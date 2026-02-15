@@ -2170,8 +2170,14 @@ CREATE TABLE [BMC].[UserProfile]
 	[displayName] NVARCHAR(100) NOT NULL,		-- Public display name shown in the community (distinct from auth username)
 	[bio] NVARCHAR(MAX) NULL,		-- Free-form biography / about-me text
 	[location] NVARCHAR(100) NULL,		-- User's declared location (city, country, or free-form)
-	[avatarImagePath] NVARCHAR(250) NULL,		-- Relative path to the user's avatar image
-	[profileBannerImagePath] NVARCHAR(250) NULL,		-- Relative path to the profile banner/cover image
+	[avatarFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
+	[avatarSize] BIGINT NULL,		-- Part of the binary data field setup
+	[avatarData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
+	[avatarMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[bannerFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
+	[bannerSize] BIGINT NULL,		-- Part of the binary data field setup
+	[bannerData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
+	[bannerMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
 	[websiteUrl] NVARCHAR(250) NULL,		-- Optional personal website or portfolio URL
 	[isPublic] BIT NOT NULL DEFAULT 1,		-- Whether this profile is visible to unauthenticated visitors
 	[memberSinceDate] DATETIME2(7) NULL,		-- Date the user first created their profile (for display purposes)

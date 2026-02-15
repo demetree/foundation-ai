@@ -214,9 +214,9 @@ export class ApiKeyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.apiKey.ApiRequestLogs.then(apiKeies => { ... })
+     *   this.apiKey.ApiRequestLogs.then(apiKeys => { ... })
      *   or
-     *   await this.apiKey.apiKeies
+     *   await this.apiKey.apiKeys
      *
     */
     public get ApiRequestLogs(): Promise<ApiRequestLogData[]> {
@@ -460,7 +460,7 @@ export class ApiKeyService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ApiKeyData>>(this.baseUrl + 'api/ApiKeies', { 
+        return this.http.get<Array<ApiKeyData>>(this.baseUrl + 'api/ApiKeys', { 
             params: queryParams, 
             headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveApiKeyList(rawList)),
@@ -469,31 +469,31 @@ export class ApiKeyService extends SecureEndpointBase {
             }));
     }
 
-    public GetApiKeiesRowCount(config: ApiKeyQueryParameters | any = null) : Observable<bigint | number> {
+    public GetApiKeysRowCount(config: ApiKeyQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.rowCountCache.has(configHash)) {
-            const apiKeiesRowCount$ = this.requestApiKeiesRowCount(config).pipe(
+            const apiKeysRowCount$ = this.requestApiKeysRowCount(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
           
-                    //this.alertService.showHttpErrorMessage("Unable to get ApiKeies row count", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get ApiKeys row count", error);
 
                     return throwError(() => error);
                 })
             )
 
-            this.rowCountCache.set(configHash, apiKeiesRowCount$);
+            this.rowCountCache.set(configHash, apiKeysRowCount$);
 
-            return apiKeiesRowCount$;
+            return apiKeysRowCount$;
         }
 
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestApiKeiesRowCount(config: ApiKeyQueryParameters | any) : Observable<bigint | number> {
+    private requestApiKeysRowCount(config: ApiKeyQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -508,38 +508,38 @@ export class ApiKeyService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<bigint | number>(this.baseUrl + 'api/ApiKeies/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
+        return this.http.get<bigint | number>(this.baseUrl + 'api/ApiKeys/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
             catchError(error => {
-                return this.handleError(error, () => this.requestApiKeiesRowCount(config));
+                return this.handleError(error, () => this.requestApiKeysRowCount(config));
             }));
     }
 
-    public GetApiKeiesBasicListData(config: ApiKeyQueryParameters | any = null) : Observable<Array<ApiKeyBasicListData>> {
+    public GetApiKeysBasicListData(config: ApiKeyQueryParameters | any = null) : Observable<Array<ApiKeyBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.basicListDataCache.has(configHash)) {
-            const apiKeiesBasicListData$ = this.requestApiKeiesBasicListData(config).pipe(
+            const apiKeysBasicListData$ = this.requestApiKeysBasicListData(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.basicListDataCache.delete(configHash);
 
-                    //this.alertService.showHttpErrorMessage("Unable to get ApiKeies basic list data", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get ApiKeys basic list data", error);
 
                     return throwError(() => error);
                 })
             );
       
-            this.basicListDataCache.set(configHash, apiKeiesBasicListData$);
+            this.basicListDataCache.set(configHash, apiKeysBasicListData$);
 
-            return apiKeiesBasicListData$;
+            return apiKeysBasicListData$;
         }
 
         return this.basicListDataCache.get(configHash) as Observable<Array<ApiKeyBasicListData>>;
     }
 
 
-    private requestApiKeiesBasicListData(config: ApiKeyQueryParameters | any) : Observable<Array<ApiKeyBasicListData>> {
+    private requestApiKeysBasicListData(config: ApiKeyQueryParameters | any) : Observable<Array<ApiKeyBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -554,9 +554,9 @@ export class ApiKeyService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ApiKeyBasicListData>>(this.baseUrl + 'api/ApiKeies/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
+        return this.http.get<Array<ApiKeyBasicListData>>(this.baseUrl + 'api/ApiKeys/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
             catchError(error => {
-                return this.handleError(error, () => this.requestApiKeiesBasicListData(config));
+                return this.handleError(error, () => this.requestApiKeysBasicListData(config));
             }));
 
     }
@@ -631,7 +631,7 @@ export class ApiKeyService extends SecureEndpointBase {
         let userIsBMCApiKeyReader = this.authService.isBMCReader;
 
         //
-        // Next test to see if the user has a high enough read permission level to read from BMC.ApiKeies
+        // Next test to see if the user has a high enough read permission level to read from BMC.ApiKeys
         //
         if (userIsBMCApiKeyReader == true) {
             const user = this.authService.currentUser;
@@ -655,7 +655,7 @@ export class ApiKeyService extends SecureEndpointBase {
         let userIsBMCApiKeyWriter = this.authService.isBMCReaderWriter;
 
         //
-        // Next test to see if the user has a high enough write permission level to write to BMC.ApiKeies
+        // Next test to see if the user has a high enough write permission level to write to BMC.ApiKeys
         //
         if (userIsBMCApiKeyWriter == true) {
           let user = this.authService.currentUser;

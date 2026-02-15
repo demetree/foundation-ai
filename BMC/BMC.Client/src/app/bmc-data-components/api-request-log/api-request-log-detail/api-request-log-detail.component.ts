@@ -94,7 +94,7 @@ export class ApiRequestLogDetailComponent implements OnInit, CanComponentDeactiv
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   apiRequestLogs$ = this.apiRequestLogService.GetApiRequestLogList();
-  public apiKeies$ = this.apiKeyService.GetApiKeyList();
+  public apiKeys$ = this.apiKeyService.GetApiKeyList();
 
   private destroy$ = new Subject<void>();
 

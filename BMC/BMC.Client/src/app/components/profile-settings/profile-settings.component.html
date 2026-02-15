@@ -63,21 +63,64 @@
         </div>
 
 
-        <!-- Appearance Card -->
+        <!-- Appearance Card — Avatar & Banner Upload -->
         <div class="settings-card bmc-card">
             <h3 class="card-title"><i class="fas fa-image me-2"></i>Appearance</h3>
 
-            <div class="form-group">
-                <label class="form-label">Avatar Image Path</label>
-                <input type="text" class="form-input" [(ngModel)]="avatarImagePath" placeholder="Path to avatar image">
-                <span class="form-hint">Image upload coming soon — enter a path for now</span>
+            <!-- Avatar Upload -->
+            <div class="image-upload-section">
+                <label class="form-label">Avatar</label>
+                <div class="avatar-upload-row">
+                    <div class="avatar-preview-container" (click)="avatarFileInput.click()">
+                        <div class="avatar-preview" *ngIf="!avatarPreviewUrl">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <img *ngIf="avatarPreviewUrl" [src]="avatarPreviewUrl" class="avatar-preview-img"
+                            alt="Avatar preview">
+                        <div class="avatar-overlay">
+                            <i class="fas" [class.fa-camera]="!isUploadingAvatar" [class.fa-spinner]="isUploadingAvatar"
+                                [class.fa-spin]="isUploadingAvatar"></i>
+                        </div>
+                    </div>
+                    <input #avatarFileInput type="file" accept="image/*" (change)="onAvatarFileSelected($event)"
+                        style="display:none">
+                    <div class="upload-info">
+                        <button class="btn-upload" (click)="avatarFileInput.click()" [disabled]="isUploadingAvatar">
+                            <i class="fas fa-upload"></i> {{ hasAvatar ? 'Change Avatar' : 'Upload Avatar' }}
+                        </button>
+                        <button class="btn-remove-image" *ngIf="hasAvatar" (click)="removeAvatar()">
+                            <i class="fas fa-trash-alt"></i> Remove
+                        </button>
+                        <span class="form-hint">Max 2 MB. JPG, PNG, or WebP recommended.</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Profile Banner Image Path</label>
-                <input type="text" class="form-input" [(ngModel)]="profileBannerImagePath"
-                    placeholder="Path to banner image">
-                <span class="form-hint">Recommended size: 1200×300px</span>
+            <!-- Banner Upload -->
+            <div class="image-upload-section">
+                <label class="form-label">Profile Banner</label>
+                <div class="banner-upload-zone" (click)="bannerFileInput.click()">
+                    <div class="banner-preview" *ngIf="!bannerPreviewUrl">
+                        <i class="fas fa-panorama"></i>
+                        <span>Click to upload a banner image</span>
+                    </div>
+                    <img *ngIf="bannerPreviewUrl" [src]="bannerPreviewUrl" class="banner-preview-img"
+                        alt="Banner preview">
+                    <div class="banner-overlay" *ngIf="bannerPreviewUrl">
+                        <i class="fas" [class.fa-camera]="!isUploadingBanner" [class.fa-spinner]="isUploadingBanner"
+                            [class.fa-spin]="isUploadingBanner"></i>
+                        <span>Change Banner</span>
+                    </div>
+                </div>
+                <input #bannerFileInput type="file" accept="image/*" (change)="onBannerFileSelected($event)"
+                    style="display:none">
+                <div class="banner-actions">
+                    <button class="btn-remove-image" *ngIf="hasBanner"
+                        (click)="removeBanner(); $event.stopPropagation()">
+                        <i class="fas fa-trash-alt"></i> Remove Banner
+                    </button>
+                    <span class="form-hint">Recommended size: 1200×300px. Max 5 MB.</span>
+                </div>
             </div>
         </div>
 

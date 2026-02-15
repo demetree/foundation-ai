@@ -19,18 +19,16 @@
     <div *ngIf="profile && !isLoading" class="profile-content">
 
         <!-- Hero Banner -->
-        <div class="profile-hero"
-            [style.background-image]="profile.profileBannerImagePath ? 'url(' + profile.profileBannerImagePath + ')' : ''">
+        <div class="profile-hero" [style.background-image]="getBannerStyle()">
             <div class="hero-overlay"></div>
 
             <div class="hero-content">
                 <!-- Avatar -->
                 <div class="avatar-container">
-                    <div class="avatar" *ngIf="!profile.avatarImagePath">
+                    <div class="avatar" *ngIf="!profile.hasAvatar">
                         <span class="avatar-initials">{{ getAvatarInitials() }}</span>
                     </div>
-                    <img *ngIf="profile.avatarImagePath" [src]="profile.avatarImagePath" class="avatar-img"
-                        alt="Avatar">
+                    <img *ngIf="profile.hasAvatar" [src]="getAvatarSrc()" class="avatar-img" alt="Avatar">
                     <span class="status-dot" [class.public]="profile.isPublic"></span>
                 </div>
 

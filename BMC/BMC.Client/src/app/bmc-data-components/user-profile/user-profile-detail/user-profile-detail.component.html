@@ -32,13 +32,37 @@
                                 <label for="UserProfile-location" id="label-UserProfile-location">Location</label>
                                 <input type="text" id="UserProfile-location" formControlName="location" placeholder="Enter Location" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-location" />
                             </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('avatarImagePath')">
-                                <label for="UserProfile-avatarImagePath" id="label-UserProfile-avatarImagePath">Avatar Image Path</label>
-                                <input type="text" id="UserProfile-avatarImagePath" formControlName="avatarImagePath" placeholder="Enter Avatar Image Path" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-avatarImagePath" />
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                                <label for="UserProfile-avatarFileName" id="label-UserProfile-avatarFileName">Avatar File Name</label>
+                                <input type="text" id="UserProfile-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-avatarFileName" />
                             </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('profileBannerImagePath')">
-                                <label for="UserProfile-profileBannerImagePath" id="label-UserProfile-profileBannerImagePath">Profile Banner Image Path</label>
-                                <input type="text" id="UserProfile-profileBannerImagePath" formControlName="profileBannerImagePath" placeholder="Enter Profile Banner Image Path" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-profileBannerImagePath" />
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                                <label for="UserProfile-avatarSize" id="label-UserProfile-avatarSize">Avatar Size</label>
+                                <input type="number" id="UserProfile-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-avatarSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                                <label for="UserProfile-avatarData" id="label-UserProfile-avatarData">Avatar Data</label>
+                                <input type="text" id="UserProfile-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-avatarData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                                <label for="UserProfile-avatarMimeType" id="label-UserProfile-avatarMimeType">Avatar Mime Type</label>
+                                <input type="text" id="UserProfile-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-avatarMimeType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bannerFileName')">
+                                <label for="UserProfile-bannerFileName" id="label-UserProfile-bannerFileName">Banner File Name</label>
+                                <input type="text" id="UserProfile-bannerFileName" formControlName="bannerFileName" placeholder="Enter Banner File Name" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-bannerFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bannerSize')">
+                                <label for="UserProfile-bannerSize" id="label-UserProfile-bannerSize">Banner Size</label>
+                                <input type="number" id="UserProfile-bannerSize" formControlName="bannerSize" placeholder="Enter Banner Size" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-bannerSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bannerData')">
+                                <label for="UserProfile-bannerData" id="label-UserProfile-bannerData">Banner Data</label>
+                                <input type="text" id="UserProfile-bannerData" formControlName="bannerData" placeholder="Enter Banner Data" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-bannerData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bannerMimeType')">
+                                <label for="UserProfile-bannerMimeType" id="label-UserProfile-bannerMimeType">Banner Mime Type</label>
+                                <input type="text" id="UserProfile-bannerMimeType" formControlName="bannerMimeType" placeholder="Enter Banner Mime Type" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-bannerMimeType" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('websiteUrl')">
                                 <label for="UserProfile-websiteUrl" id="label-UserProfile-websiteUrl">Website Url</label>

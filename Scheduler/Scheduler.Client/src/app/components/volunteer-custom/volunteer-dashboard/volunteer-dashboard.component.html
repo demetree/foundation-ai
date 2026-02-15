@@ -49,6 +49,45 @@
             </div>
         </div>
 
+        <!-- Action Items / Alerts -->
+        <div class="card shadow-sm mb-4" *ngIf="alerts.length > 0">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>
+                    Action Items
+                    <span class="badge bg-danger ms-2" *ngIf="criticalCount > 0">{{ criticalCount }} critical</span>
+                    <span class="badge bg-warning text-dark ms-1" *ngIf="warningCount > 0">{{ warningCount }}
+                        warning</span>
+                </h6>
+                <span class="text-muted small">{{ alerts.length }} total</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action alert-item py-2"
+                        *ngFor="let alert of visibleAlerts" [ngClass]="getAlertBorderClass(alert.severity)"
+                        [routerLink]="['/volunteer', alert.volunteerId]">
+                        <div class="d-flex align-items-center gap-3">
+                            <i [class]="getAlertIcon(alert)" [ngClass]="getAlertColorClass(alert.severity)"
+                                class="alert-severity-icon"></i>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium">{{ alert.volunteerName }}</div>
+                                <div class="text-muted small">
+                                    {{ alert.message }}
+                                    <span *ngIf="alert.detail" class="ms-1">&mdash; {{ alert.detail }}</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-muted small"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="text-center py-2 border-top" *ngIf="alerts.length > ALERTS_PREVIEW_COUNT">
+                    <button class="btn btn-sm btn-link text-decoration-none" (click)="showAllAlerts = !showAllAlerts">
+                        {{ showAllAlerts ? 'Show fewer' : 'Show all ' + alerts.length + ' items' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-3">
 
             <!-- Status Distribution -->

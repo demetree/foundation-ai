@@ -33,8 +33,12 @@ export class UserProfileQueryParameters {
     displayName: string | null | undefined = null;
     bio: string | null | undefined = null;
     location: string | null | undefined = null;
-    avatarImagePath: string | null | undefined = null;
-    profileBannerImagePath: string | null | undefined = null;
+    avatarFileName: string | null | undefined = null;
+    avatarSize: bigint | number | null | undefined = null;
+    avatarMimeType: string | null | undefined = null;
+    bannerFileName: string | null | undefined = null;
+    bannerSize: bigint | number | null | undefined = null;
+    bannerMimeType: string | null | undefined = null;
     websiteUrl: string | null | undefined = null;
     isPublic: boolean | null | undefined = null;
     memberSinceDate: string | null | undefined = null;        // ISO 8601 (full datetime)
@@ -57,8 +61,14 @@ export class UserProfileSubmitData {
     displayName!: string;
     bio: string | null = null;
     location: string | null = null;
-    avatarImagePath: string | null = null;
-    profileBannerImagePath: string | null = null;
+    avatarFileName: string | null = null;
+    avatarSize: bigint | number | null = null;
+    avatarData: string | null = null;
+    avatarMimeType: string | null = null;
+    bannerFileName: string | null = null;
+    bannerSize: bigint | number | null = null;
+    bannerData: string | null = null;
+    bannerMimeType: string | null = null;
     websiteUrl: string | null = null;
     isPublic!: boolean;
     memberSinceDate: string | null = null;     // ISO 8601 (full datetime)
@@ -135,8 +145,14 @@ export class UserProfileData {
     displayName!: string;
     bio!: string | null;
     location!: string | null;
-    avatarImagePath!: string | null;
-    profileBannerImagePath!: string | null;
+    avatarFileName!: string | null;
+    avatarSize!: bigint | number;
+    avatarData!: string | null;
+    avatarMimeType!: string | null;
+    bannerFileName!: string | null;
+    bannerSize!: bigint | number;
+    bannerData!: string | null;
+    bannerMimeType!: string | null;
     websiteUrl!: string | null;
     isPublic!: boolean;
     memberSinceDate!: string | null;   // ISO 8601 (full datetime)
@@ -631,8 +647,14 @@ export class UserProfileService extends SecureEndpointBase {
         output.displayName = data.displayName;
         output.bio = data.bio;
         output.location = data.location;
-        output.avatarImagePath = data.avatarImagePath;
-        output.profileBannerImagePath = data.profileBannerImagePath;
+        output.avatarFileName = data.avatarFileName;
+        output.avatarSize = data.avatarSize;
+        output.avatarData = data.avatarData;
+        output.avatarMimeType = data.avatarMimeType;
+        output.bannerFileName = data.bannerFileName;
+        output.bannerSize = data.bannerSize;
+        output.bannerData = data.bannerData;
+        output.bannerMimeType = data.bannerMimeType;
         output.websiteUrl = data.websiteUrl;
         output.isPublic = data.isPublic;
         output.memberSinceDate = data.memberSinceDate;

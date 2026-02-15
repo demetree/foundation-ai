@@ -96,3 +96,32 @@
         border-top: none;
     }
 }
+
+// Action Items / Alerts
+.alert-item {
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &.alert-item-critical {
+        border-left-color: #dc3545;
+    }
+
+    &.alert-item-warning {
+        border-left-color: #ffc107;
+    }
+
+    &.alert-item-info {
+        border-left-color: #0dcaf0;
+    }
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+}
+
+.alert-severity-icon {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}

@@ -990,8 +990,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             userProfileTable.AddString100Field("displayName", false).AddScriptComments("Public display name shown in the community (distinct from auth username)");
             userProfileTable.AddTextField("bio").AddScriptComments("Free-form biography / about-me text");
             userProfileTable.AddString100Field("location").AddScriptComments("User's declared location (city, country, or free-form)");
-            userProfileTable.AddString250Field("avatarImagePath").AddScriptComments("Relative path to the user's avatar image");
-            userProfileTable.AddString250Field("profileBannerImagePath").AddScriptComments("Relative path to the profile banner/cover image");
+            userProfileTable.AddBinaryDataFields("avatar");      // avatarFileName, avatarSize, avatarData, avatarMimeType
+            userProfileTable.AddBinaryDataFields("banner");       // bannerFileName, bannerSize, bannerData, bannerMimeType
             userProfileTable.AddString250Field("websiteUrl").AddScriptComments("Optional personal website or portfolio URL");
             userProfileTable.AddBoolField("isPublic", false, true).AddScriptComments("Whether this profile is visible to unauthenticated visitors");
             userProfileTable.AddDateTimeField("memberSinceDate", true).AddScriptComments("Date the user first created their profile (for display purposes)");

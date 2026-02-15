@@ -95,7 +95,7 @@ export class ApiKeyAddEditComponent {
 
   public isSaving: boolean = false;
 
-  apiKeies$ = this.apiKeyService.GetApiKeyList();
+  apiKeys$ = this.apiKeyService.GetApiKeyList();
 
   constructor(
     private modalService: NgbModal,
@@ -112,7 +112,7 @@ export class ApiKeyAddEditComponent {
 
       if (!this.apiKeyService.userIsBMCApiKeyReader()) {
         this.alertService.showMessage(
-          `${this.authService.currentUser?.userName} does not have permission to read Api Keies`,
+          `${this.authService.currentUser?.userName} does not have permission to read Api Keys`,
           '',
           MessageSeverity.info
         );
@@ -128,7 +128,7 @@ export class ApiKeyAddEditComponent {
 
       if (!this.apiKeyService.userIsBMCApiKeyWriter()) {
         this.alertService.showMessage(
-          `${this.authService.currentUser?.userName} does not have permission to write Api Keies`,
+          `${this.authService.currentUser?.userName} does not have permission to write Api Keys`,
           '',
           MessageSeverity.info
         );
@@ -194,7 +194,7 @@ export class ApiKeyAddEditComponent {
 
     if (this.apiKeyService.userIsBMCApiKeyWriter() == false) {
       this.alertService.showMessage(
-        `${this.authService.currentUser?.userName} does not have permission to write Api Keies`,
+        `${this.authService.currentUser?.userName} does not have permission to write Api Keys`,
         '',
         MessageSeverity.info
       );

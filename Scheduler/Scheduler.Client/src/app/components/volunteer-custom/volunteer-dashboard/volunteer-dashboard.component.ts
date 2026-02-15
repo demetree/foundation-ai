@@ -20,6 +20,20 @@ interface RecentActivity {
     status: 'reported' | 'approved' | 'assigned';
 }
 
+/**
+ * Extensible alert model — designed for future server-side provider.
+ * A server endpoint could return DashboardAlert[] which the UI merges
+ * with client-computed alerts.
+ */
+export interface DashboardAlert {
+    severity: 'critical' | 'warning' | 'info';
+    type: 'bg-expired' | 'bg-expiring' | 'pending-hours' | 'inactive' | 'missing-compliance';
+    message: string;
+    volunteerName: string;
+    volunteerId: number;
+    detail?: string;
+}
+
 @Component({
     selector: 'app-volunteer-dashboard',
     templateUrl: './volunteer-dashboard.component.html',
@@ -38,6 +52,11 @@ export class VolunteerDashboardComponent implements OnInit, OnDestroy {
 
     // Recent activity
     public recentActivity: RecentActivity[] = [];
+
+    // Action items / alerts
+    public alerts: DashboardAlert[] = [];
+    public showAllAlerts = false;
+    public readonly ALERTS_PREVIEW_COUNT = 5;
 
     // Loading states
     public isLoading = true;
@@ -112,6 +131,9 @@ export class VolunteerDashboardComponent implements OnInit, OnDestroy {
             });
 
             this.isLoading = false;
+
+            // Compute alerts from volunteer data
+            this.computeAlerts(volunteers);
 
             // Load recent volunteer assignments for activity feed
             this.loadRecentActivity(volunteers);
@@ -190,5 +212,128 @@ export class VolunteerDashboardComponent implements OnInit, OnDestroy {
             case 'assigned': return 'bg-secondary';
             default: return 'bg-secondary';
         }
+    }
+
+    public get visibleAlerts(): DashboardAlert[] {
+        return this.showAllAlerts ? this.alerts : this.alerts.slice(0, this.ALERTS_PREVIEW_COUNT);
+    }
+
+    public get criticalCount(): number {
+        return this.alerts.filter(a => a.severity === 'critical').length;
+    }
+
+    public get warningCount(): number {
+        return this.alerts.filter(a => a.severity === 'warning').length;
+    }
+
+    public getAlertIcon(alert: DashboardAlert): string {
+        switch (alert.type) {
+            case 'bg-expired': return 'fa-solid fa-shield-xmark';
+            case 'bg-expiring': return 'fa-solid fa-shield-halved';
+            case 'pending-hours': return 'fa-solid fa-hourglass-half';
+            case 'inactive': return 'fa-solid fa-user-clock';
+            case 'missing-compliance': return 'fa-solid fa-file-circle-exclamation';
+            default: return 'fa-solid fa-circle-info';
+        }
+    }
+
+    public getAlertColorClass(severity: string): string {
+        switch (severity) {
+            case 'critical': return 'text-danger';
+            case 'warning': return 'text-warning';
+            case 'info': return 'text-info';
+            default: return 'text-secondary';
+        }
+    }
+
+    public getAlertBorderClass(severity: string): string {
+        switch (severity) {
+            case 'critical': return 'alert-item-critical';
+            case 'warning': return 'alert-item-warning';
+            case 'info': return 'alert-item-info';
+            default: return '';
+        }
+    }
+
+    /**
+     * Compute client-side alerts from volunteer data.
+     * Future: merge with server-provided alerts from an API endpoint.
+     */
+    private computeAlerts(volunteers: VolunteerProfileData[]): void {
+        const alerts: DashboardAlert[] = [];
+        const now = new Date();
+        const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+        for (const v of volunteers) {
+            const name = v.resource?.name || 'Unknown';
+            const id = Number(v.id);
+
+            // Expired BG checks (past due) — critical
+            if (v.backgroundCheckExpiry) {
+                const expiry = new Date(v.backgroundCheckExpiry);
+                if (expiry < now) {
+                    alerts.push({
+                        severity: 'critical',
+                        type: 'bg-expired',
+                        message: 'Background check expired',
+                        volunteerName: name,
+                        volunteerId: id,
+                        detail: `Expired ${this.formatDate(v.backgroundCheckExpiry)}`
+                    });
+                } else if (expiry <= thirtyDaysFromNow) {
+                    // Expiring within 30 days — warning
+                    alerts.push({
+                        severity: 'warning',
+                        type: 'bg-expiring',
+                        message: 'Background check expiring soon',
+                        volunteerName: name,
+                        volunteerId: id,
+                        detail: `Expires ${this.formatDate(v.backgroundCheckExpiry)}`
+                    });
+                }
+            }
+
+            // Missing compliance — info
+            if (v.backgroundCheckCompleted === false && !v.backgroundCheckDate) {
+                alerts.push({
+                    severity: 'info',
+                    type: 'missing-compliance',
+                    message: 'Background check not completed',
+                    volunteerName: name,
+                    volunteerId: id
+                });
+            }
+            if (v.confidentialityAgreementSigned === false && !v.confidentialityAgreementDate) {
+                alerts.push({
+                    severity: 'info',
+                    type: 'missing-compliance',
+                    message: 'Confidentiality agreement not signed',
+                    volunteerName: name,
+                    volunteerId: id
+                });
+            }
+
+            // Long inactive — info (no activity in 90+ days)
+            if (v.lastActivityDate) {
+                const lastActivity = new Date(v.lastActivityDate);
+                if (lastActivity < ninetyDaysAgo) {
+                    alerts.push({
+                        severity: 'info',
+                        type: 'inactive',
+                        message: 'No activity in 90+ days',
+                        volunteerName: name,
+                        volunteerId: id,
+                        detail: `Last active ${this.formatDate(v.lastActivityDate)}`
+                    });
+                }
+            }
+        }
+
+        // Sort by severity: critical first, then warning, then info
+        const severityOrder: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+        alerts.sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
+
+        this.alerts = alerts;
     }
 }

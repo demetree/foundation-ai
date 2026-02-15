@@ -7,6 +7,7 @@ import { VolunteerStatusService, VolunteerStatusData } from '../../../scheduler-
 import { VolunteerCustomAddEditComponent } from '../volunteer-custom-add-edit/volunteer-custom-add-edit.component';
 import { VolunteerCustomTableComponent } from '../volunteer-custom-table/volunteer-custom-table.component';
 import { AuthService } from '../../../services/auth.service';
+import { CsvExportService, CsvColumn } from '../../../services/csv-export.service';
 import { Location } from '@angular/common';
 
 @Component({
@@ -24,6 +25,7 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
     // Filter state
     public showFilters: boolean = false;
     public showDashboard: boolean = false;
+    public showCalendar: boolean = false;
     public statusFilter: number | null = null;
     public bgCheckFilter: boolean | null = null;
     public activeFilter: boolean | null = null;
@@ -44,6 +46,7 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
         private volunteerStatusService: VolunteerStatusService,
         private authService: AuthService,
         private breakpointObserver: BreakpointObserver,
+        private csvExportService: CsvExportService,
         private location: Location
     ) { }
 
@@ -149,5 +152,44 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
         this.volunteerStatusService.GetVolunteerStatusList({ active: true, deleted: false })
             .pipe(takeUntil(this.destroy$))
             .subscribe(statuses => this.volunteerStatuses = statuses);
+    }
+
+    public isExporting = false;
+
+    public async exportVolunteers(): Promise<void> {
+        if (this.isExporting) return;
+        this.isExporting = true;
+
+        try {
+            // Try table data first; if table isn't rendered, fetch from service
+            let data = this.tableComponent?.filteredVolunteers;
+
+            if (!data || data.length === 0) {
+                const fetched = await this.volunteerProfileService
+                    .GetVolunteerProfileList({ active: true, deleted: false, includeRelations: true })
+                    .toPromise();
+                data = fetched ?? [];
+            }
+
+            if (!data || data.length === 0) return;
+
+            const columns: CsvColumn<VolunteerProfileData>[] = [
+                { header: 'Name', accessor: v => v.resource?.name || '' },
+                { header: 'Status', accessor: v => v.volunteerStatus?.name || '' },
+                { header: 'Onboarded Date', accessor: v => v.onboardedDate || '' },
+                { header: 'Total Hours', accessor: v => v.totalHoursServed ?? 0 },
+                { header: 'BG Check', accessor: v => v.backgroundCheckCompleted },
+                { header: 'BG Check Expiry', accessor: v => v.backgroundCheckExpiry || '' },
+                { header: 'Active', accessor: v => v.active },
+                { header: 'Last Activity', accessor: v => v.lastActivityDate || '' },
+                { header: 'Availability', accessor: v => v.availabilityPreferences || '' },
+                { header: 'Skills / Interests', accessor: v => v.interestsAndSkillsNotes || '' },
+            ];
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.csvExportService.exportToCsv(`volunteers-export-${dateStr}`, data, columns);
+        } finally {
+            this.isExporting = false;
+        }
     }
 }

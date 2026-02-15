@@ -5,15 +5,23 @@
 }
 
 .btn-add-volunteer {
-    background-color: #10b981;
-    border-color: #10b981;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
     height: 37px;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 12px;
-    width: 60px;
+    padding: 0 14px;
+    gap: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+        color: white;
+    }
 }
 
 .volunteer-modal-header {}

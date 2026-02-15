@@ -25,7 +25,7 @@
                 <label for="ApiRequestLog-apiKeyId" id="label-ApiRequestLog-apiKeyId"><span class="text-danger">*</span>Api Key</label>
                 <select id="ApiRequestLog-apiKeyId" formControlName="apiKeyId" class="form-select api-request-log-select" [disabled]="!userIsBMCApiRequestLogWriter()">
                     <option [ngValue]="null">Select Api Key</option>
-                    <option *ngFor="let apiKey of apiKeies$ | async" [ngValue]="apiKey.id">{{apiKey.keyHash}}</option>
+                    <option *ngFor="let apiKey of apiKeys$ | async" [ngValue]="apiKey.id">{{apiKey.keyHash}}</option>
                 </select>
                 <div *ngIf="apiRequestLogForm.get('apiKeyId')?.invalid && apiRequestLogForm.get('apiKeyId')?.touched" class="text-danger">
                     Api Key is required

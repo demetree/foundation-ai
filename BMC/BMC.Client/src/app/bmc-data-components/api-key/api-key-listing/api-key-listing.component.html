@@ -9,8 +9,8 @@
 
                 <!-- Title -->
                 <div>
-                    <h3 class="page-title mb-0">Api Keies</h3>
-                    <small class="text-muted">View Api Keies</small>
+                    <h3 class="page-title mb-0">Api Keys</h3>
+                    <small class="text-muted">View Api Keys</small>
                 </div>
             </div>
 
@@ -26,20 +26,20 @@
                     <!-- Filtered: some results -->
                     <ng-container *ngIf="filteredApiKeyCount$ | async as filteredCount">
                       <span *ngIf="filterText && (filteredCount ?? 0) > 0">
-                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Api Keies' : 'Api Key' }}
+                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Api Keys' : 'Api Key' }}
                       </span>
                     </ng-container>
                     <!-- Filtered: 0 results -->
                     <span *ngIf="total > 0 && filterText && (filteredApiKeyCount$ | async) === 0">
-                      No matching Api Keies
+                      No matching Api Keys
                     </span>
                     <!-- No filter: normal count -->
                     <span *ngIf="!filterText">
-                      {{ total }} {{ total !== 1 ? 'Api Keies' : 'Api Key' }}
+                      {{ total }} {{ total !== 1 ? 'Api Keys' : 'Api Key' }}
                     </span>
-                    <!-- No Api Keies at all (even unfiltered) -->
+                    <!-- No Api Keys at all (even unfiltered) -->
                     <span *ngIf="total === 0">
-                      No Api Keies
+                      No Api Keys
                     </span>
 
                   </span>
@@ -51,7 +51,7 @@
                     <i class="fa fa-spinner fa-spin me-1"></i> Loading...
                   </span>
                   <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
-                    No Api Keies
+                    No Api Keys
                   </span>
                 </ng-template>
 
@@ -62,7 +62,7 @@
                 <i class="fa fa-search search-icon"></i>
                 <input type="text"
                    class="form-control search-input"
-                   placeholder="Search ApiKeies..."
+                   placeholder="Search ApiKeys..."
                    [(ngModel)]="filterText"
                    (ngModelChange)="onFilterChange()">
                 <button *ngIf="filterText"

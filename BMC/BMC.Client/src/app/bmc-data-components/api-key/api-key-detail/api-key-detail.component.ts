@@ -97,7 +97,7 @@ export class ApiKeyDetailComponent implements OnInit, CanComponentDeactivate {
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
-  apiKeies$ = this.apiKeyService.GetApiKeyList();
+  apiKeys$ = this.apiKeyService.GetApiKeyList();
   public apiRequestLogs$ = this.apiRequestLogService.GetApiRequestLogList();
 
   private destroy$ = new Subject<void>();
@@ -225,7 +225,7 @@ export class ApiKeyDetailComponent implements OnInit, CanComponentDeactivate {
     if (!this.apiKeyService.userIsBMCApiKeyReader()) {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
-      this.alertService.showMessage(`${userName} does not have permission to read ApiKeies.`,
+      this.alertService.showMessage(`${userName} does not have permission to read ApiKeys.`,
                                     'Access Denied',
                                      MessageSeverity.warn
       );
@@ -455,7 +455,7 @@ export class ApiKeyDetailComponent implements OnInit, CanComponentDeactivate {
     }
 
     if (this.apiKeyService.userIsBMCApiKeyWriter() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Api Keies", 'Access Denied', MessageSeverity.info);
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Api Keys", 'Access Denied', MessageSeverity.info);
       return;
     }
 
@@ -512,7 +512,7 @@ export class ApiKeyDetailComponent implements OnInit, CanComponentDeactivate {
           this.apiKeyForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
           this.apiKeyForm.markAsUntouched();
 
-          this.router.navigate(['/apikeies', savedApiKeyData.id]);
+          this.router.navigate(['/apikeys', savedApiKeyData.id]);
           this.alertService.showMessage('Api Key added successfully', '', MessageSeverity.success);
         } else {
 

@@ -49,7 +49,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 		/// <summary>
 		/// 
-		/// This gets a list of ApiKeies filtered by the parameters provided.
+		/// This gets a list of ApiKeys filtered by the parameters provided.
 		/// 
 		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
 		/// 
@@ -60,8 +60,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 		/// </summary>
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/ApiKeies")]
-		public async Task<IActionResult> GetApiKeies(
+		[Route("api/ApiKeys")]
+		public async Task<IActionResult> GetApiKeys(
 			string keyHash = null,
 			string keyPrefix = null,
 			string name = null,
@@ -266,14 +266,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 		
         /// <summary>
         /// 
-        /// This returns a row count of ApiKeies filtered by the parameters provided.  Its query is similar to the GetApiKeies method, but it only returns the count of rows that would be returned.
+        /// This returns a row count of ApiKeys filtered by the parameters provided.  Its query is similar to the GetApiKeys method, but it only returns the count of rows that would be returned.
         ///
         /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/ApiKeies/RowCount")]
+		[Route("api/ApiKeys/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			string keyHash = null,
 			string keyPrefix = null,
@@ -902,7 +902,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		/// The rate limit is 2 per second per user.
         /// 
         /// </summary>
-		[Route("api/ApiKeies/ListData")]
+		[Route("api/ApiKeys/ListData")]
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(

@@ -8,8 +8,10 @@ interface ProfileData {
     displayName: string;
     bio: string;
     location: string;
-    avatarImagePath: string;
-    profileBannerImagePath: string;
+    hasAvatar: boolean;
+    avatarUrl: string | null;
+    hasBanner: boolean;
+    bannerUrl: string | null;
     websiteUrl: string;
     isPublic: boolean;
     memberSinceDate: string;
@@ -44,6 +46,9 @@ export class ProfileComponent implements OnInit {
     isLoading = true;
     error = '';
 
+    // Cache-bust suffix to force image reload after upload
+    imageVersion = Date.now();
+
     stats: { icon: string; label: string; value: number; color: string }[] = [];
 
     constructor(
@@ -65,6 +70,7 @@ export class ProfileComponent implements OnInit {
             next: (data) => {
                 this.profile = data;
                 this.buildStats(data);
+                this.imageVersion = Date.now();
                 this.isLoading = false;
             },
             error: (err) => {
@@ -84,6 +90,20 @@ export class ProfileComponent implements OnInit {
             { icon: 'fas fa-heart', label: 'Likes Received', value: p.totalLikesReceived, color: '#ef5350' },
             { icon: 'fas fa-trophy', label: 'Achievement Pts', value: p.totalAchievementPoints, color: '#ffca28' },
         ];
+    }
+
+    getAvatarSrc(): string {
+        if (this.profile?.hasAvatar && this.profile.avatarUrl) {
+            return this.profile.avatarUrl + '?v=' + this.imageVersion;
+        }
+        return '';
+    }
+
+    getBannerStyle(): string {
+        if (this.profile?.hasBanner && this.profile.bannerUrl) {
+            return 'url(' + this.profile.bannerUrl + '?v=' + this.imageVersion + ')';
+        }
+        return '';
     }
 
     goToSettings(): void {

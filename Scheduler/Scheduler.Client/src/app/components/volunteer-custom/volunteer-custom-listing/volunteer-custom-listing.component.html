@@ -61,18 +61,27 @@
 
 
                 <!-- Dashboard Toggle -->
-                <button class="btn btn-sm" [class.btn-warning]="showDashboard"
-                    [class.btn-outline-secondary]="!showDashboard" (click)="showDashboard = !showDashboard"
-                    ngbTooltip="Toggle Dashboard">
+                <button class="btn btn-sm btn-glass" [class.btn-glass-active]="showDashboard"
+                    (click)="showDashboard = !showDashboard; showCalendar = false" ngbTooltip="Toggle Dashboard">
                     <i class="fa fa-gauge-high"></i>
                 </button>
 
+                <!-- Calendar Toggle -->
+                <button class="btn btn-sm btn-glass" [class.btn-glass-active]="showCalendar"
+                    (click)="showCalendar = !showCalendar; showDashboard = false" ngbTooltip="Toggle Calendar">
+                    <i class="fa fa-calendar-days"></i>
+                </button>
+
                 <!-- Filter Toggle -->
-                <button class="btn btn-sm" [class.btn-info]="showFilters || hasActiveFilters"
-                    [class.btn-outline-secondary]="!showFilters && !hasActiveFilters" (click)="toggleFilters()"
-                    ngbTooltip="Toggle Filters">
-                    <i class="fa fa-filter me-1"></i>
-                    <span *ngIf="hasActiveFilters" class="badge bg-warning text-dark ms-1">!</span>
+                <button class="btn btn-sm btn-glass" [class.btn-glass-active]="showFilters || hasActiveFilters"
+                    (click)="toggleFilters()" ngbTooltip="Toggle Filters">
+                    <i class="fa fa-filter"></i>
+                    <span *ngIf="hasActiveFilters" class="filter-active-dot"></span>
+                </button>
+
+                <!-- Export CSV -->
+                <button class="btn btn-sm btn-glass" (click)="exportVolunteers()" ngbTooltip="Export to CSV">
+                    <i class="fa fa-download"></i>
                 </button>
 
                 <!-- Quick Search Input -->
@@ -137,9 +146,14 @@
     <!-- Dashboard View -->
     <app-volunteer-dashboard *ngIf="showDashboard && userIsVolunteerReader()"></app-volunteer-dashboard>
 
+    <!-- Calendar View -->
+    <div class="card shadow-sm border-0" *ngIf="showCalendar && userIsVolunteerReader()">
+        <app-volunteer-calendar></app-volunteer-calendar>
+    </div>
+
     <!-- Table View -->
-    <app-volunteer-custom-table *ngIf="!showDashboard && userIsVolunteerReader() == true" [filterText]="filterText"
-        [isSmallScreen]="isSmallScreen" [statusFilter]="statusFilter" [bgCheckFilter]="bgCheckFilter"
-        [activeFilter]="activeFilter">
+    <app-volunteer-custom-table *ngIf="!showDashboard && !showCalendar && userIsVolunteerReader() == true"
+        [filterText]="filterText" [isSmallScreen]="isSmallScreen" [statusFilter]="statusFilter"
+        [bgCheckFilter]="bgCheckFilter" [activeFilter]="activeFilter">
     </app-volunteer-custom-table>
 </div>

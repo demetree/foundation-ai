@@ -5,6 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { VolunteerProfileData, VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { EventResourceAssignmentData, EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { EventAddEditModalComponent } from '../../scheduler/event-add-edit-modal/event-add-edit-modal.component';
+import { VolunteerSuggestionService, VolunteerSuggestion, SuggestionContext } from '../../../services/volunteer-suggestion.service';
 
 /**
  * Assignments tab for the Volunteer detail page.
@@ -28,10 +29,16 @@ export class VolunteerAssignmentsTabComponent implements OnChanges {
     public isLoading = true;
     public error: string | null = null;
 
+    // Smart Suggestions
+    public suggestions: VolunteerSuggestion[] = [];
+    public showSuggestions = false;
+    public isLoadingSuggestions = false;
+
     constructor(
         private router: Router,
         private eventResourceAssignmentService: EventResourceAssignmentService,
         private volunteerProfileService: VolunteerProfileService,
+        private suggestionService: VolunteerSuggestionService,
         private modalService: NgbModal
     ) { }
 
@@ -177,5 +184,66 @@ export class VolunteerAssignmentsTabComponent implements OnChanges {
      */
     public userIsVolunteerWriter(): boolean {
         return this.volunteerProfileService.userIsSchedulerVolunteerProfileWriter();
+    }
+
+    /**
+     * Load smart suggestions — volunteers who'd be good matches for similar events.
+     */
+    public async toggleSuggestions(): Promise<void> {
+        this.showSuggestions = !this.showSuggestions;
+
+        if (!this.showSuggestions || this.suggestions.length > 0) return;
+
+        this.isLoadingSuggestions = true;
+
+        try {
+            // Get all active volunteers
+            const allVolunteers = await lastValueFrom(
+                this.volunteerProfileService.GetVolunteerProfileList({
+                    active: true,
+                    deleted: false,
+                    includeRelations: true
+                })
+            );
+
+            // Get all active assignments for workload context
+            const allAssignments = await lastValueFrom(
+                this.eventResourceAssignmentService.GetEventResourceAssignmentList({
+                    isVolunteer: true,
+                    active: true,
+                    deleted: false,
+                    includeRelations: true
+                })
+            );
+
+            // Build context from the volunteer's most recent assignment
+            const recentAssignment = this.allAssignments[0]; // sorted newest first
+            const context: SuggestionContext = {
+                eventName: recentAssignment?.scheduledEvent?.name || '',
+                eventDescription: recentAssignment?.scheduledEvent?.description || '',
+                alreadyAssignedResourceIds: this.volunteer?.resourceId
+                    ? [Number(this.volunteer.resourceId)]
+                    : [],
+                allAssignments
+            };
+
+            // Set day of week from event start
+            const startDate = recentAssignment?.assignmentStartDateTime || recentAssignment?.scheduledEvent?.startDateTime;
+            if (startDate) {
+                context.eventDayOfWeek = new Date(startDate).getDay();
+            }
+
+            this.suggestions = this.suggestionService.getSuggestions(allVolunteers, context, 5);
+        } catch (err) {
+            console.error('Failed to load suggestions', err);
+        } finally {
+            this.isLoadingSuggestions = false;
+        }
+    }
+
+    public navigateToVolunteer(volunteerId: bigint | number | undefined): void {
+        if (volunteerId) {
+            this.router.navigate(['/volunteers', volunteerId]);
+        }
     }
 }

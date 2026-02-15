@@ -34,7 +34,7 @@ import { TableColumn } from '../../../utility/foundation.utility';
 export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild(ApiKeyAddEditComponent) addEditApiKeyComponent!: ApiKeyAddEditComponent;
 
-  @Input() ApiKeies: ApiKeyData[] | null = null; // Optional prefiltered data
+  @Input() ApiKeys: ApiKeyData[] | null = null; // Optional prefiltered data
   @Input() isSmallScreen: boolean = false;
   @Input() filterText: string | null = null; // Optional filter text 
   @Input() queryParams: Partial<ApiKeyQueryParameters> = { } // Optional query parameters
@@ -49,7 +49,7 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
 
   @Input() columns: TableColumn[] = [];     // Default set built in ngOnInit
 
-  public filteredApiKeies: ApiKeyData[] | null = null;        // Stores the filtered/sorted data
+  public filteredApiKeys: ApiKeyData[] | null = null;        // Stores the filtered/sorted data
 
   // Sorting properties
   public sortColumn: string | null = null;
@@ -83,7 +83,7 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
       this.buildDefaultColumns();
     }
 
-    if (!this.ApiKeies) {
+    if (!this.ApiKeys) {
 
         this.isManagingData = true; // Component is managing data loading
         this.loadData(); // Load data on initialization
@@ -219,7 +219,7 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
     }
 
     if (this.apiKeyService.userIsBMCApiKeyReader() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Api Keies", '', MessageSeverity.info);
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Api Keys", '', MessageSeverity.info);
       return;
     }
 
@@ -237,9 +237,9 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
     this.apiKeyService.GetApiKeyList(apiKeyQueryParams).subscribe({
       next: (ApiKeyList) => {
         if (ApiKeyList) {
-          this.ApiKeies = ApiKeyList;
+          this.ApiKeys = ApiKeyList;
         } else {
-          this.ApiKeies = [];
+          this.ApiKeys = [];
         }
 
         //
@@ -295,8 +295,8 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
 
    private applyFiltersAndSort(): void {
 
-    if (!this.ApiKeies) {
-      this.filteredApiKeies = null;
+    if (!this.ApiKeys) {
+      this.filteredApiKeys = null;
       return;
     }
 
@@ -308,7 +308,7 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
     };
 
 
-    let result = [...this.ApiKeies];
+    let result = [...this.ApiKeys];
 
     if (this.filterText) {
 
@@ -357,7 +357,7 @@ export class ApiKeyTableComponent implements OnInit, OnChanges, AfterViewInit {
       });
     }
 
-    this.filteredApiKeies = result;
+    this.filteredApiKeys = result;
   }
 
 

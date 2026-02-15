@@ -14,8 +14,10 @@
             </div>
             <div class="header-right">
                 <!-- Status Badge -->
-                <span class="badge badge-glass mx-2" *ngIf="volunteer.volunteerStatus"
-                    [style.border-color]="volunteer.volunteerStatus.color || 'white'">
+                <span class="badge badge-status mx-2" *ngIf="volunteer.volunteerStatus"
+                    [style.border-left-color]="volunteer.volunteerStatus.color || 'white'">
+                    <span class="status-dot me-1"
+                        [style.background-color]="volunteer.volunteerStatus.color || 'white'"></span>
                     {{ volunteer.volunteerStatus.name }}
                 </span>
                 <!-- Edit Button -->
@@ -70,6 +72,15 @@
                 </a>
                 <ng-template ngbNavContent>
                     <app-volunteer-groups-tab [volunteer]="volunteer"></app-volunteer-groups-tab>
+                </ng-template>
+            </li>
+
+            <li ngbNavItem="calendar">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-calendar-days me-1"></i> Calendar
+                </a>
+                <ng-template ngbNavContent>
+                    <app-volunteer-calendar [resourceId]="volunteer.resourceId"></app-volunteer-calendar>
                 </ng-template>
             </li>
 

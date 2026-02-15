@@ -17,9 +17,21 @@ public partial class UserProfile
 
     public string location { get; set; }
 
-    public string avatarImagePath { get; set; }
+    public string avatarFileName { get; set; }
 
-    public string profileBannerImagePath { get; set; }
+    public long? avatarSize { get; set; }
+
+    public byte[] avatarData { get; set; }
+
+    public string avatarMimeType { get; set; }
+
+    public string bannerFileName { get; set; }
+
+    public long? bannerSize { get; set; }
+
+    public byte[] bannerData { get; set; }
+
+    public string bannerMimeType { get; set; }
 
     public string websiteUrl { get; set; }
 

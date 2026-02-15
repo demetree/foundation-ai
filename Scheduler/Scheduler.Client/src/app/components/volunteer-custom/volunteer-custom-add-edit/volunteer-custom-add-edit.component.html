@@ -1,7 +1,7 @@
 <div class="add-volunteer" *ngIf="showAddButton == true">
-    <button type="button" class="btn btn-sm btn-add-volunteer me-2" (click)="openModal()" ngbTooltip="Add Volunteer"
-        *ngIf="userIsVolunteerWriter() == true" placement="top" style="min-width: 75px;">
-        Add
+    <button type="button" class="btn btn-sm btn-add-volunteer" (click)="openModal()" ngbTooltip="Add Volunteer"
+        *ngIf="userIsVolunteerWriter() == true" placement="top">
+        <i class="fa-solid fa-plus"></i> Add
     </button>
 </div>
 

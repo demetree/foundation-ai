@@ -1,18 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-
-interface ProfileData {
-    id: number;
-    displayName: string;
-    bio: string;
-    location: string;
-    avatarImagePath: string;
-    profileBannerImagePath: string;
-    websiteUrl: string;
-    isPublic: boolean;
-}
 
 interface LinkType {
     id: number;
@@ -39,10 +28,17 @@ export class ProfileSettingsComponent implements OnInit {
     displayName = '';
     bio = '';
     location = '';
-    avatarImagePath = '';
-    profileBannerImagePath = '';
     websiteUrl = '';
     isPublic = true;
+
+    // Image state
+    hasAvatar = false;
+    hasBanner = false;
+    avatarPreviewUrl: string | null = null;
+    bannerPreviewUrl: string | null = null;
+    isUploadingAvatar = false;
+    isUploadingBanner = false;
+    imageVersion = Date.now();
 
     // Links
     links: ProfileLink[] = [];
@@ -74,10 +70,17 @@ export class ProfileSettingsComponent implements OnInit {
                 this.displayName = profile.displayName || '';
                 this.bio = profile.bio || '';
                 this.location = profile.location || '';
-                this.avatarImagePath = profile.avatarImagePath || '';
-                this.profileBannerImagePath = profile.profileBannerImagePath || '';
                 this.websiteUrl = profile.websiteUrl || '';
                 this.isPublic = profile.isPublic;
+                this.hasAvatar = profile.hasAvatar;
+                this.hasBanner = profile.hasBanner;
+
+                if (profile.hasAvatar && profile.avatarUrl) {
+                    this.avatarPreviewUrl = profile.avatarUrl + '?v=' + Date.now();
+                }
+                if (profile.hasBanner && profile.bannerUrl) {
+                    this.bannerPreviewUrl = profile.bannerUrl + '?v=' + Date.now();
+                }
 
                 // Map links
                 this.links = (profile.links || []).map((l: any) => ({
@@ -107,6 +110,101 @@ export class ProfileSettingsComponent implements OnInit {
         });
     }
 
+
+    // ------- Image Upload -------
+
+    onAvatarFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (!input.files || input.files.length === 0) return;
+        this.uploadImage(input.files[0], 'avatar');
+        input.value = ''; // Reset so same file can be re-selected
+    }
+
+    onBannerFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (!input.files || input.files.length === 0) return;
+        this.uploadImage(input.files[0], 'banner');
+        input.value = '';
+    }
+
+    private uploadImage(file: File, type: 'avatar' | 'banner'): void {
+        const maxSize = type === 'avatar' ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            this.error = `File exceeds the maximum size of ${maxSize / (1024 * 1024)} MB.`;
+            return;
+        }
+        if (!file.type.startsWith('image/')) {
+            this.error = 'File must be an image.';
+            return;
+        }
+
+        this.error = '';
+        if (type === 'avatar') { this.isUploadingAvatar = true; }
+        else { this.isUploadingBanner = true; }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Use auth-only headers — do NOT set Content-Type so the browser
+        // auto-generates the multipart/form-data boundary for FormData.
+        const uploadHeaders = new HttpHeaders({
+            Authorization: `Bearer ${this.authService.accessToken}`
+        });
+        this.http.post<any>(`/api/profile/mine/${type}`, formData, { headers: uploadHeaders }).subscribe({
+            next: () => {
+                const ts = Date.now();
+                if (type === 'avatar') {
+                    this.hasAvatar = true;
+                    this.avatarPreviewUrl = '/api/profile/mine/avatar?v=' + ts;
+                    this.isUploadingAvatar = false;
+                } else {
+                    this.hasBanner = true;
+                    this.bannerPreviewUrl = '/api/profile/mine/banner?v=' + ts;
+                    this.isUploadingBanner = false;
+                }
+                this.successMessage = `${type === 'avatar' ? 'Avatar' : 'Banner'} uploaded!`;
+                setTimeout(() => this.successMessage = '', 3000);
+            },
+            error: (err) => {
+                if (type === 'avatar') { this.isUploadingAvatar = false; }
+                else { this.isUploadingBanner = false; }
+                this.error = `Failed to upload ${type}.`;
+                console.error(err);
+            }
+        });
+    }
+
+    removeAvatar(): void {
+        const headers = this.authService.GetAuthenticationHeaders();
+        this.http.delete('/api/profile/mine/avatar', { headers }).subscribe({
+            next: () => {
+                this.hasAvatar = false;
+                this.avatarPreviewUrl = null;
+            },
+            error: (err) => {
+                this.error = 'Failed to remove avatar.';
+                console.error(err);
+            }
+        });
+    }
+
+    removeBanner(): void {
+        const headers = this.authService.GetAuthenticationHeaders();
+        this.http.delete('/api/profile/mine/banner', { headers }).subscribe({
+            next: () => {
+                this.hasBanner = false;
+                this.bannerPreviewUrl = null;
+            },
+            error: (err) => {
+                this.error = 'Failed to remove banner.';
+                console.error(err);
+            }
+        });
+    }
+
+
+    // ------- Social Links -------
+
     addLink(): void {
         this.links.push({
             userProfileLinkTypeId: this.linkTypes.length > 0 ? this.linkTypes[0].id : 0,
@@ -118,7 +216,6 @@ export class ProfileSettingsComponent implements OnInit {
 
     removeLink(index: number): void {
         this.links.splice(index, 1);
-        // Resequence
         this.links.forEach((l, i) => l.sequence = i);
     }
 
@@ -126,6 +223,9 @@ export class ProfileSettingsComponent implements OnInit {
         const type = this.linkTypes.find(t => t.id === id);
         return type?.name || 'Unknown';
     }
+
+
+    // ------- Save Profile + Links -------
 
     save(): void {
         this.error = '';
@@ -144,20 +244,16 @@ export class ProfileSettingsComponent implements OnInit {
         this.isSaving = true;
         const headers = this.authService.GetAuthenticationHeaders();
 
-        // Save profile
         const profilePayload = {
             displayName: this.displayName.trim(),
             bio: this.bio.trim(),
             location: this.location.trim(),
-            avatarImagePath: this.avatarImagePath.trim(),
-            profileBannerImagePath: this.profileBannerImagePath.trim(),
             websiteUrl: this.websiteUrl.trim(),
             isPublic: this.isPublic
         };
 
         this.http.put('/api/profile/mine', profilePayload, { headers }).subscribe({
             next: () => {
-                // Also save links
                 const validLinks = this.links.filter(l => l.url.trim().length > 0);
                 this.http.put('/api/profile/mine/links', validLinks, { headers }).subscribe({
                     next: () => {

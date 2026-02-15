@@ -285,8 +285,14 @@ namespace Foundation.BMC.Database
 			public String displayName { get; set; }
 			public String bio { get; set; }
 			public String location { get; set; }
-			public String avatarImagePath { get; set; }
-			public String profileBannerImagePath { get; set; }
+			public String avatarFileName { get; set; }
+			public Int64? avatarSize { get; set; }
+			public Byte[] avatarData { get; set; }
+			public String avatarMimeType { get; set; }
+			public String bannerFileName { get; set; }
+			public Int64? bannerSize { get; set; }
+			public Byte[] bannerData { get; set; }
+			public String bannerMimeType { get; set; }
 			public String websiteUrl { get; set; }
 			[Required]
 			public Boolean isPublic { get; set; }
@@ -324,8 +330,14 @@ namespace Foundation.BMC.Database
 				displayName = this.displayName,
 				bio = this.bio,
 				location = this.location,
-				avatarImagePath = this.avatarImagePath,
-				profileBannerImagePath = this.profileBannerImagePath,
+				avatarFileName = this.avatarFileName,
+				avatarSize = this.avatarSize,
+				avatarData = this.avatarData,
+				avatarMimeType = this.avatarMimeType,
+				bannerFileName = this.bannerFileName,
+				bannerSize = this.bannerSize,
+				bannerData = this.bannerData,
+				bannerMimeType = this.bannerMimeType,
 				websiteUrl = this.websiteUrl,
 				isPublic = this.isPublic,
 				memberSinceDate = this.memberSinceDate,
@@ -375,8 +387,14 @@ namespace Foundation.BMC.Database
 				displayName = this.displayName,
 				bio = this.bio,
 				location = this.location,
-				avatarImagePath = this.avatarImagePath,
-				profileBannerImagePath = this.profileBannerImagePath,
+				avatarFileName = this.avatarFileName,
+				avatarSize = this.avatarSize,
+				avatarData = this.avatarData,
+				avatarMimeType = this.avatarMimeType,
+				bannerFileName = this.bannerFileName,
+				bannerSize = this.bannerSize,
+				bannerData = this.bannerData,
+				bannerMimeType = this.bannerMimeType,
 				websiteUrl = this.websiteUrl,
 				isPublic = this.isPublic,
 				memberSinceDate = this.memberSinceDate,
@@ -426,8 +444,14 @@ namespace Foundation.BMC.Database
 				displayName = dto.displayName,
 				bio = dto.bio,
 				location = dto.location,
-				avatarImagePath = dto.avatarImagePath,
-				profileBannerImagePath = dto.profileBannerImagePath,
+				avatarFileName = dto.avatarFileName,
+				avatarSize = dto.avatarSize,
+				avatarData = dto.avatarData,
+				avatarMimeType = dto.avatarMimeType,
+				bannerFileName = dto.bannerFileName,
+				bannerSize = dto.bannerSize,
+				bannerData = dto.bannerData,
+				bannerMimeType = dto.bannerMimeType,
 				websiteUrl = dto.websiteUrl,
 				isPublic = dto.isPublic,
 				memberSinceDate = dto.memberSinceDate,
@@ -454,8 +478,14 @@ namespace Foundation.BMC.Database
 			this.displayName = dto.displayName;
 			this.bio = dto.bio;
 			this.location = dto.location;
-			this.avatarImagePath = dto.avatarImagePath;
-			this.profileBannerImagePath = dto.profileBannerImagePath;
+			this.avatarFileName = dto.avatarFileName;
+			this.avatarSize = dto.avatarSize;
+			this.avatarData = dto.avatarData;
+			this.avatarMimeType = dto.avatarMimeType;
+			this.bannerFileName = dto.bannerFileName;
+			this.bannerSize = dto.bannerSize;
+			this.bannerData = dto.bannerData;
+			this.bannerMimeType = dto.bannerMimeType;
 			this.websiteUrl = dto.websiteUrl;
 			this.isPublic = dto.isPublic;
 			this.memberSinceDate = dto.memberSinceDate;
@@ -488,8 +518,14 @@ namespace Foundation.BMC.Database
 				displayName = this.displayName,
 				bio = this.bio,
 				location = this.location,
-				avatarImagePath = this.avatarImagePath,
-				profileBannerImagePath = this.profileBannerImagePath,
+				avatarFileName = this.avatarFileName,
+				avatarSize = this.avatarSize,
+				avatarData = this.avatarData,
+				avatarMimeType = this.avatarMimeType,
+				bannerFileName = this.bannerFileName,
+				bannerSize = this.bannerSize,
+				bannerData = this.bannerData,
+				bannerMimeType = this.bannerMimeType,
 				websiteUrl = this.websiteUrl,
 				isPublic = this.isPublic,
 				memberSinceDate = this.memberSinceDate,
@@ -553,8 +589,14 @@ namespace Foundation.BMC.Database
 				displayName = userProfile.displayName,
 				bio = userProfile.bio,
 				location = userProfile.location,
-				avatarImagePath = userProfile.avatarImagePath,
-				profileBannerImagePath = userProfile.profileBannerImagePath,
+				avatarFileName = userProfile.avatarFileName,
+				avatarSize = userProfile.avatarSize,
+				avatarData = userProfile.avatarData,
+				avatarMimeType = userProfile.avatarMimeType,
+				bannerFileName = userProfile.bannerFileName,
+				bannerSize = userProfile.bannerSize,
+				bannerData = userProfile.bannerData,
+				bannerMimeType = userProfile.bannerMimeType,
 				websiteUrl = userProfile.websiteUrl,
 				isPublic = userProfile.isPublic,
 				memberSinceDate = userProfile.memberSinceDate,
@@ -585,8 +627,14 @@ namespace Foundation.BMC.Database
 				displayName = userProfile.displayName,
 				bio = userProfile.bio,
 				location = userProfile.location,
-				avatarImagePath = userProfile.avatarImagePath,
-				profileBannerImagePath = userProfile.profileBannerImagePath,
+				avatarFileName = userProfile.avatarFileName,
+				avatarSize = userProfile.avatarSize,
+				avatarData = userProfile.avatarData,
+				avatarMimeType = userProfile.avatarMimeType,
+				bannerFileName = userProfile.bannerFileName,
+				bannerSize = userProfile.bannerSize,
+				bannerData = userProfile.bannerData,
+				bannerMimeType = userProfile.bannerMimeType,
 				websiteUrl = userProfile.websiteUrl,
 				isPublic = userProfile.isPublic,
 				memberSinceDate = userProfile.memberSinceDate,
@@ -615,7 +663,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = userProfile.id,
 				name = userProfile.displayName,
-				description = string.Join(", ", new[] { userProfile.displayName, userProfile.location, userProfile.avatarImagePath}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = string.Join(", ", new[] { userProfile.displayName, userProfile.location, userProfile.avatarFileName}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}

@@ -92,5 +92,49 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Smart Suggestions Panel -->
+        <div class="mt-3" *ngIf="allAssignments.length > 0 && !isLoading">
+            <button class="btn btn-sm btn-outline-primary" (click)="toggleSuggestions()">
+                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>
+                {{ showSuggestions ? 'Hide Suggestions' : 'Suggest Teammates' }}
+            </button>
+
+            <div *ngIf="showSuggestions" class="mt-3">
+                <div *ngIf="isLoadingSuggestions" class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted small">Analyzing volunteers...</span>
+                </div>
+
+                <div *ngIf="!isLoadingSuggestions && suggestions.length === 0"
+                    class="text-center text-muted py-3 small">
+                    No suggestions available
+                </div>
+
+                <div class="list-group" *ngIf="!isLoadingSuggestions && suggestions.length > 0">
+                    <div class="list-group-item py-2" *ngFor="let s of suggestions; let i = index">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge rounded-pill bg-primary" style="min-width: 42px;">{{ s.score }}%</span>
+                            <div class="flex-grow-1">
+                                <a class="fw-semibold text-decoration-none pointer"
+                                    (click)="navigateToVolunteer(s.volunteer.id)">
+                                    {{ s.volunteer.resource?.name || 'Unknown' }}
+                                </a>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    <span *ngFor="let r of s.matchReasons" class="badge rounded-pill small" [ngClass]="{
+                                            'bg-success-subtle text-success': r.type === 'positive',
+                                            'bg-warning-subtle text-warning-emphasis': r.type === 'neutral',
+                                            'bg-danger-subtle text-danger': r.type === 'negative'
+                                        }">
+                                        <i [class]="r.icon" class="me-1"></i>{{ r.label }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>

@@ -202,6 +202,204 @@
 }
 
 
+/* ----- Image Upload Sections ----- */
+.image-upload-section {
+    margin-bottom: 24px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Avatar Upload */
+.avatar-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar-preview-container {
+    position: relative;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid var(--bmc-border);
+    transition: border-color var(--transition-fast);
+
+    &:hover {
+        border-color: var(--bmc-primary);
+
+        .avatar-overlay {
+            opacity: 1;
+        }
+    }
+}
+
+.avatar-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15), rgba(255, 109, 0, 0.1));
+    color: var(--bmc-text-muted);
+    font-size: 2rem;
+}
+
+.avatar-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.upload-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.btn-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: rgba(255, 167, 38, 0.08);
+    border: 1px solid rgba(255, 167, 38, 0.25);
+    border-radius: var(--radius-sm);
+    color: var(--bmc-primary);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 167, 38, 0.15);
+        border-color: var(--bmc-primary);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.btn-remove-image {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--bmc-text-muted);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        background: rgba(239, 83, 80, 0.06);
+        border-color: rgba(239, 83, 80, 0.2);
+        color: #ef5350;
+    }
+}
+
+
+/* Banner Upload */
+.banner-upload-zone {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--bmc-border);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
+
+    &:hover {
+        border-color: var(--bmc-primary);
+
+        .banner-overlay {
+            opacity: 1;
+        }
+    }
+}
+
+.banner-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 167, 38, 0.03);
+    color: var(--bmc-text-muted);
+
+    i {
+        font-size: 2rem;
+        opacity: 0.3;
+    }
+
+    span {
+        font-size: 0.8rem;
+    }
+}
+
+.banner-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.banner-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.55);
+    color: white;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+
+    i {
+        font-size: 1.3rem;
+    }
+
+    span {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+}
+
+.banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+
 /* Toggle */
 .toggle-row {
     display: flex;
@@ -419,6 +617,11 @@
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    .avatar-upload-row {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     .link-row {

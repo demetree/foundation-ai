@@ -35,7 +35,7 @@ export class ApiKeyListingComponent implements OnInit, AfterViewInit, CanCompone
   @ViewChild(ApiKeyAddEditComponent) addEditApiKeyComponent!: ApiKeyAddEditComponent;
   @ViewChild(ApiKeyTableComponent) apiKeyTableComponent!: ApiKeyTableComponent;
 
-  public ApiKeies: ApiKeyData[] | null = null;
+  public ApiKeys: ApiKeyData[] | null = null;
   public isSmallScreen: boolean = false;
 
   public filterText: string | null = null;
@@ -97,7 +97,7 @@ export class ApiKeyListingComponent implements OnInit, AfterViewInit, CanCompone
     this.loadingFilteredCount = true;
 
     // Total count (no filter)
-    this.totalApiKeyCount$ = this.apiKeyService.GetApiKeiesRowCount({
+    this.totalApiKeyCount$ = this.apiKeyService.GetApiKeysRowCount({
       active: true,
       deleted: false
     }).pipe(
@@ -111,7 +111,7 @@ export class ApiKeyListingComponent implements OnInit, AfterViewInit, CanCompone
 
     if (this.filterText) {
 
-      this.filteredApiKeyCount$ = this.apiKeyService.GetApiKeiesRowCount({
+      this.filteredApiKeyCount$ = this.apiKeyService.GetApiKeysRowCount({
         active: true,
         deleted: false,
         anyStringContains: this.filterText || undefined

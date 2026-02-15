@@ -93,7 +93,7 @@ export class ApiRequestLogAddEditComponent {
   public isSaving: boolean = false;
 
   apiRequestLogs$ = this.apiRequestLogService.GetApiRequestLogList();
-  apiKeies$ = this.apiKeyService.GetApiKeyList();
+  apiKeys$ = this.apiKeyService.GetApiKeyList();
 
   constructor(
     private modalService: NgbModal,

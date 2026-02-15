@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,12 +20,18 @@ namespace Foundation.BMC.Controllers.WebAPI
     /// UserProfileLink, UserProfileLinkType, and UserProfileStat tables
     /// to power the profile page and settings UI.
     ///
+    /// Avatar and banner images are stored as binary data (byte[]) in the
+    /// database, following the same pattern used by Contact, Client,
+    /// Resource, and other Scheduler entities.
+    ///
     /// All endpoints are tenant-scoped and require at minimum BMC read permission.
     /// Write operations require the "BMC Community Writer" custom role.
     /// </summary>
     public class ProfileController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        private const long MAX_AVATAR_SIZE = 2 * 1024 * 1024;   // 2 MB
+        private const long MAX_BANNER_SIZE = 5 * 1024 * 1024;   // 5 MB
 
         private readonly BMCContext _context;
         private readonly ILogger<ProfileController> _logger;
@@ -51,8 +58,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string displayName { get; set; }
             public string bio { get; set; }
             public string location { get; set; }
-            public string avatarImagePath { get; set; }
-            public string profileBannerImagePath { get; set; }
+            public bool hasAvatar { get; set; }
+            public string avatarUrl { get; set; }
+            public bool hasBanner { get; set; }
+            public string bannerUrl { get; set; }
             public string websiteUrl { get; set; }
             public bool isPublic { get; set; }
             public DateTime? memberSinceDate { get; set; }
@@ -87,14 +96,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         /// <summary>
         /// Request body for PUT /api/profile/mine.
+        /// Images are uploaded separately via dedicated endpoints.
         /// </summary>
         public class UpdateProfileRequest
         {
             public string displayName { get; set; }
             public string bio { get; set; }
             public string location { get; set; }
-            public string avatarImagePath { get; set; }
-            public string profileBannerImagePath { get; set; }
             public string websiteUrl { get; set; }
             public bool isPublic { get; set; }
         }
@@ -112,6 +120,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         #endregion
 
+
+        #region Profile CRUD
 
         /// <summary>
         /// GET /api/profile/mine
@@ -158,8 +168,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                     displayName = securityUser.accountName ?? "New Builder",
                     bio = "",
                     location = "",
-                    avatarImagePath = "",
-                    profileBannerImagePath = "",
                     websiteUrl = "",
                     isPublic = true,
                     memberSinceDate = DateTime.UtcNow,
@@ -229,8 +237,10 @@ namespace Foundation.BMC.Controllers.WebAPI
                 displayName = profile.displayName,
                 bio = profile.bio,
                 location = profile.location,
-                avatarImagePath = profile.avatarImagePath,
-                profileBannerImagePath = profile.profileBannerImagePath,
+                hasAvatar = profile.avatarData != null && profile.avatarData.Length > 0,
+                avatarUrl = (profile.avatarData != null && profile.avatarData.Length > 0) ? "/api/profile/mine/avatar" : null,
+                hasBanner = profile.bannerData != null && profile.bannerData.Length > 0,
+                bannerUrl = (profile.bannerData != null && profile.bannerData.Length > 0) ? "/api/profile/mine/banner" : null,
                 websiteUrl = profile.websiteUrl,
                 isPublic = profile.isPublic,
                 memberSinceDate = profile.memberSinceDate,
@@ -253,6 +263,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// PUT /api/profile/mine
         ///
         /// Updates the current user's profile fields.
+        /// Images are uploaded separately via POST avatar/banner endpoints.
         /// </summary>
         [HttpPut]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
@@ -309,8 +320,6 @@ namespace Foundation.BMC.Controllers.WebAPI
             profile.displayName = request.displayName.Trim();
             profile.bio = request.bio?.Trim() ?? "";
             profile.location = request.location?.Trim() ?? "";
-            profile.avatarImagePath = request.avatarImagePath?.Trim() ?? "";
-            profile.profileBannerImagePath = request.profileBannerImagePath?.Trim() ?? "";
             profile.websiteUrl = request.websiteUrl?.Trim() ?? "";
             profile.isPublic = request.isPublic;
 
@@ -319,6 +328,267 @@ namespace Foundation.BMC.Controllers.WebAPI
             return Ok(new { action = "updated" });
         }
 
+        #endregion
+
+
+        #region Image Upload / Serve / Delete
+
+        /// <summary>
+        /// POST /api/profile/mine/avatar
+        ///
+        /// Upload or replace the user's avatar image.
+        /// Accepts multipart/form-data with a single file field named "file".
+        /// Max size: 2 MB. Must be an image MIME type.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file, CancellationToken cancellationToken = default)
+        {
+            return await UploadImage(file, "avatar", MAX_AVATAR_SIZE, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// POST /api/profile/mine/banner
+        ///
+        /// Upload or replace the user's banner image.
+        /// Accepts multipart/form-data with a single file field named "file".
+        /// Max size: 5 MB. Must be an image MIME type.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/banner")]
+        public async Task<IActionResult> UploadBanner(IFormFile file, CancellationToken cancellationToken = default)
+        {
+            return await UploadImage(file, "banner", MAX_BANNER_SIZE, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// GET /api/profile/mine/avatar
+        ///
+        /// Serves the user's avatar image with correct MIME type.
+        /// Returns 404 if no avatar is set.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/avatar")]
+        public async Task<IActionResult> GetAvatar(CancellationToken cancellationToken = default)
+        {
+            return await ServeImage("avatar", cancellationToken);
+        }
+
+
+        /// <summary>
+        /// GET /api/profile/mine/banner
+        ///
+        /// Serves the user's banner image with correct MIME type.
+        /// Returns 404 if no banner is set.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/banner")]
+        public async Task<IActionResult> GetBanner(CancellationToken cancellationToken = default)
+        {
+            return await ServeImage("banner", cancellationToken);
+        }
+
+
+        /// <summary>
+        /// DELETE /api/profile/mine/avatar
+        ///
+        /// Removes the user's avatar image.
+        /// </summary>
+        [HttpDelete]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/avatar")]
+        public async Task<IActionResult> DeleteAvatar(CancellationToken cancellationToken = default)
+        {
+            return await RemoveImage("avatar", cancellationToken);
+        }
+
+
+        /// <summary>
+        /// DELETE /api/profile/mine/banner
+        ///
+        /// Removes the user's banner image.
+        /// </summary>
+        [HttpDelete]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/banner")]
+        public async Task<IActionResult> DeleteBanner(CancellationToken cancellationToken = default)
+        {
+            return await RemoveImage("banner", cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Shared upload logic for avatar and banner.
+        /// </summary>
+        private async Task<IActionResult> UploadImage(IFormFile file, string imageType, long maxSize, CancellationToken cancellationToken)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file provided.");
+            }
+
+            if (file.Length > maxSize)
+            {
+                return BadRequest($"File exceeds the maximum size of {maxSize / (1024 * 1024)} MB.");
+            }
+
+            if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("File must be an image (image/* MIME type).");
+            }
+
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Community Writer", cancellationToken) == false &&
+                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            UserProfile profile = await GetUserProfileAsync(cancellationToken);
+            if (profile == null)
+            {
+                return NotFound("Profile not found.");
+            }
+
+            // Read file bytes
+            byte[] data;
+            using (var ms = new System.IO.MemoryStream())
+            {
+                await file.CopyToAsync(ms, cancellationToken);
+                data = ms.ToArray();
+            }
+
+            if (imageType == "avatar")
+            {
+                profile.avatarFileName = file.FileName;
+                profile.avatarSize = file.Length;
+                profile.avatarData = data;
+                profile.avatarMimeType = file.ContentType;
+            }
+            else
+            {
+                profile.bannerFileName = file.FileName;
+                profile.bannerSize = file.Length;
+                profile.bannerData = data;
+                profile.bannerMimeType = file.ContentType;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Ok(new { action = "uploaded", imageType, fileName = file.FileName, size = file.Length });
+        }
+
+
+        /// <summary>
+        /// Shared serve logic for avatar and banner.
+        /// </summary>
+        private async Task<IActionResult> ServeImage(string imageType, CancellationToken cancellationToken)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            UserProfile profile = await GetUserProfileAsync(cancellationToken);
+            if (profile == null)
+            {
+                return NotFound();
+            }
+
+            byte[] data;
+            string mimeType;
+            string fileName;
+
+            if (imageType == "avatar")
+            {
+                data = profile.avatarData;
+                mimeType = profile.avatarMimeType;
+                fileName = profile.avatarFileName;
+            }
+            else
+            {
+                data = profile.bannerData;
+                mimeType = profile.bannerMimeType;
+                fileName = profile.bannerFileName;
+            }
+
+            if (data == null || data.Length == 0)
+            {
+                return NotFound();
+            }
+
+            return File(data, mimeType ?? "image/png", fileName);
+        }
+
+
+        /// <summary>
+        /// Shared delete logic for avatar and banner.
+        /// </summary>
+        private async Task<IActionResult> RemoveImage(string imageType, CancellationToken cancellationToken)
+        {
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Community Writer", cancellationToken) == false &&
+                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            UserProfile profile = await GetUserProfileAsync(cancellationToken);
+            if (profile == null)
+            {
+                return NotFound("Profile not found.");
+            }
+
+            if (imageType == "avatar")
+            {
+                profile.avatarFileName = null;
+                profile.avatarSize = null;
+                profile.avatarData = null;
+                profile.avatarMimeType = null;
+            }
+            else
+            {
+                profile.bannerFileName = null;
+                profile.bannerSize = null;
+                profile.bannerData = null;
+                profile.bannerMimeType = null;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Ok(new { action = "removed", imageType });
+        }
+
+
+        /// <summary>
+        /// Helper: Gets the current user's profile entity.
+        /// </summary>
+        private async Task<UserProfile> GetUserProfileAsync(CancellationToken cancellationToken)
+        {
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            return await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.tenantGuid == userTenantGuid && p.active == true && p.deleted == false, cancellationToken);
+        }
+
+        #endregion
+
+
+        #region Links
 
         /// <summary>
         /// GET /api/profile/mine/links
@@ -478,6 +748,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             return Ok(new { action = "saved", linkCount = request.Count(r => validLinkTypeIds.Contains(r.userProfileLinkTypeId) && !string.IsNullOrWhiteSpace(r.url)) });
         }
 
+        #endregion
+
+
+        #region Link Types
 
         /// <summary>
         /// GET /api/profile/link-types
@@ -510,5 +784,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             return Ok(linkTypes);
         }
+
+        #endregion
     }
 }

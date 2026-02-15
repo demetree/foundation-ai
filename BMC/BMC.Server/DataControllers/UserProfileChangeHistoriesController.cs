@@ -173,8 +173,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || (includeRelations == true && x.userProfile.displayName.Contains(anyStringContains))
 			       || (includeRelations == true && x.userProfile.bio.Contains(anyStringContains))
 			       || (includeRelations == true && x.userProfile.location.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.avatarImagePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.profileBannerImagePath.Contains(anyStringContains))
+			       || (includeRelations == true && x.userProfile.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.userProfile.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.userProfile.bannerFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.userProfile.bannerMimeType.Contains(anyStringContains))
 			       || (includeRelations == true && x.userProfile.websiteUrl.Contains(anyStringContains))
 			   );
 			}
@@ -294,8 +296,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.userProfile.displayName.Contains(anyStringContains)
 			       || x.userProfile.bio.Contains(anyStringContains)
 			       || x.userProfile.location.Contains(anyStringContains)
-			       || x.userProfile.avatarImagePath.Contains(anyStringContains)
-			       || x.userProfile.profileBannerImagePath.Contains(anyStringContains)
+			       || x.userProfile.avatarFileName.Contains(anyStringContains)
+			       || x.userProfile.avatarMimeType.Contains(anyStringContains)
+			       || x.userProfile.bannerFileName.Contains(anyStringContains)
+			       || x.userProfile.bannerMimeType.Contains(anyStringContains)
 			       || x.userProfile.websiteUrl.Contains(anyStringContains)
 			   );
 			}
@@ -813,8 +817,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.userProfile.displayName.Contains(anyStringContains)
 			       || x.userProfile.bio.Contains(anyStringContains)
 			       || x.userProfile.location.Contains(anyStringContains)
-			       || x.userProfile.avatarImagePath.Contains(anyStringContains)
-			       || x.userProfile.profileBannerImagePath.Contains(anyStringContains)
+			       || x.userProfile.avatarFileName.Contains(anyStringContains)
+			       || x.userProfile.avatarMimeType.Contains(anyStringContains)
+			       || x.userProfile.bannerFileName.Contains(anyStringContains)
+			       || x.userProfile.bannerMimeType.Contains(anyStringContains)
 			       || x.userProfile.websiteUrl.Contains(anyStringContains)
 			   );
 			}

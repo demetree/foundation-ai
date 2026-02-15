@@ -1971,8 +1971,14 @@ CREATE TABLE "BMC"."UserProfile"
 	"displayName" VARCHAR(100) NOT NULL,		-- Public display name shown in the community (distinct from auth username)
 	"bio" TEXT NULL,		-- Free-form biography / about-me text
 	"location" VARCHAR(100) NULL,		-- User's declared location (city, country, or free-form)
-	"avatarImagePath" VARCHAR(250) NULL,		-- Relative path to the user's avatar image
-	"profileBannerImagePath" VARCHAR(250) NULL,		-- Relative path to the profile banner/cover image
+	"avatarFileName" VARCHAR(250) NULL,		-- Part of the binary data field setup
+	"avatarSize" BIGINT NULL,		-- Part of the binary data field setup
+	"avatarData" BYTEA NULL,		-- Part of the binary data field setup
+	"avatarMimeType" VARCHAR(100) NULL,		-- Part of the binary data field setup
+	"bannerFileName" VARCHAR(250) NULL,		-- Part of the binary data field setup
+	"bannerSize" BIGINT NULL,		-- Part of the binary data field setup
+	"bannerData" BYTEA NULL,		-- Part of the binary data field setup
+	"bannerMimeType" VARCHAR(100) NULL,		-- Part of the binary data field setup
 	"websiteUrl" VARCHAR(250) NULL,		-- Optional personal website or portfolio URL
 	"isPublic" BOOLEAN NOT NULL DEFAULT true,		-- Whether this profile is visible to unauthenticated visitors
 	"memberSinceDate" TIMESTAMP NULL,		-- Date the user first created their profile (for display purposes)

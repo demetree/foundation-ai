@@ -35,13 +35,37 @@
                 Location
                 <span *ngIf="sortColumn === 'location'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('avatarImagePath')">
-                Avatar  Image  Path
-                <span *ngIf="sortColumn === 'avatarImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('profileBannerImagePath')">
-                Profile  Banner  Image  Path
-                <span *ngIf="sortColumn === 'profileBannerImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bannerFileName')">
+                Banner  File  Name
+                <span *ngIf="sortColumn === 'bannerFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bannerSize')">
+                Banner  Size
+                <span *ngIf="sortColumn === 'bannerSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bannerData')">
+                Banner  Data
+                <span *ngIf="sortColumn === 'bannerData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bannerMimeType')">
+                Banner  Mime  Type
+                <span *ngIf="sortColumn === 'bannerMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('websiteUrl')">
                 Website  Url
@@ -140,8 +164,14 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/userprofile', userProfile.id]" class="btn btn-link text-left" ngbTooltip="Open User Profile details">{{userProfile.displayName}}</a></td>
             <td class="text-truncate">{{userProfile.bio}}</td>
             <td class="text-truncate">{{userProfile.location}}</td>
-            <td class="text-truncate">{{userProfile.avatarImagePath}}</td>
-            <td class="text-truncate">{{userProfile.profileBannerImagePath}}</td>
+            <td class="text-truncate">{{userProfile.avatarFileName}}</td>
+            <td class="text-truncate">{{userProfile.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{userProfile.avatarData}}</td>
+            <td class="text-truncate">{{userProfile.avatarMimeType}}</td>
+            <td class="text-truncate">{{userProfile.bannerFileName}}</td>
+            <td class="text-truncate">{{userProfile.bannerSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{userProfile.bannerData}}</td>
+            <td class="text-truncate">{{userProfile.bannerMimeType}}</td>
             <td class="text-truncate">{{userProfile.websiteUrl}}</td>
             <td class="text-truncate"><boolean-icon [value]="userProfile.isPublic"/></td>
             <td class="text-truncate">{{userProfile.memberSinceDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
@@ -303,13 +333,37 @@ End of commented block for alternate definition option -->
               <strong>Location: </strong>
               {{userProfile.location}}
             </p>
-            <p class="user-profile-info" *ngIf="userProfile.avatarImagePath != null">
-              <strong>Avatar Image Path: </strong>
-              {{userProfile.avatarImagePath}}
+            <p class="user-profile-info" *ngIf="userProfile.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{userProfile.avatarFileName}}
             </p>
-            <p class="user-profile-info" *ngIf="userProfile.profileBannerImagePath != null">
-              <strong>Profile Banner Image Path: </strong>
-              {{userProfile.profileBannerImagePath}}
+            <p class="user-profile-info" *ngIf="userProfile.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{userProfile.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="user-profile-info" *ngIf="userProfile.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{userProfile.avatarData}}
+            </p>
+            <p class="user-profile-info" *ngIf="userProfile.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{userProfile.avatarMimeType}}
+            </p>
+            <p class="user-profile-info" *ngIf="userProfile.bannerFileName != null">
+              <strong>Banner File Name: </strong>
+              {{userProfile.bannerFileName}}
+            </p>
+            <p class="user-profile-info" *ngIf="userProfile.bannerSize != null">
+              <strong>Banner Size: </strong>
+              {{userProfile.bannerSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="user-profile-info" *ngIf="userProfile.bannerData != null">
+              <strong>Banner Data: </strong>
+              {{userProfile.bannerData}}
+            </p>
+            <p class="user-profile-info" *ngIf="userProfile.bannerMimeType != null">
+              <strong>Banner Mime Type: </strong>
+              {{userProfile.bannerMimeType}}
             </p>
             <p class="user-profile-info" *ngIf="userProfile.websiteUrl != null">
               <strong>Website Url: </strong>

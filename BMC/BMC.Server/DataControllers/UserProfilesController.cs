@@ -17,6 +17,11 @@ using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
 using Foundation.ChangeHistory;
+using System.IO;
+using System.Net;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -69,8 +74,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string displayName = null,
 			string bio = null,
 			string location = null,
-			string avatarImagePath = null,
-			string profileBannerImagePath = null,
+			string avatarFileName = null,
+			long? avatarSize = null,
+			string avatarMimeType = null,
+			string bannerFileName = null,
+			long? bannerSize = null,
+			string bannerMimeType = null,
 			string websiteUrl = null,
 			bool? isPublic = null,
 			DateTime? memberSinceDate = null,
@@ -148,13 +157,29 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(up => up.location == location);
 			}
-			if (string.IsNullOrEmpty(avatarImagePath) == false)
+			if (string.IsNullOrEmpty(avatarFileName) == false)
 			{
-				query = query.Where(up => up.avatarImagePath == avatarImagePath);
+				query = query.Where(up => up.avatarFileName == avatarFileName);
 			}
-			if (string.IsNullOrEmpty(profileBannerImagePath) == false)
+			if (avatarSize.HasValue == true)
 			{
-				query = query.Where(up => up.profileBannerImagePath == profileBannerImagePath);
+				query = query.Where(up => up.avatarSize == avatarSize.Value);
+			}
+			if (string.IsNullOrEmpty(avatarMimeType) == false)
+			{
+				query = query.Where(up => up.avatarMimeType == avatarMimeType);
+			}
+			if (string.IsNullOrEmpty(bannerFileName) == false)
+			{
+				query = query.Where(up => up.bannerFileName == bannerFileName);
+			}
+			if (bannerSize.HasValue == true)
+			{
+				query = query.Where(up => up.bannerSize == bannerSize.Value);
+			}
+			if (string.IsNullOrEmpty(bannerMimeType) == false)
+			{
+				query = query.Where(up => up.bannerMimeType == bannerMimeType);
 			}
 			if (string.IsNullOrEmpty(websiteUrl) == false)
 			{
@@ -201,7 +226,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(up => up.deleted == false);
 			}
 
-			query = query.OrderBy(up => up.displayName).ThenBy(up => up.location).ThenBy(up => up.avatarImagePath);
+			query = query.OrderBy(up => up.displayName).ThenBy(up => up.location).ThenBy(up => up.avatarFileName);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -226,8 +251,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.displayName.Contains(anyStringContains)
 			       || x.bio.Contains(anyStringContains)
 			       || x.location.Contains(anyStringContains)
-			       || x.avatarImagePath.Contains(anyStringContains)
-			       || x.profileBannerImagePath.Contains(anyStringContains)
+			       || x.avatarFileName.Contains(anyStringContains)
+			       || x.avatarMimeType.Contains(anyStringContains)
+			       || x.bannerFileName.Contains(anyStringContains)
+			       || x.bannerMimeType.Contains(anyStringContains)
 			       || x.websiteUrl.Contains(anyStringContains)
 			   );
 			}
@@ -243,6 +270,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(userProfile, databaseStoresDateWithTimeZone);
 			}
 
+
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+			if (diskBasedBinaryStorageMode == true)
+			{
+				var tasks = materialized.Select(async userProfile =>
+				{
+
+					if (userProfile.bannerData == null &&
+					    userProfile.bannerSize.HasValue == true &&
+					    userProfile.bannerSize.Value > 0)
+					{
+					    userProfile.bannerData = await LoadDataFromDiskAsync(userProfile.objectGuid, userProfile.versionNumber, "data");
+					}
+
+				}).ToList();
+
+				// Run tasks concurrently and await their completion
+				await Task.WhenAll(tasks);
+			}
 
 			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "BMC.UserProfile Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "BMC.UserProfile Entity list was read.  Returning " + materialized.Count + " rows of data.");
 
@@ -274,8 +321,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string displayName = null,
 			string bio = null,
 			string location = null,
-			string avatarImagePath = null,
-			string profileBannerImagePath = null,
+			string avatarFileName = null,
+			long? avatarSize = null,
+			string avatarMimeType = null,
+			string bannerFileName = null,
+			long? bannerSize = null,
+			string bannerMimeType = null,
 			string websiteUrl = null,
 			bool? isPublic = null,
 			DateTime? memberSinceDate = null,
@@ -333,13 +384,29 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(up => up.location == location);
 			}
-			if (avatarImagePath != null)
+			if (avatarFileName != null)
 			{
-				query = query.Where(up => up.avatarImagePath == avatarImagePath);
+				query = query.Where(up => up.avatarFileName == avatarFileName);
 			}
-			if (profileBannerImagePath != null)
+			if (avatarSize.HasValue == true)
 			{
-				query = query.Where(up => up.profileBannerImagePath == profileBannerImagePath);
+				query = query.Where(up => up.avatarSize == avatarSize.Value);
+			}
+			if (avatarMimeType != null)
+			{
+				query = query.Where(up => up.avatarMimeType == avatarMimeType);
+			}
+			if (bannerFileName != null)
+			{
+				query = query.Where(up => up.bannerFileName == bannerFileName);
+			}
+			if (bannerSize.HasValue == true)
+			{
+				query = query.Where(up => up.bannerSize == bannerSize.Value);
+			}
+			if (bannerMimeType != null)
+			{
+				query = query.Where(up => up.bannerMimeType == bannerMimeType);
 			}
 			if (websiteUrl != null)
 			{
@@ -397,8 +464,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.displayName.Contains(anyStringContains)
 			       || x.bio.Contains(anyStringContains)
 			       || x.location.Contains(anyStringContains)
-			       || x.avatarImagePath.Contains(anyStringContains)
-			       || x.profileBannerImagePath.Contains(anyStringContains)
+			       || x.avatarFileName.Contains(anyStringContains)
+			       || x.avatarMimeType.Contains(anyStringContains)
+			       || x.bannerFileName.Contains(anyStringContains)
+			       || x.bannerMimeType.Contains(anyStringContains)
 			       || x.websiteUrl.Contains(anyStringContains)
 			   );
 			}
@@ -470,6 +539,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 				if (materialized != null)
 				{
+					bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+					if (diskBasedBinaryStorageMode == true &&
+					    materialized.bannerData == null &&
+					    materialized.bannerSize.HasValue == true &&
+					    materialized.bannerSize.Value > 0)
+					{
+					    materialized.bannerData = await LoadDataFromDiskAsync(materialized.objectGuid, materialized.versionNumber, "data", cancellationToken);
+					}
+
 					
 					// Convert all the date properties to be of kind UTC.
 					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
@@ -644,14 +723,24 @@ namespace Foundation.BMC.Controllers.WebAPI
 					userProfile.location = userProfile.location.Substring(0, 100);
 				}
 
-				if (userProfile.avatarImagePath != null && userProfile.avatarImagePath.Length > 250)
+				if (userProfile.avatarFileName != null && userProfile.avatarFileName.Length > 250)
 				{
-					userProfile.avatarImagePath = userProfile.avatarImagePath.Substring(0, 250);
+					userProfile.avatarFileName = userProfile.avatarFileName.Substring(0, 250);
 				}
 
-				if (userProfile.profileBannerImagePath != null && userProfile.profileBannerImagePath.Length > 250)
+				if (userProfile.avatarMimeType != null && userProfile.avatarMimeType.Length > 100)
 				{
-					userProfile.profileBannerImagePath = userProfile.profileBannerImagePath.Substring(0, 250);
+					userProfile.avatarMimeType = userProfile.avatarMimeType.Substring(0, 100);
+				}
+
+				if (userProfile.bannerFileName != null && userProfile.bannerFileName.Length > 250)
+				{
+					userProfile.bannerFileName = userProfile.bannerFileName.Substring(0, 250);
+				}
+
+				if (userProfile.bannerMimeType != null && userProfile.bannerMimeType.Length > 100)
+				{
+					userProfile.bannerMimeType = userProfile.bannerMimeType.Substring(0, 100);
 				}
 
 				if (userProfile.websiteUrl != null && userProfile.websiteUrl.Length > 250)
@@ -664,8 +753,49 @@ namespace Foundation.BMC.Controllers.WebAPI
 					userProfile.memberSinceDate = userProfile.memberSinceDate.Value.ToUniversalTime();
 				}
 
+
+				//
+				// Add default values for any missing data attribute fields.
+				//
+				if (userProfile.bannerData != null && string.IsNullOrEmpty(userProfile.bannerFileName))
+				{
+				    userProfile.bannerFileName = userProfile.objectGuid.ToString() + ".data";
+				}
+
+				if (userProfile.bannerData != null && (userProfile.bannerSize.HasValue == false || userProfile.bannerSize != userProfile.bannerData.Length))
+				{
+				    userProfile.bannerSize = userProfile.bannerData.Length;
+				}
+
+				if (userProfile.bannerData != null && string.IsNullOrEmpty(userProfile.bannerMimeType))
+				{
+				    userProfile.bannerMimeType = "application/octet-stream";
+				}
+
+				bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
 				try
 				{
+					byte[] dataReferenceBeforeClearing = userProfile.bannerData;
+
+					if (diskBasedBinaryStorageMode == true &&
+					    userProfile.bannerFileName != null &&
+					    userProfile.bannerData != null &&
+					    userProfile.bannerSize.HasValue == true &&
+					    userProfile.bannerSize.Value > 0)
+					{
+					    //
+					    // write the bytes to disk
+					    //
+					    WriteDataToDisk(userProfile.objectGuid, userProfile.versionNumber, userProfile.bannerData, "data");
+
+					    //
+					    // Clear the data from the object before we put it into the db
+					    //
+					    userProfile.bannerData = null;
+
+					}
+
 				    EntityEntry<Database.UserProfile> attached = _context.Entry(existing);
 				    attached.CurrentValues.SetValues(userProfile);
 
@@ -689,6 +819,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 				        transaction.Commit();
 				    }
+
+					if (diskBasedBinaryStorageMode == true)
+					{
+					    //
+					    // Put the data bytes back into the object that will be returned.
+					    //
+					    userProfile.bannerData = dataReferenceBeforeClearing;
+					}
 
 					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
 						"BMC.UserProfile entity successfully updated.",
@@ -782,14 +920,24 @@ namespace Foundation.BMC.Controllers.WebAPI
 					userProfile.location = userProfile.location.Substring(0, 100);
 				}
 
-				if (userProfile.avatarImagePath != null && userProfile.avatarImagePath.Length > 250)
+				if (userProfile.avatarFileName != null && userProfile.avatarFileName.Length > 250)
 				{
-					userProfile.avatarImagePath = userProfile.avatarImagePath.Substring(0, 250);
+					userProfile.avatarFileName = userProfile.avatarFileName.Substring(0, 250);
 				}
 
-				if (userProfile.profileBannerImagePath != null && userProfile.profileBannerImagePath.Length > 250)
+				if (userProfile.avatarMimeType != null && userProfile.avatarMimeType.Length > 100)
 				{
-					userProfile.profileBannerImagePath = userProfile.profileBannerImagePath.Substring(0, 250);
+					userProfile.avatarMimeType = userProfile.avatarMimeType.Substring(0, 100);
+				}
+
+				if (userProfile.bannerFileName != null && userProfile.bannerFileName.Length > 250)
+				{
+					userProfile.bannerFileName = userProfile.bannerFileName.Substring(0, 250);
+				}
+
+				if (userProfile.bannerMimeType != null && userProfile.bannerMimeType.Length > 100)
+				{
+					userProfile.bannerMimeType = userProfile.bannerMimeType.Substring(0, 100);
 				}
 
 				if (userProfile.websiteUrl != null && userProfile.websiteUrl.Length > 250)
@@ -803,7 +951,48 @@ namespace Foundation.BMC.Controllers.WebAPI
 				}
 
 				userProfile.objectGuid = Guid.NewGuid();
+
+				//
+				// Add default values for any missing data attribute fields.
+				//
+				if (userProfile.bannerData != null && string.IsNullOrEmpty(userProfile.bannerFileName))
+				{
+				    userProfile.bannerFileName = userProfile.objectGuid.ToString() + ".data";
+				}
+
+				if (userProfile.bannerData != null && (userProfile.bannerSize.HasValue == false || userProfile.bannerSize != userProfile.bannerData.Length))
+				{
+				    userProfile.bannerSize = userProfile.bannerData.Length;
+				}
+
+				if (userProfile.bannerData != null && string.IsNullOrEmpty(userProfile.bannerMimeType))
+				{
+				    userProfile.bannerMimeType = "application/octet-stream";
+				}
+
 				userProfile.versionNumber = 1;
+
+				bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+				byte[] dataReferenceBeforeClearing = userProfile.bannerData;
+
+				if (diskBasedBinaryStorageMode == true &&
+				    userProfile.bannerData != null &&
+				    userProfile.bannerFileName != null &&
+				    userProfile.bannerSize.HasValue == true &&
+				    userProfile.bannerSize.Value > 0)
+				{
+				    //
+				    // write the bytes to disk
+				    //
+				    await WriteDataToDiskAsync(userProfile.objectGuid, userProfile.versionNumber, userProfile.bannerData, "data", cancellationToken);
+
+				    //
+				    // Clear the data from the object before we put it into the db
+				    //
+				    userProfile.bannerData = null;
+
+				}
 
 				_context.UserProfiles.Add(userProfile);
 
@@ -823,6 +1012,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					userProfile.avatarData = null;
+					userProfile.bannerData = null;
 					userProfile.UserProfileChangeHistories = null;
 					userProfile.UserProfileLinks = null;
 					userProfile.UserProfileStats = null;
@@ -848,6 +1039,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 						JsonSerializer.Serialize(Database.UserProfile.CreateAnonymousWithFirstLevelSubObjects(userProfile)),
 						null);
 
+
+
+					if (diskBasedBinaryStorageMode == true)
+					{
+					    //
+					    // Put the data bytes back into the object that will be returned.
+					    //
+					    userProfile.bannerData = dataReferenceBeforeClearing;
+					}
 
 				}
 			}
@@ -917,6 +1117,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
 
 			//
 			// Make sure nobody else is editing this UserProfile concurrently
@@ -940,6 +1142,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.avatarData = null;
+				cloneOfExisting.bannerData = null;
 				cloneOfExisting.UserProfileChangeHistories = null;
 				cloneOfExisting.UserProfileLinks = null;
 				cloneOfExisting.UserProfileStats = null;
@@ -974,14 +1178,32 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    userProfile.displayName = oldUserProfile.displayName;
 				    userProfile.bio = oldUserProfile.bio;
 				    userProfile.location = oldUserProfile.location;
-				    userProfile.avatarImagePath = oldUserProfile.avatarImagePath;
-				    userProfile.profileBannerImagePath = oldUserProfile.profileBannerImagePath;
+				    userProfile.avatarFileName = oldUserProfile.avatarFileName;
+				    userProfile.avatarSize = oldUserProfile.avatarSize;
+				    userProfile.avatarData = oldUserProfile.avatarData;
+				    userProfile.avatarMimeType = oldUserProfile.avatarMimeType;
+				    userProfile.bannerFileName = oldUserProfile.bannerFileName;
+				    userProfile.bannerSize = oldUserProfile.bannerSize;
+				    userProfile.bannerData = oldUserProfile.bannerData;
+				    userProfile.bannerMimeType = oldUserProfile.bannerMimeType;
 				    userProfile.websiteUrl = oldUserProfile.websiteUrl;
 				    userProfile.isPublic = oldUserProfile.isPublic;
 				    userProfile.memberSinceDate = oldUserProfile.memberSinceDate;
 				    userProfile.objectGuid = oldUserProfile.objectGuid;
 				    userProfile.active = oldUserProfile.active;
 				    userProfile.deleted = oldUserProfile.deleted;
+				    //
+				    // If disk based binary mode is on, then we need to copy the old data file over as well.
+				    //
+				    if (diskBasedBinaryStorageMode == true)
+				    {
+				    	Byte[] binaryData = LoadDataFromDisk(oldUserProfile.objectGuid, oldUserProfile.versionNumber, "data");
+
+				    	//
+				    	// Write out the data as the new version
+				    	//
+				    	WriteDataToDisk(userProfile.objectGuid, userProfile.versionNumber, binaryData, "data");
+				    }
 
 				    string serializedUserProfile = JsonSerializer.Serialize(userProfile);
 
@@ -1359,6 +1581,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.UserProfile cloneOfExisting = (Database.UserProfile)_context.Entry(userProfile).GetDatabaseValues().ToObject();
 
 
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
 			lock (userProfileDeleteSyncRoot)
 			{
 			    try
@@ -1367,6 +1591,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			        userProfile.versionNumber++;
 
 			        _context.SaveChanges();
+
+			        //
+			        // If in disk based storage mode, create a copy of the disk data file for the new version.
+			        //
+			        if (diskBasedBinaryStorageMode == true)
+			        {
+			        	Byte[] binaryData = LoadDataFromDisk(userProfile.objectGuid, userProfile.versionNumber -1, "data");
+
+			        	//
+			        	// Write out the same data
+			        	//
+			        	WriteDataToDisk(userProfile.objectGuid, userProfile.versionNumber, binaryData, "data");
+			        }
 
 			        //
 			        // Now add the change history
@@ -1424,8 +1661,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string displayName = null,
 			string bio = null,
 			string location = null,
-			string avatarImagePath = null,
-			string profileBannerImagePath = null,
+			string avatarFileName = null,
+			long? avatarSize = null,
+			string avatarMimeType = null,
+			string bannerFileName = null,
+			long? bannerSize = null,
+			string bannerMimeType = null,
 			string websiteUrl = null,
 			bool? isPublic = null,
 			DateTime? memberSinceDate = null,
@@ -1502,13 +1743,29 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(up => up.location == location);
 			}
-			if (string.IsNullOrEmpty(avatarImagePath) == false)
+			if (string.IsNullOrEmpty(avatarFileName) == false)
 			{
-				query = query.Where(up => up.avatarImagePath == avatarImagePath);
+				query = query.Where(up => up.avatarFileName == avatarFileName);
 			}
-			if (string.IsNullOrEmpty(profileBannerImagePath) == false)
+			if (avatarSize.HasValue == true)
 			{
-				query = query.Where(up => up.profileBannerImagePath == profileBannerImagePath);
+				query = query.Where(up => up.avatarSize == avatarSize.Value);
+			}
+			if (string.IsNullOrEmpty(avatarMimeType) == false)
+			{
+				query = query.Where(up => up.avatarMimeType == avatarMimeType);
+			}
+			if (string.IsNullOrEmpty(bannerFileName) == false)
+			{
+				query = query.Where(up => up.bannerFileName == bannerFileName);
+			}
+			if (bannerSize.HasValue == true)
+			{
+				query = query.Where(up => up.bannerSize == bannerSize.Value);
+			}
+			if (string.IsNullOrEmpty(bannerMimeType) == false)
+			{
+				query = query.Where(up => up.bannerMimeType == bannerMimeType);
 			}
 			if (string.IsNullOrEmpty(websiteUrl) == false)
 			{
@@ -1567,8 +1824,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.displayName.Contains(anyStringContains)
 			       || x.bio.Contains(anyStringContains)
 			       || x.location.Contains(anyStringContains)
-			       || x.avatarImagePath.Contains(anyStringContains)
-			       || x.profileBannerImagePath.Contains(anyStringContains)
+			       || x.avatarFileName.Contains(anyStringContains)
+			       || x.avatarMimeType.Contains(anyStringContains)
+			       || x.bannerFileName.Contains(anyStringContains)
+			       || x.bannerMimeType.Contains(anyStringContains)
 			       || x.websiteUrl.Contains(anyStringContains)
 			   );
 			}
@@ -1577,7 +1836,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.displayName).ThenBy(x => x.location).ThenBy(x => x.avatarImagePath);
+			query = query.OrderBy(x => x.displayName).ThenBy(x => x.location).ThenBy(x => x.avatarFileName);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{
@@ -1617,5 +1876,243 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+
+
+        [Route("api/UserProfile/Data/{id:int}")]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [HttpPost]
+        [HttpPut]
+        public async Task<IActionResult> UploadData(int id, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			MediaTypeHeaderValue mediaTypeHeader; 
+
+            if (!HttpContext.Request.HasFormContentType ||
+				!MediaTypeHeaderValue.TryParse(HttpContext.Request.ContentType, out mediaTypeHeader) ||
+                string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
+            {
+                return new UnsupportedMediaTypeResult();
+            }
+
+
+            Database.UserProfile userProfile = await (from x in _context.UserProfiles where x.id == id && x.active == true && x.deleted == false select x).FirstOrDefaultAsync();
+            if (userProfile == null)
+            {
+                return NotFound();
+            }
+
+            bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+
+            // This will be used to signal whether we are saving data or clearing it.
+            bool foundFileData = false;
+
+
+            //
+            // This will get the first file from the request and save it
+            //
+			try
+			{
+                MultipartReader reader = new MultipartReader(mediaTypeHeader.Boundary.Value, HttpContext.Request.Body);
+                MultipartSection section = await reader.ReadNextSectionAsync();
+
+                while (section != null)
+				{
+					ContentDispositionHeaderValue contentDisposition;
+
+					bool hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
+
+
+					if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
+						!string.IsNullOrEmpty(contentDisposition.FileName.Value))
+					{
+
+						foundFileData = true;
+						string fileName = contentDisposition.FileName.ToString().Trim('"');
+
+						// default the mime type to be the one for arbitrary binary data unless we have a mime type on the content headers that tells us otherwise.
+						MediaTypeHeaderValue mediaType;
+						bool hasMediaTypeHeader = MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
+
+						string mimeType = "application/octet-stream";
+						if (hasMediaTypeHeader && mediaTypeHeader.MediaType != null )
+						{
+							mimeType = mediaTypeHeader.MediaType.ToString();
+						}
+
+						lock (userProfilePutSyncRoot)
+						{
+							try
+							{
+								using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+								{
+									userProfile.bannerFileName = fileName.Trim();
+									userProfile.bannerMimeType = mimeType;
+									userProfile.bannerSize = section.Body.Length;
+
+									userProfile.versionNumber++;
+
+									if (diskBasedBinaryStorageMode == true &&
+										 userProfile.bannerFileName != null &&
+										 userProfile.bannerSize > 0)
+									{
+										//
+										// write the bytes to disk
+										//
+										WriteDataToDisk(userProfile.objectGuid, userProfile.versionNumber, section.Body, "data");
+										//
+										// Clear the data from the object before we put it into the db
+										//
+										userProfile.bannerData = null;
+									}
+									else
+									{
+										using (MemoryStream memoryStream = new MemoryStream((int)section.Body.Length))
+										{
+											section.Body.CopyTo(memoryStream);
+											userProfile.bannerData = memoryStream.ToArray();
+										}
+									}
+									//
+									// Now add the change history
+									//
+									UserProfileChangeHistory userProfileChangeHistory = new UserProfileChangeHistory();
+									userProfileChangeHistory.userProfileId = userProfile.id;
+									userProfileChangeHistory.versionNumber = userProfile.versionNumber;
+									userProfileChangeHistory.timeStamp = DateTime.UtcNow;
+									userProfileChangeHistory.userId = securityUser.id;
+									userProfileChangeHistory.tenantGuid = userProfile.tenantGuid;
+									userProfileChangeHistory.data = JsonSerializer.Serialize(Database.UserProfile.CreateAnonymousWithFirstLevelSubObjects(userProfile));
+									_context.UserProfileChangeHistories.Add(userProfileChangeHistory);
+
+									_context.SaveChanges();
+
+									transaction.Commit();
+
+									CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "UserProfile Data Uploaded with filename of " + fileName + " and with size of " + section.Body.Length, id.ToString());
+								}
+							}
+							catch (Exception ex)
+							{
+								CreateAuditEvent(AuditEngine.AuditType.DeleteEntity, "UserProfile Data Upload Failed.", false, id.ToString(), "", "", ex);
+
+								return Problem(ex.Message);
+							}
+						}
+
+
+						//
+						// Stop looking for more files.
+						//
+						break;
+					}
+
+					section = await reader.ReadNextSectionAsync();
+				}
+            }
+            catch (Exception ex)
+            {
+                CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "Caught error in UploadData handler", id.ToString(), ex);
+
+                return Problem(ex.Message);
+            }
+
+            //
+            // Treat the situation where we have a valid ID but no file content as a request to clear the data
+            //
+            if (foundFileData == false)
+            {
+                lock (userProfilePutSyncRoot)
+                {
+                    try
+                    {
+                        using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                        {
+                            if (diskBasedBinaryStorageMode == true)
+                            {
+								DeleteDataFromDisk(userProfile.objectGuid, userProfile.versionNumber, "data");
+                            }
+
+                            userProfile.bannerFileName = null;
+                            userProfile.bannerMimeType = null;
+                            userProfile.bannerSize = 0;
+                            userProfile.bannerData = null;
+                            userProfile.versionNumber++;
+
+
+                            //
+                            // Now add the change history
+                            //
+                            UserProfileChangeHistory userProfileChangeHistory = new UserProfileChangeHistory();
+                            userProfileChangeHistory.userProfileId = userProfile.id;
+                            userProfileChangeHistory.versionNumber = userProfile.versionNumber;
+                            userProfileChangeHistory.timeStamp = DateTime.UtcNow;
+                            userProfileChangeHistory.userId = securityUser.id;
+                                    userProfileChangeHistory.tenantGuid = userProfile.tenantGuid;
+                                    userProfileChangeHistory.data = JsonSerializer.Serialize(Database.UserProfile.CreateAnonymousWithFirstLevelSubObjects(userProfile));
+                            _context.UserProfileChangeHistories.Add(userProfileChangeHistory);
+
+                            _context.SaveChanges();
+
+                            transaction.Commit();
+
+                            CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "UserProfile data cleared.", id.ToString());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CreateAuditEvent(AuditEngine.AuditType.DeleteEntity, "UserProfile data clear failed.", false, id.ToString(), "", "", ex);
+
+                        return Problem(ex.Message);
+                    }
+                }
+            }
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/UserProfile/Data/{id:int}")]
+        public async Task<IActionResult> DownloadDataAsync(int id, CancellationToken cancellationToken = default)
+        {
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			using (BMCContext context = new BMCContext())
+            {
+                //
+                // Return the data to the user as though it was a file.
+                //
+                Database.UserProfile userProfile = await (from d in context.UserProfiles
+                                                where d.id == id &&
+                                                d.active == true &&
+                                                d.deleted == false
+                                                select d).FirstOrDefaultAsync();
+
+                if (userProfile != null && userProfile.bannerData != null)
+                {
+                   return File(userProfile.bannerData.ToArray<byte>(), userProfile.bannerMimeType, userProfile.bannerFileName != null ? userProfile.bannerFileName.Trim() : "UserProfile_" + userProfile.id.ToString(), true);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+        }
 	}
 }

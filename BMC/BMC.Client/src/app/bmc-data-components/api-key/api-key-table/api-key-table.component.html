@@ -68,7 +68,7 @@ End of commented block for alternate definition option -->
         <table class="custom-table mb-0">
         <tbody>
             <!-- Only visible rows are rendered -->
-          <tr *cdkVirtualFor="let apiKey of filteredApiKeies; trackBy: getApiKeyId"
+          <tr *cdkVirtualFor="let apiKey of filteredApiKeys; trackBy: getApiKeyId"
               [ngClass]="{
                  'row-inactive': apiKey.active == false,
                  'row-deleted': apiKey.deleted == true 
@@ -159,7 +159,7 @@ End of commented block for alternate definition option -->
 
       <!-- Cards for Mobile -->
       <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
-        <div *cdkVirtualFor="let apiKey of filteredApiKeies; trackBy: getApiKeyId" class="card my-2"
+        <div *cdkVirtualFor="let apiKey of filteredApiKeys; trackBy: getApiKeyId" class="card my-2"
               [ngClass]="{
                  'row-inactive': apiKey.active == false,
                  'row-deleted': apiKey.deleted == true 

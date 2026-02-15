@@ -50,12 +50,32 @@ $gradient-volunteer: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
     color: white;
     backdrop-filter: blur(5px);
     transition: all 0.2s ease;
+    position: relative;
 
     &:hover {
         background: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
         color: white;
     }
+
+    &.btn-glass-active {
+        background: rgba(255, 255, 255, 0.35);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+}
+
+.filter-active-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 7px;
+    height: 7px;
+    background: #fbbf24;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 4px rgba(251, 191, 36, 0.6);
 }
 
 .badge-glass {
@@ -117,6 +137,34 @@ $gradient-volunteer: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
 
         &:hover {
             opacity: 1;
+        }
+    }
+}
+
+//
+// Filter bar — glass-themed selects
+//
+.filter-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        backdrop-filter: blur(5px);
+        transition: all 0.2s ease;
+
+        &:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        option {
+            background: #1e293b;
+            color: white;
         }
     }
 }
