@@ -1,0 +1,67 @@
+<div class="modal-header bg-dark text-light">
+    <h5 class="modal-title mb-0">
+        <i class="fa-solid fa-user-plus me-2"></i>
+        Add Member to {{ groupName }}
+    </h5>
+    <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="cancel()"></button>
+</div>
+<div class="modal-body">
+    <form [formGroup]="addForm" (ngSubmit)="submit()">
+
+        <!-- Resource Selection -->
+        <div class="mb-3">
+            <label for="resourceId" class="form-label"><span class="text-danger">*</span> Resource (Person)</label>
+            <select id="resourceId" formControlName="resourceId" class="form-select">
+                <option [ngValue]="null">Select Resource...</option>
+                <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">
+                    {{ resource.name }}
+                </option>
+            </select>
+            <div *ngIf="addForm.get('resourceId')?.invalid && addForm.get('resourceId')?.touched"
+                class="text-danger small mt-1">
+                Resource is required
+            </div>
+        </div>
+
+        <!-- Assignment Role -->
+        <div class="mb-3">
+            <label for="assignmentRoleId" class="form-label">Default Role</label>
+            <select id="assignmentRoleId" formControlName="assignmentRoleId" class="form-select">
+                <option [ngValue]="null">No specific role</option>
+                <option *ngFor="let role of assignmentRoles$ | async" [ngValue]="role.id">
+                    {{ role.name }}
+                </option>
+            </select>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <!-- Sequence -->
+            <div class="col-md-6">
+                <label for="sequence" class="form-label"><span class="text-danger">*</span> Position</label>
+                <input type="number" id="sequence" formControlName="sequence" class="form-control" min="1" />
+            </div>
+
+            <!-- Joined Date -->
+            <div class="col-md-6">
+                <label for="joinedDate" class="form-label">Joined Date</label>
+                <input type="date" id="joinedDate" formControlName="joinedDate" class="form-control" />
+            </div>
+        </div>
+
+        <div class="modal-footer px-0 pb-0">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="cancel()" ngbTooltip="Cancel">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !addForm.valid"
+                ngbTooltip="Add Member">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Adding...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-plus me-1"></i> Add Member
+                </span>
+            </button>
+        </div>
+    </form>
+</div>

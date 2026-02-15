@@ -98,6 +98,11 @@ namespace Foundation.BMC
                     options.MaxAge = TimeSpan.FromDays(365);
                 });
 
+                //
+                // In-memory cache for custom controllers (e.g. PartsCatalogController)
+                //
+                builder.Services.AddMemoryCache();
+
 
                 //
                 // Add HTTP client factory

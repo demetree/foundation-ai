@@ -51,6 +51,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         private router: Router,
         private http: HttpClient,
         private authService: AuthService,
+        private brickPartService: BrickPartService,
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
@@ -90,13 +91,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.isLoading = true;
 
         try {
-            const part = await lastValueFrom(BrickPartService.Instance.GetBrickPart(id, true));
-
-            //
-            // Reload to rehydrate the full prototype — the deserialized object
-            // may not have all the lazy-loading Promise getters attached.
-            //
-            await part.Reload();
+            const part = await lastValueFrom(this.brickPartService.GetBrickPart(id, true));
 
             this.part = part;
 

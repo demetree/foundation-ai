@@ -1,52 +1,92 @@
-<div class="members-tab p-4">
-    <div class="d-flex justify-content-center align-items-center py-5" *ngIf="isLoading">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading members...</span>
+<div class="card h-100">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-users-gear me-2"></i>
+            Group Members
+        </h6>
+        <div class="d-flex gap-2">
+            <!-- Add Member Button -->
+            <button class="btn btn-sm btn-primary" (click)="openAddMemberModal()"
+                *ngIf="userIsVolunteerGroupMemberWriter()">
+                <i class="fa fa-plus me-1"></i> Add Member
+            </button>
+            <!-- Refresh Button -->
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadGroupMembers()">
+                <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+            </button>
         </div>
     </div>
 
-    <div *ngIf="!isLoading">
-        <!-- No members -->
-        <div class="text-center py-4" *ngIf="members.length === 0">
-            <i class="fa-solid fa-user-plus fa-3x text-muted mb-3"></i>
-            <p class="text-muted">This group has no members yet.</p>
+    <div class="card-body">
+        <!-- Loading -->
+        <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading members...</span>
+            </div>
         </div>
 
-        <!-- Members Table -->
-        <div class="table-responsive" *ngIf="members.length > 0">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>Role</th>
-                        <th>Joined</th>
-                        <th>Left</th>
-                        <th class="text-center">Active</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let member of members"
-                        [ngClass]="{ 'table-secondary': !member.active || member.deleted }">
-                        <td>
-                            <a [routerLink]="['/resources', member.resourceId]" class="text-decoration-none fw-medium">
-                                {{ member.resource?.name || 'Resource #' + member.resourceId }}
+        <!-- Error -->
+        <div class="alert alert-danger small" *ngIf="error">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            {{ error }}
+        </div>
+
+        <!-- Empty -->
+        <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!groupMembers || groupMembers.length === 0)">
+            <i class="fa-solid fa-users-slash fa-3x mb-3 opacity-50"></i>
+            <div>Group has no members</div>
+        </div>
+
+        <!-- Member List -->
+        <div class="list-group list-group-flush" *ngIf="!isLoading && groupMembers && groupMembers.length > 0">
+            <div class="list-group-item px-0 py-3 border-start border-4" *ngFor="let member of groupMembers"
+                [style.border-left-color]="group?.color || '#dee2e6'">
+                <div class="d-flex align-items-center">
+
+                    <!-- Resource Avatar -->
+                    <div class="avatar-preview rounded-circle overflow-hidden flex-shrink-0 me-3 clickable mx-3"
+                        (click)="navigateToVolunteer(member)" ngbTooltip="View Details"
+                        style="width: 50px; height: 50px;"
+                        [style.background-image]="member.resource?.avatarData ? 'url(data:' + member.resource?.avatarMimeType + ';base64,' + member.resource?.avatarData + ')' : null"
+                        [style.background-color]="member.resource?.color || group?.color || '#6c757d'">
+                        <i class="fa-solid fa-user fa-2x text-white d-flex align-items-center justify-content-center w-100 h-100"
+                            *ngIf="!member.resource?.avatarData"></i>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <a class="fw-bold fs-5 text-decoration-none clickable" (click)="navigateToVolunteer(member)"
+                                ngbTooltip="View Details" [style.color]="'#000000'">
+                                {{ member.resource?.name || 'Unknown Resource' }}
                             </a>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark" *ngIf="member.assignmentRole">
-                                {{ member.assignmentRole.name }}
+                            <span class="badge" *ngIf="member.assignmentRole?.name"
+                                [style.background-color]="group?.color || '#0d6efd'" style="color: #FFFFFF;">
+                                {{ member.assignmentRole?.name }}
                             </span>
-                            <span *ngIf="!member.assignmentRole" class="text-muted">—</span>
-                        </td>
-                        <td>{{ member.joinedDate ? (member.joinedDate | date:'mediumDate') : '—' }}</td>
-                        <td>{{ member.leftDate ? (member.leftDate | date:'mediumDate') : '—' }}</td>
-                        <td class="text-center">
-                            <i
-                                [class]="member.active ? 'fa-solid fa-check text-success' : 'fa-solid fa-times text-danger'"></i>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <span class="badge bg-light text-dark">
+                                Position {{ member.sequence }}
+                            </span>
+                            <span class="badge bg-success" *ngIf="member.active && !member.leftDate">Active</span>
+                            <span class="badge bg-secondary" *ngIf="member.leftDate">Left {{ member.leftDate }}</span>
+                        </div>
+                        <div class="small text-muted mt-1" *ngIf="member.joinedDate">
+                            <i class="fa-solid fa-calendar-check me-1"></i> Joined {{ member.joinedDate }}
+                        </div>
+                        <div class="small text-muted mt-1" *ngIf="member.notes">
+                            {{ member.notes }}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="ms-3 d-flex gap-2" *ngIf="userIsVolunteerGroupMemberWriter()">
+                        <button class="btn btn-sm btn-outline-danger" ngbTooltip="Remove from Group"
+                            (click)="removeMember(member)">
+                            <i class="fa-solid fa-user-minus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

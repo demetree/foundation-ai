@@ -20,6 +20,10 @@ export class VolunteerGroupCustomDetailComponent implements OnInit, OnDestroy {
     public isLoading: boolean = true;
     public activeTab: string = 'overview';
 
+    // Change history
+    public auditHistory: any[] | null = null;
+    public isLoadingHistory: boolean = false;
+
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -64,6 +68,20 @@ export class VolunteerGroupCustomDetailComponent implements OnInit, OnDestroy {
 
     onTabChange(tabId: string): void {
         this.activeTab = tabId;
+        if (this.activeTab === 'history') {
+            this.loadHistory();
+        }
+    }
+
+    public loadHistory(): void {
+        if (this.auditHistory != null || !this.group) {
+            return;
+        }
+        this.isLoadingHistory = true;
+        this.volunteerGroupService.GetVolunteerGroupAuditHistory(this.group.id as number, true).subscribe({
+            next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+            error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
+        });
     }
 
     openEditModal(): void {
@@ -73,6 +91,7 @@ export class VolunteerGroupCustomDetailComponent implements OnInit, OnDestroy {
     }
 
     onGroupChanged(): void {
+        this.auditHistory = null;
         if (this.group) {
             this.loadGroup(this.group.id as number);
         }

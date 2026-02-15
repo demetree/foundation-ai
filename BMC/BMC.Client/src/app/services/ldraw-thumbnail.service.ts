@@ -110,7 +110,7 @@ export class LDrawThumbnailService {
     private readonly HEIGHT = 200;
 
     // Delay between consecutive renders (ms) — prevents 429s from sub-file requests
-    private readonly RENDER_DELAY_MS = 100;
+    private readonly RENDER_DELAY_MS = 50;
 
 
     constructor(
@@ -178,9 +178,12 @@ export class LDrawThumbnailService {
         this.queue = [...needed];
         this.queueGeneration++;
 
-        if (!this.rendering) {
-            this.processQueue(this.queueGeneration);
-        }
+        //
+        // Always start a new processQueue — the previous one will self-abort
+        // when it detects the generation mismatch. This prevents the "hung"
+        // feeling when switching categories while rendering is in progress.
+        //
+        this.processQueue(this.queueGeneration);
     }
 
 
@@ -292,13 +295,21 @@ export class LDrawThumbnailService {
         this.ensureInitialized();
         await this.preloadMaterials();
 
+        //
+        // Check generation again after async preload — a new batch may have
+        // arrived while we were loading materials
+        //
+        if (generation !== this.queueGeneration) {
+            return; // a newer processQueue is now responsible
+        }
+
         while (this.queue.length > 0) {
 
             //
             // Abort if a new renderBatch() started a new generation
             //
             if (generation !== this.queueGeneration) {
-                break;
+                return; // don't clear rendering — the new generation handles it
             }
 
             const part = this.queue.shift()!;
@@ -332,7 +343,13 @@ export class LDrawThumbnailService {
             }
         }
 
-        this.rendering = false;
+        //
+        // Only clear the rendering flag if we're still the active generation.
+        // If a newer generation took over, it will manage the flag.
+        //
+        if (generation === this.queueGeneration) {
+            this.rendering = false;
+        }
     }
 
 

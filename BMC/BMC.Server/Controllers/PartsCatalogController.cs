@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Foundation.Controllers;
 using Foundation.Security;
@@ -20,18 +21,31 @@ namespace Foundation.BMC.Controllers.WebAPI
     /// LDraw geometry data (geometryFilePath IS NOT NULL), making the catalog
     /// fast even with 50K+ parts in the database from the Rebrickable import.
     ///
+    /// Uses IMemoryCache to cache repeated requests — categories and part types
+    /// are cached for 10 minutes (they rarely change), and paginated part results
+    /// are cached for 2 minutes (good enough for browsing bursts).
+    ///
     /// All endpoints are read-only and require BMC read permission.
     /// </summary>
     public class PartsCatalogController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 
+        private static readonly TimeSpan PageCacheDuration = TimeSpan.FromMinutes(2);
+        private static readonly TimeSpan SidebarCacheDuration = TimeSpan.FromMinutes(10);
+
         private readonly BMCContext _context;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<PartsCatalogController> _logger;
 
-        public PartsCatalogController(BMCContext context, ILogger<PartsCatalogController> logger) : base("BMC", "PartsCatalog")
+        public PartsCatalogController(
+            BMCContext context,
+            IMemoryCache cache,
+            ILogger<PartsCatalogController> logger
+        ) : base("BMC", "PartsCatalog")
         {
             _context = context;
+            _cache = cache;
             _logger = logger;
 
             _context.Database.SetCommandTimeout(30);
@@ -105,6 +119,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// Returns a paginated, filtered list of parts that have LDraw geometry data.
         /// Supports text search across name, ldrawPartId, ldrawTitle, keywords, and author.
+        /// Results are cached for 2 minutes per unique combination of parameters.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
@@ -126,6 +141,16 @@ namespace Foundation.BMC.Controllers.WebAPI
             if (pageSize <= 0) pageSize = 48;
             if (pageSize > 200) pageSize = 200;
             if (pageNumber < 1) pageNumber = 1;
+
+            //
+            // Build a cache key from the normalised parameters
+            //
+            string cacheKey = $"catalog:parts:{search ?? ""}:{categoryId}:{partTypeId}:{pageSize}:{pageNumber}";
+
+            if (_cache.TryGetValue(cacheKey, out CatalogPageResult cached))
+            {
+                return Ok(cached);
+            }
 
             //
             // Base query: only parts with LDraw geometry data, active and not deleted
@@ -211,6 +236,12 @@ namespace Foundation.BMC.Controllers.WebAPI
                 items = items
             };
 
+            //
+            // Cache for 2 minutes — good enough for browsing bursts,
+            // short enough that new imports are reflected quickly
+            //
+            _cache.Set(cacheKey, result, PageCacheDuration);
+
             return Ok(result);
         }
 
@@ -220,7 +251,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// Returns categories that have at least one renderable part (geometryFilePath IS NOT NULL),
         /// along with the count of renderable parts in each category.
-        /// Sorted by count descending.
+        /// Sorted by count descending. Cached for 10 minutes.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
@@ -230,6 +261,13 @@ namespace Foundation.BMC.Controllers.WebAPI
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
+            }
+
+            const string cacheKey = "catalog:categories";
+
+            if (_cache.TryGetValue(cacheKey, out List<CatalogCategoryDto> cached))
+            {
+                return Ok(cached);
             }
 
             List<CatalogCategoryDto> categories = await _context.BrickCategories
@@ -247,6 +285,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
+            _cache.Set(cacheKey, categories, SidebarCacheDuration);
+
             return Ok(categories);
         }
 
@@ -256,7 +296,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// Returns part types that have at least one renderable part,
         /// along with the count of renderable parts for each type.
-        /// Sorted by count descending.
+        /// Sorted by count descending. Cached for 10 minutes.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
@@ -266,6 +306,13 @@ namespace Foundation.BMC.Controllers.WebAPI
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
+            }
+
+            const string cacheKey = "catalog:part-types";
+
+            if (_cache.TryGetValue(cacheKey, out List<CatalogPartTypeDto> cached))
+            {
+                return Ok(cached);
             }
 
             List<CatalogPartTypeDto> partTypes = await _context.PartTypes
@@ -281,6 +328,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .ThenBy(pt => pt.name)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+
+            _cache.Set(cacheKey, partTypes, SidebarCacheDuration);
 
             return Ok(partTypes);
         }

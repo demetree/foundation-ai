@@ -20,6 +20,10 @@ export class VolunteerCustomDetailComponent implements OnInit, OnDestroy {
     public isLoading: boolean = true;
     public activeTab: string = 'overview';
 
+    // Change history
+    public auditHistory: any[] | null = null;
+    public isLoadingHistory: boolean = false;
+
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -64,6 +68,20 @@ export class VolunteerCustomDetailComponent implements OnInit, OnDestroy {
 
     onTabChange(tabId: string): void {
         this.activeTab = tabId;
+        if (this.activeTab === 'history') {
+            this.loadHistory();
+        }
+    }
+
+    public loadHistory(): void {
+        if (this.auditHistory != null || !this.volunteer) {
+            return;
+        }
+        this.isLoadingHistory = true;
+        this.volunteerProfileService.GetVolunteerProfileAuditHistory(this.volunteer.id as number, true).subscribe({
+            next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+            error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
+        });
     }
 
     openEditModal(): void {
@@ -73,6 +91,7 @@ export class VolunteerCustomDetailComponent implements OnInit, OnDestroy {
     }
 
     onVolunteerChanged(): void {
+        this.auditHistory = null;
         if (this.volunteer) {
             this.loadVolunteer(this.volunteer.id as number);
         }

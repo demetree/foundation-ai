@@ -64,7 +64,10 @@
                 </a>
                 <ng-template ngbNavContent>
                     <div class="p-4">
-                        <p class="text-muted">Change history will be loaded here.</p>
+                        <app-change-history-viewer [auditHistory]="auditHistory" [isLoading]="isLoadingHistory"
+                            [entityName]="'Volunteer Profile'"
+                            [excludeFields]="['objectGuid', 'avatarData', 'avatarFileName', 'avatarSize', 'avatarMimeType']">
+                        </app-change-history-viewer>
                     </div>
                 </ng-template>
             </li>
