@@ -3,6 +3,7 @@ import { Subject, Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { VolunteerProfileService, VolunteerProfileData, VolunteerProfileQueryParameters } from '../../../scheduler-data-services/volunteer-profile.service';
+import { VolunteerStatusService, VolunteerStatusData } from '../../../scheduler-data-services/volunteer-status.service';
 import { VolunteerCustomAddEditComponent } from '../volunteer-custom-add-edit/volunteer-custom-add-edit.component';
 import { VolunteerCustomTableComponent } from '../volunteer-custom-table/volunteer-custom-table.component';
 import { AuthService } from '../../../services/auth.service';
@@ -20,6 +21,14 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
     public filterText: string = '';
     public isSmallScreen: boolean = false;
 
+    // Filter state
+    public showFilters: boolean = false;
+    public showDashboard: boolean = false;
+    public statusFilter: number | null = null;
+    public bgCheckFilter: boolean | null = null;
+    public activeFilter: boolean | null = null;
+    public volunteerStatuses: VolunteerStatusData[] = [];
+
     // Row count observables
     public totalVolunteerCount$!: Observable<bigint | number>;
     public filteredVolunteerCount$!: Observable<bigint | number>;
@@ -32,6 +41,7 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
 
     constructor(
         private volunteerProfileService: VolunteerProfileService,
+        private volunteerStatusService: VolunteerStatusService,
         private authService: AuthService,
         private breakpointObserver: BreakpointObserver,
         private location: Location
@@ -45,6 +55,7 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
             });
 
         this.loadTotalCount();
+        this.loadStatuses();
 
         this.filterChanged$.pipe(
             debounceTime(300),
@@ -118,5 +129,25 @@ export class VolunteerCustomListingComponent implements OnInit, OnDestroy, After
 
     public userIsVolunteerWriter(): boolean {
         return this.volunteerProfileService.userIsSchedulerVolunteerProfileWriter();
+    }
+
+    public toggleFilters(): void {
+        this.showFilters = !this.showFilters;
+    }
+
+    public clearFilters(): void {
+        this.statusFilter = null;
+        this.bgCheckFilter = null;
+        this.activeFilter = null;
+    }
+
+    public get hasActiveFilters(): boolean {
+        return this.statusFilter !== null || this.bgCheckFilter !== null || this.activeFilter !== null;
+    }
+
+    private loadStatuses(): void {
+        this.volunteerStatusService.GetVolunteerStatusList({ active: true, deleted: false })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(statuses => this.volunteerStatuses = statuses);
     }
 }

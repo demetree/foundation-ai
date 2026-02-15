@@ -60,6 +60,21 @@
                 </span>
 
 
+                <!-- Dashboard Toggle -->
+                <button class="btn btn-sm" [class.btn-warning]="showDashboard"
+                    [class.btn-outline-secondary]="!showDashboard" (click)="showDashboard = !showDashboard"
+                    ngbTooltip="Toggle Dashboard">
+                    <i class="fa fa-gauge-high"></i>
+                </button>
+
+                <!-- Filter Toggle -->
+                <button class="btn btn-sm" [class.btn-info]="showFilters || hasActiveFilters"
+                    [class.btn-outline-secondary]="!showFilters && !hasActiveFilters" (click)="toggleFilters()"
+                    ngbTooltip="Toggle Filters">
+                    <i class="fa fa-filter me-1"></i>
+                    <span *ngIf="hasActiveFilters" class="badge bg-warning text-dark ms-1">!</span>
+                </button>
+
                 <!-- Quick Search Input -->
                 <div class="search-bar me-2 position-relative">
                     <i class="fa fa-search search-icon text-white-50"></i>
@@ -77,9 +92,54 @@
                 </div>
             </div>
         </div>
+
+        <!-- Collapsible Filter Bar -->
+        <div class="filter-bar px-3 pb-3" *ngIf="showFilters">
+            <div class="d-flex flex-wrap gap-3 align-items-end">
+                <div>
+                    <label class="form-label small text-white-50 mb-1">Status</label>
+                    <select class="form-select form-select-sm glass-input" [(ngModel)]="statusFilter"
+                        style="min-width: 160px;">
+                        <option [ngValue]="null">All Statuses</option>
+                        <option *ngFor="let s of volunteerStatuses" [ngValue]="s.id">
+                            {{ s.name }}
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small text-white-50 mb-1">BG Check</label>
+                    <select class="form-select form-select-sm glass-input" [(ngModel)]="bgCheckFilter"
+                        style="min-width: 130px;">
+                        <option [ngValue]="null">All</option>
+                        <option [ngValue]="true">Completed</option>
+                        <option [ngValue]="false">Not Completed</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small text-white-50 mb-1">Active</label>
+                    <select class="form-select form-select-sm glass-input" [(ngModel)]="activeFilter"
+                        style="min-width: 130px;">
+                        <option [ngValue]="null">All</option>
+                        <option [ngValue]="true">Active</option>
+                        <option [ngValue]="false">Inactive</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-light" (click)="clearFilters()"
+                        [disabled]="!hasActiveFilters">
+                        <i class="fa fa-times me-1"></i> Clear
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <app-volunteer-custom-table *ngIf="userIsVolunteerReader() == true" [filterText]="filterText"
-        [isSmallScreen]="isSmallScreen">
+    <!-- Dashboard View -->
+    <app-volunteer-dashboard *ngIf="showDashboard && userIsVolunteerReader()"></app-volunteer-dashboard>
+
+    <!-- Table View -->
+    <app-volunteer-custom-table *ngIf="!showDashboard && userIsVolunteerReader() == true" [filterText]="filterText"
+        [isSmallScreen]="isSmallScreen" [statusFilter]="statusFilter" [bgCheckFilter]="bgCheckFilter"
+        [activeFilter]="activeFilter">
     </app-volunteer-custom-table>
 </div>

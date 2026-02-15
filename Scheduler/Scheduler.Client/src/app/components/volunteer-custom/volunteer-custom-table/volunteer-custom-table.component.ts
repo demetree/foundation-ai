@@ -18,6 +18,9 @@ export class VolunteerCustomTableComponent implements OnInit, OnChanges, AfterVi
 
     @Input() Volunteers: VolunteerProfileData[] | null = null;
     @Input() isSmallScreen: boolean = false;
+    @Input() statusFilter: number | null = null;
+    @Input() bgCheckFilter: boolean | null = null;
+    @Input() activeFilter: boolean | null = null;
     @Input() filterText: string | null = null;
     @Input() queryParams: Partial<VolunteerProfileQueryParameters> = {};
 
@@ -74,7 +77,11 @@ export class VolunteerCustomTableComponent implements OnInit, OnChanges, AfterVi
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['filterText'] && this.isManagingData) {
+        if (changes['Volunteers'] && this.Volunteers) {
+            this.applyFiltersAndSort();
+        }
+
+        if (changes['filterText']) {
             clearTimeout(this.debounceTimeout);
             this.debounceTimeout = setTimeout(() => {
                 if (this.isManagingData) {
@@ -83,6 +90,14 @@ export class VolunteerCustomTableComponent implements OnInit, OnChanges, AfterVi
                     this.applyFiltersAndSort();
                 }
             }, 200);
+        }
+
+        if (changes['statusFilter'] || changes['bgCheckFilter'] || changes['activeFilter']) {
+            this.applyFiltersAndSort();
+        }
+
+        if (changes['isSmallScreen'] && !changes['isSmallScreen'].isFirstChange()) {
+            // Re-apply if switching between mobile/desktop
         }
 
         if (changes['queryParams']) {
@@ -190,6 +205,19 @@ export class VolunteerCustomTableComponent implements OnInit, OnChanges, AfterVi
                     })
                 );
             }
+        }
+
+        // Apply dropdown filters
+        if (this.statusFilter !== null && this.statusFilter !== undefined) {
+            result = result.filter(v => Number(v.volunteerStatusId) === this.statusFilter);
+        }
+
+        if (this.bgCheckFilter !== null && this.bgCheckFilter !== undefined) {
+            result = result.filter(v => v.backgroundCheckCompleted === this.bgCheckFilter);
+        }
+
+        if (this.activeFilter !== null && this.activeFilter !== undefined) {
+            result = result.filter(v => v.active === this.activeFilter);
         }
 
         if (this.sortColumn) {

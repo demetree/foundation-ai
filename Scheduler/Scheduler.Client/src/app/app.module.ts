@@ -155,6 +155,7 @@ import { VolunteerOverviewTabComponent } from './components/volunteer-custom/vol
 import { VolunteerGroupsTabComponent } from './components/volunteer-custom/volunteer-groups-tab/volunteer-groups-tab.component';
 import { VolunteerAssignmentsTabComponent } from './components/volunteer-custom/volunteer-assignments-tab/volunteer-assignments-tab.component';
 import { VolunteerHoursTabComponent } from './components/volunteer-custom/volunteer-hours-tab/volunteer-hours-tab.component';
+import { VolunteerDashboardComponent } from './components/volunteer-custom/volunteer-dashboard/volunteer-dashboard.component';
 
 //
 // Volunteer Group custom optimizations
@@ -1087,6 +1088,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     VolunteerGroupsTabComponent,
     VolunteerAssignmentsTabComponent,
     VolunteerHoursTabComponent,
+    VolunteerDashboardComponent,
 
     //
     // Volunteer Group customization

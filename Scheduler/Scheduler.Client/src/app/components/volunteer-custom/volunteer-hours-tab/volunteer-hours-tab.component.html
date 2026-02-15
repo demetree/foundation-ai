@@ -5,6 +5,9 @@
             Volunteer Hours
         </h6>
         <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-primary" *ngIf="userIsVolunteerWriter()" (click)="toggleLogHoursForm()">
+                <i class="fa-solid fa-plus me-1"></i> Log Hours
+            </button>
             <!-- Date Range Filter -->
             <div class="btn-group btn-group-sm" role="group">
                 <button type="button" class="btn" [class.btn-primary]="dateRange === 'all'"
@@ -37,6 +40,53 @@
         </div>
 
         <ng-container *ngIf="!isLoading && !error">
+
+            <!-- Log Hours Form -->
+            <div class="log-hours-form mb-3" *ngIf="showLogHoursForm">
+                <div class="card border-primary">
+                    <div class="card-body py-3">
+                        <h6 class="mb-3 fw-semibold">
+                            <i class="fa-solid fa-stopwatch me-2 text-primary"></i>Report Hours
+                        </h6>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label small">Assignment</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="logHoursAssignmentId">
+                                    <option [ngValue]="null">Select an assignment...</option>
+                                    <option *ngFor="let a of unreportedAssignments" [ngValue]="a.id">
+                                        {{ a.scheduledEvent?.name || 'Event' }} — {{
+                                        formatDate(a.assignmentStartDateTime || a.scheduledEvent?.startDateTime) }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Hours</label>
+                                <input type="number" class="form-control form-control-sm" [(ngModel)]="logHoursValue"
+                                    min="0.1" step="0.5" placeholder="0.0" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Notes (optional)</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="logHoursNotes"
+                                    placeholder="Brief description of work done" />
+                            </div>
+                            <div class="col-md-2 d-flex gap-1">
+                                <button class="btn btn-sm btn-primary flex-fill" (click)="submitLogHours()"
+                                    [disabled]="!logHoursAssignmentId || !logHoursValue || logHoursValue <= 0 || isSubmittingHours">
+                                    <i class="fa-solid fa-check me-1" *ngIf="!isSubmittingHours"></i>
+                                    <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="isSubmittingHours"></i>
+                                    Submit
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" (click)="toggleLogHoursForm()">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-muted small mt-2" *ngIf="unreportedAssignments.length === 0">
+                            <i class="fa-solid fa-info-circle me-1"></i> All assignments already have reported hours.
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Summary Cards -->
             <div class="row g-3 mb-4">

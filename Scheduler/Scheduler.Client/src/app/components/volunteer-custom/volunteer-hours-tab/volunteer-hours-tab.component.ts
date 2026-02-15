@@ -35,6 +35,13 @@ export class VolunteerHoursTabComponent implements OnChanges {
     public totalReimbursement = 0;
     public pendingReimbursementCount = 0;
 
+    // Log hours form state
+    public showLogHoursForm = false;
+    public logHoursAssignmentId: number | null = null;
+    public logHoursValue: number | null = null;
+    public logHoursNotes: string = '';
+    public isSubmittingHours = false;
+
     constructor(
         private router: Router,
         private eventResourceAssignmentService: EventResourceAssignmentService,
@@ -287,5 +294,72 @@ export class VolunteerHoursTabComponent implements OnChanges {
         const hasReported = assignment.reportedVolunteerHours !== null && assignment.reportedVolunteerHours !== undefined && assignment.reportedVolunteerHours > 0;
         const hasApproved = assignment.approvedVolunteerHours !== null && assignment.approvedVolunteerHours !== undefined && assignment.approvedVolunteerHours > 0;
         return hasReported && !hasApproved;
+    }
+
+    /**
+     * Returns assignments that don't yet have reported hours (for the log hours dropdown).
+     */
+    public get unreportedAssignments(): EventResourceAssignmentData[] {
+        return this.allAssignments.filter(a =>
+            a.reportedVolunteerHours === null || a.reportedVolunteerHours === undefined || a.reportedVolunteerHours === 0
+        );
+    }
+
+    /**
+     * Toggles the log hours inline form.
+     */
+    public toggleLogHoursForm(): void {
+        this.showLogHoursForm = !this.showLogHoursForm;
+        if (!this.showLogHoursForm) {
+            this.resetLogHoursForm();
+        }
+    }
+
+    /**
+     * Submits reported hours for the selected assignment.
+     */
+    public async submitLogHours(): Promise<void> {
+        if (!this.logHoursAssignmentId || !this.logHoursValue || this.logHoursValue <= 0) {
+            return;
+        }
+
+        const assignment = this.allAssignments.find(a => Number(a.id) === this.logHoursAssignmentId);
+        if (!assignment) return;
+
+        this.isSubmittingHours = true;
+
+        try {
+            const submitData = assignment.ConvertToSubmitData();
+            submitData.reportedVolunteerHours = this.logHoursValue;
+            submitData.volunteerNotes = this.logHoursNotes || null;
+
+            const updated = await lastValueFrom(
+                this.eventResourceAssignmentService.PutEventResourceAssignment(assignment.id, submitData)
+            );
+
+            // Update local data
+            assignment.reportedVolunteerHours = updated.reportedVolunteerHours;
+            assignment.volunteerNotes = updated.volunteerNotes;
+
+            this.computeSummary();
+            this.showLogHoursForm = false;
+            this.resetLogHoursForm();
+
+            this.alertService.showMessage('Success', 'Hours reported successfully.', MessageSeverity.success);
+        } catch (err) {
+            console.error('Failed to report hours', err);
+            this.alertService.showMessage('Error', 'Failed to report hours.', MessageSeverity.error);
+        } finally {
+            this.isSubmittingHours = false;
+        }
+    }
+
+    /**
+     * Resets the log hours form fields.
+     */
+    private resetLogHoursForm(): void {
+        this.logHoursAssignmentId = null;
+        this.logHoursValue = null;
+        this.logHoursNotes = '';
     }
 }

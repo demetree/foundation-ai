@@ -1,0 +1,135 @@
+<div class="dashboard-container">
+    <!-- Loading -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading dashboard...</span>
+        </div>
+        <div class="text-muted mt-2">Loading dashboard data...</div>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+        <!-- KPI Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="kpi-card kpi-volunteers">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="kpi-value">{{ totalActiveVolunteers }}</div>
+                    <div class="kpi-label">Active Volunteers</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="kpi-card kpi-hours">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="kpi-value">{{ formatHours(totalHoursServed) }}</div>
+                    <div class="kpi-label">Total Hours Served</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="kpi-card kpi-pending">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div class="kpi-value">{{ pendingApprovals }}</div>
+                    <div class="kpi-label">Pending Approvals</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="kpi-card kpi-bgcheck">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="kpi-value">{{ expiringBgChecks }}</div>
+                    <div class="kpi-label">BG Checks Expiring (30d)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+
+            <!-- Status Distribution -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fa-solid fa-chart-pie me-2 text-primary"></i>
+                            Status Distribution
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="statusBreakdown.length === 0" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-chart-pie fa-2x opacity-50 mb-2"></i>
+                            <div>No status data available</div>
+                        </div>
+
+                        <div *ngFor="let status of statusBreakdown" class="status-row mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-dot" [style.background-color]="status.color"></span>
+                                    <span class="fw-medium">{{ status.name }}</span>
+                                </div>
+                                <span class="text-muted small">{{ status.count }} ({{ status.percentage }}%)</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" [style.width.%]="status.percentage"
+                                    [style.background-color]="status.color">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fa-solid fa-timeline me-2 text-primary"></i>
+                            Recent Activity
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div *ngIf="isLoadingActivity" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        </div>
+
+                        <div *ngIf="!isLoadingActivity && recentActivity.length === 0"
+                            class="text-center text-muted py-4">
+                            <i class="fa-solid fa-timeline fa-2x opacity-50 mb-2"></i>
+                            <div>No recent activity</div>
+                        </div>
+
+                        <div class="list-group list-group-flush"
+                            *ngIf="!isLoadingActivity && recentActivity.length > 0">
+                            <div class="list-group-item py-2" *ngFor="let activity of recentActivity">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-medium">{{ activity.volunteerName }}</div>
+                                        <div class="text-muted small">
+                                            {{ activity.eventName }}
+                                            <span *ngIf="activity.hours"> — {{ formatHours(activity.hours) }}h</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge rounded-pill"
+                                            [ngClass]="getStatusBadgeClass(activity.status)">
+                                            {{ activity.status | titlecase }}
+                                        </span>
+                                        <div class="text-muted small mt-1">{{ formatDate(activity.date) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </ng-container>
+</div>

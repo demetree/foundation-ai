@@ -177,6 +177,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(LDrawController));
                 controllers.Add(typeof(CollectionController));
                 controllers.Add(typeof(PartsCatalogController));
+                controllers.Add(typeof(ProfileController));
 
                 //
                 // Start of code generated controller list for BMC module

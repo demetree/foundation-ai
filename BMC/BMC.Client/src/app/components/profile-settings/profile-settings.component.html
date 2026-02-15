@@ -1,0 +1,144 @@
+<div class="profile-settings animate-fade-in">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="btn-back" (click)="cancel()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-user-cog me-2"></i>Profile Settings
+                </h1>
+                <p class="page-subtitle">Customise how others see you in the community</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="loading-container">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Loading settings...</span>
+    </div>
+
+    <!-- Form -->
+    <div *ngIf="!isLoading" class="settings-form">
+
+        <!-- Messages -->
+        <div *ngIf="error" class="message error-message">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+        <div *ngIf="successMessage" class="message success-message">
+            <i class="fas fa-check-circle"></i> {{ successMessage }}
+        </div>
+
+
+        <!-- Basic Info Card -->
+        <div class="settings-card bmc-card">
+            <h3 class="card-title"><i class="fas fa-id-card me-2"></i>Basic Information</h3>
+
+            <div class="form-group">
+                <label class="form-label">Display Name <span class="required">*</span></label>
+                <input type="text" class="form-input" [(ngModel)]="displayName" placeholder="Your display name"
+                    maxlength="50">
+                <span class="char-count">{{ displayName.length }}/50</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea class="form-input textarea" [(ngModel)]="bio" rows="4"
+                    placeholder="Tell the community about yourself..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" [(ngModel)]="location" placeholder="e.g. London, UK">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    <input type="url" class="form-input" [(ngModel)]="websiteUrl" placeholder="https://yoursite.com">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Appearance Card -->
+        <div class="settings-card bmc-card">
+            <h3 class="card-title"><i class="fas fa-image me-2"></i>Appearance</h3>
+
+            <div class="form-group">
+                <label class="form-label">Avatar Image Path</label>
+                <input type="text" class="form-input" [(ngModel)]="avatarImagePath" placeholder="Path to avatar image">
+                <span class="form-hint">Image upload coming soon — enter a path for now</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Profile Banner Image Path</label>
+                <input type="text" class="form-input" [(ngModel)]="profileBannerImagePath"
+                    placeholder="Path to banner image">
+                <span class="form-hint">Recommended size: 1200×300px</span>
+            </div>
+        </div>
+
+
+        <!-- Privacy Card -->
+        <div class="settings-card bmc-card">
+            <h3 class="card-title"><i class="fas fa-shield-alt me-2"></i>Privacy</h3>
+
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <span class="toggle-label">Public Profile</span>
+                    <span class="toggle-desc">Allow other users to view your profile, stats, and published MOCs</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [(ngModel)]="isPublic">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+
+        <!-- Social Links Card -->
+        <div class="settings-card bmc-card">
+            <div class="card-title-row">
+                <h3 class="card-title"><i class="fas fa-link me-2"></i>Social Links</h3>
+                <button class="btn-add-link" (click)="addLink()">
+                    <i class="fas fa-plus"></i> Add Link
+                </button>
+            </div>
+
+            <div *ngIf="links.length === 0" class="empty-links">
+                <i class="fas fa-link"></i>
+                <p>No social links yet. Add links to your social profiles.</p>
+            </div>
+
+            <div *ngFor="let link of links; let i = index" class="link-row">
+                <div class="link-type-select">
+                    <select class="form-input" [(ngModel)]="link.userProfileLinkTypeId">
+                        <option *ngFor="let type of linkTypes" [ngValue]="type.id">
+                            {{ type.name }}
+                        </option>
+                    </select>
+                </div>
+                <input type="url" class="form-input link-url" [(ngModel)]="link.url" placeholder="https://...">
+                <input type="text" class="form-input link-label" [(ngModel)]="link.displayLabel"
+                    placeholder="Label (optional)">
+                <button class="btn-remove-link" (click)="removeLink(i)" title="Remove link">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Action Buttons -->
+        <div class="actions-row">
+            <button class="btn-cancel" (click)="cancel()">Cancel</button>
+            <button class="btn-save" (click)="save()" [disabled]="isSaving">
+                <i class="fas" [class.fa-save]="!isSaving" [class.fa-spinner]="isSaving" [class.fa-spin]="isSaving"></i>
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+        </div>
+
+    </div>
+</div>
