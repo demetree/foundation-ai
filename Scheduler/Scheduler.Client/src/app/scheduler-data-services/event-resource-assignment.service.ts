@@ -44,21 +44,21 @@ export class EventResourceAssignmentQueryParameters {
     volunteerGroupId: bigint | number | null | undefined = null;
     assignmentRoleId: bigint | number | null | undefined = null;
     assignmentStatusId: bigint | number | null | undefined = null;
-    assignmentStartDateTime: string | null | undefined = null;        // ISO 8601
-    assignmentEndDateTime: string | null | undefined = null;        // ISO 8601
+    assignmentStartDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    assignmentEndDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     notes: string | null | undefined = null;
     isTravelRequired: boolean | null | undefined = null;
     travelDurationMinutes: bigint | number | null | undefined = null;
     distanceKilometers: number | null | undefined = null;
     startLocation: string | null | undefined = null;
-    actualStartDateTime: string | null | undefined = null;        // ISO 8601
-    actualEndDateTime: string | null | undefined = null;        // ISO 8601
+    actualStartDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    actualEndDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     actualNotes: string | null | undefined = null;
     isVolunteer: boolean | null | undefined = null;
     reportedVolunteerHours: number | null | undefined = null;
     approvedVolunteerHours: number | null | undefined = null;
     hoursApprovedByContactId: bigint | number | null | undefined = null;
-    approvedDateTime: string | null | undefined = null;        // ISO 8601
+    approvedDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     reimbursementAmount: number | null | undefined = null;
     chargeTypeId: bigint | number | null | undefined = null;
     reimbursementRequested: boolean | null | undefined = null;
@@ -86,21 +86,21 @@ export class EventResourceAssignmentSubmitData {
     volunteerGroupId: bigint | number | null = null;
     assignmentRoleId: bigint | number | null = null;
     assignmentStatusId!: bigint | number;
-    assignmentStartDateTime: string | null = null;     // ISO 8601
-    assignmentEndDateTime: string | null = null;     // ISO 8601
+    assignmentStartDateTime: string | null = null;     // ISO 8601 (full datetime)
+    assignmentEndDateTime: string | null = null;     // ISO 8601 (full datetime)
     notes: string | null = null;
     isTravelRequired: boolean | null = null;
     travelDurationMinutes: bigint | number | null = null;
     distanceKilometers: number | null = null;
     startLocation: string | null = null;
-    actualStartDateTime: string | null = null;     // ISO 8601
-    actualEndDateTime: string | null = null;     // ISO 8601
+    actualStartDateTime: string | null = null;     // ISO 8601 (full datetime)
+    actualEndDateTime: string | null = null;     // ISO 8601 (full datetime)
     actualNotes: string | null = null;
     isVolunteer!: boolean;
     reportedVolunteerHours: number | null = null;
     approvedVolunteerHours: number | null = null;
     hoursApprovedByContactId: bigint | number | null = null;
-    approvedDateTime: string | null = null;     // ISO 8601
+    approvedDateTime: string | null = null;     // ISO 8601 (full datetime)
     reimbursementAmount: number | null = null;
     chargeTypeId: bigint | number | null = null;
     reimbursementRequested!: boolean;
@@ -182,21 +182,21 @@ export class EventResourceAssignmentData {
     volunteerGroupId!: bigint | number;
     assignmentRoleId!: bigint | number;
     assignmentStatusId!: bigint | number;
-    assignmentStartDateTime!: string | null;   // ISO 8601
-    assignmentEndDateTime!: string | null;   // ISO 8601
+    assignmentStartDateTime!: string | null;   // ISO 8601 (full datetime)
+    assignmentEndDateTime!: string | null;   // ISO 8601 (full datetime)
     notes!: string | null;
     isTravelRequired!: boolean | null;
     travelDurationMinutes!: bigint | number;
     distanceKilometers!: number | null;
     startLocation!: string | null;
-    actualStartDateTime!: string | null;   // ISO 8601
-    actualEndDateTime!: string | null;   // ISO 8601
+    actualStartDateTime!: string | null;   // ISO 8601 (full datetime)
+    actualEndDateTime!: string | null;   // ISO 8601 (full datetime)
     actualNotes!: string | null;
     isVolunteer!: boolean;
     reportedVolunteerHours!: number | null;
     approvedVolunteerHours!: number | null;
     hoursApprovedByContactId!: bigint | number;
-    approvedDateTime!: string | null;   // ISO 8601
+    approvedDateTime!: string | null;   // ISO 8601 (full datetime)
     reimbursementAmount!: number | null;
     chargeTypeId!: bigint | number;
     reimbursementRequested!: boolean;

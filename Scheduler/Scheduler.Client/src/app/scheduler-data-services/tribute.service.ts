@@ -36,8 +36,8 @@ export class TributeQueryParameters {
     description: string | null | undefined = null;
     tributeTypeId: bigint | number | null | undefined = null;
     defaultAcknowledgeeId: bigint | number | null | undefined = null;
-    startDate: string | null | undefined = null;        // ISO 8601
-    endDate: string | null | undefined = null;        // ISO 8601
+    startDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    endDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     iconId: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
     avatarFileName: string | null | undefined = null;
@@ -63,8 +63,8 @@ export class TributeSubmitData {
     description: string | null = null;
     tributeTypeId: bigint | number | null = null;
     defaultAcknowledgeeId: bigint | number | null = null;
-    startDate: string | null = null;     // ISO 8601
-    endDate: string | null = null;     // ISO 8601
+    startDate: string | null = null;     // Date only (YYYY-MM-DD)
+    endDate: string | null = null;     // Date only (YYYY-MM-DD)
     iconId: bigint | number | null = null;
     color: string | null = null;
     avatarFileName: string | null = null;
@@ -145,8 +145,8 @@ export class TributeData {
     description!: string | null;
     tributeTypeId!: bigint | number;
     defaultAcknowledgeeId!: bigint | number;
-    startDate!: string | null;   // ISO 8601
-    endDate!: string | null;   // ISO 8601
+    startDate!: string | null;   // Date only (YYYY-MM-DD)
+    endDate!: string | null;   // Date only (YYYY-MM-DD)
     iconId!: bigint | number;
     color!: string | null;
     avatarFileName!: string | null;

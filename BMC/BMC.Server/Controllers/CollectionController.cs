@@ -95,6 +95,20 @@ namespace Foundation.BMC.Controllers.WebAPI
             public int totalQuantityAdded { get; set; }
         }
 
+        /// <summary>
+        /// Search result for the set search typeahead.
+        /// </summary>
+        public class SetSearchResultDto
+        {
+            public int id { get; set; }
+            public string name { get; set; }
+            public string setNumber { get; set; }
+            public string imageUrl { get; set; }
+            public int year { get; set; }
+            public int partCount { get; set; }
+            public string themeName { get; set; }
+        }
+
         #endregion
 
 
@@ -451,16 +465,17 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
         /// <summary>
-        /// POST /api/collection/{id}/import-set/{legoSetId}
+        /// POST /api/collection/{id}/import-set/{setNumber}
         ///
         /// Imports all parts from a LEGO set into a collection.
+        /// Accepts the Rebrickable-style set number (e.g. "10179-1") rather than database ID.
         /// For each LegoSetPart, creates or increments a UserCollectionPart entry,
         /// and creates a UserCollectionSetImport record.
         /// </summary>
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-        [Route("api/collection/{id}/import-set/{legoSetId}")]
-        public async Task<IActionResult> ImportSet(int id, int legoSetId, int quantity = 1, CancellationToken cancellationToken = default)
+        [Route("api/collection/{id}/import-set/{setNumber}")]
+        public async Task<IActionResult> ImportSet(int id, string setNumber, int quantity = 1, CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
                 await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
@@ -492,15 +507,17 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             //
-            // Verify the LEGO set exists
+            // Look up the LEGO set by set number
             //
-            bool setExists = await _context.LegoSets
-                .AnyAsync(s => s.id == legoSetId && s.active == true && s.deleted == false, cancellationToken);
+            LegoSet legoSet = await _context.LegoSets
+                .FirstOrDefaultAsync(s => s.setNumber == setNumber && s.active == true && s.deleted == false, cancellationToken);
 
-            if (!setExists)
+            if (legoSet == null)
             {
-                return NotFound("LEGO set not found.");
+                return NotFound($"LEGO set '{setNumber}' not found.");
             }
+
+            int legoSetId = legoSet.id;
 
             //
             // Load the set's parts inventory
@@ -633,6 +650,11 @@ namespace Foundation.BMC.Controllers.WebAPI
                     i.legoSetId,
                     setName = i.legoSet.name,
                     setNumber = i.legoSet.setNumber,
+                    imageUrl = i.legoSet.imageUrl,
+                    year = i.legoSet.year,
+                    partCount = i.legoSet.partCount,
+                    themeName = i.legoSet.legoTheme != null ? i.legoSet.legoTheme.name : null,
+                    rebrickableUrl = i.legoSet.rebrickableUrl,
                     i.quantity,
                     i.importedDate
                 })
@@ -698,6 +720,52 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .ToListAsync(cancellationToken);
 
             return Ok(wishlist);
+        }
+
+
+        /// <summary>
+        /// GET /api/collection/search-sets?q=
+        ///
+        /// Searches LEGO sets by set number or name for the import modal typeahead.
+        /// Returns top 10 matches with image, year, theme, and part count.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/collection/search-sets")]
+        public async Task<IActionResult> SearchSets(string q, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            {
+                return Ok(new List<SetSearchResultDto>());
+            }
+
+            string searchTerm = q.Trim().ToLower();
+
+            var results = await _context.LegoSets
+                .Where(s => s.active == true && s.deleted == false &&
+                    (s.setNumber.ToLower().Contains(searchTerm) || s.name.ToLower().Contains(searchTerm)))
+                .OrderByDescending(s => s.setNumber.ToLower().StartsWith(searchTerm))  // Exact set number matches first
+                .ThenByDescending(s => s.partCount)  // Larger / more notable sets next
+                .Take(10)
+                .Select(s => new SetSearchResultDto
+                {
+                    id = s.id,
+                    name = s.name,
+                    setNumber = s.setNumber,
+                    imageUrl = s.imageUrl,
+                    year = s.year,
+                    partCount = s.partCount,
+                    themeName = s.legoTheme != null ? s.legoTheme.name : null
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            return Ok(results);
         }
     }
 }

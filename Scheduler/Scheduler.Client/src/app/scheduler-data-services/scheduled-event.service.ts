@@ -53,12 +53,12 @@ export class ScheduledEventQueryParameters {
     schedulingTargetId: bigint | number | null | undefined = null;
     timeZoneId: bigint | number | null | undefined = null;
     parentScheduledEventId: bigint | number | null | undefined = null;
-    recurrenceInstanceDate: string | null | undefined = null;        // ISO 8601
+    recurrenceInstanceDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     isAllDay: boolean | null | undefined = null;
-    startDateTime: string | null | undefined = null;        // ISO 8601
-    endDateTime: string | null | undefined = null;        // ISO 8601
+    startDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    endDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     location: string | null | undefined = null;
     eventStatusId: bigint | number | null | undefined = null;
     resourceId: bigint | number | null | undefined = null;
@@ -93,12 +93,12 @@ export class ScheduledEventSubmitData {
     schedulingTargetId: bigint | number | null = null;
     timeZoneId: bigint | number | null = null;
     parentScheduledEventId: bigint | number | null = null;
-    recurrenceInstanceDate: string | null = null;     // ISO 8601
+    recurrenceInstanceDate: string | null = null;     // ISO 8601 (full datetime)
     name!: string;
     description: string | null = null;
     isAllDay: boolean | null = null;
-    startDateTime!: string;      // ISO 8601
-    endDateTime!: string;      // ISO 8601
+    startDateTime!: string;      // ISO 8601 (full datetime)
+    endDateTime!: string;      // ISO 8601 (full datetime)
     location: string | null = null;
     eventStatusId!: bigint | number;
     resourceId: bigint | number | null = null;
@@ -137,8 +137,8 @@ export interface VersionInformation<T> {
 }
 
 export class ScheduledEventBasicListData {
-    id!: bigint | number;
-    name!: string;
+  id!: bigint | number;
+  name!: string;
 }
 
 
@@ -187,12 +187,12 @@ export class ScheduledEventData {
     schedulingTargetId!: bigint | number;
     timeZoneId!: bigint | number;
     parentScheduledEventId!: bigint | number;
-    recurrenceInstanceDate!: string | null;   // ISO 8601
+    recurrenceInstanceDate!: string | null;   // ISO 8601 (full datetime)
     name!: string;
     description!: string | null;
     isAllDay!: boolean | null;
-    startDateTime!: string;      // ISO 8601
-    endDateTime!: string;      // ISO 8601
+    startDateTime!: string;      // ISO 8601 (full datetime)
+    endDateTime!: string;      // ISO 8601 (full datetime)
     location!: string | null;
     eventStatusId!: bigint | number;
     resourceId!: bigint | number;
@@ -225,48 +225,48 @@ export class ScheduledEventData {
     // Private lazy-loading caches for related collections
     //
     private _scheduledEventChangeHistories: ScheduledEventChangeHistoryData[] | null = null;
-    private _scheduledEventChangeHistoriesPromise: Promise<ScheduledEventChangeHistoryData[]> | null = null;
+    private _scheduledEventChangeHistoriesPromise: Promise<ScheduledEventChangeHistoryData[]> | null  = null;
     private _scheduledEventChangeHistoriesSubject = new BehaviorSubject<ScheduledEventChangeHistoryData[] | null>(null);
 
-
+                
     private _eventCharges: EventChargeData[] | null = null;
-    private _eventChargesPromise: Promise<EventChargeData[]> | null = null;
+    private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
-
+                
     private _contactInteractions: ContactInteractionData[] | null = null;
-    private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null = null;
+    private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
-
+                
     private _eventCalendars: EventCalendarData[] | null = null;
-    private _eventCalendarsPromise: Promise<EventCalendarData[]> | null = null;
+    private _eventCalendarsPromise: Promise<EventCalendarData[]> | null  = null;
     private _eventCalendarsSubject = new BehaviorSubject<EventCalendarData[] | null>(null);
 
-
+                
     private _scheduledEventDependencyPredecessorEvents: ScheduledEventDependencyData[] | null = null;
-    private _scheduledEventDependencyPredecessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null = null;
+    private _scheduledEventDependencyPredecessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
     private _scheduledEventDependencyPredecessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
-
+                    
     private _scheduledEventDependencySuccessorEvents: ScheduledEventDependencyData[] | null = null;
-    private _scheduledEventDependencySuccessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null = null;
+    private _scheduledEventDependencySuccessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
     private _scheduledEventDependencySuccessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
-
+                    
     private _scheduledEventQualificationRequirements: ScheduledEventQualificationRequirementData[] | null = null;
-    private _scheduledEventQualificationRequirementsPromise: Promise<ScheduledEventQualificationRequirementData[]> | null = null;
+    private _scheduledEventQualificationRequirementsPromise: Promise<ScheduledEventQualificationRequirementData[]> | null  = null;
     private _scheduledEventQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventQualificationRequirementData[] | null>(null);
 
-
+                
     private _recurrenceExceptions: RecurrenceExceptionData[] | null = null;
-    private _recurrenceExceptionsPromise: Promise<RecurrenceExceptionData[]> | null = null;
+    private _recurrenceExceptionsPromise: Promise<RecurrenceExceptionData[]> | null  = null;
     private _recurrenceExceptionsSubject = new BehaviorSubject<RecurrenceExceptionData[] | null>(null);
 
-
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
-    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null = null;
+    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
-
+                
 
 
     //
@@ -287,18 +287,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._scheduledEventChangeHistories === null && this._scheduledEventChangeHistoriesPromise === null) {
-                this.loadScheduledEventChangeHistories(); // Private method to start fetch
-            }
+          if (this._scheduledEventChangeHistories === null && this._scheduledEventChangeHistoriesPromise === null) {
+            this.loadScheduledEventChangeHistories(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -307,18 +306,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._eventCharges === null && this._eventChargesPromise === null) {
-                this.loadEventCharges(); // Private method to start fetch
-            }
+          if (this._eventCharges === null && this._eventChargesPromise === null) {
+            this.loadEventCharges(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -327,18 +325,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._contactInteractions === null && this._contactInteractionsPromise === null) {
-                this.loadContactInteractions(); // Private method to start fetch
-            }
+          if (this._contactInteractions === null && this._contactInteractionsPromise === null) {
+            this.loadContactInteractions(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -347,18 +344,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._eventCalendars === null && this._eventCalendarsPromise === null) {
-                this.loadEventCalendars(); // Private method to start fetch
-            }
+          if (this._eventCalendars === null && this._eventCalendarsPromise === null) {
+            this.loadEventCalendars(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -367,18 +363,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._scheduledEventDependencyPredecessorEvents === null && this._scheduledEventDependencyPredecessorEventsPromise === null) {
-                this.loadScheduledEventDependencyPredecessorEvents(); // Private method to start fetch
-            }
+          if (this._scheduledEventDependencyPredecessorEvents === null && this._scheduledEventDependencyPredecessorEventsPromise === null) {
+            this.loadScheduledEventDependencyPredecessorEvents(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ScheduledEventDependencyPredecessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({
-        predecessorEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public ScheduledEventDependencyPredecessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({predecessorEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -386,18 +381,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._scheduledEventDependencySuccessorEvents === null && this._scheduledEventDependencySuccessorEventsPromise === null) {
-                this.loadScheduledEventDependencySuccessorEvents(); // Private method to start fetch
-            }
+          if (this._scheduledEventDependencySuccessorEvents === null && this._scheduledEventDependencySuccessorEventsPromise === null) {
+            this.loadScheduledEventDependencySuccessorEvents(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ScheduledEventDependencySuccessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({
-        successorEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public ScheduledEventDependencySuccessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({successorEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -405,18 +399,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._scheduledEventQualificationRequirements === null && this._scheduledEventQualificationRequirementsPromise === null) {
-                this.loadScheduledEventQualificationRequirements(); // Private method to start fetch
-            }
+          if (this._scheduledEventQualificationRequirements === null && this._scheduledEventQualificationRequirementsPromise === null) {
+            this.loadScheduledEventQualificationRequirements(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -425,18 +418,17 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._recurrenceExceptions === null && this._recurrenceExceptionsPromise === null) {
-                this.loadRecurrenceExceptions(); // Private method to start fetch
-            }
+          if (this._recurrenceExceptions === null && this._recurrenceExceptionsPromise === null) {
+            this.loadRecurrenceExceptions(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -445,100 +437,99 @@ export class ScheduledEventData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
-                this.loadEventResourceAssignments(); // Private method to start fetch
-            }
+          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
+            this.loadEventResourceAssignments(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({
-        scheduledEventId: this.id,
-        active: true,
-        deleted: false
+  
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({scheduledEventId: this.id,
+      active: true,
+      deleted: false
     });
 
 
 
 
-    //
-    // Full reload — refreshes the entire object and clears all lazy caches 
-    //
-    // Promise based reload method to allow rebuilding of any ScheduledEventData object with all of it's relations on demand.  Useful for navigating into nav property
-    // objects and getting full state after put or post that may not have returned all nav properties.
-    //
-    // Usage examples:;
-    //
-    //  Async:
-    //   await this.scheduledEvent.Reload();
-    //
-    //  Non Async:
-    //
-    //     scheduledEvent[0].Reload().then(x => {
-    //        this.scheduledEvent = x;
-    //    });
-    //
-    public async Reload(includeRelations: boolean = true): Promise<this> {
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any ScheduledEventData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.scheduledEvent.Reload();
+  //
+  //  Non Async:
+  //
+  //     scheduledEvent[0].Reload().then(x => {
+  //        this.scheduledEvent = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
 
-        const fresh = await lastValueFrom(
-            ScheduledEventService.Instance.GetScheduledEvent(this.id, includeRelations)
-        );
+    const fresh = await lastValueFrom(
+      ScheduledEventService.Instance.GetScheduledEvent(this.id, includeRelations)
+    );
 
-        // Merge fresh data into this instance (preserves reference)
-        this.UpdateFrom(fresh as this);
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
 
-        // Clear all lazy caches to force re-load on next access
-        this.clearAllLazyCaches();
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
 
-        return this;
-    }
+    return this;
+  }
 
 
-    private clearAllLazyCaches(): void {
-        //
-        // Reset every collection cache and notify subscribers
-        //
-        this._scheduledEventChangeHistories = null;
-        this._scheduledEventChangeHistoriesPromise = null;
-        this._scheduledEventChangeHistoriesSubject.next(null);
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._scheduledEventChangeHistories = null;
+     this._scheduledEventChangeHistoriesPromise = null;
+     this._scheduledEventChangeHistoriesSubject.next(null);
 
-        this._eventCharges = null;
-        this._eventChargesPromise = null;
-        this._eventChargesSubject.next(null);
+     this._eventCharges = null;
+     this._eventChargesPromise = null;
+     this._eventChargesSubject.next(null);
 
-        this._contactInteractions = null;
-        this._contactInteractionsPromise = null;
-        this._contactInteractionsSubject.next(null);
+     this._contactInteractions = null;
+     this._contactInteractionsPromise = null;
+     this._contactInteractionsSubject.next(null);
 
-        this._eventCalendars = null;
-        this._eventCalendarsPromise = null;
-        this._eventCalendarsSubject.next(null);
+     this._eventCalendars = null;
+     this._eventCalendarsPromise = null;
+     this._eventCalendarsSubject.next(null);
 
-        this._scheduledEventDependencyPredecessorEvents = null;
-        this._scheduledEventDependencyPredecessorEventsPromise = null;
-        this._scheduledEventDependencyPredecessorEventsSubject.next(null);
+     this._scheduledEventDependencyPredecessorEvents = null;
+     this._scheduledEventDependencyPredecessorEventsPromise = null;
+     this._scheduledEventDependencyPredecessorEventsSubject.next(null);
 
-        this._scheduledEventDependencySuccessorEvents = null;
-        this._scheduledEventDependencySuccessorEventsPromise = null;
-        this._scheduledEventDependencySuccessorEventsSubject.next(null);
+     this._scheduledEventDependencySuccessorEvents = null;
+     this._scheduledEventDependencySuccessorEventsPromise = null;
+     this._scheduledEventDependencySuccessorEventsSubject.next(null);
 
-        this._scheduledEventQualificationRequirements = null;
-        this._scheduledEventQualificationRequirementsPromise = null;
-        this._scheduledEventQualificationRequirementsSubject.next(null);
+     this._scheduledEventQualificationRequirements = null;
+     this._scheduledEventQualificationRequirementsPromise = null;
+     this._scheduledEventQualificationRequirementsSubject.next(null);
 
-        this._recurrenceExceptions = null;
-        this._recurrenceExceptionsPromise = null;
-        this._recurrenceExceptionsSubject.next(null);
+     this._recurrenceExceptions = null;
+     this._recurrenceExceptionsPromise = null;
+     this._recurrenceExceptionsSubject.next(null);
 
-        this._eventResourceAssignments = null;
-        this._eventResourceAssignmentsPromise = null;
-        this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignments = null;
+     this._eventResourceAssignmentsPromise = null;
+     this._eventResourceAssignmentsSubject.next(null);
 
-        this._currentVersionInfo = null;
-        this._currentVersionInfoPromise = null;
-        this._currentVersionInfoSubject.next(null);
-    }
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
+  }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -580,19 +571,19 @@ export class ScheduledEventData {
         this._scheduledEventChangeHistoriesPromise = lastValueFrom(
             ScheduledEventService.Instance.GetScheduledEventChangeHistoriesForScheduledEvent(this.id)
         )
-            .then(ScheduledEventChangeHistories => {
-                this._scheduledEventChangeHistories = ScheduledEventChangeHistories ?? [];
-                this._scheduledEventChangeHistoriesSubject.next(this._scheduledEventChangeHistories);
-                return this._scheduledEventChangeHistories;
-            })
-            .catch(err => {
-                this._scheduledEventChangeHistories = [];
-                this._scheduledEventChangeHistoriesSubject.next(this._scheduledEventChangeHistories);
-                throw err;
-            })
-            .finally(() => {
-                this._scheduledEventChangeHistoriesPromise = null; // Allow retry if needed
-            });
+        .then(ScheduledEventChangeHistories => {
+            this._scheduledEventChangeHistories = ScheduledEventChangeHistories ?? [];
+            this._scheduledEventChangeHistoriesSubject.next(this._scheduledEventChangeHistories);
+            return this._scheduledEventChangeHistories;
+         })
+        .catch(err => {
+            this._scheduledEventChangeHistories = [];
+            this._scheduledEventChangeHistoriesSubject.next(this._scheduledEventChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._scheduledEventChangeHistoriesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -645,19 +636,19 @@ export class ScheduledEventData {
         this._eventChargesPromise = lastValueFrom(
             ScheduledEventService.Instance.GetEventChargesForScheduledEvent(this.id)
         )
-            .then(EventCharges => {
-                this._eventCharges = EventCharges ?? [];
-                this._eventChargesSubject.next(this._eventCharges);
-                return this._eventCharges;
-            })
-            .catch(err => {
-                this._eventCharges = [];
-                this._eventChargesSubject.next(this._eventCharges);
-                throw err;
-            })
-            .finally(() => {
-                this._eventChargesPromise = null; // Allow retry if needed
-            });
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
+            this._eventChargesSubject.next(this._eventCharges);
+            return this._eventCharges;
+         })
+        .catch(err => {
+            this._eventCharges = [];
+            this._eventChargesSubject.next(this._eventCharges);
+            throw err;
+        })
+        .finally(() => {
+            this._eventChargesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -710,19 +701,19 @@ export class ScheduledEventData {
         this._contactInteractionsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetContactInteractionsForScheduledEvent(this.id)
         )
-            .then(ContactInteractions => {
-                this._contactInteractions = ContactInteractions ?? [];
-                this._contactInteractionsSubject.next(this._contactInteractions);
-                return this._contactInteractions;
-            })
-            .catch(err => {
-                this._contactInteractions = [];
-                this._contactInteractionsSubject.next(this._contactInteractions);
-                throw err;
-            })
-            .finally(() => {
-                this._contactInteractionsPromise = null; // Allow retry if needed
-            });
+        .then(ContactInteractions => {
+            this._contactInteractions = ContactInteractions ?? [];
+            this._contactInteractionsSubject.next(this._contactInteractions);
+            return this._contactInteractions;
+         })
+        .catch(err => {
+            this._contactInteractions = [];
+            this._contactInteractionsSubject.next(this._contactInteractions);
+            throw err;
+        })
+        .finally(() => {
+            this._contactInteractionsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -775,19 +766,19 @@ export class ScheduledEventData {
         this._eventCalendarsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetEventCalendarsForScheduledEvent(this.id)
         )
-            .then(EventCalendars => {
-                this._eventCalendars = EventCalendars ?? [];
-                this._eventCalendarsSubject.next(this._eventCalendars);
-                return this._eventCalendars;
-            })
-            .catch(err => {
-                this._eventCalendars = [];
-                this._eventCalendarsSubject.next(this._eventCalendars);
-                throw err;
-            })
-            .finally(() => {
-                this._eventCalendarsPromise = null; // Allow retry if needed
-            });
+        .then(EventCalendars => {
+            this._eventCalendars = EventCalendars ?? [];
+            this._eventCalendarsSubject.next(this._eventCalendars);
+            return this._eventCalendars;
+         })
+        .catch(err => {
+            this._eventCalendars = [];
+            this._eventCalendarsSubject.next(this._eventCalendars);
+            throw err;
+        })
+        .finally(() => {
+            this._eventCalendarsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -840,19 +831,19 @@ export class ScheduledEventData {
         this._scheduledEventDependencyPredecessorEventsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetScheduledEventDependencyPredecessorEventsForScheduledEvent(this.id)
         )
-            .then(ScheduledEventDependencyPredecessorEvents => {
-                this._scheduledEventDependencyPredecessorEvents = ScheduledEventDependencyPredecessorEvents ?? [];
-                this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);
-                return this._scheduledEventDependencyPredecessorEvents;
-            })
-            .catch(err => {
-                this._scheduledEventDependencyPredecessorEvents = [];
-                this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);
-                throw err;
-            })
-            .finally(() => {
-                this._scheduledEventDependencyPredecessorEventsPromise = null; // Allow retry if needed
-            });
+        .then(ScheduledEventDependencyPredecessorEvents => {
+            this._scheduledEventDependencyPredecessorEvents = ScheduledEventDependencyPredecessorEvents ?? [];
+            this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);
+            return this._scheduledEventDependencyPredecessorEvents;
+         })
+        .catch(err => {
+            this._scheduledEventDependencyPredecessorEvents = [];
+            this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);
+            throw err;
+        })
+        .finally(() => {
+            this._scheduledEventDependencyPredecessorEventsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -905,19 +896,19 @@ export class ScheduledEventData {
         this._scheduledEventDependencySuccessorEventsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetScheduledEventDependencySuccessorEventsForScheduledEvent(this.id)
         )
-            .then(ScheduledEventDependencySuccessorEvents => {
-                this._scheduledEventDependencySuccessorEvents = ScheduledEventDependencySuccessorEvents ?? [];
-                this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);
-                return this._scheduledEventDependencySuccessorEvents;
-            })
-            .catch(err => {
-                this._scheduledEventDependencySuccessorEvents = [];
-                this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);
-                throw err;
-            })
-            .finally(() => {
-                this._scheduledEventDependencySuccessorEventsPromise = null; // Allow retry if needed
-            });
+        .then(ScheduledEventDependencySuccessorEvents => {
+            this._scheduledEventDependencySuccessorEvents = ScheduledEventDependencySuccessorEvents ?? [];
+            this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);
+            return this._scheduledEventDependencySuccessorEvents;
+         })
+        .catch(err => {
+            this._scheduledEventDependencySuccessorEvents = [];
+            this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);
+            throw err;
+        })
+        .finally(() => {
+            this._scheduledEventDependencySuccessorEventsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -970,19 +961,19 @@ export class ScheduledEventData {
         this._scheduledEventQualificationRequirementsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetScheduledEventQualificationRequirementsForScheduledEvent(this.id)
         )
-            .then(ScheduledEventQualificationRequirements => {
-                this._scheduledEventQualificationRequirements = ScheduledEventQualificationRequirements ?? [];
-                this._scheduledEventQualificationRequirementsSubject.next(this._scheduledEventQualificationRequirements);
-                return this._scheduledEventQualificationRequirements;
-            })
-            .catch(err => {
-                this._scheduledEventQualificationRequirements = [];
-                this._scheduledEventQualificationRequirementsSubject.next(this._scheduledEventQualificationRequirements);
-                throw err;
-            })
-            .finally(() => {
-                this._scheduledEventQualificationRequirementsPromise = null; // Allow retry if needed
-            });
+        .then(ScheduledEventQualificationRequirements => {
+            this._scheduledEventQualificationRequirements = ScheduledEventQualificationRequirements ?? [];
+            this._scheduledEventQualificationRequirementsSubject.next(this._scheduledEventQualificationRequirements);
+            return this._scheduledEventQualificationRequirements;
+         })
+        .catch(err => {
+            this._scheduledEventQualificationRequirements = [];
+            this._scheduledEventQualificationRequirementsSubject.next(this._scheduledEventQualificationRequirements);
+            throw err;
+        })
+        .finally(() => {
+            this._scheduledEventQualificationRequirementsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1035,19 +1026,19 @@ export class ScheduledEventData {
         this._recurrenceExceptionsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetRecurrenceExceptionsForScheduledEvent(this.id)
         )
-            .then(RecurrenceExceptions => {
-                this._recurrenceExceptions = RecurrenceExceptions ?? [];
-                this._recurrenceExceptionsSubject.next(this._recurrenceExceptions);
-                return this._recurrenceExceptions;
-            })
-            .catch(err => {
-                this._recurrenceExceptions = [];
-                this._recurrenceExceptionsSubject.next(this._recurrenceExceptions);
-                throw err;
-            })
-            .finally(() => {
-                this._recurrenceExceptionsPromise = null; // Allow retry if needed
-            });
+        .then(RecurrenceExceptions => {
+            this._recurrenceExceptions = RecurrenceExceptions ?? [];
+            this._recurrenceExceptionsSubject.next(this._recurrenceExceptions);
+            return this._recurrenceExceptions;
+         })
+        .catch(err => {
+            this._recurrenceExceptions = [];
+            this._recurrenceExceptionsSubject.next(this._recurrenceExceptions);
+            throw err;
+        })
+        .finally(() => {
+            this._recurrenceExceptionsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1100,19 +1091,19 @@ export class ScheduledEventData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetEventResourceAssignmentsForScheduledEvent(this.id)
         )
-            .then(EventResourceAssignments => {
-                this._eventResourceAssignments = EventResourceAssignments ?? [];
-                this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-                return this._eventResourceAssignments;
-            })
-            .catch(err => {
-                this._eventResourceAssignments = [];
-                this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-                throw err;
-            })
-            .finally(() => {
-                this._eventResourceAssignmentsPromise = null; // Allow retry if needed
-            });
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            return this._eventResourceAssignments;
+         })
+        .catch(err => {
+            this._eventResourceAssignments = [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            throw err;
+        })
+        .finally(() => {
+            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1192,7 +1183,7 @@ export class ScheduledEventData {
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class ScheduledEventService extends SecureEndpointBase {
 
@@ -1227,7 +1218,7 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
     public static get Instance(): ScheduledEventService {
-        return ScheduledEventService._instance;
+      return ScheduledEventService._instance;
     }
 
 
@@ -1236,7 +1227,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-            this.listCache.delete(configHash);
+          this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -1303,7 +1294,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         return output;
     }
 
-    public GetScheduledEvent(id: bigint | number, includeRelations: boolean = true): Observable<ScheduledEventData> {
+    public GetScheduledEvent(id: bigint | number, includeRelations: boolean = true) : Observable<ScheduledEventData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -1313,7 +1304,7 @@ export class ScheduledEventService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get ScheduledEvent", error);
 
                     return throwError(() => error);
@@ -1328,7 +1319,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<ScheduledEventData>;
     }
 
-    private requestScheduledEvent(id: bigint | number, includeRelations: boolean = true): Observable<ScheduledEventData> {
+    private requestScheduledEvent(id: bigint | number, includeRelations: boolean = true) : Observable<ScheduledEventData> {
 
         let queryParams = new HttpParams();
 
@@ -1336,17 +1327,16 @@ export class ScheduledEventService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent/' + id.toString(), {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(raw => this.ReviveScheduledEvent(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestScheduledEvent(id, includeRelations));
             }));
     }
 
-    public GetScheduledEventList(config: ScheduledEventQueryParameters | any = null): Observable<Array<ScheduledEventData>> {
+    public GetScheduledEventList(config: ScheduledEventQueryParameters | any = null) : Observable<Array<ScheduledEventData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1371,7 +1361,7 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    private requestScheduledEventList(config: ScheduledEventQueryParameters | any): Observable<Array<ScheduledEventData>> {
+    private requestScheduledEventList(config: ScheduledEventQueryParameters | any) : Observable <Array<ScheduledEventData>> {
 
         let queryParams = new HttpParams();
 
@@ -1386,21 +1376,16 @@ export class ScheduledEventService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ScheduledEventData>>(this.baseUrl + 'api/ScheduledEvents', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<Array<ScheduledEventData>>(this.baseUrl + 'api/ScheduledEvents', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveScheduledEventList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestScheduledEventList(config));
             }));
     }
 
-
-
-
-    public GetScheduledEventsRowCount(config: ScheduledEventQueryParameters | any = null): Observable<bigint | number> {
-
+    public GetScheduledEventsRowCount(config: ScheduledEventQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1409,7 +1394,7 @@ export class ScheduledEventService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get ScheduledEvents row count", error);
 
                     return throwError(() => error);
@@ -1424,7 +1409,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestScheduledEventsRowCount(config: ScheduledEventQueryParameters | any): Observable<bigint | number> {
+    private requestScheduledEventsRowCount(config: ScheduledEventQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -1445,7 +1430,7 @@ export class ScheduledEventService extends SecureEndpointBase {
             }));
     }
 
-    public GetScheduledEventsBasicListData(config: ScheduledEventQueryParameters | any = null): Observable<Array<ScheduledEventBasicListData>> {
+    public GetScheduledEventsBasicListData(config: ScheduledEventQueryParameters | any = null) : Observable<Array<ScheduledEventBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1460,7 +1445,7 @@ export class ScheduledEventService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-
+      
             this.basicListDataCache.set(configHash, scheduledEventsBasicListData$);
 
             return scheduledEventsBasicListData$;
@@ -1470,7 +1455,7 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    private requestScheduledEventsBasicListData(config: ScheduledEventQueryParameters | any): Observable<Array<ScheduledEventBasicListData>> {
+    private requestScheduledEventsBasicListData(config: ScheduledEventQueryParameters | any) : Observable<Array<ScheduledEventBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -1493,11 +1478,11 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    public PutScheduledEvent(id: bigint | number, scheduledEvent: ScheduledEventSubmitData): Observable<ScheduledEventData> {
+    public PutScheduledEvent(id: bigint | number, scheduledEvent: ScheduledEventSubmitData) : Observable<ScheduledEventData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent/' + id.toString(), scheduledEvent, { headers: authenticationHeaders }).pipe(
+        return this.http.put<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent/' + id.toString(), scheduledEvent, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveScheduledEvent(raw)),
             catchError(error => {
@@ -1506,31 +1491,31 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    public PostScheduledEvent(scheduledEvent: ScheduledEventSubmitData): Observable<ScheduledEventData> {
+    public PostScheduledEvent(scheduledEvent: ScheduledEventSubmitData) : Observable<ScheduledEventData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent', scheduledEvent, { headers: authenticationHeaders }).pipe(
+        return this.http.post<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent', scheduledEvent, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveScheduledEvent(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PostScheduledEvent(scheduledEvent));
+              return this.handleError(error, () => this.PostScheduledEvent(scheduledEvent));
             }));
     }
 
-
-    public DeleteScheduledEvent(id: bigint | number): Observable<any> {
+  
+    public DeleteScheduledEvent(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/ScheduledEvent/' + id.toString(), { headers: authenticationHeaders }).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/ScheduledEvent/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteScheduledEvent(id));
             }));
     }
 
-    public RollbackScheduledEvent(id: bigint | number, versionNumber: bigint | number): Observable<ScheduledEventData> {
+    public RollbackScheduledEvent(id: bigint | number, versionNumber: bigint | number) : Observable<ScheduledEventData>{
 
         let queryParams = new HttpParams();
 
@@ -1544,7 +1529,7 @@ export class ScheduledEventService extends SecureEndpointBase {
             map(raw => this.ReviveScheduledEvent(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.RollbackScheduledEvent(id, versionNumber));
-            }));
+        }));
     }
 
 
@@ -1691,13 +1676,13 @@ export class ScheduledEventService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to Scheduler.ScheduledEvents
         //
         if (userIsSchedulerScheduledEventWriter == true) {
-            let user = this.authService.currentUser;
+          let user = this.authService.currentUser;
 
-            if (user != null) {
-                userIsSchedulerScheduledEventWriter = user.writePermission >= 1;
-            } else {
-                userIsSchedulerScheduledEventWriter = false;
-            }
+          if (user != null) {
+            userIsSchedulerScheduledEventWriter = user.writePermission >= 1;
+          } else {
+            userIsSchedulerScheduledEventWriter = false;
+          }      
         }
 
         return userIsSchedulerScheduledEventWriter;
@@ -1793,270 +1778,261 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    /**
-      *
-      * Revives a plain object from the server into a full ScheduledEventData instance.
-      *
-      * This is critical for the lazy-loading pattern to work correctly.
-      *
-      * When the server returns JSON, it is a plain object with no prototype methods
-      * or observable properties. This method:
-      * 1. Re-attaches the ScheduledEventData prototype
-      * 2. Copies all properties from the raw object
-      * 3. Re-initializes all private caches and BehaviorSubjects
-      * 4. Re-creates all public observable properties ($ suffixed) with their
-      *    original tap() triggers that initiate lazy loading on first subscription
-      *
-      * Without this, revived objects would not trigger loads when ScheduledEventTags$ etc.
-      * are subscribed to in templates.
-      *
-      */
-    public ReviveScheduledEvent(raw: any): ScheduledEventData {
-        if (!raw) return raw;
+ /**
+   *
+   * Revives a plain object from the server into a full ScheduledEventData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the ScheduledEventData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when ScheduledEventTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveScheduledEvent(raw: any): ScheduledEventData {
+    if (!raw) return raw;
 
-        //
-        // Create a ScheduledEventData object instance with correct prototype
-        //
-        const revived = Object.create(ScheduledEventData.prototype) as ScheduledEventData;
+    //
+    // Create a ScheduledEventData object instance with correct prototype
+    //
+    const revived = Object.create(ScheduledEventData.prototype) as ScheduledEventData;
 
-        //
-        // Copy all raw properties
-        //
-        Object.assign(revived, raw);
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
 
-        //
-        // Explicitly initialize all private caches
-        // This ensures the getters work correctly on revived objects
-        //
-        (revived as any)._scheduledEvents = null;
-        (revived as any)._scheduledEventsPromise = null;
-        (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._scheduledEvents = null;
+    (revived as any)._scheduledEventsPromise = null;
+    (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
-        (revived as any)._scheduledEventChangeHistories = null;
-        (revived as any)._scheduledEventChangeHistoriesPromise = null;
-        (revived as any)._scheduledEventChangeHistoriesSubject = new BehaviorSubject<ScheduledEventChangeHistoryData[] | null>(null);
+    (revived as any)._scheduledEventChangeHistories = null;
+    (revived as any)._scheduledEventChangeHistoriesPromise = null;
+    (revived as any)._scheduledEventChangeHistoriesSubject = new BehaviorSubject<ScheduledEventChangeHistoryData[] | null>(null);
 
-        (revived as any)._eventCharges = null;
-        (revived as any)._eventChargesPromise = null;
-        (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
+    (revived as any)._eventCharges = null;
+    (revived as any)._eventChargesPromise = null;
+    (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
-        (revived as any)._contactInteractions = null;
-        (revived as any)._contactInteractionsPromise = null;
-        (revived as any)._contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
+    (revived as any)._contactInteractions = null;
+    (revived as any)._contactInteractionsPromise = null;
+    (revived as any)._contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
-        (revived as any)._eventCalendars = null;
-        (revived as any)._eventCalendarsPromise = null;
-        (revived as any)._eventCalendarsSubject = new BehaviorSubject<EventCalendarData[] | null>(null);
+    (revived as any)._eventCalendars = null;
+    (revived as any)._eventCalendarsPromise = null;
+    (revived as any)._eventCalendarsSubject = new BehaviorSubject<EventCalendarData[] | null>(null);
 
-        (revived as any)._scheduledEventDependencies = null;
-        (revived as any)._scheduledEventDependenciesPromise = null;
-        (revived as any)._scheduledEventDependenciesSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
+    (revived as any)._scheduledEventDependencies = null;
+    (revived as any)._scheduledEventDependenciesPromise = null;
+    (revived as any)._scheduledEventDependenciesSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
 
-        (revived as any)._scheduledEventQualificationRequirements = null;
-        (revived as any)._scheduledEventQualificationRequirementsPromise = null;
-        (revived as any)._scheduledEventQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventQualificationRequirementData[] | null>(null);
+    (revived as any)._scheduledEventQualificationRequirements = null;
+    (revived as any)._scheduledEventQualificationRequirementsPromise = null;
+    (revived as any)._scheduledEventQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventQualificationRequirementData[] | null>(null);
 
-        (revived as any)._recurrenceExceptions = null;
-        (revived as any)._recurrenceExceptionsPromise = null;
-        (revived as any)._recurrenceExceptionsSubject = new BehaviorSubject<RecurrenceExceptionData[] | null>(null);
+    (revived as any)._recurrenceExceptions = null;
+    (revived as any)._recurrenceExceptionsPromise = null;
+    (revived as any)._recurrenceExceptionsSubject = new BehaviorSubject<RecurrenceExceptionData[] | null>(null);
 
-        (revived as any)._eventResourceAssignments = null;
-        (revived as any)._eventResourceAssignmentsPromise = null;
-        (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
-
-
-        //
-        // Re-attach ALL public observables with their lazy-load tap() triggers
-        // This mirrors the original class definition exactly
-        //
-        //
-        // Re-create all public observables with their lazy-load triggers
-        // We use 'as any' because:
-        // 1. The revived object has the correct prototype
-        // 2. But private methods (loadScheduledEventXYZ, etc.) are not accessible via the typed variable
-        // 3. This is a controlled revival context — safe and necessary
-        //
-        (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._scheduledEvents === null && (revived as any)._scheduledEventsPromise === null) {
-                    (revived as any).loadScheduledEvents();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any)._eventResourceAssignments = null;
+    (revived as any)._eventResourceAssignmentsPromise = null;
+    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
 
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadScheduledEventXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduledEvents === null && (revived as any)._scheduledEventsPromise === null) {
+                (revived as any).loadScheduledEvents();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).ScheduledEventChangeHistories$ = (revived as any)._scheduledEventChangeHistoriesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._scheduledEventChangeHistories === null && (revived as any)._scheduledEventChangeHistoriesPromise === null) {
-                    (revived as any).loadScheduledEventChangeHistories();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._eventCharges === null && (revived as any)._eventChargesPromise === null) {
-                    (revived as any).loadEventCharges();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).ScheduledEventChangeHistories$ = (revived as any)._scheduledEventChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduledEventChangeHistories === null && (revived as any)._scheduledEventChangeHistoriesPromise === null) {
+                (revived as any).loadScheduledEventChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._contactInteractions === null && (revived as any)._contactInteractionsPromise === null) {
-                    (revived as any).loadContactInteractions();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).EventCalendars$ = (revived as any)._eventCalendarsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._eventCalendars === null && (revived as any)._eventCalendarsPromise === null) {
-                    (revived as any).loadEventCalendars();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventCharges === null && (revived as any)._eventChargesPromise === null) {
+                (revived as any).loadEventCharges();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ScheduledEventDependencies$ = (revived as any)._scheduledEventDependenciesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._scheduledEventDependencies === null && (revived as any)._scheduledEventDependenciesPromise === null) {
-                    (revived as any).loadScheduledEventDependencies();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ScheduledEventDependenciesCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).ScheduledEventQualificationRequirements$ = (revived as any)._scheduledEventQualificationRequirementsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._scheduledEventQualificationRequirements === null && (revived as any)._scheduledEventQualificationRequirementsPromise === null) {
-                    (revived as any).loadScheduledEventQualificationRequirements();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._contactInteractions === null && (revived as any)._contactInteractionsPromise === null) {
+                (revived as any).loadContactInteractions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).RecurrenceExceptions$ = (revived as any)._recurrenceExceptionsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._recurrenceExceptions === null && (revived as any)._recurrenceExceptionsPromise === null) {
-                    (revived as any).loadRecurrenceExceptions();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
-                    (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).EventCalendars$ = (revived as any)._eventCalendarsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventCalendars === null && (revived as any)._eventCalendarsPromise === null) {
+                (revived as any).loadEventCalendars();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({
-            scheduledEventId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ScheduledEventDependencies$ = (revived as any)._scheduledEventDependenciesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduledEventDependencies === null && (revived as any)._scheduledEventDependenciesPromise === null) {
+                (revived as any).loadScheduledEventDependencies();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ScheduledEventDependenciesCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ScheduledEventQualificationRequirements$ = (revived as any)._scheduledEventQualificationRequirementsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduledEventQualificationRequirements === null && (revived as any)._scheduledEventQualificationRequirementsPromise === null) {
+                (revived as any).loadScheduledEventQualificationRequirements();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).RecurrenceExceptions$ = (revived as any)._recurrenceExceptionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._recurrenceExceptions === null && (revived as any)._recurrenceExceptionsPromise === null) {
+                (revived as any).loadRecurrenceExceptions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
+                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({scheduledEventId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
 
-        //
-        // Version history metadata cache and observable
-        //
-        (revived as any)._currentVersionInfo = null;
-        (revived as any)._currentVersionInfoPromise = null;
-        (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ScheduledEventData> | null>(null);
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ScheduledEventData> | null>(null);
 
-        (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
-                    (revived as any).loadCurrentVersionInfo();
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
-        return revived;
+    return revived;
+  }
+
+  private ReviveScheduledEventList(rawList: any[]): ScheduledEventData[] {
+
+    if (!rawList) {
+        return [];
     }
 
-    private ReviveScheduledEventList(rawList: any[]): ScheduledEventData[] {
-
-        if (!rawList) {
-            return [];
-        }
-
-        return rawList.map(raw => this.ReviveScheduledEvent(raw));
-    }
+    return rawList.map(raw => this.ReviveScheduledEvent(raw));
+  }
 
 }

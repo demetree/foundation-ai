@@ -37,9 +37,9 @@ export class PledgeQueryParameters {
     constituentId: bigint | number | null | undefined = null;
     totalAmount: number | null | undefined = null;
     balanceAmount: number | null | undefined = null;
-    pledgeDate: string | null | undefined = null;        // ISO 8601
-    startDate: string | null | undefined = null;        // ISO 8601
-    endDate: string | null | undefined = null;        // ISO 8601
+    pledgeDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    startDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    endDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     recurrenceFrequencyId: bigint | number | null | undefined = null;
     fundId: bigint | number | null | undefined = null;
     campaignId: bigint | number | null | undefined = null;
@@ -66,9 +66,9 @@ export class PledgeSubmitData {
     constituentId!: bigint | number;
     totalAmount!: number;
     balanceAmount!: number;
-    pledgeDate!: string;      // ISO 8601
-    startDate: string | null = null;     // ISO 8601
-    endDate: string | null = null;     // ISO 8601
+    pledgeDate!: string;      // Date only (YYYY-MM-DD)
+    startDate: string | null = null;     // Date only (YYYY-MM-DD)
+    endDate: string | null = null;     // Date only (YYYY-MM-DD)
     recurrenceFrequencyId: bigint | number | null = null;
     fundId!: bigint | number;
     campaignId: bigint | number | null = null;
@@ -149,9 +149,9 @@ export class PledgeData {
     constituentId!: bigint | number;
     totalAmount!: number;
     balanceAmount!: number;
-    pledgeDate!: string;      // ISO 8601
-    startDate!: string | null;   // ISO 8601
-    endDate!: string | null;   // ISO 8601
+    pledgeDate!: string;      // Date only (YYYY-MM-DD)
+    startDate!: string | null;   // Date only (YYYY-MM-DD)
+    endDate!: string | null;   // Date only (YYYY-MM-DD)
     recurrenceFrequencyId!: bigint | number;
     fundId!: bigint | number;
     campaignId!: bigint | number;

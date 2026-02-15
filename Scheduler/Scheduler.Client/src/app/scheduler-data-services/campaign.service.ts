@@ -35,8 +35,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class CampaignQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
-    startDate: string | null | undefined = null;        // ISO 8601
-    endDate: string | null | undefined = null;        // ISO 8601
+    startDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    endDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     fundRaisingGoal: number | null | undefined = null;
     notes: string | null | undefined = null;
     iconId: bigint | number | null | undefined = null;
@@ -59,8 +59,8 @@ export class CampaignSubmitData {
     id!: bigint | number;
     name!: string;
     description: string | null = null;
-    startDate: string | null = null;     // ISO 8601
-    endDate: string | null = null;     // ISO 8601
+    startDate: string | null = null;     // Date only (YYYY-MM-DD)
+    endDate: string | null = null;     // Date only (YYYY-MM-DD)
     fundRaisingGoal: number | null = null;
     notes: string | null = null;
     iconId: bigint | number | null = null;
@@ -137,8 +137,8 @@ export class CampaignData {
     id!: bigint | number;
     name!: string;
     description!: string | null;
-    startDate!: string | null;   // ISO 8601
-    endDate!: string | null;   // ISO 8601
+    startDate!: string | null;   // Date only (YYYY-MM-DD)
+    endDate!: string | null;   // Date only (YYYY-MM-DD)
     fundRaisingGoal!: number | null;
     notes!: string | null;
     iconId!: bigint | number;

@@ -46,7 +46,7 @@ export class EventChargeQueryParameters {
     rateTypeId: bigint | number | null | undefined = null;
     notes: string | null | undefined = null;
     isAutomatic: boolean | null | undefined = null;
-    exportedDate: string | null | undefined = null;        // ISO 8601
+    exportedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     externalId: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -76,7 +76,7 @@ export class EventChargeSubmitData {
     rateTypeId: bigint | number | null = null;
     notes: string | null = null;
     isAutomatic!: boolean;
-    exportedDate: string | null = null;     // ISO 8601
+    exportedDate: string | null = null;     // ISO 8601 (full datetime)
     externalId: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
@@ -160,7 +160,7 @@ export class EventChargeData {
     rateTypeId!: bigint | number;
     notes!: string | null;
     isAutomatic!: boolean;
-    exportedDate!: string | null;   // ISO 8601
+    exportedDate!: string | null;   // ISO 8601 (full datetime)
     externalId!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;

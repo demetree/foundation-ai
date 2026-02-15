@@ -175,11 +175,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			//
 			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
 			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			   );
-			}
+			//if (!string.IsNullOrEmpty(anyStringContains))
+			//{
+			//   query = query.Where(x =>
+			//   );
+			//}
 
 			query = query.AsNoTracking();
 			
@@ -297,11 +297,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			//
 			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
 			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			   );
-			}
+			//if (!string.IsNullOrEmpty(anyStringContains))
+			//{
+			//   query = query.Where(x =>
+			//   );
+			//}
 
 
 			int output = await query.CountAsync(cancellationToken);
@@ -833,11 +833,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			//
 			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
 			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			   );
-			}
+			//if (!string.IsNullOrEmpty(anyStringContains))
+			//{
+			//   query = query.Where(x =>
+			//   );
+			//}
 
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);

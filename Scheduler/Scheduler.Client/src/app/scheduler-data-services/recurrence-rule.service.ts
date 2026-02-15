@@ -32,7 +32,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class RecurrenceRuleQueryParameters {
     recurrenceFrequencyId: bigint | number | null | undefined = null;
     interval: bigint | number | null | undefined = null;
-    untilDateTime: string | null | undefined = null;        // ISO 8601
+    untilDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     count: bigint | number | null | undefined = null;
     dayOfWeekMask: bigint | number | null | undefined = null;
     dayOfMonth: bigint | number | null | undefined = null;
@@ -55,7 +55,7 @@ export class RecurrenceRuleSubmitData {
     id!: bigint | number;
     recurrenceFrequencyId!: bigint | number;
     interval!: bigint | number;
-    untilDateTime: string | null = null;     // ISO 8601
+    untilDateTime: string | null = null;     // ISO 8601 (full datetime)
     count: bigint | number | null = null;
     dayOfWeekMask: bigint | number | null = null;
     dayOfMonth: bigint | number | null = null;
@@ -132,7 +132,7 @@ export class RecurrenceRuleData {
     id!: bigint | number;
     recurrenceFrequencyId!: bigint | number;
     interval!: bigint | number;
-    untilDateTime!: string | null;   // ISO 8601
+    untilDateTime!: string | null;   // ISO 8601 (full datetime)
     count!: bigint | number;
     dayOfWeekMask!: bigint | number;
     dayOfMonth!: bigint | number;

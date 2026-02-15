@@ -32,8 +32,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class ResourceAvailabilityQueryParameters {
     resourceId: bigint | number | null | undefined = null;
     timeZoneId: bigint | number | null | undefined = null;
-    startDateTime: string | null | undefined = null;        // ISO 8601
-    endDateTime: string | null | undefined = null;        // ISO 8601
+    startDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    endDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     reason: string | null | undefined = null;
     notes: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -54,8 +54,8 @@ export class ResourceAvailabilitySubmitData {
     id!: bigint | number;
     resourceId!: bigint | number;
     timeZoneId: bigint | number | null = null;
-    startDateTime!: string;      // ISO 8601
-    endDateTime: string | null = null;     // ISO 8601
+    startDateTime!: string;      // ISO 8601 (full datetime)
+    endDateTime: string | null = null;     // ISO 8601 (full datetime)
     reason: string | null = null;
     notes: string | null = null;
     versionNumber!: bigint | number;
@@ -130,8 +130,8 @@ export class ResourceAvailabilityData {
     id!: bigint | number;
     resourceId!: bigint | number;
     timeZoneId!: bigint | number;
-    startDateTime!: string;      // ISO 8601
-    endDateTime!: string | null;   // ISO 8601
+    startDateTime!: string;      // ISO 8601 (full datetime)
+    endDateTime!: string | null;   // ISO 8601 (full datetime)
     reason!: string | null;
     notes!: string | null;
     versionNumber!: bigint | number;

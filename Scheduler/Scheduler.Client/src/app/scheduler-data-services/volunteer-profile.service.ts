@@ -34,15 +34,15 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class VolunteerProfileQueryParameters {
     resourceId: bigint | number | null | undefined = null;
     volunteerStatusId: bigint | number | null | undefined = null;
-    onboardedDate: string | null | undefined = null;        // ISO 8601
-    inactiveSince: string | null | undefined = null;        // ISO 8601
+    onboardedDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    inactiveSince: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     totalHoursServed: number | null | undefined = null;
-    lastActivityDate: string | null | undefined = null;        // ISO 8601
+    lastActivityDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     backgroundCheckCompleted: boolean | null | undefined = null;
-    backgroundCheckDate: string | null | undefined = null;        // ISO 8601
-    backgroundCheckExpiry: string | null | undefined = null;        // ISO 8601
+    backgroundCheckDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    backgroundCheckExpiry: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     confidentialityAgreementSigned: boolean | null | undefined = null;
-    confidentialityAgreementDate: string | null | undefined = null;        // ISO 8601
+    confidentialityAgreementDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     availabilityPreferences: string | null | undefined = null;
     interestsAndSkillsNotes: string | null | undefined = null;
     emergencyContactNotes: string | null | undefined = null;
@@ -68,15 +68,15 @@ export class VolunteerProfileSubmitData {
     id!: bigint | number;
     resourceId!: bigint | number;
     volunteerStatusId!: bigint | number;
-    onboardedDate: string | null = null;     // ISO 8601
-    inactiveSince: string | null = null;     // ISO 8601
+    onboardedDate: string | null = null;     // Date only (YYYY-MM-DD)
+    inactiveSince: string | null = null;     // Date only (YYYY-MM-DD)
     totalHoursServed: number | null = null;
-    lastActivityDate: string | null = null;     // ISO 8601
+    lastActivityDate: string | null = null;     // Date only (YYYY-MM-DD)
     backgroundCheckCompleted!: boolean;
-    backgroundCheckDate: string | null = null;     // ISO 8601
-    backgroundCheckExpiry: string | null = null;     // ISO 8601
+    backgroundCheckDate: string | null = null;     // Date only (YYYY-MM-DD)
+    backgroundCheckExpiry: string | null = null;     // Date only (YYYY-MM-DD)
     confidentialityAgreementSigned!: boolean;
-    confidentialityAgreementDate: string | null = null;     // ISO 8601
+    confidentialityAgreementDate: string | null = null;     // Date only (YYYY-MM-DD)
     availabilityPreferences: string | null = null;
     interestsAndSkillsNotes: string | null = null;
     emergencyContactNotes: string | null = null;
@@ -84,7 +84,6 @@ export class VolunteerProfileSubmitData {
     iconId: bigint | number | null = null;
     color: string | null = null;
     attributes: string | null = null;
-    objectGuid: string = '00000000-0000-0000-0000-000000000000';
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -112,8 +111,8 @@ export interface VersionInformation<T> {
 }
 
 export class VolunteerProfileBasicListData {
-    id!: bigint | number;
-    name!: string;
+  id!: bigint | number;
+  name!: string;
 }
 
 
@@ -157,15 +156,15 @@ export class VolunteerProfileData {
     id!: bigint | number;
     resourceId!: bigint | number;
     volunteerStatusId!: bigint | number;
-    onboardedDate!: string | null;   // ISO 8601
-    inactiveSince!: string | null;   // ISO 8601
+    onboardedDate!: string | null;   // Date only (YYYY-MM-DD)
+    inactiveSince!: string | null;   // Date only (YYYY-MM-DD)
     totalHoursServed!: number | null;
-    lastActivityDate!: string | null;   // ISO 8601
+    lastActivityDate!: string | null;   // Date only (YYYY-MM-DD)
     backgroundCheckCompleted!: boolean;
-    backgroundCheckDate!: string | null;   // ISO 8601
-    backgroundCheckExpiry!: string | null;   // ISO 8601
+    backgroundCheckDate!: string | null;   // Date only (YYYY-MM-DD)
+    backgroundCheckExpiry!: string | null;   // Date only (YYYY-MM-DD)
     confidentialityAgreementSigned!: boolean;
-    confidentialityAgreementDate!: string | null;   // ISO 8601
+    confidentialityAgreementDate!: string | null;   // Date only (YYYY-MM-DD)
     availabilityPreferences!: string | null;
     interestsAndSkillsNotes!: string | null;
     emergencyContactNotes!: string | null;
@@ -186,10 +185,10 @@ export class VolunteerProfileData {
     // Private lazy-loading caches for related collections
     //
     private _volunteerProfileChangeHistories: VolunteerProfileChangeHistoryData[] | null = null;
-    private _volunteerProfileChangeHistoriesPromise: Promise<VolunteerProfileChangeHistoryData[]> | null = null;
+    private _volunteerProfileChangeHistoriesPromise: Promise<VolunteerProfileChangeHistoryData[]> | null  = null;
     private _volunteerProfileChangeHistoriesSubject = new BehaviorSubject<VolunteerProfileChangeHistoryData[] | null>(null);
 
-
+                
 
 
     //
@@ -210,68 +209,67 @@ export class VolunteerProfileData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._volunteerProfileChangeHistories === null && this._volunteerProfileChangeHistoriesPromise === null) {
-                this.loadVolunteerProfileChangeHistories(); // Private method to start fetch
-            }
+          if (this._volunteerProfileChangeHistories === null && this._volunteerProfileChangeHistoriesPromise === null) {
+            this.loadVolunteerProfileChangeHistories(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public VolunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({
-        volunteerProfileId: this.id,
-        active: true,
-        deleted: false
+  
+    public VolunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({volunteerProfileId: this.id,
+      active: true,
+      deleted: false
     });
 
 
 
 
-    //
-    // Full reload — refreshes the entire object and clears all lazy caches 
-    //
-    // Promise based reload method to allow rebuilding of any VolunteerProfileData object with all of it's relations on demand.  Useful for navigating into nav property
-    // objects and getting full state after put or post that may not have returned all nav properties.
-    //
-    // Usage examples:;
-    //
-    //  Async:
-    //   await this.volunteerProfile.Reload();
-    //
-    //  Non Async:
-    //
-    //     volunteerProfile[0].Reload().then(x => {
-    //        this.volunteerProfile = x;
-    //    });
-    //
-    public async Reload(includeRelations: boolean = true): Promise<this> {
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any VolunteerProfileData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.volunteerProfile.Reload();
+  //
+  //  Non Async:
+  //
+  //     volunteerProfile[0].Reload().then(x => {
+  //        this.volunteerProfile = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
 
-        const fresh = await lastValueFrom(
-            VolunteerProfileService.Instance.GetVolunteerProfile(this.id, includeRelations)
-        );
+    const fresh = await lastValueFrom(
+      VolunteerProfileService.Instance.GetVolunteerProfile(this.id, includeRelations)
+    );
 
-        // Merge fresh data into this instance (preserves reference)
-        this.UpdateFrom(fresh as this);
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
 
-        // Clear all lazy caches to force re-load on next access
-        this.clearAllLazyCaches();
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
 
-        return this;
-    }
+    return this;
+  }
 
 
-    private clearAllLazyCaches(): void {
-        //
-        // Reset every collection cache and notify subscribers
-        //
-        this._volunteerProfileChangeHistories = null;
-        this._volunteerProfileChangeHistoriesPromise = null;
-        this._volunteerProfileChangeHistoriesSubject.next(null);
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._volunteerProfileChangeHistories = null;
+     this._volunteerProfileChangeHistoriesPromise = null;
+     this._volunteerProfileChangeHistoriesSubject.next(null);
 
-        this._currentVersionInfo = null;
-        this._currentVersionInfoPromise = null;
-        this._currentVersionInfoSubject.next(null);
-    }
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
+  }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -313,19 +311,19 @@ export class VolunteerProfileData {
         this._volunteerProfileChangeHistoriesPromise = lastValueFrom(
             VolunteerProfileService.Instance.GetVolunteerProfileChangeHistoriesForVolunteerProfile(this.id)
         )
-            .then(VolunteerProfileChangeHistories => {
-                this._volunteerProfileChangeHistories = VolunteerProfileChangeHistories ?? [];
-                this._volunteerProfileChangeHistoriesSubject.next(this._volunteerProfileChangeHistories);
-                return this._volunteerProfileChangeHistories;
-            })
-            .catch(err => {
-                this._volunteerProfileChangeHistories = [];
-                this._volunteerProfileChangeHistoriesSubject.next(this._volunteerProfileChangeHistories);
-                throw err;
-            })
-            .finally(() => {
-                this._volunteerProfileChangeHistoriesPromise = null; // Allow retry if needed
-            });
+        .then(VolunteerProfileChangeHistories => {
+            this._volunteerProfileChangeHistories = VolunteerProfileChangeHistories ?? [];
+            this._volunteerProfileChangeHistoriesSubject.next(this._volunteerProfileChangeHistories);
+            return this._volunteerProfileChangeHistories;
+         })
+        .catch(err => {
+            this._volunteerProfileChangeHistories = [];
+            this._volunteerProfileChangeHistoriesSubject.next(this._volunteerProfileChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerProfileChangeHistoriesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -405,7 +403,7 @@ export class VolunteerProfileData {
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class VolunteerProfileService extends SecureEndpointBase {
 
@@ -433,7 +431,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
     }
 
     public static get Instance(): VolunteerProfileService {
-        return VolunteerProfileService._instance;
+      return VolunteerProfileService._instance;
     }
 
 
@@ -442,7 +440,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-            this.listCache.delete(configHash);
+          this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -496,7 +494,6 @@ export class VolunteerProfileService extends SecureEndpointBase {
         output.iconId = data.iconId;
         output.color = data.color;
         output.attributes = data.attributes;
-        output.objectGuid = data.objectGuid;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -504,7 +501,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
         return output;
     }
 
-    public GetVolunteerProfile(id: bigint | number, includeRelations: boolean = true): Observable<VolunteerProfileData> {
+    public GetVolunteerProfile(id: bigint | number, includeRelations: boolean = true) : Observable<VolunteerProfileData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -514,7 +511,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get VolunteerProfile", error);
 
                     return throwError(() => error);
@@ -529,7 +526,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<VolunteerProfileData>;
     }
 
-    private requestVolunteerProfile(id: bigint | number, includeRelations: boolean = true): Observable<VolunteerProfileData> {
+    private requestVolunteerProfile(id: bigint | number, includeRelations: boolean = true) : Observable<VolunteerProfileData> {
 
         let queryParams = new HttpParams();
 
@@ -537,17 +534,16 @@ export class VolunteerProfileService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<VolunteerProfileData>(this.baseUrl + 'api/VolunteerProfile/' + id.toString(), {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<VolunteerProfileData>(this.baseUrl + 'api/VolunteerProfile/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(raw => this.ReviveVolunteerProfile(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestVolunteerProfile(id, includeRelations));
             }));
     }
 
-    public GetVolunteerProfileList(config: VolunteerProfileQueryParameters | any = null): Observable<Array<VolunteerProfileData>> {
+    public GetVolunteerProfileList(config: VolunteerProfileQueryParameters | any = null) : Observable<Array<VolunteerProfileData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -572,7 +568,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
     }
 
 
-    private requestVolunteerProfileList(config: VolunteerProfileQueryParameters | any): Observable<Array<VolunteerProfileData>> {
+    private requestVolunteerProfileList(config: VolunteerProfileQueryParameters | any) : Observable <Array<VolunteerProfileData>> {
 
         let queryParams = new HttpParams();
 
@@ -587,17 +583,16 @@ export class VolunteerProfileService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<VolunteerProfileData>>(this.baseUrl + 'api/VolunteerProfiles', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<Array<VolunteerProfileData>>(this.baseUrl + 'api/VolunteerProfiles', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveVolunteerProfileList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestVolunteerProfileList(config));
             }));
     }
 
-    public GetVolunteerProfilesRowCount(config: VolunteerProfileQueryParameters | any = null): Observable<bigint | number> {
+    public GetVolunteerProfilesRowCount(config: VolunteerProfileQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -606,7 +601,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get VolunteerProfiles row count", error);
 
                     return throwError(() => error);
@@ -621,7 +616,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestVolunteerProfilesRowCount(config: VolunteerProfileQueryParameters | any): Observable<bigint | number> {
+    private requestVolunteerProfilesRowCount(config: VolunteerProfileQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -642,7 +637,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
             }));
     }
 
-    public GetVolunteerProfilesBasicListData(config: VolunteerProfileQueryParameters | any = null): Observable<Array<VolunteerProfileBasicListData>> {
+    public GetVolunteerProfilesBasicListData(config: VolunteerProfileQueryParameters | any = null) : Observable<Array<VolunteerProfileBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -657,7 +652,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-
+      
             this.basicListDataCache.set(configHash, volunteerProfilesBasicListData$);
 
             return volunteerProfilesBasicListData$;
@@ -667,7 +662,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
     }
 
 
-    private requestVolunteerProfilesBasicListData(config: VolunteerProfileQueryParameters | any): Observable<Array<VolunteerProfileBasicListData>> {
+    private requestVolunteerProfilesBasicListData(config: VolunteerProfileQueryParameters | any) : Observable<Array<VolunteerProfileBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -690,11 +685,11 @@ export class VolunteerProfileService extends SecureEndpointBase {
     }
 
 
-    public PutVolunteerProfile(id: bigint | number, volunteerProfile: VolunteerProfileSubmitData): Observable<VolunteerProfileData> {
+    public PutVolunteerProfile(id: bigint | number, volunteerProfile: VolunteerProfileSubmitData) : Observable<VolunteerProfileData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<VolunteerProfileData>(this.baseUrl + 'api/VolunteerProfile/' + id.toString(), volunteerProfile, { headers: authenticationHeaders }).pipe(
+        return this.http.put<VolunteerProfileData>(this.baseUrl + 'api/VolunteerProfile/' + id.toString(), volunteerProfile, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveVolunteerProfile(raw)),
             catchError(error => {
@@ -703,31 +698,31 @@ export class VolunteerProfileService extends SecureEndpointBase {
     }
 
 
-    public PostVolunteerProfile(volunteerProfile: VolunteerProfileSubmitData): Observable<VolunteerProfileData> {
+    public PostVolunteerProfile(volunteerProfile: VolunteerProfileSubmitData) : Observable<VolunteerProfileData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<VolunteerProfileData>(this.baseUrl + 'api/VolunteerProfile', volunteerProfile, { headers: authenticationHeaders }).pipe(
+        return this.http.post<VolunteerProfileData>(this.baseUrl + 'api/VolunteerProfile', volunteerProfile, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveVolunteerProfile(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PostVolunteerProfile(volunteerProfile));
+              return this.handleError(error, () => this.PostVolunteerProfile(volunteerProfile));
             }));
     }
 
-
-    public DeleteVolunteerProfile(id: bigint | number): Observable<any> {
+  
+    public DeleteVolunteerProfile(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/VolunteerProfile/' + id.toString(), { headers: authenticationHeaders }).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/VolunteerProfile/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteVolunteerProfile(id));
             }));
     }
 
-    public RollbackVolunteerProfile(id: bigint | number, versionNumber: bigint | number): Observable<VolunteerProfileData> {
+    public RollbackVolunteerProfile(id: bigint | number, versionNumber: bigint | number) : Observable<VolunteerProfileData>{
 
         let queryParams = new HttpParams();
 
@@ -741,7 +736,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
             map(raw => this.ReviveVolunteerProfile(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.RollbackVolunteerProfile(id, versionNumber));
-            }));
+        }));
     }
 
 
@@ -888,13 +883,13 @@ export class VolunteerProfileService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to Scheduler.VolunteerProfiles
         //
         if (userIsSchedulerVolunteerProfileWriter == true) {
-            let user = this.authService.currentUser;
+          let user = this.authService.currentUser;
 
-            if (user != null) {
-                userIsSchedulerVolunteerProfileWriter = user.writePermission >= 40;
-            } else {
-                userIsSchedulerVolunteerProfileWriter = false;
-            }
+          if (user != null) {
+            userIsSchedulerVolunteerProfileWriter = user.writePermission >= 40;
+          } else {
+            userIsSchedulerVolunteerProfileWriter = false;
+          }      
         }
 
         return userIsSchedulerVolunteerProfileWriter;
@@ -910,102 +905,101 @@ export class VolunteerProfileService extends SecureEndpointBase {
     }
 
 
-    /**
-      *
-      * Revives a plain object from the server into a full VolunteerProfileData instance.
-      *
-      * This is critical for the lazy-loading pattern to work correctly.
-      *
-      * When the server returns JSON, it is a plain object with no prototype methods
-      * or observable properties. This method:
-      * 1. Re-attaches the VolunteerProfileData prototype
-      * 2. Copies all properties from the raw object
-      * 3. Re-initializes all private caches and BehaviorSubjects
-      * 4. Re-creates all public observable properties ($ suffixed) with their
-      *    original tap() triggers that initiate lazy loading on first subscription
-      *
-      * Without this, revived objects would not trigger loads when VolunteerProfileTags$ etc.
-      * are subscribed to in templates.
-      *
-      */
-    public ReviveVolunteerProfile(raw: any): VolunteerProfileData {
-        if (!raw) return raw;
+ /**
+   *
+   * Revives a plain object from the server into a full VolunteerProfileData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the VolunteerProfileData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when VolunteerProfileTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveVolunteerProfile(raw: any): VolunteerProfileData {
+    if (!raw) return raw;
 
-        //
-        // Create a VolunteerProfileData object instance with correct prototype
-        //
-        const revived = Object.create(VolunteerProfileData.prototype) as VolunteerProfileData;
+    //
+    // Create a VolunteerProfileData object instance with correct prototype
+    //
+    const revived = Object.create(VolunteerProfileData.prototype) as VolunteerProfileData;
 
-        //
-        // Copy all raw properties
-        //
-        Object.assign(revived, raw);
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
 
-        //
-        // Explicitly initialize all private caches
-        // This ensures the getters work correctly on revived objects
-        //
-        (revived as any)._volunteerProfileChangeHistories = null;
-        (revived as any)._volunteerProfileChangeHistoriesPromise = null;
-        (revived as any)._volunteerProfileChangeHistoriesSubject = new BehaviorSubject<VolunteerProfileChangeHistoryData[] | null>(null);
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._volunteerProfileChangeHistories = null;
+    (revived as any)._volunteerProfileChangeHistoriesPromise = null;
+    (revived as any)._volunteerProfileChangeHistoriesSubject = new BehaviorSubject<VolunteerProfileChangeHistoryData[] | null>(null);
 
 
-        //
-        // Re-attach ALL public observables with their lazy-load tap() triggers
-        // This mirrors the original class definition exactly
-        //
-        //
-        // Re-create all public observables with their lazy-load triggers
-        // We use 'as any' because:
-        // 1. The revived object has the correct prototype
-        // 2. But private methods (loadVolunteerProfileXYZ, etc.) are not accessible via the typed variable
-        // 3. This is a controlled revival context — safe and necessary
-        //
-        (revived as any).VolunteerProfileChangeHistories$ = (revived as any)._volunteerProfileChangeHistoriesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._volunteerProfileChangeHistories === null && (revived as any)._volunteerProfileChangeHistoriesPromise === null) {
-                    (revived as any).loadVolunteerProfileChangeHistories();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadVolunteerProfileXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).VolunteerProfileChangeHistories$ = (revived as any)._volunteerProfileChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerProfileChangeHistories === null && (revived as any)._volunteerProfileChangeHistoriesPromise === null) {
+                (revived as any).loadVolunteerProfileChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).VolunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({
-            volunteerProfileId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
+    (revived as any).VolunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({volunteerProfileId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        //
-        // Version history metadata cache and observable
-        //
-        (revived as any)._currentVersionInfo = null;
-        (revived as any)._currentVersionInfoPromise = null;
-        (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<VolunteerProfileData> | null>(null);
 
-        (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
-                    (revived as any).loadCurrentVersionInfo();
-                }
-            }),
-            shareReplay(1)
-        );
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<VolunteerProfileData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
-        return revived;
+    return revived;
+  }
+
+  private ReviveVolunteerProfileList(rawList: any[]): VolunteerProfileData[] {
+
+    if (!rawList) {
+        return [];
     }
 
-    private ReviveVolunteerProfileList(rawList: any[]): VolunteerProfileData[] {
-
-        if (!rawList) {
-            return [];
-        }
-
-        return rawList.map(raw => this.ReviveVolunteerProfile(raw));
-    }
+    return rawList.map(raw => this.ReviveVolunteerProfile(raw));
+  }
 
 }

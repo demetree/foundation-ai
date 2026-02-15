@@ -2,11 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
-import { BrickPartService, BrickPartData } from '../../bmc-data-services/brick-part.service';
-import { BrickCategoryService, BrickCategoryData } from '../../bmc-data-services/brick-category.service';
-import { PartTypeService, PartTypeData } from '../../bmc-data-services/part-type.service';
+import { PartsCatalogService, CatalogPart, CatalogCategory, CatalogPartType } from '../../services/parts-catalog.service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
-import { IndexedDBCacheService } from '../../services/indexeddb-cache.service';
 
 @Component({
     selector: 'app-parts-catalog',
@@ -21,36 +18,27 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     // 3D thumbnail cache: geometryFilePath → data:URL
     thumbnails = new Map<string, string>();
 
-    allParts: BrickPartData[] = [];
-    filteredParts: BrickPartData[] = [];
-    displayedParts: BrickPartData[] = [];
-    categories: BrickCategoryData[] = [];       // Filtered & sorted for sidebar display
-    private allCategories: BrickCategoryData[] = [];  // Unfiltered from server
-    categoryCounts = new Map<number | bigint, number>();
-    partTypes: PartTypeData[] = [];
+    displayedParts: CatalogPart[] = [];
+    categories: CatalogCategory[] = [];
+    partTypes: CatalogPartType[] = [];
 
     loading = true;
     searchTerm = '';
-    selectedCategoryId: number | bigint | null = null;
-    selectedPartTypeId: number | bigint | null = null;
+    selectedCategoryId: number | null = null;
+    selectedPartTypeId: number | null = null;
     viewMode: 'grid' | 'list' = 'grid';
     sidebarCollapsed = false;
 
-    // Pagination
+    // Pagination (server-driven)
     pageSize = 48;
     currentPage = 1;
     totalPages = 1;
-
-    // Stats
     totalCount = 0;
 
     constructor(
-        private partService: BrickPartService,
-        private categoryService: BrickCategoryService,
-        private partTypeService: PartTypeService,
+        private catalogService: PartsCatalogService,
         private router: Router,
-        private thumbnailService: LDrawThumbnailService,
-        private cacheService: IndexedDBCacheService
+        private thumbnailService: LDrawThumbnailService
     ) { }
 
     ngOnInit(): void {
@@ -60,7 +48,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         ).subscribe(term => {
             this.searchTerm = term;
             this.currentPage = 1;
-            this.applyFilters();
+            this.fetchPage();
         });
 
         //
@@ -69,7 +57,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         this.thumbnailService.thumbnail$.pipe(
             takeUntil(this.destroy$)
         ).subscribe(result => {
-            this.thumbnails.set(result.geometryFilePath, result.dataUrl);
+            this.thumbnails.set(result.cacheKey, result.dataUrl);
         });
 
         this.loadData();
@@ -83,56 +71,55 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     loadData(): void {
         this.loading = true;
 
-        const categoryParams = { active: true, deleted: false };
-        const partTypeParams = { active: true, deleted: false };
-        const partParams = { active: true, deleted: false, includeRelations: true };
-
-        // Load categories (cached 7 days)
-        this.cacheService.getOrFetch<BrickCategoryData[]>(
-            'brick-categories',
-            categoryParams,
-            (p) => this.categoryService.GetBrickCategoryList(p),
-            10080  // 7 days
-        ).pipe(
+        // Load categories (with server-side counts of renderable parts)
+        this.catalogService.getCategories().pipe(
             takeUntil(this.destroy$)
         ).subscribe({
-            next: (cats) => this.allCategories = cats,
-            error: () => this.allCategories = []
+            next: (cats) => this.categories = cats,
+            error: () => this.categories = []
         });
 
-        // Load part types (cached 7 days)
-        this.cacheService.getOrFetch<PartTypeData[]>(
-            'part-types',
-            partTypeParams,
-            (p) => this.partTypeService.GetPartTypeList(p),
-            10080  // 7 days
-        ).pipe(
+        // Load part types (with server-side counts of renderable parts)
+        this.catalogService.getPartTypes().pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (types) => this.partTypes = types,
             error: () => this.partTypes = []
         });
 
-        // Load parts (cached 24 hours)
-        this.cacheService.getOrFetch<BrickPartData[]>(
-            'brick-parts',
-            partParams,
-            (p) => this.partService.GetBrickPartList(p),
-            1440  // 24 hours
-        ).pipe(
+        // Load first page of parts
+        this.fetchPage();
+    }
+
+    /**
+     * Fetch a page of parts from the server with current filters applied.
+     */
+    fetchPage(): void {
+        this.loading = true;
+
+        this.catalogService.getCatalogPage({
+            search: this.searchTerm || undefined,
+            categoryId: this.selectedCategoryId ?? undefined,
+            partTypeId: this.selectedPartTypeId ?? undefined,
+            pageSize: this.pageSize,
+            pageNumber: this.currentPage
+        }).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
-            next: (parts) => {
-                this.allParts = parts;
-                this.totalCount = parts.length;
-                this.buildCategorySidebar();
-                this.applyFilters();
+            next: (result) => {
+                this.displayedParts = result.items;
+                this.totalCount = result.totalCount;
+                this.totalPages = result.totalPages;
+                this.currentPage = result.pageNumber;
                 this.loading = false;
+
+                // Kick off 3D thumbnail rendering for the visible parts
+                this.thumbnailService.renderBatch(this.displayedParts);
             },
             error: () => {
-                this.allParts = [];
-                this.filteredParts = [];
                 this.displayedParts = [];
+                this.totalCount = 0;
+                this.totalPages = 1;
                 this.loading = false;
             }
         });
@@ -143,84 +130,43 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         this.searchSubject.next(term);
     }
 
-    applyFilters(): void {
-        let result = [...this.allParts];
-
-        // Text search
-        if (this.searchTerm) {
-            const lower = this.searchTerm.toLowerCase();
-            result = result.filter(p =>
-                p.name?.toLowerCase().includes(lower) ||
-                p.ldrawPartId?.toLowerCase().includes(lower) ||
-                p.ldrawTitle?.toLowerCase().includes(lower) ||
-                p.keywords?.toLowerCase().includes(lower) ||
-                p.ldrawCategory?.toLowerCase().includes(lower)
-            );
-        }
-
-        // Category filter
-        if (this.selectedCategoryId !== null) {
-            result = result.filter(p => p.brickCategoryId == this.selectedCategoryId);
-        }
-
-        // Part type filter
-        if (this.selectedPartTypeId !== null) {
-            result = result.filter(p => p.partTypeId == this.selectedPartTypeId);
-        }
-
-        this.filteredParts = result;
-        this.totalPages = Math.max(1, Math.ceil(result.length / this.pageSize));
-        if (this.currentPage > this.totalPages) this.currentPage = 1;
-        this.updateDisplayedParts();
-    }
-
-    updateDisplayedParts(): void {
-        const start = (this.currentPage - 1) * this.pageSize;
-        this.displayedParts = this.filteredParts.slice(start, start + this.pageSize);
-
-        //
-        // Kick off 3D thumbnail rendering for the new batch of visible parts
-        //
-        this.thumbnailService.renderBatch(this.displayedParts);
-    }
-
-    selectCategory(catId: number | bigint | null): void {
+    selectCategory(catId: number | null): void {
         this.selectedCategoryId = this.selectedCategoryId === catId ? null : catId;
         this.currentPage = 1;
-        this.applyFilters();
+        this.fetchPage();
     }
 
-    selectPartType(typeId: number | bigint | null): void {
+    selectPartType(typeId: number | null): void {
         this.selectedPartTypeId = this.selectedPartTypeId === typeId ? null : typeId;
         this.currentPage = 1;
-        this.applyFilters();
+        this.fetchPage();
     }
 
-    navigateToDetail(part: BrickPartData): void {
+    navigateToDetail(part: CatalogPart): void {
         this.router.navigate(['/parts', part.id]);
     }
 
     nextPage(): void {
         if (this.currentPage < this.totalPages) {
             this.currentPage++;
-            this.updateDisplayedParts();
+            this.fetchPage();
         }
     }
 
     prevPage(): void {
         if (this.currentPage > 1) {
             this.currentPage--;
-            this.updateDisplayedParts();
+            this.fetchPage();
         }
     }
 
     goToPage(page: number): void {
         this.currentPage = page;
-        this.updateDisplayedParts();
+        this.fetchPage();
     }
 
-    getPartTypeIcon(part: BrickPartData): string {
-        const typeName = part.partType?.name?.toLowerCase() || '';
+    getPartTypeIcon(part: CatalogPart): string {
+        const typeName = part.partTypeName?.toLowerCase() || '';
         if (typeName.includes('plate')) return 'fas fa-grip-lines';
         if (typeName.includes('brick')) return 'fas fa-cube';
         if (typeName.includes('tile')) return 'fas fa-square';
@@ -231,7 +177,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         return 'fas fa-puzzle-piece';
     }
 
-    formatDimensions(part: BrickPartData): string {
+    formatDimensions(part: CatalogPart): string {
         if (!part.widthLdu && !part.heightLdu && !part.depthLdu) return '—';
         return `${part.widthLdu || 0} × ${part.heightLdu || 0} × ${part.depthLdu || 0}`;
     }
@@ -241,7 +187,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     // ----------------------------------------------------------------
 
     /** Get effective LDU dimensions — uses real data, parsed title, or type-based defaults */
-    private getPartDimensions(part: BrickPartData): { w: number; h: number; d: number } {
+    private getPartDimensions(part: CatalogPart): { w: number; h: number; d: number } {
         // 1. Use actual LDU dimensions if available
         if (part.widthLdu > 0 || part.heightLdu > 0 || part.depthLdu > 0) {
             return {
@@ -251,7 +197,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
             };
         }
 
-        const categoryName = part.brickCategory?.name?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
+        const categoryName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
 
         // 2. Try to parse stud dimensions from ldrawTitle (e.g. "Brick 2 x 4", "Plate 1 x 6 x 2")
         const title = part.ldrawTitle || part.name || '';
@@ -305,8 +251,8 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Get colour palette based on brick category */
-    getPartColour(part: BrickPartData): { top: string; front: string; side: string; stud: string; outline: string } {
-        const typeName = part.brickCategory?.name?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
+    getPartColour(part: CatalogPart): { top: string; front: string; side: string; stud: string; outline: string } {
+        const typeName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
 
         if (typeName.includes('brick')) return { top: '#ffb74d', front: '#f09030', side: '#c06a20', stud: '#ffd180', outline: '#a05010' };
         if (typeName.includes('plate')) return { top: '#64b5f6', front: '#4090d0', side: '#2a6ca0', stud: '#90caf9', outline: '#1a5080' };
@@ -331,7 +277,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Compute isometric polygon points for 3 faces of the brick */
-    getIsometricPoints(part: BrickPartData): { top: string; front: string; side: string } {
+    getIsometricPoints(part: CatalogPart): { top: string; front: string; side: string } {
         const dims = this.getPartDimensions(part);
         const rawW = dims.w;
         const rawH = dims.h;
@@ -398,13 +344,13 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Whether studs should be shown (bricks and plates) */
-    shouldShowStuds(part: BrickPartData): boolean {
-        const typeName = part.brickCategory?.name?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
+    shouldShowStuds(part: CatalogPart): boolean {
+        const typeName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
         return typeName.includes('brick') || typeName.includes('plate') || typeName.includes('baseplate');
     }
 
     /** Get stud positions on the top face as ellipse centers */
-    getStudPositions(part: BrickPartData): { cx: number; cy: number }[] {
+    getStudPositions(part: CatalogPart): { cx: number; cy: number }[] {
         const dims = this.getPartDimensions(part);
         const rawW = dims.w;
         const rawH = dims.h;
@@ -450,7 +396,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Stud ellipse radius scaled to part size */
-    getStudRadius(part: BrickPartData): { rx: number; ry: number } {
+    getStudRadius(part: CatalogPart): { rx: number; ry: number } {
         const dims = this.getPartDimensions(part);
         const maxDim = Math.max(dims.w, dims.h, dims.d);
         const scale = 32 / maxDim;
@@ -465,44 +411,16 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         this.selectedCategoryId = null;
         this.selectedPartTypeId = null;
         this.currentPage = 1;
-        this.applyFilters();
+        this.fetchPage();
     }
 
     hasActiveFilters(): boolean {
         return !!this.searchTerm || this.selectedCategoryId !== null || this.selectedPartTypeId !== null;
     }
 
-    getCategoryCount(catId: number | bigint): number {
-        return this.categoryCounts.get(catId) ?? 0;
-    }
-
-
-    /**
-     * Build the sidebar category list: compute counts, hide empties, sort by count.
-     * Called after both categories and parts have loaded.
-     */
-    private buildCategorySidebar(): void {
-        //
-        // Build counts map from loaded parts
-        //
-        this.categoryCounts.clear();
-        for (const part of this.allParts) {
-            if (part.brickCategoryId != null) {
-                const current = this.categoryCounts.get(part.brickCategoryId) ?? 0;
-                this.categoryCounts.set(part.brickCategoryId, current + 1);
-            }
-        }
-
-        //
-        // Filter out empty categories, then sort by count descending
-        //
-        this.categories = this.allCategories
-            .filter(cat => (this.categoryCounts.get(cat.id) ?? 0) > 0)
-            .sort((a, b) => {
-                const countDiff = (this.categoryCounts.get(b.id) ?? 0) - (this.categoryCounts.get(a.id) ?? 0);
-                if (countDiff !== 0) return countDiff;
-                return (a.name || '').localeCompare(b.name || '');  // tie-break alphabetically
-            });
+    getCategoryCount(catId: number): number {
+        const cat = this.categories.find(c => c.id === catId);
+        return cat ? cat.partCount : 0;
     }
 
     getVisiblePages(): number[] {

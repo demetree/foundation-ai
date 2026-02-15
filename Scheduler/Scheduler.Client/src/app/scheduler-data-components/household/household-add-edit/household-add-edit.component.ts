@@ -246,7 +246,7 @@ export class HouseholdAddEditComponent {
         informalSalutation: formValue.informalSalutation?.trim() || null,
         addressee: formValue.addressee?.trim() || null,
         totalHouseholdGiving: Number(formValue.totalHouseholdGiving),
-        lastHouseholdGiftDate: formValue.lastHouseholdGiftDate?.trim() || null,
+        lastHouseholdGiftDate: formValue.lastHouseholdGiftDate ? formValue.lastHouseholdGiftDate.trim() : null,
         notes: formValue.notes?.trim() || null,
         iconId: formValue.iconId ? Number(formValue.iconId) : null,
         color: formValue.color?.trim() || null,

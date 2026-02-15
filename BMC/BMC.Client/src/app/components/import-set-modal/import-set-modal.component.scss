@@ -1,0 +1,212 @@
+/* ----------------------------------------------------------------
+   Import Set Modal — NgbModal styles
+   ---------------------------------------------------------------- */
+
+.search-input-wrap {
+    position: relative;
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bs-secondary);
+        font-size: 0.85rem;
+    }
+
+    .search-input {
+        padding-left: 36px !important;
+        padding-right: 36px !important;
+    }
+
+    .search-spinner {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bs-primary);
+        font-size: 0.8rem;
+    }
+
+    .clear-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: var(--bs-secondary);
+        cursor: pointer;
+        font-size: 0.9rem;
+
+        &:hover {
+            color: var(--bs-body-color);
+        }
+    }
+}
+
+.search-results {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--bs-border-color);
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: var(--bs-tertiary-bg);
+    }
+
+    .result-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+
+    .result-placeholder {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bs-secondary);
+        opacity: 0.3;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .result-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .result-name {
+        font-size: 0.82rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .result-meta {
+        font-size: 0.72rem;
+        color: var(--bs-secondary);
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .result-number {
+        font-family: 'Fira Code', 'Consolas', monospace;
+    }
+
+    .result-theme {
+        color: #ab47bc;
+    }
+}
+
+.search-no-results {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.82rem;
+    color: var(--bs-secondary);
+    margin-bottom: 12px;
+
+    i {
+        margin-right: 6px;
+        opacity: 0.5;
+    }
+}
+
+.selected-set-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+
+    .selected-set-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+
+    .selected-set-placeholder {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bs-secondary);
+        opacity: 0.3;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .selected-set-info {
+        flex: 1;
+        min-width: 0;
+
+        h5 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin: 0 0 6px;
+        }
+    }
+
+    .selected-set-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
+.bg-purple-subtle {
+    background-color: rgba(171, 71, 188, 0.1) !important;
+}
+
+.text-purple {
+    color: #ab47bc !important;
+}
+
+.qty-input {
+    max-width: 100px;
+}
+
+.import-result {
+    border-radius: 6px;
+    padding: 14px;
+    background: var(--bs-tertiary-bg);
+    margin-top: 12px;
+}
+
+.result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.82rem;
+}

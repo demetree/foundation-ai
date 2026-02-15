@@ -30,8 +30,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class RecurrenceExceptionQueryParameters {
     scheduledEventId: bigint | number | null | undefined = null;
-    exceptionDateTime: string | null | undefined = null;        // ISO 8601
-    movedToDateTime: string | null | undefined = null;        // ISO 8601
+    exceptionDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    movedToDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     reason: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -50,8 +50,8 @@ export class RecurrenceExceptionQueryParameters {
 export class RecurrenceExceptionSubmitData {
     id!: bigint | number;
     scheduledEventId!: bigint | number;
-    exceptionDateTime!: string;      // ISO 8601
-    movedToDateTime: string | null = null;     // ISO 8601
+    exceptionDateTime!: string;      // ISO 8601 (full datetime)
+    movedToDateTime: string | null = null;     // ISO 8601 (full datetime)
     reason: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
@@ -124,8 +124,8 @@ export class RecurrenceExceptionBasicListData {
 export class RecurrenceExceptionData {
     id!: bigint | number;
     scheduledEventId!: bigint | number;
-    exceptionDateTime!: string;      // ISO 8601
-    movedToDateTime!: string | null;   // ISO 8601
+    exceptionDateTime!: string;      // ISO 8601 (full datetime)
+    movedToDateTime!: string | null;   // ISO 8601 (full datetime)
     reason!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;

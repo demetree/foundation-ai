@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, finalize } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CollectionService, CollectionSummary, CollectionPart, ImportedSetRecord, WishlistItem, ImportSetResult } from '../../services/collection.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
+import { ImportSetModalComponent } from '../import-set-modal/import-set-modal.component';
 
 type TabId = 'parts' | 'imported-sets' | 'wishlist';
 
@@ -49,18 +51,14 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
     // Wishlist tab
     wishlistItems: WishlistItem[] = [];
 
-    // Import set modal
-    showImportModal = false;
-    importSetNumber = '';
-    importQuantity = 1;
-    importing = false;
-    lastImportResult: ImportSetResult | null = null;
+    // Import set modal state removed — now handled by ImportSetModalComponent via NgbModal
 
     constructor(
         private collectionService: CollectionService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService,
-        private thumbnailService: LDrawThumbnailService
+        private thumbnailService: LDrawThumbnailService,
+        private modalService: NgbModal
     ) { }
 
 
@@ -78,8 +76,9 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
         this.thumbnailService.thumbnail$.pipe(
             takeUntil(this.destroy$)
         ).subscribe(result => {
-            this.thumbnails.set(result.geometryFilePath, result.dataUrl);
+            this.thumbnails.set(result.cacheKey, result.dataUrl);
         });
+
 
         this.loadCollections();
     }
@@ -219,10 +218,10 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
         const start = (this.currentPage - 1) * this.pageSize;
         this.displayedParts = this.filteredParts.slice(start, start + this.pageSize);
 
-        // Kick off 3D thumbnail rendering
+        // Kick off 3D thumbnail rendering (with colour overrides)
         const partsWithGeometry = this.displayedParts
             .filter(p => p.geometryFilePath)
-            .map(p => ({ geometryFilePath: p.geometryFilePath } as any));
+            .map(p => ({ geometryFilePath: p.geometryFilePath, colourHex: p.colourHex || undefined }));
         if (partsWithGeometry.length > 0) {
             this.thumbnailService.renderBatch(partsWithGeometry);
         }
@@ -296,34 +295,20 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
 
 
     openImportModal(): void {
-        this.showImportModal = true;
-        this.importSetNumber = '';
-        this.importQuantity = 1;
-        this.lastImportResult = null;
-    }
+        if (!this.activeCollection) return;
 
+        const modalRef = this.modalService.open(ImportSetModalComponent, {
+            centered: true,
+            size: 'lg',
+            backdrop: 'static',
+            keyboard: true
+        });
 
-    closeImportModal(): void {
-        this.showImportModal = false;
-    }
+        modalRef.componentInstance.collectionId = this.activeCollection.id;
 
-
-    importSet(): void {
-        if (!this.activeCollection || !this.importSetNumber) return;
-
-        const setId = parseInt(this.importSetNumber, 10);
-        if (isNaN(setId) || setId <= 0) {
-            this.alertService.showMessage('Invalid', 'Please enter a valid set ID', MessageSeverity.warn);
-            return;
-        }
-
-        this.importing = true;
-        this.collectionService.importSet(this.activeCollection.id, setId, this.importQuantity).pipe(
-            takeUntil(this.destroy$),
-            finalize(() => this.importing = false)
-        ).subscribe({
-            next: (result) => {
-                this.lastImportResult = result;
+        modalRef.result.then(
+            (result: ImportSetResult) => {
+                // Successful import
                 this.alertService.showMessage(
                     'Import Complete',
                     `Added ${result.partsAdded} new parts, updated ${result.partsUpdated} existing (${result.totalQuantityAdded} total bricks)`,
@@ -331,11 +316,10 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
                 );
                 this.loadParts();
                 this.loadCollections();
+                this.loadImportedSets();
             },
-            error: () => {
-                this.alertService.showMessage('Error', 'Failed to import set. Check the set ID and try again.', MessageSeverity.error);
-            }
-        });
+            () => { /* dismissed */ }
+        );
     }
 
 
@@ -343,6 +327,10 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
 
     getQuantityAvailable(part: CollectionPart): number {
         return Math.max(0, part.quantityOwned - part.quantityUsed);
+    }
+
+    getThumbnailKey(part: CollectionPart): string {
+        return LDrawThumbnailService.cacheKey(part.geometryFilePath, part.colourHex || undefined);
     }
 
     getColourStyle(hex: string): string {

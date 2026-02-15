@@ -724,17 +724,28 @@
     }
 }
 
-.set-icon {
-    width: 44px;
-    height: 44px;
+.set-image-wrap {
+    width: 72px;
+    height: 72px;
     border-radius: var(--radius-md, 8px);
-    background: rgba(102, 187, 106, 0.1);
-    color: #66bb6a;
+    background: var(--bmc-bg-elevated);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
     flex-shrink: 0;
+    overflow: hidden;
+
+    .set-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .set-image-placeholder {
+        color: var(--bmc-text-muted);
+        opacity: 0.3;
+        font-size: 1.8rem;
+    }
 }
 
 .set-info {
@@ -756,6 +767,13 @@
         font-family: 'Fira Code', 'Consolas', monospace;
         color: var(--bmc-text-muted);
     }
+
+    .set-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+    }
 }
 
 .set-meta {
@@ -774,6 +792,49 @@
     .set-date {
         font-size: 0.68rem;
         color: var(--bmc-text-muted);
+    }
+
+    .external {
+        margin-top: 2px;
+        color: var(--bmc-text-muted);
+
+        &:hover {
+            color: var(--bmc-primary);
+        }
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Badges
+   ---------------------------------------------------------------- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    white-space: nowrap;
+
+    i {
+        font-size: 0.6rem;
+    }
+
+    &.badge-year {
+        background: rgba(66, 165, 245, 0.1);
+        color: #42a5f5;
+    }
+
+    &.badge-parts {
+        background: rgba(255, 167, 38, 0.1);
+        color: var(--bmc-primary);
+    }
+
+    &.badge-theme {
+        background: rgba(171, 71, 188, 0.1);
+        color: #ab47bc;
     }
 }
 
@@ -851,14 +912,12 @@
 /* ----------------------------------------------------------------
    Import Set Modal
    ---------------------------------------------------------------- */
-.modal-backdrop {
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -866,7 +925,19 @@
     animation: fadeIn 0.2s ease;
 }
 
+.modal-backdrop-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
 .modal-dialog {
+    position: relative;
+    z-index: 1;
     width: 90%;
     max-width: 460px;
     background: var(--bmc-bg-card);
@@ -874,6 +945,10 @@
     border-radius: var(--radius-lg, 12px);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
     animation: slideUp 0.25s ease-out;
+
+    &.import-modal {
+        max-width: 540px;
+    }
 }
 
 .modal-header {
@@ -997,6 +1072,199 @@
     gap: 10px;
     padding: 14px 24px 20px;
     border-top: 1px solid var(--bmc-border);
+}
+
+
+/* ----------------------------------------------------------------
+   Import Modal — Search & Preview
+   ---------------------------------------------------------------- */
+.search-input-wrap {
+    position: relative;
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bmc-text-muted);
+        font-size: 0.85rem;
+    }
+
+    .search-input {
+        padding-left: 36px !important;
+        padding-right: 36px !important;
+    }
+
+    .search-spinner {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bmc-primary);
+        font-size: 0.8rem;
+    }
+
+    .clear-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: var(--bmc-text-muted);
+        cursor: pointer;
+        font-size: 0.9rem;
+
+        &:hover {
+            color: var(--bmc-text-primary);
+        }
+    }
+}
+
+.search-results {
+    background: var(--bmc-bg-elevated);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-md, 6px);
+    max-height: 280px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--bmc-border);
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: var(--bmc-bg-hover);
+    }
+
+    .result-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+
+    .result-placeholder {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bmc-text-muted);
+        opacity: 0.3;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .result-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .result-name {
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--bmc-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .result-meta {
+        font-size: 0.72rem;
+        color: var(--bmc-text-muted);
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .result-number {
+        font-family: 'Fira Code', 'Consolas', monospace;
+    }
+
+    .result-theme {
+        color: #ab47bc;
+    }
+}
+
+.search-no-results {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.82rem;
+    color: var(--bmc-text-muted);
+    margin-bottom: 12px;
+
+    i {
+        margin-right: 6px;
+        opacity: 0.5;
+    }
+}
+
+.selected-set-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--bmc-bg-elevated);
+    border: 1px solid rgba(255, 167, 38, 0.3);
+    border-radius: var(--radius-md, 8px);
+    padding: 14px;
+    margin-bottom: 16px;
+
+    .selected-set-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+
+    .selected-set-placeholder {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bmc-text-muted);
+        opacity: 0.3;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .selected-set-info {
+        flex: 1;
+        min-width: 0;
+
+        h4 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--bmc-text-primary);
+            margin: 0 0 6px;
+        }
+    }
+
+    .selected-set-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
+.qty-input {
+    max-width: 100px;
 }
 
 

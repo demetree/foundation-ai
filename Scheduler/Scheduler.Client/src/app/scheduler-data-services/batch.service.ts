@@ -35,15 +35,15 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class BatchQueryParameters {
     batchNumber: string | null | undefined = null;
     description: string | null | undefined = null;
-    dateOpened: string | null | undefined = null;        // ISO 8601
-    datePosted: string | null | undefined = null;        // ISO 8601
+    dateOpened: string | null | undefined = null;        // ISO 8601 (full datetime)
+    datePosted: string | null | undefined = null;        // ISO 8601 (full datetime)
     batchStatusId: bigint | number | null | undefined = null;
     controlAmount: number | null | undefined = null;
     controlCount: bigint | number | null | undefined = null;
     defaultFundId: bigint | number | null | undefined = null;
     defaultCampaignId: bigint | number | null | undefined = null;
     defaultAppealId: bigint | number | null | undefined = null;
-    defaultDate: string | null | undefined = null;        // ISO 8601
+    defaultDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -62,15 +62,15 @@ export class BatchSubmitData {
     id!: bigint | number;
     batchNumber!: string;
     description: string | null = null;
-    dateOpened!: string;      // ISO 8601
-    datePosted: string | null = null;     // ISO 8601
+    dateOpened!: string;      // ISO 8601 (full datetime)
+    datePosted: string | null = null;     // ISO 8601 (full datetime)
     batchStatusId!: bigint | number;
     controlAmount!: number;
     controlCount!: bigint | number;
     defaultFundId: bigint | number | null = null;
     defaultCampaignId: bigint | number | null = null;
     defaultAppealId: bigint | number | null = null;
-    defaultDate: string | null = null;     // ISO 8601
+    defaultDate: string | null = null;     // Date only (YYYY-MM-DD)
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -143,15 +143,15 @@ export class BatchData {
     id!: bigint | number;
     batchNumber!: string;
     description!: string | null;
-    dateOpened!: string;      // ISO 8601
-    datePosted!: string | null;   // ISO 8601
+    dateOpened!: string;      // ISO 8601 (full datetime)
+    datePosted!: string | null;   // ISO 8601 (full datetime)
     batchStatusId!: bigint | number;
     controlAmount!: number;
     controlCount!: bigint | number;
     defaultFundId!: bigint | number;
     defaultCampaignId!: bigint | number;
     defaultAppealId!: bigint | number;
-    defaultDate!: string | null;   // ISO 8601
+    defaultDate!: string | null;   // Date only (YYYY-MM-DD)
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;

@@ -30,7 +30,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class TenantProfileChangeHistoryQueryParameters {
     tenantProfileId: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
-    timeStamp: string | null | undefined = null;        // ISO 8601
+    timeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
     userId: bigint | number | null | undefined = null;
     data: string | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
@@ -47,7 +47,7 @@ export class TenantProfileChangeHistorySubmitData {
     id!: bigint | number;
     tenantProfileId!: bigint | number;
     versionNumber!: bigint | number;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     userId!: bigint | number;
     data!: string;
 }
@@ -99,7 +99,7 @@ export class TenantProfileChangeHistoryData {
     id!: bigint | number;
     tenantProfileId!: bigint | number;
     versionNumber!: bigint | number;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     userId!: bigint | number;
     data!: string;
     tenantProfile: TenantProfileData | null | undefined = null;          // Navigation property (populated when includeRelations=true)

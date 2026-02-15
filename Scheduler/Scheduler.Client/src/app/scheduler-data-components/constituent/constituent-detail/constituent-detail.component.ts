@@ -579,7 +579,7 @@ export class ConstituentDetailComponent implements OnInit, CanComponentDeactivat
         doNotMail: !!formValue.doNotMail,
         totalLifetimeGiving: Number(formValue.totalLifetimeGiving),
         totalYTDGiving: Number(formValue.totalYTDGiving),
-        lastGiftDate: formValue.lastGiftDate?.trim() || null,
+        lastGiftDate: formValue.lastGiftDate ? formValue.lastGiftDate.trim() : null,
         lastGiftAmount: formValue.lastGiftAmount ? Number(formValue.lastGiftAmount) : null,
         largestGiftAmount: formValue.largestGiftAmount ? Number(formValue.largestGiftAmount) : null,
         totalGiftCount: formValue.totalGiftCount ? Number(formValue.totalGiftCount) : null,

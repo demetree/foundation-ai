@@ -32,8 +32,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class ResourceQualificationQueryParameters {
     resourceId: bigint | number | null | undefined = null;
     qualificationId: bigint | number | null | undefined = null;
-    issueDate: string | null | undefined = null;        // ISO 8601
-    expiryDate: string | null | undefined = null;        // ISO 8601
+    issueDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    expiryDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     issuer: string | null | undefined = null;
     notes: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -54,8 +54,8 @@ export class ResourceQualificationSubmitData {
     id!: bigint | number;
     resourceId!: bigint | number;
     qualificationId!: bigint | number;
-    issueDate: string | null = null;     // ISO 8601
-    expiryDate: string | null = null;     // ISO 8601
+    issueDate: string | null = null;     // ISO 8601 (full datetime)
+    expiryDate: string | null = null;     // ISO 8601 (full datetime)
     issuer: string | null = null;
     notes: string | null = null;
     versionNumber!: bigint | number;
@@ -130,8 +130,8 @@ export class ResourceQualificationData {
     id!: bigint | number;
     resourceId!: bigint | number;
     qualificationId!: bigint | number;
-    issueDate!: string | null;   // ISO 8601
-    expiryDate!: string | null;   // ISO 8601
+    issueDate!: string | null;   // ISO 8601 (full datetime)
+    expiryDate!: string | null;   // ISO 8601 (full datetime)
     issuer!: string | null;
     notes!: string | null;
     versionNumber!: bigint | number;

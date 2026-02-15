@@ -47,14 +47,14 @@ export class ConstituentQueryParameters {
     doNotMail: boolean | null | undefined = null;
     totalLifetimeGiving: number | null | undefined = null;
     totalYTDGiving: number | null | undefined = null;
-    lastGiftDate: string | null | undefined = null;        // ISO 8601
+    lastGiftDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     lastGiftAmount: number | null | undefined = null;
     largestGiftAmount: number | null | undefined = null;
     totalGiftCount: bigint | number | null | undefined = null;
     externalId: string | null | undefined = null;
     notes: string | null | undefined = null;
     constituentJourneyStageId: bigint | number | null | undefined = null;
-    dateEnteredCurrentStage: string | null | undefined = null;        // ISO 8601
+    dateEnteredCurrentStage: string | null | undefined = null;        // ISO 8601 (full datetime)
     attributes: string | null | undefined = null;
     iconId: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
@@ -86,14 +86,14 @@ export class ConstituentSubmitData {
     doNotMail!: boolean;
     totalLifetimeGiving!: number;
     totalYTDGiving!: number;
-    lastGiftDate: string | null = null;     // ISO 8601
+    lastGiftDate: string | null = null;     // Date only (YYYY-MM-DD)
     lastGiftAmount: number | null = null;
     largestGiftAmount: number | null = null;
     totalGiftCount: bigint | number | null = null;
     externalId: string | null = null;
     notes: string | null = null;
     constituentJourneyStageId: bigint | number | null = null;
-    dateEnteredCurrentStage: string | null = null;     // ISO 8601
+    dateEnteredCurrentStage: string | null = null;     // ISO 8601 (full datetime)
     attributes: string | null = null;
     iconId: bigint | number | null = null;
     color: string | null = null;
@@ -180,14 +180,14 @@ export class ConstituentData {
     doNotMail!: boolean;
     totalLifetimeGiving!: number;
     totalYTDGiving!: number;
-    lastGiftDate!: string | null;   // ISO 8601
+    lastGiftDate!: string | null;   // Date only (YYYY-MM-DD)
     lastGiftAmount!: number | null;
     largestGiftAmount!: number | null;
     totalGiftCount!: bigint | number;
     externalId!: string | null;
     notes!: string | null;
     constituentJourneyStageId!: bigint | number;
-    dateEnteredCurrentStage!: string | null;   // ISO 8601
+    dateEnteredCurrentStage!: string | null;   // ISO 8601 (full datetime)
     attributes!: string | null;
     iconId!: bigint | number;
     color!: string | null;

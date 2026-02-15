@@ -35,8 +35,8 @@ export class VolunteerGroupMemberQueryParameters {
     resourceId: bigint | number | null | undefined = null;
     assignmentRoleId: bigint | number | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
-    joinedDate: string | null | undefined = null;        // ISO 8601
-    leftDate: string | null | undefined = null;        // ISO 8601
+    joinedDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
+    leftDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     notes: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -58,8 +58,8 @@ export class VolunteerGroupMemberSubmitData {
     resourceId!: bigint | number;
     assignmentRoleId: bigint | number | null = null;
     sequence!: bigint | number;
-    joinedDate: string | null = null;     // ISO 8601
-    leftDate: string | null = null;     // ISO 8601
+    joinedDate: string | null = null;     // Date only (YYYY-MM-DD)
+    leftDate: string | null = null;     // Date only (YYYY-MM-DD)
     notes: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
@@ -135,8 +135,8 @@ export class VolunteerGroupMemberData {
     resourceId!: bigint | number;
     assignmentRoleId!: bigint | number;
     sequence!: bigint | number;
-    joinedDate!: string | null;   // ISO 8601
-    leftDate!: string | null;   // ISO 8601
+    joinedDate!: string | null;   // Date only (YYYY-MM-DD)
+    leftDate!: string | null;   // Date only (YYYY-MM-DD)
     notes!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;

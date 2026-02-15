@@ -31,7 +31,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class ShiftPatternDayQueryParameters {
     shiftPatternId: bigint | number | null | undefined = null;
     dayOfWeek: bigint | number | null | undefined = null;
-    startTime: string | null | undefined = null;        // ISO 8601
+    startTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     hours: number | null | undefined = null;
     label: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -52,7 +52,7 @@ export class ShiftPatternDaySubmitData {
     id!: bigint | number;
     shiftPatternId!: bigint | number;
     dayOfWeek!: bigint | number;
-    startTime!: string;      // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
     hours!: number;
     label: string | null = null;
     versionNumber!: bigint | number;
@@ -127,7 +127,7 @@ export class ShiftPatternDayData {
     id!: bigint | number;
     shiftPatternId!: bigint | number;
     dayOfWeek!: bigint | number;
-    startTime!: string;      // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
     hours!: number;
     label!: string | null;
     versionNumber!: bigint | number;

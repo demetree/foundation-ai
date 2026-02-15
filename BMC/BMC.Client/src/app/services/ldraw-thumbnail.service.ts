@@ -7,13 +7,22 @@ import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
 import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
 
 import { AuthService } from './auth.service';
-import { BrickPartData } from '../bmc-data-services/brick-part.service';
+
+/**
+ * Lightweight request interface for thumbnail rendering.
+ * Consumers pass geometry path and optional colour override.
+ */
+export interface ThumbnailRequest {
+    geometryFilePath: string;
+    colourHex?: string;  // e.g. 'A0A5A9' (no # prefix)
+}
 
 /**
  * Thumbnail result emitted for each successfully rendered part.
+ * The cacheKey is the composite key: 'geometryFilePath' or 'geometryFilePath:colourHex'
  */
 export interface ThumbnailResult {
-    geometryFilePath: string;
+    cacheKey: string;
     dataUrl: string;
 }
 
@@ -21,7 +30,7 @@ export interface ThumbnailResult {
  * Persisted thumbnail entry in IndexedDB.
  */
 interface ThumbnailCacheEntry {
-    geometryFilePath: string;
+    cacheKey: string;
     dataUrl: string;
     cachedAt: number;
 }
@@ -33,9 +42,10 @@ class ThumbnailCacheDatabase extends Dexie {
     thumbnails!: Table<ThumbnailCacheEntry, string>;
 
     constructor() {
-        super('bmc-thumbnails');
+        super('bmc-thumbnails-v2');
+
         this.version(1).stores({
-            thumbnails: 'geometryFilePath'
+            thumbnails: 'cacheKey'
         });
     }
 }
@@ -47,6 +57,10 @@ class ThumbnailCacheDatabase extends Dexie {
  * Thumbnails are persisted in IndexedDB so subsequent visits load instantly
  * without re-rendering. The in-memory Map is pre-loaded from IndexedDB on
  * first use.
+ *
+ * Supports optional colour overrides: when a colourHex is provided, all
+ * materials in the loaded model are replaced with the specified colour,
+ * allowing the same geometry to be rendered in different brick colours.
  *
  * This approach avoids the browser's WebGL context limit (~8-16) which would
  * be exceeded by putting a separate <canvas> on each catalog card.
@@ -64,7 +78,7 @@ export class LDrawThumbnailService {
     private canvas!: HTMLCanvasElement;
 
     //
-    // Cache: geometryFilePath → data:image/png
+    // Cache: cacheKey → data:image/png
     //
     private cache = new Map<string, string>();
 
@@ -87,7 +101,7 @@ export class LDrawThumbnailService {
     private initialized = false;
     private materialsPreloaded = false;
     private rendering = false;
-    private queue: BrickPartData[] = [];
+    private queue: ThumbnailRequest[] = [];
     private queueGeneration = 0;  // incremented on each renderBatch to abort stale loops
     private baseUrl: string;
 
@@ -109,11 +123,19 @@ export class LDrawThumbnailService {
 
 
     /**
+     * Build a composite cache key from geometry path and optional colour.
+     */
+    static cacheKey(geometryFilePath: string, colourHex?: string): string {
+        return colourHex ? `${geometryFilePath}:${colourHex}` : geometryFilePath;
+    }
+
+
+    /**
      * Render 3D thumbnails for a batch of parts.
      * Results arrive asynchronously via thumbnail$.
      * Automatically deduplicates (skips already-cached parts).
      */
-    renderBatch(parts: BrickPartData[]): void {
+    renderBatch(parts: ThumbnailRequest[]): void {
 
         //
         // Ensure IndexedDB thumbnails are loaded into memory first
@@ -129,20 +151,21 @@ export class LDrawThumbnailService {
         //
         // Filter to parts that have a geometry file and aren't already cached
         //
-        const needed = parts.filter(p =>
-            p.geometryFilePath &&
-            !this.cache.has(p.geometryFilePath)
-        );
+        const needed = parts.filter(p => {
+            const key = LDrawThumbnailService.cacheKey(p.geometryFilePath, p.colourHex);
+            return p.geometryFilePath && !this.cache.has(key);
+        });
 
         if (needed.length === 0) {
             //
             // Emit cached results immediately for cards that already have thumbnails
             //
             for (const part of parts) {
-                if (part.geometryFilePath && this.cache.has(part.geometryFilePath)) {
+                const key = LDrawThumbnailService.cacheKey(part.geometryFilePath, part.colourHex);
+                if (part.geometryFilePath && this.cache.has(key)) {
                     this.thumbnailSubject.next({
-                        geometryFilePath: part.geometryFilePath,
-                        dataUrl: this.cache.get(part.geometryFilePath)!
+                        cacheKey: key,
+                        dataUrl: this.cache.get(key)!
                     });
                 }
             }
@@ -164,8 +187,8 @@ export class LDrawThumbnailService {
     /**
      * Get a cached thumbnail URL, or null if not yet rendered.
      */
-    getCached(geometryFilePath: string): string | null {
-        return this.cache.get(geometryFilePath) ?? null;
+    getCached(cacheKey: string): string | null {
+        return this.cache.get(cacheKey) ?? null;
     }
 
 
@@ -279,24 +302,22 @@ export class LDrawThumbnailService {
             }
 
             const part = this.queue.shift()!;
+            const key = LDrawThumbnailService.cacheKey(part.geometryFilePath, part.colourHex);
 
-            if (!part.geometryFilePath || this.cache.has(part.geometryFilePath)) {
+            if (!part.geometryFilePath || this.cache.has(key)) {
                 continue;
             }
 
             try {
                 const dataUrl = await this.renderSinglePart(part);
                 if (dataUrl) {
-                    this.cache.set(part.geometryFilePath, dataUrl);
-                    this.thumbnailSubject.next({
-                        geometryFilePath: part.geometryFilePath,
-                        dataUrl
-                    });
+                    this.cache.set(key, dataUrl);
+                    this.thumbnailSubject.next({ cacheKey: key, dataUrl });
 
                     //
                     // Persist to IndexedDB (fire-and-forget)
                     //
-                    this.persistToIndexedDB(part.geometryFilePath, dataUrl);
+                    this.persistToIndexedDB(key, dataUrl);
                 }
             } catch (err) {
                 console.warn(`[LDrawThumbnail] Failed to render ${part.geometryFilePath}:`, err);
@@ -317,8 +338,10 @@ export class LDrawThumbnailService {
 
     /**
      * Load a single part model, frame it in the camera, render one frame, and export.
+     * If the request includes a colourHex, all model materials are overridden
+     * with that colour (preserving shading/lighting).
      */
-    private renderSinglePart(part: BrickPartData): Promise<string | null> {
+    private renderSinglePart(part: ThumbnailRequest): Promise<string | null> {
         return new Promise((resolve) => {
 
             //
@@ -346,6 +369,13 @@ export class LDrawThumbnailService {
                         // Clear scene of previous model (keep lights)
                         //
                         this.clearModel();
+
+                        //
+                        // Override colours if a colourHex was provided
+                        //
+                        if (part.colourHex) {
+                            this.applyColourOverride(group, part.colourHex);
+                        }
 
                         //
                         // Add model to scene
@@ -380,6 +410,38 @@ export class LDrawThumbnailService {
                     resolve(null);
                 }
             );
+        });
+    }
+
+
+    /**
+     * Override all materials in the loaded model group with the specified colour.
+     * Modifies the existing material's .color property to preserve the material type
+     * and shading that LDrawLoader set up (Phong, Lambert, etc.).
+     * Edge lines are tinted to a darker shade of the same colour.
+     */
+    private applyColourOverride(group: THREE.Group, colourHex: string): void {
+        const colour = new THREE.Color(`#${colourHex}`);
+
+        // Slightly darker version for edges
+        const edgeColour = colour.clone().multiplyScalar(0.5);
+
+        group.traverse((child: THREE.Object3D) => {
+            if (child instanceof THREE.Mesh) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                for (const mat of materials) {
+                    if (mat && 'color' in mat) {
+                        (mat as any).color.copy(colour);
+                    }
+                }
+            } else if (child instanceof THREE.LineSegments) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                for (const mat of materials) {
+                    if (mat && 'color' in mat) {
+                        (mat as any).color.copy(edgeColour);
+                    }
+                }
+            }
         });
     }
 
@@ -454,7 +516,7 @@ export class LDrawThumbnailService {
         try {
             const entries = await this.db.thumbnails.toArray();
             for (const entry of entries) {
-                this.cache.set(entry.geometryFilePath, entry.dataUrl);
+                this.cache.set(entry.cacheKey, entry.dataUrl);
             }
         } catch (err) {
             console.warn('[LDrawThumbnail] Failed to load from IndexedDB:', err);
@@ -466,10 +528,10 @@ export class LDrawThumbnailService {
     /**
      * Persist a single rendered thumbnail to IndexedDB (fire-and-forget).
      */
-    private async persistToIndexedDB(geometryFilePath: string, dataUrl: string): Promise<void> {
+    private async persistToIndexedDB(cacheKey: string, dataUrl: string): Promise<void> {
         try {
             await this.db.thumbnails.put({
-                geometryFilePath,
+                cacheKey,
                 dataUrl,
                 cachedAt: Date.now()
             });

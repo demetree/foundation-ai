@@ -49,7 +49,7 @@ export class ContactQueryParameters {
     lastName: string | null | undefined = null;
     salutationId: bigint | number | null | undefined = null;
     title: string | null | undefined = null;
-    birthDate: string | null | undefined = null;        // ISO 8601
+    birthDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     company: string | null | undefined = null;
     email: string | null | undefined = null;
     phone: string | null | undefined = null;
@@ -88,7 +88,7 @@ export class ContactSubmitData {
     lastName!: string;
     salutationId: bigint | number | null = null;
     title: string | null = null;
-    birthDate: string | null = null;     // ISO 8601
+    birthDate: string | null = null;     // Date only (YYYY-MM-DD)
     company: string | null = null;
     email: string | null = null;
     phone: string | null = null;
@@ -182,7 +182,7 @@ export class ContactData {
     lastName!: string;
     salutationId!: bigint | number;
     title!: string | null;
-    birthDate!: string | null;   // ISO 8601
+    birthDate!: string | null;   // Date only (YYYY-MM-DD)
     company!: string | null;
     email!: string | null;
     phone!: string | null;

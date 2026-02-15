@@ -272,7 +272,7 @@ export class ContactAddEditComponent {
         lastName: formValue.lastName!.trim(),
         salutationId: formValue.salutationId ? Number(formValue.salutationId) : null,
         title: formValue.title?.trim() || null,
-        birthDate: formValue.birthDate?.trim() || null,
+        birthDate: formValue.birthDate ? formValue.birthDate.trim() : null,
         company: formValue.company?.trim() || null,
         email: formValue.email?.trim() || null,
         phone: formValue.phone?.trim() || null,

@@ -43,8 +43,8 @@ export class GiftQueryParameters {
     constituentId: bigint | number | null | undefined = null;
     pledgeId: bigint | number | null | undefined = null;
     amount: number | null | undefined = null;
-    receivedDate: string | null | undefined = null;        // ISO 8601
-    postedDate: string | null | undefined = null;        // ISO 8601
+    receivedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    postedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     fundId: bigint | number | null | undefined = null;
     campaignId: bigint | number | null | undefined = null;
     appealId: bigint | number | null | undefined = null;
@@ -52,7 +52,7 @@ export class GiftQueryParameters {
     referenceNumber: string | null | undefined = null;
     batchId: bigint | number | null | undefined = null;
     receiptTypeId: bigint | number | null | undefined = null;
-    receiptDate: string | null | undefined = null;        // ISO 8601
+    receiptDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     tributeId: bigint | number | null | undefined = null;
     notes: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -75,8 +75,8 @@ export class GiftSubmitData {
     constituentId!: bigint | number;
     pledgeId: bigint | number | null = null;
     amount!: number;
-    receivedDate!: string;      // ISO 8601
-    postedDate: string | null = null;     // ISO 8601
+    receivedDate!: string;      // ISO 8601 (full datetime)
+    postedDate: string | null = null;     // ISO 8601 (full datetime)
     fundId!: bigint | number;
     campaignId: bigint | number | null = null;
     appealId: bigint | number | null = null;
@@ -84,7 +84,7 @@ export class GiftSubmitData {
     referenceNumber: string | null = null;
     batchId: bigint | number | null = null;
     receiptTypeId: bigint | number | null = null;
-    receiptDate: string | null = null;     // ISO 8601
+    receiptDate: string | null = null;     // ISO 8601 (full datetime)
     tributeId: bigint | number | null = null;
     notes: string | null = null;
     versionNumber!: bigint | number;
@@ -161,8 +161,8 @@ export class GiftData {
     constituentId!: bigint | number;
     pledgeId!: bigint | number;
     amount!: number;
-    receivedDate!: string;      // ISO 8601
-    postedDate!: string | null;   // ISO 8601
+    receivedDate!: string;      // ISO 8601 (full datetime)
+    postedDate!: string | null;   // ISO 8601 (full datetime)
     fundId!: bigint | number;
     campaignId!: bigint | number;
     appealId!: bigint | number;
@@ -170,7 +170,7 @@ export class GiftData {
     referenceNumber!: string | null;
     batchId!: bigint | number;
     receiptTypeId!: bigint | number;
-    receiptDate!: string | null;   // ISO 8601
+    receiptDate!: string | null;   // ISO 8601 (full datetime)
     tributeId!: bigint | number;
     notes!: string | null;
     versionNumber!: bigint | number;

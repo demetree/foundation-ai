@@ -1,0 +1,96 @@
+<div class="modal-header">
+    <h4 class="modal-title"><i class="fas fa-file-import text-primary me-2"></i> Import LEGO Set</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+
+    <!-- Search field -->
+    <div class="mb-3">
+        <label class="form-label">Search for a set</label>
+        <div class="search-input-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control search-input" [value]="searchTerm" (input)="onSearchInput($event)"
+                placeholder="Type a set number or name…" [disabled]="importing" autocomplete="off" />
+            <i class="fas fa-spinner fa-spin search-spinner" *ngIf="searchingForSets"></i>
+            <button class="clear-btn" *ngIf="selectedSet" (click)="clearSelection()" title="Clear">
+                <i class="fas fa-times-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search results dropdown -->
+    <div class="search-results" *ngIf="setSearchResults.length > 0 && !selectedSet">
+        <div class="search-result-item" *ngFor="let r of setSearchResults" (click)="selectSet(r)">
+            <img *ngIf="r.imageUrl" [src]="r.imageUrl" class="result-thumb" [alt]="r.name" />
+            <div class="result-placeholder" *ngIf="!r.imageUrl"><i class="fas fa-box"></i></div>
+            <div class="result-info">
+                <span class="result-name">{{ r.name }}</span>
+                <span class="result-meta">
+                    <span class="result-number">{{ r.setNumber }}</span>
+                    <span *ngIf="r.year">· {{ r.year }}</span>
+                    <span *ngIf="r.partCount">· {{ r.partCount | number }} pcs</span>
+                    <span *ngIf="r.themeName" class="result-theme">· {{ r.themeName }}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- No results -->
+    <div class="search-no-results"
+        *ngIf="setSearchResults.length === 0 && searchTerm.length >= 2 && !searchingForSets && !selectedSet">
+        <i class="fas fa-search"></i> No sets found for "{{ searchTerm }}"
+    </div>
+
+    <!-- Selected set preview -->
+    <div class="selected-set-card" *ngIf="selectedSet">
+        <img *ngIf="selectedSet.imageUrl" [src]="selectedSet.imageUrl" class="selected-set-img"
+            [alt]="selectedSet.name" />
+        <div class="selected-set-placeholder" *ngIf="!selectedSet.imageUrl"><i class="fas fa-box"></i></div>
+        <div class="selected-set-info">
+            <h5>{{ selectedSet.name }}</h5>
+            <div class="selected-set-meta">
+                <span class="badge bg-info-subtle text-info" *ngIf="selectedSet.year"><i
+                        class="fas fa-calendar-alt"></i> {{ selectedSet.year }}</span>
+                <span class="badge bg-warning-subtle text-warning" *ngIf="selectedSet.partCount"><i
+                        class="fas fa-puzzle-piece"></i> {{ selectedSet.partCount | number }} parts</span>
+                <span class="badge bg-purple-subtle text-purple" *ngIf="selectedSet.themeName">{{ selectedSet.themeName
+                    }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quantity -->
+    <div class="mb-3" *ngIf="selectedSet">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control qty-input" [(ngModel)]="quantity" min="1" max="99"
+            [disabled]="importing" />
+        <small class="text-muted">How many copies of this set do you own?</small>
+    </div>
+
+    <!-- Import results -->
+    <div class="import-result" *ngIf="lastImportResult">
+        <div class="result-row text-success">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ lastImportResult.partsAdded }} new parts added</span>
+        </div>
+        <div class="result-row text-info">
+            <i class="fas fa-sync-alt"></i>
+            <span>{{ lastImportResult.partsUpdated }} existing parts updated</span>
+        </div>
+        <div class="result-row text-warning">
+            <i class="fas fa-cubes"></i>
+            <span>{{ lastImportResult.totalQuantityAdded }} total bricks imported</span>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()"
+        [disabled]="importing">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="importSet()" [disabled]="importing || !selectedSet">
+        <i class="fas fa-spinner fa-spin me-1" *ngIf="importing"></i>
+        <span *ngIf="!importing">Import</span>
+        <span *ngIf="importing">Importing…</span>
+    </button>
+</div>

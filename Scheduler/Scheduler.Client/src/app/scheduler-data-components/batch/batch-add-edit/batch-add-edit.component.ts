@@ -247,7 +247,7 @@ export class BatchAddEditComponent {
         defaultFundId: formValue.defaultFundId ? Number(formValue.defaultFundId) : null,
         defaultCampaignId: formValue.defaultCampaignId ? Number(formValue.defaultCampaignId) : null,
         defaultAppealId: formValue.defaultAppealId ? Number(formValue.defaultAppealId) : null,
-        defaultDate: formValue.defaultDate?.trim() || null,
+        defaultDate: formValue.defaultDate ? formValue.defaultDate.trim() : null,
         versionNumber: this.batchSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

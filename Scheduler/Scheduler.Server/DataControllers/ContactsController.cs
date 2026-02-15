@@ -2498,7 +2498,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/Contact/Data/{id:int}")]
-        public async Task<IActionResult> DownloadDataAsync(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DownloadDataAsync(int id, CancellationToken cancellationToken = default)
         {
 
 			//

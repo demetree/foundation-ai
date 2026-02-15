@@ -38,7 +38,7 @@ export class HouseholdQueryParameters {
     informalSalutation: string | null | undefined = null;
     addressee: string | null | undefined = null;
     totalHouseholdGiving: number | null | undefined = null;
-    lastHouseholdGiftDate: string | null | undefined = null;        // ISO 8601
+    lastHouseholdGiftDate: string | null | undefined = null;        // Date only (YYYY-MM-DD)
     notes: string | null | undefined = null;
     iconId: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
@@ -68,7 +68,7 @@ export class HouseholdSubmitData {
     informalSalutation: string | null = null;
     addressee: string | null = null;
     totalHouseholdGiving!: number;
-    lastHouseholdGiftDate: string | null = null;     // ISO 8601
+    lastHouseholdGiftDate: string | null = null;     // Date only (YYYY-MM-DD)
     notes: string | null = null;
     iconId: bigint | number | null = null;
     color: string | null = null;
@@ -153,7 +153,7 @@ export class HouseholdData {
     informalSalutation!: string | null;
     addressee!: string | null;
     totalHouseholdGiving!: number;
-    lastHouseholdGiftDate!: string | null;   // ISO 8601
+    lastHouseholdGiftDate!: string | null;   // Date only (YYYY-MM-DD)
     notes!: string | null;
     iconId!: bigint | number;
     color!: string | null;

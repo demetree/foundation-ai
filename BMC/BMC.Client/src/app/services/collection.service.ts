@@ -51,11 +51,26 @@ export interface ImportSetResult {
     totalQuantityAdded: number;
 }
 
+export interface SetSearchResult {
+    id: number;
+    name: string;
+    setNumber: string;
+    imageUrl: string | null;
+    year: number;
+    partCount: number;
+    themeName: string | null;
+}
+
 export interface ImportedSetRecord {
     id: number;
     legoSetId: number;
     setName: string;
     setNumber: string;
+    imageUrl: string | null;
+    year: number;
+    partCount: number;
+    themeName: string | null;
+    rebrickableUrl: string | null;
     quantity: number;
     importedDate: Date;
 }
@@ -134,10 +149,10 @@ export class CollectionService {
         );
     }
 
-    /** POST /api/collection/{id}/import-set/{legoSetId} — bulk import */
-    importSet(collectionId: number, legoSetId: number, quantity: number = 1): Observable<ImportSetResult> {
+    /** POST /api/collection/{id}/import-set/{setNumber} — bulk import */
+    importSet(collectionId: number, setNumber: string, quantity: number = 1): Observable<ImportSetResult> {
         return this.http.post<ImportSetResult>(
-            `${this.baseUrl}/${collectionId}/import-set/${legoSetId}?quantity=${quantity}`,
+            `${this.baseUrl}/${collectionId}/import-set/${encodeURIComponent(setNumber)}?quantity=${quantity}`,
             null,
             { headers: this.headers }
         );
@@ -156,6 +171,14 @@ export class CollectionService {
         return this.http.get<WishlistItem[]>(
             `${this.baseUrl}/${collectionId}/wishlist`,
             { headers: this.headers }
+        );
+    }
+
+    /** GET /api/collection/search-sets?q= — typeahead for import modal */
+    searchSets(query: string): Observable<SetSearchResult[]> {
+        return this.http.get<SetSearchResult[]>(
+            `${this.baseUrl}/search-sets`,
+            { headers: this.headers, params: { q: query } }
         );
     }
 }

@@ -36,8 +36,8 @@ export class ContactInteractionQueryParameters {
     initiatingContactId: bigint | number | null | undefined = null;
     interactionTypeId: bigint | number | null | undefined = null;
     scheduledEventId: bigint | number | null | undefined = null;
-    startTime: string | null | undefined = null;        // ISO 8601
-    endTime: string | null | undefined = null;        // ISO 8601
+    startTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    endTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     notes: string | null | undefined = null;
     location: string | null | undefined = null;
     priorityId: bigint | number | null | undefined = null;
@@ -62,8 +62,8 @@ export class ContactInteractionSubmitData {
     initiatingContactId: bigint | number | null = null;
     interactionTypeId!: bigint | number;
     scheduledEventId: bigint | number | null = null;
-    startTime!: string;      // ISO 8601
-    endTime: string | null = null;     // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
+    endTime: string | null = null;     // ISO 8601 (full datetime)
     notes: string | null = null;
     location: string | null = null;
     priorityId: bigint | number | null = null;
@@ -142,8 +142,8 @@ export class ContactInteractionData {
     initiatingContactId!: bigint | number;
     interactionTypeId!: bigint | number;
     scheduledEventId!: bigint | number;
-    startTime!: string;      // ISO 8601
-    endTime!: string | null;   // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
+    endTime!: string | null;   // ISO 8601 (full datetime)
     notes!: string | null;
     location!: string | null;
     priorityId!: bigint | number;

@@ -192,7 +192,6 @@ export class VolunteerCustomAddEditComponent {
             iconId: formValue.iconId ? Number(formValue.iconId) : null,
             color: formValue.color?.trim() || null,
             attributes: null,
-            objectGuid: this.objectGuid || '00000000-0000-0000-0000-000000000000',
             versionNumber: this.submitData?.versionNumber ?? 0,
             active: !!formValue.active,
             deleted: !!formValue.deleted,

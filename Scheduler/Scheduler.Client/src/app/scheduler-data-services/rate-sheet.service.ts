@@ -39,7 +39,7 @@ export class RateSheetQueryParameters {
     resourceId: bigint | number | null | undefined = null;
     schedulingTargetId: bigint | number | null | undefined = null;
     rateTypeId: bigint | number | null | undefined = null;
-    effectiveDate: string | null | undefined = null;        // ISO 8601
+    effectiveDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     currencyId: bigint | number | null | undefined = null;
     costRate: number | null | undefined = null;
     billingRate: number | null | undefined = null;
@@ -65,7 +65,7 @@ export class RateSheetSubmitData {
     resourceId: bigint | number | null = null;
     schedulingTargetId: bigint | number | null = null;
     rateTypeId!: bigint | number;
-    effectiveDate!: string;      // ISO 8601
+    effectiveDate!: string;      // ISO 8601 (full datetime)
     currencyId!: bigint | number;
     costRate!: number;
     billingRate!: number;
@@ -145,7 +145,7 @@ export class RateSheetData {
     resourceId!: bigint | number;
     schedulingTargetId!: bigint | number;
     rateTypeId!: bigint | number;
-    effectiveDate!: string;      // ISO 8601
+    effectiveDate!: string;      // ISO 8601 (full datetime)
     currencyId!: bigint | number;
     costRate!: number;
     billingRate!: number;

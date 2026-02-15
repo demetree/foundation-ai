@@ -120,9 +120,9 @@
 
                 <!-- Thumbnail -->
                 <div class="card-thumbnail">
-                    <img *ngIf="thumbnails.get(part.geometryFilePath)" [src]="thumbnails.get(part.geometryFilePath)"
+                    <img *ngIf="thumbnails.get(getThumbnailKey(part))" [src]="thumbnails.get(getThumbnailKey(part))"
                         alt="Part thumbnail" />
-                    <div class="placeholder-thumb" *ngIf="!thumbnails.get(part.geometryFilePath)">
+                    <div class="placeholder-thumb" *ngIf="!thumbnails.get(getThumbnailKey(part))">
                         <i class="fas fa-cube"></i>
                     </div>
                     <span class="colour-dot" [style.background-color]="getColourStyle(part.colourHex)"
@@ -225,14 +225,35 @@
 
         <div class="sets-grid" *ngIf="!loadingImports && importedSets.length > 0">
             <div class="set-card" *ngFor="let s of importedSets">
-                <div class="set-icon"><i class="fas fa-box"></i></div>
-                <div class="set-info">
-                    <h4>{{ s.setName || 'Unknown Set' }}</h4>
-                    <span class="set-number">{{ s.setNumber }}</span>
+                <!-- Set Image -->
+                <div class="set-image-wrap">
+                    <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.setName" class="set-image" />
+                    <div class="set-image-placeholder" *ngIf="!s.imageUrl">
+                        <i class="fas fa-box"></i>
+                    </div>
                 </div>
+
+                <!-- Set Info -->
+                <div class="set-info">
+                    <h4 [title]="s.setName">{{ s.setName || 'Unknown Set' }}</h4>
+                    <span class="set-number">{{ s.setNumber }}</span>
+                    <div class="set-badges">
+                        <span class="badge badge-year" *ngIf="s.year"><i class="fas fa-calendar-alt"></i> {{ s.year
+                            }}</span>
+                        <span class="badge badge-parts" *ngIf="s.partCount"><i class="fas fa-puzzle-piece"></i> {{
+                            s.partCount | number }}</span>
+                        <span class="badge badge-theme" *ngIf="s.themeName">{{ s.themeName }}</span>
+                    </div>
+                </div>
+
+                <!-- Set Meta -->
                 <div class="set-meta">
                     <span class="set-qty" *ngIf="s.quantity > 1">×{{ s.quantity }}</span>
                     <span class="set-date">{{ s.importedDate | date:'mediumDate' }}</span>
+                    <a *ngIf="s.rebrickableUrl" [href]="s.rebrickableUrl" target="_blank" rel="noopener"
+                        class="btn-icon external" title="View on Rebrickable">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -268,55 +289,6 @@
                     <span class="qty-label">wanted</span>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- ===== IMPORT SET MODAL ===== -->
-<div class="modal-backdrop" *ngIf="showImportModal" (click)="closeImportModal()">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2><i class="fas fa-file-import"></i> Import LEGO Set</h2>
-            <button class="btn-close" (click)="closeImportModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label for="setId">Set ID</label>
-                <input id="setId" type="text" class="form-input" [(ngModel)]="importSetNumber" placeholder="e.g. 42"
-                    [disabled]="importing" />
-                <small class="form-hint">Enter the database ID of the LEGO set to import</small>
-            </div>
-            <div class="form-group">
-                <label for="setQty">Quantity</label>
-                <input id="setQty" type="number" class="form-input" [(ngModel)]="importQuantity" min="1" max="99"
-                    [disabled]="importing" />
-                <small class="form-hint">How many copies of this set do you own?</small>
-            </div>
-
-            <!-- Import results -->
-            <div class="import-result" *ngIf="lastImportResult">
-                <div class="result-row success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ lastImportResult.partsAdded }} new parts added</span>
-                </div>
-                <div class="result-row info">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>{{ lastImportResult.partsUpdated }} existing parts updated</span>
-                </div>
-                <div class="result-row accent">
-                    <i class="fas fa-cubes"></i>
-                    <span>{{ lastImportResult.totalQuantityAdded }} total bricks imported</span>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="importing">Cancel</button>
-            <button class="btn btn-primary" (click)="importSet()" [disabled]="importing || !importSetNumber">
-                <i class="fas fa-spinner fa-spin" *ngIf="importing"></i>
-                <span *ngIf="!importing">Import</span>
-                <span *ngIf="importing">Importing…</span>
-            </button>
         </div>
     </div>
 </div>

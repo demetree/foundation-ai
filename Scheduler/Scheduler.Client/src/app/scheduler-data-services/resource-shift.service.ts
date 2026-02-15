@@ -33,7 +33,7 @@ export class ResourceShiftQueryParameters {
     resourceId: bigint | number | null | undefined = null;
     dayOfWeek: bigint | number | null | undefined = null;
     timeZoneId: bigint | number | null | undefined = null;
-    startTime: string | null | undefined = null;        // ISO 8601
+    startTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     hours: number | null | undefined = null;
     label: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -55,7 +55,7 @@ export class ResourceShiftSubmitData {
     resourceId!: bigint | number;
     dayOfWeek!: bigint | number;
     timeZoneId: bigint | number | null = null;
-    startTime!: string;      // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
     hours!: number;
     label: string | null = null;
     versionNumber!: bigint | number;
@@ -131,7 +131,7 @@ export class ResourceShiftData {
     resourceId!: bigint | number;
     dayOfWeek!: bigint | number;
     timeZoneId!: bigint | number;
-    startTime!: string;      // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
     hours!: number;
     label!: string | null;
     versionNumber!: bigint | number;

@@ -62,7 +62,7 @@
                     <button *ngFor="let cat of categories" class="category-item"
                         [class.active]="selectedCategoryId === cat.id" (click)="selectCategory(cat.id)">
                         <span class="cat-name">{{ cat.name }}</span>
-                        <span class="cat-count">{{ getCategoryCount(cat.id) }}</span>
+                        <span class="cat-count">{{ cat.partCount }}</span>
                     </button>
                 </div>
             </div>
@@ -86,7 +86,7 @@
             <!-- Results Info -->
             <div class="results-info" *ngIf="!loading">
                 <span class="results-text">
-                    {{ filteredParts.length }} part{{ filteredParts.length !== 1 ? 's' : '' }}
+                    {{ totalCount }} part{{ totalCount !== 1 ? 's' : '' }}
                     <span *ngIf="hasActiveFilters()"> matching filters</span>
                 </span>
                 <span class="page-info" *ngIf="totalPages > 1">
@@ -140,8 +140,8 @@
                         <span class="part-ldraw">{{ part.ldrawPartId }}</span>
 
                         <div class="part-meta">
-                            <span class="meta-item category-badge" *ngIf="part.brickCategory" title="Category">
-                                <i class="fas fa-tag me-1"></i>{{ part.brickCategory.name }}
+                            <span class="meta-item category-badge" *ngIf="part.categoryName" title="Category">
+                                <i class="fas fa-tag me-1"></i>{{ part.categoryName }}
                             </span>
                             <span class="meta-item" *ngIf="part.author" title="Author">
                                 <i class="fas fa-user me-1"></i>{{ part.author }}
@@ -182,14 +182,14 @@
                         {{ part.ldrawTitle || part.name }}
                     </span>
                     <span class="lr-ldraw">{{ part.ldrawPartId }}</span>
-                    <span class="lr-category">{{ part.brickCategory?.name || '—' }}</span>
-                    <span class="lr-type">{{ part.partType?.name || '—' }}</span>
+                    <span class="lr-category">{{ part.categoryName || '—' }}</span>
+                    <span class="lr-type">{{ part.partTypeName || '—' }}</span>
                     <span class="lr-dims">{{ formatDimensions(part) }}</span>
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div *ngIf="!loading && filteredParts.length === 0" class="empty-state">
+            <div *ngIf="!loading && displayedParts.length === 0" class="empty-state">
                 <i class="fas fa-cubes empty-icon"></i>
                 <h3>No parts found</h3>
                 <p>Try adjusting your search or category filters</p>

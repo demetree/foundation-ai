@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -13,7 +13,7 @@ import { Location } from '@angular/common';
     templateUrl: './volunteer-group-custom-listing.component.html',
     styleUrls: ['./volunteer-group-custom-listing.component.scss']
 })
-export class VolunteerGroupCustomListingComponent implements OnInit, OnDestroy {
+export class VolunteerGroupCustomListingComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild(VolunteerGroupCustomAddEditComponent) addEditComponent!: VolunteerGroupCustomAddEditComponent;
     @ViewChild(VolunteerGroupCustomTableComponent) tableComponent!: VolunteerGroupCustomTableComponent;
 
@@ -52,6 +52,21 @@ export class VolunteerGroupCustomListingComponent implements OnInit, OnDestroy {
         ).subscribe(filterText => {
             this.loadFilteredCount(filterText);
         });
+    }
+
+    ngAfterViewInit(): void {
+        if (this.addEditComponent) {
+            this.addEditComponent.volunteerGroupChanged.pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: () => {
+                    if (this.tableComponent) {
+                        this.tableComponent.loadData();
+                    }
+                    this.loadTotalCount();
+                }
+            });
+        }
     }
 
     ngOnDestroy(): void {
