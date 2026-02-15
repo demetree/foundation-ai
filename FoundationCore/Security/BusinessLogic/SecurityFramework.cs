@@ -52,6 +52,150 @@ namespace Foundation.Security
         }
 
 
+        // =============================================================================================================
+        //
+        //  TENANT GUARD INFRASTRUCTURE
+        //
+        //  The SecurityTenantUser table carries three broad-stroke entitlement flags that govern a user's
+        //  relationship with their tenant.  These are intentionally much less granular than the per-module
+        //  role / privilege system:
+        //
+        //    isOwner  – The user is the tenant owner and has full administrative rights to every module
+        //               in the tenant, regardless of what roles are assigned to them.
+        //
+        //    canRead  – The user is allowed to read data from this tenant.  When false, the user is
+        //               effectively locked out of all read operations across all modules.
+        //
+        //    canWrite – The user is allowed to write data in this tenant.  When false, the user can
+        //               still read (if canRead is true) but cannot modify any data in any module.
+        //
+        //  These guards are evaluated BEFORE the per-module role/privilege checks.  If a guard denies
+        //  the operation, the more granular checks are never reached.
+        //
+        //  The guard system is ONLY active when multi-tenancy mode is enabled.  In single-tenant
+        //  deployments, these checks are bypassed entirely to preserve backward compatibility.
+        //
+        //  The SecurityTenantUser record is cached using the same MemoryCacheManager pattern as
+        //  other security data, with a key prefix of "SF_TUG_" (Tenant User Guard).  This cache
+        //  is automatically cleared by ClearSecurityCaches() because it matches the "^SF_" pattern.
+        //
+        // =============================================================================================================
+
+
+        /// <summary>
+        /// 
+        /// Retrieves the SecurityTenantUser record for the given user and their assigned tenant.
+        /// This record contains the tenant-level guard fields (isOwner, canRead, canWrite).
+        ///
+        /// Returns null if:
+        ///   - Multi-tenancy mode is not enabled
+        ///   - The user is null or has no tenant assigned
+        ///   - No SecurityTenantUser record exists for this user/tenant combination
+        ///   - The SecurityTenantUser record is inactive or deleted
+        ///
+        /// Results are cached using the standard SF_ cache key pattern.
+        /// 
+        /// </summary>
+        private static async Task<SecurityTenantUser> GetTenantUserGuardAsync(SecurityUser user, CancellationToken cancellationToken = default)
+        {
+            //
+            // Guard checks only apply in multi-tenant deployments.
+            // In single-tenant mode, return null to indicate "no guard applies."
+            //
+            if (Foundation.Configuration.GetMultiTenancyMode() == false)
+            {
+                return null;
+            }
+
+            //
+            // If we don't have a user or the user isn't assigned to a tenant, there's nothing to guard against.
+            //
+            if (user == null || user.securityTenantId.HasValue == false)
+            {
+                return null;
+            }
+
+            MemoryCacheManager mcm = new MemoryCacheManager();
+
+            string cacheKey = "SF_TUG_" + user.id + "_" + user.securityTenantId.Value;
+
+            if (mcm.IsSet(cacheKey) == true)
+            {
+                return mcm.Get<SecurityTenantUser>(cacheKey);
+            }
+
+            using (SecurityContext db = new SecurityContext())
+            {
+                //
+                // Look up the SecurityTenantUser join record that ties this user to their tenant.
+                // This is the record that carries the isOwner, canRead, and canWrite flags.
+                //
+                SecurityTenantUser tenantUser = await (from stu in db.SecurityTenantUsers
+                                                       where stu.securityUserId == user.id
+                                                       && stu.securityTenantId == user.securityTenantId.Value
+                                                       && stu.active == true
+                                                       && stu.deleted == false
+                                                       select stu)
+                                                       .AsNoTracking()
+                                                       .FirstOrDefaultAsync(cancellationToken)
+                                                       .ConfigureAwait(false);
+
+                mcm.Set(cacheKey, tenantUser, CACHE_TIME_MINUTES);
+
+                return tenantUser;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Synchronous version of GetTenantUserGuardAsync.
+        /// See the async version for full documentation.
+        /// 
+        /// </summary>
+        private static SecurityTenantUser GetTenantUserGuard(SecurityUser user)
+        {
+            //
+            // Guard checks only apply in multi-tenant deployments.
+            //
+            if (Foundation.Configuration.GetMultiTenancyMode() == false)
+            {
+                return null;
+            }
+
+            if (user == null || user.securityTenantId.HasValue == false)
+            {
+                return null;
+            }
+
+            MemoryCacheManager mcm = new MemoryCacheManager();
+
+            string cacheKey = "SF_TUG_" + user.id + "_" + user.securityTenantId.Value;
+
+            if (mcm.IsSet(cacheKey) == true)
+            {
+                return mcm.Get<SecurityTenantUser>(cacheKey);
+            }
+
+            using (SecurityContext db = new SecurityContext())
+            {
+                SecurityTenantUser tenantUser = (from stu in db.SecurityTenantUsers
+                                                 where stu.securityUserId == user.id
+                                                 && stu.securityTenantId == user.securityTenantId.Value
+                                                 && stu.active == true
+                                                 && stu.deleted == false
+                                                 select stu)
+                                                 .AsNoTracking()
+                                                 .FirstOrDefault();
+
+                mcm.Set(cacheKey, tenantUser, CACHE_TIME_MINUTES);
+
+                return tenantUser;
+            }
+        }
+
+
+
         public async static Task<SecurityProfile> GetUserSecurityProfileAsync(SecurityUser user, CancellationToken cancellationToken = default)
         {
             SecurityProfile output = new SecurityProfile();
@@ -64,6 +208,14 @@ namespace Foundation.Security
             output.accountName = user.accountName;
             output.id = user.id;
 
+            //
+            // TENANT GUARD CHECK
+            //
+            // Before building the per-module access profile, check if the user's tenant-level
+            // entitlements restrict their capabilities.  The tenantUser record (if present) will
+            // be used after the per-module role resolution to override access flags.
+            //
+            SecurityTenantUser tenantUser = await GetTenantUserGuardAsync(user, cancellationToken);
 
             output.roles = await GetUserModuleRolesAsync(user, cancellationToken);
             output.moduleAccess = new List<ModuleAccess>();
@@ -136,6 +288,57 @@ namespace Foundation.Security
                 }
             }
 
+
+            //
+            // TENANT GUARD OVERRIDES
+            //
+            // After the per-module role/privilege logic has run, apply the tenant-level guard overrides.
+            // These are broad-stroke overrides that can revoke access or grant full admin rights
+            // regardless of what the per-module roles say.
+            //
+            if (tenantUser != null)
+            {
+                for (int m = 0; m < output.moduleAccess.Count; m++)
+                {
+                    ModuleAccess ma = output.moduleAccess[m];
+
+                    //
+                    // If the user cannot read at the tenant level, shut the door on all modules.
+                    //
+                    if (tenantUser.canRead == false)
+                    {
+                        ma.userCanAccess = false;
+                        ma.userCanRead = false;
+                        ma.userCanWrite = false;
+                        ma.userCanAdminister = false;
+                        ma.userMustReadAnonymous = false;
+                    }
+                    //
+                    // If the user cannot write at the tenant level, revoke write and admin on all modules.
+                    // Read access is preserved.
+                    //
+                    else if (tenantUser.canWrite == false)
+                    {
+                        ma.userCanWrite = false;
+                        ma.userCanAdminister = false;
+                    }
+
+                    //
+                    // If the user is the tenant owner, grant full administrative access to every module.
+                    // This overrides any role-based restrictions — tenant owners can do everything.
+                    //
+                    if (tenantUser.isOwner == true)
+                    {
+                        ma.userCanAccess = true;
+                        ma.userCanRead = true;
+                        ma.userCanWrite = true;
+                        ma.userCanAdminister = true;
+                        ma.userMustReadAnonymous = false;
+                    }
+                }
+            }
+
+
             return output;
         }
 
@@ -152,6 +355,10 @@ namespace Foundation.Security
             output.accountName = user.accountName;
             output.id = user.id;
 
+            //
+            // TENANT GUARD CHECK — see async version for full documentation.
+            //
+            SecurityTenantUser tenantUser = GetTenantUserGuard(user);
 
             output.roles = GetUserModuleRoles(user);
             output.moduleAccess = new List<ModuleAccess>();
@@ -223,6 +430,42 @@ namespace Foundation.Security
                     }
                 }
             }
+
+
+            //
+            // TENANT GUARD OVERRIDES — see async version for full documentation.
+            //
+            if (tenantUser != null)
+            {
+                for (int m = 0; m < output.moduleAccess.Count; m++)
+                {
+                    ModuleAccess ma = output.moduleAccess[m];
+
+                    if (tenantUser.canRead == false)
+                    {
+                        ma.userCanAccess = false;
+                        ma.userCanRead = false;
+                        ma.userCanWrite = false;
+                        ma.userCanAdminister = false;
+                        ma.userMustReadAnonymous = false;
+                    }
+                    else if (tenantUser.canWrite == false)
+                    {
+                        ma.userCanWrite = false;
+                        ma.userCanAdminister = false;
+                    }
+
+                    if (tenantUser.isOwner == true)
+                    {
+                        ma.userCanAccess = true;
+                        ma.userCanRead = true;
+                        ma.userCanWrite = true;
+                        ma.userCanAdminister = true;
+                        ma.userMustReadAnonymous = false;
+                    }
+                }
+            }
+
 
             return output;
         }
@@ -944,6 +1187,35 @@ namespace Foundation.Security
                 return true;
             }
 
+
+            //
+            // TENANT GUARD CHECK
+            //
+            // If the user's SecurityTenantUser record indicates they cannot read from this tenant,
+            // then they effectively have no access to anything.  This is checked before the per-module
+            // role resolution because it is a broader, tenant-level restriction.
+            //
+            // If the user is the tenant owner (isOwner == true), they always have access, so we
+            // return false immediately — no need to check per-module roles.
+            //
+            SecurityTenantUser tenantUser = await GetTenantUserGuardAsync(user, cancellationToken);
+
+            if (tenantUser != null)
+            {
+                // Tenant owners always have access — bypass all further checks.
+                if (tenantUser.isOwner == true)
+                {
+                    return false;
+                }
+
+                // If the user cannot read at the tenant level, they have no access.
+                if (tenantUser.canRead == false)
+                {
+                    return true;
+                }
+            }
+
+
             //
             // Get the roles the user has access to in the provided module, if one is provided
             //
@@ -994,6 +1266,26 @@ namespace Foundation.Security
             {
                 return true;
             }
+
+
+            //
+            // TENANT GUARD CHECK — see async version for full documentation.
+            //
+            SecurityTenantUser tenantUser = GetTenantUserGuard(user);
+
+            if (tenantUser != null)
+            {
+                if (tenantUser.isOwner == true)
+                {
+                    return false;
+                }
+
+                if (tenantUser.canRead == false)
+                {
+                    return true;
+                }
+            }
+
 
             //
             // Get the roles the user has access to in the provided module, if one is provided
@@ -1123,6 +1415,36 @@ namespace Foundation.Security
                 return false;
             }
 
+
+            //
+            // TENANT GUARD CHECK
+            //
+            // Before evaluating per-module roles, check the tenant-level entitlement flags.
+            //
+            // If the user's SecurityTenantUser record says canRead == false, they cannot read from
+            // any module in this tenant, regardless of what roles they hold.  Return false immediately.
+            //
+            // If the user is the tenant owner (isOwner == true), they can always read everything.
+            // Return true immediately — no need to evaluate roles.
+            //
+            SecurityTenantUser tenantUser = await GetTenantUserGuardAsync(user, cancellationToken);
+
+            if (tenantUser != null)
+            {
+                // Tenant owners can always read.
+                if (tenantUser.isOwner == true)
+                {
+                    return true;
+                }
+
+                // If the user cannot read at the tenant level, deny immediately.
+                if (tenantUser.canRead == false)
+                {
+                    return false;
+                }
+            }
+
+
             bool adminFound = false;
             bool readerFound = false;
 
@@ -1209,6 +1531,26 @@ namespace Foundation.Security
             {
                 return false;
             }
+
+
+            //
+            // TENANT GUARD CHECK — see async version for full documentation.
+            //
+            SecurityTenantUser tenantUser = GetTenantUserGuard(user);
+
+            if (tenantUser != null)
+            {
+                if (tenantUser.isOwner == true)
+                {
+                    return true;
+                }
+
+                if (tenantUser.canRead == false)
+                {
+                    return false;
+                }
+            }
+
 
             bool adminFound = false;
             bool readerFound = false;
@@ -1359,6 +1701,43 @@ namespace Foundation.Security
                 return false;
             }
 
+
+            //
+            // TENANT GUARD CHECK
+            //
+            // Before evaluating per-module roles, check the tenant-level entitlement flags.
+            //
+            // If the user is the tenant owner, they can always write — return true immediately.
+            //
+            // If canRead is false, the user can't even access the tenant, so writing is also denied.
+            //
+            // If canWrite is false (but canRead is true), the user is in a read-only state at the
+            // tenant level.  They cannot write to any module regardless of their roles.
+            //
+            SecurityTenantUser tenantUser = await GetTenantUserGuardAsync(user, cancellationToken);
+
+            if (tenantUser != null)
+            {
+                // Tenant owners can always write.
+                if (tenantUser.isOwner == true)
+                {
+                    return true;
+                }
+
+                // Cannot write if the user can't even read at the tenant level.
+                if (tenantUser.canRead == false)
+                {
+                    return false;
+                }
+
+                // Cannot write if the tenant-level write flag is explicitly off.
+                if (tenantUser.canWrite == false)
+                {
+                    return false;
+                }
+            }
+
+
             //
             // Get the roles the user has access to in the provided module, if one is provided
             //
@@ -1437,6 +1816,31 @@ namespace Foundation.Security
             {
                 return false;
             }
+
+
+            //
+            // TENANT GUARD CHECK — see async version for full documentation.
+            //
+            SecurityTenantUser tenantUser = GetTenantUserGuard(user);
+
+            if (tenantUser != null)
+            {
+                if (tenantUser.isOwner == true)
+                {
+                    return true;
+                }
+
+                if (tenantUser.canRead == false)
+                {
+                    return false;
+                }
+
+                if (tenantUser.canWrite == false)
+                {
+                    return false;
+                }
+            }
+
 
             //
             // Get the roles the user has access to in the provided module, if one is provided
@@ -1518,6 +1922,41 @@ namespace Foundation.Security
 
 
             //
+            // TENANT GUARD CHECK
+            //
+            // Tenant owners have full administrative rights to every module — return true immediately.
+            //
+            // If canRead is false, the user has no access at all — deny administration.
+            //
+            // If canWrite is false, the user is read-only at the tenant level — administration requires
+            // write capability, so deny.
+            //
+            SecurityTenantUser tenantUser = await GetTenantUserGuardAsync(user, cancellationToken);
+
+            if (tenantUser != null)
+            {
+                // Tenant owners are always administrators.
+                if (tenantUser.isOwner == true)
+                {
+                    return true;
+                }
+
+                // No read access means no access at all.
+                if (tenantUser.canRead == false)
+                {
+                    return false;
+                }
+
+                // Read-only users cannot administer.
+                if (tenantUser.canWrite == false)
+                {
+                    return false;
+                }
+            }
+
+
+
+            //
             // Get the roles the user has access to in the provided module, if one is provided
             //
             List<SecurityRole> userRoles = null;
@@ -1557,6 +1996,31 @@ namespace Foundation.Security
             {
                 return false;
             }
+
+
+            //
+            // TENANT GUARD CHECK — see async version for full documentation.
+            //
+            SecurityTenantUser tenantUser = GetTenantUserGuard(user);
+
+            if (tenantUser != null)
+            {
+                if (tenantUser.isOwner == true)
+                {
+                    return true;
+                }
+
+                if (tenantUser.canRead == false)
+                {
+                    return false;
+                }
+
+                if (tenantUser.canWrite == false)
+                {
+                    return false;
+                }
+            }
+
 
 
             //

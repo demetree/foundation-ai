@@ -797,7 +797,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// No authentication required — returns 404 if profile is not public.
         /// </summary>
         [HttpGet]
-        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerIP)]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerClientIp)]
         [Route("api/profile/{id:int}")]
         public async Task<IActionResult> GetPublicProfile(int id, CancellationToken cancellationToken = default)
         {
@@ -875,7 +875,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// No authentication required — returns 404 if profile is not public or has no avatar.
         /// </summary>
         [HttpGet]
-        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerIP)]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerClientIp)]
         [Route("api/profile/{id:int}/avatar")]
         public async Task<IActionResult> GetPublicAvatar(int id, CancellationToken cancellationToken = default)
         {
@@ -890,7 +890,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// No authentication required — returns 404 if profile is not public or has no banner.
         /// </summary>
         [HttpGet]
-        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerIP)]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerClientIp)]
         [Route("api/profile/{id:int}/banner")]
         public async Task<IActionResult> GetPublicBanner(int id, CancellationToken cancellationToken = default)
         {

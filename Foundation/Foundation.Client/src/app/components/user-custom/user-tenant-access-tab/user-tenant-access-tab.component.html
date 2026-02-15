@@ -1,0 +1,105 @@
+<div class="tenant-access-container" *ngIf="user">
+    <div class="row g-4">
+
+        <!-- Tenant Entitlements Section -->
+        <div class="col-12">
+            <div class="section-card">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="section-title mb-0">
+                        <i class="fa-solid fa-building-shield me-2 text-primary"></i>Tenant Entitlements
+                    </h6>
+                    <span class="badge bg-primary-subtle text-primary" *ngIf="tenantUser">
+                        <i class="fa-solid fa-building me-1"></i>{{ getTenantName() }}
+                    </span>
+                </div>
+
+                <!-- Loading -->
+                <div *ngIf="loading" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Loading tenant access...</span>
+                </div>
+
+                <!-- No Tenant Assigned -->
+                <div *ngIf="!loading && !user.securityTenantId" class="text-center py-4">
+                    <i class="fa-solid fa-building-circle-xmark fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No tenant assigned to this user</p>
+                </div>
+
+                <!-- Tenant Assigned but No Record Found -->
+                <div *ngIf="!loading && user.securityTenantId && !tenantUser" class="text-center py-4">
+                    <i class="fa-solid fa-triangle-exclamation fa-2x text-warning opacity-75 mb-2"></i>
+                    <p class="text-muted mb-0">Tenant user record not found. Save the user to create it automatically.
+                    </p>
+                </div>
+
+                <!-- Entitlement Toggles -->
+                <div *ngIf="!loading && tenantUser" class="entitlements-list">
+
+                    <!-- Is Owner -->
+                    <div class="entitlement-row d-flex justify-content-between align-items-center">
+                        <div class="entitlement-info">
+                            <div class="entitlement-label fw-semibold">
+                                <i class="fa-solid fa-crown me-2 text-warning"></i>Is Owner
+                            </div>
+                            <small class="text-muted">Grants full ownership privileges for this tenant</small>
+                        </div>
+                        <div class="entitlement-control">
+                            <div class="form-check form-switch" *ngIf="userCanManage()">
+                                <input class="form-check-input" type="checkbox" role="switch" id="tenantIsOwner"
+                                    [checked]="tenantUser.isOwner" [disabled]="saving" (change)="toggleIsOwner()">
+                            </div>
+                            <i *ngIf="!userCanManage()" class="fa-solid"
+                                [ngClass]="tenantUser.isOwner ? 'fa-check-circle text-success' : 'fa-times-circle text-muted'"></i>
+                        </div>
+                    </div>
+
+                    <!-- Can Read -->
+                    <div class="entitlement-row d-flex justify-content-between align-items-center">
+                        <div class="entitlement-info">
+                            <div class="entitlement-label fw-semibold">
+                                <i class="fa-solid fa-eye me-2 text-info"></i>Can Read
+                            </div>
+                            <small class="text-muted">Allows reading data within this tenant</small>
+                        </div>
+                        <div class="entitlement-control">
+                            <div class="form-check form-switch" *ngIf="userCanManage()">
+                                <input class="form-check-input" type="checkbox" role="switch" id="tenantCanRead"
+                                    [checked]="tenantUser.canRead" [disabled]="saving" (change)="toggleCanRead()">
+                            </div>
+                            <i *ngIf="!userCanManage()" class="fa-solid"
+                                [ngClass]="tenantUser.canRead ? 'fa-check-circle text-success' : 'fa-times-circle text-muted'"></i>
+                        </div>
+                    </div>
+
+                    <!-- Can Write -->
+                    <div class="entitlement-row d-flex justify-content-between align-items-center">
+                        <div class="entitlement-info">
+                            <div class="entitlement-label fw-semibold">
+                                <i class="fa-solid fa-pen me-2 text-success"></i>Can Write
+                            </div>
+                            <small class="text-muted">Allows creating and modifying data within this tenant</small>
+                        </div>
+                        <div class="entitlement-control">
+                            <div class="form-check form-switch" *ngIf="userCanManage()">
+                                <input class="form-check-input" type="checkbox" role="switch" id="tenantCanWrite"
+                                    [checked]="tenantUser.canWrite" [disabled]="saving" (change)="toggleCanWrite()">
+                            </div>
+                            <i *ngIf="!userCanManage()" class="fa-solid"
+                                [ngClass]="tenantUser.canWrite ? 'fa-check-circle text-success' : 'fa-times-circle text-muted'"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Saving indicator -->
+                <div *ngIf="saving" class="text-end mt-2">
+                    <small class="text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary me-1" role="status"></div>
+                        Saving...
+                    </small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

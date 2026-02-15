@@ -305,6 +305,160 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         // ─────────────────────────────────────────────────────────────
+        // ADMIN: Provision Hub Access for a Volunteer
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Creates (or reuses) a SecurityUser record for a volunteer, links it to
+        /// the VolunteerProfile, and configures 2FA delivery for OTP login.
+        /// Called from the admin volunteer add/edit form.
+        /// </summary>
+        [HttpPost("admin/provision-access")]
+        public async Task<IActionResult> ProvisionAccess([FromBody] ProvisionAccessModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model?.Email))
+            {
+                return BadRequest(new { message = "Email is required." });
+            }
+
+            if (model.VolunteerProfileId <= 0)
+            {
+                return BadRequest(new { message = "Volunteer profile ID is required." });
+            }
+
+            try
+            {
+                // Verify the volunteer profile exists
+                VolunteerProfile? volunteerProfile = await _schedulerDb.VolunteerProfiles
+                    .Include(vp => vp.resource)
+                    .Where(vp => vp.id == model.VolunteerProfileId)
+                    .FirstOrDefaultAsync();
+
+                if (volunteerProfile == null)
+                {
+                    return NotFound(new { message = "Volunteer profile not found." });
+                }
+
+                string email = model.Email.Trim().ToLowerInvariant();
+                string? phone = string.IsNullOrWhiteSpace(model.Phone) ? null : model.Phone.Trim();
+                string firstName = model.FirstName?.Trim() ?? "";
+                string lastName = model.LastName?.Trim() ?? "";
+
+                Guid linkedUserGuid;
+                string accountName;
+
+                using (SecurityContext securityDb = new SecurityContext())
+                {
+                    // Check if a SecurityUser already exists with this email
+                    SecurityUser? existingUser = await securityDb.SecurityUsers
+                        .Where(u => u.accountName.ToLower() == email || u.emailAddress.ToLower() == email)
+                        .FirstOrDefaultAsync();
+
+                    if (existingUser != null)
+                    {
+                        // Refuse if this is a real system account (AD user or non-volunteer-hub account)
+                        bool isSystemAccount = existingUser.activeDirectoryAccount == true
+                            || (existingUser.description != null && !existingUser.description.StartsWith("Volunteer Hub access provisioned"));
+
+                        if (isSystemAccount)
+                        {
+                            return Conflict(new { message = "This email belongs to an existing system user account. Please use a different email address for Volunteer Hub access." });
+                        }
+
+                        // Check if another volunteer profile is already linked to this SecurityUser
+                        bool alreadyLinked = await _schedulerDb.VolunteerProfiles
+                            .AnyAsync(vp => vp.linkedUserGuid == existingUser.objectGuid
+                                         && vp.id != model.VolunteerProfileId
+                                         && vp.active == true
+                                         && vp.deleted == false);
+
+                        if (alreadyLinked)
+                        {
+                            return Conflict(new { message = "This email is already linked to another volunteer profile." });
+                        }
+
+                        // Reuse existing volunteer hub user — ensure 2FA delivery is configured
+                        if (existingUser.twoFactorSendByEmail != true)
+                        {
+                            existingUser.twoFactorSendByEmail = true;
+                        }
+                        if (phone != null && existingUser.twoFactorSendBySMS != true)
+                        {
+                            existingUser.cellPhoneNumber = phone;
+                            existingUser.twoFactorSendBySMS = true;
+                        }
+
+                        existingUser.canLogin = true;
+                        await securityDb.SaveChangesAsync();
+
+                        linkedUserGuid = existingUser.objectGuid;
+                        accountName = existingUser.accountName;
+
+                        _logger.LogInformation(
+                            "VolunteerHub: Reused existing SecurityUser '{AccountName}' for volunteer profile {ProfileId}",
+                            accountName, model.VolunteerProfileId);
+                    }
+                    else
+                    {
+                        // Create a new SecurityUser for this volunteer
+                        SecurityUser newUser = new SecurityUser();
+
+                        newUser.objectGuid = Guid.NewGuid();
+                        newUser.accountName = email;
+                        newUser.emailAddress = email;
+
+                        // Random GUID password — prevents login via admin credentials
+                        newUser.password = SecurityLogic.SecurePasswordHasher.Hash(Guid.NewGuid().ToString("N"));
+
+                        newUser.firstName = firstName;
+                        newUser.lastName = lastName;
+                        newUser.description = $"Volunteer Hub access provisioned for {firstName} {lastName}".Trim();
+
+                        newUser.cellPhoneNumber = phone;
+
+                        newUser.twoFactorSendByEmail = true;
+                        newUser.twoFactorSendBySMS = phone != null;
+
+                        newUser.activeDirectoryAccount = false;
+                        newUser.canLogin = true;
+                        newUser.failedLoginCount = 0;
+                        newUser.mostRecentActivity = DateTime.UtcNow;
+
+                        newUser.active = true;
+                        newUser.deleted = false;
+
+                        securityDb.SecurityUsers.Add(newUser);
+                        await securityDb.SaveChangesAsync();
+
+                        linkedUserGuid = newUser.objectGuid;
+                        accountName = newUser.accountName;
+
+                        _logger.LogInformation(
+                            "VolunteerHub: Created new SecurityUser '{AccountName}' (objectGuid: {Guid}) for volunteer profile {ProfileId}",
+                            accountName, linkedUserGuid, model.VolunteerProfileId);
+                    }
+                }
+
+                // Link the volunteer profile to the SecurityUser
+                volunteerProfile.linkedUserGuid = linkedUserGuid;
+                await _schedulerDb.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    linkedUserGuid = linkedUserGuid,
+                    accountName = accountName,
+                    message = "Hub access provisioned successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error provisioning hub access for volunteer profile {ProfileId}", model.VolunteerProfileId);
+                return StatusCode(500, new { message = "An error occurred while provisioning access." });
+            }
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
         // HELPERS
         // ─────────────────────────────────────────────────────────────
 
@@ -364,5 +518,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
     {
         public string Identifier { get; set; } = "";
         public string Code { get; set; } = "";
+    }
+
+    public class ProvisionAccessModel
+    {
+        public int VolunteerProfileId { get; set; }
+        public string Email { get; set; } = "";
+        public string? Phone { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
     }
 }

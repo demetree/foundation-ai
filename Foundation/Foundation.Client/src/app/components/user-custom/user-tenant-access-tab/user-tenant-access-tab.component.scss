@@ -1,0 +1,70 @@
+//
+// User Tenant Access Tab Styles
+//
+
+.tenant-access-container {
+    min-height: 200px;
+}
+
+.section-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #e9ecef;
+}
+
+.section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+}
+
+.entitlements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.entitlement-row {
+    padding: 0.875rem 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;
+    }
+}
+
+.entitlement-label {
+    font-size: 0.9rem;
+}
+
+.entitlement-info {
+    small {
+        display: block;
+        margin-top: 2px;
+    }
+}
+
+.form-check-input {
+    width: 2.5em;
+    height: 1.25em;
+    cursor: pointer;
+
+    &:checked {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

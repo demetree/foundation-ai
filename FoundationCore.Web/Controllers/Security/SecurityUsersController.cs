@@ -912,6 +912,12 @@ namespace Foundation.Security.Controllers.WebAPI
                     stu.securityTenantId = securityUser.securityTenantId.Value;
                     stu.objectGuid = Guid.NewGuid();
 
+                    //
+                    // Default to being able to read and write
+                    //
+                    stu.canRead = true;
+                    stu.canWrite = true;
+
                     stu.active = true;
                     stu.deleted = false;
                     _context.SecurityTenantUsers.Add(stu);
@@ -1073,6 +1079,12 @@ namespace Foundation.Security.Controllers.WebAPI
                     stu.securityUserId = securityUser.id;
                     stu.securityTenantId = securityUser.securityTenantId.Value;
                     stu.objectGuid = Guid.NewGuid();
+
+                    //
+                    // Default to being able to read and write
+                    //
+                    stu.canRead = true;
+                    stu.canWrite = true;
 
                     stu.active = true;
                     stu.deleted = false;

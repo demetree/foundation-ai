@@ -191,10 +191,13 @@ namespace Foundation.Scheduler
                 //
                 controllers.Add(typeof(DataController));                    // For Excel export
                 controllers.Add(typeof(TenantProfileController));           // For profile access with auto creation
-                controllers.Add(typeof(GeocodingController));                // For address-to-coordinate resolution
-                                                                             //
-                                                                             // End of Scheduler custom controllers
-                                                                             //
+                controllers.Add(typeof(GeocodingController));               // For address-to-coordinate resolution
+                controllers.Add(typeof(VolunteerHubController));            // For setting up volunteer user accounts for hub acces
+
+
+                //
+                // End of Scheduler custom controllers
+                //
 
                 //
                 // Start of code generated controller list for Scheduler module

@@ -1,0 +1,119 @@
+<div class="profile animate-fade-in">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <span class="loading-text">Loading profile...</span>
+    </div>
+
+    <!-- Not Found State -->
+    <div *ngIf="notFound && !isLoading" class="not-found-container bmc-card">
+        <i class="fas fa-user-slash not-found-icon"></i>
+        <h2>Profile Not Found</h2>
+        <p>This profile doesn't exist or is set to private.</p>
+    </div>
+
+    <!-- Profile Content -->
+    <div *ngIf="profile && !isLoading && !notFound" class="profile-content">
+
+        <!-- Hero Banner -->
+        <div class="profile-hero" [style.background-image]="bannerSafeStyle">
+            <div class="hero-overlay"></div>
+
+            <div class="hero-content">
+                <!-- Avatar -->
+                <div class="avatar-container">
+                    <div class="avatar" *ngIf="!profile.hasAvatar">
+                        <span class="avatar-initials">{{ getAvatarInitials() }}</span>
+                    </div>
+                    <img *ngIf="profile.hasAvatar" [src]="profile.avatarUrl" class="avatar-img" alt="Avatar">
+                </div>
+
+                <!-- Name & Meta -->
+                <div class="hero-info">
+                    <h1 class="display-name">{{ profile.displayName }}</h1>
+                    <div class="meta-row">
+                        <span class="meta-item" *ngIf="profile.location">
+                            <i class="fas fa-map-marker-alt"></i> {{ profile.location }}
+                        </span>
+                        <span class="meta-item" *ngIf="profile.memberSinceDate">
+                            <i class="fas fa-calendar-alt"></i> Member since {{ getMemberSinceFormatted() }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Bio Section -->
+        <div class="bio-section bmc-card" *ngIf="profile.bio">
+            <h3 class="section-title"><i class="fas fa-feather-alt me-2"></i>About</h3>
+            <p class="bio-text">{{ profile.bio }}</p>
+        </div>
+
+
+        <!-- Social Links -->
+        <div class="links-section bmc-card" *ngIf="profile.links && profile.links.length > 0">
+            <h3 class="section-title"><i class="fas fa-link me-2"></i>Links</h3>
+            <div class="links-row">
+                <a *ngFor="let link of profile.links" class="social-link" [href]="link.url" target="_blank"
+                    rel="noopener noreferrer" [title]="link.displayLabel || link.linkTypeName">
+                    <i [class]="link.iconCssClass || 'fas fa-external-link-alt'"></i>
+                    <span>{{ link.displayLabel || link.linkTypeName }}</span>
+                </a>
+            </div>
+        </div>
+
+
+        <!-- Stats Grid -->
+        <div class="stats-section">
+            <h3 class="section-title"><i class="fas fa-chart-bar me-2"></i>Statistics</h3>
+            <div class="stats-grid">
+                <div *ngFor="let stat of stats; let i = index" class="stat-card bmc-card"
+                    [style.animation-delay]="(i * 80) + 'ms'">
+                    <div class="stat-icon" [style.color]="stat.color">
+                        <i [class]="stat.icon"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stat.value | number }}</span>
+                        <span class="stat-label">{{ stat.label }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Website Link -->
+        <div class="website-section bmc-card" *ngIf="profile.websiteUrl">
+            <i class="fas fa-globe"></i>
+            <a [href]="profile.websiteUrl" target="_blank" rel="noopener noreferrer">
+                {{ profile.websiteUrl }}
+            </a>
+        </div>
+
+
+        <!-- Tabbed Sections (shells for future content) -->
+        <div class="tabs-section">
+            <div class="tab-header">
+                <button class="tab-btn active">
+                    <i class="fas fa-drafting-compass me-1"></i> MOCs
+                </button>
+                <button class="tab-btn" disabled>
+                    <i class="fas fa-layer-group me-1"></i> Sets
+                </button>
+                <button class="tab-btn" disabled>
+                    <i class="fas fa-trophy me-1"></i> Achievements
+                </button>
+            </div>
+            <div class="tab-content bmc-card">
+                <div class="empty-tab">
+                    <i class="fas fa-drafting-compass"></i>
+                    <p>No MOCs published yet.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

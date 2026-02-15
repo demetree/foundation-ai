@@ -113,6 +113,16 @@
                     </ng-template>
                 </li>
 
+                <!-- Tenant Access Tab -->
+                <li [ngbNavItem]="'tenant-access'">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-building-shield me-2"></i>Tenant Access
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-user-tenant-access-tab [user]="user"></app-user-tenant-access-tab>
+                    </ng-template>
+                </li>
+
                 <!-- Roles & Groups Tab -->
                 <li [ngbNavItem]="'roles'">
                     <button ngbNavLink>

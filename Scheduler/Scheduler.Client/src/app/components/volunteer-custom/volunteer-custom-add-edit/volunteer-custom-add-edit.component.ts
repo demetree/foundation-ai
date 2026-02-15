@@ -1,6 +1,7 @@
 import { Component, ViewChild, Output, Input, TemplateRef, SimpleChanges } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject, finalize } from 'rxjs';
@@ -54,6 +55,14 @@ export class VolunteerCustomAddEditComponent {
     public isCompliancePanelOpen = false;
     public isNotesPanelOpen = false;
     public isAppearancePanelOpen = false;
+    public isHubAccessPanelOpen = false;
+
+    // Hub Access provisioning
+    public hubEmail = '';
+    public hubPhone = '';
+    public isProvisioning = false;
+    public linkedUserGuid: string | null = null;
+    public linkedAccountName: string | null = null;
 
     volunteerForm: FormGroup = this.fb.group({
         resourceId: [null, Validators.required],
@@ -100,7 +109,8 @@ export class VolunteerCustomAddEditComponent {
         private alertService: AlertService,
         private currentUserService: CurrentUserService,
         private router: Router,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private http: HttpClient
     ) { }
 
     openModal(data?: VolunteerProfileData) {
@@ -117,6 +127,7 @@ export class VolunteerCustomAddEditComponent {
             this.submitData = this.volunteerProfileService.ConvertToVolunteerProfileSubmitData(data);
             this.isEditMode = true;
             this.objectGuid = data.objectGuid;
+            this.linkedUserGuid = data.linkedUserGuid ?? null;
             this.buildFormValues(data);
         } else {
             if (!this.volunteerProfileService.userIsSchedulerVolunteerProfileWriter()) {
@@ -129,6 +140,10 @@ export class VolunteerCustomAddEditComponent {
 
             this.isEditMode = false;
             this.currentData = null;
+            this.linkedUserGuid = null;
+            this.linkedAccountName = null;
+            this.hubEmail = '';
+            this.hubPhone = '';
             this.buildFormValues(null);
         }
 
@@ -149,6 +164,7 @@ export class VolunteerCustomAddEditComponent {
         this.isCompliancePanelOpen = false;
         this.isNotesPanelOpen = false;
         this.isAppearancePanelOpen = false;
+        this.isHubAccessPanelOpen = false;
         this.modalIsDisplayed = false;
     }
 
@@ -192,6 +208,7 @@ export class VolunteerCustomAddEditComponent {
             iconId: formValue.iconId ? Number(formValue.iconId) : null,
             color: formValue.color?.trim() || null,
             attributes: null,
+            linkedUserGuid: this.linkedUserGuid,
             versionNumber: this.submitData?.versionNumber ?? 0,
             active: !!formValue.active,
             deleted: !!formValue.deleted,
@@ -319,5 +336,47 @@ export class VolunteerCustomAddEditComponent {
 
     public userIsSchedulerAdministrator(): boolean {
         return this.authService.isSchedulerAdministrator;
+    }
+
+
+    // ─── Hub Access Provisioning ───────────────────────
+
+    provisionHubAccess(): void {
+        if (!this.hubEmail.trim() || this.isProvisioning) return;
+        if (!this.submitData?.id) {
+            this.alertService.showMessage('Save the volunteer first', 'You must save the volunteer profile before provisioning Hub access.', MessageSeverity.warn);
+            return;
+        }
+
+        this.isProvisioning = true;
+        const payload = {
+            volunteerProfileId: this.submitData.id,
+            email: this.hubEmail.trim(),
+            phone: this.hubPhone.trim() || null,
+            firstName: this.currentData?.resource?.name?.split(' ')[0] || '',
+            lastName: this.currentData?.resource?.name?.split(' ').slice(1).join(' ') || ''
+        };
+
+        this.http.post<any>('/api/volunteerhub/admin/provision-access', payload).subscribe({
+            next: (result) => {
+                this.linkedUserGuid = result.linkedUserGuid;
+                this.linkedAccountName = result.accountName;
+                this.isProvisioning = false;
+                this.volunteerForm.markAsDirty();
+                this.alertService.showMessage('Hub access provisioned', result.message, MessageSeverity.success);
+            },
+            error: (err) => {
+                this.isProvisioning = false;
+                const msg = err?.error?.message || 'Failed to provision hub access.';
+                this.alertService.showMessage('Provisioning failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+    removeHubAccess(): void {
+        this.linkedUserGuid = null;
+        this.linkedAccountName = null;
+        this.volunteerForm.markAsDirty();
+        this.alertService.showMessage('Hub access removed', 'Save the volunteer to confirm.', MessageSeverity.info);
     }
 }

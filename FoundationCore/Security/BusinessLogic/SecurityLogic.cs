@@ -3631,6 +3631,18 @@ This setting makes sure that the user profile - a COM object - loads when needed
                         stu.securityUserId = securityUser.id;
                         stu.securityTenantId = tenant.id;
 
+                        //
+                        // Tenant guard field defaults for newly created users.
+                        //
+                        // canRead and canWrite default to true so that new users are not locked out
+                        // of their tenant.  These can be revoked later by an administrator.
+                        //
+                        // isOwner defaults to false.  Tenant ownership should be explicitly granted.
+                        //
+                        stu.isOwner = false;
+                        stu.canRead = true;
+                        stu.canWrite = true;
+
                         stu.objectGuid = Guid.NewGuid();
                         stu.active = true;
                         stu.deleted = false;
