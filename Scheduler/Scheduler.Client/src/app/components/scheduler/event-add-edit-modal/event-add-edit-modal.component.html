@@ -99,6 +99,12 @@
         <div class="col-md-4">
           <label class="form-label fw-semibold">End <span class="text-danger">*</span></label>
           <input type="datetime-local" class="form-control" formControlName="endDateTime" />
+          <!-- Quick Duration Pills -->
+          <div class="d-flex gap-1 mt-1 flex-wrap" *ngIf="eventForm.get('startDateTime')?.value">
+            <button type="button" class="btn btn-sm duration-pill" *ngFor="let dur of [30, 60, 120, 240, 480]"
+              [class.active]="getActiveDuration() === dur" (click)="setDuration(dur)">
+              {{ dur < 60 ? dur + 'm' : (dur / 60) + 'h' }} </button>
+          </div>
         </div>
         <div class="col-md-4 d-flex align-items-end">
           <div class="form-check">

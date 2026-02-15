@@ -46,6 +46,24 @@
                 </ng-template>
             </li>
 
+            <li ngbNavItem="assignments">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-calendar-check me-1"></i> Assignments
+                </a>
+                <ng-template ngbNavContent>
+                    <app-volunteer-assignments-tab [volunteer]="volunteer"></app-volunteer-assignments-tab>
+                </ng-template>
+            </li>
+
+            <li ngbNavItem="hours">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-clock me-1"></i> Hours
+                </a>
+                <ng-template ngbNavContent>
+                    <app-volunteer-hours-tab [volunteer]="volunteer"></app-volunteer-hours-tab>
+                </ng-template>
+            </li>
+
             <li ngbNavItem="groups">
                 <a ngbNavLink>
                     <i class="fa-solid fa-people-group me-1"></i> Groups

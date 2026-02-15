@@ -1,0 +1,87 @@
+<div class="add-user-set-ownership" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-set-ownership me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Set Ownership" 
+        *ngIf="userIsBMCUserSetOwnershipWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userSetOwnershipModal let-modal>
+   <div class="modal-header bg-dark text-light user-set-ownership-modal-header">
+      <h5 class="modal-title mb-0" id="userSetOwnershipModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Set Ownership' : 'Add User Set Ownership' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-set-ownership-modal-body">
+      <form [formGroup]="userSetOwnershipForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('legoSetId')">
+                <label for="UserSetOwnership-legoSetId" id="label-UserSetOwnership-legoSetId"><span class="text-danger">*</span>Lego Set</label>
+                <select id="UserSetOwnership-legoSetId" formControlName="legoSetId" class="form-select user-set-ownership-select" [disabled]="!userIsBMCUserSetOwnershipWriter()">
+                    <option [ngValue]="null">Select Lego Set</option>
+                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                </select>
+                <div *ngIf="userSetOwnershipForm.get('legoSetId')?.invalid && userSetOwnershipForm.get('legoSetId')?.touched" class="text-danger">
+                    Lego Set is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="UserSetOwnership-status" id="label-UserSetOwnership-status"><span class="text-danger">*</span>Status</label>
+                <input type="text" id="UserSetOwnership-status" formControlName="status" placeholder="Enter Status" class="form-control user-set-ownership-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" aria-labelledby="label-status" />
+                <div *ngIf="userSetOwnershipForm.get('status')?.invalid && userSetOwnershipForm.get('status')?.touched" class="text-danger">
+                    Status is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('acquiredDate')">
+                <label for="UserSetOwnership-acquiredDate" id="label-UserSetOwnership-acquiredDate">Acquired Date</label>
+                <input type="datetime-local" id="UserSetOwnership-acquiredDate" formControlName="acquiredDate" placeholder="Enter Acquired Date" class="form-control user-set-ownership-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" aria-labelledby="label-acquiredDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('personalRating')">
+                <label for="UserSetOwnership-personalRating" id="label-UserSetOwnership-personalRating">Personal Rating</label>
+                <input type="number" id="UserSetOwnership-personalRating" formControlName="personalRating" placeholder="Enter Personal Rating" class="form-control user-set-ownership-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" aria-labelledby="label-personalRating" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="UserSetOwnership-notes" id="label-UserSetOwnership-notes">Notes</label>
+                <textarea id="UserSetOwnership-notes" formControlName="notes" placeholder="Enter Notes" class="form-control user-set-ownership-input" [disabled]="!userIsBMCUserSetOwnershipWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                <label for="UserSetOwnership-quantity" id="label-UserSetOwnership-quantity"><span class="text-danger">*</span>Quantity</label>
+                <input type="number" id="UserSetOwnership-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control user-set-ownership-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" aria-labelledby="label-quantity" />
+                <div *ngIf="userSetOwnershipForm.get('quantity')?.invalid && userSetOwnershipForm.get('quantity')?.touched" class="text-danger">
+                    Quantity is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublic')">
+                <input type="checkbox" id="UserSetOwnership-isPublic" formControlName="isPublic" class="form-check-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" />
+                <label for="UserSetOwnership-isPublic" class="form-check-label" id="label-UserSetOwnership-isPublic"><span class="text-danger">*</span>Is Public</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserSetOwnership-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" />
+                <label for="UserSetOwnership-active" class="form-check-label" id="label-UserSetOwnership-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserSetOwnership-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserSetOwnershipWriter()" />
+                <label for="UserSetOwnership-deleted" class="form-check-label" id="label-UserSetOwnership-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-set-ownership-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Set Ownership changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userSetOwnershipForm.valid || userSetOwnershipForm.pristine  || userIsBMCUserSetOwnershipWriter() == false " ngbTooltip="Save the User Set Ownership changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Set Ownership' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

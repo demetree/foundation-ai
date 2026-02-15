@@ -788,6 +788,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 					project.ProjectReferenceImages = null;
 					project.ProjectRenders = null;
 					project.ProjectTagAssignments = null;
+					project.PublishedMocs = null;
 					project.Submodels = null;
 
 
@@ -912,6 +913,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				cloneOfExisting.ProjectReferenceImages = null;
 				cloneOfExisting.ProjectRenders = null;
 				cloneOfExisting.ProjectTagAssignments = null;
+				cloneOfExisting.PublishedMocs = null;
 				cloneOfExisting.Submodels = null;
 
 				if (versionNumber >= project.versionNumber)

@@ -1,0 +1,87 @@
+<div class="page-container">
+    <div class="card mb-3 header-card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="header-left">
+                <!-- Back Button -->
+                <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <!-- Title -->
+                <div>
+                    <h3 class="page-title mb-0">Api Request Logs</h3>
+                    <small class="text-muted">View Api Request Logs</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+              <span class="badge bg-secondary mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+                <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+              </span>
+
+              <span *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                <ng-container *ngIf="totalApiRequestLogCount$ | async as total; else falsyObservable">
+                  <span class="badge bg-secondary mx-2">
+
+                    <!-- Filtered: some results -->
+                    <ng-container *ngIf="filteredApiRequestLogCount$ | async as filteredCount">
+                      <span *ngIf="filterText && (filteredCount ?? 0) > 0">
+                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Api Request Logs' : 'Api Request Log' }}
+                      </span>
+                    </ng-container>
+                    <!-- Filtered: 0 results -->
+                    <span *ngIf="total > 0 && filterText && (filteredApiRequestLogCount$ | async) === 0">
+                      No matching Api Request Logs
+                    </span>
+                    <!-- No filter: normal count -->
+                    <span *ngIf="!filterText">
+                      {{ total }} {{ total !== 1 ? 'Api Request Logs' : 'Api Request Log' }}
+                    </span>
+                    <!-- No Api Request Logs at all (even unfiltered) -->
+                    <span *ngIf="total === 0">
+                      No Api Request Logs
+                    </span>
+
+                  </span>
+                </ng-container>
+
+                <!-- when observable is falsy, then decide whether to show a spinner or a loading spinner..-->
+                <ng-template #falsyObservable>
+                  <span class="badge bg-secondary mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
+                    <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                  </span>
+                  <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                    No Api Request Logs
+                  </span>
+                </ng-template>
+
+              </span>
+
+                <!-- Quick Search Input -->
+                <div class="search-bar me-2 position-relative">  
+                <i class="fa fa-search search-icon"></i>
+                <input type="text"
+                   class="form-control search-input"
+                   placeholder="Search ApiRequestLogs..."
+                   [(ngModel)]="filterText"
+                   (ngModelChange)="onFilterChange()">
+                <button *ngIf="filterText"
+                    class="clear-search btn"
+                    (click)="filterText=''; onFilterChange()"
+                    title="Clear Search">
+                <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+             <!-- Add/Edit Button -->
+             <app-api-request-log-add-edit [navigateToDetailsAfterAdd]="false"></app-api-request-log-add-edit>
+          </div>
+      </div>
+    </div>
+
+  <app-api-request-log-table
+    *ngIf="userIsBMCApiRequestLogReader() == true"
+    [filterText]="filterText"
+    [isSmallScreen]="isSmallScreen">
+  </app-api-request-log-table>
+</div>

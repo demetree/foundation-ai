@@ -33,12 +33,16 @@ namespace Foundation.BMC.Database
         private const int BMC_COLLECTION_WRITER_PERMISSION_LEVEL = 10;        // User's personal collection / inventory
         private const int BMC_INSTRUCTION_WRITER_PERMISSION_LEVEL = 20;       // Instructions, manuals, pages
         private const int BMC_CATALOG_WRITER_PERMISSION_LEVEL = 50;           // Admin: parts catalog, colours, connectors
+        private const int BMC_COMMUNITY_WRITER_PERMISSION_LEVEL = 1;          // Social interactions (follows, likes, comments, MOC publishing)
+        private const int BMC_MODERATOR_PERMISSION_LEVEL = 100;               // Content moderation and community management
         private const int BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL = 255;      // Foundation / system admin only
 
         // ── Custom role names ──
         private const string BMC_CATALOG_WRITER_CUSTOM_ROLE_NAME = "BMC Catalog Writer";
         private const string BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME = "BMC Collection Writer";
         private const string BMC_INSTRUCTION_WRITER_CUSTOM_ROLE_NAME = "BMC Instruction Writer";
+        private const string BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME = "BMC Community Writer";
+        private const string BMC_MODERATOR_CUSTOM_ROLE_NAME = "BMC Moderator";
 
 
         public BmcDatabaseGenerator() : base("BMC", "BMC")
@@ -57,6 +61,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             this.database.AddCustomRole(BMC_CATALOG_WRITER_CUSTOM_ROLE_NAME, $"{BMC_CATALOG_WRITER_CUSTOM_ROLE_NAME} Role");
             this.database.AddCustomRole(BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME, $"{BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME} Role");
             this.database.AddCustomRole(BMC_INSTRUCTION_WRITER_CUSTOM_ROLE_NAME, $"{BMC_INSTRUCTION_WRITER_CUSTOM_ROLE_NAME} Role");
+            this.database.AddCustomRole(BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME, $"{BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME} Role");
+            this.database.AddCustomRole(BMC_MODERATOR_CUSTOM_ROLE_NAME, $"{BMC_MODERATOR_CUSTOM_ROLE_NAME} Role");
 
 
             #region Master Data - Part Categories, Connector Types, Colours
@@ -965,6 +971,628 @@ All operational tables include multi-tenant support, versioning where appropriat
             projectExportTable.AddBoolField("includePartsList", false, false).AddScriptComments("Whether a bill of materials / parts list was included in the export");
 
             projectExportTable.AddControlFields();
+
+            #endregion
+
+
+            #region User Profiles and Identity
+
+            // -------------------------------------------------
+            // UserProfile — Public builder profile, one per tenant
+            // -------------------------------------------------
+            Database.Table userProfileTable = database.AddTable("UserProfile");
+            userProfileTable.comment = "Public builder profile for community features. One profile per tenant (user). Decoupled from Foundation user/tenant tables to keep BMC concerns independent.";
+            userProfileTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            userProfileTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            userProfileTable.AddIdField();
+            userProfileTable.AddMultiTenantSupport();
+
+            userProfileTable.AddString100Field("displayName", false).AddScriptComments("Public display name shown in the community (distinct from auth username)");
+            userProfileTable.AddTextField("bio").AddScriptComments("Free-form biography / about-me text");
+            userProfileTable.AddString100Field("location").AddScriptComments("User's declared location (city, country, or free-form)");
+            userProfileTable.AddString250Field("avatarImagePath").AddScriptComments("Relative path to the user's avatar image");
+            userProfileTable.AddString250Field("profileBannerImagePath").AddScriptComments("Relative path to the profile banner/cover image");
+            userProfileTable.AddString250Field("websiteUrl").AddScriptComments("Optional personal website or portfolio URL");
+            userProfileTable.AddBoolField("isPublic", false, true).AddScriptComments("Whether this profile is visible to unauthenticated visitors");
+            userProfileTable.AddDateTimeField("memberSinceDate", true).AddScriptComments("Date the user first created their profile (for display purposes)");
+
+            userProfileTable.AddVersionControl();
+            userProfileTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // UserProfileLinkType — Lookup of external link types
+            // -------------------------------------------------
+            Database.Table userProfileLinkTypeTable = database.AddTable("UserProfileLinkType");
+            userProfileLinkTypeTable.comment = "Lookup table of external link types a user can add to their profile (e.g. BrickLink Store, Flickr, YouTube, Instagram, Rebrickable).";
+            userProfileLinkTypeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            userProfileLinkTypeTable.AddIdField();
+            userProfileLinkTypeTable.AddNameAndDescriptionFields(true, true, false);
+
+            userProfileLinkTypeTable.AddString100Field("iconCssClass").AddScriptComments("CSS class for the link type icon (e.g. 'fab fa-youtube')");
+
+            userProfileLinkTypeTable.AddSequenceField();
+            userProfileLinkTypeTable.AddControlFields();
+
+            // Seed data — common AFOL community link types
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "BrickLink Store" }, { "description", "Link to the user's BrickLink seller store" }, { "iconCssClass", "fas fa-store" }, { "sequence", "1" }, { "objectGuid", "a0100001-0001-4000-8000-000000000001" } });
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "Rebrickable" }, { "description", "Link to the user's Rebrickable profile" }, { "iconCssClass", "fas fa-cubes" }, { "sequence", "2" }, { "objectGuid", "a0100001-0001-4000-8000-000000000002" } });
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "Flickr" }, { "description", "Link to the user's Flickr photostream" }, { "iconCssClass", "fab fa-flickr" }, { "sequence", "3" }, { "objectGuid", "a0100001-0001-4000-8000-000000000003" } });
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "YouTube" }, { "description", "Link to the user's YouTube channel" }, { "iconCssClass", "fab fa-youtube" }, { "sequence", "4" }, { "objectGuid", "a0100001-0001-4000-8000-000000000004" } });
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "Instagram" }, { "description", "Link to the user's Instagram profile" }, { "iconCssClass", "fab fa-instagram" }, { "sequence", "5" }, { "objectGuid", "a0100001-0001-4000-8000-000000000005" } });
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "Personal Website" }, { "description", "Link to the user's personal website or blog" }, { "iconCssClass", "fas fa-globe" }, { "sequence", "6" }, { "objectGuid", "a0100001-0001-4000-8000-000000000006" } });
+            userProfileLinkTypeTable.AddData(new Dictionary<string, string> { { "name", "Eurobricks" }, { "description", "Link to the user's Eurobricks forum profile" }, { "iconCssClass", "fas fa-comments" }, { "sequence", "7" }, { "objectGuid", "a0100001-0001-4000-8000-000000000007" } });
+
+
+            // -------------------------------------------------
+            // UserProfileLink — External links on a user's profile
+            // -------------------------------------------------
+            Database.Table userProfileLinkTable = database.AddTable("UserProfileLink");
+            userProfileLinkTable.comment = "External links displayed on a user's public profile (BrickLink store, Flickr, YouTube, etc.).";
+            userProfileLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            userProfileLinkTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            userProfileLinkTable.AddIdField();
+            userProfileLinkTable.AddMultiTenantSupport();
+
+            userProfileLinkTable.AddForeignKeyField(userProfileTable, false).AddScriptComments("The profile this link belongs to");
+            userProfileLinkTable.AddForeignKeyField(userProfileLinkTypeTable, false).AddScriptComments("The type of link (BrickLink, YouTube, etc.)");
+            userProfileLinkTable.AddString500Field("url", false).AddScriptComments("The full URL to the external resource");
+            userProfileLinkTable.AddString100Field("displayLabel").AddScriptComments("Optional custom label to display instead of the URL (e.g. 'My BL Store')");
+
+            userProfileLinkTable.AddSequenceField();
+            userProfileLinkTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // UserSetOwnership — Track owned sets with status
+            // -------------------------------------------------
+            Database.Table userSetOwnershipTable = database.AddTable("UserSetOwnership");
+            userSetOwnershipTable.comment = "Tracks a user's relationship with official LEGO sets for their collector showcase. Distinct from UserCollectionSetImport which tracks parts inventory.";
+            userSetOwnershipTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            userSetOwnershipTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            userSetOwnershipTable.AddIdField();
+            userSetOwnershipTable.AddMultiTenantSupport();
+
+            userSetOwnershipTable.AddForeignKeyField(legoSetTable, false).AddScriptComments("The official LEGO set");
+            userSetOwnershipTable.AddString50Field("status", false).AddScriptComments("Ownership status: Owned, Built, Wanted, WishList, ForDisplay, ForSale");
+            userSetOwnershipTable.AddDateTimeField("acquiredDate", true).AddScriptComments("Date the user acquired this set (null if unknown or wanted)");
+            userSetOwnershipTable.AddIntField("personalRating", true).AddScriptComments("User's personal rating of the set (1-5 stars, null if not rated)");
+            userSetOwnershipTable.AddTextField("notes").AddScriptComments("Free-form notes about this set (e.g. condition, where purchased, modifications)");
+            userSetOwnershipTable.AddIntField("quantity", false, 1).AddScriptComments("Number of copies owned");
+            userSetOwnershipTable.AddBoolField("isPublic", false, true).AddScriptComments("Whether this ownership record is visible on the user's public profile");
+
+            userSetOwnershipTable.AddControlFields();
+
+            userSetOwnershipTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "legoSetId" }, false);
+
+
+            // -------------------------------------------------
+            // UserProfileStat — Cached aggregate stats for fast display
+            // -------------------------------------------------
+            Database.Table userProfileStatTable = database.AddTable("UserProfileStat");
+            userProfileStatTable.comment = "Cached aggregate statistics for a user's profile. Periodically recalculated by background worker to avoid expensive real-time queries.";
+            userProfileStatTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            userProfileStatTable.AddIdField();
+            userProfileStatTable.AddMultiTenantSupport();
+
+            userProfileStatTable.AddForeignKeyField(userProfileTable, false).AddScriptComments("The profile these stats belong to");
+            userProfileStatTable.AddIntField("totalPartsOwned", false, 0).AddScriptComments("Total number of individual parts across all collections");
+            userProfileStatTable.AddIntField("totalUniquePartsOwned", false, 0).AddScriptComments("Total number of unique part+colour combinations owned");
+            userProfileStatTable.AddIntField("totalSetsOwned", false, 0).AddScriptComments("Total number of sets with Owned or Built status");
+            userProfileStatTable.AddIntField("totalMocsPublished", false, 0).AddScriptComments("Total number of MOCs published to the gallery");
+            userProfileStatTable.AddIntField("totalFollowers", false, 0).AddScriptComments("Number of users following this profile");
+            userProfileStatTable.AddIntField("totalFollowing", false, 0).AddScriptComments("Number of users this profile is following");
+            userProfileStatTable.AddIntField("totalLikesReceived", false, 0).AddScriptComments("Total likes received across all published MOCs");
+            userProfileStatTable.AddIntField("totalAchievementPoints", false, 0).AddScriptComments("Sum of achievement point values earned");
+            userProfileStatTable.AddDateTimeField("lastCalculatedDate", true).AddScriptComments("When these stats were last recalculated by the background worker");
+
+            userProfileStatTable.AddControlFields();
+
+            #endregion
+
+
+            #region Social Graph
+
+            // -------------------------------------------------
+            // UserFollow — Follow relationships between users
+            // -------------------------------------------------
+            Database.Table userFollowTable = database.AddTable("UserFollow");
+            userFollowTable.comment = "Follow relationships between users. A follower subscribes to activity updates from the followed user.";
+            userFollowTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            userFollowTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            userFollowTable.AddIdField();
+
+            userFollowTable.AddGuidField("followerTenantGuid", false).AddScriptComments("Tenant GUID of the user who is following");
+            userFollowTable.AddGuidField("followedTenantGuid", false).AddScriptComments("Tenant GUID of the user being followed");
+            userFollowTable.AddDateTimeField("followedDate", false).AddScriptComments("Date/time the follow relationship was created");
+
+            userFollowTable.AddControlFields();
+
+            userFollowTable.AddUniqueConstraint(new List<string>() { "followerTenantGuid", "followedTenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // ActivityEventType — Lookup of activity event types
+            // -------------------------------------------------
+            Database.Table activityEventTypeTable = database.AddTable("ActivityEventType");
+            activityEventTypeTable.comment = "Lookup table of activity event types that appear in users' activity feeds.";
+            activityEventTypeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            activityEventTypeTable.AddIdField();
+            activityEventTypeTable.AddNameAndDescriptionFields(true, true, false);
+
+            activityEventTypeTable.AddString100Field("iconCssClass").AddScriptComments("CSS class for the event type icon in the activity feed");
+            activityEventTypeTable.AddHTMLColorField("accentColor", true).AddScriptComments("Optional accent colour for this event type in the feed");
+
+            activityEventTypeTable.AddSequenceField();
+            activityEventTypeTable.AddControlFields();
+
+            // Seed data — core activity event types
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "PublishedMoc" }, { "description", "User published a MOC to the gallery" }, { "iconCssClass", "fas fa-rocket" }, { "sequence", "1" }, { "objectGuid", "ae100001-0001-4000-8000-000000000001" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "AddedSet" }, { "description", "User added a set to their collection" }, { "iconCssClass", "fas fa-box-open" }, { "sequence", "2" }, { "objectGuid", "ae100001-0001-4000-8000-000000000002" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "EarnedAchievement" }, { "description", "User earned an achievement" }, { "iconCssClass", "fas fa-trophy" }, { "sequence", "3" }, { "objectGuid", "ae100001-0001-4000-8000-000000000003" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "JoinedChallenge" }, { "description", "User submitted an entry to a build challenge" }, { "iconCssClass", "fas fa-flag-checkered" }, { "sequence", "4" }, { "objectGuid", "ae100001-0001-4000-8000-000000000004" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "SharedInstruction" }, { "description", "User published build instructions" }, { "iconCssClass", "fas fa-book" }, { "sequence", "5" }, { "objectGuid", "ae100001-0001-4000-8000-000000000005" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "CollectionMilestone" }, { "description", "User reached a collection milestone" }, { "iconCssClass", "fas fa-gem" }, { "sequence", "6" }, { "objectGuid", "ae100001-0001-4000-8000-000000000006" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "FollowedUser" }, { "description", "User followed another builder" }, { "iconCssClass", "fas fa-user-plus" }, { "sequence", "7" }, { "objectGuid", "ae100001-0001-4000-8000-000000000007" } });
+
+
+            // -------------------------------------------------
+            // ActivityEvent — Activity feed events
+            // -------------------------------------------------
+            Database.Table activityEventTable = database.AddTable("ActivityEvent");
+            activityEventTable.comment = "Individual activity feed events generated by user actions. Used to build the community activity feed and individual user activity histories.";
+            activityEventTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            activityEventTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            activityEventTable.AddIdField(true, true);
+            activityEventTable.AddMultiTenantSupport();
+
+            activityEventTable.AddForeignKeyField(activityEventTypeTable, false).AddScriptComments("The type of activity event");
+            activityEventTable.AddString250Field("title", false).AddScriptComments("Short display title for the event (e.g. 'Published Technic Crane MOC')");
+            activityEventTable.AddTextField("description").AddScriptComments("Optional longer description or context for the event");
+            activityEventTable.AddString100Field("relatedEntityType").AddScriptComments("Type name of the related entity (e.g. 'PublishedMoc', 'LegoSet', 'Achievement')");
+            activityEventTable.AddLongField("relatedEntityId", true).AddScriptComments("ID of the related entity for deep linking (null if not applicable)");
+            activityEventTable.AddDateTimeField("eventDate", false).AddScriptComments("Date/time the activity occurred");
+            activityEventTable.AddBoolField("isPublic", false, true).AddScriptComments("Whether this event is visible on the public activity feed");
+
+            activityEventTable.AddControlFields();
+
+            #endregion
+
+
+            #region Content Sharing and Gallery
+
+            // -------------------------------------------------
+            // PublishedMoc — A MOC published to the community gallery
+            // -------------------------------------------------
+            Database.Table publishedMocTable = database.AddTable("PublishedMoc");
+            publishedMocTable.comment = "A MOC (My Own Creation) published to the community gallery. Links to the underlying project for parts list and 3D model data.";
+            publishedMocTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            publishedMocTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            publishedMocTable.AddIdField();
+            publishedMocTable.AddMultiTenantSupport();
+
+            publishedMocTable.AddForeignKeyField(projectTable, false).AddScriptComments("The underlying project containing the model data");
+            publishedMocTable.AddNameField(true, true).AddScriptComments("Public-facing title of the MOC");
+            publishedMocTable.AddTextField("description").AddScriptComments("Rich description of the MOC, build story, or design notes");
+            publishedMocTable.AddString250Field("thumbnailImagePath").AddScriptComments("Relative path to the primary thumbnail image");
+            publishedMocTable.AddTextField("tags").AddScriptComments("Comma-separated tags for search and categorization (e.g. 'technic, crane, vehicle')");
+            publishedMocTable.AddBoolField("isPublished", false, false).AddScriptComments("Whether this MOC is visible in the public gallery (draft vs published)");
+            publishedMocTable.AddBoolField("isFeatured", false, false).AddScriptComments("Whether this MOC is featured / editor's pick (set by moderators)");
+            publishedMocTable.AddDateTimeField("publishedDate", true).AddScriptComments("Date/time the MOC was first published");
+            publishedMocTable.AddIntField("viewCount", false, 0).AddScriptComments("Number of times this MOC has been viewed");
+            publishedMocTable.AddIntField("likeCount", false, 0).AddScriptComments("Cached like count for fast sorting and display");
+            publishedMocTable.AddIntField("commentCount", false, 0).AddScriptComments("Cached comment count for fast display");
+            publishedMocTable.AddIntField("favouriteCount", false, 0).AddScriptComments("Cached favourite/bookmark count for fast display");
+            publishedMocTable.AddIntField("partCount", true).AddScriptComments("Cached total part count from the underlying project");
+            publishedMocTable.AddBoolField("allowForking", false, true).AddScriptComments("Whether other users can fork (copy) this MOC as a starting point");
+
+            publishedMocTable.AddVersionControl();
+            publishedMocTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // PublishedMocImage — Gallery images for a published MOC
+            // -------------------------------------------------
+            Database.Table publishedMocImageTable = database.AddTable("PublishedMocImage");
+            publishedMocImageTable.comment = "Additional gallery images for a published MOC. The thumbnail is on the PublishedMoc itself; these are supplementary views and renders.";
+            publishedMocImageTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            publishedMocImageTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            publishedMocImageTable.AddIdField();
+            publishedMocImageTable.AddMultiTenantSupport();
+
+            publishedMocImageTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The published MOC this image belongs to");
+            publishedMocImageTable.AddString250Field("imagePath", false).AddScriptComments("Relative path to the image file");
+            publishedMocImageTable.AddString250Field("caption").AddScriptComments("Optional caption describing the image or the angle shown");
+
+            publishedMocImageTable.AddSequenceField();
+            publishedMocImageTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // MocLike — Likes on published MOCs
+            // -------------------------------------------------
+            Database.Table mocLikeTable = database.AddTable("MocLike");
+            mocLikeTable.comment = "User likes on published MOCs. One like per user per MOC.";
+            mocLikeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            mocLikeTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            mocLikeTable.AddIdField();
+
+            mocLikeTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The MOC being liked");
+            mocLikeTable.AddGuidField("likerTenantGuid", false).AddScriptComments("Tenant GUID of the user who liked");
+            mocLikeTable.AddDateTimeField("likedDate", false).AddScriptComments("Date/time the like was registered");
+
+            mocLikeTable.AddControlFields();
+
+            mocLikeTable.AddUniqueConstraint(new List<string>() { "publishedMocId", "likerTenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // MocComment — Comments on published MOCs
+            // -------------------------------------------------
+            Database.Table mocCommentTable = database.AddTable("MocComment");
+            mocCommentTable.comment = "User comments on published MOCs. Supports threaded replies via self-referencing parent FK.";
+            mocCommentTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            mocCommentTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            mocCommentTable.AddIdField();
+
+            mocCommentTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The MOC being commented on");
+            mocCommentTable.AddGuidField("commenterTenantGuid", false).AddScriptComments("Tenant GUID of the user who posted the comment");
+            mocCommentTable.AddTextField("commentText", false).AddScriptComments("The comment content");
+            mocCommentTable.AddDateTimeField("postedDate", false).AddScriptComments("Date/time the comment was posted");
+            mocCommentTable.AddForeignKeyField(mocCommentTable, true).AddScriptComments("Optional parent comment for threaded replies (null = top-level comment)");
+            mocCommentTable.AddBoolField("isEdited", false, false).AddScriptComments("Whether this comment has been edited after posting");
+            mocCommentTable.AddBoolField("isHidden", false, false).AddScriptComments("Whether this comment has been hidden by a moderator");
+
+            mocCommentTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // MocFavourite — User's favourited/bookmarked MOCs
+            // -------------------------------------------------
+            Database.Table mocFavouriteTable = database.AddTable("MocFavourite");
+            mocFavouriteTable.comment = "User's favourited (bookmarked) MOCs for quick access. Separate from likes — favourites are private bookmarks, likes are public endorsements.";
+            mocFavouriteTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            mocFavouriteTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            mocFavouriteTable.AddIdField();
+
+            mocFavouriteTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The MOC being favourited");
+            mocFavouriteTable.AddGuidField("userTenantGuid", false).AddScriptComments("Tenant GUID of the user who favourited");
+            mocFavouriteTable.AddDateTimeField("favouritedDate", false).AddScriptComments("Date/time the favourite was added");
+
+            mocFavouriteTable.AddControlFields();
+
+            mocFavouriteTable.AddUniqueConstraint(new List<string>() { "publishedMocId", "userTenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // SharedInstruction — Published instruction manuals
+            // -------------------------------------------------
+            Database.Table sharedInstructionTable = database.AddTable("SharedInstruction");
+            sharedInstructionTable.comment = "Published instruction manuals shared with the community. Can be BMC-native format (linked to BuildManual), uploaded PDF, or image-based.";
+            sharedInstructionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            sharedInstructionTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            sharedInstructionTable.AddIdField();
+            sharedInstructionTable.AddMultiTenantSupport();
+
+            sharedInstructionTable.AddForeignKeyField(buildManualTable, true).AddScriptComments("Optional link to a BMC-native BuildManual (null for uploaded PDF/image instructions)");
+            sharedInstructionTable.AddForeignKeyField(publishedMocTable, true).AddScriptComments("Optional link to the published MOC these instructions are for");
+            sharedInstructionTable.AddNameField(true, true).AddScriptComments("Public-facing title of the instruction document");
+            sharedInstructionTable.AddTextField("description").AddScriptComments("Description of what these instructions cover");
+            sharedInstructionTable.AddString50Field("formatType", false).AddScriptComments("Format of the instruction: BMCNative, PDF, ImageSet");
+            sharedInstructionTable.AddString250Field("filePath").AddScriptComments("Relative path to the instruction file (PDF) or folder (image set). Null for BMC-native.");
+            sharedInstructionTable.AddBoolField("isPublished", false, false).AddScriptComments("Whether these instructions are visible in the community");
+            sharedInstructionTable.AddDateTimeField("publishedDate", true).AddScriptComments("Date/time the instructions were first published");
+            sharedInstructionTable.AddIntField("downloadCount", false, 0).AddScriptComments("Number of times these instructions have been downloaded");
+            sharedInstructionTable.AddIntField("pageCount", true).AddScriptComments("Total number of pages (for display purposes)");
+
+            sharedInstructionTable.AddVersionControl();
+            sharedInstructionTable.AddControlFields();
+
+            #endregion
+
+
+            #region Gamification and Achievements
+
+            // -------------------------------------------------
+            // AchievementCategory — Groups of achievements
+            // -------------------------------------------------
+            Database.Table achievementCategoryTable = database.AddTable("AchievementCategory");
+            achievementCategoryTable.comment = "Groups of achievements for organization and display (e.g. Collection, Building, Social, Exploration).";
+            achievementCategoryTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            achievementCategoryTable.AddIdField();
+            achievementCategoryTable.AddNameAndDescriptionFields(true, true, false);
+
+            achievementCategoryTable.AddString100Field("iconCssClass").AddScriptComments("CSS class for the category icon");
+
+            achievementCategoryTable.AddSequenceField();
+            achievementCategoryTable.AddControlFields();
+
+            // Seed data — core achievement categories
+            achievementCategoryTable.AddData(new Dictionary<string, string> { { "name", "Collection" }, { "description", "Achievements related to building and managing your parts collection" }, { "iconCssClass", "fas fa-cubes" }, { "sequence", "1" }, { "objectGuid", "ac100001-0001-4000-8000-000000000001" } });
+            achievementCategoryTable.AddData(new Dictionary<string, string> { { "name", "Building" }, { "description", "Achievements related to creating and publishing MOCs" }, { "iconCssClass", "fas fa-hammer" }, { "sequence", "2" }, { "objectGuid", "ac100001-0001-4000-8000-000000000002" } });
+            achievementCategoryTable.AddData(new Dictionary<string, string> { { "name", "Social" }, { "description", "Achievements related to community engagement and social interactions" }, { "iconCssClass", "fas fa-users" }, { "sequence", "3" }, { "objectGuid", "ac100001-0001-4000-8000-000000000003" } });
+            achievementCategoryTable.AddData(new Dictionary<string, string> { { "name", "Exploration" }, { "description", "Achievements related to exploring the parts catalog and set database" }, { "iconCssClass", "fas fa-compass" }, { "sequence", "4" }, { "objectGuid", "ac100001-0001-4000-8000-000000000004" } });
+            achievementCategoryTable.AddData(new Dictionary<string, string> { { "name", "Challenge" }, { "description", "Achievements earned by competing in build challenges" }, { "iconCssClass", "fas fa-medal" }, { "sequence", "5" }, { "objectGuid", "ac100001-0001-4000-8000-000000000005" } });
+
+
+            // -------------------------------------------------
+            // Achievement — Achievement definitions
+            // -------------------------------------------------
+            Database.Table achievementTable = database.AddTable("Achievement");
+            achievementTable.comment = "Individual achievement definitions. Each achievement has criteria, point value, and rarity classification.";
+            achievementTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            achievementTable.AddIdField();
+
+            achievementTable.AddForeignKeyField(achievementCategoryTable, false).AddScriptComments("The category this achievement belongs to");
+            achievementTable.AddNameAndDescriptionFields(true, true, false);
+            achievementTable.AddString100Field("iconCssClass").AddScriptComments("CSS class for the achievement icon/badge");
+            achievementTable.AddString250Field("iconImagePath").AddScriptComments("Optional path to a custom badge image (overrides CSS icon)");
+            achievementTable.AddTextField("criteria").AddScriptComments("Human-readable description of how to earn this achievement");
+            achievementTable.AddString250Field("criteriaCode").AddScriptComments("Machine-readable criteria code for automatic detection (e.g. 'parts_owned >= 10000')");
+            achievementTable.AddIntField("pointValue", false, 10).AddScriptComments("Point value when earned — contributes to the user's total achievement score");
+            achievementTable.AddString50Field("rarity", false).AddScriptComments("Rarity classification: Common, Uncommon, Rare, Epic, Legendary");
+            achievementTable.AddBoolField("isActive", false, true).AddScriptComments("Whether this achievement can currently be earned");
+
+            achievementTable.AddSequenceField();
+            achievementTable.AddControlFields();
+
+            // Seed data — starter achievements
+            achievementTable.AddData(new Dictionary<string, string> { { "name", "First Brick" }, { "description", "Added your first part to your collection" }, { "iconCssClass", "fas fa-cube" }, { "criteria", "Add at least 1 part to any collection" }, { "criteriaCode", "parts_owned >= 1" }, { "pointValue", "5" }, { "rarity", "Common" }, { "isActive", "true" }, { "sequence", "1" }, { "link:AchievementCategory:name:achievementCategoryId", "Collection" }, { "objectGuid", "a1100001-0001-4000-8000-000000000001" } });
+            achievementTable.AddData(new Dictionary<string, string> { { "name", "Brick Enthusiast" }, { "description", "Own 1,000 parts across all collections" }, { "iconCssClass", "fas fa-cubes" }, { "criteria", "Total parts owned reaches 1,000" }, { "criteriaCode", "parts_owned >= 1000" }, { "pointValue", "25" }, { "rarity", "Uncommon" }, { "isActive", "true" }, { "sequence", "2" }, { "link:AchievementCategory:name:achievementCategoryId", "Collection" }, { "objectGuid", "a1100001-0001-4000-8000-000000000002" } });
+            achievementTable.AddData(new Dictionary<string, string> { { "name", "Brick Master" }, { "description", "Own 10,000 parts across all collections" }, { "iconCssClass", "fas fa-warehouse" }, { "criteria", "Total parts owned reaches 10,000" }, { "criteriaCode", "parts_owned >= 10000" }, { "pointValue", "100" }, { "rarity", "Rare" }, { "isActive", "true" }, { "sequence", "3" }, { "link:AchievementCategory:name:achievementCategoryId", "Collection" }, { "objectGuid", "a1100001-0001-4000-8000-000000000003" } });
+            achievementTable.AddData(new Dictionary<string, string> { { "name", "First Creation" }, { "description", "Published your first MOC to the gallery" }, { "iconCssClass", "fas fa-rocket" }, { "criteria", "Publish at least 1 MOC to the gallery" }, { "criteriaCode", "mocs_published >= 1" }, { "pointValue", "15" }, { "rarity", "Common" }, { "isActive", "true" }, { "sequence", "10" }, { "link:AchievementCategory:name:achievementCategoryId", "Building" }, { "objectGuid", "a1100001-0001-4000-8000-000000000010" } });
+            achievementTable.AddData(new Dictionary<string, string> { { "name", "Community Builder" }, { "description", "Gained 10 followers" }, { "iconCssClass", "fas fa-user-friends" }, { "criteria", "Reach 10 followers on your profile" }, { "criteriaCode", "followers >= 10" }, { "pointValue", "20" }, { "rarity", "Uncommon" }, { "isActive", "true" }, { "sequence", "20" }, { "link:AchievementCategory:name:achievementCategoryId", "Social" }, { "objectGuid", "a1100001-0001-4000-8000-000000000020" } });
+
+
+            // -------------------------------------------------
+            // UserAchievement — Achievements earned by users
+            // -------------------------------------------------
+            Database.Table userAchievementTable = database.AddTable("UserAchievement");
+            userAchievementTable.comment = "Records of achievements earned by users. Created when a user meets an achievement's criteria.";
+            userAchievementTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            userAchievementTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            userAchievementTable.AddIdField();
+            userAchievementTable.AddMultiTenantSupport();
+
+            userAchievementTable.AddForeignKeyField(achievementTable, false).AddScriptComments("The achievement earned");
+            userAchievementTable.AddDateTimeField("earnedDate", false).AddScriptComments("Date/time the achievement was earned");
+            userAchievementTable.AddBoolField("isDisplayed", false, true).AddScriptComments("Whether this achievement is displayed on the user's public profile showcase");
+
+            userAchievementTable.AddControlFields();
+
+            userAchievementTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "achievementId" }, false);
+
+
+            // -------------------------------------------------
+            // UserBadge — Display badges for user profiles
+            // -------------------------------------------------
+            Database.Table userBadgeTable = database.AddTable("UserBadge");
+            userBadgeTable.comment = "Special display badges that can be awarded to users by moderators or earned through special events. Displayed prominently on user profiles.";
+            userBadgeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            userBadgeTable.AddIdField();
+            userBadgeTable.AddNameAndDescriptionFields(true, true, false);
+
+            userBadgeTable.AddString100Field("iconCssClass").AddScriptComments("CSS class for the badge icon");
+            userBadgeTable.AddString250Field("iconImagePath").AddScriptComments("Optional path to a custom badge image");
+            userBadgeTable.AddHTMLColorField("badgeColor", true).AddScriptComments("Optional accent colour for the badge display");
+            userBadgeTable.AddBoolField("isAutomatic", false, false).AddScriptComments("Whether this badge is automatically awarded (vs. manually by moderators)");
+            userBadgeTable.AddString250Field("automaticCriteriaCode").AddScriptComments("Machine-readable criteria for automatic badges (null for manual badges)");
+
+            userBadgeTable.AddSequenceField();
+            userBadgeTable.AddControlFields();
+
+            // Seed data — starter badges
+            userBadgeTable.AddData(new Dictionary<string, string> { { "name", "Early Adopter" }, { "description", "Joined the BMC community during the early access period" }, { "iconCssClass", "fas fa-star" }, { "isAutomatic", "false" }, { "sequence", "1" }, { "objectGuid", "ab100001-0001-4000-8000-000000000001" } });
+            userBadgeTable.AddData(new Dictionary<string, string> { { "name", "Verified Builder" }, { "description", "Identity verified by the BMC team" }, { "iconCssClass", "fas fa-check-circle" }, { "isAutomatic", "false" }, { "sequence", "2" }, { "objectGuid", "ab100001-0001-4000-8000-000000000002" } });
+            userBadgeTable.AddData(new Dictionary<string, string> { { "name", "Top Contributor" }, { "description", "One of the most active community contributors this month" }, { "iconCssClass", "fas fa-crown" }, { "isAutomatic", "false" }, { "sequence", "3" }, { "objectGuid", "ab100001-0001-4000-8000-000000000003" } });
+            userBadgeTable.AddData(new Dictionary<string, string> { { "name", "Challenge Winner" }, { "description", "Won a community build challenge" }, { "iconCssClass", "fas fa-award" }, { "isAutomatic", "false" }, { "sequence", "4" }, { "objectGuid", "ab100001-0001-4000-8000-000000000004" } });
+            userBadgeTable.AddData(new Dictionary<string, string> { { "name", "Moderator" }, { "description", "Community moderator trusted to help maintain quality" }, { "iconCssClass", "fas fa-shield-alt" }, { "isAutomatic", "false" }, { "sequence", "5" }, { "objectGuid", "ab100001-0001-4000-8000-000000000005" } });
+
+
+            // -------------------------------------------------
+            // UserBadgeAssignment — Badges awarded to users
+            // -------------------------------------------------
+            Database.Table userBadgeAssignmentTable = database.AddTable("UserBadgeAssignment");
+            userBadgeAssignmentTable.comment = "Maps badges to users. A badge can be awarded multiple times conceptually, but one unique assignment per user per badge.";
+            userBadgeAssignmentTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            userBadgeAssignmentTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            userBadgeAssignmentTable.AddIdField();
+            userBadgeAssignmentTable.AddMultiTenantSupport();
+
+            userBadgeAssignmentTable.AddForeignKeyField(userBadgeTable, false).AddScriptComments("The badge awarded");
+            userBadgeAssignmentTable.AddDateTimeField("awardedDate", false).AddScriptComments("Date/time the badge was awarded");
+            userBadgeAssignmentTable.AddGuidField("awardedByTenantGuid", true).AddScriptComments("Tenant GUID of the moderator who awarded the badge (null for automatic badges)");
+            userBadgeAssignmentTable.AddTextField("reason").AddScriptComments("Optional reason or context for awarding the badge");
+            userBadgeAssignmentTable.AddBoolField("isDisplayed", false, true).AddScriptComments("Whether this badge is displayed on the user's profile");
+
+            userBadgeAssignmentTable.AddControlFields();
+
+            userBadgeAssignmentTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userBadgeId" }, false);
+
+
+            // -------------------------------------------------
+            // BuildChallenge — Community build challenges
+            // -------------------------------------------------
+            Database.Table buildChallengeTable = database.AddTable("BuildChallenge");
+            buildChallengeTable.comment = "Community build challenges with themes, rules, and time windows. Created by moderators or admins.";
+            buildChallengeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_MODERATOR_PERMISSION_LEVEL);
+            buildChallengeTable.customWriteAccessRole = BMC_MODERATOR_CUSTOM_ROLE_NAME;
+            buildChallengeTable.AddIdField();
+
+            buildChallengeTable.AddNameField(true, true).AddScriptComments("Title of the challenge (e.g. 'Under 100 Parts Technic Vehicle')");
+            buildChallengeTable.AddTextField("description").AddScriptComments("Full description of the challenge theme and goals");
+            buildChallengeTable.AddTextField("rules").AddScriptComments("Detailed rules and constraints for entries");
+            buildChallengeTable.AddString250Field("thumbnailImagePath").AddScriptComments("Promotional image for the challenge");
+            buildChallengeTable.AddDateTimeField("startDate", false).AddScriptComments("When submissions open");
+            buildChallengeTable.AddDateTimeField("endDate", false).AddScriptComments("When submissions close");
+            buildChallengeTable.AddDateTimeField("votingEndDate", true).AddScriptComments("When community voting closes (null if no voting period)");
+            buildChallengeTable.AddBoolField("isActive", false, true).AddScriptComments("Whether this challenge is currently active and accepting entries");
+            buildChallengeTable.AddBoolField("isFeatured", false, false).AddScriptComments("Whether this challenge should be prominently displayed on the landing page");
+            buildChallengeTable.AddIntField("entryCount", false, 0).AddScriptComments("Cached count of submitted entries");
+            buildChallengeTable.AddIntField("maxPartsLimit", true).AddScriptComments("Optional maximum part count constraint for entries (null = no limit)");
+
+            buildChallengeTable.AddVersionControl();
+            buildChallengeTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // BuildChallengeEntry — User entries into a challenge
+            // -------------------------------------------------
+            Database.Table buildChallengeEntryTable = database.AddTable("BuildChallengeEntry");
+            buildChallengeEntryTable.comment = "User-submitted entries into a build challenge. Links to a published MOC.";
+            buildChallengeEntryTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            buildChallengeEntryTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            buildChallengeEntryTable.AddIdField();
+            buildChallengeEntryTable.AddMultiTenantSupport();
+
+            buildChallengeEntryTable.AddForeignKeyField(buildChallengeTable, false).AddScriptComments("The challenge being entered");
+            buildChallengeEntryTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The published MOC submitted as an entry");
+            buildChallengeEntryTable.AddDateTimeField("submittedDate", false).AddScriptComments("Date/time the entry was submitted");
+            buildChallengeEntryTable.AddTextField("entryNotes").AddScriptComments("Optional notes from the builder about their entry");
+            buildChallengeEntryTable.AddIntField("voteCount", false, 0).AddScriptComments("Cached community vote count");
+            buildChallengeEntryTable.AddBoolField("isWinner", false, false).AddScriptComments("Whether this entry was selected as a winner");
+            buildChallengeEntryTable.AddBoolField("isDisqualified", false, false).AddScriptComments("Whether this entry was disqualified by moderators");
+
+            buildChallengeEntryTable.AddControlFields();
+
+            buildChallengeEntryTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "buildChallengeId" }, false);
+
+            #endregion
+
+
+            #region Moderation and Admin
+
+            // -------------------------------------------------
+            // ContentReportReason — Lookup of report reasons
+            // -------------------------------------------------
+            Database.Table contentReportReasonTable = database.AddTable("ContentReportReason");
+            contentReportReasonTable.comment = "Lookup table of reasons a user can report community content (Spam, Inappropriate, Copyright, etc.).";
+            contentReportReasonTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            contentReportReasonTable.AddIdField();
+            contentReportReasonTable.AddNameAndDescriptionFields(true, true, false);
+
+            contentReportReasonTable.AddSequenceField();
+            contentReportReasonTable.AddControlFields();
+
+            // Seed data — standard report reasons
+            contentReportReasonTable.AddData(new Dictionary<string, string> { { "name", "Spam" }, { "description", "Content is spam, advertising, or promotional" }, { "sequence", "1" }, { "objectGuid", "c4100001-0001-4000-8000-000000000001" } });
+            contentReportReasonTable.AddData(new Dictionary<string, string> { { "name", "Inappropriate" }, { "description", "Content is offensive, vulgar, or inappropriate" }, { "sequence", "2" }, { "objectGuid", "c4100001-0001-4000-8000-000000000002" } });
+            contentReportReasonTable.AddData(new Dictionary<string, string> { { "name", "Copyright" }, { "description", "Content violates copyright or intellectual property" }, { "sequence", "3" }, { "objectGuid", "c4100001-0001-4000-8000-000000000003" } });
+            contentReportReasonTable.AddData(new Dictionary<string, string> { { "name", "Harassment" }, { "description", "Content constitutes harassment or bullying" }, { "sequence", "4" }, { "objectGuid", "c4100001-0001-4000-8000-000000000004" } });
+            contentReportReasonTable.AddData(new Dictionary<string, string> { { "name", "Misinformation" }, { "description", "Content contains misleading or false information" }, { "sequence", "5" }, { "objectGuid", "c4100001-0001-4000-8000-000000000005" } });
+            contentReportReasonTable.AddData(new Dictionary<string, string> { { "name", "Other" }, { "description", "Other reason not covered above" }, { "sequence", "99" }, { "objectGuid", "c4100001-0001-4000-8000-000000000099" } });
+
+
+            // -------------------------------------------------
+            // ContentReport — User-submitted content reports
+            // -------------------------------------------------
+            Database.Table contentReportTable = database.AddTable("ContentReport");
+            contentReportTable.comment = "User-submitted reports of problematic community content. Reviewed by moderators via the BMC Admin project.";
+            contentReportTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            contentReportTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            contentReportTable.AddIdField();
+
+            contentReportTable.AddForeignKeyField(contentReportReasonTable, false).AddScriptComments("The reason for the report");
+            contentReportTable.AddGuidField("reporterTenantGuid", false).AddScriptComments("Tenant GUID of the user submitting the report");
+            contentReportTable.AddString100Field("reportedEntityType", false).AddScriptComments("Type of the reported content (e.g. 'PublishedMoc', 'MocComment', 'UserProfile')");
+            contentReportTable.AddLongField("reportedEntityId", false).AddScriptComments("ID of the reported entity");
+            contentReportTable.AddTextField("description").AddScriptComments("Additional details provided by the reporter");
+            contentReportTable.AddString50Field("status", false).AddScriptComments("Report status: Pending, UnderReview, Dismissed, ActionTaken");
+            contentReportTable.AddDateTimeField("reportedDate", false).AddScriptComments("Date/time the report was submitted");
+            contentReportTable.AddDateTimeField("reviewedDate", true).AddScriptComments("Date/time a moderator reviewed the report (null if pending)");
+            contentReportTable.AddGuidField("reviewerTenantGuid", true).AddScriptComments("Tenant GUID of the moderator who reviewed (null if pending)");
+            contentReportTable.AddTextField("reviewNotes").AddScriptComments("Moderator notes on the review decision");
+
+            contentReportTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // ModerationAction — Log of moderator actions
+            // -------------------------------------------------
+            Database.Table moderationActionTable = database.AddTable("ModerationAction");
+            moderationActionTable.comment = "Audit log of actions taken by moderators. Immutable record for accountability.";
+            moderationActionTable.SetMinimumPermissionLevels(BMC_MODERATOR_PERMISSION_LEVEL, BMC_MODERATOR_PERMISSION_LEVEL);
+            moderationActionTable.customWriteAccessRole = BMC_MODERATOR_CUSTOM_ROLE_NAME;
+            moderationActionTable.AddIdField(true, true);
+
+            moderationActionTable.AddGuidField("moderatorTenantGuid", false).AddScriptComments("Tenant GUID of the moderator who took the action");
+            moderationActionTable.AddString100Field("actionType", false).AddScriptComments("Type of action: Warning, ContentRemoved, ContentHidden, UserSuspended, UserBanned, BadgeAwarded");
+            moderationActionTable.AddGuidField("targetTenantGuid", true).AddScriptComments("Tenant GUID of the user the action was taken against (null for content-only actions)");
+            moderationActionTable.AddString100Field("targetEntityType").AddScriptComments("Type of the target entity (e.g. 'PublishedMoc', 'MocComment', 'UserProfile')");
+            moderationActionTable.AddLongField("targetEntityId", true).AddScriptComments("ID of the target entity (null for user-level actions)");
+            moderationActionTable.AddTextField("reason").AddScriptComments("Reason for the moderation action");
+            moderationActionTable.AddDateTimeField("actionDate", false).AddScriptComments("Date/time the action was taken");
+            moderationActionTable.AddForeignKeyField(contentReportTable, true).AddScriptComments("Optional link to the content report that triggered this action");
+
+            moderationActionTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // PlatformAnnouncement — Admin announcements for landing page
+            // -------------------------------------------------
+            Database.Table platformAnnouncementTable = database.AddTable("PlatformAnnouncement");
+            platformAnnouncementTable.comment = "Admin-created announcements displayed on the public landing page and/or dashboard. Time-windowed with priority ordering.";
+            platformAnnouncementTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_MODERATOR_PERMISSION_LEVEL);
+            platformAnnouncementTable.customWriteAccessRole = BMC_MODERATOR_CUSTOM_ROLE_NAME;
+            platformAnnouncementTable.AddIdField();
+
+            platformAnnouncementTable.AddNameField(true, true).AddScriptComments("Announcement headline/title");
+            platformAnnouncementTable.AddTextField("body").AddScriptComments("Full announcement content (supports markdown or HTML)");
+            platformAnnouncementTable.AddString50Field("announcementType").AddScriptComments("Type for styling: Info, Warning, Celebration, Maintenance");
+            platformAnnouncementTable.AddDateTimeField("startDate", false).AddScriptComments("When the announcement becomes visible");
+            platformAnnouncementTable.AddDateTimeField("endDate", true).AddScriptComments("When the announcement expires (null = no expiry)");
+            platformAnnouncementTable.AddBoolField("isActive", false, true).AddScriptComments("Whether the announcement is currently active");
+            platformAnnouncementTable.AddIntField("priority", false, 0).AddScriptComments("Display priority (higher = more prominent)");
+            platformAnnouncementTable.AddBoolField("showOnLandingPage", false, true).AddScriptComments("Whether to show on the public landing page");
+            platformAnnouncementTable.AddBoolField("showOnDashboard", false, true).AddScriptComments("Whether to show on the authenticated user dashboard");
+
+            platformAnnouncementTable.AddControlFields();
+
+            #endregion
+
+
+            #region Public API Management
+
+            // -------------------------------------------------
+            // ApiKey — API keys for public API consumers
+            // -------------------------------------------------
+            Database.Table apiKeyTable = database.AddTable("ApiKey");
+            apiKeyTable.comment = "API keys issued to users or external integrators for accessing the BMC Public API. Keys are stored as hashes for security.";
+            apiKeyTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            apiKeyTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            apiKeyTable.AddIdField();
+            apiKeyTable.AddMultiTenantSupport();
+
+            apiKeyTable.AddString250Field("keyHash", false).AddScriptComments("SHA-256 hash of the API key (the plain key is shown once at creation, then discarded)");
+            apiKeyTable.AddString100Field("keyPrefix", false).AddScriptComments("First 8 characters of the key for identification without exposing the full key");
+            apiKeyTable.AddNameField(true, true).AddScriptComments("User-defined name for the key (e.g. 'My BrickLink Integration')");
+            apiKeyTable.AddTextField("description").AddScriptComments("Optional description of what this key is used for");
+            apiKeyTable.AddBoolField("isActive", false, true).AddScriptComments("Whether this key is active and can authenticate requests");
+            apiKeyTable.AddDateTimeField("createdDate", false).AddScriptComments("Date/time the key was created");
+            apiKeyTable.AddDateTimeField("lastUsedDate", true).AddScriptComments("Date/time the key was last used to make a request");
+            apiKeyTable.AddDateTimeField("expiresDate", true).AddScriptComments("Optional expiry date (null = no expiry)");
+            apiKeyTable.AddIntField("rateLimitPerHour", false, 1000).AddScriptComments("Maximum API requests allowed per hour with this key");
+
+            apiKeyTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // ApiRequestLog — Audit log of API requests
+            // -------------------------------------------------
+            Database.Table apiRequestLogTable = database.AddTable("ApiRequestLog");
+            apiRequestLogTable.comment = "Audit log of requests made through the BMC Public API. Used for rate limiting, usage analytics, and abuse detection.";
+            apiRequestLogTable.SetMinimumPermissionLevels(BMC_MODERATOR_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            apiRequestLogTable.AddIdField(true, true);
+
+            apiRequestLogTable.AddForeignKeyField(apiKeyTable, false).AddScriptComments("The API key used for this request");
+            apiRequestLogTable.AddString250Field("endpoint", false).AddScriptComments("The API endpoint that was called (e.g. '/api/v1/parts/3001')");
+            apiRequestLogTable.AddString10Field("httpMethod", false).AddScriptComments("HTTP method (GET, POST, PUT, DELETE)");
+            apiRequestLogTable.AddIntField("responseStatus", false).AddScriptComments("HTTP response status code (200, 401, 429, etc.)");
+            apiRequestLogTable.AddDateTimeField("requestDate", false).AddScriptComments("Date/time of the request");
+            apiRequestLogTable.AddIntField("durationMs", true).AddScriptComments("Request processing duration in milliseconds");
+            apiRequestLogTable.AddString100Field("clientIpAddress").AddScriptComments("IP address of the client making the request");
+
+            apiRequestLogTable.AddControlFields();
 
             #endregion
         }

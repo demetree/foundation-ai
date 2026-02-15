@@ -181,6 +181,12 @@ namespace Foundation.BMC
                 //
                 // Start of code generated controller list for BMC module
                 //
+                controllers.Add(typeof(AchievementsController));
+                controllers.Add(typeof(AchievementCategoriesController));
+                controllers.Add(typeof(ActivityEventsController));
+                controllers.Add(typeof(ActivityEventTypesController));
+                controllers.Add(typeof(ApiKeysController));
+                controllers.Add(typeof(ApiRequestLogsController));
                 controllers.Add(typeof(BrickCategoriesController));
                 controllers.Add(typeof(BrickColoursController));
                 controllers.Add(typeof(BrickConnectionsController));
@@ -190,6 +196,9 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BrickPartColoursController));
                 controllers.Add(typeof(BrickPartConnectorsController));
                 controllers.Add(typeof(BrickPartRelationshipsController));
+                controllers.Add(typeof(BuildChallengesController));
+                controllers.Add(typeof(BuildChallengeChangeHistoriesController));
+                controllers.Add(typeof(BuildChallengeEntriesController));
                 controllers.Add(typeof(BuildManualsController));
                 controllers.Add(typeof(BuildManualChangeHistoriesController));
                 controllers.Add(typeof(BuildManualPagesController));
@@ -199,6 +208,8 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BuildStepPartsController));
                 controllers.Add(typeof(ColourFinishesController));
                 controllers.Add(typeof(ConnectorTypesController));
+                controllers.Add(typeof(ContentReportsController));
+                controllers.Add(typeof(ContentReportReasonsController));
                 controllers.Add(typeof(ExportFormatsController));
                 controllers.Add(typeof(LegoMinifigsController));
                 controllers.Add(typeof(LegoSetsController));
@@ -206,9 +217,14 @@ namespace Foundation.BMC
                 controllers.Add(typeof(LegoSetPartsController));
                 controllers.Add(typeof(LegoSetSubsetsController));
                 controllers.Add(typeof(LegoThemesController));
+                controllers.Add(typeof(MocCommentsController));
+                controllers.Add(typeof(MocFavouritesController));
+                controllers.Add(typeof(MocLikesController));
+                controllers.Add(typeof(ModerationActionsController));
                 controllers.Add(typeof(PartTypesController));
                 controllers.Add(typeof(PlacedBricksController));
                 controllers.Add(typeof(PlacedBrickChangeHistoriesController));
+                controllers.Add(typeof(PlatformAnnouncementsController));
                 controllers.Add(typeof(ProjectsController));
                 controllers.Add(typeof(ProjectCameraPresetsController));
                 controllers.Add(typeof(ProjectChangeHistoriesController));
@@ -217,14 +233,29 @@ namespace Foundation.BMC
                 controllers.Add(typeof(ProjectRendersController));
                 controllers.Add(typeof(ProjectTagsController));
                 controllers.Add(typeof(ProjectTagAssignmentsController));
+                controllers.Add(typeof(PublishedMocsController));
+                controllers.Add(typeof(PublishedMocChangeHistoriesController));
+                controllers.Add(typeof(PublishedMocImagesController));
                 controllers.Add(typeof(RenderPresetsController));
+                controllers.Add(typeof(SharedInstructionsController));
+                controllers.Add(typeof(SharedInstructionChangeHistoriesController));
                 controllers.Add(typeof(SubmodelsController));
                 controllers.Add(typeof(SubmodelChangeHistoriesController));
                 controllers.Add(typeof(SubmodelPlacedBricksController));
+                controllers.Add(typeof(UserAchievementsController));
+                controllers.Add(typeof(UserBadgesController));
+                controllers.Add(typeof(UserBadgeAssignmentsController));
                 controllers.Add(typeof(UserCollectionsController));
                 controllers.Add(typeof(UserCollectionChangeHistoriesController));
                 controllers.Add(typeof(UserCollectionPartsController));
                 controllers.Add(typeof(UserCollectionSetImportsController));
+                controllers.Add(typeof(UserFollowsController));
+                controllers.Add(typeof(UserProfilesController));
+                controllers.Add(typeof(UserProfileChangeHistoriesController));
+                controllers.Add(typeof(UserProfileLinksController));
+                controllers.Add(typeof(UserProfileLinkTypesController));
+                controllers.Add(typeof(UserProfileStatsController));
+                controllers.Add(typeof(UserSetOwnershipsController));
                 controllers.Add(typeof(UserWishlistItemsController));
                 //
                 // End of code generated controller list for BMC module

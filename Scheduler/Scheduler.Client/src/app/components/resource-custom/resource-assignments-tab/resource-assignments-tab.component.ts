@@ -2,9 +2,11 @@ import { Component, Input, Output, OnChanges, SimpleChanges } from '@angular/cor
 import { Subject } from 'rxjs'
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { ResourceData } from '../../../scheduler-data-services/resource.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ResourceData, ResourceService } from '../../../scheduler-data-services/resource.service';
 import { EventResourceAssignmentData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { ScheduledEventService, ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
+import { EventAddEditModalComponent } from '../../scheduler/event-add-edit-modal/event-add-edit-modal.component';
 
 /**
  * Assignments tab for the Resource detail page.
@@ -32,7 +34,9 @@ export class ResourceAssignmentsTabComponent implements OnChanges {
   public error: string | null = null;
 
   constructor(private router: Router,
-              private scheduledEventService: ScheduledEventService) { }
+    private scheduledEventService: ScheduledEventService,
+    private resourceService: ResourceService,
+    private modalService: NgbModal) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['resource'] && this.resource) {
@@ -104,7 +108,7 @@ export class ResourceAssignmentsTabComponent implements OnChanges {
   /**
    * Navigate to the event detail page
    */
-  public navigateToEvent(eventId: number | bigint| null | undefined): void {
+  public navigateToEvent(eventId: number | bigint | null | undefined): void {
     if (eventId) {
       this.router.navigate(['/scheduledevent', eventId]);
     }
@@ -146,5 +150,36 @@ export class ResourceAssignmentsTabComponent implements OnChanges {
    */
   public getTargetName(assignment: EventResourceAssignmentData): string {
     return assignment.scheduledEvent?.schedulingTarget?.name || 'Unknown';
+  }
+
+  /**
+   * Opens the event add/edit modal in create mode with this resource pre-assigned.
+   */
+  public openAddAssignment(): void {
+    if (!this.resource) return;
+
+    const modalRef = this.modalService.open(EventAddEditModalComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.componentInstance.initialResourceId = Number(this.resource.id);
+
+    modalRef.result.then(
+      (result) => {
+        if (result === true) {
+          this.loadAssignments();
+        }
+      },
+      () => { /* dismissed */ }
+    );
+  }
+
+  /**
+   * Checks if the current user can write resource data.
+   */
+  public userIsResourceWriter(): boolean {
+    return this.resourceService.userIsSchedulerResourceWriter();
   }
 }

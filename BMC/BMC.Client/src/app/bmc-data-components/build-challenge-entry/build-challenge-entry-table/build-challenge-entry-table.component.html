@@ -1,0 +1,323 @@
+<app-build-challenge-entry-add-edit [showAddButton]="false"></app-build-challenge-entry-add-edit>
+<div class="row" *ngIf="userIsBMCBuildChallengeEntryReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBuildChallengeEntryWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBuildChallengeEntryWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('buildChallenge.name')">
+                Build  Challenge
+                <span *ngIf="sortColumn === 'buildChallenge.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('publishedMoc.name')">
+                Published  Moc
+                <span *ngIf="sortColumn === 'publishedMoc.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('submittedDate')">
+                Submitted  Date
+                <span *ngIf="sortColumn === 'submittedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('entryNotes')">
+                Entry  Notes
+                <span *ngIf="sortColumn === 'entryNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('voteCount')">
+                Vote  Count
+                <span *ngIf="sortColumn === 'voteCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isWinner')">
+                Is  Winner
+                <span *ngIf="sortColumn === 'isWinner'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isDisqualified')">
+                Is  Disqualified
+                <span *ngIf="sortColumn === 'isDisqualified'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let buildChallengeEntry of filteredBuildChallengeEntries; trackBy: getBuildChallengeEntryId"
+              [ngClass]="{
+                 'row-inactive': buildChallengeEntry.active == false,
+                 'row-deleted': buildChallengeEntry.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCBuildChallengeEntryWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(buildChallengeEntry)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCBuildChallengeEntryWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(buildChallengeEntry)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="buildChallengeEntry.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(buildChallengeEntry)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="buildChallengeEntry.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(buildChallengeEntry, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(buildChallengeEntry, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(buildChallengeEntry, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(buildChallengeEntry, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(buildChallengeEntry, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(buildChallengeEntry, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(buildChallengeEntry, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(buildChallengeEntry, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/buildchallenge', buildChallengeEntry.buildChallengeId]" class="btn btn-link text-left" ngbTooltip="Open Build Challenge details">{{buildChallengeEntry.buildChallenge?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/publishedmoc', buildChallengeEntry.publishedMocId]" class="btn btn-link text-left" ngbTooltip="Open Published Moc details">{{buildChallengeEntry.publishedMoc?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/buildchallengeentry', buildChallengeEntry.id]" class="btn btn-link text-left" ngbTooltip="Open Build Challenge Entry details">{{buildChallengeEntry.submittedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{buildChallengeEntry.entryNotes}}</td>
+            <td class="text-truncate">{{buildChallengeEntry.voteCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="buildChallengeEntry.isWinner"/></td>
+            <td class="text-truncate"><boolean-icon [value]="buildChallengeEntry.isDisqualified"/></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let buildChallengeEntry of filteredBuildChallengeEntries; trackBy: getBuildChallengeEntryId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': buildChallengeEntry.active == false,
+                 'row-deleted': buildChallengeEntry.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(buildChallengeEntry, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(buildChallengeEntry, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(buildChallengeEntry, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(buildChallengeEntry, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(buildChallengeEntry, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(buildChallengeEntry, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(buildChallengeEntry, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(buildChallengeEntry, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(buildChallengeEntry, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(buildChallengeEntry, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(buildChallengeEntry, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(buildChallengeEntry, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(buildChallengeEntry, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/buildchallengeentry', buildChallengeEntry.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(buildChallengeEntry)" *ngIf="userIsBMCBuildChallengeEntryWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(buildChallengeEntry)" *ngIf="userIsBMCBuildChallengeEntryWriter() && buildChallengeEntry.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(buildChallengeEntry)" *ngIf="userIsBMCBuildChallengeEntryWriter() && buildChallengeEntry.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{buildChallengeEntry.id}}</strong>
+               <small class="text-muted d-block">{{buildChallengeEntry.buildChallenge?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/buildchallengeentry', buildChallengeEntry.id]"
+                        ngbTooltip="Build Challenge Entry Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(buildChallengeEntry)"
+                        ngbTooltip="Edit Build Challenge Entry">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(buildChallengeEntry)"
+                      ngbTooltip="Delete Build Challenge Entry" 
+                      placement="top"
+                      *ngIf="buildChallengeEntry.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(buildChallengeEntry)"
+                      ngbTooltip="Undelete Build Challenge Entry" 
+                      placement="top"
+                      *ngIf="buildChallengeEntry.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.buildChallengeId != null">
+              <strong>Build Challenge: </strong>
+              <a [routerLink]="['/buildchallenge', buildChallengeEntry.buildChallengeId]" class="text-left p-0 m-0" ngbTooltip="Open Build Challenge details">{{buildChallengeEntry.buildChallenge?.name}}</a>
+            </p>
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.publishedMocId != null">
+              <strong>Published Moc: </strong>
+              <a [routerLink]="['/publishedmoc', buildChallengeEntry.publishedMocId]" class="text-left p-0 m-0" ngbTooltip="Open Published Moc details">{{buildChallengeEntry.publishedMoc?.name}}</a>
+            </p>
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.submittedDate != null">
+              <strong>Submitted Date: </strong>
+              {{buildChallengeEntry.submittedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.entryNotes != null">
+              <strong>Entry Notes: </strong>
+              {{buildChallengeEntry.entryNotes}}
+            </p>
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.voteCount != null">
+              <strong>Vote Count: </strong>
+              {{buildChallengeEntry.voteCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.isWinner != null">
+              <strong>Is Winner: </strong>
+              <boolean-icon [value]="buildChallengeEntry.isWinner"/>
+            </p>
+            <p class="build-challenge-entry-info" *ngIf="buildChallengeEntry.isDisqualified != null">
+              <strong>Is Disqualified: </strong>
+              <boolean-icon [value]="buildChallengeEntry.isDisqualified"/>
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

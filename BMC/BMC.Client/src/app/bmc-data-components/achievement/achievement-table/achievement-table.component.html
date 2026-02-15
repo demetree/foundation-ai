@@ -1,0 +1,359 @@
+<app-achievement-add-edit [showAddButton]="false"></app-achievement-add-edit>
+<div class="row" *ngIf="userIsBMCAchievementReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCAchievementWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCAchievementWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('achievementCategory.name')">
+                Achievement  Category
+                <span *ngIf="sortColumn === 'achievementCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('iconCssClass')">
+                Icon  Css  Class
+                <span *ngIf="sortColumn === 'iconCssClass'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('iconImagePath')">
+                Icon  Image  Path
+                <span *ngIf="sortColumn === 'iconImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('criteria')">
+                Criteria
+                <span *ngIf="sortColumn === 'criteria'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('criteriaCode')">
+                Criteria  Code
+                <span *ngIf="sortColumn === 'criteriaCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('pointValue')">
+                Point  Value
+                <span *ngIf="sortColumn === 'pointValue'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('rarity')">
+                Rarity
+                <span *ngIf="sortColumn === 'rarity'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isActive')">
+                Is  Active
+                <span *ngIf="sortColumn === 'isActive'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let achievement of filteredAchievements; trackBy: getAchievementId"
+              [ngClass]="{
+                 'row-inactive': achievement.active == false,
+                 'row-deleted': achievement.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCAchievementWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(achievement)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCAchievementWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(achievement)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="achievement.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(achievement)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="achievement.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(achievement, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(achievement, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(achievement, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(achievement, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(achievement, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(achievement, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(achievement, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(achievement, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/achievementcategory', achievement.achievementCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Achievement Category details">{{achievement.achievementCategory?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/achievement', achievement.id]" class="btn btn-link text-left" ngbTooltip="Open Achievement details">{{achievement.name}}</a></td>
+            <td class="text-truncate">{{achievement.description}}</td>
+            <td class="text-truncate">{{achievement.iconCssClass}}</td>
+            <td class="text-truncate">{{achievement.iconImagePath}}</td>
+            <td class="text-truncate">{{achievement.criteria}}</td>
+            <td class="text-truncate">{{achievement.criteriaCode}}</td>
+            <td class="text-truncate">{{achievement.pointValue | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{achievement.rarity}}</td>
+            <td class="text-truncate"><boolean-icon [value]="achievement.isActive"/></td>
+            <td class="text-truncate">{{achievement.sequence | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let achievement of filteredAchievements; trackBy: getAchievementId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': achievement.active == false,
+                 'row-deleted': achievement.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(achievement, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(achievement, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(achievement, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(achievement, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(achievement, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(achievement, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(achievement, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(achievement, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(achievement, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(achievement, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(achievement, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(achievement, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(achievement, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/achievement', achievement.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(achievement)" *ngIf="userIsBMCAchievementWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(achievement)" *ngIf="userIsBMCAchievementWriter() && achievement.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(achievement)" *ngIf="userIsBMCAchievementWriter() && achievement.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{achievement.name}}</strong>
+               <small class="text-muted d-block">{{achievement.achievementCategory?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/achievement', achievement.id]"
+                        ngbTooltip="Achievement Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(achievement)"
+                        ngbTooltip="Edit Achievement">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(achievement)"
+                      ngbTooltip="Delete Achievement" 
+                      placement="top"
+                      *ngIf="achievement.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(achievement)"
+                      ngbTooltip="Undelete Achievement" 
+                      placement="top"
+                      *ngIf="achievement.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="achievement-info" *ngIf="achievement.achievementCategoryId != null">
+              <strong>Achievement Category: </strong>
+              <a [routerLink]="['/achievementcategory', achievement.achievementCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Achievement Category details">{{achievement.achievementCategory?.name}}</a>
+            </p>
+            <p class="achievement-info" *ngIf="achievement.name != null">
+              <strong>Name: </strong>
+              {{achievement.name}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.description != null">
+              <strong>Description: </strong>
+              {{achievement.description}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.iconCssClass != null">
+              <strong>Icon Css Class: </strong>
+              {{achievement.iconCssClass}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.iconImagePath != null">
+              <strong>Icon Image Path: </strong>
+              {{achievement.iconImagePath}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.criteria != null">
+              <strong>Criteria: </strong>
+              {{achievement.criteria}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.criteriaCode != null">
+              <strong>Criteria Code: </strong>
+              {{achievement.criteriaCode}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.pointValue != null">
+              <strong>Point Value: </strong>
+              {{achievement.pointValue | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.rarity != null">
+              <strong>Rarity: </strong>
+              {{achievement.rarity}}
+            </p>
+            <p class="achievement-info" *ngIf="achievement.isActive != null">
+              <strong>Is Active: </strong>
+              <boolean-icon [value]="achievement.isActive"/>
+            </p>
+            <p class="achievement-info" *ngIf="achievement.sequence != null">
+              <strong>Sequence: </strong>
+              {{achievement.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

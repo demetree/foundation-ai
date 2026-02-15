@@ -1,0 +1,350 @@
+<app-shared-instruction-add-edit [showAddButton]="false"></app-shared-instruction-add-edit>
+<div class="row" *ngIf="userIsBMCSharedInstructionReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCSharedInstructionWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCSharedInstructionWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('buildManual.name')">
+                Build  Manual
+                <span *ngIf="sortColumn === 'buildManual.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('publishedMoc.name')">
+                Published  Moc
+                <span *ngIf="sortColumn === 'publishedMoc.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('formatType')">
+                Format  Type
+                <span *ngIf="sortColumn === 'formatType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('filePath')">
+                File  Path
+                <span *ngIf="sortColumn === 'filePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPublished')">
+                Is  Published
+                <span *ngIf="sortColumn === 'isPublished'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('publishedDate')">
+                Published  Date
+                <span *ngIf="sortColumn === 'publishedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('downloadCount')">
+                Download  Count
+                <span *ngIf="sortColumn === 'downloadCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('pageCount')">
+                Page  Count
+                <span *ngIf="sortColumn === 'pageCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let sharedInstruction of filteredSharedInstructions; trackBy: getSharedInstructionId"
+              [ngClass]="{
+                 'row-inactive': sharedInstruction.active == false,
+                 'row-deleted': sharedInstruction.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCSharedInstructionWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(sharedInstruction)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCSharedInstructionWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(sharedInstruction)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="sharedInstruction.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(sharedInstruction)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="sharedInstruction.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(sharedInstruction, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(sharedInstruction, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(sharedInstruction, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(sharedInstruction, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(sharedInstruction, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(sharedInstruction, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(sharedInstruction, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(sharedInstruction, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/buildmanual', sharedInstruction.buildManualId]" class="btn btn-link text-left" ngbTooltip="Open Build Manual details">{{sharedInstruction.buildManual?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/publishedmoc', sharedInstruction.publishedMocId]" class="btn btn-link text-left" ngbTooltip="Open Published Moc details">{{sharedInstruction.publishedMoc?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/sharedinstruction', sharedInstruction.id]" class="btn btn-link text-left" ngbTooltip="Open Shared Instruction details">{{sharedInstruction.name}}</a></td>
+            <td class="text-truncate">{{sharedInstruction.description}}</td>
+            <td class="text-truncate">{{sharedInstruction.formatType}}</td>
+            <td class="text-truncate">{{sharedInstruction.filePath}}</td>
+            <td class="text-truncate"><boolean-icon [value]="sharedInstruction.isPublished"/></td>
+            <td class="text-truncate">{{sharedInstruction.publishedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{sharedInstruction.downloadCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{sharedInstruction.pageCount | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let sharedInstruction of filteredSharedInstructions; trackBy: getSharedInstructionId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': sharedInstruction.active == false,
+                 'row-deleted': sharedInstruction.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(sharedInstruction, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(sharedInstruction, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(sharedInstruction, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(sharedInstruction, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(sharedInstruction, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(sharedInstruction, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(sharedInstruction, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(sharedInstruction, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(sharedInstruction, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(sharedInstruction, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(sharedInstruction, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(sharedInstruction, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(sharedInstruction, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/sharedinstruction', sharedInstruction.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(sharedInstruction)" *ngIf="userIsBMCSharedInstructionWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(sharedInstruction)" *ngIf="userIsBMCSharedInstructionWriter() && sharedInstruction.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(sharedInstruction)" *ngIf="userIsBMCSharedInstructionWriter() && sharedInstruction.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{sharedInstruction.name}}</strong>
+               <small class="text-muted d-block">{{sharedInstruction.buildManual?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/sharedinstruction', sharedInstruction.id]"
+                        ngbTooltip="Shared Instruction Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(sharedInstruction)"
+                        ngbTooltip="Edit Shared Instruction">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(sharedInstruction)"
+                      ngbTooltip="Delete Shared Instruction" 
+                      placement="top"
+                      *ngIf="sharedInstruction.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(sharedInstruction)"
+                      ngbTooltip="Undelete Shared Instruction" 
+                      placement="top"
+                      *ngIf="sharedInstruction.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.buildManualId != null">
+              <strong>Build Manual: </strong>
+              <a [routerLink]="['/buildmanual', sharedInstruction.buildManualId]" class="text-left p-0 m-0" ngbTooltip="Open Build Manual details">{{sharedInstruction.buildManual?.name}}</a>
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.publishedMocId != null">
+              <strong>Published Moc: </strong>
+              <a [routerLink]="['/publishedmoc', sharedInstruction.publishedMocId]" class="text-left p-0 m-0" ngbTooltip="Open Published Moc details">{{sharedInstruction.publishedMoc?.name}}</a>
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.name != null">
+              <strong>Name: </strong>
+              {{sharedInstruction.name}}
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.description != null">
+              <strong>Description: </strong>
+              {{sharedInstruction.description}}
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.formatType != null">
+              <strong>Format Type: </strong>
+              {{sharedInstruction.formatType}}
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.filePath != null">
+              <strong>File Path: </strong>
+              {{sharedInstruction.filePath}}
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.isPublished != null">
+              <strong>Is Published: </strong>
+              <boolean-icon [value]="sharedInstruction.isPublished"/>
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.publishedDate != null">
+              <strong>Published Date: </strong>
+              {{sharedInstruction.publishedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.downloadCount != null">
+              <strong>Download Count: </strong>
+              {{sharedInstruction.downloadCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="shared-instruction-info" *ngIf="sharedInstruction.pageCount != null">
+              <strong>Page Count: </strong>
+              {{sharedInstruction.pageCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

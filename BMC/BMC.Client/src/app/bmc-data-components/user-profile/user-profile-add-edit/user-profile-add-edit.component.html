@@ -1,0 +1,86 @@
+<div class="add-user-profile" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-profile me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Profile" 
+        *ngIf="userIsBMCUserProfileWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userProfileModal let-modal>
+   <div class="modal-header bg-dark text-light user-profile-modal-header">
+      <h5 class="modal-title mb-0" id="userProfileModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Profile' : 'Add User Profile' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-profile-modal-body">
+      <form [formGroup]="userProfileForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('displayName')">
+                <label for="UserProfile-displayName" id="label-UserProfile-displayName"><span class="text-danger">*</span>Display Name</label>
+                <input type="text" id="UserProfile-displayName" formControlName="displayName" placeholder="Enter Display Name" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-displayName" />
+                <div *ngIf="userProfileForm.get('displayName')?.invalid && userProfileForm.get('displayName')?.touched" class="text-danger">
+                    Display Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bio')">
+                <label for="UserProfile-bio" id="label-UserProfile-bio">Bio</label>
+                <textarea id="UserProfile-bio" formControlName="bio" placeholder="Enter Bio" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('location')">
+                <label for="UserProfile-location" id="label-UserProfile-location">Location</label>
+                <input type="text" id="UserProfile-location" formControlName="location" placeholder="Enter Location" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-location" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarImagePath')">
+                <label for="UserProfile-avatarImagePath" id="label-UserProfile-avatarImagePath">Avatar Image Path</label>
+                <input type="text" id="UserProfile-avatarImagePath" formControlName="avatarImagePath" placeholder="Enter Avatar Image Path" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-avatarImagePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('profileBannerImagePath')">
+                <label for="UserProfile-profileBannerImagePath" id="label-UserProfile-profileBannerImagePath">Profile Banner Image Path</label>
+                <input type="text" id="UserProfile-profileBannerImagePath" formControlName="profileBannerImagePath" placeholder="Enter Profile Banner Image Path" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-profileBannerImagePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('websiteUrl')">
+                <label for="UserProfile-websiteUrl" id="label-UserProfile-websiteUrl">Website Url</label>
+                <input type="text" id="UserProfile-websiteUrl" formControlName="websiteUrl" placeholder="Enter Website Url" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-websiteUrl" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublic')">
+                <input type="checkbox" id="UserProfile-isPublic" formControlName="isPublic" class="form-check-input" [disabled]="!userIsBMCUserProfileWriter()" />
+                <label for="UserProfile-isPublic" class="form-check-label" id="label-UserProfile-isPublic"><span class="text-danger">*</span>Is Public</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('memberSinceDate')">
+                <label for="UserProfile-memberSinceDate" id="label-UserProfile-memberSinceDate">Member Since Date</label>
+                <input type="datetime-local" id="UserProfile-memberSinceDate" formControlName="memberSinceDate" placeholder="Enter Member Since Date" class="form-control user-profile-input" [disabled]="!userIsBMCUserProfileWriter()" aria-labelledby="label-memberSinceDate" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserProfile-versionNumber" id="label-UserProfile-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserProfile-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-profile-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfile-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfileWriter()" />
+                <label for="UserProfile-active" class="form-check-label" id="label-UserProfile-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfile-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfileWriter()" />
+                <label for="UserProfile-deleted" class="form-check-label" id="label-UserProfile-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-profile-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Profile changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfileForm.valid || userProfileForm.pristine  || userIsBMCUserProfileWriter() == false " ngbTooltip="Save the User Profile changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Profile' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

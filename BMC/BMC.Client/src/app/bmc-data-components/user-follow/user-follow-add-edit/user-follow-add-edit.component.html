@@ -1,0 +1,68 @@
+<div class="add-user-follow" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-follow me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Follow" 
+        *ngIf="userIsBMCUserFollowWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userFollowModal let-modal>
+   <div class="modal-header bg-dark text-light user-follow-modal-header">
+      <h5 class="modal-title mb-0" id="userFollowModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Follow' : 'Add User Follow' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-follow-modal-body">
+      <form [formGroup]="userFollowForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('followerTenantGuid')">
+                <label for="UserFollow-followerTenantGuid" id="label-UserFollow-followerTenantGuid"><span class="text-danger">*</span>Follower Tenant Guid</label>
+                <input type="text" id="UserFollow-followerTenantGuid" formControlName="followerTenantGuid" placeholder="Enter Follower Tenant Guid" class="form-control user-follow-input" [disabled]="!userIsBMCUserFollowWriter()" aria-labelledby="label-followerTenantGuid" />
+                <div *ngIf="userFollowForm.get('followerTenantGuid')?.invalid && userFollowForm.get('followerTenantGuid')?.touched" class="text-danger">
+                    Follower Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('followedTenantGuid')">
+                <label for="UserFollow-followedTenantGuid" id="label-UserFollow-followedTenantGuid"><span class="text-danger">*</span>Followed Tenant Guid</label>
+                <input type="text" id="UserFollow-followedTenantGuid" formControlName="followedTenantGuid" placeholder="Enter Followed Tenant Guid" class="form-control user-follow-input" [disabled]="!userIsBMCUserFollowWriter()" aria-labelledby="label-followedTenantGuid" />
+                <div *ngIf="userFollowForm.get('followedTenantGuid')?.invalid && userFollowForm.get('followedTenantGuid')?.touched" class="text-danger">
+                    Followed Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('followedDate')">
+                <label for="UserFollow-followedDate" id="label-UserFollow-followedDate"><span class="text-danger">*</span>Followed Date</label>
+                <input type="datetime-local" id="UserFollow-followedDate" formControlName="followedDate" placeholder="Enter Followed Date" class="form-control user-follow-input" [disabled]="!userIsBMCUserFollowWriter()" aria-labelledby="label-followedDate" />
+                <div *ngIf="userFollowForm.get('followedDate')?.invalid && userFollowForm.get('followedDate')?.touched" class="text-danger">
+                    Followed Date is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserFollow-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserFollowWriter()" />
+                <label for="UserFollow-active" class="form-check-label" id="label-UserFollow-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserFollow-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserFollowWriter()" />
+                <label for="UserFollow-deleted" class="form-check-label" id="label-UserFollow-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-follow-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Follow changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userFollowForm.valid || userFollowForm.pristine  || userIsBMCUserFollowWriter() == false " ngbTooltip="Save the User Follow changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Follow' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

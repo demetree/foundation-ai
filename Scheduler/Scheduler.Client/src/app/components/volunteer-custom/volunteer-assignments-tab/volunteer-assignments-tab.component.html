@@ -1,0 +1,96 @@
+<div class="card h-100">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-calendar-check me-2"></i>
+            Volunteer Assignments
+        </h6>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-primary" (click)="openAddAssignment()" *ngIf="userIsVolunteerWriter()">
+                <i class="fa-solid fa-plus me-1"></i> Add Assignment
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadAssignments()">
+                <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Loading -->
+        <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading assignments...</span>
+            </div>
+        </div>
+
+        <!-- Error -->
+        <div class="alert alert-danger small" *ngIf="error">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            {{ error }}
+        </div>
+
+        <!-- Empty -->
+        <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!allAssignments || allAssignments.length === 0)">
+            <i class="fa-solid fa-calendar-xmark fa-3x mb-3 opacity-50"></i>
+            <div>No assignments recorded</div>
+            <div class="small mt-2">This volunteer has no event assignments</div>
+        </div>
+
+        <!-- Assignment List -->
+        <div class="table-responsive" *ngIf="!isLoading && allAssignments && allAssignments.length > 0">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Event</th>
+                        <th>Target</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-end">Reported Hrs</th>
+                        <th class="text-end">Approved Hrs</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr *ngFor="let assignment of allAssignments">
+                        <td>
+                            {{ formatDateTime(assignment.assignmentStartDateTime ||
+                            assignment.scheduledEvent?.startDateTime) }}
+                            <span class="text-muted small d-block">
+                                → {{ formatDateTime(assignment.assignmentEndDateTime ||
+                                assignment.scheduledEvent?.endDateTime) }}
+                            </span>
+                        </td>
+                        <td>
+                            <a class="text-decoration-none pointer fw-semibold"
+                                (click)="navigateToEvent(assignment.scheduledEvent?.id)">
+                                {{ assignment.scheduledEvent?.name || 'Untitled Event' }}
+                            </a>
+                        </td>
+                        <td>{{ getTargetName(assignment) }}</td>
+                        <td>
+                            <span *ngIf="assignment.assignmentRole?.name; else noRole">
+                                {{ assignment.assignmentRole?.name }}
+                            </span>
+                            <ng-template #noRole>—</ng-template>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill {{ getAssignmentStatusBadge(assignment) }}">
+                                {{ assignment.assignmentStatus?.name || 'Planned' }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            {{ formatHours(assignment.reportedVolunteerHours) }}
+                        </td>
+                        <td class="text-end">
+                            <span
+                                [class.text-success]="assignment.approvedVolunteerHours !== null && assignment.approvedVolunteerHours !== undefined">
+                                {{ formatHours(assignment.approvedVolunteerHours) }}
+                            </span>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

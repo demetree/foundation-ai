@@ -1,0 +1,91 @@
+<div class="add-activity-event-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-activity-event-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Activity Event Type" 
+        *ngIf="userIsBMCActivityEventTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #activityEventTypeModal let-modal>
+   <div class="modal-header bg-dark text-light activity-event-type-modal-header">
+      <h5 class="modal-title mb-0" id="activityEventTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Activity Event Type' : 'Add Activity Event Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body activity-event-type-modal-body">
+      <form [formGroup]="activityEventTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ActivityEventType-name" id="label-ActivityEventType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ActivityEventType-name" formControlName="name" placeholder="Enter Name" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="activityEventTypeForm.get('name')?.invalid && activityEventTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ActivityEventType-description" id="label-ActivityEventType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ActivityEventType-description" formControlName="description" placeholder="Enter Description" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()"></textarea>
+                <div *ngIf="activityEventTypeForm.get('description')?.invalid && activityEventTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconCssClass')">
+                <label for="ActivityEventType-iconCssClass" id="label-ActivityEventType-iconCssClass">Icon Css Class</label>
+                <input type="text" id="ActivityEventType-iconCssClass" formControlName="iconCssClass" placeholder="Enter Icon Css Class" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()" aria-labelledby="label-iconCssClass" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('accentColor')">
+                <label for="ActivityEventType-accentColor" id="label-ActivityEventType-accentColor">Accent Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ActivityEventType-accentColor" 
+                        formControlName="accentColor" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCActivityEventTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="activityEventTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ActivityEventType-sequence" id="label-ActivityEventType-sequence">Sequence</label>
+                <input type="number" id="ActivityEventType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ActivityEventType-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCActivityEventTypeWriter()" />
+                <label for="ActivityEventType-active" class="form-check-label" id="label-ActivityEventType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ActivityEventType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCActivityEventTypeWriter()" />
+                <label for="ActivityEventType-deleted" class="form-check-label" id="label-ActivityEventType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer activity-event-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Activity Event Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !activityEventTypeForm.valid || activityEventTypeForm.pristine  || userIsBMCActivityEventTypeWriter() == false " ngbTooltip="Save the Activity Event Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Activity Event Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

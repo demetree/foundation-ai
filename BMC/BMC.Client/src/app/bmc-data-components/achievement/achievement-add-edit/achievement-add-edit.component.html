@@ -1,0 +1,109 @@
+<div class="add-achievement" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-achievement me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Achievement" 
+        *ngIf="userIsBMCAchievementWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #achievementModal let-modal>
+   <div class="modal-header bg-dark text-light achievement-modal-header">
+      <h5 class="modal-title mb-0" id="achievementModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Achievement' : 'Add Achievement' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body achievement-modal-body">
+      <form [formGroup]="achievementForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('achievementCategoryId')">
+                <label for="Achievement-achievementCategoryId" id="label-Achievement-achievementCategoryId"><span class="text-danger">*</span>Achievement Category</label>
+                <select id="Achievement-achievementCategoryId" formControlName="achievementCategoryId" class="form-select achievement-select" [disabled]="!userIsBMCAchievementWriter()">
+                    <option [ngValue]="null">Select Achievement Category</option>
+                    <option *ngFor="let achievementCategory of achievementCategories$ | async" [ngValue]="achievementCategory.id">{{achievementCategory.name}}</option>
+                </select>
+                <div *ngIf="achievementForm.get('achievementCategoryId')?.invalid && achievementForm.get('achievementCategoryId')?.touched" class="text-danger">
+                    Achievement Category is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Achievement-name" id="label-Achievement-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Achievement-name" formControlName="name" placeholder="Enter Name" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-name" />
+                <div *ngIf="achievementForm.get('name')?.invalid && achievementForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Achievement-description" id="label-Achievement-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="Achievement-description" formControlName="description" placeholder="Enter Description" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()"></textarea>
+                <div *ngIf="achievementForm.get('description')?.invalid && achievementForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconCssClass')">
+                <label for="Achievement-iconCssClass" id="label-Achievement-iconCssClass">Icon Css Class</label>
+                <input type="text" id="Achievement-iconCssClass" formControlName="iconCssClass" placeholder="Enter Icon Css Class" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-iconCssClass" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconImagePath')">
+                <label for="Achievement-iconImagePath" id="label-Achievement-iconImagePath">Icon Image Path</label>
+                <input type="text" id="Achievement-iconImagePath" formControlName="iconImagePath" placeholder="Enter Icon Image Path" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-iconImagePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('criteria')">
+                <label for="Achievement-criteria" id="label-Achievement-criteria">Criteria</label>
+                <textarea id="Achievement-criteria" formControlName="criteria" placeholder="Enter Criteria" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('criteriaCode')">
+                <label for="Achievement-criteriaCode" id="label-Achievement-criteriaCode">Criteria Code</label>
+                <input type="text" id="Achievement-criteriaCode" formControlName="criteriaCode" placeholder="Enter Criteria Code" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-criteriaCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('pointValue')">
+                <label for="Achievement-pointValue" id="label-Achievement-pointValue"><span class="text-danger">*</span>Point Value</label>
+                <input type="number" id="Achievement-pointValue" formControlName="pointValue" placeholder="Enter Point Value" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-pointValue" />
+                <div *ngIf="achievementForm.get('pointValue')?.invalid && achievementForm.get('pointValue')?.touched" class="text-danger">
+                    Point Value is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rarity')">
+                <label for="Achievement-rarity" id="label-Achievement-rarity"><span class="text-danger">*</span>Rarity</label>
+                <input type="text" id="Achievement-rarity" formControlName="rarity" placeholder="Enter Rarity" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-rarity" />
+                <div *ngIf="achievementForm.get('rarity')?.invalid && achievementForm.get('rarity')?.touched" class="text-danger">
+                    Rarity is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isActive')">
+                <input type="checkbox" id="Achievement-isActive" formControlName="isActive" class="form-check-input" [disabled]="!userIsBMCAchievementWriter()" />
+                <label for="Achievement-isActive" class="form-check-label" id="label-Achievement-isActive"><span class="text-danger">*</span>Is Active</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Achievement-sequence" id="label-Achievement-sequence">Sequence</label>
+                <input type="number" id="Achievement-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control achievement-input" [disabled]="!userIsBMCAchievementWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Achievement-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCAchievementWriter()" />
+                <label for="Achievement-active" class="form-check-label" id="label-Achievement-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Achievement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCAchievementWriter()" />
+                <label for="Achievement-deleted" class="form-check-label" id="label-Achievement-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer achievement-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Achievement changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !achievementForm.valid || achievementForm.pristine  || userIsBMCAchievementWriter() == false " ngbTooltip="Save the Achievement changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Achievement' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

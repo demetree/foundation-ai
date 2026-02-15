@@ -33,7 +33,7 @@ export class ProjectExportQueryParameters {
     exportFormatId: bigint | number | null | undefined = null;
     name: string | null | undefined = null;
     outputFilePath: string | null | undefined = null;
-    exportedDate: string | null | undefined = null;        // ISO 8601
+    exportedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     includeInstructions: boolean | null | undefined = null;
     includePartsList: boolean | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -55,7 +55,7 @@ export class ProjectExportSubmitData {
     exportFormatId!: bigint | number;
     name!: string;
     outputFilePath: string | null = null;
-    exportedDate: string | null = null;     // ISO 8601
+    exportedDate: string | null = null;     // ISO 8601 (full datetime)
     includeInstructions!: boolean;
     includePartsList!: boolean;
     active!: boolean;
@@ -111,7 +111,7 @@ export class ProjectExportData {
     exportFormatId!: bigint | number;
     name!: string;
     outputFilePath!: string | null;
-    exportedDate!: string | null;   // ISO 8601
+    exportedDate!: string | null;   // ISO 8601 (full datetime)
     includeInstructions!: boolean;
     includePartsList!: boolean;
     objectGuid!: string;

@@ -1,0 +1,72 @@
+<div class="add-published-moc-image" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-published-moc-image me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Published Moc Image" 
+        *ngIf="userIsBMCPublishedMocImageWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #publishedMocImageModal let-modal>
+   <div class="modal-header bg-dark text-light published-moc-image-modal-header">
+      <h5 class="modal-title mb-0" id="publishedMocImageModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Published Moc Image' : 'Add Published Moc Image' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body published-moc-image-modal-body">
+      <form [formGroup]="publishedMocImageForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                <label for="PublishedMocImage-publishedMocId" id="label-PublishedMocImage-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                <select id="PublishedMocImage-publishedMocId" formControlName="publishedMocId" class="form-select published-moc-image-select" [disabled]="!userIsBMCPublishedMocImageWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+                <div *ngIf="publishedMocImageForm.get('publishedMocId')?.invalid && publishedMocImageForm.get('publishedMocId')?.touched" class="text-danger">
+                    Published Moc is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('imagePath')">
+                <label for="PublishedMocImage-imagePath" id="label-PublishedMocImage-imagePath"><span class="text-danger">*</span>Image Path</label>
+                <input type="text" id="PublishedMocImage-imagePath" formControlName="imagePath" placeholder="Enter Image Path" class="form-control published-moc-image-input" [disabled]="!userIsBMCPublishedMocImageWriter()" aria-labelledby="label-imagePath" />
+                <div *ngIf="publishedMocImageForm.get('imagePath')?.invalid && publishedMocImageForm.get('imagePath')?.touched" class="text-danger">
+                    Image Path is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('caption')">
+                <label for="PublishedMocImage-caption" id="label-PublishedMocImage-caption">Caption</label>
+                <input type="text" id="PublishedMocImage-caption" formControlName="caption" placeholder="Enter Caption" class="form-control published-moc-image-input" [disabled]="!userIsBMCPublishedMocImageWriter()" aria-labelledby="label-caption" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="PublishedMocImage-sequence" id="label-PublishedMocImage-sequence">Sequence</label>
+                <input type="number" id="PublishedMocImage-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control published-moc-image-input" [disabled]="!userIsBMCPublishedMocImageWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PublishedMocImage-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPublishedMocImageWriter()" />
+                <label for="PublishedMocImage-active" class="form-check-label" id="label-PublishedMocImage-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PublishedMocImage-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPublishedMocImageWriter()" />
+                <label for="PublishedMocImage-deleted" class="form-check-label" id="label-PublishedMocImage-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer published-moc-image-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Published Moc Image changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !publishedMocImageForm.valid || publishedMocImageForm.pristine  || userIsBMCPublishedMocImageWriter() == false " ngbTooltip="Save the Published Moc Image changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Published Moc Image' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -33,6 +33,7 @@ import { ProjectReferenceImageService } from '../../../bmc-data-services/project
 import { BuildManualService } from '../../../bmc-data-services/build-manual.service';
 import { ProjectRenderService } from '../../../bmc-data-services/project-render.service';
 import { ProjectExportService } from '../../../bmc-data-services/project-export.service';
+import { PublishedMocService } from '../../../bmc-data-services/published-moc.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -113,6 +114,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
   public buildManuals$ = this.buildManualService.GetBuildManualList();
   public projectRenders$ = this.projectRenderService.GetProjectRenderList();
   public projectExports$ = this.projectExportService.GetProjectExportList();
+  public publishedMocs$ = this.publishedMocService.GetPublishedMocList();
 
   private destroy$ = new Subject<void>();
 
@@ -128,6 +130,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
     public buildManualService: BuildManualService,
     public projectRenderService: ProjectRenderService,
     public projectExportService: ProjectExportService,
+    public publishedMocService: PublishedMocService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

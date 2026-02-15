@@ -1,0 +1,68 @@
+<div class="add-user-achievement" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-achievement me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Achievement" 
+        *ngIf="userIsBMCUserAchievementWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userAchievementModal let-modal>
+   <div class="modal-header bg-dark text-light user-achievement-modal-header">
+      <h5 class="modal-title mb-0" id="userAchievementModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Achievement' : 'Add User Achievement' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-achievement-modal-body">
+      <form [formGroup]="userAchievementForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('achievementId')">
+                <label for="UserAchievement-achievementId" id="label-UserAchievement-achievementId"><span class="text-danger">*</span>Achievement</label>
+                <select id="UserAchievement-achievementId" formControlName="achievementId" class="form-select user-achievement-select" [disabled]="!userIsBMCUserAchievementWriter()">
+                    <option [ngValue]="null">Select Achievement</option>
+                    <option *ngFor="let achievement of achievements$ | async" [ngValue]="achievement.id">{{achievement.name}}</option>
+                </select>
+                <div *ngIf="userAchievementForm.get('achievementId')?.invalid && userAchievementForm.get('achievementId')?.touched" class="text-danger">
+                    Achievement is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('earnedDate')">
+                <label for="UserAchievement-earnedDate" id="label-UserAchievement-earnedDate"><span class="text-danger">*</span>Earned Date</label>
+                <input type="datetime-local" id="UserAchievement-earnedDate" formControlName="earnedDate" placeholder="Enter Earned Date" class="form-control user-achievement-input" [disabled]="!userIsBMCUserAchievementWriter()" aria-labelledby="label-earnedDate" />
+                <div *ngIf="userAchievementForm.get('earnedDate')?.invalid && userAchievementForm.get('earnedDate')?.touched" class="text-danger">
+                    Earned Date is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDisplayed')">
+                <input type="checkbox" id="UserAchievement-isDisplayed" formControlName="isDisplayed" class="form-check-input" [disabled]="!userIsBMCUserAchievementWriter()" />
+                <label for="UserAchievement-isDisplayed" class="form-check-label" id="label-UserAchievement-isDisplayed"><span class="text-danger">*</span>Is Displayed</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserAchievement-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserAchievementWriter()" />
+                <label for="UserAchievement-active" class="form-check-label" id="label-UserAchievement-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserAchievement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserAchievementWriter()" />
+                <label for="UserAchievement-deleted" class="form-check-label" id="label-UserAchievement-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-achievement-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Achievement changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userAchievementForm.valid || userAchievementForm.pristine  || userIsBMCUserAchievementWriter() == false " ngbTooltip="Save the User Achievement changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Achievement' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

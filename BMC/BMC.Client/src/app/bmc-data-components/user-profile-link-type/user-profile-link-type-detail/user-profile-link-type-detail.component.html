@@ -1,0 +1,97 @@
+<div class="container-fluid p-1 m-0 user-profile-link-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-profile-link-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Profile Link Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Profile Link Type' : 'Add User Profile Link Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserProfileLinkTypeReader()">
+                <div class="col m-2 user-profile-link-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userProfileLinkTypeForm" (ngSubmit)="submitForm()" class="user-profile-link-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="UserProfileLinkType-name" id="label-UserProfileLinkType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="UserProfileLinkType-name" formControlName="name" placeholder="Enter Name" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="userProfileLinkTypeForm.get('name')?.invalid && userProfileLinkTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="UserProfileLinkType-description" id="label-UserProfileLinkType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="UserProfileLinkType-description" formControlName="description" placeholder="Enter Description" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()"></textarea>
+                                <div *ngIf="userProfileLinkTypeForm.get('description')?.invalid && userProfileLinkTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconCssClass')">
+                                <label for="UserProfileLinkType-iconCssClass" id="label-UserProfileLinkType-iconCssClass">Icon Css Class</label>
+                                <input type="text" id="UserProfileLinkType-iconCssClass" formControlName="iconCssClass" placeholder="Enter Icon Css Class" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" aria-labelledby="label-iconCssClass" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="UserProfileLinkType-sequence" id="label-UserProfileLinkType-sequence">Sequence</label>
+                                <input type="number" id="UserProfileLinkType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserProfileLinkType-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" />
+                                <label for="UserProfileLinkType-active" class="form-check-label" id="label-UserProfileLinkType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserProfileLinkType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" />
+                                <label for="UserProfileLinkType-deleted" class="form-check-label" id="label-UserProfileLinkType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-profile-link-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userProfileLinkTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Profile Link Type">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfileLinkTypeForm.valid || !userProfileLinkTypeForm.dirty || userProfileLinkTypeForm.pristine  || userIsBMCUserProfileLinkTypeWriter() == false " ngbTooltip="Save the User Profile Link Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Profile Link Type' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCUserProfileLinkTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 user-profile-link-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="userProfileLinkService.userIsBMCUserProfileLinkReader()">
+                            <button ngbNavLink>User Profile Links
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userProfileLinkTypeData?.UserProfileLinksCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-profile-link-table [queryParams]="{ userProfileLinkTypeId: userProfileLinkTypeData?.id }"></app-user-profile-link-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-profile-link-add-edit [preSeededData]="{ userProfileLinkTypeId: userProfileLinkTypeData?.id }" [hiddenFields]="['userProfileLinkTypeId']"></app-user-profile-link-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

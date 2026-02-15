@@ -21,6 +21,7 @@ import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
 import { LegoSetMinifigService, LegoSetMinifigData } from './lego-set-minifig.service';
 import { LegoSetSubsetService, LegoSetSubsetData } from './lego-set-subset.service';
 import { UserCollectionSetImportService, UserCollectionSetImportData } from './user-collection-set-import.service';
+import { UserSetOwnershipService, UserSetOwnershipData } from './user-set-ownership.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -151,6 +152,11 @@ export class LegoSetData {
     private _userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
 
                 
+    private _userSetOwnerships: UserSetOwnershipData[] | null = null;
+    private _userSetOwnershipsPromise: Promise<UserSetOwnershipData[]> | null  = null;
+    private _userSetOwnershipsSubject = new BehaviorSubject<UserSetOwnershipData[] | null>(null);
+
+                
 
     //
     // Public observables — use with | async in templates
@@ -251,6 +257,25 @@ export class LegoSetData {
 
 
 
+    public UserSetOwnerships$ = this._userSetOwnershipsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userSetOwnerships === null && this._userSetOwnershipsPromise === null) {
+            this.loadUserSetOwnerships(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -308,6 +333,10 @@ export class LegoSetData {
      this._userCollectionSetImports = null;
      this._userCollectionSetImportsPromise = null;
      this._userCollectionSetImportsSubject.next(null);
+
+     this._userSetOwnerships = null;
+     this._userSetOwnershipsPromise = null;
+     this._userSetOwnershipsSubject.next(null);
 
   }
 
@@ -640,6 +669,71 @@ export class LegoSetData {
     }
 
 
+    /**
+     *
+     * Gets the UserSetOwnerships for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.UserSetOwnerships.then(legoSets => { ... })
+     *   or
+     *   await this.legoSet.legoSets
+     *
+    */
+    public get UserSetOwnerships(): Promise<UserSetOwnershipData[]> {
+        if (this._userSetOwnerships !== null) {
+            return Promise.resolve(this._userSetOwnerships);
+        }
+
+        if (this._userSetOwnershipsPromise !== null) {
+            return this._userSetOwnershipsPromise;
+        }
+
+        // Start the load
+        this.loadUserSetOwnerships();
+
+        return this._userSetOwnershipsPromise!;
+    }
+
+
+
+    private loadUserSetOwnerships(): void {
+
+        this._userSetOwnershipsPromise = lastValueFrom(
+            LegoSetService.Instance.GetUserSetOwnershipsForLegoSet(this.id)
+        )
+        .then(UserSetOwnerships => {
+            this._userSetOwnerships = UserSetOwnerships ?? [];
+            this._userSetOwnershipsSubject.next(this._userSetOwnerships);
+            return this._userSetOwnerships;
+         })
+        .catch(err => {
+            this._userSetOwnerships = [];
+            this._userSetOwnershipsSubject.next(this._userSetOwnerships);
+            throw err;
+        })
+        .finally(() => {
+            this._userSetOwnershipsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserSetOwnership. Call after mutations to force refresh.
+     */
+    public ClearUserSetOwnershipsCache(): void {
+        this._userSetOwnerships = null;
+        this._userSetOwnershipsPromise = null;
+        this._userSetOwnershipsSubject.next(this._userSetOwnerships);      // Emit to observable
+    }
+
+    public get HasUserSetOwnerships(): Promise<boolean> {
+        return this.UserSetOwnerships.then(userSetOwnerships => userSetOwnerships.length > 0);
+    }
+
+
 
 
     /**
@@ -679,6 +773,7 @@ export class LegoSetService extends SecureEndpointBase {
         private legoSetMinifigService: LegoSetMinifigService,
         private legoSetSubsetService: LegoSetSubsetService,
         private userCollectionSetImportService: UserCollectionSetImportService,
+        private userSetOwnershipService: UserSetOwnershipService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1092,6 +1187,16 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
+    public GetUserSetOwnershipsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserSetOwnershipData[]> {
+        return this.userSetOwnershipService.GetUserSetOwnershipList({
+            legoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full LegoSetData instance.
@@ -1142,6 +1247,10 @@ export class LegoSetService extends SecureEndpointBase {
     (revived as any)._userCollectionSetImports = null;
     (revived as any)._userCollectionSetImportsPromise = null;
     (revived as any)._userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
+
+    (revived as any)._userSetOwnerships = null;
+    (revived as any)._userSetOwnershipsPromise = null;
+    (revived as any)._userSetOwnershipsSubject = new BehaviorSubject<UserSetOwnershipData[] | null>(null);
 
 
     //
@@ -1213,6 +1322,22 @@ export class LegoSetService extends SecureEndpointBase {
       );
 
     (revived as any).UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserSetOwnerships$ = (revived as any)._userSetOwnershipsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userSetOwnerships === null && (revived as any)._userSetOwnershipsPromise === null) {
+                (revived as any).loadUserSetOwnerships();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: (revived as any).id,
       active: true,
       deleted: false
     });

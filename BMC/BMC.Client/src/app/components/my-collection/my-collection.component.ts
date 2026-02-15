@@ -221,7 +221,7 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
         // Kick off 3D thumbnail rendering (with colour overrides)
         const partsWithGeometry = this.displayedParts
             .filter(p => p.geometryFilePath)
-            .map(p => ({ geometryFilePath: p.geometryFilePath, colourHex: p.colourHex || undefined }));
+            .map(p => ({ geometryFilePath: p.geometryFilePath, colourHex: this.normalizeHex(p.colourHex) }));
         if (partsWithGeometry.length > 0) {
             this.thumbnailService.renderBatch(partsWithGeometry);
         }
@@ -330,11 +330,21 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
     }
 
     getThumbnailKey(part: CollectionPart): string {
-        return LDrawThumbnailService.cacheKey(part.geometryFilePath, part.colourHex || undefined);
+        return LDrawThumbnailService.cacheKey(part.geometryFilePath, this.normalizeHex(part.colourHex));
     }
 
     getColourStyle(hex: string): string {
-        return hex ? `#${hex}` : '#999';
+        if (!hex) return '#999';
+        return hex.startsWith('#') ? hex : `#${hex}`;
+    }
+
+    /**
+     * Strip leading '#' from hex colour values returned by the API.
+     * The DB stores '#A0A5A9' but the thumbnail service expects 'A0A5A9'.
+     */
+    private normalizeHex(hex: string | undefined | null): string | undefined {
+        if (!hex) return undefined;
+        return hex.startsWith('#') ? hex.substring(1) : hex;
     }
 
     getStatIcon(stat: string): string {

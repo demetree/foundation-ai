@@ -17,6 +17,18 @@ import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
 //
 // Beginning of imports for BMC Data Components
 //
+import { AchievementListingComponent } from './bmc-data-components/achievement/achievement-listing/achievement-listing.component';
+import { AchievementDetailComponent } from './bmc-data-components/achievement/achievement-detail/achievement-detail.component';
+import { AchievementCategoryListingComponent } from './bmc-data-components/achievement-category/achievement-category-listing/achievement-category-listing.component';
+import { AchievementCategoryDetailComponent } from './bmc-data-components/achievement-category/achievement-category-detail/achievement-category-detail.component';
+import { ActivityEventListingComponent } from './bmc-data-components/activity-event/activity-event-listing/activity-event-listing.component';
+import { ActivityEventDetailComponent } from './bmc-data-components/activity-event/activity-event-detail/activity-event-detail.component';
+import { ActivityEventTypeListingComponent } from './bmc-data-components/activity-event-type/activity-event-type-listing/activity-event-type-listing.component';
+import { ActivityEventTypeDetailComponent } from './bmc-data-components/activity-event-type/activity-event-type-detail/activity-event-type-detail.component';
+import { ApiKeyListingComponent } from './bmc-data-components/api-key/api-key-listing/api-key-listing.component';
+import { ApiKeyDetailComponent } from './bmc-data-components/api-key/api-key-detail/api-key-detail.component';
+import { ApiRequestLogListingComponent } from './bmc-data-components/api-request-log/api-request-log-listing/api-request-log-listing.component';
+import { ApiRequestLogDetailComponent } from './bmc-data-components/api-request-log/api-request-log-detail/api-request-log-detail.component';
 import { BrickCategoryListingComponent } from './bmc-data-components/brick-category/brick-category-listing/brick-category-listing.component';
 import { BrickCategoryDetailComponent } from './bmc-data-components/brick-category/brick-category-detail/brick-category-detail.component';
 import { BrickColourListingComponent } from './bmc-data-components/brick-colour/brick-colour-listing/brick-colour-listing.component';
@@ -35,6 +47,12 @@ import { BrickPartConnectorListingComponent } from './bmc-data-components/brick-
 import { BrickPartConnectorDetailComponent } from './bmc-data-components/brick-part-connector/brick-part-connector-detail/brick-part-connector-detail.component';
 import { BrickPartRelationshipListingComponent } from './bmc-data-components/brick-part-relationship/brick-part-relationship-listing/brick-part-relationship-listing.component';
 import { BrickPartRelationshipDetailComponent } from './bmc-data-components/brick-part-relationship/brick-part-relationship-detail/brick-part-relationship-detail.component';
+import { BuildChallengeListingComponent } from './bmc-data-components/build-challenge/build-challenge-listing/build-challenge-listing.component';
+import { BuildChallengeDetailComponent } from './bmc-data-components/build-challenge/build-challenge-detail/build-challenge-detail.component';
+import { BuildChallengeChangeHistoryListingComponent } from './bmc-data-components/build-challenge-change-history/build-challenge-change-history-listing/build-challenge-change-history-listing.component';
+import { BuildChallengeChangeHistoryDetailComponent } from './bmc-data-components/build-challenge-change-history/build-challenge-change-history-detail/build-challenge-change-history-detail.component';
+import { BuildChallengeEntryListingComponent } from './bmc-data-components/build-challenge-entry/build-challenge-entry-listing/build-challenge-entry-listing.component';
+import { BuildChallengeEntryDetailComponent } from './bmc-data-components/build-challenge-entry/build-challenge-entry-detail/build-challenge-entry-detail.component';
 import { BuildManualListingComponent } from './bmc-data-components/build-manual/build-manual-listing/build-manual-listing.component';
 import { BuildManualDetailComponent } from './bmc-data-components/build-manual/build-manual-detail/build-manual-detail.component';
 import { BuildManualChangeHistoryListingComponent } from './bmc-data-components/build-manual-change-history/build-manual-change-history-listing/build-manual-change-history-listing.component';
@@ -53,6 +71,10 @@ import { ColourFinishListingComponent } from './bmc-data-components/colour-finis
 import { ColourFinishDetailComponent } from './bmc-data-components/colour-finish/colour-finish-detail/colour-finish-detail.component';
 import { ConnectorTypeListingComponent } from './bmc-data-components/connector-type/connector-type-listing/connector-type-listing.component';
 import { ConnectorTypeDetailComponent } from './bmc-data-components/connector-type/connector-type-detail/connector-type-detail.component';
+import { ContentReportListingComponent } from './bmc-data-components/content-report/content-report-listing/content-report-listing.component';
+import { ContentReportDetailComponent } from './bmc-data-components/content-report/content-report-detail/content-report-detail.component';
+import { ContentReportReasonListingComponent } from './bmc-data-components/content-report-reason/content-report-reason-listing/content-report-reason-listing.component';
+import { ContentReportReasonDetailComponent } from './bmc-data-components/content-report-reason/content-report-reason-detail/content-report-reason-detail.component';
 import { ExportFormatListingComponent } from './bmc-data-components/export-format/export-format-listing/export-format-listing.component';
 import { ExportFormatDetailComponent } from './bmc-data-components/export-format/export-format-detail/export-format-detail.component';
 import { LegoMinifigListingComponent } from './bmc-data-components/lego-minifig/lego-minifig-listing/lego-minifig-listing.component';
@@ -67,12 +89,22 @@ import { LegoSetSubsetListingComponent } from './bmc-data-components/lego-set-su
 import { LegoSetSubsetDetailComponent } from './bmc-data-components/lego-set-subset/lego-set-subset-detail/lego-set-subset-detail.component';
 import { LegoThemeListingComponent } from './bmc-data-components/lego-theme/lego-theme-listing/lego-theme-listing.component';
 import { LegoThemeDetailComponent } from './bmc-data-components/lego-theme/lego-theme-detail/lego-theme-detail.component';
+import { MocCommentListingComponent } from './bmc-data-components/moc-comment/moc-comment-listing/moc-comment-listing.component';
+import { MocCommentDetailComponent } from './bmc-data-components/moc-comment/moc-comment-detail/moc-comment-detail.component';
+import { MocFavouriteListingComponent } from './bmc-data-components/moc-favourite/moc-favourite-listing/moc-favourite-listing.component';
+import { MocFavouriteDetailComponent } from './bmc-data-components/moc-favourite/moc-favourite-detail/moc-favourite-detail.component';
+import { MocLikeListingComponent } from './bmc-data-components/moc-like/moc-like-listing/moc-like-listing.component';
+import { MocLikeDetailComponent } from './bmc-data-components/moc-like/moc-like-detail/moc-like-detail.component';
+import { ModerationActionListingComponent } from './bmc-data-components/moderation-action/moderation-action-listing/moderation-action-listing.component';
+import { ModerationActionDetailComponent } from './bmc-data-components/moderation-action/moderation-action-detail/moderation-action-detail.component';
 import { PartTypeListingComponent } from './bmc-data-components/part-type/part-type-listing/part-type-listing.component';
 import { PartTypeDetailComponent } from './bmc-data-components/part-type/part-type-detail/part-type-detail.component';
 import { PlacedBrickListingComponent } from './bmc-data-components/placed-brick/placed-brick-listing/placed-brick-listing.component';
 import { PlacedBrickDetailComponent } from './bmc-data-components/placed-brick/placed-brick-detail/placed-brick-detail.component';
 import { PlacedBrickChangeHistoryListingComponent } from './bmc-data-components/placed-brick-change-history/placed-brick-change-history-listing/placed-brick-change-history-listing.component';
 import { PlacedBrickChangeHistoryDetailComponent } from './bmc-data-components/placed-brick-change-history/placed-brick-change-history-detail/placed-brick-change-history-detail.component';
+import { PlatformAnnouncementListingComponent } from './bmc-data-components/platform-announcement/platform-announcement-listing/platform-announcement-listing.component';
+import { PlatformAnnouncementDetailComponent } from './bmc-data-components/platform-announcement/platform-announcement-detail/platform-announcement-detail.component';
 import { ProjectListingComponent } from './bmc-data-components/project/project-listing/project-listing.component';
 import { ProjectDetailComponent } from './bmc-data-components/project/project-detail/project-detail.component';
 import { ProjectCameraPresetListingComponent } from './bmc-data-components/project-camera-preset/project-camera-preset-listing/project-camera-preset-listing.component';
@@ -89,14 +121,30 @@ import { ProjectTagListingComponent } from './bmc-data-components/project-tag/pr
 import { ProjectTagDetailComponent } from './bmc-data-components/project-tag/project-tag-detail/project-tag-detail.component';
 import { ProjectTagAssignmentListingComponent } from './bmc-data-components/project-tag-assignment/project-tag-assignment-listing/project-tag-assignment-listing.component';
 import { ProjectTagAssignmentDetailComponent } from './bmc-data-components/project-tag-assignment/project-tag-assignment-detail/project-tag-assignment-detail.component';
+import { PublishedMocListingComponent } from './bmc-data-components/published-moc/published-moc-listing/published-moc-listing.component';
+import { PublishedMocDetailComponent } from './bmc-data-components/published-moc/published-moc-detail/published-moc-detail.component';
+import { PublishedMocChangeHistoryListingComponent } from './bmc-data-components/published-moc-change-history/published-moc-change-history-listing/published-moc-change-history-listing.component';
+import { PublishedMocChangeHistoryDetailComponent } from './bmc-data-components/published-moc-change-history/published-moc-change-history-detail/published-moc-change-history-detail.component';
+import { PublishedMocImageListingComponent } from './bmc-data-components/published-moc-image/published-moc-image-listing/published-moc-image-listing.component';
+import { PublishedMocImageDetailComponent } from './bmc-data-components/published-moc-image/published-moc-image-detail/published-moc-image-detail.component';
 import { RenderPresetListingComponent } from './bmc-data-components/render-preset/render-preset-listing/render-preset-listing.component';
 import { RenderPresetDetailComponent } from './bmc-data-components/render-preset/render-preset-detail/render-preset-detail.component';
+import { SharedInstructionListingComponent } from './bmc-data-components/shared-instruction/shared-instruction-listing/shared-instruction-listing.component';
+import { SharedInstructionDetailComponent } from './bmc-data-components/shared-instruction/shared-instruction-detail/shared-instruction-detail.component';
+import { SharedInstructionChangeHistoryListingComponent } from './bmc-data-components/shared-instruction-change-history/shared-instruction-change-history-listing/shared-instruction-change-history-listing.component';
+import { SharedInstructionChangeHistoryDetailComponent } from './bmc-data-components/shared-instruction-change-history/shared-instruction-change-history-detail/shared-instruction-change-history-detail.component';
 import { SubmodelListingComponent } from './bmc-data-components/submodel/submodel-listing/submodel-listing.component';
 import { SubmodelDetailComponent } from './bmc-data-components/submodel/submodel-detail/submodel-detail.component';
 import { SubmodelChangeHistoryListingComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-listing/submodel-change-history-listing.component';
 import { SubmodelChangeHistoryDetailComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-detail/submodel-change-history-detail.component';
 import { SubmodelPlacedBrickListingComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-listing/submodel-placed-brick-listing.component';
 import { SubmodelPlacedBrickDetailComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-detail/submodel-placed-brick-detail.component';
+import { UserAchievementListingComponent } from './bmc-data-components/user-achievement/user-achievement-listing/user-achievement-listing.component';
+import { UserAchievementDetailComponent } from './bmc-data-components/user-achievement/user-achievement-detail/user-achievement-detail.component';
+import { UserBadgeListingComponent } from './bmc-data-components/user-badge/user-badge-listing/user-badge-listing.component';
+import { UserBadgeDetailComponent } from './bmc-data-components/user-badge/user-badge-detail/user-badge-detail.component';
+import { UserBadgeAssignmentListingComponent } from './bmc-data-components/user-badge-assignment/user-badge-assignment-listing/user-badge-assignment-listing.component';
+import { UserBadgeAssignmentDetailComponent } from './bmc-data-components/user-badge-assignment/user-badge-assignment-detail/user-badge-assignment-detail.component';
 import { UserCollectionListingComponent } from './bmc-data-components/user-collection/user-collection-listing/user-collection-listing.component';
 import { UserCollectionDetailComponent } from './bmc-data-components/user-collection/user-collection-detail/user-collection-detail.component';
 import { UserCollectionChangeHistoryListingComponent } from './bmc-data-components/user-collection-change-history/user-collection-change-history-listing/user-collection-change-history-listing.component';
@@ -105,6 +153,20 @@ import { UserCollectionPartListingComponent } from './bmc-data-components/user-c
 import { UserCollectionPartDetailComponent } from './bmc-data-components/user-collection-part/user-collection-part-detail/user-collection-part-detail.component';
 import { UserCollectionSetImportListingComponent } from './bmc-data-components/user-collection-set-import/user-collection-set-import-listing/user-collection-set-import-listing.component';
 import { UserCollectionSetImportDetailComponent } from './bmc-data-components/user-collection-set-import/user-collection-set-import-detail/user-collection-set-import-detail.component';
+import { UserFollowListingComponent } from './bmc-data-components/user-follow/user-follow-listing/user-follow-listing.component';
+import { UserFollowDetailComponent } from './bmc-data-components/user-follow/user-follow-detail/user-follow-detail.component';
+import { UserProfileListingComponent } from './bmc-data-components/user-profile/user-profile-listing/user-profile-listing.component';
+import { UserProfileDetailComponent } from './bmc-data-components/user-profile/user-profile-detail/user-profile-detail.component';
+import { UserProfileChangeHistoryListingComponent } from './bmc-data-components/user-profile-change-history/user-profile-change-history-listing/user-profile-change-history-listing.component';
+import { UserProfileChangeHistoryDetailComponent } from './bmc-data-components/user-profile-change-history/user-profile-change-history-detail/user-profile-change-history-detail.component';
+import { UserProfileLinkListingComponent } from './bmc-data-components/user-profile-link/user-profile-link-listing/user-profile-link-listing.component';
+import { UserProfileLinkDetailComponent } from './bmc-data-components/user-profile-link/user-profile-link-detail/user-profile-link-detail.component';
+import { UserProfileLinkTypeListingComponent } from './bmc-data-components/user-profile-link-type/user-profile-link-type-listing/user-profile-link-type-listing.component';
+import { UserProfileLinkTypeDetailComponent } from './bmc-data-components/user-profile-link-type/user-profile-link-type-detail/user-profile-link-type-detail.component';
+import { UserProfileStatListingComponent } from './bmc-data-components/user-profile-stat/user-profile-stat-listing/user-profile-stat-listing.component';
+import { UserProfileStatDetailComponent } from './bmc-data-components/user-profile-stat/user-profile-stat-detail/user-profile-stat-detail.component';
+import { UserSetOwnershipListingComponent } from './bmc-data-components/user-set-ownership/user-set-ownership-listing/user-set-ownership-listing.component';
+import { UserSetOwnershipDetailComponent } from './bmc-data-components/user-set-ownership/user-set-ownership-detail/user-set-ownership-detail.component';
 import { UserWishlistItemListingComponent } from './bmc-data-components/user-wishlist-item/user-wishlist-item-listing/user-wishlist-item-listing.component';
 import { UserWishlistItemDetailComponent } from './bmc-data-components/user-wishlist-item/user-wishlist-item-detail/user-wishlist-item-detail.component';
 //
@@ -130,6 +192,36 @@ const routes: Routes = [
     //
     // Beginning of routes for BMC Data Components
 //
+  {path: 'achievements', component: AchievementListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Achievements' },
+  {path: 'achievements/new', component: AchievementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Achievement' },
+  {path: 'achievements/:achievementId', component: AchievementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Achievement' },
+  {path: 'achievement/:achievementId', component: AchievementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Achievement' },
+  {path: 'achievement',  redirectTo: 'achievements'},
+  {path: 'achievementcategories', component: AchievementCategoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Achievement Categories' },
+  {path: 'achievementcategories/new', component: AchievementCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Achievement Category' },
+  {path: 'achievementcategories/:achievementCategoryId', component: AchievementCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Achievement Category' },
+  {path: 'achievementcategory/:achievementCategoryId', component: AchievementCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Achievement Category' },
+  {path: 'achievementcategory',  redirectTo: 'achievementcategories'},
+  {path: 'activityevents', component: ActivityEventListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Activity Events' },
+  {path: 'activityevents/new', component: ActivityEventDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Activity Event' },
+  {path: 'activityevents/:activityEventId', component: ActivityEventDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Activity Event' },
+  {path: 'activityevent/:activityEventId', component: ActivityEventDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Activity Event' },
+  {path: 'activityevent',  redirectTo: 'activityevents'},
+  {path: 'activityeventtypes', component: ActivityEventTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Activity Event Types' },
+  {path: 'activityeventtypes/new', component: ActivityEventTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Activity Event Type' },
+  {path: 'activityeventtypes/:activityEventTypeId', component: ActivityEventTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Activity Event Type' },
+  {path: 'activityeventtype/:activityEventTypeId', component: ActivityEventTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Activity Event Type' },
+  {path: 'activityeventtype',  redirectTo: 'activityeventtypes'},
+  {path: 'apikeies', component: ApiKeyListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Api Keies' },
+  {path: 'apikeies/new', component: ApiKeyDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Api Key' },
+  {path: 'apikeies/:apiKeyId', component: ApiKeyDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Api Key' },
+  {path: 'apikey/:apiKeyId', component: ApiKeyDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Api Key' },
+  {path: 'apikey',  redirectTo: 'apikeies'},
+  {path: 'apirequestlogs', component: ApiRequestLogListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Api Request Logs' },
+  {path: 'apirequestlogs/new', component: ApiRequestLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Api Request Log' },
+  {path: 'apirequestlogs/:apiRequestLogId', component: ApiRequestLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Api Request Log' },
+  {path: 'apirequestlog/:apiRequestLogId', component: ApiRequestLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Api Request Log' },
+  {path: 'apirequestlog',  redirectTo: 'apirequestlogs'},
   {path: 'brickcategories', component: BrickCategoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Brick Categories' },
   {path: 'brickcategories/new', component: BrickCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Brick Category' },
   {path: 'brickcategories/:brickCategoryId', component: BrickCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Brick Category' },
@@ -175,6 +267,21 @@ const routes: Routes = [
   {path: 'brickpartrelationships/:brickPartRelationshipId', component: BrickPartRelationshipDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Brick Part Relationship' },
   {path: 'brickpartrelationship/:brickPartRelationshipId', component: BrickPartRelationshipDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Brick Part Relationship' },
   {path: 'brickpartrelationship',  redirectTo: 'brickpartrelationships'},
+  {path: 'buildchallenges', component: BuildChallengeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Challenges' },
+  {path: 'buildchallenges/new', component: BuildChallengeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Challenge' },
+  {path: 'buildchallenges/:buildChallengeId', component: BuildChallengeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Challenge' },
+  {path: 'buildchallenge/:buildChallengeId', component: BuildChallengeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Challenge' },
+  {path: 'buildchallenge',  redirectTo: 'buildchallenges'},
+  {path: 'buildchallengechangehistories', component: BuildChallengeChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Challenge Change Histories' },
+  {path: 'buildchallengechangehistories/new', component: BuildChallengeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Challenge Change History' },
+  {path: 'buildchallengechangehistories/:buildChallengeChangeHistoryId', component: BuildChallengeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Challenge Change History' },
+  {path: 'buildchallengechangehistory/:buildChallengeChangeHistoryId', component: BuildChallengeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Challenge Change History' },
+  {path: 'buildchallengechangehistory',  redirectTo: 'buildchallengechangehistories'},
+  {path: 'buildchallengeentries', component: BuildChallengeEntryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Challenge Entries' },
+  {path: 'buildchallengeentries/new', component: BuildChallengeEntryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Challenge Entry' },
+  {path: 'buildchallengeentries/:buildChallengeEntryId', component: BuildChallengeEntryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Challenge Entry' },
+  {path: 'buildchallengeentry/:buildChallengeEntryId', component: BuildChallengeEntryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Challenge Entry' },
+  {path: 'buildchallengeentry',  redirectTo: 'buildchallengeentries'},
   {path: 'buildmanuals', component: BuildManualListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Manuals' },
   {path: 'buildmanuals/new', component: BuildManualDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Manual' },
   {path: 'buildmanuals/:buildManualId', component: BuildManualDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual' },
@@ -220,6 +327,16 @@ const routes: Routes = [
   {path: 'connectortypes/:connectorTypeId', component: ConnectorTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Connector Type' },
   {path: 'connectortype/:connectorTypeId', component: ConnectorTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Connector Type' },
   {path: 'connectortype',  redirectTo: 'connectortypes'},
+  {path: 'contentreports', component: ContentReportListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Content Reports' },
+  {path: 'contentreports/new', component: ContentReportDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Content Report' },
+  {path: 'contentreports/:contentReportId', component: ContentReportDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Content Report' },
+  {path: 'contentreport/:contentReportId', component: ContentReportDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Content Report' },
+  {path: 'contentreport',  redirectTo: 'contentreports'},
+  {path: 'contentreportreasons', component: ContentReportReasonListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Content Report Reasons' },
+  {path: 'contentreportreasons/new', component: ContentReportReasonDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Content Report Reason' },
+  {path: 'contentreportreasons/:contentReportReasonId', component: ContentReportReasonDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Content Report Reason' },
+  {path: 'contentreportreason/:contentReportReasonId', component: ContentReportReasonDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Content Report Reason' },
+  {path: 'contentreportreason',  redirectTo: 'contentreportreasons'},
   {path: 'exportformats', component: ExportFormatListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Export Formats' },
   {path: 'exportformats/new', component: ExportFormatDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Export Format' },
   {path: 'exportformats/:exportFormatId', component: ExportFormatDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Export Format' },
@@ -255,6 +372,26 @@ const routes: Routes = [
   {path: 'legothemes/:legoThemeId', component: LegoThemeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Lego Theme' },
   {path: 'legotheme/:legoThemeId', component: LegoThemeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Lego Theme' },
   {path: 'legotheme',  redirectTo: 'legothemes'},
+  {path: 'moccomments', component: MocCommentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Comments' },
+  {path: 'moccomments/new', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Comment' },
+  {path: 'moccomments/:mocCommentId', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Comment' },
+  {path: 'moccomment/:mocCommentId', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Comment' },
+  {path: 'moccomment',  redirectTo: 'moccomments'},
+  {path: 'mocfavourites', component: MocFavouriteListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Favourites' },
+  {path: 'mocfavourites/new', component: MocFavouriteDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Favourite' },
+  {path: 'mocfavourites/:mocFavouriteId', component: MocFavouriteDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Favourite' },
+  {path: 'mocfavourite/:mocFavouriteId', component: MocFavouriteDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Favourite' },
+  {path: 'mocfavourite',  redirectTo: 'mocfavourites'},
+  {path: 'moclikes', component: MocLikeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Likes' },
+  {path: 'moclikes/new', component: MocLikeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Like' },
+  {path: 'moclikes/:mocLikeId', component: MocLikeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Like' },
+  {path: 'moclike/:mocLikeId', component: MocLikeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Like' },
+  {path: 'moclike',  redirectTo: 'moclikes'},
+  {path: 'moderationactions', component: ModerationActionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moderation Actions' },
+  {path: 'moderationactions/new', component: ModerationActionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moderation Action' },
+  {path: 'moderationactions/:moderationActionId', component: ModerationActionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moderation Action' },
+  {path: 'moderationaction/:moderationActionId', component: ModerationActionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moderation Action' },
+  {path: 'moderationaction',  redirectTo: 'moderationactions'},
   {path: 'parttypes', component: PartTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Part Types' },
   {path: 'parttypes/new', component: PartTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Part Type' },
   {path: 'parttypes/:partTypeId', component: PartTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Part Type' },
@@ -270,6 +407,11 @@ const routes: Routes = [
   {path: 'placedbrickchangehistories/:placedBrickChangeHistoryId', component: PlacedBrickChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Placed Brick Change History' },
   {path: 'placedbrickchangehistory/:placedBrickChangeHistoryId', component: PlacedBrickChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Placed Brick Change History' },
   {path: 'placedbrickchangehistory',  redirectTo: 'placedbrickchangehistories'},
+  {path: 'platformannouncements', component: PlatformAnnouncementListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Platform Announcements' },
+  {path: 'platformannouncements/new', component: PlatformAnnouncementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Platform Announcement' },
+  {path: 'platformannouncements/:platformAnnouncementId', component: PlatformAnnouncementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Platform Announcement' },
+  {path: 'platformannouncement/:platformAnnouncementId', component: PlatformAnnouncementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Platform Announcement' },
+  {path: 'platformannouncement',  redirectTo: 'platformannouncements'},
   {path: 'projects', component: ProjectListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Projects' },
   {path: 'projects/new', component: ProjectDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Project' },
   {path: 'projects/:projectId', component: ProjectDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Project' },
@@ -310,11 +452,36 @@ const routes: Routes = [
   {path: 'projecttagassignments/:projectTagAssignmentId', component: ProjectTagAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Project Tag Assignment' },
   {path: 'projecttagassignment/:projectTagAssignmentId', component: ProjectTagAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Project Tag Assignment' },
   {path: 'projecttagassignment',  redirectTo: 'projecttagassignments'},
+  {path: 'publishedmocs', component: PublishedMocListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Published Mocs' },
+  {path: 'publishedmocs/new', component: PublishedMocDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Published Moc' },
+  {path: 'publishedmocs/:publishedMocId', component: PublishedMocDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc' },
+  {path: 'publishedmoc/:publishedMocId', component: PublishedMocDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc' },
+  {path: 'publishedmoc',  redirectTo: 'publishedmocs'},
+  {path: 'publishedmocchangehistories', component: PublishedMocChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Published Moc Change Histories' },
+  {path: 'publishedmocchangehistories/new', component: PublishedMocChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Published Moc Change History' },
+  {path: 'publishedmocchangehistories/:publishedMocChangeHistoryId', component: PublishedMocChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc Change History' },
+  {path: 'publishedmocchangehistory/:publishedMocChangeHistoryId', component: PublishedMocChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc Change History' },
+  {path: 'publishedmocchangehistory',  redirectTo: 'publishedmocchangehistories'},
+  {path: 'publishedmocimages', component: PublishedMocImageListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Published Moc Images' },
+  {path: 'publishedmocimages/new', component: PublishedMocImageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Published Moc Image' },
+  {path: 'publishedmocimages/:publishedMocImageId', component: PublishedMocImageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc Image' },
+  {path: 'publishedmocimage/:publishedMocImageId', component: PublishedMocImageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc Image' },
+  {path: 'publishedmocimage',  redirectTo: 'publishedmocimages'},
   {path: 'renderpresets', component: RenderPresetListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Render Presets' },
   {path: 'renderpresets/new', component: RenderPresetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Render Preset' },
   {path: 'renderpresets/:renderPresetId', component: RenderPresetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Render Preset' },
   {path: 'renderpreset/:renderPresetId', component: RenderPresetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Render Preset' },
   {path: 'renderpreset',  redirectTo: 'renderpresets'},
+  {path: 'sharedinstructions', component: SharedInstructionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shared Instructions' },
+  {path: 'sharedinstructions/new', component: SharedInstructionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Shared Instruction' },
+  {path: 'sharedinstructions/:sharedInstructionId', component: SharedInstructionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Shared Instruction' },
+  {path: 'sharedinstruction/:sharedInstructionId', component: SharedInstructionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Shared Instruction' },
+  {path: 'sharedinstruction',  redirectTo: 'sharedinstructions'},
+  {path: 'sharedinstructionchangehistories', component: SharedInstructionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shared Instruction Change Histories' },
+  {path: 'sharedinstructionchangehistories/new', component: SharedInstructionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Shared Instruction Change History' },
+  {path: 'sharedinstructionchangehistories/:sharedInstructionChangeHistoryId', component: SharedInstructionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Shared Instruction Change History' },
+  {path: 'sharedinstructionchangehistory/:sharedInstructionChangeHistoryId', component: SharedInstructionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Shared Instruction Change History' },
+  {path: 'sharedinstructionchangehistory',  redirectTo: 'sharedinstructionchangehistories'},
   {path: 'submodels', component: SubmodelListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Submodels' },
   {path: 'submodels/new', component: SubmodelDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Submodel' },
   {path: 'submodels/:submodelId', component: SubmodelDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel' },
@@ -330,6 +497,21 @@ const routes: Routes = [
   {path: 'submodelplacedbricks/:submodelPlacedBrickId', component: SubmodelPlacedBrickDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Placed Brick' },
   {path: 'submodelplacedbrick/:submodelPlacedBrickId', component: SubmodelPlacedBrickDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Placed Brick' },
   {path: 'submodelplacedbrick',  redirectTo: 'submodelplacedbricks'},
+  {path: 'userachievements', component: UserAchievementListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Achievements' },
+  {path: 'userachievements/new', component: UserAchievementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Achievement' },
+  {path: 'userachievements/:userAchievementId', component: UserAchievementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Achievement' },
+  {path: 'userachievement/:userAchievementId', component: UserAchievementDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Achievement' },
+  {path: 'userachievement',  redirectTo: 'userachievements'},
+  {path: 'userbadges', component: UserBadgeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Badges' },
+  {path: 'userbadges/new', component: UserBadgeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Badge' },
+  {path: 'userbadges/:userBadgeId', component: UserBadgeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Badge' },
+  {path: 'userbadge/:userBadgeId', component: UserBadgeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Badge' },
+  {path: 'userbadge',  redirectTo: 'userbadges'},
+  {path: 'userbadgeassignments', component: UserBadgeAssignmentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Badge Assignments' },
+  {path: 'userbadgeassignments/new', component: UserBadgeAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Badge Assignment' },
+  {path: 'userbadgeassignments/:userBadgeAssignmentId', component: UserBadgeAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Badge Assignment' },
+  {path: 'userbadgeassignment/:userBadgeAssignmentId', component: UserBadgeAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Badge Assignment' },
+  {path: 'userbadgeassignment',  redirectTo: 'userbadgeassignments'},
   {path: 'usercollections', component: UserCollectionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Collections' },
   {path: 'usercollections/new', component: UserCollectionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Collection' },
   {path: 'usercollections/:userCollectionId', component: UserCollectionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Collection' },
@@ -350,6 +532,41 @@ const routes: Routes = [
   {path: 'usercollectionsetimports/:userCollectionSetImportId', component: UserCollectionSetImportDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Collection Set Import' },
   {path: 'usercollectionsetimport/:userCollectionSetImportId', component: UserCollectionSetImportDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Collection Set Import' },
   {path: 'usercollectionsetimport',  redirectTo: 'usercollectionsetimports'},
+  {path: 'userfollows', component: UserFollowListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Follows' },
+  {path: 'userfollows/new', component: UserFollowDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Follow' },
+  {path: 'userfollows/:userFollowId', component: UserFollowDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Follow' },
+  {path: 'userfollow/:userFollowId', component: UserFollowDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Follow' },
+  {path: 'userfollow',  redirectTo: 'userfollows'},
+  {path: 'userprofiles', component: UserProfileListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Profiles' },
+  {path: 'userprofiles/new', component: UserProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Profile' },
+  {path: 'userprofiles/:userProfileId', component: UserProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile' },
+  {path: 'userprofile/:userProfileId', component: UserProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile' },
+  {path: 'userprofile',  redirectTo: 'userprofiles'},
+  {path: 'userprofilechangehistories', component: UserProfileChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Profile Change Histories' },
+  {path: 'userprofilechangehistories/new', component: UserProfileChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Profile Change History' },
+  {path: 'userprofilechangehistories/:userProfileChangeHistoryId', component: UserProfileChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Change History' },
+  {path: 'userprofilechangehistory/:userProfileChangeHistoryId', component: UserProfileChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Change History' },
+  {path: 'userprofilechangehistory',  redirectTo: 'userprofilechangehistories'},
+  {path: 'userprofilelinks', component: UserProfileLinkListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Profile Links' },
+  {path: 'userprofilelinks/new', component: UserProfileLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Profile Link' },
+  {path: 'userprofilelinks/:userProfileLinkId', component: UserProfileLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Link' },
+  {path: 'userprofilelink/:userProfileLinkId', component: UserProfileLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Link' },
+  {path: 'userprofilelink',  redirectTo: 'userprofilelinks'},
+  {path: 'userprofilelinktypes', component: UserProfileLinkTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Profile Link Types' },
+  {path: 'userprofilelinktypes/new', component: UserProfileLinkTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Profile Link Type' },
+  {path: 'userprofilelinktypes/:userProfileLinkTypeId', component: UserProfileLinkTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Link Type' },
+  {path: 'userprofilelinktype/:userProfileLinkTypeId', component: UserProfileLinkTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Link Type' },
+  {path: 'userprofilelinktype',  redirectTo: 'userprofilelinktypes'},
+  {path: 'userprofilestats', component: UserProfileStatListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Profile Stats' },
+  {path: 'userprofilestats/new', component: UserProfileStatDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Profile Stat' },
+  {path: 'userprofilestats/:userProfileStatId', component: UserProfileStatDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Stat' },
+  {path: 'userprofilestat/:userProfileStatId', component: UserProfileStatDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Profile Stat' },
+  {path: 'userprofilestat',  redirectTo: 'userprofilestats'},
+  {path: 'usersetownerships', component: UserSetOwnershipListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Set Ownerships' },
+  {path: 'usersetownerships/new', component: UserSetOwnershipDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Set Ownership' },
+  {path: 'usersetownerships/:userSetOwnershipId', component: UserSetOwnershipDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Set Ownership' },
+  {path: 'usersetownership/:userSetOwnershipId', component: UserSetOwnershipDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Set Ownership' },
+  {path: 'usersetownership',  redirectTo: 'usersetownerships'},
   {path: 'userwishlistitems', component: UserWishlistItemListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Wishlist Items' },
   {path: 'userwishlistitems/new', component: UserWishlistItemDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Wishlist Item' },
   {path: 'userwishlistitems/:userWishlistItemId', component: UserWishlistItemDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Wishlist Item' },

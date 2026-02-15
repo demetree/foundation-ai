@@ -41,5 +41,7 @@ public partial class LegoSet
 
     public virtual ICollection<UserCollectionSetImport> UserCollectionSetImports { get; set; } = new List<UserCollectionSetImport>();
 
+    public virtual ICollection<UserSetOwnership> UserSetOwnerships { get; set; } = new List<UserSetOwnership>();
+
     public virtual LegoTheme legoTheme { get; set; }
 }

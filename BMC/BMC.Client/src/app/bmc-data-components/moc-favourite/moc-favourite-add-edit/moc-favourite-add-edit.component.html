@@ -1,0 +1,71 @@
+<div class="add-moc-favourite" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-moc-favourite me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Moc Favourite" 
+        *ngIf="userIsBMCMocFavouriteWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #mocFavouriteModal let-modal>
+   <div class="modal-header bg-dark text-light moc-favourite-modal-header">
+      <h5 class="modal-title mb-0" id="mocFavouriteModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Moc Favourite' : 'Add Moc Favourite' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body moc-favourite-modal-body">
+      <form [formGroup]="mocFavouriteForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                <label for="MocFavourite-publishedMocId" id="label-MocFavourite-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                <select id="MocFavourite-publishedMocId" formControlName="publishedMocId" class="form-select moc-favourite-select" [disabled]="!userIsBMCMocFavouriteWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+                <div *ngIf="mocFavouriteForm.get('publishedMocId')?.invalid && mocFavouriteForm.get('publishedMocId')?.touched" class="text-danger">
+                    Published Moc is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userTenantGuid')">
+                <label for="MocFavourite-userTenantGuid" id="label-MocFavourite-userTenantGuid"><span class="text-danger">*</span>User Tenant Guid</label>
+                <input type="text" id="MocFavourite-userTenantGuid" formControlName="userTenantGuid" placeholder="Enter User Tenant Guid" class="form-control moc-favourite-input" [disabled]="!userIsBMCMocFavouriteWriter()" aria-labelledby="label-userTenantGuid" />
+                <div *ngIf="mocFavouriteForm.get('userTenantGuid')?.invalid && mocFavouriteForm.get('userTenantGuid')?.touched" class="text-danger">
+                    User Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('favouritedDate')">
+                <label for="MocFavourite-favouritedDate" id="label-MocFavourite-favouritedDate"><span class="text-danger">*</span>Favourited Date</label>
+                <input type="datetime-local" id="MocFavourite-favouritedDate" formControlName="favouritedDate" placeholder="Enter Favourited Date" class="form-control moc-favourite-input" [disabled]="!userIsBMCMocFavouriteWriter()" aria-labelledby="label-favouritedDate" />
+                <div *ngIf="mocFavouriteForm.get('favouritedDate')?.invalid && mocFavouriteForm.get('favouritedDate')?.touched" class="text-danger">
+                    Favourited Date is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MocFavourite-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocFavouriteWriter()" />
+                <label for="MocFavourite-active" class="form-check-label" id="label-MocFavourite-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MocFavourite-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMocFavouriteWriter()" />
+                <label for="MocFavourite-deleted" class="form-check-label" id="label-MocFavourite-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer moc-favourite-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Moc Favourite changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocFavouriteForm.valid || mocFavouriteForm.pristine  || userIsBMCMocFavouriteWriter() == false " ngbTooltip="Save the Moc Favourite changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Moc Favourite' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

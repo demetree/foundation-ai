@@ -1,0 +1,77 @@
+<div class="container-fluid p-1 m-0 user-badge-assignment-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-badge-assignment-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Badge Assignment</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Badge Assignment' : 'Add User Badge Assignment'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserBadgeAssignmentReader()">
+                <div class="col m-2 user-badge-assignment-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userBadgeAssignmentForm" (ngSubmit)="submitForm()" class="user-badge-assignment-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userBadgeId')">
+                                <label for="UserBadgeAssignment-userBadgeId" id="label-UserBadgeAssignment-userBadgeId"><span class="text-danger">*</span>User Badge</label>
+                                <select id="UserBadgeAssignment-userBadgeId" formControlName="userBadgeId" class="form-select user-badge-assignment-select" [disabled]="!userIsBMCUserBadgeAssignmentWriter()">
+                                    <option [ngValue]="null">Select User Badge</option>
+                                    <option *ngFor="let userBadge of userBadges$ | async" [ngValue]="userBadge.id">{{userBadge.name}}</option>
+                                </select>
+                                <div *ngIf="userBadgeAssignmentForm.get('userBadgeId')?.invalid && userBadgeAssignmentForm.get('userBadgeId')?.touched" class="text-danger">
+                                    User Badge is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('awardedDate')">
+                                <label for="UserBadgeAssignment-awardedDate" id="label-UserBadgeAssignment-awardedDate"><span class="text-danger">*</span>Awarded Date</label>
+                                <input type="datetime-local" id="UserBadgeAssignment-awardedDate" formControlName="awardedDate" placeholder="Enter Awarded Date" class="form-control user-badge-assignment-input" [disabled]="!userIsBMCUserBadgeAssignmentWriter()" aria-labelledby="label-awardedDate" />
+                                <div *ngIf="userBadgeAssignmentForm.get('awardedDate')?.invalid && userBadgeAssignmentForm.get('awardedDate')?.touched" class="text-danger">
+                                    Awarded Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('awardedByTenantGuid')">
+                                <label for="UserBadgeAssignment-awardedByTenantGuid" id="label-UserBadgeAssignment-awardedByTenantGuid">Awarded By Tenant Guid</label>
+                                <input type="text" id="UserBadgeAssignment-awardedByTenantGuid" formControlName="awardedByTenantGuid" placeholder="Enter Awarded By Tenant Guid" class="form-control user-badge-assignment-input" [disabled]="!userIsBMCUserBadgeAssignmentWriter()" aria-labelledby="label-awardedByTenantGuid" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                                <label for="UserBadgeAssignment-reason" id="label-UserBadgeAssignment-reason">Reason</label>
+                                <textarea id="UserBadgeAssignment-reason" formControlName="reason" placeholder="Enter Reason" class="form-control user-badge-assignment-input" [disabled]="!userIsBMCUserBadgeAssignmentWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isDisplayed')">
+                                <input type="checkbox" id="UserBadgeAssignment-isDisplayed" formControlName="isDisplayed" class="form-check-input" [disabled]="!userIsBMCUserBadgeAssignmentWriter()" />
+                                <label for="UserBadgeAssignment-isDisplayed" class="form-check-label" id="label-UserBadgeAssignment-isDisplayed"><span class="text-danger">*</span>Is Displayed</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserBadgeAssignment-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserBadgeAssignmentWriter()" />
+                                <label for="UserBadgeAssignment-active" class="form-check-label" id="label-UserBadgeAssignment-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserBadgeAssignment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserBadgeAssignmentWriter()" />
+                                <label for="UserBadgeAssignment-deleted" class="form-check-label" id="label-UserBadgeAssignment-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-badge-assignment-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userBadgeAssignmentForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Badge Assignment">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userBadgeAssignmentForm.valid || !userBadgeAssignmentForm.dirty || userBadgeAssignmentForm.pristine  || userIsBMCUserBadgeAssignmentWriter() == false " ngbTooltip="Save the User Badge Assignment changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Badge Assignment' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

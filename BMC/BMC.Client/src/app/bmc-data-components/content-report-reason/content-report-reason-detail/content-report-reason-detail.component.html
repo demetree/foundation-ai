@@ -1,0 +1,93 @@
+<div class="container-fluid p-1 m-0 content-report-reason-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="content-report-reason-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Content Report Reason</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Content Report Reason' : 'Add Content Report Reason'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCContentReportReasonReader()">
+                <div class="col m-2 content-report-reason-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="contentReportReasonForm" (ngSubmit)="submitForm()" class="content-report-reason-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ContentReportReason-name" id="label-ContentReportReason-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ContentReportReason-name" formControlName="name" placeholder="Enter Name" class="form-control content-report-reason-input" [disabled]="!userIsBMCContentReportReasonWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="contentReportReasonForm.get('name')?.invalid && contentReportReasonForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ContentReportReason-description" id="label-ContentReportReason-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="ContentReportReason-description" formControlName="description" placeholder="Enter Description" class="form-control content-report-reason-input" [disabled]="!userIsBMCContentReportReasonWriter()"></textarea>
+                                <div *ngIf="contentReportReasonForm.get('description')?.invalid && contentReportReasonForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="ContentReportReason-sequence" id="label-ContentReportReason-sequence">Sequence</label>
+                                <input type="number" id="ContentReportReason-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control content-report-reason-input" [disabled]="!userIsBMCContentReportReasonWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ContentReportReason-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCContentReportReasonWriter()" />
+                                <label for="ContentReportReason-active" class="form-check-label" id="label-ContentReportReason-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ContentReportReason-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCContentReportReasonWriter()" />
+                                <label for="ContentReportReason-deleted" class="form-check-label" id="label-ContentReportReason-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="content-report-reason-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="contentReportReasonForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Content Report Reason">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contentReportReasonForm.valid || !contentReportReasonForm.dirty || contentReportReasonForm.pristine  || userIsBMCContentReportReasonWriter() == false " ngbTooltip="Save the Content Report Reason changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Content Report Reason' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCContentReportReasonReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 content-report-reason-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="contentReportService.userIsBMCContentReportReader()">
+                            <button ngbNavLink>Content Reports
+                                <span class="badge bg-primary ms-2">
+                                    {{ (contentReportReasonData?.ContentReportsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-content-report-table [queryParams]="{ contentReportReasonId: contentReportReasonData?.id }"></app-content-report-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-content-report-add-edit [preSeededData]="{ contentReportReasonId: contentReportReasonData?.id }" [hiddenFields]="['contentReportReasonId']"></app-content-report-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

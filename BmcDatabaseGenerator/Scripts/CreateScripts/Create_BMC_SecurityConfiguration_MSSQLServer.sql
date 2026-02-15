@@ -49,6 +49,12 @@ GO
 INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'BMC Instruction Writer', 'BMC Instruction Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'BMC Community Writer', 'BMC Community Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'BMC Moderator', 'BMC Moderator Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
 
 INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'BMC' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'BMC Catalog Writer' ) )
 GO
@@ -57,6 +63,12 @@ INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VAL
 GO
 
 INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'BMC' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'BMC Instruction Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'BMC' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'BMC Community Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'BMC' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'BMC Moderator' ) )
 GO
 
 

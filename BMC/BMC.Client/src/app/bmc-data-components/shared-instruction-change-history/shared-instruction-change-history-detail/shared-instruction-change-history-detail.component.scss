@@ -1,0 +1,113 @@
+.header-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+
+  .card-header {
+    background-color: transparent;
+    border: none;
+    padding: 1rem 1.5rem;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .text-muted {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Styles for the color picker
+.color-picker {
+  // Native color inputs are usually square and small; make it a reasonable size
+  width: 60px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+// Style for the read-only hex display next to the picker
+.input-color-display {
+  margin-bottom: 0; // Align properly with the picker
+}
+
+
+
+.shared-instruction-change-history-details-header {
+    background-color: transparent;
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+/* Full height for container with navbar and footer */
+.shared-instruction-change-history-details-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Full height relative to viewport */
+  overflow: hidden; /* Prevent internal scrolling and make outer container scrollable */
+  padding-top: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  background-color: #f4f6f9;
+}
+
+/* Body section that allows for scrolling */
+.shared-instruction-change-history-details-body {
+  flex-grow: 1; /* Takes up remaining space in the viewport */
+  overflow-y: auto; /* Enables vertical scrolling if needed */
+  box-sizing: border-box; /* Ensure padding doesn't cause overflow */
+  overflow-x: hidden;   /* hide any potential x overflow.  There should be none, but we want to make sure x scrollbars don't appear*/
+  padding: 1rem 1.5rem;
+}
+
+/* Form styling */
+.shared-instruction-change-history-details-form {
+  width: 100%; /* Ensure the form doesn't exceed the container width */
+  max-width: 100%; /* Prevent unintended overflow */
+  box-sizing: border-box; /* Ensure consistent sizing with padding and borders */
+  padding: 5px;
+  font-size: 1rem;
+}
+
+/* Footer stays at the bottom of the form but will only be visible when the page is scrolled */
+.shared-instruction-change-history-details-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  border: none;
+}
+
+.shared-instruction-change-history-input, .shared-instruction-change-history-select {
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.shared-instruction-change-history-input::placeholder, .shared-instruction-change-history-select::placeholder {
+  color: #6c757d;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.detail-background {
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.back-button {
+  margin-right: 3px;
+}
+
+.hidden {
+  display: none;
+}

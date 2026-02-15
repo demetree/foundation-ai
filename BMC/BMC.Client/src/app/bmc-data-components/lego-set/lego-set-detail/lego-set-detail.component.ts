@@ -28,6 +28,7 @@ import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.ser
 import { LegoSetMinifigService } from '../../../bmc-data-services/lego-set-minifig.service';
 import { LegoSetSubsetService } from '../../../bmc-data-services/lego-set-subset.service';
 import { UserCollectionSetImportService } from '../../../bmc-data-services/user-collection-set-import.service';
+import { UserSetOwnershipService } from '../../../bmc-data-services/user-set-ownership.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -105,6 +106,7 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
   public legoSetMinifigs$ = this.legoSetMinifigService.GetLegoSetMinifigList();
   public legoSetSubsets$ = this.legoSetSubsetService.GetLegoSetSubsetList();
   public userCollectionSetImports$ = this.userCollectionSetImportService.GetUserCollectionSetImportList();
+  public userSetOwnerships$ = this.userSetOwnershipService.GetUserSetOwnershipList();
 
   private destroy$ = new Subject<void>();
 
@@ -115,6 +117,7 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
     public legoSetMinifigService: LegoSetMinifigService,
     public legoSetSubsetService: LegoSetSubsetService,
     public userCollectionSetImportService: UserCollectionSetImportService,
+    public userSetOwnershipService: UserSetOwnershipService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

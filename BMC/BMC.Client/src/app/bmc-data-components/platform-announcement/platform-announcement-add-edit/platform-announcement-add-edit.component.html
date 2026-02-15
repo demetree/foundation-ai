@@ -1,0 +1,92 @@
+<div class="add-platform-announcement" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-platform-announcement me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Platform Announcement" 
+        *ngIf="userIsBMCPlatformAnnouncementWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #platformAnnouncementModal let-modal>
+   <div class="modal-header bg-dark text-light platform-announcement-modal-header">
+      <h5 class="modal-title mb-0" id="platformAnnouncementModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Platform Announcement' : 'Add Platform Announcement' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body platform-announcement-modal-body">
+      <form [formGroup]="platformAnnouncementForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="PlatformAnnouncement-name" id="label-PlatformAnnouncement-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="PlatformAnnouncement-name" formControlName="name" placeholder="Enter Name" class="form-control platform-announcement-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" aria-labelledby="label-name" />
+                <div *ngIf="platformAnnouncementForm.get('name')?.invalid && platformAnnouncementForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('body')">
+                <label for="PlatformAnnouncement-body" id="label-PlatformAnnouncement-body">Body</label>
+                <textarea id="PlatformAnnouncement-body" formControlName="body" placeholder="Enter Body" class="form-control platform-announcement-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('announcementType')">
+                <label for="PlatformAnnouncement-announcementType" id="label-PlatformAnnouncement-announcementType">Announcement Type</label>
+                <input type="text" id="PlatformAnnouncement-announcementType" formControlName="announcementType" placeholder="Enter Announcement Type" class="form-control platform-announcement-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" aria-labelledby="label-announcementType" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('startDate')">
+                <label for="PlatformAnnouncement-startDate" id="label-PlatformAnnouncement-startDate"><span class="text-danger">*</span>Start Date</label>
+                <input type="datetime-local" id="PlatformAnnouncement-startDate" formControlName="startDate" placeholder="Enter Start Date" class="form-control platform-announcement-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" aria-labelledby="label-startDate" />
+                <div *ngIf="platformAnnouncementForm.get('startDate')?.invalid && platformAnnouncementForm.get('startDate')?.touched" class="text-danger">
+                    Start Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('endDate')">
+                <label for="PlatformAnnouncement-endDate" id="label-PlatformAnnouncement-endDate">End Date</label>
+                <input type="datetime-local" id="PlatformAnnouncement-endDate" formControlName="endDate" placeholder="Enter End Date" class="form-control platform-announcement-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" aria-labelledby="label-endDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isActive')">
+                <input type="checkbox" id="PlatformAnnouncement-isActive" formControlName="isActive" class="form-check-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" />
+                <label for="PlatformAnnouncement-isActive" class="form-check-label" id="label-PlatformAnnouncement-isActive"><span class="text-danger">*</span>Is Active</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('priority')">
+                <label for="PlatformAnnouncement-priority" id="label-PlatformAnnouncement-priority"><span class="text-danger">*</span>Priority</label>
+                <input type="number" id="PlatformAnnouncement-priority" formControlName="priority" placeholder="Enter Priority" class="form-control platform-announcement-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" aria-labelledby="label-priority" />
+                <div *ngIf="platformAnnouncementForm.get('priority')?.invalid && platformAnnouncementForm.get('priority')?.touched" class="text-danger">
+                    Priority is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('showOnLandingPage')">
+                <input type="checkbox" id="PlatformAnnouncement-showOnLandingPage" formControlName="showOnLandingPage" class="form-check-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" />
+                <label for="PlatformAnnouncement-showOnLandingPage" class="form-check-label" id="label-PlatformAnnouncement-showOnLandingPage"><span class="text-danger">*</span>Show On Landing Page</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('showOnDashboard')">
+                <input type="checkbox" id="PlatformAnnouncement-showOnDashboard" formControlName="showOnDashboard" class="form-check-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" />
+                <label for="PlatformAnnouncement-showOnDashboard" class="form-check-label" id="label-PlatformAnnouncement-showOnDashboard"><span class="text-danger">*</span>Show On Dashboard</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PlatformAnnouncement-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" />
+                <label for="PlatformAnnouncement-active" class="form-check-label" id="label-PlatformAnnouncement-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PlatformAnnouncement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPlatformAnnouncementWriter()" />
+                <label for="PlatformAnnouncement-deleted" class="form-check-label" id="label-PlatformAnnouncement-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer platform-announcement-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Platform Announcement changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !platformAnnouncementForm.valid || platformAnnouncementForm.pristine  || userIsBMCPlatformAnnouncementWriter() == false " ngbTooltip="Save the Platform Announcement changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Platform Announcement' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

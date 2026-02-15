@@ -1,0 +1,160 @@
+<div class="card h-100">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-clock me-2"></i>
+            Volunteer Hours
+        </h6>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Date Range Filter -->
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn" [class.btn-primary]="dateRange === 'all'"
+                    [class.btn-outline-secondary]="dateRange !== 'all'" (click)="setDateRange('all')">All</button>
+                <button type="button" class="btn" [class.btn-primary]="dateRange === 'year'"
+                    [class.btn-outline-secondary]="dateRange !== 'year'" (click)="setDateRange('year')">Year</button>
+                <button type="button" class="btn" [class.btn-primary]="dateRange === 'month'"
+                    [class.btn-outline-secondary]="dateRange !== 'month'" (click)="setDateRange('month')">Month</button>
+                <button type="button" class="btn" [class.btn-primary]="dateRange === 'week'"
+                    [class.btn-outline-secondary]="dateRange !== 'week'" (click)="setDateRange('week')">Week</button>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadAssignments()">
+                <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Loading -->
+        <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading hours...</span>
+            </div>
+        </div>
+
+        <!-- Error -->
+        <div class="alert alert-danger small" *ngIf="error">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            {{ error }}
+        </div>
+
+        <ng-container *ngIf="!isLoading && !error">
+
+            <!-- Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="summary-card reported">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                        </div>
+                        <div class="summary-value">{{ formatHours(totalReportedHours) }}</div>
+                        <div class="summary-label">Reported Hours</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="summary-card approved">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-check-circle"></i>
+                        </div>
+                        <div class="summary-value">{{ formatHours(totalApprovedHours) }}</div>
+                        <div class="summary-label">Approved Hours</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="summary-card pending">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div class="summary-value">{{ pendingApprovalCount }}</div>
+                        <div class="summary-label">Pending Approval</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="summary-card reimbursement">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                        <div class="summary-value">{{ formatCurrency(totalReimbursement) }}</div>
+                        <div class="summary-label">Total Reimbursement</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5 text-muted" *ngIf="filteredAssignments.length === 0">
+                <i class="fa-solid fa-clock fa-3x mb-3 opacity-50"></i>
+                <div>No hours recorded</div>
+                <div class="small mt-2">No volunteer assignments found for the selected period</div>
+            </div>
+
+            <!-- Hours Detail Table -->
+            <div class="table-responsive" *ngIf="filteredAssignments.length > 0">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Event</th>
+                            <th class="text-end">Reported</th>
+                            <th class="text-end">Approved</th>
+                            <th>Approved By</th>
+                            <th class="text-end">Reimbursement</th>
+                            <th *ngIf="userIsVolunteerWriter()" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr *ngFor="let assignment of filteredAssignments"
+                            [class.table-warning]="isPendingApproval(assignment)">
+                            <td>
+                                {{ formatDate(assignment.assignmentStartDateTime ||
+                                assignment.scheduledEvent?.startDateTime) }}
+                            </td>
+                            <td>
+                                <a class="text-decoration-none pointer fw-semibold"
+                                    (click)="navigateToEvent(assignment.scheduledEvent?.id)">
+                                    {{ assignment.scheduledEvent?.name || 'Untitled Event' }}
+                                </a>
+                                <span class="d-block text-muted small" *ngIf="assignment.volunteerNotes">
+                                    {{ assignment.volunteerNotes }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                {{ formatHours(assignment.reportedVolunteerHours) }}
+                            </td>
+                            <td class="text-end">
+                                <span
+                                    [class.text-success]="assignment.approvedVolunteerHours !== null && assignment.approvedVolunteerHours !== undefined">
+                                    {{ formatHours(assignment.approvedVolunteerHours) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span *ngIf="assignment.hoursApprovedByContact; else noApprover">
+                                    {{ assignment.hoursApprovedByContact.firstName }} {{
+                                    assignment.hoursApprovedByContact.lastName }}
+                                </span>
+                                <ng-template #noApprover>
+                                    <span class="text-muted">—</span>
+                                </ng-template>
+                            </td>
+                            <td class="text-end">
+                                <span *ngIf="assignment.reimbursementRequested"
+                                    class="badge bg-info me-1">Requested</span>
+                                {{ formatCurrency(assignment.reimbursementAmount) }}
+                            </td>
+                            <td *ngIf="userIsVolunteerWriter()" class="text-center">
+                                <button class="btn btn-sm btn-outline-success" *ngIf="isPendingApproval(assignment)"
+                                    (click)="approveHours(assignment)" ngbTooltip="Approve Hours">
+                                    <i class="fa-solid fa-check me-1"></i> Approve
+                                </button>
+                                <span *ngIf="!isPendingApproval(assignment) && assignment.approvedVolunteerHours"
+                                    class="text-success">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </ng-container>
+    </div>
+</div>

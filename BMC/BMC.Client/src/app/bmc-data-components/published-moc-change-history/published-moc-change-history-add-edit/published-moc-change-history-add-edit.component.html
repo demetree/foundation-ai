@@ -1,0 +1,74 @@
+<div class="add-published-moc-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-published-moc-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Published Moc Change History" 
+        *ngIf="userIsBMCPublishedMocChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #publishedMocChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light published-moc-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="publishedMocChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Published Moc Change History' : 'Add Published Moc Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body published-moc-change-history-modal-body">
+      <form [formGroup]="publishedMocChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                <label for="PublishedMocChangeHistory-publishedMocId" id="label-PublishedMocChangeHistory-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                <select id="PublishedMocChangeHistory-publishedMocId" formControlName="publishedMocId" class="form-select published-moc-change-history-select" [disabled]="!userIsBMCPublishedMocChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+                <div *ngIf="publishedMocChangeHistoryForm.get('publishedMocId')?.invalid && publishedMocChangeHistoryForm.get('publishedMocId')?.touched" class="text-danger">
+                    Published Moc is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="PublishedMocChangeHistory-versionNumber" id="label-PublishedMocChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="PublishedMocChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control published-moc-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="PublishedMocChangeHistory-timeStamp" id="label-PublishedMocChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="PublishedMocChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control published-moc-change-history-input" [disabled]="!userIsBMCPublishedMocChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="publishedMocChangeHistoryForm.get('timeStamp')?.invalid && publishedMocChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="PublishedMocChangeHistory-userId" id="label-PublishedMocChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="PublishedMocChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control published-moc-change-history-input" [disabled]="!userIsBMCPublishedMocChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="publishedMocChangeHistoryForm.get('userId')?.invalid && publishedMocChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="PublishedMocChangeHistory-data" id="label-PublishedMocChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="PublishedMocChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control published-moc-change-history-input" [disabled]="!userIsBMCPublishedMocChangeHistoryWriter()"></textarea>
+                <div *ngIf="publishedMocChangeHistoryForm.get('data')?.invalid && publishedMocChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer published-moc-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Published Moc Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !publishedMocChangeHistoryForm.valid || publishedMocChangeHistoryForm.pristine  || userIsBMCPublishedMocChangeHistoryWriter() == false " ngbTooltip="Save the Published Moc Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Published Moc Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

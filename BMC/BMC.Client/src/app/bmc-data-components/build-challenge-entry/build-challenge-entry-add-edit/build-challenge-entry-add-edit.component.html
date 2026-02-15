@@ -1,0 +1,93 @@
+<div class="add-build-challenge-entry" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-build-challenge-entry me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Build Challenge Entry" 
+        *ngIf="userIsBMCBuildChallengeEntryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #buildChallengeEntryModal let-modal>
+   <div class="modal-header bg-dark text-light build-challenge-entry-modal-header">
+      <h5 class="modal-title mb-0" id="buildChallengeEntryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Build Challenge Entry' : 'Add Build Challenge Entry' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body build-challenge-entry-modal-body">
+      <form [formGroup]="buildChallengeEntryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('buildChallengeId')">
+                <label for="BuildChallengeEntry-buildChallengeId" id="label-BuildChallengeEntry-buildChallengeId"><span class="text-danger">*</span>Build Challenge</label>
+                <select id="BuildChallengeEntry-buildChallengeId" formControlName="buildChallengeId" class="form-select build-challenge-entry-select" [disabled]="!userIsBMCBuildChallengeEntryWriter()">
+                    <option [ngValue]="null">Select Build Challenge</option>
+                    <option *ngFor="let buildChallenge of buildChallenges$ | async" [ngValue]="buildChallenge.id">{{buildChallenge.name}}</option>
+                </select>
+                <div *ngIf="buildChallengeEntryForm.get('buildChallengeId')?.invalid && buildChallengeEntryForm.get('buildChallengeId')?.touched" class="text-danger">
+                    Build Challenge is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                <label for="BuildChallengeEntry-publishedMocId" id="label-BuildChallengeEntry-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                <select id="BuildChallengeEntry-publishedMocId" formControlName="publishedMocId" class="form-select build-challenge-entry-select" [disabled]="!userIsBMCBuildChallengeEntryWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+                <div *ngIf="buildChallengeEntryForm.get('publishedMocId')?.invalid && buildChallengeEntryForm.get('publishedMocId')?.touched" class="text-danger">
+                    Published Moc is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('submittedDate')">
+                <label for="BuildChallengeEntry-submittedDate" id="label-BuildChallengeEntry-submittedDate"><span class="text-danger">*</span>Submitted Date</label>
+                <input type="datetime-local" id="BuildChallengeEntry-submittedDate" formControlName="submittedDate" placeholder="Enter Submitted Date" class="form-control build-challenge-entry-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()" aria-labelledby="label-submittedDate" />
+                <div *ngIf="buildChallengeEntryForm.get('submittedDate')?.invalid && buildChallengeEntryForm.get('submittedDate')?.touched" class="text-danger">
+                    Submitted Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('entryNotes')">
+                <label for="BuildChallengeEntry-entryNotes" id="label-BuildChallengeEntry-entryNotes">Entry Notes</label>
+                <textarea id="BuildChallengeEntry-entryNotes" formControlName="entryNotes" placeholder="Enter Entry Notes" class="form-control build-challenge-entry-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('voteCount')">
+                <label for="BuildChallengeEntry-voteCount" id="label-BuildChallengeEntry-voteCount"><span class="text-danger">*</span>Vote Count</label>
+                <input type="number" id="BuildChallengeEntry-voteCount" formControlName="voteCount" placeholder="Enter Vote Count" class="form-control build-challenge-entry-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()" aria-labelledby="label-voteCount" />
+                <div *ngIf="buildChallengeEntryForm.get('voteCount')?.invalid && buildChallengeEntryForm.get('voteCount')?.touched" class="text-danger">
+                    Vote Count is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isWinner')">
+                <input type="checkbox" id="BuildChallengeEntry-isWinner" formControlName="isWinner" class="form-check-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()" />
+                <label for="BuildChallengeEntry-isWinner" class="form-check-label" id="label-BuildChallengeEntry-isWinner"><span class="text-danger">*</span>Is Winner</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDisqualified')">
+                <input type="checkbox" id="BuildChallengeEntry-isDisqualified" formControlName="isDisqualified" class="form-check-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()" />
+                <label for="BuildChallengeEntry-isDisqualified" class="form-check-label" id="label-BuildChallengeEntry-isDisqualified"><span class="text-danger">*</span>Is Disqualified</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildChallengeEntry-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()" />
+                <label for="BuildChallengeEntry-active" class="form-check-label" id="label-BuildChallengeEntry-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildChallengeEntry-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildChallengeEntryWriter()" />
+                <label for="BuildChallengeEntry-deleted" class="form-check-label" id="label-BuildChallengeEntry-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer build-challenge-entry-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Build Challenge Entry changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildChallengeEntryForm.valid || buildChallengeEntryForm.pristine  || userIsBMCBuildChallengeEntryWriter() == false " ngbTooltip="Save the Build Challenge Entry changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Build Challenge Entry' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

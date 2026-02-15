@@ -1,0 +1,323 @@
+<app-moc-comment-add-edit [showAddButton]="false"></app-moc-comment-add-edit>
+<div class="row" *ngIf="userIsBMCMocCommentReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCMocCommentWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCMocCommentWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('publishedMoc.name')">
+                Published  Moc
+                <span *ngIf="sortColumn === 'publishedMoc.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('commenterTenantGuid')">
+                Commenter  Tenant  Guid
+                <span *ngIf="sortColumn === 'commenterTenantGuid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('commentText')">
+                Comment  Text
+                <span *ngIf="sortColumn === 'commentText'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postedDate')">
+                Posted  Date
+                <span *ngIf="sortColumn === 'postedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('mocComment.name')">
+                Moc  Comment
+                <span *ngIf="sortColumn === 'mocComment.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isEdited')">
+                Is  Edited
+                <span *ngIf="sortColumn === 'isEdited'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isHidden')">
+                Is  Hidden
+                <span *ngIf="sortColumn === 'isHidden'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let mocComment of filteredMocComments; trackBy: getMocCommentId"
+              [ngClass]="{
+                 'row-inactive': mocComment.active == false,
+                 'row-deleted': mocComment.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCMocCommentWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(mocComment)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCMocCommentWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(mocComment)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="mocComment.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(mocComment)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="mocComment.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(mocComment, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(mocComment, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(mocComment, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(mocComment, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(mocComment, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(mocComment, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(mocComment, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(mocComment, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/publishedmoc', mocComment.publishedMocId]" class="btn btn-link text-left" ngbTooltip="Open Published Moc details">{{mocComment.publishedMoc?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/moccomment', mocComment.id]" class="btn btn-link text-left" ngbTooltip="Open Moc Comment details">{{mocComment.commenterTenantGuid}}</a></td>
+            <td class="text-truncate">{{mocComment.commentText}}</td>
+            <td class="text-truncate">{{mocComment.postedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/moccomment', mocComment.mocCommentId]" class="btn btn-link text-left" ngbTooltip="Open Moc Comment details">{{mocComment.mocComment?.name}}</a></td>
+            <td class="text-truncate"><boolean-icon [value]="mocComment.isEdited"/></td>
+            <td class="text-truncate"><boolean-icon [value]="mocComment.isHidden"/></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let mocComment of filteredMocComments; trackBy: getMocCommentId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': mocComment.active == false,
+                 'row-deleted': mocComment.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(mocComment, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(mocComment, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(mocComment, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(mocComment, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(mocComment, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(mocComment, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(mocComment, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(mocComment, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(mocComment, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(mocComment, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(mocComment, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(mocComment, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(mocComment, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/moccomment', mocComment.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(mocComment)" *ngIf="userIsBMCMocCommentWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(mocComment)" *ngIf="userIsBMCMocCommentWriter() && mocComment.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(mocComment)" *ngIf="userIsBMCMocCommentWriter() && mocComment.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{mocComment.id}}</strong>
+               <small class="text-muted d-block">{{mocComment.publishedMoc?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/moccomment', mocComment.id]"
+                        ngbTooltip="Moc Comment Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(mocComment)"
+                        ngbTooltip="Edit Moc Comment">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(mocComment)"
+                      ngbTooltip="Delete Moc Comment" 
+                      placement="top"
+                      *ngIf="mocComment.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(mocComment)"
+                      ngbTooltip="Undelete Moc Comment" 
+                      placement="top"
+                      *ngIf="mocComment.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="moc-comment-info" *ngIf="mocComment.publishedMocId != null">
+              <strong>Published Moc: </strong>
+              <a [routerLink]="['/publishedmoc', mocComment.publishedMocId]" class="text-left p-0 m-0" ngbTooltip="Open Published Moc details">{{mocComment.publishedMoc?.name}}</a>
+            </p>
+            <p class="moc-comment-info" *ngIf="mocComment.commenterTenantGuid != null">
+              <strong>Commenter Tenant Guid: </strong>
+              {{mocComment.commenterTenantGuid}}
+            </p>
+            <p class="moc-comment-info" *ngIf="mocComment.commentText != null">
+              <strong>Comment Text: </strong>
+              {{mocComment.commentText}}
+            </p>
+            <p class="moc-comment-info" *ngIf="mocComment.postedDate != null">
+              <strong>Posted Date: </strong>
+              {{mocComment.postedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="moc-comment-info" *ngIf="mocComment.mocCommentId != null">
+              <strong>Moc Comment: </strong>
+              <a [routerLink]="['/moccomment', mocComment.mocCommentId]" class="text-left p-0 m-0" ngbTooltip="Open Moc Comment details">{{mocComment.mocComment?.name}}</a>
+            </p>
+            <p class="moc-comment-info" *ngIf="mocComment.isEdited != null">
+              <strong>Is Edited: </strong>
+              <boolean-icon [value]="mocComment.isEdited"/>
+            </p>
+            <p class="moc-comment-info" *ngIf="mocComment.isHidden != null">
+              <strong>Is Hidden: </strong>
+              <boolean-icon [value]="mocComment.isHidden"/>
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

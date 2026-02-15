@@ -1,0 +1,131 @@
+<div class="container-fluid p-1 m-0 user-badge-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-badge-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Badge</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Badge' : 'Add User Badge'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserBadgeReader()">
+                <div class="col m-2 user-badge-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userBadgeForm" (ngSubmit)="submitForm()" class="user-badge-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="UserBadge-name" id="label-UserBadge-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="UserBadge-name" formControlName="name" placeholder="Enter Name" class="form-control user-badge-input" [disabled]="!userIsBMCUserBadgeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="userBadgeForm.get('name')?.invalid && userBadgeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="UserBadge-description" id="label-UserBadge-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="UserBadge-description" formControlName="description" placeholder="Enter Description" class="form-control user-badge-input" [disabled]="!userIsBMCUserBadgeWriter()"></textarea>
+                                <div *ngIf="userBadgeForm.get('description')?.invalid && userBadgeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconCssClass')">
+                                <label for="UserBadge-iconCssClass" id="label-UserBadge-iconCssClass">Icon Css Class</label>
+                                <input type="text" id="UserBadge-iconCssClass" formControlName="iconCssClass" placeholder="Enter Icon Css Class" class="form-control user-badge-input" [disabled]="!userIsBMCUserBadgeWriter()" aria-labelledby="label-iconCssClass" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconImagePath')">
+                                <label for="UserBadge-iconImagePath" id="label-UserBadge-iconImagePath">Icon Image Path</label>
+                                <input type="text" id="UserBadge-iconImagePath" formControlName="iconImagePath" placeholder="Enter Icon Image Path" class="form-control user-badge-input" [disabled]="!userIsBMCUserBadgeWriter()" aria-labelledby="label-iconImagePath" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('badgeColor')">
+                                <label for="UserBadge-badgeColor" id="label-UserBadge-badgeColor">Badge Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="UserBadge-badgeColor" 
+                        formControlName="badgeColor" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCUserBadgeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="userBadgeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isAutomatic')">
+                                <input type="checkbox" id="UserBadge-isAutomatic" formControlName="isAutomatic" class="form-check-input" [disabled]="!userIsBMCUserBadgeWriter()" />
+                                <label for="UserBadge-isAutomatic" class="form-check-label" id="label-UserBadge-isAutomatic"><span class="text-danger">*</span>Is Automatic</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('automaticCriteriaCode')">
+                                <label for="UserBadge-automaticCriteriaCode" id="label-UserBadge-automaticCriteriaCode">Automatic Criteria Code</label>
+                                <input type="text" id="UserBadge-automaticCriteriaCode" formControlName="automaticCriteriaCode" placeholder="Enter Automatic Criteria Code" class="form-control user-badge-input" [disabled]="!userIsBMCUserBadgeWriter()" aria-labelledby="label-automaticCriteriaCode" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="UserBadge-sequence" id="label-UserBadge-sequence">Sequence</label>
+                                <input type="number" id="UserBadge-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control user-badge-input" [disabled]="!userIsBMCUserBadgeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserBadge-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserBadgeWriter()" />
+                                <label for="UserBadge-active" class="form-check-label" id="label-UserBadge-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserBadge-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserBadgeWriter()" />
+                                <label for="UserBadge-deleted" class="form-check-label" id="label-UserBadge-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-badge-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userBadgeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Badge">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userBadgeForm.valid || !userBadgeForm.dirty || userBadgeForm.pristine  || userIsBMCUserBadgeWriter() == false " ngbTooltip="Save the User Badge changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Badge' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCUserBadgeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 user-badge-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="userBadgeAssignmentService.userIsBMCUserBadgeAssignmentReader()">
+                            <button ngbNavLink>User Badge Assignments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userBadgeData?.UserBadgeAssignmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-badge-assignment-table [queryParams]="{ userBadgeId: userBadgeData?.id }"></app-user-badge-assignment-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-badge-assignment-add-edit [preSeededData]="{ userBadgeId: userBadgeData?.id }" [hiddenFields]="['userBadgeId']"></app-user-badge-assignment-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,69 @@
+<div class="container-fluid p-1 m-0 user-follow-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-follow-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Follow</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Follow' : 'Add User Follow'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserFollowReader()">
+                <div class="col m-2 user-follow-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userFollowForm" (ngSubmit)="submitForm()" class="user-follow-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('followerTenantGuid')">
+                                <label for="UserFollow-followerTenantGuid" id="label-UserFollow-followerTenantGuid"><span class="text-danger">*</span>Follower Tenant Guid</label>
+                                <input type="text" id="UserFollow-followerTenantGuid" formControlName="followerTenantGuid" placeholder="Enter Follower Tenant Guid" class="form-control user-follow-input" [disabled]="!userIsBMCUserFollowWriter()" aria-labelledby="label-followerTenantGuid" />
+                                <div *ngIf="userFollowForm.get('followerTenantGuid')?.invalid && userFollowForm.get('followerTenantGuid')?.touched" class="text-danger">
+                                    Follower Tenant Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('followedTenantGuid')">
+                                <label for="UserFollow-followedTenantGuid" id="label-UserFollow-followedTenantGuid"><span class="text-danger">*</span>Followed Tenant Guid</label>
+                                <input type="text" id="UserFollow-followedTenantGuid" formControlName="followedTenantGuid" placeholder="Enter Followed Tenant Guid" class="form-control user-follow-input" [disabled]="!userIsBMCUserFollowWriter()" aria-labelledby="label-followedTenantGuid" />
+                                <div *ngIf="userFollowForm.get('followedTenantGuid')?.invalid && userFollowForm.get('followedTenantGuid')?.touched" class="text-danger">
+                                    Followed Tenant Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('followedDate')">
+                                <label for="UserFollow-followedDate" id="label-UserFollow-followedDate"><span class="text-danger">*</span>Followed Date</label>
+                                <input type="datetime-local" id="UserFollow-followedDate" formControlName="followedDate" placeholder="Enter Followed Date" class="form-control user-follow-input" [disabled]="!userIsBMCUserFollowWriter()" aria-labelledby="label-followedDate" />
+                                <div *ngIf="userFollowForm.get('followedDate')?.invalid && userFollowForm.get('followedDate')?.touched" class="text-danger">
+                                    Followed Date is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserFollow-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserFollowWriter()" />
+                                <label for="UserFollow-active" class="form-check-label" id="label-UserFollow-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserFollow-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserFollowWriter()" />
+                                <label for="UserFollow-deleted" class="form-check-label" id="label-UserFollow-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-follow-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userFollowForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Follow">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userFollowForm.valid || !userFollowForm.dirty || userFollowForm.pristine  || userIsBMCUserFollowWriter() == false " ngbTooltip="Save the User Follow changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Follow' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

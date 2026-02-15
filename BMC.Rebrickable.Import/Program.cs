@@ -247,6 +247,14 @@ namespace BMC.Rebrickable.Import
                         }
                     }
                 }
+
+                if (importAll || importTargets.Contains("reconcile"))
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("── Reconcile Moved Parts ────────────────");
+                    ReconcileResult reconcileResult = await service.ReconcileMovedPartsAsync();
+                    Console.WriteLine($"  Reconcile: {reconcileResult}");
+                }
             }
 
             Console.WriteLine();
@@ -283,6 +291,7 @@ namespace BMC.Rebrickable.Import
             Console.WriteLine("  sets           sets.csv → LegoSet");
             Console.WriteLine("  minifigs       minifigs.csv → LegoMinifig");
             Console.WriteLine("  inventories    inventories.csv + inventory_*.csv → LegoSetPart/Subset/Minifig");
+            Console.WriteLine("  reconcile      Fix existing data that references moved LDraw parts");
             Console.WriteLine();
             Console.WriteLine("Examples:");
             Console.WriteLine("  BMC.Rebrickable.Import --download --import all");

@@ -1,0 +1,83 @@
+<div class="container-fluid p-1 m-0 user-profile-link-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-profile-link-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Profile Link</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Profile Link' : 'Add User Profile Link'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserProfileLinkReader()">
+                <div class="col m-2 user-profile-link-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userProfileLinkForm" (ngSubmit)="submitForm()" class="user-profile-link-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userProfileId')">
+                                <label for="UserProfileLink-userProfileId" id="label-UserProfileLink-userProfileId"><span class="text-danger">*</span>User Profile</label>
+                                <select id="UserProfileLink-userProfileId" formControlName="userProfileId" class="form-select user-profile-link-select" [disabled]="!userIsBMCUserProfileLinkWriter()">
+                                    <option [ngValue]="null">Select User Profile</option>
+                                    <option *ngFor="let userProfile of userProfiles$ | async" [ngValue]="userProfile.id">{{userProfile.displayName}}</option>
+                                </select>
+                                <div *ngIf="userProfileLinkForm.get('userProfileId')?.invalid && userProfileLinkForm.get('userProfileId')?.touched" class="text-danger">
+                                    User Profile is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userProfileLinkTypeId')">
+                                <label for="UserProfileLink-userProfileLinkTypeId" id="label-UserProfileLink-userProfileLinkTypeId"><span class="text-danger">*</span>User Profile Link Type</label>
+                                <select id="UserProfileLink-userProfileLinkTypeId" formControlName="userProfileLinkTypeId" class="form-select user-profile-link-select" [disabled]="!userIsBMCUserProfileLinkWriter()">
+                                    <option [ngValue]="null">Select User Profile Link Type</option>
+                                    <option *ngFor="let userProfileLinkType of userProfileLinkTypes$ | async" [ngValue]="userProfileLinkType.id">{{userProfileLinkType.name}}</option>
+                                </select>
+                                <div *ngIf="userProfileLinkForm.get('userProfileLinkTypeId')?.invalid && userProfileLinkForm.get('userProfileLinkTypeId')?.touched" class="text-danger">
+                                    User Profile Link Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('url')">
+                                <label for="UserProfileLink-url" id="label-UserProfileLink-url"><span class="text-danger">*</span>Url</label>
+                                <textarea id="UserProfileLink-url" formControlName="url" placeholder="Enter Url" class="form-control user-profile-link-input" [disabled]="!userIsBMCUserProfileLinkWriter()"></textarea>
+                                <div *ngIf="userProfileLinkForm.get('url')?.invalid && userProfileLinkForm.get('url')?.touched" class="text-danger">
+                                    Url is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('displayLabel')">
+                                <label for="UserProfileLink-displayLabel" id="label-UserProfileLink-displayLabel">Display Label</label>
+                                <input type="text" id="UserProfileLink-displayLabel" formControlName="displayLabel" placeholder="Enter Display Label" class="form-control user-profile-link-input" [disabled]="!userIsBMCUserProfileLinkWriter()" aria-labelledby="label-displayLabel" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="UserProfileLink-sequence" id="label-UserProfileLink-sequence">Sequence</label>
+                                <input type="number" id="UserProfileLink-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control user-profile-link-input" [disabled]="!userIsBMCUserProfileLinkWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserProfileLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfileLinkWriter()" />
+                                <label for="UserProfileLink-active" class="form-check-label" id="label-UserProfileLink-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserProfileLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfileLinkWriter()" />
+                                <label for="UserProfileLink-deleted" class="form-check-label" id="label-UserProfileLink-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-profile-link-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userProfileLinkForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Profile Link">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfileLinkForm.valid || !userProfileLinkForm.dirty || userProfileLinkForm.pristine  || userIsBMCUserProfileLinkWriter() == false " ngbTooltip="Save the User Profile Link changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Profile Link' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

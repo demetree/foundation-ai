@@ -1,0 +1,323 @@
+<app-user-set-ownership-add-edit [showAddButton]="false"></app-user-set-ownership-add-edit>
+<div class="row" *ngIf="userIsBMCUserSetOwnershipReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserSetOwnershipWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserSetOwnershipWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('legoSet.name')">
+                Lego  Set
+                <span *ngIf="sortColumn === 'legoSet.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('status')">
+                Status
+                <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('acquiredDate')">
+                Acquired  Date
+                <span *ngIf="sortColumn === 'acquiredDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('personalRating')">
+                Personal  Rating
+                <span *ngIf="sortColumn === 'personalRating'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('quantity')">
+                Quantity
+                <span *ngIf="sortColumn === 'quantity'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPublic')">
+                Is  Public
+                <span *ngIf="sortColumn === 'isPublic'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let userSetOwnership of filteredUserSetOwnerships; trackBy: getUserSetOwnershipId"
+              [ngClass]="{
+                 'row-inactive': userSetOwnership.active == false,
+                 'row-deleted': userSetOwnership.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCUserSetOwnershipWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(userSetOwnership)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCUserSetOwnershipWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(userSetOwnership)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="userSetOwnership.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(userSetOwnership)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="userSetOwnership.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userSetOwnership, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(userSetOwnership, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(userSetOwnership, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(userSetOwnership, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userSetOwnership, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userSetOwnership, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(userSetOwnership, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(userSetOwnership, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/legoset', userSetOwnership.legoSetId]" class="btn btn-link text-left" ngbTooltip="Open Lego Set details">{{userSetOwnership.legoSet?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/usersetownership', userSetOwnership.id]" class="btn btn-link text-left" ngbTooltip="Open User Set Ownership details">{{userSetOwnership.status}}</a></td>
+            <td class="text-truncate">{{userSetOwnership.acquiredDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{userSetOwnership.personalRating | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{userSetOwnership.notes}}</td>
+            <td class="text-truncate">{{userSetOwnership.quantity | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="userSetOwnership.isPublic"/></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let userSetOwnership of filteredUserSetOwnerships; trackBy: getUserSetOwnershipId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': userSetOwnership.active == false,
+                 'row-deleted': userSetOwnership.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userSetOwnership, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(userSetOwnership, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(userSetOwnership, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(userSetOwnership, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(userSetOwnership, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userSetOwnership, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(userSetOwnership, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(userSetOwnership, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(userSetOwnership, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userSetOwnership, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userSetOwnership, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(userSetOwnership, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(userSetOwnership, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/usersetownership', userSetOwnership.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(userSetOwnership)" *ngIf="userIsBMCUserSetOwnershipWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(userSetOwnership)" *ngIf="userIsBMCUserSetOwnershipWriter() && userSetOwnership.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(userSetOwnership)" *ngIf="userIsBMCUserSetOwnershipWriter() && userSetOwnership.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{userSetOwnership.id}}</strong>
+               <small class="text-muted d-block">{{userSetOwnership.legoSet?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/usersetownership', userSetOwnership.id]"
+                        ngbTooltip="User Set Ownership Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(userSetOwnership)"
+                        ngbTooltip="Edit User Set Ownership">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(userSetOwnership)"
+                      ngbTooltip="Delete User Set Ownership" 
+                      placement="top"
+                      *ngIf="userSetOwnership.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(userSetOwnership)"
+                      ngbTooltip="Undelete User Set Ownership" 
+                      placement="top"
+                      *ngIf="userSetOwnership.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.legoSetId != null">
+              <strong>Lego Set: </strong>
+              <a [routerLink]="['/legoset', userSetOwnership.legoSetId]" class="text-left p-0 m-0" ngbTooltip="Open Lego Set details">{{userSetOwnership.legoSet?.name}}</a>
+            </p>
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.status != null">
+              <strong>Status: </strong>
+              {{userSetOwnership.status}}
+            </p>
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.acquiredDate != null">
+              <strong>Acquired Date: </strong>
+              {{userSetOwnership.acquiredDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.personalRating != null">
+              <strong>Personal Rating: </strong>
+              {{userSetOwnership.personalRating | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.notes != null">
+              <strong>Notes: </strong>
+              {{userSetOwnership.notes}}
+            </p>
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.quantity != null">
+              <strong>Quantity: </strong>
+              {{userSetOwnership.quantity | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="user-set-ownership-info" *ngIf="userSetOwnership.isPublic != null">
+              <strong>Is Public: </strong>
+              <boolean-icon [value]="userSetOwnership.isPublic"/>
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

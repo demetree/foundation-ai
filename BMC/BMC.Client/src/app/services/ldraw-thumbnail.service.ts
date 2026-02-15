@@ -438,7 +438,9 @@ export class LDrawThumbnailService {
      * Edge lines are tinted to a darker shade of the same colour.
      */
     private applyColourOverride(group: THREE.Group, colourHex: string): void {
-        const colour = new THREE.Color(`#${colourHex}`);
+        // Defensive: strip leading '#' if present (DB stores '#A0A5A9', we need 'A0A5A9')
+        const hex = colourHex.startsWith('#') ? colourHex.substring(1) : colourHex;
+        const colour = new THREE.Color(`#${hex}`);
 
         // Slightly darker version for edges
         const edgeColour = colour.clone().multiplyScalar(0.5);

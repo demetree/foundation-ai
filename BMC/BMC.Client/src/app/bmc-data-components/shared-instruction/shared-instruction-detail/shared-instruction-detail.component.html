@@ -1,0 +1,134 @@
+<div class="container-fluid p-1 m-0 shared-instruction-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="shared-instruction-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Shared Instruction</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Shared Instruction' : 'Add Shared Instruction'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCSharedInstructionReader()">
+                <div class="col m-2 shared-instruction-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="sharedInstructionForm" (ngSubmit)="submitForm()" class="shared-instruction-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('buildManualId')">
+                                <label for="SharedInstruction-buildManualId" id="label-SharedInstruction-buildManualId">Build Manual</label>
+                                <select id="SharedInstruction-buildManualId" formControlName="buildManualId" class="form-select shared-instruction-select" [disabled]="!userIsBMCSharedInstructionWriter()">
+                                    <option [ngValue]="null">Select Build Manual</option>
+                                    <option *ngFor="let buildManual of buildManuals$ | async" [ngValue]="buildManual.id">{{buildManual.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                                <label for="SharedInstruction-publishedMocId" id="label-SharedInstruction-publishedMocId">Published Moc</label>
+                                <select id="SharedInstruction-publishedMocId" formControlName="publishedMocId" class="form-select shared-instruction-select" [disabled]="!userIsBMCSharedInstructionWriter()">
+                                    <option [ngValue]="null">Select Published Moc</option>
+                                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="SharedInstruction-name" id="label-SharedInstruction-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="SharedInstruction-name" formControlName="name" placeholder="Enter Name" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="sharedInstructionForm.get('name')?.invalid && sharedInstructionForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="SharedInstruction-description" id="label-SharedInstruction-description">Description</label>
+                                <textarea id="SharedInstruction-description" formControlName="description" placeholder="Enter Description" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('formatType')">
+                                <label for="SharedInstruction-formatType" id="label-SharedInstruction-formatType"><span class="text-danger">*</span>Format Type</label>
+                                <input type="text" id="SharedInstruction-formatType" formControlName="formatType" placeholder="Enter Format Type" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()" aria-labelledby="label-formatType" />
+                                <div *ngIf="sharedInstructionForm.get('formatType')?.invalid && sharedInstructionForm.get('formatType')?.touched" class="text-danger">
+                                    Format Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('filePath')">
+                                <label for="SharedInstruction-filePath" id="label-SharedInstruction-filePath">File Path</label>
+                                <input type="text" id="SharedInstruction-filePath" formControlName="filePath" placeholder="Enter File Path" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()" aria-labelledby="label-filePath" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublished')">
+                                <input type="checkbox" id="SharedInstruction-isPublished" formControlName="isPublished" class="form-check-input" [disabled]="!userIsBMCSharedInstructionWriter()" />
+                                <label for="SharedInstruction-isPublished" class="form-check-label" id="label-SharedInstruction-isPublished"><span class="text-danger">*</span>Is Published</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('publishedDate')">
+                                <label for="SharedInstruction-publishedDate" id="label-SharedInstruction-publishedDate">Published Date</label>
+                                <input type="datetime-local" id="SharedInstruction-publishedDate" formControlName="publishedDate" placeholder="Enter Published Date" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()" aria-labelledby="label-publishedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('downloadCount')">
+                                <label for="SharedInstruction-downloadCount" id="label-SharedInstruction-downloadCount"><span class="text-danger">*</span>Download Count</label>
+                                <input type="number" id="SharedInstruction-downloadCount" formControlName="downloadCount" placeholder="Enter Download Count" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()" aria-labelledby="label-downloadCount" />
+                                <div *ngIf="sharedInstructionForm.get('downloadCount')?.invalid && sharedInstructionForm.get('downloadCount')?.touched" class="text-danger">
+                                    Download Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('pageCount')">
+                                <label for="SharedInstruction-pageCount" id="label-SharedInstruction-pageCount">Page Count</label>
+                                <input type="number" id="SharedInstruction-pageCount" formControlName="pageCount" placeholder="Enter Page Count" class="form-control shared-instruction-input" [disabled]="!userIsBMCSharedInstructionWriter()" aria-labelledby="label-pageCount" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="SharedInstruction-versionNumber" id="label-SharedInstruction-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="SharedInstruction-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control shared-instruction-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SharedInstruction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCSharedInstructionWriter()" />
+                                <label for="SharedInstruction-active" class="form-check-label" id="label-SharedInstruction-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SharedInstruction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCSharedInstructionWriter()" />
+                                <label for="SharedInstruction-deleted" class="form-check-label" id="label-SharedInstruction-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="shared-instruction-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="sharedInstructionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Shared Instruction">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !sharedInstructionForm.valid || !sharedInstructionForm.dirty || sharedInstructionForm.pristine  || userIsBMCSharedInstructionWriter() == false " ngbTooltip="Save the Shared Instruction changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Shared Instruction' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCSharedInstructionReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 shared-instruction-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="sharedInstructionChangeHistoryService.userIsBMCSharedInstructionChangeHistoryReader()">
+                            <button ngbNavLink>Shared Instruction Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (sharedInstructionData?.SharedInstructionChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-shared-instruction-change-history-table [queryParams]="{ sharedInstructionId: sharedInstructionData?.id }"></app-shared-instruction-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-shared-instruction-change-history-add-edit [preSeededData]="{ sharedInstructionId: sharedInstructionData?.id }" [hiddenFields]="['sharedInstructionId']"></app-shared-instruction-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

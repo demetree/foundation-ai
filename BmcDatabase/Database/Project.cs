@@ -49,5 +49,7 @@ public partial class Project
 
     public virtual ICollection<ProjectTagAssignment> ProjectTagAssignments { get; set; } = new List<ProjectTagAssignment>();
 
+    public virtual ICollection<PublishedMoc> PublishedMocs { get; set; } = new List<PublishedMoc>();
+
     public virtual ICollection<Submodel> Submodels { get; set; } = new List<Submodel>();
 }

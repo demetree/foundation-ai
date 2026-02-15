@@ -19,7 +19,7 @@
                         <form [class.hidden]="isLoading$ | async" [formGroup]="legoMinifigForm" (ngSubmit)="submitForm()" class="lego-minifig-details-form">
                             <div class="form-group" *ngIf="!isFieldHidden('name')">
                                 <label for="LegoMinifig-name" id="label-LegoMinifig-name"><span class="text-danger">*</span>Name</label>
-                                <input type="text" id="LegoMinifig-name" formControlName="name" placeholder="Enter Name" class="form-control lego-minifig-input" [disabled]="!userIsBMCLegoMinifigWriter()" aria-labelledby="label-name" />
+                                <textarea id="LegoMinifig-name" formControlName="name" placeholder="Enter Name" class="form-control lego-minifig-input" [disabled]="!userIsBMCLegoMinifigWriter()"></textarea>
                                 <div *ngIf="legoMinifigForm.get('name')?.invalid && legoMinifigForm.get('name')?.touched" class="text-danger">
                                     Name is required
                                 </div>

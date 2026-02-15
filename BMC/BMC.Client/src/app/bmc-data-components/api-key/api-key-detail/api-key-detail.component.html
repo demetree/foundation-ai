@@ -1,0 +1,126 @@
+<div class="container-fluid p-1 m-0 api-key-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="api-key-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Api Key</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Api Key' : 'Add Api Key'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCApiKeyReader()">
+                <div class="col m-2 api-key-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="apiKeyForm" (ngSubmit)="submitForm()" class="api-key-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('keyHash')">
+                                <label for="ApiKey-keyHash" id="label-ApiKey-keyHash"><span class="text-danger">*</span>Key Hash</label>
+                                <input type="text" id="ApiKey-keyHash" formControlName="keyHash" placeholder="Enter Key Hash" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-keyHash" />
+                                <div *ngIf="apiKeyForm.get('keyHash')?.invalid && apiKeyForm.get('keyHash')?.touched" class="text-danger">
+                                    Key Hash is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('keyPrefix')">
+                                <label for="ApiKey-keyPrefix" id="label-ApiKey-keyPrefix"><span class="text-danger">*</span>Key Prefix</label>
+                                <input type="text" id="ApiKey-keyPrefix" formControlName="keyPrefix" placeholder="Enter Key Prefix" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-keyPrefix" />
+                                <div *ngIf="apiKeyForm.get('keyPrefix')?.invalid && apiKeyForm.get('keyPrefix')?.touched" class="text-danger">
+                                    Key Prefix is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ApiKey-name" id="label-ApiKey-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ApiKey-name" formControlName="name" placeholder="Enter Name" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="apiKeyForm.get('name')?.invalid && apiKeyForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ApiKey-description" id="label-ApiKey-description">Description</label>
+                                <textarea id="ApiKey-description" formControlName="description" placeholder="Enter Description" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isActive')">
+                                <input type="checkbox" id="ApiKey-isActive" formControlName="isActive" class="form-check-input" [disabled]="!userIsBMCApiKeyWriter()" />
+                                <label for="ApiKey-isActive" class="form-check-label" id="label-ApiKey-isActive"><span class="text-danger">*</span>Is Active</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdDate')">
+                                <label for="ApiKey-createdDate" id="label-ApiKey-createdDate"><span class="text-danger">*</span>Created Date</label>
+                                <input type="datetime-local" id="ApiKey-createdDate" formControlName="createdDate" placeholder="Enter Created Date" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-createdDate" />
+                                <div *ngIf="apiKeyForm.get('createdDate')?.invalid && apiKeyForm.get('createdDate')?.touched" class="text-danger">
+                                    Created Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastUsedDate')">
+                                <label for="ApiKey-lastUsedDate" id="label-ApiKey-lastUsedDate">Last Used Date</label>
+                                <input type="datetime-local" id="ApiKey-lastUsedDate" formControlName="lastUsedDate" placeholder="Enter Last Used Date" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-lastUsedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('expiresDate')">
+                                <label for="ApiKey-expiresDate" id="label-ApiKey-expiresDate">Expires Date</label>
+                                <input type="datetime-local" id="ApiKey-expiresDate" formControlName="expiresDate" placeholder="Enter Expires Date" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-expiresDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rateLimitPerHour')">
+                                <label for="ApiKey-rateLimitPerHour" id="label-ApiKey-rateLimitPerHour"><span class="text-danger">*</span>Rate Limit Per Hour</label>
+                                <input type="number" id="ApiKey-rateLimitPerHour" formControlName="rateLimitPerHour" placeholder="Enter Rate Limit Per Hour" class="form-control api-key-input" [disabled]="!userIsBMCApiKeyWriter()" aria-labelledby="label-rateLimitPerHour" />
+                                <div *ngIf="apiKeyForm.get('rateLimitPerHour')?.invalid && apiKeyForm.get('rateLimitPerHour')?.touched" class="text-danger">
+                                    Rate Limit Per Hour is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ApiKey-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCApiKeyWriter()" />
+                                <label for="ApiKey-active" class="form-check-label" id="label-ApiKey-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ApiKey-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCApiKeyWriter()" />
+                                <label for="ApiKey-deleted" class="form-check-label" id="label-ApiKey-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="api-key-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="apiKeyForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Api Key">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !apiKeyForm.valid || !apiKeyForm.dirty || apiKeyForm.pristine  || userIsBMCApiKeyWriter() == false " ngbTooltip="Save the Api Key changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Api Key' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCApiKeyReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 api-key-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="apiRequestLogService.userIsBMCApiRequestLogReader()">
+                            <button ngbNavLink>Api Request Logs
+                                <span class="badge bg-primary ms-2">
+                                    {{ (apiKeyData?.ApiRequestLogsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-api-request-log-table [queryParams]="{ apiKeyId: apiKeyData?.id }"></app-api-request-log-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-api-request-log-add-edit [preSeededData]="{ apiKeyId: apiKeyData?.id }" [hiddenFields]="['apiKeyId']"></app-api-request-log-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

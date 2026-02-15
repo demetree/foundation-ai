@@ -1,0 +1,94 @@
+<div class="container-fluid p-1 m-0 api-request-log-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="api-request-log-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Api Request Log</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Api Request Log' : 'Add Api Request Log'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCApiRequestLogReader()">
+                <div class="col m-2 api-request-log-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="apiRequestLogForm" (ngSubmit)="submitForm()" class="api-request-log-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('apiKeyId')">
+                                <label for="ApiRequestLog-apiKeyId" id="label-ApiRequestLog-apiKeyId"><span class="text-danger">*</span>Api Key</label>
+                                <select id="ApiRequestLog-apiKeyId" formControlName="apiKeyId" class="form-select api-request-log-select" [disabled]="!userIsBMCApiRequestLogWriter()">
+                                    <option [ngValue]="null">Select Api Key</option>
+                                    <option *ngFor="let apiKey of apiKeies$ | async" [ngValue]="apiKey.id">{{apiKey.keyHash}}</option>
+                                </select>
+                                <div *ngIf="apiRequestLogForm.get('apiKeyId')?.invalid && apiRequestLogForm.get('apiKeyId')?.touched" class="text-danger">
+                                    Api Key is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endpoint')">
+                                <label for="ApiRequestLog-endpoint" id="label-ApiRequestLog-endpoint"><span class="text-danger">*</span>Endpoint</label>
+                                <input type="text" id="ApiRequestLog-endpoint" formControlName="endpoint" placeholder="Enter Endpoint" class="form-control api-request-log-input" [disabled]="!userIsBMCApiRequestLogWriter()" aria-labelledby="label-endpoint" />
+                                <div *ngIf="apiRequestLogForm.get('endpoint')?.invalid && apiRequestLogForm.get('endpoint')?.touched" class="text-danger">
+                                    Endpoint is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('httpMethod')">
+                                <label for="ApiRequestLog-httpMethod" id="label-ApiRequestLog-httpMethod"><span class="text-danger">*</span>Http Method</label>
+                                <input type="text" id="ApiRequestLog-httpMethod" formControlName="httpMethod" placeholder="Enter Http Method" class="form-control api-request-log-input" [disabled]="!userIsBMCApiRequestLogWriter()" aria-labelledby="label-httpMethod" />
+                                <div *ngIf="apiRequestLogForm.get('httpMethod')?.invalid && apiRequestLogForm.get('httpMethod')?.touched" class="text-danger">
+                                    Http Method is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('responseStatus')">
+                                <label for="ApiRequestLog-responseStatus" id="label-ApiRequestLog-responseStatus"><span class="text-danger">*</span>Response Status</label>
+                                <input type="number" id="ApiRequestLog-responseStatus" formControlName="responseStatus" placeholder="Enter Response Status" class="form-control api-request-log-input" [disabled]="!userIsBMCApiRequestLogWriter()" aria-labelledby="label-responseStatus" />
+                                <div *ngIf="apiRequestLogForm.get('responseStatus')?.invalid && apiRequestLogForm.get('responseStatus')?.touched" class="text-danger">
+                                    Response Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('requestDate')">
+                                <label for="ApiRequestLog-requestDate" id="label-ApiRequestLog-requestDate"><span class="text-danger">*</span>Request Date</label>
+                                <input type="datetime-local" id="ApiRequestLog-requestDate" formControlName="requestDate" placeholder="Enter Request Date" class="form-control api-request-log-input" [disabled]="!userIsBMCApiRequestLogWriter()" aria-labelledby="label-requestDate" />
+                                <div *ngIf="apiRequestLogForm.get('requestDate')?.invalid && apiRequestLogForm.get('requestDate')?.touched" class="text-danger">
+                                    Request Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('durationMs')">
+                                <label for="ApiRequestLog-durationMs" id="label-ApiRequestLog-durationMs">Duration Ms</label>
+                                <input type="number" id="ApiRequestLog-durationMs" formControlName="durationMs" placeholder="Enter Duration Ms" class="form-control api-request-log-input" [disabled]="!userIsBMCApiRequestLogWriter()" aria-labelledby="label-durationMs" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('clientIpAddress')">
+                                <label for="ApiRequestLog-clientIpAddress" id="label-ApiRequestLog-clientIpAddress">Client Ip Address</label>
+                                <input type="text" id="ApiRequestLog-clientIpAddress" formControlName="clientIpAddress" placeholder="Enter Client Ip Address" class="form-control api-request-log-input" [disabled]="!userIsBMCApiRequestLogWriter()" aria-labelledby="label-clientIpAddress" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ApiRequestLog-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCApiRequestLogWriter()" />
+                                <label for="ApiRequestLog-active" class="form-check-label" id="label-ApiRequestLog-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ApiRequestLog-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCApiRequestLogWriter()" />
+                                <label for="ApiRequestLog-deleted" class="form-check-label" id="label-ApiRequestLog-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="api-request-log-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="apiRequestLogForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Api Request Log">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !apiRequestLogForm.valid || !apiRequestLogForm.dirty || apiRequestLogForm.pristine  || userIsBMCApiRequestLogWriter() == false " ngbTooltip="Save the Api Request Log changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Api Request Log' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

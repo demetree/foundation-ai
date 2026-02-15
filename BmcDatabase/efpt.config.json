@@ -19,6 +19,30 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[BMC].[Achievement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[AchievementCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ActivityEvent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ActivityEventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ApiKey]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ApiRequestLog]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[BrickCategory]",
          "ObjectType": 0
       },
@@ -52,6 +76,18 @@
       },
       {
          "Name": "[BMC].[BrickPartRelationship]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildChallenge]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildChallengeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildChallengeEntry]",
          "ObjectType": 0
       },
       {
@@ -91,6 +127,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[ContentReport]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ContentReportReason]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ExportFormat]",
          "ObjectType": 0
       },
@@ -119,6 +163,22 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[MocComment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[MocFavourite]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[MocLike]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ModerationAction]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[PartType]",
          "ObjectType": 0
       },
@@ -128,6 +188,10 @@
       },
       {
          "Name": "[BMC].[PlacedBrickChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PlatformAnnouncement]",
          "ObjectType": 0
       },
       {
@@ -163,7 +227,27 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[PublishedMoc]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PublishedMocChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PublishedMocImage]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[RenderPreset]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[SharedInstruction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[SharedInstructionChangeHistory]",
          "ObjectType": 0
       },
       {
@@ -176,6 +260,18 @@
       },
       {
          "Name": "[BMC].[SubmodelPlacedBrick]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserAchievement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserBadge]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserBadgeAssignment]",
          "ObjectType": 0
       },
       {
@@ -192,6 +288,34 @@
       },
       {
          "Name": "[BMC].[UserCollectionSetImport]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserFollow]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserProfile]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserProfileChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserProfileLink]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserProfileLinkType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserProfileStat]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserSetOwnership]",
          "ObjectType": 0
       },
       {

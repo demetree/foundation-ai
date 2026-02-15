@@ -1,0 +1,69 @@
+<div class="container-fluid p-1 m-0 user-achievement-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-achievement-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Achievement</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Achievement' : 'Add User Achievement'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserAchievementReader()">
+                <div class="col m-2 user-achievement-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userAchievementForm" (ngSubmit)="submitForm()" class="user-achievement-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('achievementId')">
+                                <label for="UserAchievement-achievementId" id="label-UserAchievement-achievementId"><span class="text-danger">*</span>Achievement</label>
+                                <select id="UserAchievement-achievementId" formControlName="achievementId" class="form-select user-achievement-select" [disabled]="!userIsBMCUserAchievementWriter()">
+                                    <option [ngValue]="null">Select Achievement</option>
+                                    <option *ngFor="let achievement of achievements$ | async" [ngValue]="achievement.id">{{achievement.name}}</option>
+                                </select>
+                                <div *ngIf="userAchievementForm.get('achievementId')?.invalid && userAchievementForm.get('achievementId')?.touched" class="text-danger">
+                                    Achievement is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('earnedDate')">
+                                <label for="UserAchievement-earnedDate" id="label-UserAchievement-earnedDate"><span class="text-danger">*</span>Earned Date</label>
+                                <input type="datetime-local" id="UserAchievement-earnedDate" formControlName="earnedDate" placeholder="Enter Earned Date" class="form-control user-achievement-input" [disabled]="!userIsBMCUserAchievementWriter()" aria-labelledby="label-earnedDate" />
+                                <div *ngIf="userAchievementForm.get('earnedDate')?.invalid && userAchievementForm.get('earnedDate')?.touched" class="text-danger">
+                                    Earned Date is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isDisplayed')">
+                                <input type="checkbox" id="UserAchievement-isDisplayed" formControlName="isDisplayed" class="form-check-input" [disabled]="!userIsBMCUserAchievementWriter()" />
+                                <label for="UserAchievement-isDisplayed" class="form-check-label" id="label-UserAchievement-isDisplayed"><span class="text-danger">*</span>Is Displayed</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserAchievement-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserAchievementWriter()" />
+                                <label for="UserAchievement-active" class="form-check-label" id="label-UserAchievement-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserAchievement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserAchievementWriter()" />
+                                <label for="UserAchievement-deleted" class="form-check-label" id="label-UserAchievement-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-achievement-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userAchievementForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Achievement">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userAchievementForm.valid || !userAchievementForm.dirty || userAchievementForm.pristine  || userIsBMCUserAchievementWriter() == false " ngbTooltip="Save the User Achievement changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Achievement' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -35,5 +35,7 @@ public partial class BuildManual
 
     public virtual ICollection<BuildManualPage> BuildManualPages { get; set; } = new List<BuildManualPage>();
 
+    public virtual ICollection<SharedInstruction> SharedInstructions { get; set; } = new List<SharedInstruction>();
+
     public virtual Project project { get; set; }
 }

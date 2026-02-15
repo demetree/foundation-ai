@@ -511,6 +511,13 @@ namespace BMC.Rebrickable.Import
                 .AsNoTracking()
                 .ToDictionaryAsync(bc => bc.ldrawColourCode, bc => bc.id);
 
+            //
+            // AI-developed: Build moved part resolution map so elements referencing moved parts
+            // get redirected to the actual destination part.
+            //
+            Dictionary<int, int> movedPartMap = await BuildMovedPartMapAsync();
+            int elementsReconciled = 0;
+
             // Load existing element IDs to avoid duplicates
             HashSet<string> existingElementIds = new HashSet<string>(
                 await _context.BrickElements.Select(e => e.elementId).ToListAsync());
@@ -533,6 +540,15 @@ namespace BMC.Rebrickable.Import
                 {
                     result.Skipped++;
                     continue;
+                }
+
+                //
+                // Reconcile moved parts — redirect to the actual destination part
+                //
+                if (movedPartMap.TryGetValue(partId, out int resolvedPartId))
+                {
+                    partId = resolvedPartId;
+                    elementsReconciled++;
                 }
 
                 if (!colourLookup.TryGetValue(colourCode, out int colourId))
@@ -568,7 +584,7 @@ namespace BMC.Rebrickable.Import
                 }
             }
 
-            _log($"  Elements: {result.Created} created, {result.Skipped} skipped");
+            _log($"  Elements: {result.Created} created, {result.Skipped} skipped, {elementsReconciled} moved parts reconciled");
 
             return result;
         }
@@ -791,6 +807,13 @@ namespace BMC.Rebrickable.Import
 
             _log($"  FK lookups: {setLookup.Count} sets, {partLookup.Count} parts, {colourLookup.Count} colours");
 
+            //
+            // AI-developed: Build moved part resolution map so inventory parts referencing
+            // moved parts get redirected to the actual destination part.
+            //
+            Dictionary<int, int> movedPartMap = await BuildMovedPartMapAsync();
+            int partsReconciled = 0;
+
             // Parse inventory_parts.csv: inventory_id,part_num,color_id,quantity,is_spare,img_url
             List<string[]> rows = ParseCsv(inventoryPartsPath);
             _log($"  Parsed {rows.Count} inventory part lines");
@@ -824,6 +847,15 @@ namespace BMC.Rebrickable.Import
                     continue;
                 }
 
+                //
+                // Reconcile moved parts — redirect to the actual destination part
+                //
+                if (movedPartMap.TryGetValue(brickPartId, out int resolvedPartId))
+                {
+                    brickPartId = resolvedPartId;
+                    partsReconciled++;
+                }
+
                 if (!colourLookup.TryGetValue(colourCode, out int brickColourId))
                 {
                     result.Skipped++;
@@ -855,7 +887,7 @@ namespace BMC.Rebrickable.Import
                 }
             }
 
-            _log($"  Inventory Parts: {result.Created} created, {result.Skipped} skipped");
+            _log($"  Inventory Parts: {result.Created} created, {result.Skipped} skipped, {partsReconciled} moved parts reconciled");
 
             return result;
         }
@@ -1010,6 +1042,191 @@ namespace BMC.Rebrickable.Import
         }
 
         // ─────────────────────────────────────────────────
+        // 10. RECONCILE MOVED PARTS (post-import correction)
+        // ─────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// AI-developed: Reconciles already-imported data that references moved parts.
+        /// Scans LegoSetPart and BrickElement rows, redirecting any that point to a
+        /// moved BrickPart to the actual destination part instead.
+        /// Safe to re-run — idempotent.
+        ///
+        /// </summary>
+        public async Task<ReconcileResult> ReconcileMovedPartsAsync()
+        {
+            ReconcileResult result = new ReconcileResult();
+
+            //
+            // Build the moved part resolution map
+            //
+            Dictionary<int, int> movedPartMap = await BuildMovedPartMapAsync();
+
+            if (movedPartMap.Count == 0)
+            {
+                _log("  No moved parts found — nothing to reconcile.");
+                return result;
+            }
+
+            //
+            // Get the set of moved part IDs for efficient SQL filtering
+            //
+            HashSet<int> movedPartIds = new HashSet<int>(movedPartMap.Keys);
+
+            //
+            // Step 1: Fix LegoSetPart rows that reference moved parts
+            //
+            _log("  Scanning LegoSetPart rows for moved part references...");
+            List<LegoSetPart> affectedSetParts = await _context.LegoSetParts
+                .Where(lsp => movedPartIds.Contains(lsp.brickPartId))
+                .ToListAsync();
+
+            foreach (LegoSetPart setPart in affectedSetParts)
+            {
+                if (movedPartMap.TryGetValue(setPart.brickPartId, out int resolvedId))
+                {
+                    setPart.brickPartId = resolvedId;
+                    result.SetPartsFixed++;
+                }
+            }
+
+            if (result.SetPartsFixed > 0)
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            _log($"  LegoSetPart: {result.SetPartsFixed} rows redirected to actual parts");
+
+            //
+            // Step 2: Fix BrickElement rows that reference moved parts
+            //
+            _log("  Scanning BrickElement rows for moved part references...");
+            List<BrickElement> affectedElements = await _context.BrickElements
+                .Where(be => movedPartIds.Contains(be.brickPartId))
+                .ToListAsync();
+
+            foreach (BrickElement element in affectedElements)
+            {
+                if (movedPartMap.TryGetValue(element.brickPartId, out int resolvedId))
+                {
+                    element.brickPartId = resolvedId;
+                    result.ElementsFixed++;
+                }
+            }
+
+            if (result.ElementsFixed > 0)
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            _log($"  BrickElement: {result.ElementsFixed} rows redirected to actual parts");
+
+            return result;
+        }
+
+
+        // ─────────────────────────────────────────────────
+        // Helper: Build moved part resolution map
+        // ─────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// AI-developed: Builds a dictionary that maps moved BrickPart IDs to their actual
+        /// destination part IDs.  Parses the destination from the ldrawTitle field
+        /// (e.g. "~Moved to 10a" → destination ldrawPartId "10a").
+        ///
+        /// Follows chains: if part A moved to B and B moved to C, the map resolves A → C.
+        /// Logs warnings for any unresolvable moves (destination part not found in DB).
+        ///
+        /// </summary>
+        private async Task<Dictionary<int, int>> BuildMovedPartMapAsync()
+        {
+            //
+            // Step 1: Load all moved parts from the database
+            //
+            List<BrickPart> movedParts = await _context.BrickParts
+                .Where(bp => bp.ldrawTitle.StartsWith("~Moved to "))
+                .AsNoTracking()
+                .ToListAsync();
+
+            if (movedParts.Count == 0)
+            {
+                return new Dictionary<int, int>();
+            }
+
+            _log($"  Found {movedParts.Count} moved parts to resolve");
+
+            //
+            // Step 2: Build a lookup from ldrawPartId → BrickPart.id for resolving destinations
+            //
+            Dictionary<string, int> partIdLookup = await _context.BrickParts
+                .AsNoTracking()
+                .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp.id);
+
+            //
+            // Step 3: Build the initial moved → destination map (single hop)
+            //
+            Dictionary<int, int> movedToDestination = new Dictionary<int, int>();
+            int unresolvable = 0;
+
+            foreach (BrickPart movedPart in movedParts)
+            {
+                //
+                // Parse the destination part ID from the title text.
+                // Format is "~Moved to <partId>" — extract everything after "~Moved to "
+                //
+                string destinationPartId = movedPart.ldrawTitle.Substring("~Moved to ".Length).Trim();
+
+                if (string.IsNullOrEmpty(destinationPartId))
+                {
+                    _log($"  WARN: Could not parse destination from: '{movedPart.ldrawTitle}' (part {movedPart.ldrawPartId})");
+                    unresolvable++;
+                    continue;
+                }
+
+                if (partIdLookup.TryGetValue(destinationPartId, out int destinationId))
+                {
+                    movedToDestination[movedPart.id] = destinationId;
+                }
+                else
+                {
+                    _log($"  WARN: Destination part '{destinationPartId}' not found in DB (from moved part {movedPart.ldrawPartId})");
+                    unresolvable++;
+                }
+            }
+
+            //
+            // Step 4: Follow chains — if destination is also a moved part, resolve transitively.
+            // Use a maximum depth to prevent infinite loops in case of circular references.
+            //
+            int MAX_CHAIN_DEPTH = 10;
+            int chainsFollowed = 0;
+
+            foreach (int movedId in new List<int>(movedToDestination.Keys))
+            {
+                int currentDestination = movedToDestination[movedId];
+                int depth = 0;
+
+                while (movedToDestination.ContainsKey(currentDestination) && depth < MAX_CHAIN_DEPTH)
+                {
+                    currentDestination = movedToDestination[currentDestination];
+                    depth++;
+                }
+
+                if (depth > 0)
+                {
+                    movedToDestination[movedId] = currentDestination;
+                    chainsFollowed++;
+                }
+            }
+
+            _log($"  Moved part map: {movedToDestination.Count} resolved, {chainsFollowed} chains followed, {unresolvable} unresolvable");
+
+            return movedToDestination;
+        }
+
+
+        // ─────────────────────────────────────────────────
         // Helper: Build inventory → set mapping
         // ─────────────────────────────────────────────────
 
@@ -1144,6 +1361,21 @@ namespace BMC.Rebrickable.Import
         public override string ToString()
         {
             return $"Created: {Created}, Updated: {Updated}, Skipped: {Skipped}";
+        }
+    }
+
+
+    /// <summary>
+    /// Result counters for a moved part reconciliation operation.
+    /// </summary>
+    public class ReconcileResult
+    {
+        public int SetPartsFixed;
+        public int ElementsFixed;
+
+        public override string ToString()
+        {
+            return $"SetParts fixed: {SetPartsFixed}, Elements fixed: {ElementsFixed}";
         }
     }
 }

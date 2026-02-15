@@ -122,6 +122,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="sharedInstructionService.userIsBMCSharedInstructionReader()">
+                            <button ngbNavLink>Shared Instructions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (buildManualData?.SharedInstructionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-shared-instruction-table [queryParams]="{ buildManualId: buildManualData?.id }"></app-shared-instruction-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-shared-instruction-add-edit [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-shared-instruction-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

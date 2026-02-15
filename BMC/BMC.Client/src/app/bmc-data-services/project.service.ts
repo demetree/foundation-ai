@@ -26,6 +26,7 @@ import { ProjectReferenceImageService, ProjectReferenceImageData } from './proje
 import { BuildManualService, BuildManualData } from './build-manual.service';
 import { ProjectRenderService, ProjectRenderData } from './project-render.service';
 import { ProjectExportService, ProjectExportData } from './project-export.service';
+import { PublishedMocService, PublishedMocData } from './published-moc.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -42,7 +43,7 @@ export class ProjectQueryParameters {
     notes: string | null | undefined = null;
     thumbnailImagePath: string | null | undefined = null;
     partCount: bigint | number | null | undefined = null;
-    lastBuildDate: string | null | undefined = null;        // ISO 8601
+    lastBuildDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -64,7 +65,7 @@ export class ProjectSubmitData {
     notes: string | null = null;
     thumbnailImagePath: string | null = null;
     partCount: bigint | number | null = null;
-    lastBuildDate: string | null = null;     // ISO 8601
+    lastBuildDate: string | null = null;     // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -140,7 +141,7 @@ export class ProjectData {
     notes!: string | null;
     thumbnailImagePath!: string | null;
     partCount!: bigint | number;
-    lastBuildDate!: string | null;   // ISO 8601
+    lastBuildDate!: string | null;   // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -197,6 +198,11 @@ export class ProjectData {
     private _projectExports: ProjectExportData[] | null = null;
     private _projectExportsPromise: Promise<ProjectExportData[]> | null  = null;
     private _projectExportsSubject = new BehaviorSubject<ProjectExportData[] | null>(null);
+
+                
+    private _publishedMocs: PublishedMocData[] | null = null;
+    private _publishedMocsPromise: Promise<PublishedMocData[]> | null  = null;
+    private _publishedMocsSubject = new BehaviorSubject<PublishedMocData[] | null>(null);
 
                 
 
@@ -405,6 +411,25 @@ export class ProjectData {
 
 
 
+    public PublishedMocs$ = this._publishedMocsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._publishedMocs === null && this._publishedMocsPromise === null) {
+            this.loadPublishedMocs(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public PublishedMocsCount$ = PublishedMocService.Instance.GetPublishedMocsRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -482,6 +507,10 @@ export class ProjectData {
      this._projectExports = null;
      this._projectExportsPromise = null;
      this._projectExportsSubject.next(null);
+
+     this._publishedMocs = null;
+     this._publishedMocsPromise = null;
+     this._publishedMocsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1142,6 +1171,71 @@ export class ProjectData {
     }
 
 
+    /**
+     *
+     * Gets the PublishedMocs for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.PublishedMocs.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get PublishedMocs(): Promise<PublishedMocData[]> {
+        if (this._publishedMocs !== null) {
+            return Promise.resolve(this._publishedMocs);
+        }
+
+        if (this._publishedMocsPromise !== null) {
+            return this._publishedMocsPromise;
+        }
+
+        // Start the load
+        this.loadPublishedMocs();
+
+        return this._publishedMocsPromise!;
+    }
+
+
+
+    private loadPublishedMocs(): void {
+
+        this._publishedMocsPromise = lastValueFrom(
+            ProjectService.Instance.GetPublishedMocsForProject(this.id)
+        )
+        .then(PublishedMocs => {
+            this._publishedMocs = PublishedMocs ?? [];
+            this._publishedMocsSubject.next(this._publishedMocs);
+            return this._publishedMocs;
+         })
+        .catch(err => {
+            this._publishedMocs = [];
+            this._publishedMocsSubject.next(this._publishedMocs);
+            throw err;
+        })
+        .finally(() => {
+            this._publishedMocsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached PublishedMoc. Call after mutations to force refresh.
+     */
+    public ClearPublishedMocsCache(): void {
+        this._publishedMocs = null;
+        this._publishedMocsPromise = null;
+        this._publishedMocsSubject.next(this._publishedMocs);      // Emit to observable
+    }
+
+    public get HasPublishedMocs(): Promise<boolean> {
+        return this.PublishedMocs.then(publishedMocs => publishedMocs.length > 0);
+    }
+
+
 
 
     //
@@ -1230,6 +1324,7 @@ export class ProjectService extends SecureEndpointBase {
         private buildManualService: BuildManualService,
         private projectRenderService: ProjectRenderService,
         private projectExportService: ProjectExportService,
+        private publishedMocService: PublishedMocService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1794,6 +1889,16 @@ export class ProjectService extends SecureEndpointBase {
     }
 
 
+    public GetPublishedMocsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PublishedMocData[]> {
+        return this.publishedMocService.GetPublishedMocList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ProjectData instance.
@@ -1868,6 +1973,10 @@ export class ProjectService extends SecureEndpointBase {
     (revived as any)._projectExports = null;
     (revived as any)._projectExportsPromise = null;
     (revived as any)._projectExportsSubject = new BehaviorSubject<ProjectExportData[] | null>(null);
+
+    (revived as any)._publishedMocs = null;
+    (revived as any)._publishedMocsPromise = null;
+    (revived as any)._publishedMocsSubject = new BehaviorSubject<PublishedMocData[] | null>(null);
 
 
     //
@@ -2035,6 +2144,22 @@ export class ProjectService extends SecureEndpointBase {
       );
 
     (revived as any).ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).PublishedMocs$ = (revived as any)._publishedMocsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._publishedMocs === null && (revived as any)._publishedMocsPromise === null) {
+                (revived as any).loadPublishedMocs();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).PublishedMocsCount$ = PublishedMocService.Instance.GetPublishedMocsRowCount({projectId: (revived as any).id,
       active: true,
       deleted: false
     });

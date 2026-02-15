@@ -35,7 +35,7 @@ export class ProjectRenderQueryParameters {
     outputFilePath: string | null | undefined = null;
     resolutionWidth: bigint | number | null | undefined = null;
     resolutionHeight: bigint | number | null | undefined = null;
-    renderedDate: string | null | undefined = null;        // ISO 8601
+    renderedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     renderDurationSeconds: number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -58,7 +58,7 @@ export class ProjectRenderSubmitData {
     outputFilePath: string | null = null;
     resolutionWidth: bigint | number | null = null;
     resolutionHeight: bigint | number | null = null;
-    renderedDate: string | null = null;     // ISO 8601
+    renderedDate: string | null = null;     // ISO 8601 (full datetime)
     renderDurationSeconds: number | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -115,7 +115,7 @@ export class ProjectRenderData {
     outputFilePath!: string | null;
     resolutionWidth!: bigint | number;
     resolutionHeight!: bigint | number;
-    renderedDate!: string | null;   // ISO 8601
+    renderedDate!: string | null;   // ISO 8601 (full datetime)
     renderDurationSeconds!: number | null;
     objectGuid!: string;
     active!: boolean;

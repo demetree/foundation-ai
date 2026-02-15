@@ -1,0 +1,117 @@
+<div class="add-user-profile-stat" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-profile-stat me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Profile Stat" 
+        *ngIf="userIsBMCUserProfileStatWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userProfileStatModal let-modal>
+   <div class="modal-header bg-dark text-light user-profile-stat-modal-header">
+      <h5 class="modal-title mb-0" id="userProfileStatModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Profile Stat' : 'Add User Profile Stat' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-profile-stat-modal-body">
+      <form [formGroup]="userProfileStatForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userProfileId')">
+                <label for="UserProfileStat-userProfileId" id="label-UserProfileStat-userProfileId"><span class="text-danger">*</span>User Profile</label>
+                <select id="UserProfileStat-userProfileId" formControlName="userProfileId" class="form-select user-profile-stat-select" [disabled]="!userIsBMCUserProfileStatWriter()">
+                    <option [ngValue]="null">Select User Profile</option>
+                    <option *ngFor="let userProfile of userProfiles$ | async" [ngValue]="userProfile.id">{{userProfile.displayName}}</option>
+                </select>
+                <div *ngIf="userProfileStatForm.get('userProfileId')?.invalid && userProfileStatForm.get('userProfileId')?.touched" class="text-danger">
+                    User Profile is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalPartsOwned')">
+                <label for="UserProfileStat-totalPartsOwned" id="label-UserProfileStat-totalPartsOwned"><span class="text-danger">*</span>Total Parts Owned</label>
+                <input type="number" id="UserProfileStat-totalPartsOwned" formControlName="totalPartsOwned" placeholder="Enter Total Parts Owned" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalPartsOwned" />
+                <div *ngIf="userProfileStatForm.get('totalPartsOwned')?.invalid && userProfileStatForm.get('totalPartsOwned')?.touched" class="text-danger">
+                    Total Parts Owned is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalUniquePartsOwned')">
+                <label for="UserProfileStat-totalUniquePartsOwned" id="label-UserProfileStat-totalUniquePartsOwned"><span class="text-danger">*</span>Total Unique Parts Owned</label>
+                <input type="number" id="UserProfileStat-totalUniquePartsOwned" formControlName="totalUniquePartsOwned" placeholder="Enter Total Unique Parts Owned" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalUniquePartsOwned" />
+                <div *ngIf="userProfileStatForm.get('totalUniquePartsOwned')?.invalid && userProfileStatForm.get('totalUniquePartsOwned')?.touched" class="text-danger">
+                    Total Unique Parts Owned is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalSetsOwned')">
+                <label for="UserProfileStat-totalSetsOwned" id="label-UserProfileStat-totalSetsOwned"><span class="text-danger">*</span>Total Sets Owned</label>
+                <input type="number" id="UserProfileStat-totalSetsOwned" formControlName="totalSetsOwned" placeholder="Enter Total Sets Owned" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalSetsOwned" />
+                <div *ngIf="userProfileStatForm.get('totalSetsOwned')?.invalid && userProfileStatForm.get('totalSetsOwned')?.touched" class="text-danger">
+                    Total Sets Owned is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalMocsPublished')">
+                <label for="UserProfileStat-totalMocsPublished" id="label-UserProfileStat-totalMocsPublished"><span class="text-danger">*</span>Total Mocs Published</label>
+                <input type="number" id="UserProfileStat-totalMocsPublished" formControlName="totalMocsPublished" placeholder="Enter Total Mocs Published" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalMocsPublished" />
+                <div *ngIf="userProfileStatForm.get('totalMocsPublished')?.invalid && userProfileStatForm.get('totalMocsPublished')?.touched" class="text-danger">
+                    Total Mocs Published is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalFollowers')">
+                <label for="UserProfileStat-totalFollowers" id="label-UserProfileStat-totalFollowers"><span class="text-danger">*</span>Total Followers</label>
+                <input type="number" id="UserProfileStat-totalFollowers" formControlName="totalFollowers" placeholder="Enter Total Followers" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalFollowers" />
+                <div *ngIf="userProfileStatForm.get('totalFollowers')?.invalid && userProfileStatForm.get('totalFollowers')?.touched" class="text-danger">
+                    Total Followers is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalFollowing')">
+                <label for="UserProfileStat-totalFollowing" id="label-UserProfileStat-totalFollowing"><span class="text-danger">*</span>Total Following</label>
+                <input type="number" id="UserProfileStat-totalFollowing" formControlName="totalFollowing" placeholder="Enter Total Following" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalFollowing" />
+                <div *ngIf="userProfileStatForm.get('totalFollowing')?.invalid && userProfileStatForm.get('totalFollowing')?.touched" class="text-danger">
+                    Total Following is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalLikesReceived')">
+                <label for="UserProfileStat-totalLikesReceived" id="label-UserProfileStat-totalLikesReceived"><span class="text-danger">*</span>Total Likes Received</label>
+                <input type="number" id="UserProfileStat-totalLikesReceived" formControlName="totalLikesReceived" placeholder="Enter Total Likes Received" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalLikesReceived" />
+                <div *ngIf="userProfileStatForm.get('totalLikesReceived')?.invalid && userProfileStatForm.get('totalLikesReceived')?.touched" class="text-danger">
+                    Total Likes Received is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalAchievementPoints')">
+                <label for="UserProfileStat-totalAchievementPoints" id="label-UserProfileStat-totalAchievementPoints"><span class="text-danger">*</span>Total Achievement Points</label>
+                <input type="number" id="UserProfileStat-totalAchievementPoints" formControlName="totalAchievementPoints" placeholder="Enter Total Achievement Points" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-totalAchievementPoints" />
+                <div *ngIf="userProfileStatForm.get('totalAchievementPoints')?.invalid && userProfileStatForm.get('totalAchievementPoints')?.touched" class="text-danger">
+                    Total Achievement Points is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastCalculatedDate')">
+                <label for="UserProfileStat-lastCalculatedDate" id="label-UserProfileStat-lastCalculatedDate">Last Calculated Date</label>
+                <input type="datetime-local" id="UserProfileStat-lastCalculatedDate" formControlName="lastCalculatedDate" placeholder="Enter Last Calculated Date" class="form-control user-profile-stat-input" [disabled]="!userIsBMCUserProfileStatWriter()" aria-labelledby="label-lastCalculatedDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfileStat-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfileStatWriter()" />
+                <label for="UserProfileStat-active" class="form-check-label" id="label-UserProfileStat-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfileStat-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfileStatWriter()" />
+                <label for="UserProfileStat-deleted" class="form-check-label" id="label-UserProfileStat-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-profile-stat-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Profile Stat changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfileStatForm.valid || userProfileStatForm.pristine  || userIsBMCUserProfileStatWriter() == false " ngbTooltip="Save the User Profile Stat changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Profile Stat' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

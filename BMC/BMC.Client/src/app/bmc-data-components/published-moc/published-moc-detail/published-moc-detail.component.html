@@ -1,0 +1,258 @@
+<div class="container-fluid p-1 m-0 published-moc-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="published-moc-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Published Moc</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Published Moc' : 'Add Published Moc'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCPublishedMocReader()">
+                <div class="col m-2 published-moc-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="publishedMocForm" (ngSubmit)="submitForm()" class="published-moc-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="PublishedMoc-projectId" id="label-PublishedMoc-projectId"><span class="text-danger">*</span>Project</label>
+                                <select id="PublishedMoc-projectId" formControlName="projectId" class="form-select published-moc-select" [disabled]="!userIsBMCPublishedMocWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                                <div *ngIf="publishedMocForm.get('projectId')?.invalid && publishedMocForm.get('projectId')?.touched" class="text-danger">
+                                    Project is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="PublishedMoc-name" id="label-PublishedMoc-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="PublishedMoc-name" formControlName="name" placeholder="Enter Name" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="publishedMocForm.get('name')?.invalid && publishedMocForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="PublishedMoc-description" id="label-PublishedMoc-description">Description</label>
+                                <textarea id="PublishedMoc-description" formControlName="description" placeholder="Enter Description" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('thumbnailImagePath')">
+                                <label for="PublishedMoc-thumbnailImagePath" id="label-PublishedMoc-thumbnailImagePath">Thumbnail Image Path</label>
+                                <input type="text" id="PublishedMoc-thumbnailImagePath" formControlName="thumbnailImagePath" placeholder="Enter Thumbnail Image Path" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-thumbnailImagePath" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('tags')">
+                                <label for="PublishedMoc-tags" id="label-PublishedMoc-tags">Tags</label>
+                                <textarea id="PublishedMoc-tags" formControlName="tags" placeholder="Enter Tags" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublished')">
+                                <input type="checkbox" id="PublishedMoc-isPublished" formControlName="isPublished" class="form-check-input" [disabled]="!userIsBMCPublishedMocWriter()" />
+                                <label for="PublishedMoc-isPublished" class="form-check-label" id="label-PublishedMoc-isPublished"><span class="text-danger">*</span>Is Published</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isFeatured')">
+                                <input type="checkbox" id="PublishedMoc-isFeatured" formControlName="isFeatured" class="form-check-input" [disabled]="!userIsBMCPublishedMocWriter()" />
+                                <label for="PublishedMoc-isFeatured" class="form-check-label" id="label-PublishedMoc-isFeatured"><span class="text-danger">*</span>Is Featured</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('publishedDate')">
+                                <label for="PublishedMoc-publishedDate" id="label-PublishedMoc-publishedDate">Published Date</label>
+                                <input type="datetime-local" id="PublishedMoc-publishedDate" formControlName="publishedDate" placeholder="Enter Published Date" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-publishedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('viewCount')">
+                                <label for="PublishedMoc-viewCount" id="label-PublishedMoc-viewCount"><span class="text-danger">*</span>View Count</label>
+                                <input type="number" id="PublishedMoc-viewCount" formControlName="viewCount" placeholder="Enter View Count" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-viewCount" />
+                                <div *ngIf="publishedMocForm.get('viewCount')?.invalid && publishedMocForm.get('viewCount')?.touched" class="text-danger">
+                                    View Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('likeCount')">
+                                <label for="PublishedMoc-likeCount" id="label-PublishedMoc-likeCount"><span class="text-danger">*</span>Like Count</label>
+                                <input type="number" id="PublishedMoc-likeCount" formControlName="likeCount" placeholder="Enter Like Count" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-likeCount" />
+                                <div *ngIf="publishedMocForm.get('likeCount')?.invalid && publishedMocForm.get('likeCount')?.touched" class="text-danger">
+                                    Like Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('commentCount')">
+                                <label for="PublishedMoc-commentCount" id="label-PublishedMoc-commentCount"><span class="text-danger">*</span>Comment Count</label>
+                                <input type="number" id="PublishedMoc-commentCount" formControlName="commentCount" placeholder="Enter Comment Count" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-commentCount" />
+                                <div *ngIf="publishedMocForm.get('commentCount')?.invalid && publishedMocForm.get('commentCount')?.touched" class="text-danger">
+                                    Comment Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('favouriteCount')">
+                                <label for="PublishedMoc-favouriteCount" id="label-PublishedMoc-favouriteCount"><span class="text-danger">*</span>Favourite Count</label>
+                                <input type="number" id="PublishedMoc-favouriteCount" formControlName="favouriteCount" placeholder="Enter Favourite Count" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-favouriteCount" />
+                                <div *ngIf="publishedMocForm.get('favouriteCount')?.invalid && publishedMocForm.get('favouriteCount')?.touched" class="text-danger">
+                                    Favourite Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                                <label for="PublishedMoc-partCount" id="label-PublishedMoc-partCount">Part Count</label>
+                                <input type="number" id="PublishedMoc-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-partCount" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('allowForking')">
+                                <input type="checkbox" id="PublishedMoc-allowForking" formControlName="allowForking" class="form-check-input" [disabled]="!userIsBMCPublishedMocWriter()" />
+                                <label for="PublishedMoc-allowForking" class="form-check-label" id="label-PublishedMoc-allowForking"><span class="text-danger">*</span>Allow Forking</label>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="PublishedMoc-versionNumber" id="label-PublishedMoc-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="PublishedMoc-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control published-moc-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PublishedMoc-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPublishedMocWriter()" />
+                                <label for="PublishedMoc-active" class="form-check-label" id="label-PublishedMoc-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PublishedMoc-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPublishedMocWriter()" />
+                                <label for="PublishedMoc-deleted" class="form-check-label" id="label-PublishedMoc-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="published-moc-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="publishedMocForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Published Moc">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !publishedMocForm.valid || !publishedMocForm.dirty || publishedMocForm.pristine  || userIsBMCPublishedMocWriter() == false " ngbTooltip="Save the Published Moc changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Published Moc' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCPublishedMocReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 published-moc-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="publishedMocChangeHistoryService.userIsBMCPublishedMocChangeHistoryReader()">
+                            <button ngbNavLink>Published Moc Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.PublishedMocChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-published-moc-change-history-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-published-moc-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-published-moc-change-history-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-published-moc-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="publishedMocImageService.userIsBMCPublishedMocImageReader()">
+                            <button ngbNavLink>Published Moc Images
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.PublishedMocImagesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-published-moc-image-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-published-moc-image-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-published-moc-image-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-published-moc-image-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="mocLikeService.userIsBMCMocLikeReader()">
+                            <button ngbNavLink>Moc Likes
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.MocLikesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-moc-like-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-moc-like-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-moc-like-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-like-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="mocCommentService.userIsBMCMocCommentReader()">
+                            <button ngbNavLink>Moc Comments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.MocCommentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-moc-comment-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-moc-comment-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-moc-comment-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-comment-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="mocFavouriteService.userIsBMCMocFavouriteReader()">
+                            <button ngbNavLink>Moc Favourites
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.MocFavouritesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-moc-favourite-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-moc-favourite-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-moc-favourite-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-favourite-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="sharedInstructionService.userIsBMCSharedInstructionReader()">
+                            <button ngbNavLink>Shared Instructions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.SharedInstructionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-shared-instruction-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-shared-instruction-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-shared-instruction-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-shared-instruction-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="buildChallengeEntryService.userIsBMCBuildChallengeEntryReader()">
+                            <button ngbNavLink>Build Challenge Entries
+                                <span class="badge bg-primary ms-2">
+                                    {{ (publishedMocData?.BuildChallengeEntriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-challenge-entry-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-build-challenge-entry-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-build-challenge-entry-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-build-challenge-entry-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

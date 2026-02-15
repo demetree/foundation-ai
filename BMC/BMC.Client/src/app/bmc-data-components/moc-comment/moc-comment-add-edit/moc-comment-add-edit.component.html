@@ -1,0 +1,93 @@
+<div class="add-moc-comment" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-moc-comment me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Moc Comment" 
+        *ngIf="userIsBMCMocCommentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #mocCommentModal let-modal>
+   <div class="modal-header bg-dark text-light moc-comment-modal-header">
+      <h5 class="modal-title mb-0" id="mocCommentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Moc Comment' : 'Add Moc Comment' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body moc-comment-modal-body">
+      <form [formGroup]="mocCommentForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                <label for="MocComment-publishedMocId" id="label-MocComment-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                <select id="MocComment-publishedMocId" formControlName="publishedMocId" class="form-select moc-comment-select" [disabled]="!userIsBMCMocCommentWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+                <div *ngIf="mocCommentForm.get('publishedMocId')?.invalid && mocCommentForm.get('publishedMocId')?.touched" class="text-danger">
+                    Published Moc is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('commenterTenantGuid')">
+                <label for="MocComment-commenterTenantGuid" id="label-MocComment-commenterTenantGuid"><span class="text-danger">*</span>Commenter Tenant Guid</label>
+                <input type="text" id="MocComment-commenterTenantGuid" formControlName="commenterTenantGuid" placeholder="Enter Commenter Tenant Guid" class="form-control moc-comment-input" [disabled]="!userIsBMCMocCommentWriter()" aria-labelledby="label-commenterTenantGuid" />
+                <div *ngIf="mocCommentForm.get('commenterTenantGuid')?.invalid && mocCommentForm.get('commenterTenantGuid')?.touched" class="text-danger">
+                    Commenter Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('commentText')">
+                <label for="MocComment-commentText" id="label-MocComment-commentText"><span class="text-danger">*</span>Comment Text</label>
+                <textarea id="MocComment-commentText" formControlName="commentText" placeholder="Enter Comment Text" class="form-control moc-comment-input" [disabled]="!userIsBMCMocCommentWriter()"></textarea>
+                <div *ngIf="mocCommentForm.get('commentText')?.invalid && mocCommentForm.get('commentText')?.touched" class="text-danger">
+                    Comment Text is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postedDate')">
+                <label for="MocComment-postedDate" id="label-MocComment-postedDate"><span class="text-danger">*</span>Posted Date</label>
+                <input type="datetime-local" id="MocComment-postedDate" formControlName="postedDate" placeholder="Enter Posted Date" class="form-control moc-comment-input" [disabled]="!userIsBMCMocCommentWriter()" aria-labelledby="label-postedDate" />
+                <div *ngIf="mocCommentForm.get('postedDate')?.invalid && mocCommentForm.get('postedDate')?.touched" class="text-danger">
+                    Posted Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('mocCommentId')">
+                <label for="MocComment-mocCommentId" id="label-MocComment-mocCommentId">Moc Comment</label>
+                <select id="MocComment-mocCommentId" formControlName="mocCommentId" class="form-select moc-comment-select" [disabled]="!userIsBMCMocCommentWriter()">
+                    <option [ngValue]="null">Select Moc Comment</option>
+                    <option *ngFor="let mocComment of mocComments$ | async" [ngValue]="mocComment.id">{{mocComment.commentText}}</option>
+                </select>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isEdited')">
+                <input type="checkbox" id="MocComment-isEdited" formControlName="isEdited" class="form-check-input" [disabled]="!userIsBMCMocCommentWriter()" />
+                <label for="MocComment-isEdited" class="form-check-label" id="label-MocComment-isEdited"><span class="text-danger">*</span>Is Edited</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isHidden')">
+                <input type="checkbox" id="MocComment-isHidden" formControlName="isHidden" class="form-check-input" [disabled]="!userIsBMCMocCommentWriter()" />
+                <label for="MocComment-isHidden" class="form-check-label" id="label-MocComment-isHidden"><span class="text-danger">*</span>Is Hidden</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MocComment-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocCommentWriter()" />
+                <label for="MocComment-active" class="form-check-label" id="label-MocComment-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MocComment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMocCommentWriter()" />
+                <label for="MocComment-deleted" class="form-check-label" id="label-MocComment-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer moc-comment-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Moc Comment changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocCommentForm.valid || mocCommentForm.pristine  || userIsBMCMocCommentWriter() == false " ngbTooltip="Save the Moc Comment changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Moc Comment' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -26,6 +26,7 @@ import { BuildManualService, BuildManualData, BuildManualSubmitData } from '../.
 import { ProjectService } from '../../../bmc-data-services/project.service';
 import { BuildManualChangeHistoryService } from '../../../bmc-data-services/build-manual-change-history.service';
 import { BuildManualPageService } from '../../../bmc-data-services/build-manual-page.service';
+import { SharedInstructionService } from '../../../bmc-data-services/shared-instruction.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -99,6 +100,7 @@ export class BuildManualDetailComponent implements OnInit, CanComponentDeactivat
   public projects$ = this.projectService.GetProjectList();
   public buildManualChangeHistories$ = this.buildManualChangeHistoryService.GetBuildManualChangeHistoryList();
   public buildManualPages$ = this.buildManualPageService.GetBuildManualPageList();
+  public sharedInstructions$ = this.sharedInstructionService.GetSharedInstructionList();
 
   private destroy$ = new Subject<void>();
 
@@ -107,6 +109,7 @@ export class BuildManualDetailComponent implements OnInit, CanComponentDeactivat
     public projectService: ProjectService,
     public buildManualChangeHistoryService: BuildManualChangeHistoryService,
     public buildManualPageService: BuildManualPageService,
+    public sharedInstructionService: SharedInstructionService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

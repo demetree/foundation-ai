@@ -1,0 +1,72 @@
+<div class="container-fluid p-1 m-0 moc-like-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="moc-like-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Moc Like</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Moc Like' : 'Add Moc Like'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCMocLikeReader()">
+                <div class="col m-2 moc-like-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="mocLikeForm" (ngSubmit)="submitForm()" class="moc-like-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                                <label for="MocLike-publishedMocId" id="label-MocLike-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                                <select id="MocLike-publishedMocId" formControlName="publishedMocId" class="form-select moc-like-select" [disabled]="!userIsBMCMocLikeWriter()">
+                                    <option [ngValue]="null">Select Published Moc</option>
+                                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                                </select>
+                                <div *ngIf="mocLikeForm.get('publishedMocId')?.invalid && mocLikeForm.get('publishedMocId')?.touched" class="text-danger">
+                                    Published Moc is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('likerTenantGuid')">
+                                <label for="MocLike-likerTenantGuid" id="label-MocLike-likerTenantGuid"><span class="text-danger">*</span>Liker Tenant Guid</label>
+                                <input type="text" id="MocLike-likerTenantGuid" formControlName="likerTenantGuid" placeholder="Enter Liker Tenant Guid" class="form-control moc-like-input" [disabled]="!userIsBMCMocLikeWriter()" aria-labelledby="label-likerTenantGuid" />
+                                <div *ngIf="mocLikeForm.get('likerTenantGuid')?.invalid && mocLikeForm.get('likerTenantGuid')?.touched" class="text-danger">
+                                    Liker Tenant Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('likedDate')">
+                                <label for="MocLike-likedDate" id="label-MocLike-likedDate"><span class="text-danger">*</span>Liked Date</label>
+                                <input type="datetime-local" id="MocLike-likedDate" formControlName="likedDate" placeholder="Enter Liked Date" class="form-control moc-like-input" [disabled]="!userIsBMCMocLikeWriter()" aria-labelledby="label-likedDate" />
+                                <div *ngIf="mocLikeForm.get('likedDate')?.invalid && mocLikeForm.get('likedDate')?.touched" class="text-danger">
+                                    Liked Date is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MocLike-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocLikeWriter()" />
+                                <label for="MocLike-active" class="form-check-label" id="label-MocLike-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MocLike-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMocLikeWriter()" />
+                                <label for="MocLike-deleted" class="form-check-label" id="label-MocLike-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="moc-like-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="mocLikeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Moc Like">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocLikeForm.valid || !mocLikeForm.dirty || mocLikeForm.pristine  || userIsBMCMocLikeWriter() == false " ngbTooltip="Save the Moc Like changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Moc Like' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

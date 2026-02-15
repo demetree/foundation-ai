@@ -470,9 +470,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 				return Forbid();
 			}
 
-			if (legoMinifig.name != null && legoMinifig.name.Length > 100)
+			if (legoMinifig.name != null && legoMinifig.name.Length > 500)
 			{
-				legoMinifig.name = legoMinifig.name.Substring(0, 100);
+				legoMinifig.name = legoMinifig.name.Substring(0, 500);
 			}
 
 			if (legoMinifig.figNumber != null && legoMinifig.figNumber.Length > 100)
@@ -556,9 +556,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			try
 			{
-				if (legoMinifig.name != null && legoMinifig.name.Length > 100)
+				if (legoMinifig.name != null && legoMinifig.name.Length > 500)
 				{
-					legoMinifig.name = legoMinifig.name.Substring(0, 100);
+					legoMinifig.name = legoMinifig.name.Substring(0, 500);
 				}
 
 				if (legoMinifig.figNumber != null && legoMinifig.figNumber.Length > 100)

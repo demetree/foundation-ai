@@ -1,0 +1,69 @@
+<div class="add-user-profile-link-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-profile-link-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Profile Link Type" 
+        *ngIf="userIsBMCUserProfileLinkTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userProfileLinkTypeModal let-modal>
+   <div class="modal-header bg-dark text-light user-profile-link-type-modal-header">
+      <h5 class="modal-title mb-0" id="userProfileLinkTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Profile Link Type' : 'Add User Profile Link Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-profile-link-type-modal-body">
+      <form [formGroup]="userProfileLinkTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="UserProfileLinkType-name" id="label-UserProfileLinkType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="UserProfileLinkType-name" formControlName="name" placeholder="Enter Name" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="userProfileLinkTypeForm.get('name')?.invalid && userProfileLinkTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="UserProfileLinkType-description" id="label-UserProfileLinkType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="UserProfileLinkType-description" formControlName="description" placeholder="Enter Description" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()"></textarea>
+                <div *ngIf="userProfileLinkTypeForm.get('description')?.invalid && userProfileLinkTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconCssClass')">
+                <label for="UserProfileLinkType-iconCssClass" id="label-UserProfileLinkType-iconCssClass">Icon Css Class</label>
+                <input type="text" id="UserProfileLinkType-iconCssClass" formControlName="iconCssClass" placeholder="Enter Icon Css Class" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" aria-labelledby="label-iconCssClass" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="UserProfileLinkType-sequence" id="label-UserProfileLinkType-sequence">Sequence</label>
+                <input type="number" id="UserProfileLinkType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control user-profile-link-type-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfileLinkType-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" />
+                <label for="UserProfileLinkType-active" class="form-check-label" id="label-UserProfileLinkType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfileLinkType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfileLinkTypeWriter()" />
+                <label for="UserProfileLinkType-deleted" class="form-check-label" id="label-UserProfileLinkType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-profile-link-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Profile Link Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfileLinkTypeForm.valid || userProfileLinkTypeForm.pristine  || userIsBMCUserProfileLinkTypeWriter() == false " ngbTooltip="Save the User Profile Link Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Profile Link Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

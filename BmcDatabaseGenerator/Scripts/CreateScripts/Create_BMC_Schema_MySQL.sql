@@ -10,6 +10,37 @@ CREATE DATABASE `BMC`;
 USE `BMC`;
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE `ApiRequestLog`
+-- DROP TABLE `ApiKey`
+-- DROP TABLE `PlatformAnnouncement`
+-- DROP TABLE `ModerationAction`
+-- DROP TABLE `ContentReport`
+-- DROP TABLE `ContentReportReason`
+-- DROP TABLE `BuildChallengeEntry`
+-- DROP TABLE `BuildChallengeChangeHistory`
+-- DROP TABLE `BuildChallenge`
+-- DROP TABLE `UserBadgeAssignment`
+-- DROP TABLE `UserBadge`
+-- DROP TABLE `UserAchievement`
+-- DROP TABLE `Achievement`
+-- DROP TABLE `AchievementCategory`
+-- DROP TABLE `SharedInstructionChangeHistory`
+-- DROP TABLE `SharedInstruction`
+-- DROP TABLE `MocFavourite`
+-- DROP TABLE `MocComment`
+-- DROP TABLE `MocLike`
+-- DROP TABLE `PublishedMocImage`
+-- DROP TABLE `PublishedMocChangeHistory`
+-- DROP TABLE `PublishedMoc`
+-- DROP TABLE `ActivityEvent`
+-- DROP TABLE `ActivityEventType`
+-- DROP TABLE `UserFollow`
+-- DROP TABLE `UserProfileStat`
+-- DROP TABLE `UserSetOwnership`
+-- DROP TABLE `UserProfileLink`
+-- DROP TABLE `UserProfileLinkType`
+-- DROP TABLE `UserProfileChangeHistory`
+-- DROP TABLE `UserProfile`
 -- DROP TABLE `ProjectExport`
 -- DROP TABLE `ExportFormat`
 -- DROP TABLE `ProjectRender`
@@ -57,6 +88,37 @@ USE `BMC`;
 -- DROP TABLE `BrickCategory`
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON `ApiRequestLog` DISABLE
+-- ALTER INDEX ALL ON `ApiKey` DISABLE
+-- ALTER INDEX ALL ON `PlatformAnnouncement` DISABLE
+-- ALTER INDEX ALL ON `ModerationAction` DISABLE
+-- ALTER INDEX ALL ON `ContentReport` DISABLE
+-- ALTER INDEX ALL ON `ContentReportReason` DISABLE
+-- ALTER INDEX ALL ON `BuildChallengeEntry` DISABLE
+-- ALTER INDEX ALL ON `BuildChallengeChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `BuildChallenge` DISABLE
+-- ALTER INDEX ALL ON `UserBadgeAssignment` DISABLE
+-- ALTER INDEX ALL ON `UserBadge` DISABLE
+-- ALTER INDEX ALL ON `UserAchievement` DISABLE
+-- ALTER INDEX ALL ON `Achievement` DISABLE
+-- ALTER INDEX ALL ON `AchievementCategory` DISABLE
+-- ALTER INDEX ALL ON `SharedInstructionChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `SharedInstruction` DISABLE
+-- ALTER INDEX ALL ON `MocFavourite` DISABLE
+-- ALTER INDEX ALL ON `MocComment` DISABLE
+-- ALTER INDEX ALL ON `MocLike` DISABLE
+-- ALTER INDEX ALL ON `PublishedMocImage` DISABLE
+-- ALTER INDEX ALL ON `PublishedMocChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `PublishedMoc` DISABLE
+-- ALTER INDEX ALL ON `ActivityEvent` DISABLE
+-- ALTER INDEX ALL ON `ActivityEventType` DISABLE
+-- ALTER INDEX ALL ON `UserFollow` DISABLE
+-- ALTER INDEX ALL ON `UserProfileStat` DISABLE
+-- ALTER INDEX ALL ON `UserSetOwnership` DISABLE
+-- ALTER INDEX ALL ON `UserProfileLink` DISABLE
+-- ALTER INDEX ALL ON `UserProfileLinkType` DISABLE
+-- ALTER INDEX ALL ON `UserProfileChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `UserProfile` DISABLE
 -- ALTER INDEX ALL ON `ProjectExport` DISABLE
 -- ALTER INDEX ALL ON `ExportFormat` DISABLE
 -- ALTER INDEX ALL ON `ProjectRender` DISABLE
@@ -104,6 +166,37 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `BrickCategory` DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON `ApiRequestLog` REBUILD
+-- ALTER INDEX ALL ON `ApiKey` REBUILD
+-- ALTER INDEX ALL ON `PlatformAnnouncement` REBUILD
+-- ALTER INDEX ALL ON `ModerationAction` REBUILD
+-- ALTER INDEX ALL ON `ContentReport` REBUILD
+-- ALTER INDEX ALL ON `ContentReportReason` REBUILD
+-- ALTER INDEX ALL ON `BuildChallengeEntry` REBUILD
+-- ALTER INDEX ALL ON `BuildChallengeChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `BuildChallenge` REBUILD
+-- ALTER INDEX ALL ON `UserBadgeAssignment` REBUILD
+-- ALTER INDEX ALL ON `UserBadge` REBUILD
+-- ALTER INDEX ALL ON `UserAchievement` REBUILD
+-- ALTER INDEX ALL ON `Achievement` REBUILD
+-- ALTER INDEX ALL ON `AchievementCategory` REBUILD
+-- ALTER INDEX ALL ON `SharedInstructionChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `SharedInstruction` REBUILD
+-- ALTER INDEX ALL ON `MocFavourite` REBUILD
+-- ALTER INDEX ALL ON `MocComment` REBUILD
+-- ALTER INDEX ALL ON `MocLike` REBUILD
+-- ALTER INDEX ALL ON `PublishedMocImage` REBUILD
+-- ALTER INDEX ALL ON `PublishedMocChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `PublishedMoc` REBUILD
+-- ALTER INDEX ALL ON `ActivityEvent` REBUILD
+-- ALTER INDEX ALL ON `ActivityEventType` REBUILD
+-- ALTER INDEX ALL ON `UserFollow` REBUILD
+-- ALTER INDEX ALL ON `UserProfileStat` REBUILD
+-- ALTER INDEX ALL ON `UserSetOwnership` REBUILD
+-- ALTER INDEX ALL ON `UserProfileLink` REBUILD
+-- ALTER INDEX ALL ON `UserProfileLinkType` REBUILD
+-- ALTER INDEX ALL ON `UserProfileChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `UserProfile` REBUILD
 -- ALTER INDEX ALL ON `ProjectExport` REBUILD
 -- ALTER INDEX ALL ON `ExportFormat` REBUILD
 -- ALTER INDEX ALL ON `ProjectRender` REBUILD
@@ -1611,5 +1704,929 @@ CREATE INDEX `I_ProjectExport_tenantGuid_active` ON `ProjectExport` (`tenantGuid
 
 -- Index on the ProjectExport table's tenantGuid,deleted fields.
 CREATE INDEX `I_ProjectExport_tenantGuid_deleted` ON `ProjectExport` (`tenantGuid`, `deleted`);
+
+
+-- Public builder profile for community features. One profile per tenant (user). Decoupled from Foundation user/tenant tables to keep BMC concerns independent.
+CREATE TABLE `UserProfile`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`displayName` VARCHAR(100) NOT NULL,		-- Public display name shown in the community (distinct from auth username)
+	`bio` TEXT NULL,		-- Free-form biography / about-me text
+	`location` VARCHAR(100) NULL,		-- User's declared location (city, country, or free-form)
+	`avatarImagePath` VARCHAR(250) NULL,		-- Relative path to the user's avatar image
+	`profileBannerImagePath` VARCHAR(250) NULL,		-- Relative path to the profile banner/cover image
+	`websiteUrl` VARCHAR(250) NULL,		-- Optional personal website or portfolio URL
+	`isPublic` BIT NOT NULL DEFAULT 1,		-- Whether this profile is visible to unauthenticated visitors
+	`memberSinceDate` DATETIME NULL,		-- Date the user first created their profile (for display purposes)
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the UserProfile table's tenantGuid field.
+CREATE INDEX `I_UserProfile_tenantGuid` ON `UserProfile` (`tenantGuid`);
+
+-- Index on the UserProfile table's tenantGuid,active fields.
+CREATE INDEX `I_UserProfile_tenantGuid_active` ON `UserProfile` (`tenantGuid`, `active`);
+
+-- Index on the UserProfile table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserProfile_tenantGuid_deleted` ON `UserProfile` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the UserProfile table.
+CREATE TABLE `UserProfileChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userProfileId` INT NOT NULL,		-- Link to the UserProfile table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`userProfileId`) REFERENCES `UserProfile`(`id`)		-- Foreign key to the UserProfile table.
+);
+-- Index on the UserProfileChangeHistory table's tenantGuid field.
+CREATE INDEX `I_UserProfileChangeHistory_tenantGuid` ON `UserProfileChangeHistory` (`tenantGuid`);
+
+-- Index on the UserProfileChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_UserProfileChangeHistory_tenantGuid_versionNumber` ON `UserProfileChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the UserProfileChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_UserProfileChangeHistory_tenantGuid_timeStamp` ON `UserProfileChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the UserProfileChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_UserProfileChangeHistory_tenantGuid_userId` ON `UserProfileChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the UserProfileChangeHistory table's tenantGuid,userProfileId fields.
+CREATE INDEX `I_UserProfileChangeHistory_tenantGuid_userProfileId` ON `UserProfileChangeHistory` (`tenantGuid`, `userProfileId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Lookup table of external link types a user can add to their profile (e.g. BrickLink Store, Flickr, YouTube, Instagram, Rebrickable).
+CREATE TABLE `UserProfileLinkType`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`iconCssClass` VARCHAR(100) NULL,		-- CSS class for the link type icon (e.g. 'fab fa-youtube')
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the UserProfileLinkType table's name field.
+CREATE INDEX `I_UserProfileLinkType_name` ON `UserProfileLinkType` (`name`);
+
+-- Index on the UserProfileLinkType table's active field.
+CREATE INDEX `I_UserProfileLinkType_active` ON `UserProfileLinkType` (`active`);
+
+-- Index on the UserProfileLinkType table's deleted field.
+CREATE INDEX `I_UserProfileLinkType_deleted` ON `UserProfileLinkType` (`deleted`);
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'BrickLink Store', 'Link to the user''s BrickLink seller store', 'fas fa-store', 1, 'a0100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Rebrickable', 'Link to the user''s Rebrickable profile', 'fas fa-cubes', 2, 'a0100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Flickr', 'Link to the user''s Flickr photostream', 'fab fa-flickr', 3, 'a0100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'YouTube', 'Link to the user''s YouTube channel', 'fab fa-youtube', 4, 'a0100001-0001-4000-8000-000000000004' );
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Instagram', 'Link to the user''s Instagram profile', 'fab fa-instagram', 5, 'a0100001-0001-4000-8000-000000000005' );
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Personal Website', 'Link to the user''s personal website or blog', 'fas fa-globe', 6, 'a0100001-0001-4000-8000-000000000006' );
+
+INSERT INTO `UserProfileLinkType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Eurobricks', 'Link to the user''s Eurobricks forum profile', 'fas fa-comments', 7, 'a0100001-0001-4000-8000-000000000007' );
+
+
+-- External links displayed on a user's public profile (BrickLink store, Flickr, YouTube, etc.).
+CREATE TABLE `UserProfileLink`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userProfileId` INT NOT NULL,		-- The profile this link belongs to
+	`userProfileLinkTypeId` INT NOT NULL,		-- The type of link (BrickLink, YouTube, etc.)
+	`url` VARCHAR(500) NOT NULL,		-- The full URL to the external resource
+	`displayLabel` VARCHAR(100) NULL,		-- Optional custom label to display instead of the URL (e.g. 'My BL Store')
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`userProfileId`) REFERENCES `UserProfile`(`id`),		-- Foreign key to the UserProfile table.
+	FOREIGN KEY (`userProfileLinkTypeId`) REFERENCES `UserProfileLinkType`(`id`)		-- Foreign key to the UserProfileLinkType table.
+);
+-- Index on the UserProfileLink table's tenantGuid field.
+CREATE INDEX `I_UserProfileLink_tenantGuid` ON `UserProfileLink` (`tenantGuid`);
+
+-- Index on the UserProfileLink table's tenantGuid,userProfileId fields.
+CREATE INDEX `I_UserProfileLink_tenantGuid_userProfileId` ON `UserProfileLink` (`tenantGuid`, `userProfileId`);
+
+-- Index on the UserProfileLink table's tenantGuid,userProfileLinkTypeId fields.
+CREATE INDEX `I_UserProfileLink_tenantGuid_userProfileLinkTypeId` ON `UserProfileLink` (`tenantGuid`, `userProfileLinkTypeId`);
+
+-- Index on the UserProfileLink table's tenantGuid,active fields.
+CREATE INDEX `I_UserProfileLink_tenantGuid_active` ON `UserProfileLink` (`tenantGuid`, `active`);
+
+-- Index on the UserProfileLink table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserProfileLink_tenantGuid_deleted` ON `UserProfileLink` (`tenantGuid`, `deleted`);
+
+
+-- Tracks a user's relationship with official LEGO sets for their collector showcase. Distinct from UserCollectionSetImport which tracks parts inventory.
+CREATE TABLE `UserSetOwnership`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`legoSetId` INT NOT NULL,		-- The official LEGO set
+	`status` VARCHAR(50) NOT NULL,		-- Ownership status: Owned, Built, Wanted, WishList, ForDisplay, ForSale
+	`acquiredDate` DATETIME NULL,		-- Date the user acquired this set (null if unknown or wanted)
+	`personalRating` INT NULL,		-- User's personal rating of the set (1-5 stars, null if not rated)
+	`notes` TEXT NULL,		-- Free-form notes about this set (e.g. condition, where purchased, modifications)
+	`quantity` INT NOT NULL DEFAULT 1,		-- Number of copies owned
+	`isPublic` BIT NOT NULL DEFAULT 1,		-- Whether this ownership record is visible on the user's public profile
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`legoSetId`) REFERENCES `LegoSet`(`id`),		-- Foreign key to the LegoSet table.
+	UNIQUE `UC_UserSetOwnership_tenantGuid_legoSetId_Unique`( `tenantGuid`, `legoSetId` ) 		-- Uniqueness enforced on the UserSetOwnership table's tenantGuid and legoSetId fields.
+);
+-- Index on the UserSetOwnership table's tenantGuid field.
+CREATE INDEX `I_UserSetOwnership_tenantGuid` ON `UserSetOwnership` (`tenantGuid`);
+
+-- Index on the UserSetOwnership table's tenantGuid,legoSetId fields.
+CREATE INDEX `I_UserSetOwnership_tenantGuid_legoSetId` ON `UserSetOwnership` (`tenantGuid`, `legoSetId`);
+
+-- Index on the UserSetOwnership table's tenantGuid,active fields.
+CREATE INDEX `I_UserSetOwnership_tenantGuid_active` ON `UserSetOwnership` (`tenantGuid`, `active`);
+
+-- Index on the UserSetOwnership table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserSetOwnership_tenantGuid_deleted` ON `UserSetOwnership` (`tenantGuid`, `deleted`);
+
+
+-- Cached aggregate statistics for a user's profile. Periodically recalculated by background worker to avoid expensive real-time queries.
+CREATE TABLE `UserProfileStat`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userProfileId` INT NOT NULL,		-- The profile these stats belong to
+	`totalPartsOwned` INT NOT NULL DEFAULT 0,		-- Total number of individual parts across all collections
+	`totalUniquePartsOwned` INT NOT NULL DEFAULT 0,		-- Total number of unique part+colour combinations owned
+	`totalSetsOwned` INT NOT NULL DEFAULT 0,		-- Total number of sets with Owned or Built status
+	`totalMocsPublished` INT NOT NULL DEFAULT 0,		-- Total number of MOCs published to the gallery
+	`totalFollowers` INT NOT NULL DEFAULT 0,		-- Number of users following this profile
+	`totalFollowing` INT NOT NULL DEFAULT 0,		-- Number of users this profile is following
+	`totalLikesReceived` INT NOT NULL DEFAULT 0,		-- Total likes received across all published MOCs
+	`totalAchievementPoints` INT NOT NULL DEFAULT 0,		-- Sum of achievement point values earned
+	`lastCalculatedDate` DATETIME NULL,		-- When these stats were last recalculated by the background worker
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`userProfileId`) REFERENCES `UserProfile`(`id`)		-- Foreign key to the UserProfile table.
+);
+-- Index on the UserProfileStat table's tenantGuid field.
+CREATE INDEX `I_UserProfileStat_tenantGuid` ON `UserProfileStat` (`tenantGuid`);
+
+-- Index on the UserProfileStat table's tenantGuid,userProfileId fields.
+CREATE INDEX `I_UserProfileStat_tenantGuid_userProfileId` ON `UserProfileStat` (`tenantGuid`, `userProfileId`);
+
+-- Index on the UserProfileStat table's tenantGuid,active fields.
+CREATE INDEX `I_UserProfileStat_tenantGuid_active` ON `UserProfileStat` (`tenantGuid`, `active`);
+
+-- Index on the UserProfileStat table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserProfileStat_tenantGuid_deleted` ON `UserProfileStat` (`tenantGuid`, `deleted`);
+
+
+-- Follow relationships between users. A follower subscribes to activity updates from the followed user.
+CREATE TABLE `UserFollow`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`followerTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the user who is following
+	`followedTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the user being followed
+	`followedDate` DATETIME NOT NULL,		-- Date/time the follow relationship was created
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_UserFollow_followerTenantGuid_followedTenantGuid_Unique`( `followerTenantGuid`, `followedTenantGuid` ) 		-- Uniqueness enforced on the UserFollow table's followerTenantGuid and followedTenantGuid fields.
+);
+-- Index on the UserFollow table's active field.
+CREATE INDEX `I_UserFollow_active` ON `UserFollow` (`active`);
+
+-- Index on the UserFollow table's deleted field.
+CREATE INDEX `I_UserFollow_deleted` ON `UserFollow` (`deleted`);
+
+
+-- Lookup table of activity event types that appear in users' activity feeds.
+CREATE TABLE `ActivityEventType`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`iconCssClass` VARCHAR(100) NULL,		-- CSS class for the event type icon in the activity feed
+	`accentColor` VARCHAR(10) NULL,		-- Optional accent colour for this event type in the feed
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the ActivityEventType table's name field.
+CREATE INDEX `I_ActivityEventType_name` ON `ActivityEventType` (`name`);
+
+-- Index on the ActivityEventType table's active field.
+CREATE INDEX `I_ActivityEventType_active` ON `ActivityEventType` (`active`);
+
+-- Index on the ActivityEventType table's deleted field.
+CREATE INDEX `I_ActivityEventType_deleted` ON `ActivityEventType` (`deleted`);
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'PublishedMoc', 'User published a MOC to the gallery', 'fas fa-rocket', 1, 'ae100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'AddedSet', 'User added a set to their collection', 'fas fa-box-open', 2, 'ae100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'EarnedAchievement', 'User earned an achievement', 'fas fa-trophy', 3, 'ae100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'JoinedChallenge', 'User submitted an entry to a build challenge', 'fas fa-flag-checkered', 4, 'ae100001-0001-4000-8000-000000000004' );
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'SharedInstruction', 'User published build instructions', 'fas fa-book', 5, 'ae100001-0001-4000-8000-000000000005' );
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'CollectionMilestone', 'User reached a collection milestone', 'fas fa-gem', 6, 'ae100001-0001-4000-8000-000000000006' );
+
+INSERT INTO `ActivityEventType` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'FollowedUser', 'User followed another builder', 'fas fa-user-plus', 7, 'ae100001-0001-4000-8000-000000000007' );
+
+
+-- Individual activity feed events generated by user actions. Used to build the community activity feed and individual user activity histories.
+CREATE TABLE `ActivityEvent`(
+	`id` BIGINT PRIMARY KEY NOT NULL,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`activityEventTypeId` INT NOT NULL,		-- The type of activity event
+	`title` VARCHAR(250) NOT NULL,		-- Short display title for the event (e.g. 'Published Technic Crane MOC')
+	`description` TEXT NULL,		-- Optional longer description or context for the event
+	`relatedEntityType` VARCHAR(100) NULL,		-- Type name of the related entity (e.g. 'PublishedMoc', 'LegoSet', 'Achievement')
+	`relatedEntityId` BIGINT NULL,		-- ID of the related entity for deep linking (null if not applicable)
+	`eventDate` DATETIME NOT NULL,		-- Date/time the activity occurred
+	`isPublic` BIT NOT NULL DEFAULT 1,		-- Whether this event is visible on the public activity feed
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`activityEventTypeId`) REFERENCES `ActivityEventType`(`id`)		-- Foreign key to the ActivityEventType table.
+);
+-- Index on the ActivityEvent table's tenantGuid field.
+CREATE INDEX `I_ActivityEvent_tenantGuid` ON `ActivityEvent` (`tenantGuid`);
+
+-- Index on the ActivityEvent table's tenantGuid,activityEventTypeId fields.
+CREATE INDEX `I_ActivityEvent_tenantGuid_activityEventTypeId` ON `ActivityEvent` (`tenantGuid`, `activityEventTypeId`);
+
+-- Index on the ActivityEvent table's tenantGuid,active fields.
+CREATE INDEX `I_ActivityEvent_tenantGuid_active` ON `ActivityEvent` (`tenantGuid`, `active`);
+
+-- Index on the ActivityEvent table's tenantGuid,deleted fields.
+CREATE INDEX `I_ActivityEvent_tenantGuid_deleted` ON `ActivityEvent` (`tenantGuid`, `deleted`);
+
+
+-- A MOC (My Own Creation) published to the community gallery. Links to the underlying project for parts list and 3D model data.
+CREATE TABLE `PublishedMoc`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`projectId` INT NOT NULL,		-- The underlying project containing the model data
+	`name` VARCHAR(100) NOT NULL,		-- Public-facing title of the MOC
+	`description` TEXT NULL,		-- Rich description of the MOC, build story, or design notes
+	`thumbnailImagePath` VARCHAR(250) NULL,		-- Relative path to the primary thumbnail image
+	`tags` TEXT NULL,		-- Comma-separated tags for search and categorization (e.g. 'technic, crane, vehicle')
+	`isPublished` BIT NOT NULL DEFAULT 0,		-- Whether this MOC is visible in the public gallery (draft vs published)
+	`isFeatured` BIT NOT NULL DEFAULT 0,		-- Whether this MOC is featured / editor's pick (set by moderators)
+	`publishedDate` DATETIME NULL,		-- Date/time the MOC was first published
+	`viewCount` INT NOT NULL DEFAULT 0,		-- Number of times this MOC has been viewed
+	`likeCount` INT NOT NULL DEFAULT 0,		-- Cached like count for fast sorting and display
+	`commentCount` INT NOT NULL DEFAULT 0,		-- Cached comment count for fast display
+	`favouriteCount` INT NOT NULL DEFAULT 0,		-- Cached favourite/bookmark count for fast display
+	`partCount` INT NULL,		-- Cached total part count from the underlying project
+	`allowForking` BIT NOT NULL DEFAULT 1,		-- Whether other users can fork (copy) this MOC as a starting point
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`),		-- Foreign key to the Project table.
+	UNIQUE `UC_PublishedMoc_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the PublishedMoc table's tenantGuid and name fields.
+);
+-- Index on the PublishedMoc table's tenantGuid field.
+CREATE INDEX `I_PublishedMoc_tenantGuid` ON `PublishedMoc` (`tenantGuid`);
+
+-- Index on the PublishedMoc table's tenantGuid,projectId fields.
+CREATE INDEX `I_PublishedMoc_tenantGuid_projectId` ON `PublishedMoc` (`tenantGuid`, `projectId`);
+
+-- Index on the PublishedMoc table's tenantGuid,name fields.
+CREATE INDEX `I_PublishedMoc_tenantGuid_name` ON `PublishedMoc` (`tenantGuid`, `name`);
+
+-- Index on the PublishedMoc table's tenantGuid,active fields.
+CREATE INDEX `I_PublishedMoc_tenantGuid_active` ON `PublishedMoc` (`tenantGuid`, `active`);
+
+-- Index on the PublishedMoc table's tenantGuid,deleted fields.
+CREATE INDEX `I_PublishedMoc_tenantGuid_deleted` ON `PublishedMoc` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the PublishedMoc table.
+CREATE TABLE `PublishedMocChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`publishedMocId` INT NOT NULL,		-- Link to the PublishedMoc table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`)		-- Foreign key to the PublishedMoc table.
+);
+-- Index on the PublishedMocChangeHistory table's tenantGuid field.
+CREATE INDEX `I_PublishedMocChangeHistory_tenantGuid` ON `PublishedMocChangeHistory` (`tenantGuid`);
+
+-- Index on the PublishedMocChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_PublishedMocChangeHistory_tenantGuid_versionNumber` ON `PublishedMocChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the PublishedMocChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_PublishedMocChangeHistory_tenantGuid_timeStamp` ON `PublishedMocChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the PublishedMocChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_PublishedMocChangeHistory_tenantGuid_userId` ON `PublishedMocChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the PublishedMocChangeHistory table's tenantGuid,publishedMocId fields.
+CREATE INDEX `I_PublishedMocChangeHistory_tenantGuid_publishedMocId` ON `PublishedMocChangeHistory` (`tenantGuid`, `publishedMocId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Additional gallery images for a published MOC. The thumbnail is on the PublishedMoc itself; these are supplementary views and renders.
+CREATE TABLE `PublishedMocImage`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`publishedMocId` INT NOT NULL,		-- The published MOC this image belongs to
+	`imagePath` VARCHAR(250) NOT NULL,		-- Relative path to the image file
+	`caption` VARCHAR(250) NULL,		-- Optional caption describing the image or the angle shown
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`)		-- Foreign key to the PublishedMoc table.
+);
+-- Index on the PublishedMocImage table's tenantGuid field.
+CREATE INDEX `I_PublishedMocImage_tenantGuid` ON `PublishedMocImage` (`tenantGuid`);
+
+-- Index on the PublishedMocImage table's tenantGuid,publishedMocId fields.
+CREATE INDEX `I_PublishedMocImage_tenantGuid_publishedMocId` ON `PublishedMocImage` (`tenantGuid`, `publishedMocId`);
+
+-- Index on the PublishedMocImage table's tenantGuid,active fields.
+CREATE INDEX `I_PublishedMocImage_tenantGuid_active` ON `PublishedMocImage` (`tenantGuid`, `active`);
+
+-- Index on the PublishedMocImage table's tenantGuid,deleted fields.
+CREATE INDEX `I_PublishedMocImage_tenantGuid_deleted` ON `PublishedMocImage` (`tenantGuid`, `deleted`);
+
+
+-- User likes on published MOCs. One like per user per MOC.
+CREATE TABLE `MocLike`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`publishedMocId` INT NOT NULL,		-- The MOC being liked
+	`likerTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the user who liked
+	`likedDate` DATETIME NOT NULL,		-- Date/time the like was registered
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`),		-- Foreign key to the PublishedMoc table.
+	UNIQUE `UC_MocLike_publishedMocId_likerTenantGuid_Unique`( `publishedMocId`, `likerTenantGuid` ) 		-- Uniqueness enforced on the MocLike table's publishedMocId and likerTenantGuid fields.
+);
+-- Index on the MocLike table's publishedMocId field.
+CREATE INDEX `I_MocLike_publishedMocId` ON `MocLike` (`publishedMocId`);
+
+-- Index on the MocLike table's active field.
+CREATE INDEX `I_MocLike_active` ON `MocLike` (`active`);
+
+-- Index on the MocLike table's deleted field.
+CREATE INDEX `I_MocLike_deleted` ON `MocLike` (`deleted`);
+
+
+-- User comments on published MOCs. Supports threaded replies via self-referencing parent FK.
+CREATE TABLE `MocComment`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`publishedMocId` INT NOT NULL,		-- The MOC being commented on
+	`commenterTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the user who posted the comment
+	`commentText` TEXT NOT NULL,		-- The comment content
+	`postedDate` DATETIME NOT NULL,		-- Date/time the comment was posted
+	`mocCommentId` INT NULL,		-- Optional parent comment for threaded replies (null = top-level comment)
+	`isEdited` BIT NOT NULL DEFAULT 0,		-- Whether this comment has been edited after posting
+	`isHidden` BIT NOT NULL DEFAULT 0,		-- Whether this comment has been hidden by a moderator
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`),		-- Foreign key to the PublishedMoc table.
+	FOREIGN KEY (`mocCommentId`) REFERENCES `MocComment`(`id`)		-- Foreign key to the MocComment table.
+);
+-- Index on the MocComment table's publishedMocId field.
+CREATE INDEX `I_MocComment_publishedMocId` ON `MocComment` (`publishedMocId`);
+
+-- Index on the MocComment table's mocCommentId field.
+CREATE INDEX `I_MocComment_mocCommentId` ON `MocComment` (`mocCommentId`);
+
+-- Index on the MocComment table's active field.
+CREATE INDEX `I_MocComment_active` ON `MocComment` (`active`);
+
+-- Index on the MocComment table's deleted field.
+CREATE INDEX `I_MocComment_deleted` ON `MocComment` (`deleted`);
+
+
+-- User's favourited (bookmarked) MOCs for quick access. Separate from likes — favourites are private bookmarks, likes are public endorsements.
+CREATE TABLE `MocFavourite`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`publishedMocId` INT NOT NULL,		-- The MOC being favourited
+	`userTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the user who favourited
+	`favouritedDate` DATETIME NOT NULL,		-- Date/time the favourite was added
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`),		-- Foreign key to the PublishedMoc table.
+	UNIQUE `UC_MocFavourite_publishedMocId_userTenantGuid_Unique`( `publishedMocId`, `userTenantGuid` ) 		-- Uniqueness enforced on the MocFavourite table's publishedMocId and userTenantGuid fields.
+);
+-- Index on the MocFavourite table's publishedMocId field.
+CREATE INDEX `I_MocFavourite_publishedMocId` ON `MocFavourite` (`publishedMocId`);
+
+-- Index on the MocFavourite table's active field.
+CREATE INDEX `I_MocFavourite_active` ON `MocFavourite` (`active`);
+
+-- Index on the MocFavourite table's deleted field.
+CREATE INDEX `I_MocFavourite_deleted` ON `MocFavourite` (`deleted`);
+
+
+-- Published instruction manuals shared with the community. Can be BMC-native format (linked to BuildManual), uploaded PDF, or image-based.
+CREATE TABLE `SharedInstruction`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`buildManualId` INT NULL,		-- Optional link to a BMC-native BuildManual (null for uploaded PDF/image instructions)
+	`publishedMocId` INT NULL,		-- Optional link to the published MOC these instructions are for
+	`name` VARCHAR(100) NOT NULL,		-- Public-facing title of the instruction document
+	`description` TEXT NULL,		-- Description of what these instructions cover
+	`formatType` VARCHAR(50) NOT NULL,		-- Format of the instruction: BMCNative, PDF, ImageSet
+	`filePath` VARCHAR(250) NULL,		-- Relative path to the instruction file (PDF) or folder (image set). Null for BMC-native.
+	`isPublished` BIT NOT NULL DEFAULT 0,		-- Whether these instructions are visible in the community
+	`publishedDate` DATETIME NULL,		-- Date/time the instructions were first published
+	`downloadCount` INT NOT NULL DEFAULT 0,		-- Number of times these instructions have been downloaded
+	`pageCount` INT NULL,		-- Total number of pages (for display purposes)
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`buildManualId`) REFERENCES `BuildManual`(`id`),		-- Foreign key to the BuildManual table.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`),		-- Foreign key to the PublishedMoc table.
+	UNIQUE `UC_SharedInstruction_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the SharedInstruction table's tenantGuid and name fields.
+);
+-- Index on the SharedInstruction table's tenantGuid field.
+CREATE INDEX `I_SharedInstruction_tenantGuid` ON `SharedInstruction` (`tenantGuid`);
+
+-- Index on the SharedInstruction table's tenantGuid,buildManualId fields.
+CREATE INDEX `I_SharedInstruction_tenantGuid_buildManualId` ON `SharedInstruction` (`tenantGuid`, `buildManualId`);
+
+-- Index on the SharedInstruction table's tenantGuid,publishedMocId fields.
+CREATE INDEX `I_SharedInstruction_tenantGuid_publishedMocId` ON `SharedInstruction` (`tenantGuid`, `publishedMocId`);
+
+-- Index on the SharedInstruction table's tenantGuid,name fields.
+CREATE INDEX `I_SharedInstruction_tenantGuid_name` ON `SharedInstruction` (`tenantGuid`, `name`);
+
+-- Index on the SharedInstruction table's tenantGuid,active fields.
+CREATE INDEX `I_SharedInstruction_tenantGuid_active` ON `SharedInstruction` (`tenantGuid`, `active`);
+
+-- Index on the SharedInstruction table's tenantGuid,deleted fields.
+CREATE INDEX `I_SharedInstruction_tenantGuid_deleted` ON `SharedInstruction` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the SharedInstruction table.
+CREATE TABLE `SharedInstructionChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`sharedInstructionId` INT NOT NULL,		-- Link to the SharedInstruction table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`sharedInstructionId`) REFERENCES `SharedInstruction`(`id`)		-- Foreign key to the SharedInstruction table.
+);
+-- Index on the SharedInstructionChangeHistory table's tenantGuid field.
+CREATE INDEX `I_SharedInstructionChangeHistory_tenantGuid` ON `SharedInstructionChangeHistory` (`tenantGuid`);
+
+-- Index on the SharedInstructionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_SharedInstructionChangeHistory_tenantGuid_versionNumber` ON `SharedInstructionChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the SharedInstructionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_SharedInstructionChangeHistory_tenantGuid_timeStamp` ON `SharedInstructionChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the SharedInstructionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_SharedInstructionChangeHistory_tenantGuid_userId` ON `SharedInstructionChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the SharedInstructionChangeHistory table's tenantGuid,sharedInstructionId fields.
+CREATE INDEX `I_SharedInstructionChangeHistory_tenantGuid_sharedInstructionId` ON `SharedInstructionChangeHistory` (`tenantGuid`, `sharedInstructionId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Groups of achievements for organization and display (e.g. Collection, Building, Social, Exploration).
+CREATE TABLE `AchievementCategory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`iconCssClass` VARCHAR(100) NULL,		-- CSS class for the category icon
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the AchievementCategory table's name field.
+CREATE INDEX `I_AchievementCategory_name` ON `AchievementCategory` (`name`);
+
+-- Index on the AchievementCategory table's active field.
+CREATE INDEX `I_AchievementCategory_active` ON `AchievementCategory` (`active`);
+
+-- Index on the AchievementCategory table's deleted field.
+CREATE INDEX `I_AchievementCategory_deleted` ON `AchievementCategory` (`deleted`);
+
+INSERT INTO `AchievementCategory` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Collection', 'Achievements related to building and managing your parts collection', 'fas fa-cubes', 1, 'ac100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `AchievementCategory` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Building', 'Achievements related to creating and publishing MOCs', 'fas fa-hammer', 2, 'ac100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `AchievementCategory` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Social', 'Achievements related to community engagement and social interactions', 'fas fa-users', 3, 'ac100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `AchievementCategory` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Exploration', 'Achievements related to exploring the parts catalog and set database', 'fas fa-compass', 4, 'ac100001-0001-4000-8000-000000000004' );
+
+INSERT INTO `AchievementCategory` ( `name`, `description`, `iconCssClass`, `sequence`, `objectGuid` ) VALUES  ( 'Challenge', 'Achievements earned by competing in build challenges', 'fas fa-medal', 5, 'ac100001-0001-4000-8000-000000000005' );
+
+
+-- Individual achievement definitions. Each achievement has criteria, point value, and rarity classification.
+CREATE TABLE `Achievement`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`achievementCategoryId` INT NOT NULL,		-- The category this achievement belongs to
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`iconCssClass` VARCHAR(100) NULL,		-- CSS class for the achievement icon/badge
+	`iconImagePath` VARCHAR(250) NULL,		-- Optional path to a custom badge image (overrides CSS icon)
+	`criteria` TEXT NULL,		-- Human-readable description of how to earn this achievement
+	`criteriaCode` VARCHAR(250) NULL,		-- Machine-readable criteria code for automatic detection (e.g. 'parts_owned >= 10000')
+	`pointValue` INT NOT NULL DEFAULT 10,		-- Point value when earned — contributes to the user's total achievement score
+	`rarity` VARCHAR(50) NOT NULL,		-- Rarity classification: Common, Uncommon, Rare, Epic, Legendary
+	`isActive` BIT NOT NULL DEFAULT 1,		-- Whether this achievement can currently be earned
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`achievementCategoryId`) REFERENCES `AchievementCategory`(`id`)		-- Foreign key to the AchievementCategory table.
+);
+-- Index on the Achievement table's achievementCategoryId field.
+CREATE INDEX `I_Achievement_achievementCategoryId` ON `Achievement` (`achievementCategoryId`);
+
+-- Index on the Achievement table's name field.
+CREATE INDEX `I_Achievement_name` ON `Achievement` (`name`);
+
+-- Index on the Achievement table's active field.
+CREATE INDEX `I_Achievement_active` ON `Achievement` (`active`);
+
+-- Index on the Achievement table's deleted field.
+CREATE INDEX `I_Achievement_deleted` ON `Achievement` (`deleted`);
+
+INSERT INTO `Achievement` ( `name`, `description`, `iconCssClass`, `criteria`, `criteriaCode`, `pointValue`, `rarity`, `isActive`, `sequence`, `achievementCategoryId`, `objectGuid` ) VALUES  ( 'First Brick', 'Added your first part to your collection', 'fas fa-cube', 'Add at least 1 part to any collection', 'parts_owned >= 1', 5, 'Common', true, 1, ( SELECT id FROM `AchievementCategory` WHERE `name` = 'Collection' LIMIT 1 ), 'a1100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `Achievement` ( `name`, `description`, `iconCssClass`, `criteria`, `criteriaCode`, `pointValue`, `rarity`, `isActive`, `sequence`, `achievementCategoryId`, `objectGuid` ) VALUES  ( 'Brick Enthusiast', 'Own 1,000 parts across all collections', 'fas fa-cubes', 'Total parts owned reaches 1,000', 'parts_owned >= 1000', 25, 'Uncommon', true, 2, ( SELECT id FROM `AchievementCategory` WHERE `name` = 'Collection' LIMIT 1 ), 'a1100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `Achievement` ( `name`, `description`, `iconCssClass`, `criteria`, `criteriaCode`, `pointValue`, `rarity`, `isActive`, `sequence`, `achievementCategoryId`, `objectGuid` ) VALUES  ( 'Brick Master', 'Own 10,000 parts across all collections', 'fas fa-warehouse', 'Total parts owned reaches 10,000', 'parts_owned >= 10000', 100, 'Rare', true, 3, ( SELECT id FROM `AchievementCategory` WHERE `name` = 'Collection' LIMIT 1 ), 'a1100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `Achievement` ( `name`, `description`, `iconCssClass`, `criteria`, `criteriaCode`, `pointValue`, `rarity`, `isActive`, `sequence`, `achievementCategoryId`, `objectGuid` ) VALUES  ( 'First Creation', 'Published your first MOC to the gallery', 'fas fa-rocket', 'Publish at least 1 MOC to the gallery', 'mocs_published >= 1', 15, 'Common', true, 10, ( SELECT id FROM `AchievementCategory` WHERE `name` = 'Building' LIMIT 1 ), 'a1100001-0001-4000-8000-000000000010' );
+
+INSERT INTO `Achievement` ( `name`, `description`, `iconCssClass`, `criteria`, `criteriaCode`, `pointValue`, `rarity`, `isActive`, `sequence`, `achievementCategoryId`, `objectGuid` ) VALUES  ( 'Community Builder', 'Gained 10 followers', 'fas fa-user-friends', 'Reach 10 followers on your profile', 'followers >= 10', 20, 'Uncommon', true, 20, ( SELECT id FROM `AchievementCategory` WHERE `name` = 'Social' LIMIT 1 ), 'a1100001-0001-4000-8000-000000000020' );
+
+
+-- Records of achievements earned by users. Created when a user meets an achievement's criteria.
+CREATE TABLE `UserAchievement`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`achievementId` INT NOT NULL,		-- The achievement earned
+	`earnedDate` DATETIME NOT NULL,		-- Date/time the achievement was earned
+	`isDisplayed` BIT NOT NULL DEFAULT 1,		-- Whether this achievement is displayed on the user's public profile showcase
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`achievementId`) REFERENCES `Achievement`(`id`),		-- Foreign key to the Achievement table.
+	UNIQUE `UC_UserAchievement_tenantGuid_achievementId_Unique`( `tenantGuid`, `achievementId` ) 		-- Uniqueness enforced on the UserAchievement table's tenantGuid and achievementId fields.
+);
+-- Index on the UserAchievement table's tenantGuid field.
+CREATE INDEX `I_UserAchievement_tenantGuid` ON `UserAchievement` (`tenantGuid`);
+
+-- Index on the UserAchievement table's tenantGuid,achievementId fields.
+CREATE INDEX `I_UserAchievement_tenantGuid_achievementId` ON `UserAchievement` (`tenantGuid`, `achievementId`);
+
+-- Index on the UserAchievement table's tenantGuid,active fields.
+CREATE INDEX `I_UserAchievement_tenantGuid_active` ON `UserAchievement` (`tenantGuid`, `active`);
+
+-- Index on the UserAchievement table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserAchievement_tenantGuid_deleted` ON `UserAchievement` (`tenantGuid`, `deleted`);
+
+
+-- Special display badges that can be awarded to users by moderators or earned through special events. Displayed prominently on user profiles.
+CREATE TABLE `UserBadge`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`iconCssClass` VARCHAR(100) NULL,		-- CSS class for the badge icon
+	`iconImagePath` VARCHAR(250) NULL,		-- Optional path to a custom badge image
+	`badgeColor` VARCHAR(10) NULL,		-- Optional accent colour for the badge display
+	`isAutomatic` BIT NOT NULL DEFAULT 0,		-- Whether this badge is automatically awarded (vs. manually by moderators)
+	`automaticCriteriaCode` VARCHAR(250) NULL,		-- Machine-readable criteria for automatic badges (null for manual badges)
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the UserBadge table's name field.
+CREATE INDEX `I_UserBadge_name` ON `UserBadge` (`name`);
+
+-- Index on the UserBadge table's active field.
+CREATE INDEX `I_UserBadge_active` ON `UserBadge` (`active`);
+
+-- Index on the UserBadge table's deleted field.
+CREATE INDEX `I_UserBadge_deleted` ON `UserBadge` (`deleted`);
+
+INSERT INTO `UserBadge` ( `name`, `description`, `iconCssClass`, `isAutomatic`, `sequence`, `objectGuid` ) VALUES  ( 'Early Adopter', 'Joined the BMC community during the early access period', 'fas fa-star', false, 1, 'ab100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `UserBadge` ( `name`, `description`, `iconCssClass`, `isAutomatic`, `sequence`, `objectGuid` ) VALUES  ( 'Verified Builder', 'Identity verified by the BMC team', 'fas fa-check-circle', false, 2, 'ab100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `UserBadge` ( `name`, `description`, `iconCssClass`, `isAutomatic`, `sequence`, `objectGuid` ) VALUES  ( 'Top Contributor', 'One of the most active community contributors this month', 'fas fa-crown', false, 3, 'ab100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `UserBadge` ( `name`, `description`, `iconCssClass`, `isAutomatic`, `sequence`, `objectGuid` ) VALUES  ( 'Challenge Winner', 'Won a community build challenge', 'fas fa-award', false, 4, 'ab100001-0001-4000-8000-000000000004' );
+
+INSERT INTO `UserBadge` ( `name`, `description`, `iconCssClass`, `isAutomatic`, `sequence`, `objectGuid` ) VALUES  ( 'Moderator', 'Community moderator trusted to help maintain quality', 'fas fa-shield-alt', false, 5, 'ab100001-0001-4000-8000-000000000005' );
+
+
+-- Maps badges to users. A badge can be awarded multiple times conceptually, but one unique assignment per user per badge.
+CREATE TABLE `UserBadgeAssignment`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userBadgeId` INT NOT NULL,		-- The badge awarded
+	`awardedDate` DATETIME NOT NULL,		-- Date/time the badge was awarded
+	`awardedByTenantGuid` CHAR(38) NULL,		-- Tenant GUID of the moderator who awarded the badge (null for automatic badges)
+	`reason` TEXT NULL,		-- Optional reason or context for awarding the badge
+	`isDisplayed` BIT NOT NULL DEFAULT 1,		-- Whether this badge is displayed on the user's profile
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`userBadgeId`) REFERENCES `UserBadge`(`id`),		-- Foreign key to the UserBadge table.
+	UNIQUE `UC_UserBadgeAssignment_tenantGuid_userBadgeId_Unique`( `tenantGuid`, `userBadgeId` ) 		-- Uniqueness enforced on the UserBadgeAssignment table's tenantGuid and userBadgeId fields.
+);
+-- Index on the UserBadgeAssignment table's tenantGuid field.
+CREATE INDEX `I_UserBadgeAssignment_tenantGuid` ON `UserBadgeAssignment` (`tenantGuid`);
+
+-- Index on the UserBadgeAssignment table's tenantGuid,userBadgeId fields.
+CREATE INDEX `I_UserBadgeAssignment_tenantGuid_userBadgeId` ON `UserBadgeAssignment` (`tenantGuid`, `userBadgeId`);
+
+-- Index on the UserBadgeAssignment table's tenantGuid,active fields.
+CREATE INDEX `I_UserBadgeAssignment_tenantGuid_active` ON `UserBadgeAssignment` (`tenantGuid`, `active`);
+
+-- Index on the UserBadgeAssignment table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserBadgeAssignment_tenantGuid_deleted` ON `UserBadgeAssignment` (`tenantGuid`, `deleted`);
+
+
+-- Community build challenges with themes, rules, and time windows. Created by moderators or admins.
+CREATE TABLE `BuildChallenge`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,		-- Title of the challenge (e.g. 'Under 100 Parts Technic Vehicle')
+	`description` TEXT NULL,		-- Full description of the challenge theme and goals
+	`rules` TEXT NULL,		-- Detailed rules and constraints for entries
+	`thumbnailImagePath` VARCHAR(250) NULL,		-- Promotional image for the challenge
+	`startDate` DATETIME NOT NULL,		-- When submissions open
+	`endDate` DATETIME NOT NULL,		-- When submissions close
+	`votingEndDate` DATETIME NULL,		-- When community voting closes (null if no voting period)
+	`isActive` BIT NOT NULL DEFAULT 1,		-- Whether this challenge is currently active and accepting entries
+	`isFeatured` BIT NOT NULL DEFAULT 0,		-- Whether this challenge should be prominently displayed on the landing page
+	`entryCount` INT NOT NULL DEFAULT 0,		-- Cached count of submitted entries
+	`maxPartsLimit` INT NULL,		-- Optional maximum part count constraint for entries (null = no limit)
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the BuildChallenge table's name field.
+CREATE INDEX `I_BuildChallenge_name` ON `BuildChallenge` (`name`);
+
+-- Index on the BuildChallenge table's active field.
+CREATE INDEX `I_BuildChallenge_active` ON `BuildChallenge` (`active`);
+
+-- Index on the BuildChallenge table's deleted field.
+CREATE INDEX `I_BuildChallenge_deleted` ON `BuildChallenge` (`deleted`);
+
+
+-- The change history for records from the BuildChallenge table.
+CREATE TABLE `BuildChallengeChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`buildChallengeId` INT NOT NULL,		-- Link to the BuildChallenge table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`buildChallengeId`) REFERENCES `BuildChallenge`(`id`)		-- Foreign key to the BuildChallenge table.
+);
+-- Index on the BuildChallengeChangeHistory table's versionNumber field.
+CREATE INDEX `I_BuildChallengeChangeHistory_versionNumber` ON `BuildChallengeChangeHistory` (`versionNumber`);
+
+-- Index on the BuildChallengeChangeHistory table's timeStamp field.
+CREATE INDEX `I_BuildChallengeChangeHistory_timeStamp` ON `BuildChallengeChangeHistory` (`timeStamp`);
+
+-- Index on the BuildChallengeChangeHistory table's userId field.
+CREATE INDEX `I_BuildChallengeChangeHistory_userId` ON `BuildChallengeChangeHistory` (`userId`);
+
+-- Index on the BuildChallengeChangeHistory table's buildChallengeId field.
+CREATE INDEX `I_BuildChallengeChangeHistory_buildChallengeId` ON `BuildChallengeChangeHistory` (`buildChallengeId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- User-submitted entries into a build challenge. Links to a published MOC.
+CREATE TABLE `BuildChallengeEntry`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`buildChallengeId` INT NOT NULL,		-- The challenge being entered
+	`publishedMocId` INT NOT NULL,		-- The published MOC submitted as an entry
+	`submittedDate` DATETIME NOT NULL,		-- Date/time the entry was submitted
+	`entryNotes` TEXT NULL,		-- Optional notes from the builder about their entry
+	`voteCount` INT NOT NULL DEFAULT 0,		-- Cached community vote count
+	`isWinner` BIT NOT NULL DEFAULT 0,		-- Whether this entry was selected as a winner
+	`isDisqualified` BIT NOT NULL DEFAULT 0,		-- Whether this entry was disqualified by moderators
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`buildChallengeId`) REFERENCES `BuildChallenge`(`id`),		-- Foreign key to the BuildChallenge table.
+	FOREIGN KEY (`publishedMocId`) REFERENCES `PublishedMoc`(`id`),		-- Foreign key to the PublishedMoc table.
+	UNIQUE `UC_BuildChallengeEntry_tenantGuid_buildChallengeId_Unique`( `tenantGuid`, `buildChallengeId` ) 		-- Uniqueness enforced on the BuildChallengeEntry table's tenantGuid and buildChallengeId fields.
+);
+-- Index on the BuildChallengeEntry table's tenantGuid field.
+CREATE INDEX `I_BuildChallengeEntry_tenantGuid` ON `BuildChallengeEntry` (`tenantGuid`);
+
+-- Index on the BuildChallengeEntry table's tenantGuid,buildChallengeId fields.
+CREATE INDEX `I_BuildChallengeEntry_tenantGuid_buildChallengeId` ON `BuildChallengeEntry` (`tenantGuid`, `buildChallengeId`);
+
+-- Index on the BuildChallengeEntry table's tenantGuid,publishedMocId fields.
+CREATE INDEX `I_BuildChallengeEntry_tenantGuid_publishedMocId` ON `BuildChallengeEntry` (`tenantGuid`, `publishedMocId`);
+
+-- Index on the BuildChallengeEntry table's tenantGuid,active fields.
+CREATE INDEX `I_BuildChallengeEntry_tenantGuid_active` ON `BuildChallengeEntry` (`tenantGuid`, `active`);
+
+-- Index on the BuildChallengeEntry table's tenantGuid,deleted fields.
+CREATE INDEX `I_BuildChallengeEntry_tenantGuid_deleted` ON `BuildChallengeEntry` (`tenantGuid`, `deleted`);
+
+
+-- Lookup table of reasons a user can report community content (Spam, Inappropriate, Copyright, etc.).
+CREATE TABLE `ContentReportReason`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the ContentReportReason table's name field.
+CREATE INDEX `I_ContentReportReason_name` ON `ContentReportReason` (`name`);
+
+-- Index on the ContentReportReason table's active field.
+CREATE INDEX `I_ContentReportReason_active` ON `ContentReportReason` (`active`);
+
+-- Index on the ContentReportReason table's deleted field.
+CREATE INDEX `I_ContentReportReason_deleted` ON `ContentReportReason` (`deleted`);
+
+INSERT INTO `ContentReportReason` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Spam', 'Content is spam, advertising, or promotional', 1, 'c4100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `ContentReportReason` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Inappropriate', 'Content is offensive, vulgar, or inappropriate', 2, 'c4100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `ContentReportReason` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Copyright', 'Content violates copyright or intellectual property', 3, 'c4100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `ContentReportReason` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Harassment', 'Content constitutes harassment or bullying', 4, 'c4100001-0001-4000-8000-000000000004' );
+
+INSERT INTO `ContentReportReason` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Misinformation', 'Content contains misleading or false information', 5, 'c4100001-0001-4000-8000-000000000005' );
+
+INSERT INTO `ContentReportReason` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Other', 'Other reason not covered above', 99, 'c4100001-0001-4000-8000-000000000099' );
+
+
+-- User-submitted reports of problematic community content. Reviewed by moderators via the BMC Admin project.
+CREATE TABLE `ContentReport`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`contentReportReasonId` INT NOT NULL,		-- The reason for the report
+	`reporterTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the user submitting the report
+	`reportedEntityType` VARCHAR(100) NOT NULL,		-- Type of the reported content (e.g. 'PublishedMoc', 'MocComment', 'UserProfile')
+	`reportedEntityId` BIGINT NOT NULL,		-- ID of the reported entity
+	`description` TEXT NULL,		-- Additional details provided by the reporter
+	`status` VARCHAR(50) NOT NULL,		-- Report status: Pending, UnderReview, Dismissed, ActionTaken
+	`reportedDate` DATETIME NOT NULL,		-- Date/time the report was submitted
+	`reviewedDate` DATETIME NULL,		-- Date/time a moderator reviewed the report (null if pending)
+	`reviewerTenantGuid` CHAR(38) NULL,		-- Tenant GUID of the moderator who reviewed (null if pending)
+	`reviewNotes` TEXT NULL,		-- Moderator notes on the review decision
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`contentReportReasonId`) REFERENCES `ContentReportReason`(`id`)		-- Foreign key to the ContentReportReason table.
+);
+-- Index on the ContentReport table's contentReportReasonId field.
+CREATE INDEX `I_ContentReport_contentReportReasonId` ON `ContentReport` (`contentReportReasonId`);
+
+-- Index on the ContentReport table's active field.
+CREATE INDEX `I_ContentReport_active` ON `ContentReport` (`active`);
+
+-- Index on the ContentReport table's deleted field.
+CREATE INDEX `I_ContentReport_deleted` ON `ContentReport` (`deleted`);
+
+
+-- Audit log of actions taken by moderators. Immutable record for accountability.
+CREATE TABLE `ModerationAction`(
+	`id` BIGINT PRIMARY KEY NOT NULL,
+	`moderatorTenantGuid` CHAR(38) NOT NULL,		-- Tenant GUID of the moderator who took the action
+	`actionType` VARCHAR(100) NOT NULL,		-- Type of action: Warning, ContentRemoved, ContentHidden, UserSuspended, UserBanned, BadgeAwarded
+	`targetTenantGuid` CHAR(38) NULL,		-- Tenant GUID of the user the action was taken against (null for content-only actions)
+	`targetEntityType` VARCHAR(100) NULL,		-- Type of the target entity (e.g. 'PublishedMoc', 'MocComment', 'UserProfile')
+	`targetEntityId` BIGINT NULL,		-- ID of the target entity (null for user-level actions)
+	`reason` TEXT NULL,		-- Reason for the moderation action
+	`actionDate` DATETIME NOT NULL,		-- Date/time the action was taken
+	`contentReportId` INT NULL,		-- Optional link to the content report that triggered this action
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`contentReportId`) REFERENCES `ContentReport`(`id`)		-- Foreign key to the ContentReport table.
+);
+-- Index on the ModerationAction table's contentReportId field.
+CREATE INDEX `I_ModerationAction_contentReportId` ON `ModerationAction` (`contentReportId`);
+
+-- Index on the ModerationAction table's active field.
+CREATE INDEX `I_ModerationAction_active` ON `ModerationAction` (`active`);
+
+-- Index on the ModerationAction table's deleted field.
+CREATE INDEX `I_ModerationAction_deleted` ON `ModerationAction` (`deleted`);
+
+
+-- Admin-created announcements displayed on the public landing page and/or dashboard. Time-windowed with priority ordering.
+CREATE TABLE `PlatformAnnouncement`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,		-- Announcement headline/title
+	`body` TEXT NULL,		-- Full announcement content (supports markdown or HTML)
+	`announcementType` VARCHAR(50) NULL,		-- Type for styling: Info, Warning, Celebration, Maintenance
+	`startDate` DATETIME NOT NULL,		-- When the announcement becomes visible
+	`endDate` DATETIME NULL,		-- When the announcement expires (null = no expiry)
+	`isActive` BIT NOT NULL DEFAULT 1,		-- Whether the announcement is currently active
+	`priority` INT NOT NULL DEFAULT 0,		-- Display priority (higher = more prominent)
+	`showOnLandingPage` BIT NOT NULL DEFAULT 1,		-- Whether to show on the public landing page
+	`showOnDashboard` BIT NOT NULL DEFAULT 1,		-- Whether to show on the authenticated user dashboard
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the PlatformAnnouncement table's name field.
+CREATE INDEX `I_PlatformAnnouncement_name` ON `PlatformAnnouncement` (`name`);
+
+-- Index on the PlatformAnnouncement table's active field.
+CREATE INDEX `I_PlatformAnnouncement_active` ON `PlatformAnnouncement` (`active`);
+
+-- Index on the PlatformAnnouncement table's deleted field.
+CREATE INDEX `I_PlatformAnnouncement_deleted` ON `PlatformAnnouncement` (`deleted`);
+
+
+-- API keys issued to users or external integrators for accessing the BMC Public API. Keys are stored as hashes for security.
+CREATE TABLE `ApiKey`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`keyHash` VARCHAR(250) NOT NULL,		-- SHA-256 hash of the API key (the plain key is shown once at creation, then discarded)
+	`keyPrefix` VARCHAR(100) NOT NULL,		-- First 8 characters of the key for identification without exposing the full key
+	`name` VARCHAR(100) NOT NULL,		-- User-defined name for the key (e.g. 'My BrickLink Integration')
+	`description` TEXT NULL,		-- Optional description of what this key is used for
+	`isActive` BIT NOT NULL DEFAULT 1,		-- Whether this key is active and can authenticate requests
+	`createdDate` DATETIME NOT NULL,		-- Date/time the key was created
+	`lastUsedDate` DATETIME NULL,		-- Date/time the key was last used to make a request
+	`expiresDate` DATETIME NULL,		-- Optional expiry date (null = no expiry)
+	`rateLimitPerHour` INT NOT NULL DEFAULT 1000,		-- Maximum API requests allowed per hour with this key
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_ApiKey_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the ApiKey table's tenantGuid and name fields.
+);
+-- Index on the ApiKey table's tenantGuid field.
+CREATE INDEX `I_ApiKey_tenantGuid` ON `ApiKey` (`tenantGuid`);
+
+-- Index on the ApiKey table's tenantGuid,name fields.
+CREATE INDEX `I_ApiKey_tenantGuid_name` ON `ApiKey` (`tenantGuid`, `name`);
+
+-- Index on the ApiKey table's tenantGuid,active fields.
+CREATE INDEX `I_ApiKey_tenantGuid_active` ON `ApiKey` (`tenantGuid`, `active`);
+
+-- Index on the ApiKey table's tenantGuid,deleted fields.
+CREATE INDEX `I_ApiKey_tenantGuid_deleted` ON `ApiKey` (`tenantGuid`, `deleted`);
+
+
+-- Audit log of requests made through the BMC Public API. Used for rate limiting, usage analytics, and abuse detection.
+CREATE TABLE `ApiRequestLog`(
+	`id` BIGINT PRIMARY KEY NOT NULL,
+	`apiKeyId` INT NOT NULL,		-- The API key used for this request
+	`endpoint` VARCHAR(250) NOT NULL,		-- The API endpoint that was called (e.g. '/api/v1/parts/3001')
+	`httpMethod` VARCHAR(10) NOT NULL,		-- HTTP method (GET, POST, PUT, DELETE)
+	`responseStatus` INT NOT NULL,		-- HTTP response status code (200, 401, 429, etc.)
+	`requestDate` DATETIME NOT NULL,		-- Date/time of the request
+	`durationMs` INT NULL,		-- Request processing duration in milliseconds
+	`clientIpAddress` VARCHAR(100) NULL,		-- IP address of the client making the request
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`apiKeyId`) REFERENCES `ApiKey`(`id`)		-- Foreign key to the ApiKey table.
+);
+-- Index on the ApiRequestLog table's apiKeyId field.
+CREATE INDEX `I_ApiRequestLog_apiKeyId` ON `ApiRequestLog` (`apiKeyId`);
+
+-- Index on the ApiRequestLog table's active field.
+CREATE INDEX `I_ApiRequestLog_active` ON `ApiRequestLog` (`active`);
+
+-- Index on the ApiRequestLog table's deleted field.
+CREATE INDEX `I_ApiRequestLog_deleted` ON `ApiRequestLog` (`deleted`);
 
 

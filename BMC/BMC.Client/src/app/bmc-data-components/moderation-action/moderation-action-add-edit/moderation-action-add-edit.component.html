@@ -1,0 +1,91 @@
+<div class="add-moderation-action" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-moderation-action me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Moderation Action" 
+        *ngIf="userIsBMCModerationActionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #moderationActionModal let-modal>
+   <div class="modal-header bg-dark text-light moderation-action-modal-header">
+      <h5 class="modal-title mb-0" id="moderationActionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Moderation Action' : 'Add Moderation Action' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body moderation-action-modal-body">
+      <form [formGroup]="moderationActionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('moderatorTenantGuid')">
+                <label for="ModerationAction-moderatorTenantGuid" id="label-ModerationAction-moderatorTenantGuid"><span class="text-danger">*</span>Moderator Tenant Guid</label>
+                <input type="text" id="ModerationAction-moderatorTenantGuid" formControlName="moderatorTenantGuid" placeholder="Enter Moderator Tenant Guid" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()" aria-labelledby="label-moderatorTenantGuid" />
+                <div *ngIf="moderationActionForm.get('moderatorTenantGuid')?.invalid && moderationActionForm.get('moderatorTenantGuid')?.touched" class="text-danger">
+                    Moderator Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('actionType')">
+                <label for="ModerationAction-actionType" id="label-ModerationAction-actionType"><span class="text-danger">*</span>Action Type</label>
+                <input type="text" id="ModerationAction-actionType" formControlName="actionType" placeholder="Enter Action Type" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()" aria-labelledby="label-actionType" />
+                <div *ngIf="moderationActionForm.get('actionType')?.invalid && moderationActionForm.get('actionType')?.touched" class="text-danger">
+                    Action Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetTenantGuid')">
+                <label for="ModerationAction-targetTenantGuid" id="label-ModerationAction-targetTenantGuid">Target Tenant Guid</label>
+                <input type="text" id="ModerationAction-targetTenantGuid" formControlName="targetTenantGuid" placeholder="Enter Target Tenant Guid" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()" aria-labelledby="label-targetTenantGuid" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetEntityType')">
+                <label for="ModerationAction-targetEntityType" id="label-ModerationAction-targetEntityType">Target Entity Type</label>
+                <input type="text" id="ModerationAction-targetEntityType" formControlName="targetEntityType" placeholder="Enter Target Entity Type" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()" aria-labelledby="label-targetEntityType" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetEntityId')">
+                <label for="ModerationAction-targetEntityId" id="label-ModerationAction-targetEntityId">Target Entity Id</label>
+                <input type="number" id="ModerationAction-targetEntityId" formControlName="targetEntityId" placeholder="Enter Target Entity Id" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()" aria-labelledby="label-targetEntityId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                <label for="ModerationAction-reason" id="label-ModerationAction-reason">Reason</label>
+                <textarea id="ModerationAction-reason" formControlName="reason" placeholder="Enter Reason" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('actionDate')">
+                <label for="ModerationAction-actionDate" id="label-ModerationAction-actionDate"><span class="text-danger">*</span>Action Date</label>
+                <input type="datetime-local" id="ModerationAction-actionDate" formControlName="actionDate" placeholder="Enter Action Date" class="form-control moderation-action-input" [disabled]="!userIsBMCModerationActionWriter()" aria-labelledby="label-actionDate" />
+                <div *ngIf="moderationActionForm.get('actionDate')?.invalid && moderationActionForm.get('actionDate')?.touched" class="text-danger">
+                    Action Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contentReportId')">
+                <label for="ModerationAction-contentReportId" id="label-ModerationAction-contentReportId">Content Report</label>
+                <select id="ModerationAction-contentReportId" formControlName="contentReportId" class="form-select moderation-action-select" [disabled]="!userIsBMCModerationActionWriter()">
+                    <option [ngValue]="null">Select Content Report</option>
+                    <option *ngFor="let contentReport of contentReports$ | async" [ngValue]="contentReport.id">{{contentReport.reportedEntityType}}</option>
+                </select>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ModerationAction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCModerationActionWriter()" />
+                <label for="ModerationAction-active" class="form-check-label" id="label-ModerationAction-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ModerationAction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCModerationActionWriter()" />
+                <label for="ModerationAction-deleted" class="form-check-label" id="label-ModerationAction-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer moderation-action-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Moderation Action changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !moderationActionForm.valid || moderationActionForm.pristine  || userIsBMCModerationActionWriter() == false " ngbTooltip="Save the Moderation Action changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Moderation Action' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

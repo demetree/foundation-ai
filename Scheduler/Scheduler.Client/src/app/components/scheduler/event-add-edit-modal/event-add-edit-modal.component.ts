@@ -58,6 +58,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   @Input() initialStart: string | null = null;
   @Input() initialEnd: string | null = null;
+  @Input() initialResourceId: number | null = null;
+  @Input() initialIsVolunteer: boolean = false;
 
   // -------------------------------------------------------------------------
   // UI State
@@ -140,6 +142,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
 
+  // Track whether the user has manually set the end date
+  private endDateManuallySet = false;
+
   constructor(
     public activeModal: NgbActiveModal,
     private fb: FormBuilder,
@@ -193,6 +198,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
           endDateTime: this.initialEnd?.slice(0, 16) || this.initialStart.slice(0, 16)
         });
       }
+
+      // Pre-add a resource assignment if an initial resource was specified
+      if (this.initialResourceId) {
+        this.addIndividualAssignment();
+        const lastIdx = this.assignments.length - 1;
+        this.assignments.at(lastIdx).patchValue({ resourceId: this.initialResourceId });
+      }
     } else if (this.event) {
       this.populateForm(this.event);
       this.loadExistingDependencies();
@@ -243,6 +255,28 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
           });
         }
       }
+    });
+
+    // Auto-set end date when start changes (default +1h if end is empty)
+    this.eventForm.get('startDateTime')?.valueChanges.subscribe(startVal => {
+      if (!startVal) return;
+      const endVal = this.eventForm.get('endDateTime')?.value;
+      // Only auto-fill if end hasn't been manually set
+      if (!endVal && !this.endDateManuallySet) {
+        const start = new Date(startVal);
+        start.setMinutes(start.getMinutes() + 60);
+        const y = start.getFullYear();
+        const mo = String(start.getMonth() + 1).padStart(2, '0');
+        const d = String(start.getDate()).padStart(2, '0');
+        const h = String(start.getHours()).padStart(2, '0');
+        const mi = String(start.getMinutes()).padStart(2, '0');
+        this.eventForm.patchValue({ endDateTime: `${y}-${mo}-${d}T${h}:${mi}` }, { emitEvent: false });
+      }
+    });
+
+    // Track when user manually sets end date
+    this.eventForm.get('endDateTime')?.valueChanges.subscribe(() => {
+      this.endDateManuallySet = true;
     });
   }
 
@@ -325,6 +359,37 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // -------------------------------------------------------------------------
   setActiveTab(tab: string): void {
     this.activeTab = tab;
+  }
+
+  // -------------------------------------------------------------------------
+  // Quick Duration Helpers
+  // -------------------------------------------------------------------------
+  /**
+   * Sets the end date to start + the given duration in minutes.
+   */
+  setDuration(minutes: number): void {
+    const startVal = this.eventForm.get('startDateTime')?.value;
+    if (!startVal) return;
+
+    const start = new Date(startVal);
+    start.setMinutes(start.getMinutes() + minutes);
+    const y = start.getFullYear();
+    const mo = String(start.getMonth() + 1).padStart(2, '0');
+    const d = String(start.getDate()).padStart(2, '0');
+    const h = String(start.getHours()).padStart(2, '0');
+    const mi = String(start.getMinutes()).padStart(2, '0');
+    this.eventForm.patchValue({ endDateTime: `${y}-${mo}-${d}T${h}:${mi}` });
+  }
+
+  /**
+   * Returns the currently active duration in minutes (for highlighting the active pill), or null.
+   */
+  getActiveDuration(): number | null {
+    const startVal = this.eventForm.get('startDateTime')?.value;
+    const endVal = this.eventForm.get('endDateTime')?.value;
+    if (!startVal || !endVal) return null;
+    const diff = (new Date(endVal).getTime() - new Date(startVal).getTime()) / 60000;
+    return diff > 0 ? diff : null;
   }
 
   // -------------------------------------------------------------------------
@@ -1273,7 +1338,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       submitData.notes = control.get('notes')?.value || null;
       submitData.active = true;
       submitData.deleted = false;
-      submitData.isVolunteer = false;
+      submitData.isVolunteer = this.initialIsVolunteer
+        && !!submitData.resourceId
+        && Number(submitData.resourceId) === Number(this.initialResourceId);
       submitData.reimbursementRequested = false;
       submitData.assignmentStatusId = 1;
 

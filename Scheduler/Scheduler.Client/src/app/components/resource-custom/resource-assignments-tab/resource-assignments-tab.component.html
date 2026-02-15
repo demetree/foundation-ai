@@ -4,9 +4,14 @@
       <i class="fa-solid fa-calendar-check me-2"></i>
       Assignments
     </h6>
-    <button class="btn btn-sm btn-outline-secondary" (click)="loadAssignments()">
-      <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-primary" (click)="openAddAssignment()" *ngIf="userIsResourceWriter()">
+        <i class="fa-solid fa-plus me-1"></i> Add Assignment
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="loadAssignments()">
+        <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+      </button>
+    </div>
   </div>
 
   <div class="card-body">
@@ -53,7 +58,7 @@
             </td>
             <td>
               <a class="text-decoration-none pointer fw-semibold"
-                 (click)="navigateToEvent(assignment.scheduledEvent.id)">
+                (click)="navigateToEvent(assignment.scheduledEvent.id)">
                 {{ assignment.scheduledEvent.name || 'Untitled Event' }}
               </a>
               <span class="badge bg-info ms-2" *ngIf="assignment.assignmentType === 'primary'">

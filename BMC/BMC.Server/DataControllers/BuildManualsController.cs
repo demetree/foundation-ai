@@ -751,6 +751,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 					buildManual.BuildManualChangeHistories = null;
 					buildManual.BuildManualPages = null;
+					buildManual.SharedInstructions = null;
 					buildManual.project = null;
 
 
@@ -868,6 +869,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				cloneOfExisting.BuildManualChangeHistories = null;
 				cloneOfExisting.BuildManualPages = null;
+				cloneOfExisting.SharedInstructions = null;
 				cloneOfExisting.project = null;
 
 				if (versionNumber >= buildManual.versionNumber)

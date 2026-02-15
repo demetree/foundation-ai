@@ -19,6 +19,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ProjectData } from './project.service';
 import { BuildManualChangeHistoryService, BuildManualChangeHistoryData } from './build-manual-change-history.service';
 import { BuildManualPageService, BuildManualPageData } from './build-manual-page.service';
+import { SharedInstructionService, SharedInstructionData } from './shared-instruction.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -153,6 +154,11 @@ export class BuildManualData {
     private _buildManualPagesSubject = new BehaviorSubject<BuildManualPageData[] | null>(null);
 
                 
+    private _sharedInstructions: SharedInstructionData[] | null = null;
+    private _sharedInstructionsPromise: Promise<SharedInstructionData[]> | null  = null;
+    private _sharedInstructionsSubject = new BehaviorSubject<SharedInstructionData[] | null>(null);
+
+                
 
 
     //
@@ -207,6 +213,25 @@ export class BuildManualData {
 
 
 
+    public SharedInstructions$ = this._sharedInstructionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._sharedInstructions === null && this._sharedInstructionsPromise === null) {
+            this.loadSharedInstructions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public SharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({buildManualId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -252,6 +277,10 @@ export class BuildManualData {
      this._buildManualPages = null;
      this._buildManualPagesPromise = null;
      this._buildManualPagesSubject.next(null);
+
+     this._sharedInstructions = null;
+     this._sharedInstructionsPromise = null;
+     this._sharedInstructionsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -392,6 +421,71 @@ export class BuildManualData {
     }
 
 
+    /**
+     *
+     * Gets the SharedInstructions for this BuildManual.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.buildManual.SharedInstructions.then(buildManuals => { ... })
+     *   or
+     *   await this.buildManual.buildManuals
+     *
+    */
+    public get SharedInstructions(): Promise<SharedInstructionData[]> {
+        if (this._sharedInstructions !== null) {
+            return Promise.resolve(this._sharedInstructions);
+        }
+
+        if (this._sharedInstructionsPromise !== null) {
+            return this._sharedInstructionsPromise;
+        }
+
+        // Start the load
+        this.loadSharedInstructions();
+
+        return this._sharedInstructionsPromise!;
+    }
+
+
+
+    private loadSharedInstructions(): void {
+
+        this._sharedInstructionsPromise = lastValueFrom(
+            BuildManualService.Instance.GetSharedInstructionsForBuildManual(this.id)
+        )
+        .then(SharedInstructions => {
+            this._sharedInstructions = SharedInstructions ?? [];
+            this._sharedInstructionsSubject.next(this._sharedInstructions);
+            return this._sharedInstructions;
+         })
+        .catch(err => {
+            this._sharedInstructions = [];
+            this._sharedInstructionsSubject.next(this._sharedInstructions);
+            throw err;
+        })
+        .finally(() => {
+            this._sharedInstructionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached SharedInstruction. Call after mutations to force refresh.
+     */
+    public ClearSharedInstructionsCache(): void {
+        this._sharedInstructions = null;
+        this._sharedInstructionsPromise = null;
+        this._sharedInstructionsSubject.next(this._sharedInstructions);      // Emit to observable
+    }
+
+    public get HasSharedInstructions(): Promise<boolean> {
+        return this.SharedInstructions.then(sharedInstructions => sharedInstructions.length > 0);
+    }
+
+
 
 
     //
@@ -472,6 +566,7 @@ export class BuildManualService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private buildManualChangeHistoryService: BuildManualChangeHistoryService,
         private buildManualPageService: BuildManualPageService,
+        private sharedInstructionService: SharedInstructionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -956,6 +1051,16 @@ export class BuildManualService extends SecureEndpointBase {
     }
 
 
+    public GetSharedInstructionsForBuildManual(buildManualId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<SharedInstructionData[]> {
+        return this.sharedInstructionService.GetSharedInstructionList({
+            buildManualId: buildManualId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full BuildManualData instance.
@@ -999,6 +1104,10 @@ export class BuildManualService extends SecureEndpointBase {
     (revived as any)._buildManualPagesPromise = null;
     (revived as any)._buildManualPagesSubject = new BehaviorSubject<BuildManualPageData[] | null>(null);
 
+    (revived as any)._sharedInstructions = null;
+    (revived as any)._sharedInstructionsPromise = null;
+    (revived as any)._sharedInstructionsSubject = new BehaviorSubject<SharedInstructionData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1037,6 +1146,22 @@ export class BuildManualService extends SecureEndpointBase {
       );
 
     (revived as any).BuildManualPagesCount$ = BuildManualPageService.Instance.GetBuildManualPagesRowCount({buildManualId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).SharedInstructions$ = (revived as any)._sharedInstructionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._sharedInstructions === null && (revived as any)._sharedInstructionsPromise === null) {
+                (revived as any).loadSharedInstructions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({buildManualId: (revived as any).id,
       active: true,
       deleted: false
     });

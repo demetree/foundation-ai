@@ -180,6 +180,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="userSetOwnershipService.userIsBMCUserSetOwnershipReader()">
+                            <button ngbNavLink>User Set Ownerships
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.UserSetOwnershipsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-set-ownership-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-user-set-ownership-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-set-ownership-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-set-ownership-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

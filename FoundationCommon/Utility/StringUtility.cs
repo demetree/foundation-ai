@@ -968,7 +968,7 @@ namespace Foundation
                 // Change Datum to Data
                 return str.Substring(0, str.Length - 5) + "Data";       // need to do this because the EF Context's DBSet will be suffixed with 'Data', so we can't just tack on an s here.
             }
-            else if (str.EndsWith("y") == true && str.EndsWith("ay") == false)    // country to countries but not day to daies
+            else if (str.EndsWith("y") == true && str.EndsWith("ay") == false && str.EndsWith("ey") == false)    // country to countries but not day to daies or key to keis
             {
                 return str.Substring(0, str.Length - 1) + "ies";
             }

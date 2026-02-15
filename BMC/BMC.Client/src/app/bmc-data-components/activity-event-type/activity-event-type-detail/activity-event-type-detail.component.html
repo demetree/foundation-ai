@@ -1,0 +1,119 @@
+<div class="container-fluid p-1 m-0 activity-event-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="activity-event-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Activity Event Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Activity Event Type' : 'Add Activity Event Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCActivityEventTypeReader()">
+                <div class="col m-2 activity-event-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="activityEventTypeForm" (ngSubmit)="submitForm()" class="activity-event-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ActivityEventType-name" id="label-ActivityEventType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ActivityEventType-name" formControlName="name" placeholder="Enter Name" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="activityEventTypeForm.get('name')?.invalid && activityEventTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ActivityEventType-description" id="label-ActivityEventType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="ActivityEventType-description" formControlName="description" placeholder="Enter Description" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()"></textarea>
+                                <div *ngIf="activityEventTypeForm.get('description')?.invalid && activityEventTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconCssClass')">
+                                <label for="ActivityEventType-iconCssClass" id="label-ActivityEventType-iconCssClass">Icon Css Class</label>
+                                <input type="text" id="ActivityEventType-iconCssClass" formControlName="iconCssClass" placeholder="Enter Icon Css Class" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()" aria-labelledby="label-iconCssClass" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('accentColor')">
+                                <label for="ActivityEventType-accentColor" id="label-ActivityEventType-accentColor">Accent Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ActivityEventType-accentColor" 
+                        formControlName="accentColor" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCActivityEventTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="activityEventTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="ActivityEventType-sequence" id="label-ActivityEventType-sequence">Sequence</label>
+                                <input type="number" id="ActivityEventType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control activity-event-type-input" [disabled]="!userIsBMCActivityEventTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ActivityEventType-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCActivityEventTypeWriter()" />
+                                <label for="ActivityEventType-active" class="form-check-label" id="label-ActivityEventType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ActivityEventType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCActivityEventTypeWriter()" />
+                                <label for="ActivityEventType-deleted" class="form-check-label" id="label-ActivityEventType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="activity-event-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="activityEventTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Activity Event Type">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !activityEventTypeForm.valid || !activityEventTypeForm.dirty || activityEventTypeForm.pristine  || userIsBMCActivityEventTypeWriter() == false " ngbTooltip="Save the Activity Event Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Activity Event Type' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCActivityEventTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 activity-event-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="activityEventService.userIsBMCActivityEventReader()">
+                            <button ngbNavLink>Activity Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (activityEventTypeData?.ActivityEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-activity-event-table [queryParams]="{ activityEventTypeId: activityEventTypeData?.id }"></app-activity-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-activity-event-add-edit [preSeededData]="{ activityEventTypeId: activityEventTypeData?.id }" [hiddenFields]="['activityEventTypeId']"></app-activity-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

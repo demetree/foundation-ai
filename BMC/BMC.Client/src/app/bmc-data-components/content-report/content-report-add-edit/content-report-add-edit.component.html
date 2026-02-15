@@ -1,0 +1,108 @@
+<div class="add-content-report" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-content-report me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Content Report" 
+        *ngIf="userIsBMCContentReportWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contentReportModal let-modal>
+   <div class="modal-header bg-dark text-light content-report-modal-header">
+      <h5 class="modal-title mb-0" id="contentReportModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Content Report' : 'Add Content Report' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body content-report-modal-body">
+      <form [formGroup]="contentReportForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('contentReportReasonId')">
+                <label for="ContentReport-contentReportReasonId" id="label-ContentReport-contentReportReasonId"><span class="text-danger">*</span>Content Report Reason</label>
+                <select id="ContentReport-contentReportReasonId" formControlName="contentReportReasonId" class="form-select content-report-select" [disabled]="!userIsBMCContentReportWriter()">
+                    <option [ngValue]="null">Select Content Report Reason</option>
+                    <option *ngFor="let contentReportReason of contentReportReasons$ | async" [ngValue]="contentReportReason.id">{{contentReportReason.name}}</option>
+                </select>
+                <div *ngIf="contentReportForm.get('contentReportReasonId')?.invalid && contentReportForm.get('contentReportReasonId')?.touched" class="text-danger">
+                    Content Report Reason is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reporterTenantGuid')">
+                <label for="ContentReport-reporterTenantGuid" id="label-ContentReport-reporterTenantGuid"><span class="text-danger">*</span>Reporter Tenant Guid</label>
+                <input type="text" id="ContentReport-reporterTenantGuid" formControlName="reporterTenantGuid" placeholder="Enter Reporter Tenant Guid" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-reporterTenantGuid" />
+                <div *ngIf="contentReportForm.get('reporterTenantGuid')?.invalid && contentReportForm.get('reporterTenantGuid')?.touched" class="text-danger">
+                    Reporter Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reportedEntityType')">
+                <label for="ContentReport-reportedEntityType" id="label-ContentReport-reportedEntityType"><span class="text-danger">*</span>Reported Entity Type</label>
+                <input type="text" id="ContentReport-reportedEntityType" formControlName="reportedEntityType" placeholder="Enter Reported Entity Type" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-reportedEntityType" />
+                <div *ngIf="contentReportForm.get('reportedEntityType')?.invalid && contentReportForm.get('reportedEntityType')?.touched" class="text-danger">
+                    Reported Entity Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reportedEntityId')">
+                <label for="ContentReport-reportedEntityId" id="label-ContentReport-reportedEntityId"><span class="text-danger">*</span>Reported Entity Id</label>
+                <input type="number" id="ContentReport-reportedEntityId" formControlName="reportedEntityId" placeholder="Enter Reported Entity Id" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-reportedEntityId" />
+                <div *ngIf="contentReportForm.get('reportedEntityId')?.invalid && contentReportForm.get('reportedEntityId')?.touched" class="text-danger">
+                    Reported Entity Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ContentReport-description" id="label-ContentReport-description">Description</label>
+                <textarea id="ContentReport-description" formControlName="description" placeholder="Enter Description" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="ContentReport-status" id="label-ContentReport-status"><span class="text-danger">*</span>Status</label>
+                <input type="text" id="ContentReport-status" formControlName="status" placeholder="Enter Status" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-status" />
+                <div *ngIf="contentReportForm.get('status')?.invalid && contentReportForm.get('status')?.touched" class="text-danger">
+                    Status is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reportedDate')">
+                <label for="ContentReport-reportedDate" id="label-ContentReport-reportedDate"><span class="text-danger">*</span>Reported Date</label>
+                <input type="datetime-local" id="ContentReport-reportedDate" formControlName="reportedDate" placeholder="Enter Reported Date" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-reportedDate" />
+                <div *ngIf="contentReportForm.get('reportedDate')?.invalid && contentReportForm.get('reportedDate')?.touched" class="text-danger">
+                    Reported Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewedDate')">
+                <label for="ContentReport-reviewedDate" id="label-ContentReport-reviewedDate">Reviewed Date</label>
+                <input type="datetime-local" id="ContentReport-reviewedDate" formControlName="reviewedDate" placeholder="Enter Reviewed Date" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-reviewedDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewerTenantGuid')">
+                <label for="ContentReport-reviewerTenantGuid" id="label-ContentReport-reviewerTenantGuid">Reviewer Tenant Guid</label>
+                <input type="text" id="ContentReport-reviewerTenantGuid" formControlName="reviewerTenantGuid" placeholder="Enter Reviewer Tenant Guid" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()" aria-labelledby="label-reviewerTenantGuid" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewNotes')">
+                <label for="ContentReport-reviewNotes" id="label-ContentReport-reviewNotes">Review Notes</label>
+                <textarea id="ContentReport-reviewNotes" formControlName="reviewNotes" placeholder="Enter Review Notes" class="form-control content-report-input" [disabled]="!userIsBMCContentReportWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContentReport-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCContentReportWriter()" />
+                <label for="ContentReport-active" class="form-check-label" id="label-ContentReport-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContentReport-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCContentReportWriter()" />
+                <label for="ContentReport-deleted" class="form-check-label" id="label-ContentReport-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer content-report-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Content Report changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contentReportForm.valid || contentReportForm.pristine  || userIsBMCContentReportWriter() == false " ngbTooltip="Save the Content Report changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Content Report' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

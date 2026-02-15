@@ -32,7 +32,7 @@ export class UserCollectionSetImportQueryParameters {
     userCollectionId: bigint | number | null | undefined = null;
     legoSetId: bigint | number | null | undefined = null;
     quantity: bigint | number | null | undefined = null;
-    importedDate: string | null | undefined = null;        // ISO 8601
+    importedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -51,7 +51,7 @@ export class UserCollectionSetImportSubmitData {
     userCollectionId!: bigint | number;
     legoSetId!: bigint | number;
     quantity: bigint | number | null = null;
-    importedDate: string | null = null;     // ISO 8601
+    importedDate: string | null = null;     // ISO 8601 (full datetime)
     active!: boolean;
     deleted!: boolean;
 }
@@ -104,7 +104,7 @@ export class UserCollectionSetImportData {
     userCollectionId!: bigint | number;
     legoSetId!: bigint | number;
     quantity!: bigint | number;
-    importedDate!: string | null;   // ISO 8601
+    importedDate!: string | null;   // ISO 8601 (full datetime)
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;

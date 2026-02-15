@@ -176,6 +176,34 @@ $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 // -------------------------------------------------------------------------
+// Quick Duration Pills
+// -------------------------------------------------------------------------
+.duration-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
+    color: $text-muted;
+    line-height: 1.4;
+    transition: all 0.15s ease;
+
+    &:hover {
+        border-color: $accent;
+        color: $accent;
+        background: $accent-light;
+    }
+
+    &.active {
+        background: linear-gradient(135deg, $gradient-start, $gradient-end);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 1px 4px rgba(102, 126, 234, 0.3);
+    }
+}
+
+// -------------------------------------------------------------------------
 // Assignment Table
 // -------------------------------------------------------------------------
 .assignment-table-wrapper {
