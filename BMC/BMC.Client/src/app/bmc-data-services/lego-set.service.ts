@@ -18,6 +18,8 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { LegoThemeData } from './lego-theme.service';
 import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
+import { LegoSetMinifigService, LegoSetMinifigData } from './lego-set-minifig.service';
+import { LegoSetSubsetService, LegoSetSubsetData } from './lego-set-subset.service';
 import { UserCollectionSetImportService, UserCollectionSetImportData } from './user-collection-set-import.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -131,6 +133,19 @@ export class LegoSetData {
     private _legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
                 
+    private _legoSetMinifigs: LegoSetMinifigData[] | null = null;
+    private _legoSetMinifigsPromise: Promise<LegoSetMinifigData[]> | null  = null;
+    private _legoSetMinifigsSubject = new BehaviorSubject<LegoSetMinifigData[] | null>(null);
+
+                
+    private _legoSetSubsetParentLegoSets: LegoSetSubsetData[] | null = null;
+    private _legoSetSubsetParentLegoSetsPromise: Promise<LegoSetSubsetData[]> | null  = null;
+    private _legoSetSubsetParentLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
+                    
+    private _legoSetSubsetChildLegoSets: LegoSetSubsetData[] | null = null;
+    private _legoSetSubsetChildLegoSetsPromise: Promise<LegoSetSubsetData[]> | null  = null;
+    private _legoSetSubsetChildLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
+                    
     private _userCollectionSetImports: UserCollectionSetImportData[] | null = null;
     private _userCollectionSetImportsPromise: Promise<UserCollectionSetImportData[]> | null  = null;
     private _userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
@@ -160,6 +175,61 @@ export class LegoSetData {
       deleted: false
     });
 
+
+
+    public LegoSetMinifigs$ = this._legoSetMinifigsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._legoSetMinifigs === null && this._legoSetMinifigsPromise === null) {
+            this.loadLegoSetMinifigs(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public LegoSetSubsetParentLegoSets$ = this._legoSetSubsetParentLegoSetsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._legoSetSubsetParentLegoSets === null && this._legoSetSubsetParentLegoSetsPromise === null) {
+            this.loadLegoSetSubsetParentLegoSets(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({parentLegoSetId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+    public LegoSetSubsetChildLegoSets$ = this._legoSetSubsetChildLegoSetsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._legoSetSubsetChildLegoSets === null && this._legoSetSubsetChildLegoSetsPromise === null) {
+            this.loadLegoSetSubsetChildLegoSets(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({childLegoSetId: this.id,
+      active: true,
+      deleted: false
+    });
 
 
     public UserCollectionSetImports$ = this._userCollectionSetImportsSubject.asObservable().pipe(
@@ -222,6 +292,18 @@ export class LegoSetData {
      this._legoSetParts = null;
      this._legoSetPartsPromise = null;
      this._legoSetPartsSubject.next(null);
+
+     this._legoSetMinifigs = null;
+     this._legoSetMinifigsPromise = null;
+     this._legoSetMinifigsSubject.next(null);
+
+     this._legoSetSubsetParentLegoSets = null;
+     this._legoSetSubsetParentLegoSetsPromise = null;
+     this._legoSetSubsetParentLegoSetsSubject.next(null);
+
+     this._legoSetSubsetChildLegoSets = null;
+     this._legoSetSubsetChildLegoSetsPromise = null;
+     this._legoSetSubsetChildLegoSetsSubject.next(null);
 
      this._userCollectionSetImports = null;
      this._userCollectionSetImportsPromise = null;
@@ -295,6 +377,201 @@ export class LegoSetData {
 
     public get HasLegoSetParts(): Promise<boolean> {
         return this.LegoSetParts.then(legoSetParts => legoSetParts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the LegoSetMinifigs for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.LegoSetMinifigs.then(legoSets => { ... })
+     *   or
+     *   await this.legoSet.legoSets
+     *
+    */
+    public get LegoSetMinifigs(): Promise<LegoSetMinifigData[]> {
+        if (this._legoSetMinifigs !== null) {
+            return Promise.resolve(this._legoSetMinifigs);
+        }
+
+        if (this._legoSetMinifigsPromise !== null) {
+            return this._legoSetMinifigsPromise;
+        }
+
+        // Start the load
+        this.loadLegoSetMinifigs();
+
+        return this._legoSetMinifigsPromise!;
+    }
+
+
+
+    private loadLegoSetMinifigs(): void {
+
+        this._legoSetMinifigsPromise = lastValueFrom(
+            LegoSetService.Instance.GetLegoSetMinifigsForLegoSet(this.id)
+        )
+        .then(LegoSetMinifigs => {
+            this._legoSetMinifigs = LegoSetMinifigs ?? [];
+            this._legoSetMinifigsSubject.next(this._legoSetMinifigs);
+            return this._legoSetMinifigs;
+         })
+        .catch(err => {
+            this._legoSetMinifigs = [];
+            this._legoSetMinifigsSubject.next(this._legoSetMinifigs);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetMinifigsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached LegoSetMinifig. Call after mutations to force refresh.
+     */
+    public ClearLegoSetMinifigsCache(): void {
+        this._legoSetMinifigs = null;
+        this._legoSetMinifigsPromise = null;
+        this._legoSetMinifigsSubject.next(this._legoSetMinifigs);      // Emit to observable
+    }
+
+    public get HasLegoSetMinifigs(): Promise<boolean> {
+        return this.LegoSetMinifigs.then(legoSetMinifigs => legoSetMinifigs.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the LegoSetSubsetParentLegoSets for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.LegoSetSubsetParentLegoSets.then(parentLegoSets => { ... })
+     *   or
+     *   await this.legoSet.parentLegoSets
+     *
+    */
+    public get LegoSetSubsetParentLegoSets(): Promise<LegoSetSubsetData[]> {
+        if (this._legoSetSubsetParentLegoSets !== null) {
+            return Promise.resolve(this._legoSetSubsetParentLegoSets);
+        }
+
+        if (this._legoSetSubsetParentLegoSetsPromise !== null) {
+            return this._legoSetSubsetParentLegoSetsPromise;
+        }
+
+        // Start the load
+        this.loadLegoSetSubsetParentLegoSets();
+
+        return this._legoSetSubsetParentLegoSetsPromise!;
+    }
+
+
+
+    private loadLegoSetSubsetParentLegoSets(): void {
+
+        this._legoSetSubsetParentLegoSetsPromise = lastValueFrom(
+            LegoSetService.Instance.GetLegoSetSubsetParentLegoSetsForLegoSet(this.id)
+        )
+        .then(LegoSetSubsetParentLegoSets => {
+            this._legoSetSubsetParentLegoSets = LegoSetSubsetParentLegoSets ?? [];
+            this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);
+            return this._legoSetSubsetParentLegoSets;
+         })
+        .catch(err => {
+            this._legoSetSubsetParentLegoSets = [];
+            this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetSubsetParentLegoSetsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached LegoSetSubsetParentLegoSet. Call after mutations to force refresh.
+     */
+    public ClearLegoSetSubsetParentLegoSetsCache(): void {
+        this._legoSetSubsetParentLegoSets = null;
+        this._legoSetSubsetParentLegoSetsPromise = null;
+        this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);      // Emit to observable
+    }
+
+    public get HasLegoSetSubsetParentLegoSets(): Promise<boolean> {
+        return this.LegoSetSubsetParentLegoSets.then(legoSetSubsetParentLegoSets => legoSetSubsetParentLegoSets.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the LegoSetSubsetChildLegoSets for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.LegoSetSubsetChildLegoSets.then(childLegoSets => { ... })
+     *   or
+     *   await this.legoSet.childLegoSets
+     *
+    */
+    public get LegoSetSubsetChildLegoSets(): Promise<LegoSetSubsetData[]> {
+        if (this._legoSetSubsetChildLegoSets !== null) {
+            return Promise.resolve(this._legoSetSubsetChildLegoSets);
+        }
+
+        if (this._legoSetSubsetChildLegoSetsPromise !== null) {
+            return this._legoSetSubsetChildLegoSetsPromise;
+        }
+
+        // Start the load
+        this.loadLegoSetSubsetChildLegoSets();
+
+        return this._legoSetSubsetChildLegoSetsPromise!;
+    }
+
+
+
+    private loadLegoSetSubsetChildLegoSets(): void {
+
+        this._legoSetSubsetChildLegoSetsPromise = lastValueFrom(
+            LegoSetService.Instance.GetLegoSetSubsetChildLegoSetsForLegoSet(this.id)
+        )
+        .then(LegoSetSubsetChildLegoSets => {
+            this._legoSetSubsetChildLegoSets = LegoSetSubsetChildLegoSets ?? [];
+            this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);
+            return this._legoSetSubsetChildLegoSets;
+         })
+        .catch(err => {
+            this._legoSetSubsetChildLegoSets = [];
+            this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetSubsetChildLegoSetsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached LegoSetSubsetChildLegoSet. Call after mutations to force refresh.
+     */
+    public ClearLegoSetSubsetChildLegoSetsCache(): void {
+        this._legoSetSubsetChildLegoSets = null;
+        this._legoSetSubsetChildLegoSetsPromise = null;
+        this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);      // Emit to observable
+    }
+
+    public get HasLegoSetSubsetChildLegoSets(): Promise<boolean> {
+        return this.LegoSetSubsetChildLegoSets.then(legoSetSubsetChildLegoSets => legoSetSubsetChildLegoSets.length > 0);
     }
 
 
@@ -399,6 +676,8 @@ export class LegoSetService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private legoSetPartService: LegoSetPartService,
+        private legoSetMinifigService: LegoSetMinifigService,
+        private legoSetSubsetService: LegoSetSubsetService,
         private userCollectionSetImportService: UserCollectionSetImportService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -773,6 +1052,36 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
+    public GetLegoSetMinifigsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<LegoSetMinifigData[]> {
+        return this.legoSetMinifigService.GetLegoSetMinifigList({
+            legoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetLegoSetSubsetParentLegoSetsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<LegoSetSubsetData[]> {
+        return this.legoSetSubsetService.GetLegoSetSubsetList({
+            parentLegoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetLegoSetSubsetChildLegoSetsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<LegoSetSubsetData[]> {
+        return this.legoSetSubsetService.GetLegoSetSubsetList({
+            childLegoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetUserCollectionSetImportsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserCollectionSetImportData[]> {
         return this.userCollectionSetImportService.GetUserCollectionSetImportList({
             legoSetId: legoSetId,
@@ -822,6 +1131,14 @@ export class LegoSetService extends SecureEndpointBase {
     (revived as any)._legoSetPartsPromise = null;
     (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
+    (revived as any)._legoSetMinifigs = null;
+    (revived as any)._legoSetMinifigsPromise = null;
+    (revived as any)._legoSetMinifigsSubject = new BehaviorSubject<LegoSetMinifigData[] | null>(null);
+
+    (revived as any)._legoSetSubsets = null;
+    (revived as any)._legoSetSubsetsPromise = null;
+    (revived as any)._legoSetSubsetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
+
     (revived as any)._userCollectionSetImports = null;
     (revived as any)._userCollectionSetImportsPromise = null;
     (revived as any)._userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
@@ -848,6 +1165,38 @@ export class LegoSetService extends SecureEndpointBase {
       );
 
     (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).LegoSetMinifigs$ = (revived as any)._legoSetMinifigsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetMinifigs === null && (revived as any)._legoSetMinifigsPromise === null) {
+                (revived as any).loadLegoSetMinifigs();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).LegoSetSubsets$ = (revived as any)._legoSetSubsetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetSubsets === null && (revived as any)._legoSetSubsetsPromise === null) {
+                (revived as any).loadLegoSetSubsets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).LegoSetSubsetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({legoSetId: (revived as any).id,
       active: true,
       deleted: false
     });

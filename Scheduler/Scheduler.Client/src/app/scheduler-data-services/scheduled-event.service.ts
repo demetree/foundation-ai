@@ -1397,41 +1397,10 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    /**
-     *
-     * Gets all calendar events (standalone + expanded recurring) within a date range.
-     *
-     * This calls the server-side Calendar endpoint which handles recurrence expansion.
-     * Results are NOT cached because they are date-range specific and change with each view.
-     *
-     * @param rangeStart  ISO 8601 UTC date string for the start of the range
-     * @param rangeEnd    ISO 8601 UTC date string for the end of the range
-     * @returns Observable of ScheduledEventData array
-     *
-     */
-    public GetCalendarEvents(rangeStart: string, rangeEnd: string, calendarIds?: number[]): Observable<Array<ScheduledEventData>> {
 
-        let queryParams = new HttpParams();
-        queryParams = queryParams.append('rangeStart', rangeStart);
-        queryParams = queryParams.append('rangeEnd', rangeEnd);
-
-        if (calendarIds && calendarIds.length > 0) {
-            queryParams = queryParams.append('calendarIds', calendarIds.join(','));
-        }
-
-        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
-
-        return this.http.get<Array<ScheduledEventData>>(this.baseUrl + 'api/ScheduledEvents/Calendar', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
-            map(rawList => this.ReviveScheduledEventList(rawList)),
-            catchError(error => {
-                return this.handleError(error, () => this.GetCalendarEvents(rangeStart, rangeEnd, calendarIds));
-            }));
-    }
 
     public GetScheduledEventsRowCount(config: ScheduledEventQueryParameters | any = null): Observable<bigint | number> {
+
 
         const configHash = this.getConfigHash(config);
 

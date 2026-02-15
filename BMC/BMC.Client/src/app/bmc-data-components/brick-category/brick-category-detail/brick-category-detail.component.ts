@@ -37,6 +37,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface BrickCategoryFormValues {
   name: string,
   description: string,
+  rebrickablePartCategoryId: string | null,     // Stored as string for form input, converted to number on submit.
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -69,6 +70,7 @@ export class BrickCategoryDetailComponent implements OnInit, CanComponentDeactiv
   public brickCategoryForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: ['', Validators.required],
+        rebrickablePartCategoryId: [''],
         sequence: [''],
         active: [true],
         deleted: [false],
@@ -376,6 +378,7 @@ export class BrickCategoryDetailComponent implements OnInit, CanComponentDeactiv
       this.brickCategoryForm.reset({
         name: '',
         description: '',
+        rebrickablePartCategoryId: '',
         sequence: '',
         active: true,
         deleted: false,
@@ -390,6 +393,7 @@ export class BrickCategoryDetailComponent implements OnInit, CanComponentDeactiv
         this.brickCategoryForm.reset({
         name: brickCategoryData.name ?? '',
         description: brickCategoryData.description ?? '',
+        rebrickablePartCategoryId: brickCategoryData.rebrickablePartCategoryId?.toString() ?? '',
         sequence: brickCategoryData.sequence?.toString() ?? '',
         active: brickCategoryData.active ?? true,
         deleted: brickCategoryData.deleted ?? false,
@@ -454,6 +458,7 @@ export class BrickCategoryDetailComponent implements OnInit, CanComponentDeactiv
         id: this.brickCategoryData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
+        rebrickablePartCategoryId: formValue.rebrickablePartCategoryId ? Number(formValue.rebrickablePartCategoryId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

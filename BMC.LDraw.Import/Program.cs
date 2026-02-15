@@ -18,6 +18,8 @@ namespace BMC.LDraw.Import
 
             // Parse CLI arguments
             string sourcePath = null;
+            bool download = false;
+            bool forceDownload = false;
             bool importColours = false;
             bool importParts = false;
             bool copyData = false;
@@ -29,6 +31,13 @@ namespace BMC.LDraw.Import
                     case "--source":
                         if (i + 1 < args.Length) sourcePath = args[++i];
                         break;
+                    case "--download":
+                        download = true;
+                        break;
+                    case "--force-download":
+                        download = true;
+                        forceDownload = true;
+                        break;
                     case "--import":
                         // Read all following non-flag arguments as import targets
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
@@ -36,6 +45,7 @@ namespace BMC.LDraw.Import
                             i++;
                             if (args[i] == "colours" || args[i] == "colors") importColours = true;
                             if (args[i] == "parts") importParts = true;
+                            if (args[i] == "all") { importColours = true; importParts = true; }
                         }
                         break;
                     case "--copy-data":
@@ -48,15 +58,15 @@ namespace BMC.LDraw.Import
             }
 
             // Validate
-            if (string.IsNullOrEmpty(sourcePath))
+            if (!download && string.IsNullOrEmpty(sourcePath))
             {
-                Console.WriteLine("ERROR: --source <path> is required.");
+                Console.WriteLine("ERROR: Either --download or --source <path> is required.");
                 Console.WriteLine();
                 PrintUsage();
                 return 1;
             }
 
-            if (!Directory.Exists(sourcePath))
+            if (!download && !string.IsNullOrEmpty(sourcePath) && !Directory.Exists(sourcePath))
             {
                 Console.WriteLine($"ERROR: Source path does not exist: {sourcePath}");
                 return 1;
@@ -64,7 +74,7 @@ namespace BMC.LDraw.Import
 
             if (!importColours && !importParts && !copyData)
             {
-                Console.WriteLine("ERROR: Specify at least one action: --import colours/parts, --copy-data");
+                Console.WriteLine("ERROR: Specify at least one action: --import colours/parts/all, --copy-data");
                 Console.WriteLine();
                 PrintUsage();
                 return 1;
@@ -84,6 +94,38 @@ namespace BMC.LDraw.Import
             {
                 Console.WriteLine("ERROR: No 'BMC' connection string found in appsettings.json or environment.");
                 return 1;
+            }
+
+            // Auto-download if requested
+            if (download)
+            {
+                Console.WriteLine("── Download from ldraw.org ──────────────");
+
+                // Default cache location next to the executable
+                if (string.IsNullOrEmpty(sourcePath))
+                {
+                    sourcePath = Path.Combine(
+                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                        "ldraw-cache");
+                }
+
+                Console.WriteLine($"  Cache directory: {sourcePath}");
+                Console.WriteLine();
+
+                LDrawDownloadService downloader = new LDrawDownloadService(Console.WriteLine);
+
+                try
+                {
+                    sourcePath = await downloader.DownloadAndExtractAsync(sourcePath, forceDownload);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"ERROR: Download failed: {ex.Message}");
+                    return 1;
+                }
+
+                Console.WriteLine();
             }
 
             // Set up DbContext
@@ -145,13 +187,21 @@ namespace BMC.LDraw.Import
         static void PrintUsage()
         {
             Console.WriteLine("Usage:");
-            Console.WriteLine("  BMC.LDraw.Import --source <ldraw-path> [--import colours parts] [--copy-data]");
+            Console.WriteLine("  BMC.LDraw.Import --download --import <targets> [--copy-data]");
+            Console.WriteLine("  BMC.LDraw.Import --source <ldraw-path> --import <targets> [--copy-data]");
             Console.WriteLine();
-            Console.WriteLine("Arguments:");
-            Console.WriteLine("  --source <path>    Path to LDraw library (e.g. d:\\ldraw)");
-            Console.WriteLine("  --import <targets> What to import: colours, parts (space separated)");
-            Console.WriteLine("  --copy-data        Copy LDraw files to configured data path");
-            Console.WriteLine("  --help             Show this help");
+            Console.WriteLine("Options:");
+            Console.WriteLine("  --download          Download LDraw library from ldraw.org automatically");
+            Console.WriteLine("  --force-download    Re-download even if library already cached locally");
+            Console.WriteLine("  --source <path>     Path to LDraw library (e.g. d:\\ldraw)");
+            Console.WriteLine("  --import <targets>  What to import: all, colours, parts (space separated)");
+            Console.WriteLine("  --copy-data         Copy LDraw files to configured data path");
+            Console.WriteLine("  --help              Show this help");
+            Console.WriteLine();
+            Console.WriteLine("Examples:");
+            Console.WriteLine("  BMC.LDraw.Import --download --import all --copy-data");
+            Console.WriteLine("  BMC.LDraw.Import --download --force-download --import parts");
+            Console.WriteLine("  BMC.LDraw.Import --source d:\\ldraw --import colours parts --copy-data");
             Console.WriteLine();
             Console.WriteLine("Configuration:");
             Console.WriteLine("  Connection string: appsettings.json -> ConnectionStrings:BMC");

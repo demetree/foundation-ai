@@ -7,6 +7,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { OfficeService } from '../scheduler-data-services/office.service';
+import { ScheduledEventService, ScheduledEventData } from '../scheduler-data-services/scheduled-event.service';
 
 
 @Injectable({
@@ -154,5 +155,47 @@ export class SchedulerHelperService extends SecureEndpointBase implements OnDest
         return this.handleError(error, () => this.resolveRate(params));
       })
     );
+  }
+
+
+  /**
+   *
+   * Gets all calendar events (standalone + expanded recurring) within a date range.
+   *
+   * This calls the server-side Calendar endpoint which handles recurrence expansion.
+   * Results are NOT cached because they are date-range specific and change with each view.
+   *
+   * NOTE: This method was moved here from the auto-generated ScheduledEventService
+   * so that it is safe from code regeneration.
+   *
+   * @param rangeStart  ISO 8601 UTC date string for the start of the range
+   * @param rangeEnd    ISO 8601 UTC date string for the end of the range
+   * @param calendarIds Optional array of calendar IDs to filter by
+   * @returns Observable of ScheduledEventData array
+   *
+   */
+  public GetCalendarEvents(rangeStart: string, rangeEnd: string, calendarIds?: number[]): Observable<Array<ScheduledEventData>> {
+
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append('rangeStart', rangeStart);
+    queryParams = queryParams.append('rangeEnd', rangeEnd);
+
+    if (calendarIds && calendarIds.length > 0) {
+      queryParams = queryParams.append('calendarIds', calendarIds.join(','));
+    }
+
+    const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+    return this.http.get<Array<ScheduledEventData>>(this.baseUrl + 'api/ScheduledEvents/Calendar', {
+      params: queryParams,
+      headers: authenticationHeaders
+    }).pipe(
+      map(rawList => {
+        if (!rawList) return [];
+        return rawList.map(raw => ScheduledEventService.Instance.ReviveScheduledEvent(raw));
+      }),
+      catchError(error => {
+        return this.handleError(error, () => this.GetCalendarEvents(rangeStart, rangeEnd, calendarIds));
+      }));
   }
 }

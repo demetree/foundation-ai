@@ -1127,7 +1127,7 @@ export class FundService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerFundWriter = user.writePermission >= 50;
+            userIsSchedulerFundWriter = user.writePermission >= 60;
           } else {
             userIsSchedulerFundWriter = false;
           }      

@@ -1,0 +1,65 @@
+.add-volunteer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.btn-add-volunteer {
+    background-color: #10b981;
+    border-color: #10b981;
+    height: 37px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    width: 60px;
+}
+
+.volunteer-modal-header {}
+
+.volunteer-modal-body {
+    padding: 15px;
+    font-size: 1rem;
+}
+
+.section-heading {
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: black;
+}
+
+.volunteer-input,
+.volunteer-select {
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.volunteer-input::placeholder,
+.volunteer-select::placeholder {
+    color: #6c757d;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.color-picker {
+    width: 60px;
+    height: 42px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.volunteer-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    border: none;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}

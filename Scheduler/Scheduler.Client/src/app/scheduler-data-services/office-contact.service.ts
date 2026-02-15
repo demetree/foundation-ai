@@ -828,7 +828,7 @@ export class OfficeContactService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerOfficeContactWriter = user.writePermission >= 1;
+            userIsSchedulerOfficeContactWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerOfficeContactWriter = false;
           }      

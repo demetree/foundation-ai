@@ -1,0 +1,122 @@
+.page-container {
+    background-color: #f4f6f9;
+    min-height: 100%;
+    padding: 1rem;
+}
+
+//
+// Premium Header Styling — teal/emerald gradient for volunteer identity
+//
+$gradient-volunteer: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+
+.premium-header {
+    background: $gradient-volunteer;
+    border-radius: 16px;
+    overflow: hidden;
+
+    .card-header {
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-left,
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-title {
+        color: white;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+}
+
+//
+// Glassmorphism Utilities (scoped to header)
+//
+.btn-glass {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+        color: white;
+    }
+}
+
+.badge-glass {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 500;
+    padding: 0.5em 1em;
+    backdrop-filter: blur(5px);
+}
+
+.search-bar {
+    position: relative;
+    min-width: 0;
+    flex: 1 1 250px;
+    max-width: 400px;
+
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 15px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding-left: 40px;
+        color: white;
+        height: 42px;
+        backdrop-filter: blur(5px);
+        transition: all 0.2s ease;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        &:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+    }
+
+    .clear-search {
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 0;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BMC.Rebrickable.Import": {
+      "commandName": "Project",
+      "commandLineArgs": "--download --import all"
+    }
+  }
+}

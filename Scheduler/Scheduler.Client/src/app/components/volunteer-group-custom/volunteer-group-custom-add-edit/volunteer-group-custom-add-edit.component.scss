@@ -1,0 +1,73 @@
+.add-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.btn-add-group {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+    height: 37px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    width: 60px;
+}
+
+.group-modal-body {
+    padding: 15px;
+    font-size: 1rem;
+}
+
+.group-input,
+.group-select {
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.avatar-upload-container {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    &.drag-over {
+        background-color: rgba(124, 58, 237, 0.1);
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+    }
+}
+
+.avatar-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.color-picker {
+    width: 60px;
+    height: 42px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.group-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    border: none;
+}

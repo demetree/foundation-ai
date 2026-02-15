@@ -13,6 +13,8 @@ public partial class BrickCategory
 
     public string description { get; set; }
 
+    public int? rebrickablePartCategoryId { get; set; }
+
     public int? sequence { get; set; }
 
     public Guid objectGuid { get; set; }

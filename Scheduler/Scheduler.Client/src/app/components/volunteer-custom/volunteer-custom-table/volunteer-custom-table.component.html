@@ -1,0 +1,187 @@
+<app-volunteer-custom-add-edit [showAddButton]="false"></app-volunteer-custom-add-edit>
+<div class="row" *ngIf="userIsVolunteerReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+        <!-- Virtual Scrolling Table for Desktop -->
+        <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+            <!-- Fixed Header (outside viewport) -->
+            <div class="table-header-fixed">
+                <table class="custom-table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="header-action-button" style="width: 1rem;"
+                                *ngIf="userIsVolunteerWriter() == true"></th>
+                            <th class="header-action-button" style="width: 1rem;"
+                                *ngIf="userIsVolunteerWriter() == true"></th>
+
+                            <!-- Dynamic columns -->
+                            <th class="sortable" scope="col" *ngFor="let col of columns" (click)="sortBy(col.key)"
+                                [style.width]="col.width || 'auto'">
+                                {{ col.label }}
+                                <span *ngIf="sortColumn === col.key"
+                                    [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+                <table class="custom-table mb-0">
+                    <tbody>
+                        <tr *cdkVirtualFor="let volunteer of filteredVolunteers; trackBy: getVolunteerId" [ngClass]="{
+                 'row-inactive': volunteer.active == false,
+                 'row-deleted': volunteer.deleted == true
+                 }">
+                            <td class="header-action-button" *ngIf="userIsVolunteerWriter() == true">
+                                <button class="btn btn-sm" (click)="handleEdit(volunteer)" ngbTooltip="Edit"
+                                    placement="top">
+                                    <i class="fa fa-pen"></i>
+                                </button>
+                            </td>
+                            <td class="header-action-button" *ngIf="userIsVolunteerWriter() == true">
+                                <button class="btn btn-sm" (click)="handleDelete(volunteer)" ngbTooltip="Delete"
+                                    placement="top" *ngIf="volunteer.deleted == false">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                                <button class="btn btn-sm" (click)="handleUndelete(volunteer)" ngbTooltip="Undelete"
+                                    placement="top" *ngIf="volunteer.deleted == true">
+                                    <i class="fa fa-trash-arrow-up"></i>
+                                </button>
+                            </td>
+
+                            <!-- Dynamic cells -->
+                            <td *ngFor="let col of columns" class="text-truncate" [style.width]="col.width || 'auto'">
+
+                                <ng-container [ngSwitch]="col.template">
+
+                                    <!-- boolean -->
+                                    <boolean-icon *ngSwitchCase="'boolean'"
+                                        [value]="getNestedValue(volunteer, col.key)" />
+
+                                    <!-- link -->
+                                    <a *ngSwitchCase="'link'"
+                                        [routerLink]="col.linkPath ? buildLink(volunteer, col.linkPath) : null"
+                                        class="btn btn-link text-left">
+                                        {{ getNestedValue(volunteer, col.key) }}
+                                    </a>
+
+                                    <!-- date -->
+                                    <span *ngSwitchCase="'date'">
+                                        {{ getNestedValue(volunteer, col.key) | date:'yyyy-MM-dd' }}
+                                    </span>
+
+                                    <!-- color -->
+                                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                                        <span class="color-swatch"
+                                            [style.background-color]="getNestedValue(volunteer, col.key) || '#cccccc'"
+                                            title="{{ getNestedValue(volunteer, col.key) || 'No color set' }}">
+                                        </span>
+                                    </span>
+
+                                    <!-- status badge -->
+                                    <span *ngSwitchCase="'statusBadge'" class="badge rounded-pill"
+                                        [style.background-color]="volunteer.volunteerStatus?.color || '#6c757d'"
+                                        [style.color]="'white'">
+                                        {{ getNestedValue(volunteer, col.key) }}
+                                    </span>
+
+                                    <!-- default -->
+                                    <span *ngSwitchDefault>
+                                        {{ getNestedValue(volunteer, col.key) }}
+                                    </span>
+                                </ng-container>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </cdk-virtual-scroll-viewport>
+        </div>
+
+        <!-- Cards for Mobile -->
+        <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600"
+            maxBufferPx="1200">
+            <div *cdkVirtualFor="let volunteer of filteredVolunteers; trackBy: getVolunteerId" class="card my-2"
+                [ngClass]="{
+                 'row-inactive': volunteer.active == false,
+                 'row-deleted': volunteer.deleted == true
+                 }">
+
+                <!-- Prominent field first -->
+                <div class="card-header py-3" *ngIf="prominentColumn">
+                    <strong class="d-block text-truncate fs-5">
+                        <ng-container [ngSwitch]="prominentColumn.template">
+                            <boolean-icon *ngSwitchCase="'boolean'"
+                                [value]="getNestedValue(volunteer, prominentColumn.key)" />
+                            <a *ngSwitchCase="'link'"
+                                [routerLink]="prominentColumn.linkPath ? buildLink(volunteer, prominentColumn.linkPath) : null"
+                                class="text-primary">
+                                {{ getNestedValue(volunteer, prominentColumn.key) }}
+                            </a>
+                            <span *ngSwitchCase="'date'">
+                                {{ getNestedValue(volunteer, prominentColumn.key) | date:'yyyy-MM-dd' }}
+                            </span>
+                            <span *ngSwitchDefault>
+                                {{ getNestedValue(volunteer, prominentColumn.key) }}
+                            </span>
+                        </ng-container>
+                    </strong>
+                </div>
+
+                <!-- Card body -->
+                <div class="card-body small">
+                    <div class="row g-2">
+                        <ng-container *ngFor="let col of mobileColumns">
+                            <ng-container *ngIf="col !== prominentColumn">
+                                <div class="col-5 text-muted">{{ col.label }}:</div>
+                                <div class="col-7 text-end fw-medium">
+                                    <ng-container [ngSwitch]="col.template">
+                                        <boolean-icon *ngSwitchCase="'boolean'"
+                                            [value]="getNestedValue(volunteer, col.key)" />
+                                        <a *ngSwitchCase="'link'"
+                                            [routerLink]="col.linkPath ? buildLink(volunteer, col.linkPath) : null"
+                                            class="text-primary">
+                                            {{ getNestedValue(volunteer, col.key) }}
+                                        </a>
+                                        <span *ngSwitchCase="'date'">
+                                            {{ getNestedValue(volunteer, col.key) | date:'yyyy-MM-dd' }}
+                                        </span>
+                                        <span *ngSwitchCase="'statusBadge'" class="badge rounded-pill"
+                                            [style.background-color]="volunteer.volunteerStatus?.color || '#6c757d'"
+                                            [style.color]="'white'">
+                                            {{ getNestedValue(volunteer, col.key) }}
+                                        </span>
+                                        <span *ngSwitchDefault>
+                                            {{ getNestedValue(volunteer, col.key) }}
+                                        </span>
+                                    </ng-container>
+                                </div>
+                            </ng-container>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <div class="btn-group w-100" role="group">
+                        <button class="btn btn-sm btn-outline-primary flex-fill"
+                            [routerLink]="['/volunteers', volunteer.id]" ngbTooltip="View">
+                            <i class="fa fa-magnifying-glass"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(volunteer)"
+                            *ngIf="userIsVolunteerWriter()" ngbTooltip="Edit">
+                            <i class="fa fa-pen"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(volunteer)"
+                            *ngIf="userIsVolunteerWriter() && volunteer.deleted == false" ngbTooltip="Delete">
+                            <i class="fa fa-trash"></i> Delete
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(volunteer)"
+                            *ngIf="userIsVolunteerWriter() && volunteer.deleted == true" ngbTooltip="Undelete">
+                            <i class="fa fa-trash-arrow-up"></i> Undelete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </cdk-virtual-scroll-viewport>
+    </div>
+</div>

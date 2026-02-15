@@ -25,6 +25,8 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { LegoSetService, LegoSetData, LegoSetSubmitData } from '../../../bmc-data-services/lego-set.service';
 import { LegoThemeService } from '../../../bmc-data-services/lego-theme.service';
 import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.service';
+import { LegoSetMinifigService } from '../../../bmc-data-services/lego-set-minifig.service';
+import { LegoSetSubsetService } from '../../../bmc-data-services/lego-set-subset.service';
 import { UserCollectionSetImportService } from '../../../bmc-data-services/user-collection-set-import.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -100,6 +102,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
   legoSets$ = this.legoSetService.GetLegoSetList();
   public legoThemes$ = this.legoThemeService.GetLegoThemeList();
   public legoSetParts$ = this.legoSetPartService.GetLegoSetPartList();
+  public legoSetMinifigs$ = this.legoSetMinifigService.GetLegoSetMinifigList();
+  public legoSetSubsets$ = this.legoSetSubsetService.GetLegoSetSubsetList();
   public userCollectionSetImports$ = this.userCollectionSetImportService.GetUserCollectionSetImportList();
 
   private destroy$ = new Subject<void>();
@@ -108,6 +112,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
     public legoSetService: LegoSetService,
     public legoThemeService: LegoThemeService,
     public legoSetPartService: LegoSetPartService,
+    public legoSetMinifigService: LegoSetMinifigService,
+    public legoSetSubsetService: LegoSetSubsetService,
     public userCollectionSetImportService: UserCollectionSetImportService,
     private authService: AuthService,
     private route: ActivatedRoute,

@@ -951,7 +951,7 @@ export class ConstituentJourneyStageService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerConstituentJourneyStageWriter = user.writePermission >= 50;
+            userIsSchedulerConstituentJourneyStageWriter = user.writePermission >= 60;
           } else {
             userIsSchedulerConstituentJourneyStageWriter = false;
           }      

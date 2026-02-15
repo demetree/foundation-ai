@@ -26,6 +26,7 @@ namespace Foundation.BMC.Database
 			[Required]
 			public String description { get; set; }
 			public Int32? legoThemeId { get; set; }
+			public Int32? rebrickableThemeId { get; set; }
 			public Int32? sequence { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -60,6 +61,7 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				description = this.description,
 				legoThemeId = this.legoThemeId,
+				rebrickableThemeId = this.rebrickableThemeId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -106,6 +108,7 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				description = this.description,
 				legoThemeId = this.legoThemeId,
+				rebrickableThemeId = this.rebrickableThemeId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -153,6 +156,7 @@ namespace Foundation.BMC.Database
 				name = dto.name,
 				description = dto.description,
 				legoThemeId = dto.legoThemeId,
+				rebrickableThemeId = dto.rebrickableThemeId,
 				sequence = dto.sequence,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -176,6 +180,7 @@ namespace Foundation.BMC.Database
 			this.name = dto.name;
 			this.description = dto.description;
 			this.legoThemeId = dto.legoThemeId;
+			this.rebrickableThemeId = dto.rebrickableThemeId;
 			this.sequence = dto.sequence;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -204,6 +209,7 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				description = this.description,
 				legoThemeId = this.legoThemeId,
+				rebrickableThemeId = this.rebrickableThemeId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -264,6 +270,7 @@ namespace Foundation.BMC.Database
 				name = legoTheme.name,
 				description = legoTheme.description,
 				legoThemeId = legoTheme.legoThemeId,
+				rebrickableThemeId = legoTheme.rebrickableThemeId,
 				sequence = legoTheme.sequence,
 				objectGuid = legoTheme.objectGuid,
 				active = legoTheme.active,
@@ -291,6 +298,7 @@ namespace Foundation.BMC.Database
 				name = legoTheme.name,
 				description = legoTheme.description,
 				legoThemeId = legoTheme.legoThemeId,
+				rebrickableThemeId = legoTheme.rebrickableThemeId,
 				sequence = legoTheme.sequence,
 				objectGuid = legoTheme.objectGuid,
 				active = legoTheme.active,

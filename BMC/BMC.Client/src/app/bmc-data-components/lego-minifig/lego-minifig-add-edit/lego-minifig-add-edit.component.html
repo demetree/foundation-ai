@@ -1,0 +1,72 @@
+<div class="add-lego-minifig" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-lego-minifig me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Lego Minifig" 
+        *ngIf="userIsBMCLegoMinifigWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #legoMinifigModal let-modal>
+   <div class="modal-header bg-dark text-light lego-minifig-modal-header">
+      <h5 class="modal-title mb-0" id="legoMinifigModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Lego Minifig' : 'Add Lego Minifig' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body lego-minifig-modal-body">
+      <form [formGroup]="legoMinifigForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="LegoMinifig-name" id="label-LegoMinifig-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="LegoMinifig-name" formControlName="name" placeholder="Enter Name" class="form-control lego-minifig-input" [disabled]="!userIsBMCLegoMinifigWriter()" aria-labelledby="label-name" />
+                <div *ngIf="legoMinifigForm.get('name')?.invalid && legoMinifigForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('figNumber')">
+                <label for="LegoMinifig-figNumber" id="label-LegoMinifig-figNumber"><span class="text-danger">*</span>Fig Number</label>
+                <input type="text" id="LegoMinifig-figNumber" formControlName="figNumber" placeholder="Enter Fig Number" class="form-control lego-minifig-input" [disabled]="!userIsBMCLegoMinifigWriter()" aria-labelledby="label-figNumber" />
+                <div *ngIf="legoMinifigForm.get('figNumber')?.invalid && legoMinifigForm.get('figNumber')?.touched" class="text-danger">
+                    Fig Number is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                <label for="LegoMinifig-partCount" id="label-LegoMinifig-partCount"><span class="text-danger">*</span>Part Count</label>
+                <input type="number" id="LegoMinifig-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control lego-minifig-input" [disabled]="!userIsBMCLegoMinifigWriter()" aria-labelledby="label-partCount" />
+                <div *ngIf="legoMinifigForm.get('partCount')?.invalid && legoMinifigForm.get('partCount')?.touched" class="text-danger">
+                    Part Count is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('imageUrl')">
+                <label for="LegoMinifig-imageUrl" id="label-LegoMinifig-imageUrl">Image Url</label>
+                <input type="text" id="LegoMinifig-imageUrl" formControlName="imageUrl" placeholder="Enter Image Url" class="form-control lego-minifig-input" [disabled]="!userIsBMCLegoMinifigWriter()" aria-labelledby="label-imageUrl" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoMinifig-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoMinifigWriter()" />
+                <label for="LegoMinifig-active" class="form-check-label" id="label-LegoMinifig-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoMinifig-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCLegoMinifigWriter()" />
+                <label for="LegoMinifig-deleted" class="form-check-label" id="label-LegoMinifig-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer lego-minifig-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Lego Minifig changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !legoMinifigForm.valid || legoMinifigForm.pristine  || userIsBMCLegoMinifigWriter() == false " ngbTooltip="Save the Lego Minifig changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Lego Minifig' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

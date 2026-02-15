@@ -38,6 +38,10 @@
                                     <option *ngFor="let legoTheme of legoThemes$ | async" [ngValue]="legoTheme.id">{{legoTheme.name}}</option>
                                 </select>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableThemeId')">
+                                <label for="LegoTheme-rebrickableThemeId" id="label-LegoTheme-rebrickableThemeId">Rebrickable Theme Id</label>
+                                <input type="number" id="LegoTheme-rebrickableThemeId" formControlName="rebrickableThemeId" placeholder="Enter Rebrickable Theme Id" class="form-control lego-theme-input" [disabled]="!userIsBMCLegoThemeWriter()" aria-labelledby="label-rebrickableThemeId" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                                 <label for="LegoTheme-sequence" id="label-LegoTheme-sequence">Sequence</label>
                                 <input type="number" id="LegoTheme-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control lego-theme-input" [disabled]="!userIsBMCLegoThemeWriter()" aria-labelledby="label-sequence" />

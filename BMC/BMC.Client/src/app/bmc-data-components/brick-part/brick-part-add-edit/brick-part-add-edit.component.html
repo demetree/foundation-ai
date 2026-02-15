@@ -71,6 +71,10 @@
                     Brick Category is required
                 </div>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rebrickablePartNum')">
+                <label for="BrickPart-rebrickablePartNum" id="label-BrickPart-rebrickablePartNum">Rebrickable Part Num</label>
+                <input type="text" id="BrickPart-rebrickablePartNum" formControlName="rebrickablePartNum" placeholder="Enter Rebrickable Part Num" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-rebrickablePartNum" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('widthLdu')">
                 <label for="BrickPart-widthLdu" id="label-BrickPart-widthLdu">Width Ldu</label>
                 <input type="number" id="BrickPart-widthLdu" formControlName="widthLdu" placeholder="Enter Width Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-widthLdu" />

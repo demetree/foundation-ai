@@ -179,10 +179,12 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BrickCategoriesController));
                 controllers.Add(typeof(BrickColoursController));
                 controllers.Add(typeof(BrickConnectionsController));
+                controllers.Add(typeof(BrickElementsController));
                 controllers.Add(typeof(BrickPartsController));
                 controllers.Add(typeof(BrickPartChangeHistoriesController));
                 controllers.Add(typeof(BrickPartColoursController));
                 controllers.Add(typeof(BrickPartConnectorsController));
+                controllers.Add(typeof(BrickPartRelationshipsController));
                 controllers.Add(typeof(BuildManualsController));
                 controllers.Add(typeof(BuildManualChangeHistoriesController));
                 controllers.Add(typeof(BuildManualPagesController));
@@ -193,8 +195,11 @@ namespace Foundation.BMC
                 controllers.Add(typeof(ColourFinishesController));
                 controllers.Add(typeof(ConnectorTypesController));
                 controllers.Add(typeof(ExportFormatsController));
+                controllers.Add(typeof(LegoMinifigsController));
                 controllers.Add(typeof(LegoSetsController));
+                controllers.Add(typeof(LegoSetMinifigsController));
                 controllers.Add(typeof(LegoSetPartsController));
+                controllers.Add(typeof(LegoSetSubsetsController));
                 controllers.Add(typeof(LegoThemesController));
                 controllers.Add(typeof(PartTypesController));
                 controllers.Add(typeof(PlacedBricksController));

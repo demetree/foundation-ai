@@ -161,6 +161,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || (includeRelations == true && x.brickPart.ldrawCategory.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.keywords.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.author.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.rebrickablePartNum.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.geometryFilePath.Contains(anyStringContains))
 			   );
 			}
@@ -270,6 +271,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
 			       || x.brickPart.keywords.Contains(anyStringContains)
 			       || x.brickPart.author.Contains(anyStringContains)
+			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
 			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
 			   );
 			}
@@ -698,6 +700,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
 			       || x.brickPart.keywords.Contains(anyStringContains)
 			       || x.brickPart.author.Contains(anyStringContains)
+			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
 			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
 			   );
 			}

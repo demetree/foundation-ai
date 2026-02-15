@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 brick-part-relationship-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-part-relationship-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Part Relationship</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Part Relationship' : 'Add Brick Part Relationship'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickPartRelationshipReader()">
+                <div class="col m-2 brick-part-relationship-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickPartRelationshipForm" (ngSubmit)="submitForm()" class="brick-part-relationship-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('childBrickPartId')">
+                                <label for="BrickPartRelationship-childBrickPartId" id="label-BrickPartRelationship-childBrickPartId"><span class="text-danger">*</span>Child Brick Part</label>
+                                <select id="BrickPartRelationship-childBrickPartId" formControlName="childBrickPartId" class="form-select brick-part-relationship-select" [disabled]="!userIsBMCBrickPartRelationshipWriter()">
+                                    <option [ngValue]="null">Select Brick Part</option>
+                                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                                </select>
+                                <div *ngIf="brickPartRelationshipForm.get('childBrickPartId')?.invalid && brickPartRelationshipForm.get('childBrickPartId')?.touched" class="text-danger">
+                                    Child Brick Part is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('parentBrickPartId')">
+                                <label for="BrickPartRelationship-parentBrickPartId" id="label-BrickPartRelationship-parentBrickPartId"><span class="text-danger">*</span>Parent Brick Part</label>
+                                <select id="BrickPartRelationship-parentBrickPartId" formControlName="parentBrickPartId" class="form-select brick-part-relationship-select" [disabled]="!userIsBMCBrickPartRelationshipWriter()">
+                                    <option [ngValue]="null">Select Brick Part</option>
+                                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                                </select>
+                                <div *ngIf="brickPartRelationshipForm.get('parentBrickPartId')?.invalid && brickPartRelationshipForm.get('parentBrickPartId')?.touched" class="text-danger">
+                                    Parent Brick Part is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('relationshipType')">
+                                <label for="BrickPartRelationship-relationshipType" id="label-BrickPartRelationship-relationshipType"><span class="text-danger">*</span>Relationship Type</label>
+                                <input type="text" id="BrickPartRelationship-relationshipType" formControlName="relationshipType" placeholder="Enter Relationship Type" class="form-control brick-part-relationship-input" [disabled]="!userIsBMCBrickPartRelationshipWriter()" aria-labelledby="label-relationshipType" />
+                                <div *ngIf="brickPartRelationshipForm.get('relationshipType')?.invalid && brickPartRelationshipForm.get('relationshipType')?.touched" class="text-danger">
+                                    Relationship Type is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickPartRelationship-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickPartRelationshipWriter()" />
+                                <label for="BrickPartRelationship-active" class="form-check-label" id="label-BrickPartRelationship-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickPartRelationship-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickPartRelationshipWriter()" />
+                                <label for="BrickPartRelationship-deleted" class="form-check-label" id="label-BrickPartRelationship-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-part-relationship-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickPartRelationshipForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Part Relationship">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickPartRelationshipForm.valid || !brickPartRelationshipForm.dirty || brickPartRelationshipForm.pristine  || userIsBMCBrickPartRelationshipWriter() == false " ngbTooltip="Save the Brick Part Relationship changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Part Relationship' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

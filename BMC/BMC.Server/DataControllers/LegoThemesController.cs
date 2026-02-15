@@ -65,6 +65,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			int? legoThemeId = null,
+			int? rebrickableThemeId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -115,6 +116,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (legoThemeId.HasValue == true)
 			{
 				query = query.Where(lt => lt.legoThemeId == legoThemeId.Value);
+			}
+			if (rebrickableThemeId.HasValue == true)
+			{
+				query = query.Where(lt => lt.rebrickableThemeId == rebrickableThemeId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -221,6 +226,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			int? legoThemeId = null,
+			int? rebrickableThemeId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -253,6 +259,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (legoThemeId.HasValue == true)
 			{
 				query = query.Where(lt => lt.legoThemeId == legoThemeId.Value);
+			}
+			if (rebrickableThemeId.HasValue == true)
+			{
+				query = query.Where(lt => lt.rebrickableThemeId == rebrickableThemeId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -681,6 +691,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			int? legoThemeId = null,
+			int? rebrickableThemeId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -729,6 +740,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (legoThemeId.HasValue == true)
 			{
 				query = query.Where(lt => lt.legoThemeId == legoThemeId.Value);
+			}
+			if (rebrickableThemeId.HasValue == true)
+			{
+				query = query.Where(lt => lt.rebrickableThemeId == rebrickableThemeId.Value);
 			}
 			if (sequence.HasValue == true)
 			{

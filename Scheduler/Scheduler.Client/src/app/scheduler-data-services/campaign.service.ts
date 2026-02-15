@@ -1218,7 +1218,7 @@ export class CampaignService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerCampaignWriter = user.writePermission >= 50;
+            userIsSchedulerCampaignWriter = user.writePermission >= 60;
           } else {
             userIsSchedulerCampaignWriter = false;
           }      

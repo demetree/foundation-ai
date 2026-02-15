@@ -30,6 +30,8 @@ import { BrickPartConnectorService } from '../../../bmc-data-services/brick-part
 import { BrickPartColourService } from '../../../bmc-data-services/brick-part-colour.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
 import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.service';
+import { BrickPartRelationshipService } from '../../../bmc-data-services/brick-part-relationship.service';
+import { BrickElementService } from '../../../bmc-data-services/brick-element.service';
 import { UserCollectionPartService } from '../../../bmc-data-services/user-collection-part.service';
 import { UserWishlistItemService } from '../../../bmc-data-services/user-wishlist-item.service';
 import { AuthService } from '../../../services/auth.service';
@@ -51,6 +53,7 @@ interface BrickPartFormValues {
   keywords: string | null,
   author: string | null,
   brickCategoryId: number | bigint,       // For FK link number
+  rebrickablePartNum: string | null,
   widthLdu: string | null,     // Stored as string for form input, converted to number on submit.
   heightLdu: string | null,     // Stored as string for form input, converted to number on submit.
   depthLdu: string | null,     // Stored as string for form input, converted to number on submit.
@@ -96,6 +99,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         keywords: [''],
         author: [''],
         brickCategoryId: [null, Validators.required],
+        rebrickablePartNum: [''],
         widthLdu: [''],
         heightLdu: [''],
         depthLdu: [''],
@@ -127,6 +131,8 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
   public brickPartColours$ = this.brickPartColourService.GetBrickPartColourList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
   public legoSetParts$ = this.legoSetPartService.GetLegoSetPartList();
+  public brickPartRelationships$ = this.brickPartRelationshipService.GetBrickPartRelationshipList();
+  public brickElements$ = this.brickElementService.GetBrickElementList();
   public userCollectionParts$ = this.userCollectionPartService.GetUserCollectionPartList();
   public userWishlistItems$ = this.userWishlistItemService.GetUserWishlistItemList();
 
@@ -141,6 +147,8 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
     public brickPartColourService: BrickPartColourService,
     public placedBrickService: PlacedBrickService,
     public legoSetPartService: LegoSetPartService,
+    public brickPartRelationshipService: BrickPartRelationshipService,
+    public brickElementService: BrickElementService,
     public userCollectionPartService: UserCollectionPartService,
     public userWishlistItemService: UserWishlistItemService,
     private authService: AuthService,
@@ -432,6 +440,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         keywords: '',
         author: '',
         brickCategoryId: null,
+        rebrickablePartNum: '',
         widthLdu: '',
         heightLdu: '',
         depthLdu: '',
@@ -459,6 +468,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         keywords: brickPartData.keywords ?? '',
         author: brickPartData.author ?? '',
         brickCategoryId: brickPartData.brickCategoryId,
+        rebrickablePartNum: brickPartData.rebrickablePartNum ?? '',
         widthLdu: brickPartData.widthLdu?.toString() ?? '',
         heightLdu: brickPartData.heightLdu?.toString() ?? '',
         depthLdu: brickPartData.depthLdu?.toString() ?? '',
@@ -536,6 +546,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         keywords: formValue.keywords?.trim() || null,
         author: formValue.author?.trim() || null,
         brickCategoryId: Number(formValue.brickCategoryId),
+        rebrickablePartNum: formValue.rebrickablePartNum?.trim() || null,
         widthLdu: formValue.widthLdu ? Number(formValue.widthLdu) : null,
         heightLdu: formValue.heightLdu ? Number(formValue.heightLdu) : null,
         depthLdu: formValue.depthLdu ? Number(formValue.depthLdu) : null,

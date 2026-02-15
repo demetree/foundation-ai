@@ -1,0 +1,52 @@
+<div class="members-tab p-4">
+    <div class="d-flex justify-content-center align-items-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading members...</span>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading">
+        <!-- No members -->
+        <div class="text-center py-4" *ngIf="members.length === 0">
+            <i class="fa-solid fa-user-plus fa-3x text-muted mb-3"></i>
+            <p class="text-muted">This group has no members yet.</p>
+        </div>
+
+        <!-- Members Table -->
+        <div class="table-responsive" *ngIf="members.length > 0">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th>Left</th>
+                        <th class="text-center">Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let member of members"
+                        [ngClass]="{ 'table-secondary': !member.active || member.deleted }">
+                        <td>
+                            <a [routerLink]="['/resources', member.resourceId]" class="text-decoration-none fw-medium">
+                                {{ member.resource?.name || 'Resource #' + member.resourceId }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark" *ngIf="member.assignmentRole">
+                                {{ member.assignmentRole.name }}
+                            </span>
+                            <span *ngIf="!member.assignmentRole" class="text-muted">—</span>
+                        </td>
+                        <td>{{ member.joinedDate ? (member.joinedDate | date:'mediumDate') : '—' }}</td>
+                        <td>{{ member.leftDate ? (member.leftDate | date:'mediumDate') : '—' }}</td>
+                        <td class="text-center">
+                            <i
+                                [class]="member.active ? 'fa-solid fa-check text-success' : 'fa-solid fa-times text-danger'"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

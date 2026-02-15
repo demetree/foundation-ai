@@ -1,0 +1,71 @@
+<div class="add-lego-set-subset" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-lego-set-subset me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Lego Set Subset" 
+        *ngIf="userIsBMCLegoSetSubsetWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #legoSetSubsetModal let-modal>
+   <div class="modal-header bg-dark text-light lego-set-subset-modal-header">
+      <h5 class="modal-title mb-0" id="legoSetSubsetModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Lego Set Subset' : 'Add Lego Set Subset' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body lego-set-subset-modal-body">
+      <form [formGroup]="legoSetSubsetForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('parentLegoSetId')">
+                <label for="LegoSetSubset-parentLegoSetId" id="label-LegoSetSubset-parentLegoSetId"><span class="text-danger">*</span>Parent Lego Set</label>
+                <select id="LegoSetSubset-parentLegoSetId" formControlName="parentLegoSetId" class="form-select lego-set-subset-select" [disabled]="!userIsBMCLegoSetSubsetWriter()">
+                    <option [ngValue]="null">Select Lego Set</option>
+                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                </select>
+                <div *ngIf="legoSetSubsetForm.get('parentLegoSetId')?.invalid && legoSetSubsetForm.get('parentLegoSetId')?.touched" class="text-danger">
+                    Parent Lego Set is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('childLegoSetId')">
+                <label for="LegoSetSubset-childLegoSetId" id="label-LegoSetSubset-childLegoSetId"><span class="text-danger">*</span>Child Lego Set</label>
+                <select id="LegoSetSubset-childLegoSetId" formControlName="childLegoSetId" class="form-select lego-set-subset-select" [disabled]="!userIsBMCLegoSetSubsetWriter()">
+                    <option [ngValue]="null">Select Lego Set</option>
+                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                </select>
+                <div *ngIf="legoSetSubsetForm.get('childLegoSetId')?.invalid && legoSetSubsetForm.get('childLegoSetId')?.touched" class="text-danger">
+                    Child Lego Set is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                <label for="LegoSetSubset-quantity" id="label-LegoSetSubset-quantity">Quantity</label>
+                <input type="number" id="LegoSetSubset-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control lego-set-subset-input" [disabled]="!userIsBMCLegoSetSubsetWriter()" aria-labelledby="label-quantity" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoSetSubset-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoSetSubsetWriter()" />
+                <label for="LegoSetSubset-active" class="form-check-label" id="label-LegoSetSubset-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoSetSubset-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCLegoSetSubsetWriter()" />
+                <label for="LegoSetSubset-deleted" class="form-check-label" id="label-LegoSetSubset-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer lego-set-subset-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Lego Set Subset changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !legoSetSubsetForm.valid || legoSetSubsetForm.pristine  || userIsBMCLegoSetSubsetWriter() == false " ngbTooltip="Save the Lego Set Subset changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Lego Set Subset' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

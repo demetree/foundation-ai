@@ -42,6 +42,7 @@ import { BookingSourceTypeService, BookingSourceTypeData } from '../../../schedu
 import { ScheduledEventBasicListData } from '../../../scheduler-data-services/scheduled-event.service';
 import { ConflictDetectionService } from '../../../services/conflict-detection.service';
 import { InputDialogService } from '../../../services/input-dialog.service';
+import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 
 @Component({
   selector: 'app-event-add-edit-modal',
@@ -173,7 +174,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private eventCalendarService: EventCalendarService,
     private resourceAvailabilityService: ResourceAvailabilityService,
     private resourceShiftService: ResourceShiftService,
-    private resourceScheduleContextService: ResourceScheduleContextService
+    private resourceScheduleContextService: ResourceScheduleContextService,
+    private schedulerHelperService: SchedulerHelperService
   ) {
     this.buildForm();
   }
@@ -841,7 +843,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     const rangeEnd = new Date(new Date(end).getTime() + 86400000).toISOString();     // +1 day
 
     const nearbyEvents = await lastValueFrom(
-      this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd)
+      this.schedulerHelperService.GetCalendarEvents(rangeStart, rangeEnd)
     );
 
     // Build a virtual event representing the form state for each resource/crew

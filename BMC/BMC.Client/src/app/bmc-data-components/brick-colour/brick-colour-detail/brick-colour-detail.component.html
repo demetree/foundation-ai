@@ -191,6 +191,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="brickElementService.userIsBMCBrickElementReader()">
+                            <button ngbNavLink>Brick Elements
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickColourData?.BrickElementsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-element-table [queryParams]="{ brickColourId: brickColourData?.id }"></app-brick-element-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-brick-element-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-brick-element-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="userCollectionPartService.userIsBMCUserCollectionPartReader()">
                             <button ngbNavLink>User Collection Parts
                                 <span class="badge bg-primary ms-2">

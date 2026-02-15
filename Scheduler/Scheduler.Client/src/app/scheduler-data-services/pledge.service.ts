@@ -963,7 +963,7 @@ export class PledgeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerPledgeWriter = user.writePermission >= 50;
+            userIsSchedulerPledgeWriter = user.writePermission >= 60;
           } else {
             userIsSchedulerPledgeWriter = false;
           }      

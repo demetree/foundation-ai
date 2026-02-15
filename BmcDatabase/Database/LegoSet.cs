@@ -31,7 +31,13 @@ public partial class LegoSet
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<LegoSetMinifig> LegoSetMinifigs { get; set; } = new List<LegoSetMinifig>();
+
     public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();
+
+    public virtual ICollection<LegoSetSubset> LegoSetSubsetchildLegoSets { get; set; } = new List<LegoSetSubset>();
+
+    public virtual ICollection<LegoSetSubset> LegoSetSubsetparentLegoSets { get; set; } = new List<LegoSetSubset>();
 
     public virtual ICollection<UserCollectionSetImport> UserCollectionSetImports { get; set; } = new List<UserCollectionSetImport>();
 

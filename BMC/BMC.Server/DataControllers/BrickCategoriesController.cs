@@ -64,6 +64,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetBrickCategories(
 			string name = null,
 			string description = null,
+			int? rebrickablePartCategoryId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -110,6 +111,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(description) == false)
 			{
 				query = query.Where(bc => bc.description == description);
+			}
+			if (rebrickablePartCategoryId.HasValue == true)
+			{
+				query = query.Where(bc => bc.rebrickablePartCategoryId == rebrickablePartCategoryId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -212,6 +217,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string description = null,
+			int? rebrickablePartCategoryId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -240,6 +246,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (description != null)
 			{
 				query = query.Where(bc => bc.description == description);
+			}
+			if (rebrickablePartCategoryId.HasValue == true)
+			{
+				query = query.Where(bc => bc.rebrickablePartCategoryId == rebrickablePartCategoryId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -664,6 +674,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string name = null,
 			string description = null,
+			int? rebrickablePartCategoryId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -708,6 +719,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(description) == false)
 			{
 				query = query.Where(bc => bc.description == description);
+			}
+			if (rebrickablePartCategoryId.HasValue == true)
+			{
+				query = query.Where(bc => bc.rebrickablePartCategoryId == rebrickablePartCategoryId.Value);
 			}
 			if (sequence.HasValue == true)
 			{

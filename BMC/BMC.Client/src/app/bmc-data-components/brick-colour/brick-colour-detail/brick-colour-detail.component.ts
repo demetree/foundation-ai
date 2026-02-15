@@ -27,6 +27,7 @@ import { ColourFinishService } from '../../../bmc-data-services/colour-finish.se
 import { BrickPartColourService } from '../../../bmc-data-services/brick-part-colour.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
 import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.service';
+import { BrickElementService } from '../../../bmc-data-services/brick-element.service';
 import { UserCollectionPartService } from '../../../bmc-data-services/user-collection-part.service';
 import { UserWishlistItemService } from '../../../bmc-data-services/user-wishlist-item.service';
 import { AuthService } from '../../../services/auth.service';
@@ -111,6 +112,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
   public brickPartColours$ = this.brickPartColourService.GetBrickPartColourList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
   public legoSetParts$ = this.legoSetPartService.GetLegoSetPartList();
+  public brickElements$ = this.brickElementService.GetBrickElementList();
   public userCollectionParts$ = this.userCollectionPartService.GetUserCollectionPartList();
   public userWishlistItems$ = this.userWishlistItemService.GetUserWishlistItemList();
 
@@ -122,6 +124,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
     public brickPartColourService: BrickPartColourService,
     public placedBrickService: PlacedBrickService,
     public legoSetPartService: LegoSetPartService,
+    public brickElementService: BrickElementService,
     public userCollectionPartService: UserCollectionPartService,
     public userWishlistItemService: UserWishlistItemService,
     private authService: AuthService,

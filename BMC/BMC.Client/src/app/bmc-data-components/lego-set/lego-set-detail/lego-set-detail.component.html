@@ -112,6 +112,57 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="legoSetMinifigService.userIsBMCLegoSetMinifigReader()">
+                            <button ngbNavLink>Lego Set Minifigs
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.LegoSetMinifigsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-lego-set-minifig-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-lego-set-minifig-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-lego-set-minifig-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-lego-set-minifig-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="legoSetSubsetService.userIsBMCLegoSetSubsetReader()">
+                            <button ngbNavLink>Lego Set Subsets Parent Lego Sets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.LegoSetSubsetParentLegoSetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-lego-set-subset-table [queryParams]="{ parentLegoSetId: legoSetData?.id }"></app-lego-set-subset-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-lego-set-subset-add-edit [preSeededData]="{ parentLegoSetId: legoSetData?.id }" [hiddenFields]="['parentLegoSetId']"></app-lego-set-subset-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="legoSetSubsetService.userIsBMCLegoSetSubsetReader()">
+                            <button ngbNavLink>Lego Set Subsets Child Lego Sets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.LegoSetSubsetChildLegoSetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-lego-set-subset-table [queryParams]="{ childLegoSetId: legoSetData?.id }"></app-lego-set-subset-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-lego-set-subset-add-edit [preSeededData]="{ childLegoSetId: legoSetData?.id }" [hiddenFields]="['childLegoSetId']"></app-lego-set-subset-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="userCollectionSetImportService.userIsBMCUserCollectionSetImportReader()">
                             <button ngbNavLink>User Collection Set Imports
                                 <span class="badge bg-primary ms-2">

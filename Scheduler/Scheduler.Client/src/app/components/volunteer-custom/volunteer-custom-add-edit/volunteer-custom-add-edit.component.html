@@ -1,0 +1,236 @@
+<div class="add-volunteer" *ngIf="showAddButton == true">
+    <button type="button" class="btn btn-sm btn-add-volunteer me-2" (click)="openModal()" ngbTooltip="Add Volunteer"
+        *ngIf="userIsVolunteerWriter() == true" placement="top" style="min-width: 75px;">
+        Add
+    </button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #volunteerModal let-modal>
+    <div class="modal-header bg-dark text-light volunteer-modal-header">
+        <h5 class="modal-title mb-0" id="volunteerModalLabel" ngbTooltip="{{objectGuid}}">
+            {{ isEditMode ? 'Edit Volunteer' : 'Add Volunteer' }}
+        </h5>
+        <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()">
+        </button>
+    </div>
+    <div class="modal-body volunteer-modal-body">
+        <form [formGroup]="volunteerForm" (ngSubmit)="submitForm()">
+
+            <!-- Core Fields -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="resourceId" class="form-label"><span class="text-danger">*</span>Resource
+                        (Person)</label>
+                    <select id="resourceId" formControlName="resourceId" class="form-select volunteer-select"
+                        [attr.disabled]="isEditMode ? '' : null">
+                        <option [ngValue]="null">Select Resource</option>
+                        <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{resource.name}}
+                        </option>
+                    </select>
+                    <div *ngIf="volunteerForm.get('resourceId')?.invalid && volunteerForm.get('resourceId')?.touched"
+                        class="text-danger small">
+                        Resource is required
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="volunteerStatusId" class="form-label"><span class="text-danger">*</span>Status</label>
+                    <select id="volunteerStatusId" formControlName="volunteerStatusId"
+                        class="form-select volunteer-select">
+                        <option [ngValue]="null">Select Status</option>
+                        <option *ngFor="let status of volunteerStatuses$ | async" [ngValue]="status.id">{{status.name}}
+                        </option>
+                    </select>
+                    <div *ngIf="volunteerForm.get('volunteerStatusId')?.invalid && volunteerForm.get('volunteerStatusId')?.touched"
+                        class="text-danger small">
+                        Status is required
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="onboardedDate" class="form-label">Onboarded Date</label>
+                    <input type="date" id="onboardedDate" formControlName="onboardedDate"
+                        class="form-control volunteer-input" />
+                </div>
+                <div class="col-md-4">
+                    <label for="totalHoursServed" class="form-label">Total Hours Served</label>
+                    <input type="number" id="totalHoursServed" formControlName="totalHoursServed"
+                        class="form-control volunteer-input" step="0.5" min="0" />
+                </div>
+                <div class="col-md-4">
+                    <label for="lastActivityDate" class="form-label">Last Activity Date</label>
+                    <input type="date" id="lastActivityDate" formControlName="lastActivityDate"
+                        class="form-control volunteer-input" />
+                </div>
+            </div>
+
+            <!-- Availability -->
+            <div class="form-group mb-3">
+                <label for="availabilityPreferences" class="form-label">Availability Preferences</label>
+                <textarea id="availabilityPreferences" formControlName="availabilityPreferences"
+                    class="form-control volunteer-input" rows="2"
+                    placeholder="e.g. Weekday mornings, Saturday afternoons only"></textarea>
+            </div>
+
+            <!-- Collapsible Compliance Panel -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
+                    (click)="isCompliancePanelOpen = !isCompliancePanelOpen">
+                    <h6 class="mb-0 fw-semibold">
+                        <i [class]="isCompliancePanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
+                            class="me-2"></i>
+                        Compliance & Background Check
+                    </h6>
+                    <span class="badge bg-light text-dark"
+                        *ngIf="volunteerForm.get('backgroundCheckCompleted')?.value || volunteerForm.get('confidentialityAgreementSigned')?.value">
+                        Configured
+                    </span>
+                </div>
+
+                <div [@collapse]="isCompliancePanelOpen ? 'true' : 'false'" class="mt-3">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" id="backgroundCheckCompleted"
+                                    formControlName="backgroundCheckCompleted" class="form-check-input" />
+                                <label for="backgroundCheckCompleted" class="form-check-label">Background Check
+                                    Completed</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="backgroundCheckDate" class="form-label">BG Check Date</label>
+                            <input type="date" id="backgroundCheckDate" formControlName="backgroundCheckDate"
+                                class="form-control volunteer-input" />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="backgroundCheckExpiry" class="form-label">BG Check Expiry</label>
+                            <input type="date" id="backgroundCheckExpiry" formControlName="backgroundCheckExpiry"
+                                class="form-control volunteer-input" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" id="confidentialityAgreementSigned"
+                                    formControlName="confidentialityAgreementSigned" class="form-check-input" />
+                                <label for="confidentialityAgreementSigned" class="form-check-label">Confidentiality
+                                    Agreement
+                                    Signed</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="confidentialityAgreementDate" class="form-label">Agreement Date</label>
+                            <input type="date" id="confidentialityAgreementDate"
+                                formControlName="confidentialityAgreementDate" class="form-control volunteer-input" />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inactiveSince" class="form-label">Inactive Since</label>
+                            <input type="date" id="inactiveSince" formControlName="inactiveSince"
+                                class="form-control volunteer-input" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Notes Panel -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
+                    (click)="isNotesPanelOpen = !isNotesPanelOpen">
+                    <h6 class="mb-0 fw-semibold">
+                        <i [class]="isNotesPanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
+                            class="me-2"></i>
+                        Skills, Interests & Emergency Contact
+                    </h6>
+                </div>
+
+                <div [@collapse]="isNotesPanelOpen ? 'true' : 'false'" class="mt-3">
+                    <div class="form-group mb-3">
+                        <label for="interestsAndSkillsNotes" class="form-label">Interests & Skills</label>
+                        <textarea id="interestsAndSkillsNotes" formControlName="interestsAndSkillsNotes"
+                            class="form-control volunteer-input" rows="3"
+                            placeholder="e.g. CPR certified, speaks Spanish, enjoys outdoor events"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="emergencyContactNotes" class="form-label">Emergency Contact</label>
+                        <textarea id="emergencyContactNotes" formControlName="emergencyContactNotes"
+                            class="form-control volunteer-input" rows="2"
+                            placeholder="e.g. Jane Doe, (555) 123-4567, sister"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Appearance Panel -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
+                    (click)="isAppearancePanelOpen = !isAppearancePanelOpen">
+                    <h6 class="mb-0 fw-semibold">
+                        <i [class]="isAppearancePanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
+                            class="me-2"></i>
+                        Appearance
+                    </h6>
+                    <span class="badge bg-light text-dark" *ngIf="volunteerForm.get('color')?.value">
+                        Configured
+                    </span>
+                </div>
+
+                <div [@collapse]="isAppearancePanelOpen ? 'true' : 'false'" class="mt-3">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="color" class="form-label">Color</label>
+                            <input type="color" id="color" formControlName="color"
+                                class="form-control form-control-color color-picker" title="Choose Color">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="iconId" class="form-label">Icon</label>
+                            <select id="iconId" formControlName="iconId" class="form-select volunteer-select">
+                                <option [ngValue]="null">Select Icon</option>
+                                <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced (Edit Only) -->
+            <fieldset class="mb-4 mt-4" *ngIf="isEditMode">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="versionNumber" class="form-label">Version</label>
+                        <input type="text" id="versionNumber" [value]="volunteerForm.get('versionNumber')?.value"
+                            class="form-control" disabled />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-3">
+                        <div class="form-check">
+                            <input type="checkbox" id="active" formControlName="active" class="form-check-input" />
+                            <label class="form-check-label" for="active">Active</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" />
+                            <label class="form-check-label" for="deleted">Deleted</label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="modal-footer volunteer-modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()"
+                    ngbTooltip="Cancel and Close">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary"
+                    [disabled]="isSaving || !volunteerForm.valid || volunteerForm.pristine || !userIsVolunteerWriter()"
+                    ngbTooltip="Save and Close">
+                    <span *ngIf="isSaving">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Saving...
+                    </span>
+                    <span *ngIf="!isSaving">
+                        <i class="fa-solid fa-check me-1"></i>
+                        {{ isEditMode ? 'Save' : 'Create' }}
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>

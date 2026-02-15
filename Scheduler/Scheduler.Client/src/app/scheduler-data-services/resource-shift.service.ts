@@ -834,7 +834,7 @@ export class ResourceShiftService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerResourceShiftWriter = user.writePermission >= 50;
+            userIsSchedulerResourceShiftWriter = user.writePermission >= 30;
           } else {
             userIsSchedulerResourceShiftWriter = false;
           }      

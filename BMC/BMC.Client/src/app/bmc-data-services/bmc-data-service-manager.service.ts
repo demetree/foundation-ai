@@ -12,10 +12,12 @@ import {Injectable} from '@angular/core';
 import {BrickCategoryService} from  './brick-category.service';
 import {BrickColourService} from  './brick-colour.service';
 import {BrickConnectionService} from  './brick-connection.service';
+import {BrickElementService} from  './brick-element.service';
 import {BrickPartService} from  './brick-part.service';
 import {BrickPartChangeHistoryService} from  './brick-part-change-history.service';
 import {BrickPartColourService} from  './brick-part-colour.service';
 import {BrickPartConnectorService} from  './brick-part-connector.service';
+import {BrickPartRelationshipService} from  './brick-part-relationship.service';
 import {BuildManualService} from  './build-manual.service';
 import {BuildManualChangeHistoryService} from  './build-manual-change-history.service';
 import {BuildManualPageService} from  './build-manual-page.service';
@@ -26,8 +28,11 @@ import {BuildStepPartService} from  './build-step-part.service';
 import {ColourFinishService} from  './colour-finish.service';
 import {ConnectorTypeService} from  './connector-type.service';
 import {ExportFormatService} from  './export-format.service';
+import {LegoMinifigService} from  './lego-minifig.service';
 import {LegoSetService} from  './lego-set.service';
+import {LegoSetMinifigService} from  './lego-set-minifig.service';
 import {LegoSetPartService} from  './lego-set-part.service';
+import {LegoSetSubsetService} from  './lego-set-subset.service';
 import {LegoThemeService} from  './lego-theme.service';
 import {PartTypeService} from  './part-type.service';
 import {PlacedBrickService} from  './placed-brick.service';
@@ -59,10 +64,12 @@ export class BMCDataServiceManagerService  {
     constructor(public brickCategoryService: BrickCategoryService
               , public brickColourService: BrickColourService
               , public brickConnectionService: BrickConnectionService
+              , public brickElementService: BrickElementService
               , public brickPartService: BrickPartService
               , public brickPartChangeHistoryService: BrickPartChangeHistoryService
               , public brickPartColourService: BrickPartColourService
               , public brickPartConnectorService: BrickPartConnectorService
+              , public brickPartRelationshipService: BrickPartRelationshipService
               , public buildManualService: BuildManualService
               , public buildManualChangeHistoryService: BuildManualChangeHistoryService
               , public buildManualPageService: BuildManualPageService
@@ -73,8 +80,11 @@ export class BMCDataServiceManagerService  {
               , public colourFinishService: ColourFinishService
               , public connectorTypeService: ConnectorTypeService
               , public exportFormatService: ExportFormatService
+              , public legoMinifigService: LegoMinifigService
               , public legoSetService: LegoSetService
+              , public legoSetMinifigService: LegoSetMinifigService
               , public legoSetPartService: LegoSetPartService
+              , public legoSetSubsetService: LegoSetSubsetService
               , public legoThemeService: LegoThemeService
               , public partTypeService: PartTypeService
               , public placedBrickService: PlacedBrickService
@@ -104,10 +114,12 @@ export class BMCDataServiceManagerService  {
         this.brickCategoryService.ClearAllCaches();
         this.brickColourService.ClearAllCaches();
         this.brickConnectionService.ClearAllCaches();
+        this.brickElementService.ClearAllCaches();
         this.brickPartService.ClearAllCaches();
         this.brickPartChangeHistoryService.ClearAllCaches();
         this.brickPartColourService.ClearAllCaches();
         this.brickPartConnectorService.ClearAllCaches();
+        this.brickPartRelationshipService.ClearAllCaches();
         this.buildManualService.ClearAllCaches();
         this.buildManualChangeHistoryService.ClearAllCaches();
         this.buildManualPageService.ClearAllCaches();
@@ -118,8 +130,11 @@ export class BMCDataServiceManagerService  {
         this.colourFinishService.ClearAllCaches();
         this.connectorTypeService.ClearAllCaches();
         this.exportFormatService.ClearAllCaches();
+        this.legoMinifigService.ClearAllCaches();
         this.legoSetService.ClearAllCaches();
+        this.legoSetMinifigService.ClearAllCaches();
         this.legoSetPartService.ClearAllCaches();
+        this.legoSetSubsetService.ClearAllCaches();
         this.legoThemeService.ClearAllCaches();
         this.partTypeService.ClearAllCaches();
         this.placedBrickService.ClearAllCaches();

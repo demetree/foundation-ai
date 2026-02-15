@@ -6469,7 +6469,7 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("        [HttpGet]");
                     sb.AppendLine("        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
                     sb.AppendLine("        [Route(\"api/" + singularForRouting + "/Data/{id:int}\")]");
-                    sb.AppendLine("        public async Task<IActionResult> DownloadDataAsync(int id)");
+                    sb.AppendLine("        public async Task<IActionResult> DownloadDataAsync(int id, CancellationToken cancellationToken = default)");
                     sb.AppendLine("        {");
                     sb.AppendLine();
 

@@ -31,6 +31,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[BrickElement]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[BrickPart]",
          "ObjectType": 0
       },
@@ -44,6 +48,10 @@
       },
       {
          "Name": "[BMC].[BrickPartConnector]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickPartRelationship]",
          "ObjectType": 0
       },
       {
@@ -87,11 +95,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[LegoMinifig]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[LegoSet]",
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[LegoSetMinifig]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[LegoSetPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[LegoSetSubset]",
          "ObjectType": 0
       },
       {

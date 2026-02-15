@@ -840,7 +840,7 @@ export class VolunteerGroupMemberService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerVolunteerGroupMemberWriter = user.writePermission >= 50;
+            userIsSchedulerVolunteerGroupMemberWriter = user.writePermission >= 40;
           } else {
             userIsSchedulerVolunteerGroupMemberWriter = false;
           }      

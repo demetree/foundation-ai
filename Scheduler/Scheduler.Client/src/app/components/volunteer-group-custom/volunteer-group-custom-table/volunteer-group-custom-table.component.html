@@ -1,0 +1,136 @@
+<app-volunteer-group-custom-add-edit [showAddButton]="false"></app-volunteer-group-custom-add-edit>
+<div class="row" *ngIf="userIsGroupReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+        <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+            <div class="table-header-fixed">
+                <table class="custom-table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsGroupWriter() == true">
+                            </th>
+                            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsGroupWriter() == true">
+                            </th>
+                            <th class="sortable" scope="col" *ngFor="let col of columns" (click)="sortBy(col.key)"
+                                [style.width]="col.width || 'auto'">
+                                {{ col.label }}
+                                <span *ngIf="sortColumn === col.key"
+                                    [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+                <table class="custom-table mb-0">
+                    <tbody>
+                        <tr *cdkVirtualFor="let group of filteredGroups; trackBy: getGroupId"
+                            [ngClass]="{ 'row-inactive': group.active == false, 'row-deleted': group.deleted == true }">
+                            <td class="header-action-button" *ngIf="userIsGroupWriter() == true">
+                                <button class="btn btn-sm" (click)="handleEdit(group)" ngbTooltip="Edit"
+                                    placement="top">
+                                    <i class="fa fa-pen"></i>
+                                </button>
+                            </td>
+                            <td class="header-action-button" *ngIf="userIsGroupWriter() == true">
+                                <button class="btn btn-sm" (click)="handleDelete(group)" ngbTooltip="Delete"
+                                    placement="top" *ngIf="group.deleted == false">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                                <button class="btn btn-sm" (click)="handleUndelete(group)" ngbTooltip="Undelete"
+                                    placement="top" *ngIf="group.deleted == true">
+                                    <i class="fa fa-trash-arrow-up"></i>
+                                </button>
+                            </td>
+                            <td *ngFor="let col of columns" class="text-truncate" [style.width]="col.width || 'auto'">
+                                <ng-container [ngSwitch]="col.template">
+                                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(group, col.key)" />
+                                    <a *ngSwitchCase="'link'"
+                                        [routerLink]="col.linkPath ? buildLink(group, col.linkPath) : null"
+                                        class="btn btn-link text-left">
+                                        {{ getNestedValue(group, col.key) }}
+                                    </a>
+                                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                                        <span class="color-swatch"
+                                            [style.background-color]="getNestedValue(group, col.key) || '#cccccc'"
+                                            title="{{ getNestedValue(group, col.key) || 'No color set' }}"></span>
+                                    </span>
+                                    <span *ngSwitchCase="'statusBadge'" class="badge rounded-pill"
+                                        [style.background-color]="group.volunteerStatus?.color || '#6c757d'"
+                                        [style.color]="'white'">
+                                        {{ getNestedValue(group, col.key) }}
+                                    </span>
+                                    <span *ngSwitchDefault>{{ getNestedValue(group, col.key) }}</span>
+                                </ng-container>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </cdk-virtual-scroll-viewport>
+        </div>
+
+        <!-- Cards for Mobile -->
+        <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600"
+            maxBufferPx="1200">
+            <div *cdkVirtualFor="let group of filteredGroups; trackBy: getGroupId" class="card my-2"
+                [ngClass]="{ 'row-inactive': group.active == false, 'row-deleted': group.deleted == true }">
+                <div class="card-header py-3" *ngIf="prominentColumn">
+                    <strong class="d-block text-truncate fs-5">
+                        <a *ngIf="prominentColumn.template === 'link'"
+                            [routerLink]="prominentColumn.linkPath ? buildLink(group, prominentColumn.linkPath) : null"
+                            class="text-primary">
+                            {{ getNestedValue(group, prominentColumn.key) }}
+                        </a>
+                        <span *ngIf="prominentColumn.template !== 'link'">
+                            {{ getNestedValue(group, prominentColumn.key) }}
+                        </span>
+                    </strong>
+                </div>
+                <div class="card-body small">
+                    <div class="row g-2">
+                        <ng-container *ngFor="let col of mobileColumns">
+                            <ng-container *ngIf="col !== prominentColumn">
+                                <div class="col-5 text-muted">{{ col.label }}:</div>
+                                <div class="col-7 text-end fw-medium">
+                                    <ng-container [ngSwitch]="col.template">
+                                        <boolean-icon *ngSwitchCase="'boolean'"
+                                            [value]="getNestedValue(group, col.key)" />
+                                        <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                                            <span class="color-swatch"
+                                                [style.background-color]="getNestedValue(group, col.key) || '#cccccc'"></span>
+                                        </span>
+                                        <span *ngSwitchCase="'statusBadge'" class="badge rounded-pill"
+                                            [style.background-color]="group.volunteerStatus?.color || '#6c757d'"
+                                            [style.color]="'white'">
+                                            {{ getNestedValue(group, col.key) }}
+                                        </span>
+                                        <span *ngSwitchDefault>{{ getNestedValue(group, col.key) }}</span>
+                                    </ng-container>
+                                </div>
+                            </ng-container>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <div class="btn-group w-100" role="group">
+                        <button class="btn btn-sm btn-outline-primary flex-fill"
+                            [routerLink]="['/volunteer-groups', group.id]" ngbTooltip="View">
+                            <i class="fa fa-magnifying-glass"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(group)"
+                            *ngIf="userIsGroupWriter()" ngbTooltip="Edit">
+                            <i class="fa fa-pen"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(group)"
+                            *ngIf="userIsGroupWriter() && group.deleted == false" ngbTooltip="Delete">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(group)"
+                            *ngIf="userIsGroupWriter() && group.deleted == true" ngbTooltip="Undelete">
+                            <i class="fa fa-trash-arrow-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </cdk-virtual-scroll-viewport>
+    </div>
+</div>

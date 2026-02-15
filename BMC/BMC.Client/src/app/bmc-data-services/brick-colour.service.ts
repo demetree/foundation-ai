@@ -20,6 +20,7 @@ import { ColourFinishData } from './colour-finish.service';
 import { BrickPartColourService, BrickPartColourData } from './brick-part-colour.service';
 import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
 import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
+import { BrickElementService, BrickElementData } from './brick-element.service';
 import { UserCollectionPartService, UserCollectionPartData } from './user-collection-part.service';
 import { UserWishlistItemService, UserWishlistItemData } from './user-wishlist-item.service';
 
@@ -153,6 +154,11 @@ export class BrickColourData {
     private _legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
                 
+    private _brickElements: BrickElementData[] | null = null;
+    private _brickElementsPromise: Promise<BrickElementData[]> | null  = null;
+    private _brickElementsSubject = new BehaviorSubject<BrickElementData[] | null>(null);
+
+                
     private _userCollectionParts: UserCollectionPartData[] | null = null;
     private _userCollectionPartsPromise: Promise<UserCollectionPartData[]> | null  = null;
     private _userCollectionPartsSubject = new BehaviorSubject<UserCollectionPartData[] | null>(null);
@@ -221,6 +227,25 @@ export class BrickColourData {
 
   
     public LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickColourId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public BrickElements$ = this._brickElementsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickElements === null && this._brickElementsPromise === null) {
+            this.loadBrickElements(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickColourId: this.id,
       active: true,
       deleted: false
     });
@@ -314,6 +339,10 @@ export class BrickColourData {
      this._legoSetParts = null;
      this._legoSetPartsPromise = null;
      this._legoSetPartsSubject.next(null);
+
+     this._brickElements = null;
+     this._brickElementsPromise = null;
+     this._brickElementsSubject.next(null);
 
      this._userCollectionParts = null;
      this._userCollectionPartsPromise = null;
@@ -526,6 +555,71 @@ export class BrickColourData {
 
     /**
      *
+     * Gets the BrickElements for this BrickColour.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickColour.BrickElements.then(brickColours => { ... })
+     *   or
+     *   await this.brickColour.brickColours
+     *
+    */
+    public get BrickElements(): Promise<BrickElementData[]> {
+        if (this._brickElements !== null) {
+            return Promise.resolve(this._brickElements);
+        }
+
+        if (this._brickElementsPromise !== null) {
+            return this._brickElementsPromise;
+        }
+
+        // Start the load
+        this.loadBrickElements();
+
+        return this._brickElementsPromise!;
+    }
+
+
+
+    private loadBrickElements(): void {
+
+        this._brickElementsPromise = lastValueFrom(
+            BrickColourService.Instance.GetBrickElementsForBrickColour(this.id)
+        )
+        .then(BrickElements => {
+            this._brickElements = BrickElements ?? [];
+            this._brickElementsSubject.next(this._brickElements);
+            return this._brickElements;
+         })
+        .catch(err => {
+            this._brickElements = [];
+            this._brickElementsSubject.next(this._brickElements);
+            throw err;
+        })
+        .finally(() => {
+            this._brickElementsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickElement. Call after mutations to force refresh.
+     */
+    public ClearBrickElementsCache(): void {
+        this._brickElements = null;
+        this._brickElementsPromise = null;
+        this._brickElementsSubject.next(this._brickElements);      // Emit to observable
+    }
+
+    public get HasBrickElements(): Promise<boolean> {
+        return this.BrickElements.then(brickElements => brickElements.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the UserCollectionParts for this BrickColour.
      *
      * If already loaded, returns cached array.
@@ -692,6 +786,7 @@ export class BrickColourService extends SecureEndpointBase {
         private brickPartColourService: BrickPartColourService,
         private placedBrickService: PlacedBrickService,
         private legoSetPartService: LegoSetPartService,
+        private brickElementService: BrickElementService,
         private userCollectionPartService: UserCollectionPartService,
         private userWishlistItemService: UserWishlistItemService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -1090,6 +1185,16 @@ export class BrickColourService extends SecureEndpointBase {
     }
 
 
+    public GetBrickElementsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickElementData[]> {
+        return this.brickElementService.GetBrickElementList({
+            brickColourId: brickColourId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetUserCollectionPartsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserCollectionPartData[]> {
         return this.userCollectionPartService.GetUserCollectionPartList({
             brickColourId: brickColourId,
@@ -1157,6 +1262,10 @@ export class BrickColourService extends SecureEndpointBase {
     (revived as any)._legoSetPartsPromise = null;
     (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
+    (revived as any)._brickElements = null;
+    (revived as any)._brickElementsPromise = null;
+    (revived as any)._brickElementsSubject = new BehaviorSubject<BrickElementData[] | null>(null);
+
     (revived as any)._userCollectionParts = null;
     (revived as any)._userCollectionPartsPromise = null;
     (revived as any)._userCollectionPartsSubject = new BehaviorSubject<UserCollectionPartData[] | null>(null);
@@ -1219,6 +1328,22 @@ export class BrickColourService extends SecureEndpointBase {
       );
 
     (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickColourId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BrickElements$ = (revived as any)._brickElementsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickElements === null && (revived as any)._brickElementsPromise === null) {
+                (revived as any).loadBrickElements();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickColourId: (revived as any).id,
       active: true,
       deleted: false
     });

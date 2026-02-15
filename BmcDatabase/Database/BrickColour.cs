@@ -37,6 +37,8 @@ public partial class BrickColour
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<BrickElement> BrickElements { get; set; } = new List<BrickElement>();
+
     public virtual ICollection<BrickPartColour> BrickPartColours { get; set; } = new List<BrickPartColour>();
 
     public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();

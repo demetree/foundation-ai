@@ -1,0 +1,35 @@
+<div class="groups-tab p-4">
+    <div class="d-flex justify-content-center align-items-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading groups...</span>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading">
+        <!-- No memberships -->
+        <div class="text-center py-4" *ngIf="groups.length === 0">
+            <i class="fa-solid fa-people-group fa-3x text-muted mb-3"></i>
+            <p class="text-muted">This volunteer is not a member of any groups.</p>
+        </div>
+
+        <!-- Groups Grid -->
+        <div class="row g-3" *ngIf="groups.length > 0">
+            <div class="col-md-4 col-sm-6" *ngFor="let group of groups">
+                <div class="card border-0 shadow-sm group-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="color-dot me-2" [style.background-color]="group.color || '#10b981'"></span>
+                            <h6 class="fw-semibold mb-0">
+                                <a [routerLink]="['/volunteer-groups', group.id]"
+                                    class="text-decoration-none text-dark">
+                                    {{ group.name }}
+                                </a>
+                            </h6>
+                        </div>
+                        <p class="text-muted small mb-0 flex-grow-1">{{ group.description || 'No description' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

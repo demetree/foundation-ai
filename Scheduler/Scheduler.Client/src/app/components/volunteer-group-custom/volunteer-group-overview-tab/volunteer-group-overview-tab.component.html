@@ -1,0 +1,102 @@
+<div class="overview-container p-4" *ngIf="group">
+    <div class="row g-4">
+
+        <!-- Group Info -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-semibold text-uppercase text-muted small">
+                        <i class="fa-solid fa-circle-info me-1"></i> Group Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Name</dt>
+                        <dd class="col-sm-7 fw-medium">{{ group.name }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge rounded-pill" *ngIf="group.volunteerStatus"
+                                [style.background-color]="group.volunteerStatus?.color || '#6c757d'"
+                                [style.color]="'white'">
+                                {{ group.volunteerStatus?.name }}
+                            </span>
+                            <span *ngIf="!group.volunteerStatus" class="text-muted">—</span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted">Office</dt>
+                        <dd class="col-sm-7">{{ group.office?.name || '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Max Members</dt>
+                        <dd class="col-sm-7">{{ group.maxMembers ?? '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Color</dt>
+                        <dd class="col-sm-7">
+                            <span class="color-swatch me-2" [style.background-color]="group.color || '#cccccc'"
+                                *ngIf="group.color"></span>
+                            {{ group.color || '—' }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description / Purpose -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-semibold text-uppercase text-muted small">
+                        <i class="fa-solid fa-note-sticky me-1"></i> Description & Purpose
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3" *ngIf="group.description">
+                        <label class="text-muted small d-block">Description</label>
+                        <p class="mb-0">{{ group.description }}</p>
+                    </div>
+                    <div class="mb-3" *ngIf="group.purpose">
+                        <label class="text-muted small d-block">Purpose</label>
+                        <p class="mb-0">{{ group.purpose }}</p>
+                    </div>
+                    <div *ngIf="group.notes">
+                        <label class="text-muted small d-block">Notes</label>
+                        <p class="mb-0">{{ group.notes }}</p>
+                    </div>
+                    <p class="text-muted" *ngIf="!group.description && !group.purpose && !group.notes">
+                        No description or purpose defined.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body small text-muted">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>ID:</strong> {{ group.id }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>GUID:</strong> <span class="text-truncate d-inline-block" style="max-width: 200px;"
+                                ngbTooltip="{{ group.objectGuid }}">{{ group.objectGuid }}</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Version:</strong> {{ group.versionNumber }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Active:</strong>
+                            <i
+                                [class]="group.active ? 'fa-solid fa-check text-success' : 'fa-solid fa-times text-danger'"></i>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Deleted:</strong>
+                            <i
+                                [class]="group.deleted ? 'fa-solid fa-check text-danger' : 'fa-solid fa-times text-success'"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

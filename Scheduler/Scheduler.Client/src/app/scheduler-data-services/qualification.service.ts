@@ -1025,7 +1025,7 @@ export class QualificationService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerQualificationWriter = user.writePermission >= 255;
+            userIsSchedulerQualificationWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerQualificationWriter = false;
           }      

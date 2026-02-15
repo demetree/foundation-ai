@@ -30,6 +30,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class BrickCategoryQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
+    rebrickablePartCategoryId: bigint | number | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -48,6 +49,7 @@ export class BrickCategorySubmitData {
     id!: bigint | number;
     name!: string;
     description!: string;
+    rebrickablePartCategoryId: bigint | number | null = null;
     sequence: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -100,6 +102,7 @@ export class BrickCategoryData {
     id!: bigint | number;
     name!: string;
     description!: string;
+    rebrickablePartCategoryId!: bigint | number;
     sequence!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -347,6 +350,7 @@ export class BrickCategoryService extends SecureEndpointBase {
         output.id = data.id;
         output.name = data.name;
         output.description = data.description;
+        output.rebrickablePartCategoryId = data.rebrickablePartCategoryId;
         output.sequence = data.sequence;
         output.active = data.active;
         output.deleted = data.deleted;

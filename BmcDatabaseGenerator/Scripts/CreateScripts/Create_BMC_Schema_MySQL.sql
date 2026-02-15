@@ -26,6 +26,11 @@ USE `BMC`;
 -- DROP TABLE `UserCollectionPart`
 -- DROP TABLE `UserCollectionChangeHistory`
 -- DROP TABLE `UserCollection`
+-- DROP TABLE `LegoSetSubset`
+-- DROP TABLE `LegoSetMinifig`
+-- DROP TABLE `LegoMinifig`
+-- DROP TABLE `BrickElement`
+-- DROP TABLE `BrickPartRelationship`
 -- DROP TABLE `LegoSetPart`
 -- DROP TABLE `LegoSet`
 -- DROP TABLE `LegoTheme`
@@ -68,6 +73,11 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `UserCollectionPart` DISABLE
 -- ALTER INDEX ALL ON `UserCollectionChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `UserCollection` DISABLE
+-- ALTER INDEX ALL ON `LegoSetSubset` DISABLE
+-- ALTER INDEX ALL ON `LegoSetMinifig` DISABLE
+-- ALTER INDEX ALL ON `LegoMinifig` DISABLE
+-- ALTER INDEX ALL ON `BrickElement` DISABLE
+-- ALTER INDEX ALL ON `BrickPartRelationship` DISABLE
 -- ALTER INDEX ALL ON `LegoSetPart` DISABLE
 -- ALTER INDEX ALL ON `LegoSet` DISABLE
 -- ALTER INDEX ALL ON `LegoTheme` DISABLE
@@ -110,6 +120,11 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `UserCollectionPart` REBUILD
 -- ALTER INDEX ALL ON `UserCollectionChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `UserCollection` REBUILD
+-- ALTER INDEX ALL ON `LegoSetSubset` REBUILD
+-- ALTER INDEX ALL ON `LegoSetMinifig` REBUILD
+-- ALTER INDEX ALL ON `LegoMinifig` REBUILD
+-- ALTER INDEX ALL ON `BrickElement` REBUILD
+-- ALTER INDEX ALL ON `BrickPartRelationship` REBUILD
 -- ALTER INDEX ALL ON `LegoSetPart` REBUILD
 -- ALTER INDEX ALL ON `LegoSet` REBUILD
 -- ALTER INDEX ALL ON `LegoTheme` REBUILD
@@ -140,6 +155,7 @@ CREATE TABLE `BrickCategory`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`description` VARCHAR(500) NOT NULL,
+	`rebrickablePartCategoryId` INT NULL,		-- Rebrickable part_cat_id for cross-referencing during bulk import
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -394,6 +410,7 @@ CREATE TABLE `BrickPart`(
 	`keywords` TEXT NULL,		-- Comma-separated keywords from LDraw !KEYWORDS meta lines for search
 	`author` VARCHAR(100) NULL,		-- Part author from the LDraw Author: header line
 	`brickCategoryId` INT NOT NULL,		-- The category this part belongs to
+	`rebrickablePartNum` VARCHAR(100) NULL,		-- Rebrickable part_num when it differs from ldrawPartId (e.g. for prints, patterns, or alternate IDs)
 	`widthLdu` FLOAT NULL,		-- Part width in LDraw units (null if not yet computed)
 	`heightLdu` FLOAT NULL,		-- Part height in LDraw units (null if not yet computed)
 	`depthLdu` FLOAT NULL,		-- Part depth in LDraw units (null if not yet computed)
@@ -881,6 +898,7 @@ CREATE TABLE `LegoTheme`(
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`description` VARCHAR(500) NOT NULL,
 	`legoThemeId` INT NULL,		-- Parent theme for hierarchical nesting (self-referencing FK, null = top-level)
+	`rebrickableThemeId` INT NULL,		-- Rebrickable theme ID for cross-referencing during bulk import
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -959,6 +977,127 @@ CREATE INDEX `I_LegoSetPart_active` ON `LegoSetPart` (`active`);
 
 -- Index on the LegoSetPart table's deleted field.
 CREATE INDEX `I_LegoSetPart_deleted` ON `LegoSetPart` (`deleted`);
+
+
+-- Relationships between parts: alternates, molds, prints, pairs, sub-parts, and patterns. Bulk-loaded from Rebrickable part_relationships.csv.
+CREATE TABLE `BrickPartRelationship`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`childBrickPartId` INT NOT NULL,		-- The child part in the relationship
+	`parentBrickPartId` INT NOT NULL,		-- The parent part in the relationship
+	`relationshipType` VARCHAR(50) NOT NULL,		-- Type of relationship: Print, Pair, SubPart, Mold, Pattern, or Alternate
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`childBrickPartId`) REFERENCES `BrickPart`(`id`),		-- Foreign key to the BrickPart table.
+	FOREIGN KEY (`parentBrickPartId`) REFERENCES `BrickPart`(`id`)		-- Foreign key to the BrickPart table.
+);
+-- Index on the BrickPartRelationship table's childBrickPartId field.
+CREATE INDEX `I_BrickPartRelationship_childBrickPartId` ON `BrickPartRelationship` (`childBrickPartId`);
+
+-- Index on the BrickPartRelationship table's parentBrickPartId field.
+CREATE INDEX `I_BrickPartRelationship_parentBrickPartId` ON `BrickPartRelationship` (`parentBrickPartId`);
+
+-- Index on the BrickPartRelationship table's active field.
+CREATE INDEX `I_BrickPartRelationship_active` ON `BrickPartRelationship` (`active`);
+
+-- Index on the BrickPartRelationship table's deleted field.
+CREATE INDEX `I_BrickPartRelationship_deleted` ON `BrickPartRelationship` (`deleted`);
+
+
+-- LEGO element IDs representing specific part+colour combinations. Used for cross-referencing with official LEGO catalogues and BrickLink.
+CREATE TABLE `BrickElement`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`elementId` VARCHAR(50) NOT NULL,		-- Official LEGO element ID (unique identifier for a specific part+colour combination)
+	`brickPartId` INT NOT NULL,		-- The part this element represents
+	`brickColourId` INT NOT NULL,		-- The colour of this element
+	`designId` VARCHAR(50) NULL,		-- LEGO design ID (null if not available)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`brickPartId`) REFERENCES `BrickPart`(`id`),		-- Foreign key to the BrickPart table.
+	FOREIGN KEY (`brickColourId`) REFERENCES `BrickColour`(`id`),		-- Foreign key to the BrickColour table.
+	UNIQUE `UC_BrickElement_elementId_Unique`( `elementId` ) 		-- Uniqueness enforced on the BrickElement table's elementId field.
+);
+-- Index on the BrickElement table's brickPartId field.
+CREATE INDEX `I_BrickElement_brickPartId` ON `BrickElement` (`brickPartId`);
+
+-- Index on the BrickElement table's brickColourId field.
+CREATE INDEX `I_BrickElement_brickColourId` ON `BrickElement` (`brickColourId`);
+
+-- Index on the BrickElement table's active field.
+CREATE INDEX `I_BrickElement_active` ON `BrickElement` (`active`);
+
+-- Index on the BrickElement table's deleted field.
+CREATE INDEX `I_BrickElement_deleted` ON `BrickElement` (`deleted`);
+
+
+-- Official LEGO minifigure definitions. Each row represents a distinct minifig (e.g. fig-000001 Han Solo).
+CREATE TABLE `LegoMinifig`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(500) NOT NULL,		-- Minifig name — can be long descriptive text from Rebrickable
+	`figNumber` VARCHAR(100) NOT NULL,		-- Rebrickable minifig number (e.g. 'fig-000001')
+	`partCount` INT NOT NULL,		-- Total number of parts in the minifig
+	`imageUrl` VARCHAR(250) NULL,		-- URL to the minifig's image
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_LegoMinifig_figNumber_Unique`( `figNumber` ) 		-- Uniqueness enforced on the LegoMinifig table's figNumber field.
+);
+-- Index on the LegoMinifig table's active field.
+CREATE INDEX `I_LegoMinifig_active` ON `LegoMinifig` (`active`);
+
+-- Index on the LegoMinifig table's deleted field.
+CREATE INDEX `I_LegoMinifig_deleted` ON `LegoMinifig` (`deleted`);
+
+
+-- Minifigs included in each official LEGO set's inventory, with quantities.
+CREATE TABLE `LegoSetMinifig`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`legoSetId` INT NOT NULL,		-- The set this minifig belongs to
+	`legoMinifigId` INT NOT NULL,		-- The minifig included in the set
+	`quantity` INT NULL,		-- Number of this minifig included in the set
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`legoSetId`) REFERENCES `LegoSet`(`id`),		-- Foreign key to the LegoSet table.
+	FOREIGN KEY (`legoMinifigId`) REFERENCES `LegoMinifig`(`id`)		-- Foreign key to the LegoMinifig table.
+);
+-- Index on the LegoSetMinifig table's legoSetId field.
+CREATE INDEX `I_LegoSetMinifig_legoSetId` ON `LegoSetMinifig` (`legoSetId`);
+
+-- Index on the LegoSetMinifig table's legoMinifigId field.
+CREATE INDEX `I_LegoSetMinifig_legoMinifigId` ON `LegoSetMinifig` (`legoMinifigId`);
+
+-- Index on the LegoSetMinifig table's active field.
+CREATE INDEX `I_LegoSetMinifig_active` ON `LegoSetMinifig` (`active`);
+
+-- Index on the LegoSetMinifig table's deleted field.
+CREATE INDEX `I_LegoSetMinifig_deleted` ON `LegoSetMinifig` (`deleted`);
+
+
+-- Sets included within other sets (e.g. polybags inside a larger set). Derived from Rebrickable inventory_sets.csv.
+CREATE TABLE `LegoSetSubset`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`parentLegoSetId` INT NOT NULL,		-- The parent set that contains the subset
+	`childLegoSetId` INT NOT NULL,		-- The subset included within the parent set
+	`quantity` INT NULL,		-- Number of copies of the subset included in the parent
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`parentLegoSetId`) REFERENCES `LegoSet`(`id`),		-- Foreign key to the LegoSet table.
+	FOREIGN KEY (`childLegoSetId`) REFERENCES `LegoSet`(`id`)		-- Foreign key to the LegoSet table.
+);
+-- Index on the LegoSetSubset table's parentLegoSetId field.
+CREATE INDEX `I_LegoSetSubset_parentLegoSetId` ON `LegoSetSubset` (`parentLegoSetId`);
+
+-- Index on the LegoSetSubset table's childLegoSetId field.
+CREATE INDEX `I_LegoSetSubset_childLegoSetId` ON `LegoSetSubset` (`childLegoSetId`);
+
+-- Index on the LegoSetSubset table's active field.
+CREATE INDEX `I_LegoSetSubset_active` ON `LegoSetSubset` (`active`);
+
+-- Index on the LegoSetSubset table's deleted field.
+CREATE INDEX `I_LegoSetSubset_deleted` ON `LegoSetSubset` (`deleted`);
 
 
 -- A user's named part collection or palette. Users can have multiple collections (e.g. 'My Inventory', 'Technic Parts', 'Parts for MOC #5').

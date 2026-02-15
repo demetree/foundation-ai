@@ -293,6 +293,7 @@ namespace Foundation.BMC.Database
 			public String author { get; set; }
 			[Required]
 			public Int32 brickCategoryId { get; set; }
+			public String rebrickablePartNum { get; set; }
 			public Single? widthLdu { get; set; }
 			public Single? heightLdu { get; set; }
 			public Single? depthLdu { get; set; }
@@ -340,6 +341,7 @@ namespace Foundation.BMC.Database
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
+				rebrickablePartNum = this.rebrickablePartNum,
 				widthLdu = this.widthLdu,
 				heightLdu = this.heightLdu,
 				depthLdu = this.depthLdu,
@@ -398,6 +400,7 @@ namespace Foundation.BMC.Database
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
+				rebrickablePartNum = this.rebrickablePartNum,
 				widthLdu = this.widthLdu,
 				heightLdu = this.heightLdu,
 				depthLdu = this.depthLdu,
@@ -458,6 +461,7 @@ namespace Foundation.BMC.Database
 				keywords = dto.keywords,
 				author = dto.author,
 				brickCategoryId = dto.brickCategoryId,
+				rebrickablePartNum = dto.rebrickablePartNum,
 				widthLdu = dto.widthLdu,
 				heightLdu = dto.heightLdu,
 				depthLdu = dto.depthLdu,
@@ -493,6 +497,7 @@ namespace Foundation.BMC.Database
 			this.keywords = dto.keywords;
 			this.author = dto.author;
 			this.brickCategoryId = dto.brickCategoryId;
+			this.rebrickablePartNum = dto.rebrickablePartNum;
 			this.widthLdu = dto.widthLdu;
 			this.heightLdu = dto.heightLdu;
 			this.depthLdu = dto.depthLdu;
@@ -533,6 +538,7 @@ namespace Foundation.BMC.Database
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
+				rebrickablePartNum = this.rebrickablePartNum,
 				widthLdu = this.widthLdu,
 				heightLdu = this.heightLdu,
 				depthLdu = this.depthLdu,
@@ -605,6 +611,7 @@ namespace Foundation.BMC.Database
 				keywords = brickPart.keywords,
 				author = brickPart.author,
 				brickCategoryId = brickPart.brickCategoryId,
+				rebrickablePartNum = brickPart.rebrickablePartNum,
 				widthLdu = brickPart.widthLdu,
 				heightLdu = brickPart.heightLdu,
 				depthLdu = brickPart.depthLdu,
@@ -644,6 +651,7 @@ namespace Foundation.BMC.Database
 				keywords = brickPart.keywords,
 				author = brickPart.author,
 				brickCategoryId = brickPart.brickCategoryId,
+				rebrickablePartNum = brickPart.rebrickablePartNum,
 				widthLdu = brickPart.widthLdu,
 				heightLdu = brickPart.heightLdu,
 				depthLdu = brickPart.depthLdu,

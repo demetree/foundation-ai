@@ -858,7 +858,7 @@ export class RateSheetService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerRateSheetWriter = user.writePermission >= 50;
+            userIsSchedulerRateSheetWriter = user.writePermission >= 30;
           } else {
             userIsSchedulerRateSheetWriter = false;
           }      

@@ -1,0 +1,155 @@
+<div class="overview-container p-4" *ngIf="volunteer">
+    <div class="row g-4">
+
+        <!-- Left Column: Key Info -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-semibold text-uppercase text-muted small">
+                        <i class="fa-solid fa-circle-info me-1"></i> Profile Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Name</dt>
+                        <dd class="col-sm-7 fw-medium">{{ volunteer.resource?.name || '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge rounded-pill" *ngIf="volunteer.volunteerStatus"
+                                [style.background-color]="volunteer.volunteerStatus?.color || '#6c757d'"
+                                [style.color]="'white'">
+                                {{ volunteer.volunteerStatus?.name }}
+                            </span>
+                            <span *ngIf="!volunteer.volunteerStatus" class="text-muted">—</span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted">Onboarded</dt>
+                        <dd class="col-sm-7">{{ volunteer.onboardedDate ? (volunteer.onboardedDate | date:'mediumDate')
+                            : '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Total Hours</dt>
+                        <dd class="col-sm-7 fw-medium">{{ volunteer.totalHoursServed ?? 0 }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Last Activity</dt>
+                        <dd class="col-sm-7">{{ volunteer.lastActivityDate ? (volunteer.lastActivityDate |
+                            date:'mediumDate') : '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Inactive Since</dt>
+                        <dd class="col-sm-7">{{ volunteer.inactiveSince ? (volunteer.inactiveSince | date:'mediumDate')
+                            : '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Color</dt>
+                        <dd class="col-sm-7">
+                            <span class="color-swatch me-2" [style.background-color]="volunteer.color || '#cccccc'"
+                                *ngIf="volunteer.color"></span>
+                            {{ volunteer.color || '—' }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Compliance -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-semibold text-uppercase text-muted small">
+                        <i class="fa-solid fa-shield-check me-1"></i> Compliance
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Background Check</dt>
+                        <dd class="col-sm-7">
+                            <span [class]="volunteer.backgroundCheckCompleted ? 'text-success' : 'text-danger'">
+                                <i [class]="volunteer.backgroundCheckCompleted ? 'fa-solid fa-check-circle' : 'fa-solid fa-times-circle'"
+                                    class="me-1"></i>
+                                {{ volunteer.backgroundCheckCompleted ? 'Completed' : 'Not Completed' }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted">BG Check Date</dt>
+                        <dd class="col-sm-7">{{ volunteer.backgroundCheckDate ? (volunteer.backgroundCheckDate |
+                            date:'mediumDate') : '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">BG Check Expiry</dt>
+                        <dd class="col-sm-7">{{ volunteer.backgroundCheckExpiry ? (volunteer.backgroundCheckExpiry |
+                            date:'mediumDate') : '—' }}</dd>
+
+                        <dt class="col-sm-5 text-muted">Confidentiality Agreement</dt>
+                        <dd class="col-sm-7">
+                            <span [class]="volunteer.confidentialityAgreementSigned ? 'text-success' : 'text-danger'">
+                                <i [class]="volunteer.confidentialityAgreementSigned ? 'fa-solid fa-check-circle' : 'fa-solid fa-times-circle'"
+                                    class="me-1"></i>
+                                {{ volunteer.confidentialityAgreementSigned ? 'Signed' : 'Not Signed' }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted">Agreement Date</dt>
+                        <dd class="col-sm-7">{{ volunteer.confidentialityAgreementDate ?
+                            (volunteer.confidentialityAgreementDate | date:'mediumDate') : '—' }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width: Notes -->
+        <div class="col-12"
+            *ngIf="volunteer.availabilityPreferences || volunteer.interestsAndSkillsNotes || volunteer.emergencyContactNotes">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-semibold text-uppercase text-muted small">
+                        <i class="fa-solid fa-note-sticky me-1"></i> Notes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4" *ngIf="volunteer.availabilityPreferences">
+                            <label class="text-muted small d-block">Availability</label>
+                            <p class="mb-0">{{ volunteer.availabilityPreferences }}</p>
+                        </div>
+                        <div class="col-md-4" *ngIf="volunteer.interestsAndSkillsNotes">
+                            <label class="text-muted small d-block">Interests & Skills</label>
+                            <p class="mb-0">{{ volunteer.interestsAndSkillsNotes }}</p>
+                        </div>
+                        <div class="col-md-4" *ngIf="volunteer.emergencyContactNotes">
+                            <label class="text-muted small d-block">Emergency Contact</label>
+                            <p class="mb-0">{{ volunteer.emergencyContactNotes }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body small text-muted">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>ID:</strong> {{ volunteer.id }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>GUID:</strong> <span class="text-truncate d-inline-block" style="max-width: 200px;"
+                                ngbTooltip="{{ volunteer.objectGuid }}">{{ volunteer.objectGuid }}</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Version:</strong> {{ volunteer.versionNumber }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Active:</strong>
+                            <i
+                                [class]="volunteer.active ? 'fa-solid fa-check text-success' : 'fa-solid fa-times text-danger'"></i>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Deleted:</strong>
+                            <i
+                                [class]="volunteer.deleted ? 'fa-solid fa-check text-danger' : 'fa-solid fa-times text-success'"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

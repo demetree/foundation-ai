@@ -94,6 +94,24 @@
     </li>
 
     <li class="nav-item">
+      <a routerLink="/volunteers" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Volunteers' : null" triggers="hover" #tVolunteers="ngbTooltip"
+        (click)="tVolunteers.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+        <span class="label px-2">Volunteers</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/volunteergroups" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Volunteer Groups' : null" triggers="hover" #tVolunteerGroups="ngbTooltip"
+        (click)="tVolunteerGroups.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-people-group"></i>
+        <span class="label px-2">Volunteer Groups</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
       <a routerLink="/resourceshifts" routerLinkActive="active" class="nav-link text-white"
         [ngbTooltip]="!isExpanded ? 'Resource Shifts' : null" triggers="hover" #tShifts="ngbTooltip"
         (click)="tShifts.close()" placement="right" tooltipClass="sidebar-tip">

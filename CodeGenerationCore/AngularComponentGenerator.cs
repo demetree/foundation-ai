@@ -4407,6 +4407,21 @@ td .color-swatch,
                         sb.AppendLine($"        {fc.camelCaseName}: !!formValue.{fc.camelCaseName},");
                     }
                 }
+                else if (fc.field.isDateDataType() == true)
+                {
+                    //
+                    // DateOnly fields: <input type="date"> already produces YYYY-MM-DD format.
+                    // Pass through directly with trim — no datetime conversion needed.
+                    //
+                    if (fc.field.nullable == true)
+                    {
+                        sb.AppendLine($"        {fc.camelCaseName}: formValue.{fc.camelCaseName} ? formValue.{fc.camelCaseName}.trim() : null,");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"        {fc.camelCaseName}: formValue.{fc.camelCaseName}!.trim(),");        // validator makes sure that this has a value.
+                    }
+                }
                 else if (fc.field.isDateTimeDataType() == true)
                 {
                     //
@@ -4477,6 +4492,11 @@ td .color-swatch,
                     // make active fields default to true, all other bools go to false.
                     sb.AppendLine($"        {fc.camelCaseName}: {((fc.camelCaseName == "active" ? "true" : "false"))},");
                 }
+                else if (fc.field.isDateDataType() == true)
+                {
+                    // DateOnly fields init as empty strings for date inputs.
+                    sb.AppendLine($"        {fc.camelCaseName}: '',");
+                }
                 else if (fc.field.isDateTimeDataType() == true)
                 {
                     // DateTimes init as strings for datetime-local inputs.  This Just here to note that.
@@ -4527,6 +4547,11 @@ td .color-swatch,
                 {
                     // make active fields default to true, all other bools go to false.
                     sb.AppendLine($"        {fc.camelCaseName}: {camelCaseName}Data.{fc.camelCaseName} ?? {((fc.camelCaseName == "active" ? "true" : "false"))},");
+                }
+                else if (fc.field.isDateDataType() == true)
+                {
+                    // DateOnly fields: server returns YYYY-MM-DD format which <input type="date"> accepts directly
+                    sb.AppendLine($"        {fc.camelCaseName}: {camelCaseName}Data.{fc.camelCaseName} ?? '',");
                 }
                 else if (fc.field.isDateTimeDataType() == true)
                 {

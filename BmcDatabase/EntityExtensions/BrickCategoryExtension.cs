@@ -25,6 +25,7 @@ namespace Foundation.BMC.Database
 			public String name { get; set; }
 			[Required]
 			public String description { get; set; }
+			public Int32? rebrickablePartCategoryId { get; set; }
 			public Int32? sequence { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -57,6 +58,7 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
+				rebrickablePartCategoryId = this.rebrickablePartCategoryId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -102,6 +104,7 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
+				rebrickablePartCategoryId = this.rebrickablePartCategoryId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -147,6 +150,7 @@ namespace Foundation.BMC.Database
 				id = dto.id,
 				name = dto.name,
 				description = dto.description,
+				rebrickablePartCategoryId = dto.rebrickablePartCategoryId,
 				sequence = dto.sequence,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -169,6 +173,7 @@ namespace Foundation.BMC.Database
 
 			this.name = dto.name;
 			this.description = dto.description;
+			this.rebrickablePartCategoryId = dto.rebrickablePartCategoryId;
 			this.sequence = dto.sequence;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -196,6 +201,7 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
+				rebrickablePartCategoryId = this.rebrickablePartCategoryId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -255,6 +261,7 @@ namespace Foundation.BMC.Database
 				id = brickCategory.id,
 				name = brickCategory.name,
 				description = brickCategory.description,
+				rebrickablePartCategoryId = brickCategory.rebrickablePartCategoryId,
 				sequence = brickCategory.sequence,
 				objectGuid = brickCategory.objectGuid,
 				active = brickCategory.active,
@@ -281,6 +288,7 @@ namespace Foundation.BMC.Database
 				id = brickCategory.id,
 				name = brickCategory.name,
 				description = brickCategory.description,
+				rebrickablePartCategoryId = brickCategory.rebrickablePartCategoryId,
 				sequence = brickCategory.sequence,
 				objectGuid = brickCategory.objectGuid,
 				active = brickCategory.active,

@@ -25,6 +25,8 @@ public partial class BrickPart
 
     public int brickCategoryId { get; set; }
 
+    public string rebrickablePartNum { get; set; }
+
     public float? widthLdu { get; set; }
 
     public float? heightLdu { get; set; }
@@ -47,11 +49,17 @@ public partial class BrickPart
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<BrickElement> BrickElements { get; set; } = new List<BrickElement>();
+
     public virtual ICollection<BrickPartChangeHistory> BrickPartChangeHistories { get; set; } = new List<BrickPartChangeHistory>();
 
     public virtual ICollection<BrickPartColour> BrickPartColours { get; set; } = new List<BrickPartColour>();
 
     public virtual ICollection<BrickPartConnector> BrickPartConnectors { get; set; } = new List<BrickPartConnector>();
+
+    public virtual ICollection<BrickPartRelationship> BrickPartRelationshipchildBrickParts { get; set; } = new List<BrickPartRelationship>();
+
+    public virtual ICollection<BrickPartRelationship> BrickPartRelationshipparentBrickParts { get; set; } = new List<BrickPartRelationship>();
 
     public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();
 

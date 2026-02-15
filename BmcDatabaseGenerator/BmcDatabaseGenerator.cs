@@ -69,6 +69,9 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickCategoryTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             brickCategoryTable.AddIdField();
             brickCategoryTable.AddNameAndDescriptionFields(true, true, false);
+
+            brickCategoryTable.AddIntField("rebrickablePartCategoryId", true).AddScriptComments("Rebrickable part_cat_id for cross-referencing during bulk import");
+
             brickCategoryTable.AddSequenceField();
             brickCategoryTable.AddControlFields();
 
@@ -249,6 +252,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickPartTable.AddString100Field("author").AddScriptComments("Part author from the LDraw Author: header line");
 
             brickPartTable.AddForeignKeyField(brickCategoryTable, false).AddScriptComments("The category this part belongs to");
+
+            brickPartTable.AddString100Field("rebrickablePartNum", true).AddScriptComments("Rebrickable part_num when it differs from ldrawPartId (e.g. for prints, patterns, or alternate IDs)");
 
             // Physical dimensions in LDraw units (1 LDU = 0.4mm)
             brickPartTable.AddSingleField("widthLdu", true).AddScriptComments("Part width in LDraw units (null if not yet computed)");
@@ -524,6 +529,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             legoThemeTable.AddForeignKeyField(legoThemeTable, true).AddScriptComments("Parent theme for hierarchical nesting (self-referencing FK, null = top-level)");
 
+            legoThemeTable.AddIntField("rebrickableThemeId", true).AddScriptComments("Rebrickable theme ID for cross-referencing during bulk import");
+
             legoThemeTable.AddSequenceField();
             legoThemeTable.AddControlFields();
 
@@ -566,6 +573,88 @@ All operational tables include multi-tenant support, versioning where appropriat
             legoSetPartTable.AddBoolField("isSpare", false, false).AddScriptComments("Whether this is a spare part (included as extra in the bag, not used in the build)");
 
             legoSetPartTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // BrickPartRelationship — Relationships between parts
+            // -------------------------------------------------
+            Database.Table brickPartRelationshipTable = database.AddTable("BrickPartRelationship");
+            brickPartRelationshipTable.comment = "Relationships between parts: alternates, molds, prints, pairs, sub-parts, and patterns. Bulk-loaded from Rebrickable part_relationships.csv.";
+            brickPartRelationshipTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickPartRelationshipTable.AddIdField();
+
+            brickPartRelationshipTable.AddForeignKeyField("childBrickPartId", brickPartTable, false).AddScriptComments("The child part in the relationship");
+            brickPartRelationshipTable.AddForeignKeyField("parentBrickPartId", brickPartTable, false).AddScriptComments("The parent part in the relationship");
+            brickPartRelationshipTable.AddString50Field("relationshipType", false).AddScriptComments("Type of relationship: Print, Pair, SubPart, Mold, Pattern, or Alternate");
+
+            brickPartRelationshipTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // BrickElement — LEGO element IDs (part + colour combinations)
+            // -------------------------------------------------
+            Database.Table brickElementTable = database.AddTable("BrickElement");
+            brickElementTable.comment = "LEGO element IDs representing specific part+colour combinations. Used for cross-referencing with official LEGO catalogues and BrickLink.";
+            brickElementTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickElementTable.AddIdField();
+
+            brickElementTable.AddString50Field("elementId", false).AddScriptComments("Official LEGO element ID (unique identifier for a specific part+colour combination)");
+            brickElementTable.AddForeignKeyField(brickPartTable, false).AddScriptComments("The part this element represents");
+            brickElementTable.AddForeignKeyField(brickColourTable, false).AddScriptComments("The colour of this element");
+            brickElementTable.AddString50Field("designId", true).AddScriptComments("LEGO design ID (null if not available)");
+
+            brickElementTable.AddControlFields();
+
+            brickElementTable.AddUniqueConstraint(new List<string>() { "elementId" }, false);
+
+
+            // -------------------------------------------------
+            // LegoMinifig — Official LEGO minifigure definitions
+            // -------------------------------------------------
+            Database.Table legoMinifigTable = database.AddTable("LegoMinifig");
+            legoMinifigTable.comment = "Official LEGO minifigure definitions. Each row represents a distinct minifig (e.g. fig-000001 Han Solo).";
+            legoMinifigTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            legoMinifigTable.AddIdField();
+            // Use STRING_500 for name because Rebrickable minifig names can be very long
+            legoMinifigTable.AddString500Field("name", false).AddScriptComments("Minifig name — can be long descriptive text from Rebrickable");
+
+            legoMinifigTable.AddString100Field("figNumber", false).AddScriptComments("Rebrickable minifig number (e.g. 'fig-000001')");
+            legoMinifigTable.AddIntField("partCount", false).AddScriptComments("Total number of parts in the minifig");
+            legoMinifigTable.AddString250Field("imageUrl").AddScriptComments("URL to the minifig's image");
+
+            legoMinifigTable.AddControlFields();
+
+            legoMinifigTable.AddUniqueConstraint(new List<string>() { "figNumber" }, false);
+
+
+            // -------------------------------------------------
+            // LegoSetMinifig — Minifigs included in each set
+            // -------------------------------------------------
+            Database.Table legoSetMinifigTable = database.AddTable("LegoSetMinifig");
+            legoSetMinifigTable.comment = "Minifigs included in each official LEGO set's inventory, with quantities.";
+            legoSetMinifigTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            legoSetMinifigTable.AddIdField();
+
+            legoSetMinifigTable.AddForeignKeyField(legoSetTable, false).AddScriptComments("The set this minifig belongs to");
+            legoSetMinifigTable.AddForeignKeyField(legoMinifigTable, false).AddScriptComments("The minifig included in the set");
+            legoSetMinifigTable.AddIntField("quantity").AddScriptComments("Number of this minifig included in the set");
+
+            legoSetMinifigTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // LegoSetSubset — Sets included within other sets
+            // -------------------------------------------------
+            Database.Table legoSetSubsetTable = database.AddTable("LegoSetSubset");
+            legoSetSubsetTable.comment = "Sets included within other sets (e.g. polybags inside a larger set). Derived from Rebrickable inventory_sets.csv.";
+            legoSetSubsetTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            legoSetSubsetTable.AddIdField();
+
+            legoSetSubsetTable.AddForeignKeyField("parentLegoSetId", legoSetTable, false).AddScriptComments("The parent set that contains the subset");
+            legoSetSubsetTable.AddForeignKeyField("childLegoSetId", legoSetTable, false).AddScriptComments("The subset included within the parent set");
+            legoSetSubsetTable.AddIntField("quantity").AddScriptComments("Number of copies of the subset included in the parent");
+
+            legoSetSubsetTable.AddControlFields();
 
             #endregion
 

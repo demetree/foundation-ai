@@ -1,0 +1,97 @@
+<div class="page-container" *ngIf="!isLoading && group">
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle" *ngIf="group.avatarData"
+                        [style.background-image]="'url(data:' + group.avatarMimeType + ';base64,' + group.avatarData + ')'">
+                    </div>
+                    <div class="text-white">
+                        <h3 class="page-title mb-0 fw-bold text-shadow">{{ group.name }}</h3>
+                        <small class="text-white-50">Volunteer Group</small>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="badge badge-glass mx-2" *ngIf="group.volunteerStatus"
+                    [style.border-color]="group.volunteerStatus.color || 'white'">
+                    {{ group.volunteerStatus.name }}
+                </span>
+                <span class="badge badge-glass mx-2" *ngIf="group.maxMembers">
+                    <i class="fa-solid fa-users me-1"></i> Max: {{ group.maxMembers }}
+                </span>
+                <button class="btn btn-sm btn-glass" (click)="openEditModal()" *ngIf="userIsGroupWriter()"
+                    ngbTooltip="Edit Group">
+                    <i class="fa-solid fa-pen me-1"></i> Edit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card shadow-sm border-0">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav nav-tabs nav-fill premium-tabs"
+            (activeIdChange)="onTabChange($event)">
+
+            <li ngbNavItem="overview">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-circle-info me-1"></i> Overview
+                </a>
+                <ng-template ngbNavContent>
+                    <app-volunteer-group-overview-tab [group]="group"></app-volunteer-group-overview-tab>
+                </ng-template>
+            </li>
+
+            <li ngbNavItem="members">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-people-group me-1"></i> Members
+                    <span class="badge bg-secondary ms-1">
+                        {{ (group.VolunteerGroupMembersCount$ | async) ?? '-' }}
+                    </span>
+                </a>
+                <ng-template ngbNavContent>
+                    <app-volunteer-group-members-tab [group]="group"></app-volunteer-group-members-tab>
+                </ng-template>
+            </li>
+
+            <li ngbNavItem="history">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i> History
+                    <span class="badge bg-secondary ms-1">
+                        {{ (group.VolunteerGroupChangeHistoriesCount$ | async) ?? '-' }}
+                    </span>
+                </a>
+                <ng-template ngbNavContent>
+                    <div class="p-4">
+                        <p class="text-muted">Change history will be loaded here.</p>
+                    </div>
+                </ng-template>
+            </li>
+
+        </ul>
+        <div [ngbNavOutlet]="nav" class="tab-content"></div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="d-flex justify-content-center align-items-center min-vh-50 py-5" *ngIf="isLoading">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading group...</span>
+    </div>
+</div>
+
+<!-- Not Found -->
+<div class="text-center py-5" *ngIf="!isLoading && !group">
+    <i class="fa-solid fa-people-slash fa-3x text-muted mb-3"></i>
+    <h5 class="text-muted">Group not found</h5>
+    <button class="btn btn-sm btn-outline-primary mt-2" (click)="goBack()">Go Back</button>
+</div>
+
+<!-- Hidden Add/Edit for modal -->
+<app-volunteer-group-custom-add-edit [showAddButton]="false"
+    (volunteerGroupChanged)="onGroupChanged()"></app-volunteer-group-custom-add-edit>

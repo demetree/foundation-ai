@@ -1134,7 +1134,7 @@ export class CrewService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerCrewWriter = user.writePermission >= 50;
+            userIsSchedulerCrewWriter = user.writePermission >= 30;
           } else {
             userIsSchedulerCrewWriter = false;
           }      

@@ -106,6 +106,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -117,8 +120,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -429,6 +430,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -438,8 +442,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -649,6 +651,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -659,8 +664,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			
 			Guid userTenantGuid;
 
@@ -764,7 +767,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			StartAuditEventClock();
 
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			//
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			//
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -780,8 +786,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -1055,7 +1059,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			StartAuditEventClock();
 
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			//
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			//
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -1065,8 +1072,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -1303,7 +1308,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 			
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
 
@@ -1494,10 +1498,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Client/{id}/ChangeMetadata")]
 		public async Task<IActionResult> GetClientChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1559,10 +1568,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Client/{id}/AuditHistory")]
 		public async Task<IActionResult> GetClientAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1619,10 +1633,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Client/{id}/Version/{version}")]
 		public async Task<IActionResult> GetClientVersion(int id, int version, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1684,10 +1703,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Client/{id}/StateAtTime")]
 		public async Task<IActionResult> GetClientStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1747,7 +1771,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			//
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			//
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -1755,7 +1782,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
 			
 			
 			Guid userTenantGuid;
@@ -1896,17 +1922,20 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
 		{
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
 
@@ -2129,12 +2158,17 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Client/CreateAuditEvent")]
-		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null, CancellationToken cancellationToken = default)
 		{
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+
+			//
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			//
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
+
 
 		    await CreateAuditEventAsync(type, message, primaryKey);
 
@@ -2154,15 +2188,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[HttpPut]
 		public async Task<IActionResult> SetFavourite(int id, string description = null, CancellationToken cancellationToken = default)
 		{
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
 
+
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
 
 			Guid userTenantGuid;
 
@@ -2223,10 +2260,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[HttpDelete]
 		public async Task<IActionResult> DeleteFavourite(int id, CancellationToken cancellationToken = default)
 		{
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -2461,12 +2503,17 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/Client/Data/{id:int}")]
-        public async Task<IActionResult> DownloadDataAsync(int id)
+        public async Task<IActionResult> DownloadDataAsync(int id, CancellationToken cancellationToken = default)
         {
-             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-             {
-                 return Forbid();
-             }
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
 
 
 			using (SchedulerContext context = new SchedulerContext())

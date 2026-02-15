@@ -1528,15 +1528,21 @@ export interface VersionInformation<T> {
                     sb.AppendLine("    " + prop.Name + ": boolean | null | undefined = null;");
                 }
                 else if (propertyType == typeof(DateTime) ||
-                         propertyType == typeof(DateOnly) ||
-                         propertyType == typeof(TimeOnly))  // Might need to break this out more specifically...
+                         propertyType == typeof(TimeOnly))
                 {
                     //
-                    // Dates are to be serialized as ISO 8601 strings with milliseconds.  For example, 2025-12-09T01:09:27.093Z. 
+                    // DateTime/TimeOnly are to be serialized as ISO 8601 strings with milliseconds.  For example, 2025-12-09T01:09:27.093Z. 
                     //
                     // Javascript Date object is not used here on purpose.
                     //
-                    sb.AppendLine("    " + prop.Name + ": string | null | undefined = null;        // ISO 8601");
+                    sb.AppendLine("    " + prop.Name + ": string | null | undefined = null;        // ISO 8601 (full datetime)");
+                }
+                else if (propertyType == typeof(DateOnly))
+                {
+                    //
+                    // DateOnly fields use YYYY-MM-DD format only.  No time component.
+                    //
+                    sb.AppendLine("    " + prop.Name + ": string | null | undefined = null;        // Date only (YYYY-MM-DD)");
                 }
                 else if (propertyType == typeof(float) || propertyType == typeof(double) || propertyType == typeof(decimal))
                 {
@@ -1724,22 +1730,36 @@ export interface VersionInformation<T> {
                         }
 
                     }
-                    else if (propertyType == typeof(DateTime) ||        // Might need to break these out...
-                             propertyType == typeof(DateOnly) ||
+                    else if (propertyType == typeof(DateTime) ||
                              propertyType == typeof(TimeOnly))
                     {
                         //
-                        // Dates are to be serialized as ISO 8601 strings with milliseconds.  For example, 2025-12-09T01:09:27.093Z. 
+                        // DateTime/TimeOnly are to be serialized as ISO 8601 strings with milliseconds.  For example, 2025-12-09T01:09:27.093Z. 
                         //
                         // Javascript Date object is not used here on purpose.
                         //
                         if (field != null && field.nullable == false)
                         {
-                            sb.AppendLine("    " + prop.Name + "!: string;      // ISO 8601");
+                            sb.AppendLine("    " + prop.Name + "!: string;      // ISO 8601 (full datetime)");
                         }
                         else
                         {
-                            sb.AppendLine("    " + prop.Name + "!: string | null;   // ISO 8601");
+                            sb.AppendLine("    " + prop.Name + "!: string | null;   // ISO 8601 (full datetime)");
+                        }
+
+                    }
+                    else if (propertyType == typeof(DateOnly))
+                    {
+                        //
+                        // DateOnly fields use YYYY-MM-DD format only.  No time component.
+                        //
+                        if (field != null && field.nullable == false)
+                        {
+                            sb.AppendLine("    " + prop.Name + "!: string;      // Date only (YYYY-MM-DD)");
+                        }
+                        else
+                        {
+                            sb.AppendLine("    " + prop.Name + "!: string | null;   // Date only (YYYY-MM-DD)");
                         }
 
                     }
@@ -1781,6 +1801,17 @@ export interface VersionInformation<T> {
                     if (navPropertyNameToUse.EndsWith("Id") == true)
                     {
                         navPropertyNameToUse = navPropertyNameToUse.Substring(0, navPropertyNameToUse.Length - 2);
+                    }
+
+                    //
+                    // Skip if the nav property name matches the entity name (case-insensitive).
+                    // In that case, Loop 1 (the C# property iteration above) already emitted this
+                    // nav property as a simple FK match. Only emit here for self-referencing FKs
+                    // with a different field name prefix (e.g., parentScheduledEventId on ScheduledEvent).
+                    //
+                    if (navPropertyNameToUse.Trim().ToUpper() == entity.Trim().ToUpper())
+                    {
+                        continue;
                     }
 
                     sb.AppendLine($"    {navPropertyNameToUse}: {entity}Data | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)");
@@ -2377,22 +2408,36 @@ export interface VersionInformation<T> {
                         }
 
                     }
-                    else if (propertyType == typeof(DateTime) ||        // Might need to break these out more..
-                             propertyType == typeof(DateOnly) ||
+                    else if (propertyType == typeof(DateTime) ||
                              propertyType == typeof(TimeOnly))
                     {
                         //
-                        // Dates are to be serialized as ISO 8601 strings with milliseconds.  For example, 2025-12-09T01:09:27.093Z. 
+                        // DateTime/TimeOnly are to be serialized as ISO 8601 strings with milliseconds.  For example, 2025-12-09T01:09:27.093Z. 
                         //
                         // Javascript Date object is not used here on purpose.
                         //
                         if (field != null && field.nullable == false)
                         {
-                            sb.AppendLine("    " + prop.Name + "!: string;      // ISO 8601");
+                            sb.AppendLine("    " + prop.Name + "!: string;      // ISO 8601 (full datetime)");
                         }
                         else
                         {
-                            sb.AppendLine("    " + prop.Name + ": string | null = null;     // ISO 8601");
+                            sb.AppendLine("    " + prop.Name + ": string | null = null;     // ISO 8601 (full datetime)");
+                        }
+
+                    }
+                    else if (propertyType == typeof(DateOnly))
+                    {
+                        //
+                        // DateOnly fields use YYYY-MM-DD format only.  No time component.
+                        //
+                        if (field != null && field.nullable == false)
+                        {
+                            sb.AppendLine("    " + prop.Name + "!: string;      // Date only (YYYY-MM-DD)");
+                        }
+                        else
+                        {
+                            sb.AppendLine("    " + prop.Name + ": string | null = null;     // Date only (YYYY-MM-DD)");
                         }
 
                     }

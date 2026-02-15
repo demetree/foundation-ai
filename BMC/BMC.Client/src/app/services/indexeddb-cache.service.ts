@@ -112,6 +112,15 @@ export class IndexedDBCacheService {
                 return fetchFn(params).pipe(
                     tap(data => {
                         //
+                        // Don't cache empty arrays — if the server returns no data
+                        // (e.g., before an import), we want to re-fetch next time
+                        // rather than serving stale empty results for the full TTL.
+                        //
+                        if (Array.isArray(data) && data.length === 0) {
+                            return;
+                        }
+
+                        //
                         // Store asynchronously — don't block the response
                         //
                         this.putEntry(key, storeName, data, ttlMinutes);

@@ -818,7 +818,7 @@ export class ContactTagService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerContactTagWriter = user.writePermission >= 1;
+            userIsSchedulerContactTagWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerContactTagWriter = false;
           }      

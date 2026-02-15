@@ -83,8 +83,8 @@ export interface VersionInformation<T> {
 }
 
 export class SubmodelBasicListData {
-    id!: bigint | number;
-    name!: string;
+  id!: bigint | number;
+  name!: string;
 }
 
 
@@ -137,21 +137,20 @@ export class SubmodelData {
     deleted!: boolean;
     project: ProjectData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     submodel: SubmodelData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
-    parentSubmodel: SubmodelData | null | undefined = null;     // Self referencing navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
     //
     private _submodelChangeHistories: SubmodelChangeHistoryData[] | null = null;
-    private _submodelChangeHistoriesPromise: Promise<SubmodelChangeHistoryData[]> | null = null;
+    private _submodelChangeHistoriesPromise: Promise<SubmodelChangeHistoryData[]> | null  = null;
     private _submodelChangeHistoriesSubject = new BehaviorSubject<SubmodelChangeHistoryData[] | null>(null);
 
-
+                
     private _submodelPlacedBricks: SubmodelPlacedBrickData[] | null = null;
-    private _submodelPlacedBricksPromise: Promise<SubmodelPlacedBrickData[]> | null = null;
+    private _submodelPlacedBricksPromise: Promise<SubmodelPlacedBrickData[]> | null  = null;
     private _submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
 
-
+                
 
 
     //
@@ -172,18 +171,17 @@ export class SubmodelData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._submodelChangeHistories === null && this._submodelChangeHistoriesPromise === null) {
-                this.loadSubmodelChangeHistories(); // Private method to start fetch
-            }
+          if (this._submodelChangeHistories === null && this._submodelChangeHistoriesPromise === null) {
+            this.loadSubmodelChangeHistories(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SubmodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({
-        submodelId: this.id,
-        active: true,
-        deleted: false
+  
+    public SubmodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({submodelId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -192,72 +190,71 @@ export class SubmodelData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._submodelPlacedBricks === null && this._submodelPlacedBricksPromise === null) {
-                this.loadSubmodelPlacedBricks(); // Private method to start fetch
-            }
+          if (this._submodelPlacedBricks === null && this._submodelPlacedBricksPromise === null) {
+            this.loadSubmodelPlacedBricks(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({
-        submodelId: this.id,
-        active: true,
-        deleted: false
+  
+    public SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({submodelId: this.id,
+      active: true,
+      deleted: false
     });
 
 
 
 
-    //
-    // Full reload — refreshes the entire object and clears all lazy caches 
-    //
-    // Promise based reload method to allow rebuilding of any SubmodelData object with all of it's relations on demand.  Useful for navigating into nav property
-    // objects and getting full state after put or post that may not have returned all nav properties.
-    //
-    // Usage examples:;
-    //
-    //  Async:
-    //   await this.submodel.Reload();
-    //
-    //  Non Async:
-    //
-    //     submodel[0].Reload().then(x => {
-    //        this.submodel = x;
-    //    });
-    //
-    public async Reload(includeRelations: boolean = true): Promise<this> {
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any SubmodelData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.submodel.Reload();
+  //
+  //  Non Async:
+  //
+  //     submodel[0].Reload().then(x => {
+  //        this.submodel = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
 
-        const fresh = await lastValueFrom(
-            SubmodelService.Instance.GetSubmodel(this.id, includeRelations)
-        );
+    const fresh = await lastValueFrom(
+      SubmodelService.Instance.GetSubmodel(this.id, includeRelations)
+    );
 
-        // Merge fresh data into this instance (preserves reference)
-        this.UpdateFrom(fresh as this);
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
 
-        // Clear all lazy caches to force re-load on next access
-        this.clearAllLazyCaches();
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
 
-        return this;
-    }
+    return this;
+  }
 
 
-    private clearAllLazyCaches(): void {
-        //
-        // Reset every collection cache and notify subscribers
-        //
-        this._submodelChangeHistories = null;
-        this._submodelChangeHistoriesPromise = null;
-        this._submodelChangeHistoriesSubject.next(null);
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._submodelChangeHistories = null;
+     this._submodelChangeHistoriesPromise = null;
+     this._submodelChangeHistoriesSubject.next(null);
 
-        this._submodelPlacedBricks = null;
-        this._submodelPlacedBricksPromise = null;
-        this._submodelPlacedBricksSubject.next(null);
+     this._submodelPlacedBricks = null;
+     this._submodelPlacedBricksPromise = null;
+     this._submodelPlacedBricksSubject.next(null);
 
-        this._currentVersionInfo = null;
-        this._currentVersionInfoPromise = null;
-        this._currentVersionInfoSubject.next(null);
-    }
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
+  }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -299,19 +296,19 @@ export class SubmodelData {
         this._submodelChangeHistoriesPromise = lastValueFrom(
             SubmodelService.Instance.GetSubmodelChangeHistoriesForSubmodel(this.id)
         )
-            .then(SubmodelChangeHistories => {
-                this._submodelChangeHistories = SubmodelChangeHistories ?? [];
-                this._submodelChangeHistoriesSubject.next(this._submodelChangeHistories);
-                return this._submodelChangeHistories;
-            })
-            .catch(err => {
-                this._submodelChangeHistories = [];
-                this._submodelChangeHistoriesSubject.next(this._submodelChangeHistories);
-                throw err;
-            })
-            .finally(() => {
-                this._submodelChangeHistoriesPromise = null; // Allow retry if needed
-            });
+        .then(SubmodelChangeHistories => {
+            this._submodelChangeHistories = SubmodelChangeHistories ?? [];
+            this._submodelChangeHistoriesSubject.next(this._submodelChangeHistories);
+            return this._submodelChangeHistories;
+         })
+        .catch(err => {
+            this._submodelChangeHistories = [];
+            this._submodelChangeHistoriesSubject.next(this._submodelChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._submodelChangeHistoriesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -364,19 +361,19 @@ export class SubmodelData {
         this._submodelPlacedBricksPromise = lastValueFrom(
             SubmodelService.Instance.GetSubmodelPlacedBricksForSubmodel(this.id)
         )
-            .then(SubmodelPlacedBricks => {
-                this._submodelPlacedBricks = SubmodelPlacedBricks ?? [];
-                this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);
-                return this._submodelPlacedBricks;
-            })
-            .catch(err => {
-                this._submodelPlacedBricks = [];
-                this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);
-                throw err;
-            })
-            .finally(() => {
-                this._submodelPlacedBricksPromise = null; // Allow retry if needed
-            });
+        .then(SubmodelPlacedBricks => {
+            this._submodelPlacedBricks = SubmodelPlacedBricks ?? [];
+            this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);
+            return this._submodelPlacedBricks;
+         })
+        .catch(err => {
+            this._submodelPlacedBricks = [];
+            this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);
+            throw err;
+        })
+        .finally(() => {
+            this._submodelPlacedBricksPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -456,7 +453,7 @@ export class SubmodelData {
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class SubmodelService extends SecureEndpointBase {
 
@@ -485,7 +482,7 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
     public static get Instance(): SubmodelService {
-        return SubmodelService._instance;
+      return SubmodelService._instance;
     }
 
 
@@ -494,7 +491,7 @@ export class SubmodelService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-            this.listCache.delete(configHash);
+          this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -542,7 +539,7 @@ export class SubmodelService extends SecureEndpointBase {
         return output;
     }
 
-    public GetSubmodel(id: bigint | number, includeRelations: boolean = true): Observable<SubmodelData> {
+    public GetSubmodel(id: bigint | number, includeRelations: boolean = true) : Observable<SubmodelData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -552,7 +549,7 @@ export class SubmodelService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get Submodel", error);
 
                     return throwError(() => error);
@@ -567,7 +564,7 @@ export class SubmodelService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<SubmodelData>;
     }
 
-    private requestSubmodel(id: bigint | number, includeRelations: boolean = true): Observable<SubmodelData> {
+    private requestSubmodel(id: bigint | number, includeRelations: boolean = true) : Observable<SubmodelData> {
 
         let queryParams = new HttpParams();
 
@@ -575,17 +572,16 @@ export class SubmodelService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<SubmodelData>(this.baseUrl + 'api/Submodel/' + id.toString(), {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<SubmodelData>(this.baseUrl + 'api/Submodel/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(raw => this.ReviveSubmodel(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestSubmodel(id, includeRelations));
             }));
     }
 
-    public GetSubmodelList(config: SubmodelQueryParameters | any = null): Observable<Array<SubmodelData>> {
+    public GetSubmodelList(config: SubmodelQueryParameters | any = null) : Observable<Array<SubmodelData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -610,7 +606,7 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
-    private requestSubmodelList(config: SubmodelQueryParameters | any): Observable<Array<SubmodelData>> {
+    private requestSubmodelList(config: SubmodelQueryParameters | any) : Observable <Array<SubmodelData>> {
 
         let queryParams = new HttpParams();
 
@@ -625,17 +621,16 @@ export class SubmodelService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<SubmodelData>>(this.baseUrl + 'api/Submodels', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<Array<SubmodelData>>(this.baseUrl + 'api/Submodels', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveSubmodelList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestSubmodelList(config));
             }));
     }
 
-    public GetSubmodelsRowCount(config: SubmodelQueryParameters | any = null): Observable<bigint | number> {
+    public GetSubmodelsRowCount(config: SubmodelQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -644,7 +639,7 @@ export class SubmodelService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get Submodels row count", error);
 
                     return throwError(() => error);
@@ -659,7 +654,7 @@ export class SubmodelService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestSubmodelsRowCount(config: SubmodelQueryParameters | any): Observable<bigint | number> {
+    private requestSubmodelsRowCount(config: SubmodelQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -680,7 +675,7 @@ export class SubmodelService extends SecureEndpointBase {
             }));
     }
 
-    public GetSubmodelsBasicListData(config: SubmodelQueryParameters | any = null): Observable<Array<SubmodelBasicListData>> {
+    public GetSubmodelsBasicListData(config: SubmodelQueryParameters | any = null) : Observable<Array<SubmodelBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -695,7 +690,7 @@ export class SubmodelService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-
+      
             this.basicListDataCache.set(configHash, submodelsBasicListData$);
 
             return submodelsBasicListData$;
@@ -705,7 +700,7 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
-    private requestSubmodelsBasicListData(config: SubmodelQueryParameters | any): Observable<Array<SubmodelBasicListData>> {
+    private requestSubmodelsBasicListData(config: SubmodelQueryParameters | any) : Observable<Array<SubmodelBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -728,11 +723,11 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
-    public PutSubmodel(id: bigint | number, submodel: SubmodelSubmitData): Observable<SubmodelData> {
+    public PutSubmodel(id: bigint | number, submodel: SubmodelSubmitData) : Observable<SubmodelData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<SubmodelData>(this.baseUrl + 'api/Submodel/' + id.toString(), submodel, { headers: authenticationHeaders }).pipe(
+        return this.http.put<SubmodelData>(this.baseUrl + 'api/Submodel/' + id.toString(), submodel, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveSubmodel(raw)),
             catchError(error => {
@@ -741,31 +736,31 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
-    public PostSubmodel(submodel: SubmodelSubmitData): Observable<SubmodelData> {
+    public PostSubmodel(submodel: SubmodelSubmitData) : Observable<SubmodelData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<SubmodelData>(this.baseUrl + 'api/Submodel', submodel, { headers: authenticationHeaders }).pipe(
+        return this.http.post<SubmodelData>(this.baseUrl + 'api/Submodel', submodel, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveSubmodel(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PostSubmodel(submodel));
+              return this.handleError(error, () => this.PostSubmodel(submodel));
             }));
     }
 
-
-    public DeleteSubmodel(id: bigint | number): Observable<any> {
+  
+    public DeleteSubmodel(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/Submodel/' + id.toString(), { headers: authenticationHeaders }).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/Submodel/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteSubmodel(id));
             }));
     }
 
-    public RollbackSubmodel(id: bigint | number, versionNumber: bigint | number): Observable<SubmodelData> {
+    public RollbackSubmodel(id: bigint | number, versionNumber: bigint | number) : Observable<SubmodelData>{
 
         let queryParams = new HttpParams();
 
@@ -779,7 +774,7 @@ export class SubmodelService extends SecureEndpointBase {
             map(raw => this.ReviveSubmodel(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.RollbackSubmodel(id, versionNumber));
-            }));
+        }));
     }
 
 
@@ -926,13 +921,13 @@ export class SubmodelService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to BMC.Submodels
         //
         if (userIsBMCSubmodelWriter == true) {
-            let user = this.authService.currentUser;
+          let user = this.authService.currentUser;
 
-            if (user != null) {
-                userIsBMCSubmodelWriter = user.writePermission >= 1;
-            } else {
-                userIsBMCSubmodelWriter = false;
-            }
+          if (user != null) {
+            userIsBMCSubmodelWriter = user.writePermission >= 1;
+          } else {
+            userIsBMCSubmodelWriter = false;
+          }      
         }
 
         return userIsBMCSubmodelWriter;
@@ -958,144 +953,141 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
-    /**
-      *
-      * Revives a plain object from the server into a full SubmodelData instance.
-      *
-      * This is critical for the lazy-loading pattern to work correctly.
-      *
-      * When the server returns JSON, it is a plain object with no prototype methods
-      * or observable properties. This method:
-      * 1. Re-attaches the SubmodelData prototype
-      * 2. Copies all properties from the raw object
-      * 3. Re-initializes all private caches and BehaviorSubjects
-      * 4. Re-creates all public observable properties ($ suffixed) with their
-      *    original tap() triggers that initiate lazy loading on first subscription
-      *
-      * Without this, revived objects would not trigger loads when SubmodelTags$ etc.
-      * are subscribed to in templates.
-      *
-      */
-    public ReviveSubmodel(raw: any): SubmodelData {
-        if (!raw) return raw;
+ /**
+   *
+   * Revives a plain object from the server into a full SubmodelData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the SubmodelData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when SubmodelTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveSubmodel(raw: any): SubmodelData {
+    if (!raw) return raw;
 
-        //
-        // Create a SubmodelData object instance with correct prototype
-        //
-        const revived = Object.create(SubmodelData.prototype) as SubmodelData;
+    //
+    // Create a SubmodelData object instance with correct prototype
+    //
+    const revived = Object.create(SubmodelData.prototype) as SubmodelData;
 
-        //
-        // Copy all raw properties
-        //
-        Object.assign(revived, raw);
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
 
-        //
-        // Explicitly initialize all private caches
-        // This ensures the getters work correctly on revived objects
-        //
-        (revived as any)._submodels = null;
-        (revived as any)._submodelsPromise = null;
-        (revived as any)._submodelsSubject = new BehaviorSubject<SubmodelData[] | null>(null);
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._submodels = null;
+    (revived as any)._submodelsPromise = null;
+    (revived as any)._submodelsSubject = new BehaviorSubject<SubmodelData[] | null>(null);
 
-        (revived as any)._submodelChangeHistories = null;
-        (revived as any)._submodelChangeHistoriesPromise = null;
-        (revived as any)._submodelChangeHistoriesSubject = new BehaviorSubject<SubmodelChangeHistoryData[] | null>(null);
+    (revived as any)._submodelChangeHistories = null;
+    (revived as any)._submodelChangeHistoriesPromise = null;
+    (revived as any)._submodelChangeHistoriesSubject = new BehaviorSubject<SubmodelChangeHistoryData[] | null>(null);
 
-        (revived as any)._submodelPlacedBricks = null;
-        (revived as any)._submodelPlacedBricksPromise = null;
-        (revived as any)._submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
-
-
-        //
-        // Re-attach ALL public observables with their lazy-load tap() triggers
-        // This mirrors the original class definition exactly
-        //
-        //
-        // Re-create all public observables with their lazy-load triggers
-        // We use 'as any' because:
-        // 1. The revived object has the correct prototype
-        // 2. But private methods (loadSubmodelXYZ, etc.) are not accessible via the typed variable
-        // 3. This is a controlled revival context — safe and necessary
-        //
-        (revived as any).Submodels$ = (revived as any)._submodelsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._submodels === null && (revived as any)._submodelsPromise === null) {
-                    (revived as any).loadSubmodels();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({
-            submodelId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any)._submodelPlacedBricks = null;
+    (revived as any)._submodelPlacedBricksPromise = null;
+    (revived as any)._submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
 
 
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadSubmodelXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).Submodels$ = (revived as any)._submodelsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodels === null && (revived as any)._submodelsPromise === null) {
+                (revived as any).loadSubmodels();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SubmodelChangeHistories$ = (revived as any)._submodelChangeHistoriesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._submodelChangeHistories === null && (revived as any)._submodelChangeHistoriesPromise === null) {
-                    (revived as any).loadSubmodelChangeHistories();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SubmodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({
-            submodelId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({submodelId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).SubmodelPlacedBricks$ = (revived as any)._submodelPlacedBricksSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._submodelPlacedBricks === null && (revived as any)._submodelPlacedBricksPromise === null) {
-                    (revived as any).loadSubmodelPlacedBricks();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).SubmodelChangeHistories$ = (revived as any)._submodelChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodelChangeHistories === null && (revived as any)._submodelChangeHistoriesPromise === null) {
+                (revived as any).loadSubmodelChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({
-            submodelId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SubmodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({submodelId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).SubmodelPlacedBricks$ = (revived as any)._submodelPlacedBricksSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodelPlacedBricks === null && (revived as any)._submodelPlacedBricksPromise === null) {
+                (revived as any).loadSubmodelPlacedBricks();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({submodelId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
 
-        //
-        // Version history metadata cache and observable
-        //
-        (revived as any)._currentVersionInfo = null;
-        (revived as any)._currentVersionInfoPromise = null;
-        (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SubmodelData> | null>(null);
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SubmodelData> | null>(null);
 
-        (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
-                    (revived as any).loadCurrentVersionInfo();
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
-        return revived;
+    return revived;
+  }
+
+  private ReviveSubmodelList(rawList: any[]): SubmodelData[] {
+
+    if (!rawList) {
+        return [];
     }
 
-    private ReviveSubmodelList(rawList: any[]): SubmodelData[] {
-
-        if (!rawList) {
-            return [];
-        }
-
-        return rawList.map(raw => this.ReviveSubmodel(raw));
-    }
+    return rawList.map(raw => this.ReviveSubmodel(raw));
+  }
 
 }

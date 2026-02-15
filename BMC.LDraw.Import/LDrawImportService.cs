@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using EFCore.BulkExtensions;
 using Foundation.BMC.Database;
 using BMC.LDraw.Models;
 using BMC.LDraw.Parsers;
@@ -130,7 +131,8 @@ namespace BMC.LDraw.Import
                 .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp);
             _log($"  Loaded {existing.Count} existing BrickPart rows");
 
-            int batchCount = 0;
+            List<BrickPart> toInsert = new List<BrickPart>();
+            int updateBatchCount = 0;
             int totalProcessed = 0;
 
             foreach (string datFile in datFiles)
@@ -174,7 +176,7 @@ namespace BMC.LDraw.Import
 
                 if (existing.TryGetValue(partId, out BrickPart entity))
                 {
-                    // Update existing
+                    // Update existing (tracked entity)
                     entity.name = partId;
                     entity.ldrawTitle = header.Title;
                     entity.ldrawCategory = header.Category;
@@ -184,10 +186,18 @@ namespace BMC.LDraw.Import
                     entity.brickCategoryId = brickCategoryId;
                     entity.geometryFilePath = "parts/" + Path.GetFileName(datFile);
                     result.Updated++;
+                    updateBatchCount++;
+
+                    // Flush updates in batches
+                    if (updateBatchCount >= 500)
+                    {
+                        await _context.SaveChangesAsync();
+                        updateBatchCount = 0;
+                    }
                 }
                 else
                 {
-                    // Create new
+                    // Collect new parts for bulk insert
                     BrickPart newPart = new BrickPart
                     {
                         name = partId,
@@ -203,32 +213,39 @@ namespace BMC.LDraw.Import
                         depthLdu = 0,
                         massGrams = 0,
                         geometryFilePath = "parts/" + Path.GetFileName(datFile),
-                        versionNumber = 0,          // Using 0 here to indicate that there is no change history because this is a batch data load. We can implement versioning in the future if needed.
+                        versionNumber = 0,
                         objectGuid = Guid.NewGuid(),
                         active = true,
                         deleted = false
                     };
-                    _context.BrickParts.Add(newPart);
+                    toInsert.Add(newPart);
                     existing[partId] = newPart; // prevent duplicates within same batch
                     result.Created++;
                 }
 
-                batchCount++;
                 totalProcessed++;
-
-                // Save in batches of 500
-                if (batchCount >= 500)
+                if (totalProcessed % 2000 == 0)
                 {
-                    await _context.SaveChangesAsync();
-                    _log($"  Processed {totalProcessed}/{datFiles.Length} parts...");
-                    batchCount = 0;
+                    _log($"  Parsed {totalProcessed}/{datFiles.Length} parts...");
                 }
             }
 
-            // Save remaining
-            if (batchCount > 0)
+            // Flush remaining updates
+            if (updateBatchCount > 0)
             {
                 await _context.SaveChangesAsync();
+            }
+
+            // Bulk insert all new parts
+            if (toInsert.Count > 0)
+            {
+                _log($"  Bulk inserting {toInsert.Count} new parts...");
+                for (int i = 0; i < toInsert.Count; i += 5000)
+                {
+                    List<BrickPart> chunk = toInsert.Skip(i).Take(5000).ToList();
+                    await _context.BulkInsertAsync(chunk);
+                    _log($"  Inserted {Math.Min(i + 5000, toInsert.Count)}/{toInsert.Count}...");
+                }
             }
 
             _log($"  Parts imported: {result.Created} created, {result.Updated} updated, {result.Skipped} skipped");

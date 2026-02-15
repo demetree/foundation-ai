@@ -116,8 +116,8 @@ export interface VersionInformation<T> {
 }
 
 export class ResourceBasicListData {
-    id!: bigint | number;
-    name!: string;
+  id!: bigint | number;
+  name!: string;
 }
 
 
@@ -187,70 +187,70 @@ export class ResourceData {
     // Private lazy-loading caches for related collections
     //
     private _resourceChangeHistories: ResourceChangeHistoryData[] | null = null;
-    private _resourceChangeHistoriesPromise: Promise<ResourceChangeHistoryData[]> | null = null;
+    private _resourceChangeHistoriesPromise: Promise<ResourceChangeHistoryData[]> | null  = null;
     private _resourceChangeHistoriesSubject = new BehaviorSubject<ResourceChangeHistoryData[] | null>(null);
 
-
+                
     private _resourceContacts: ResourceContactData[] | null = null;
-    private _resourceContactsPromise: Promise<ResourceContactData[]> | null = null;
+    private _resourceContactsPromise: Promise<ResourceContactData[]> | null  = null;
     private _resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
 
-
+                
     private _rateSheets: RateSheetData[] | null = null;
-    private _rateSheetsPromise: Promise<RateSheetData[]> | null = null;
+    private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
-
+                
     private _resourceQualifications: ResourceQualificationData[] | null = null;
-    private _resourceQualificationsPromise: Promise<ResourceQualificationData[]> | null = null;
+    private _resourceQualificationsPromise: Promise<ResourceQualificationData[]> | null  = null;
     private _resourceQualificationsSubject = new BehaviorSubject<ResourceQualificationData[] | null>(null);
 
-
+                
     private _resourceAvailabilities: ResourceAvailabilityData[] | null = null;
-    private _resourceAvailabilitiesPromise: Promise<ResourceAvailabilityData[]> | null = null;
+    private _resourceAvailabilitiesPromise: Promise<ResourceAvailabilityData[]> | null  = null;
     private _resourceAvailabilitiesSubject = new BehaviorSubject<ResourceAvailabilityData[] | null>(null);
 
-
+                
     private _resourceShifts: ResourceShiftData[] | null = null;
-    private _resourceShiftsPromise: Promise<ResourceShiftData[]> | null = null;
+    private _resourceShiftsPromise: Promise<ResourceShiftData[]> | null  = null;
     private _resourceShiftsSubject = new BehaviorSubject<ResourceShiftData[] | null>(null);
 
-
+                
     private _crewMembers: CrewMemberData[] | null = null;
-    private _crewMembersPromise: Promise<CrewMemberData[]> | null = null;
+    private _crewMembersPromise: Promise<CrewMemberData[]> | null  = null;
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
 
-
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
-    private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null = null;
+    private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
-
+                
     private _eventCharges: EventChargeData[] | null = null;
-    private _eventChargesPromise: Promise<EventChargeData[]> | null = null;
+    private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
-
+                
     private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
-    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null = null;
+    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
 
-
+                
     private _volunteerProfiles: VolunteerProfileData[] | null = null;
-    private _volunteerProfilesPromise: Promise<VolunteerProfileData[]> | null = null;
+    private _volunteerProfilesPromise: Promise<VolunteerProfileData[]> | null  = null;
     private _volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
 
-
+                
     private _volunteerGroupMembers: VolunteerGroupMemberData[] | null = null;
-    private _volunteerGroupMembersPromise: Promise<VolunteerGroupMemberData[]> | null = null;
+    private _volunteerGroupMembersPromise: Promise<VolunteerGroupMemberData[]> | null  = null;
     private _volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
 
-
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
-    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null = null;
+    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
-
+                
 
 
     //
@@ -271,18 +271,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._resourceChangeHistories === null && this._resourceChangeHistoriesPromise === null) {
-                this.loadResourceChangeHistories(); // Private method to start fetch
-            }
+          if (this._resourceChangeHistories === null && this._resourceChangeHistoriesPromise === null) {
+            this.loadResourceChangeHistories(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -291,18 +290,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._resourceContacts === null && this._resourceContactsPromise === null) {
-                this.loadResourceContacts(); // Private method to start fetch
-            }
+          if (this._resourceContacts === null && this._resourceContactsPromise === null) {
+            this.loadResourceContacts(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -311,18 +309,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._rateSheets === null && this._rateSheetsPromise === null) {
-                this.loadRateSheets(); // Private method to start fetch
-            }
+          if (this._rateSheets === null && this._rateSheetsPromise === null) {
+            this.loadRateSheets(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -331,18 +328,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._resourceQualifications === null && this._resourceQualificationsPromise === null) {
-                this.loadResourceQualifications(); // Private method to start fetch
-            }
+          if (this._resourceQualifications === null && this._resourceQualificationsPromise === null) {
+            this.loadResourceQualifications(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -351,18 +347,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._resourceAvailabilities === null && this._resourceAvailabilitiesPromise === null) {
-                this.loadResourceAvailabilities(); // Private method to start fetch
-            }
+          if (this._resourceAvailabilities === null && this._resourceAvailabilitiesPromise === null) {
+            this.loadResourceAvailabilities(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -371,18 +366,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._resourceShifts === null && this._resourceShiftsPromise === null) {
-                this.loadResourceShifts(); // Private method to start fetch
-            }
+          if (this._resourceShifts === null && this._resourceShiftsPromise === null) {
+            this.loadResourceShifts(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -391,18 +385,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._crewMembers === null && this._crewMembersPromise === null) {
-                this.loadCrewMembers(); // Private method to start fetch
-            }
+          if (this._crewMembers === null && this._crewMembersPromise === null) {
+            this.loadCrewMembers(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -411,18 +404,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._scheduledEvents === null && this._scheduledEventsPromise === null) {
-                this.loadScheduledEvents(); // Private method to start fetch
-            }
+          if (this._scheduledEvents === null && this._scheduledEventsPromise === null) {
+            this.loadScheduledEvents(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -431,18 +423,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._eventCharges === null && this._eventChargesPromise === null) {
-                this.loadEventCharges(); // Private method to start fetch
-            }
+          if (this._eventCharges === null && this._eventChargesPromise === null) {
+            this.loadEventCharges(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -451,18 +442,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
-                this.loadNotificationSubscriptions(); // Private method to start fetch
-            }
+          if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
+            this.loadNotificationSubscriptions(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -471,18 +461,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._volunteerProfiles === null && this._volunteerProfilesPromise === null) {
-                this.loadVolunteerProfiles(); // Private method to start fetch
-            }
+          if (this._volunteerProfiles === null && this._volunteerProfilesPromise === null) {
+            this.loadVolunteerProfiles(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -491,18 +480,17 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._volunteerGroupMembers === null && this._volunteerGroupMembersPromise === null) {
-                this.loadVolunteerGroupMembers(); // Private method to start fetch
-            }
+          if (this._volunteerGroupMembers === null && this._volunteerGroupMembersPromise === null) {
+            this.loadVolunteerGroupMembers(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -511,116 +499,115 @@ export class ResourceData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
-                this.loadEventResourceAssignments(); // Private method to start fetch
-            }
+          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
+            this.loadEventResourceAssignments(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({
-        resourceId: this.id,
-        active: true,
-        deleted: false
+  
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
     });
 
 
 
 
-    //
-    // Full reload — refreshes the entire object and clears all lazy caches 
-    //
-    // Promise based reload method to allow rebuilding of any ResourceData object with all of it's relations on demand.  Useful for navigating into nav property
-    // objects and getting full state after put or post that may not have returned all nav properties.
-    //
-    // Usage examples:;
-    //
-    //  Async:
-    //   await this.resource.Reload();
-    //
-    //  Non Async:
-    //
-    //     resource[0].Reload().then(x => {
-    //        this.resource = x;
-    //    });
-    //
-    public async Reload(includeRelations: boolean = true): Promise<this> {
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any ResourceData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.resource.Reload();
+  //
+  //  Non Async:
+  //
+  //     resource[0].Reload().then(x => {
+  //        this.resource = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
 
-        const fresh = await lastValueFrom(
-            ResourceService.Instance.GetResource(this.id, includeRelations)
-        );
+    const fresh = await lastValueFrom(
+      ResourceService.Instance.GetResource(this.id, includeRelations)
+    );
 
-        // Merge fresh data into this instance (preserves reference)
-        this.UpdateFrom(fresh as this);
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
 
-        // Clear all lazy caches to force re-load on next access
-        this.clearAllLazyCaches();
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
 
-        return this;
-    }
+    return this;
+  }
 
 
-    private clearAllLazyCaches(): void {
-        //
-        // Reset every collection cache and notify subscribers
-        //
-        this._resourceChangeHistories = null;
-        this._resourceChangeHistoriesPromise = null;
-        this._resourceChangeHistoriesSubject.next(null);
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._resourceChangeHistories = null;
+     this._resourceChangeHistoriesPromise = null;
+     this._resourceChangeHistoriesSubject.next(null);
 
-        this._resourceContacts = null;
-        this._resourceContactsPromise = null;
-        this._resourceContactsSubject.next(null);
+     this._resourceContacts = null;
+     this._resourceContactsPromise = null;
+     this._resourceContactsSubject.next(null);
 
-        this._rateSheets = null;
-        this._rateSheetsPromise = null;
-        this._rateSheetsSubject.next(null);
+     this._rateSheets = null;
+     this._rateSheetsPromise = null;
+     this._rateSheetsSubject.next(null);
 
-        this._resourceQualifications = null;
-        this._resourceQualificationsPromise = null;
-        this._resourceQualificationsSubject.next(null);
+     this._resourceQualifications = null;
+     this._resourceQualificationsPromise = null;
+     this._resourceQualificationsSubject.next(null);
 
-        this._resourceAvailabilities = null;
-        this._resourceAvailabilitiesPromise = null;
-        this._resourceAvailabilitiesSubject.next(null);
+     this._resourceAvailabilities = null;
+     this._resourceAvailabilitiesPromise = null;
+     this._resourceAvailabilitiesSubject.next(null);
 
-        this._resourceShifts = null;
-        this._resourceShiftsPromise = null;
-        this._resourceShiftsSubject.next(null);
+     this._resourceShifts = null;
+     this._resourceShiftsPromise = null;
+     this._resourceShiftsSubject.next(null);
 
-        this._crewMembers = null;
-        this._crewMembersPromise = null;
-        this._crewMembersSubject.next(null);
+     this._crewMembers = null;
+     this._crewMembersPromise = null;
+     this._crewMembersSubject.next(null);
 
-        this._scheduledEvents = null;
-        this._scheduledEventsPromise = null;
-        this._scheduledEventsSubject.next(null);
+     this._scheduledEvents = null;
+     this._scheduledEventsPromise = null;
+     this._scheduledEventsSubject.next(null);
 
-        this._eventCharges = null;
-        this._eventChargesPromise = null;
-        this._eventChargesSubject.next(null);
+     this._eventCharges = null;
+     this._eventChargesPromise = null;
+     this._eventChargesSubject.next(null);
 
-        this._notificationSubscriptions = null;
-        this._notificationSubscriptionsPromise = null;
-        this._notificationSubscriptionsSubject.next(null);
+     this._notificationSubscriptions = null;
+     this._notificationSubscriptionsPromise = null;
+     this._notificationSubscriptionsSubject.next(null);
 
-        this._volunteerProfiles = null;
-        this._volunteerProfilesPromise = null;
-        this._volunteerProfilesSubject.next(null);
+     this._volunteerProfiles = null;
+     this._volunteerProfilesPromise = null;
+     this._volunteerProfilesSubject.next(null);
 
-        this._volunteerGroupMembers = null;
-        this._volunteerGroupMembersPromise = null;
-        this._volunteerGroupMembersSubject.next(null);
+     this._volunteerGroupMembers = null;
+     this._volunteerGroupMembersPromise = null;
+     this._volunteerGroupMembersSubject.next(null);
 
-        this._eventResourceAssignments = null;
-        this._eventResourceAssignmentsPromise = null;
-        this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignments = null;
+     this._eventResourceAssignmentsPromise = null;
+     this._eventResourceAssignmentsSubject.next(null);
 
-        this._currentVersionInfo = null;
-        this._currentVersionInfoPromise = null;
-        this._currentVersionInfoSubject.next(null);
-    }
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
+  }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -662,19 +649,19 @@ export class ResourceData {
         this._resourceChangeHistoriesPromise = lastValueFrom(
             ResourceService.Instance.GetResourceChangeHistoriesForResource(this.id)
         )
-            .then(ResourceChangeHistories => {
-                this._resourceChangeHistories = ResourceChangeHistories ?? [];
-                this._resourceChangeHistoriesSubject.next(this._resourceChangeHistories);
-                return this._resourceChangeHistories;
-            })
-            .catch(err => {
-                this._resourceChangeHistories = [];
-                this._resourceChangeHistoriesSubject.next(this._resourceChangeHistories);
-                throw err;
-            })
-            .finally(() => {
-                this._resourceChangeHistoriesPromise = null; // Allow retry if needed
-            });
+        .then(ResourceChangeHistories => {
+            this._resourceChangeHistories = ResourceChangeHistories ?? [];
+            this._resourceChangeHistoriesSubject.next(this._resourceChangeHistories);
+            return this._resourceChangeHistories;
+         })
+        .catch(err => {
+            this._resourceChangeHistories = [];
+            this._resourceChangeHistoriesSubject.next(this._resourceChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._resourceChangeHistoriesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -727,19 +714,19 @@ export class ResourceData {
         this._resourceContactsPromise = lastValueFrom(
             ResourceService.Instance.GetResourceContactsForResource(this.id)
         )
-            .then(ResourceContacts => {
-                this._resourceContacts = ResourceContacts ?? [];
-                this._resourceContactsSubject.next(this._resourceContacts);
-                return this._resourceContacts;
-            })
-            .catch(err => {
-                this._resourceContacts = [];
-                this._resourceContactsSubject.next(this._resourceContacts);
-                throw err;
-            })
-            .finally(() => {
-                this._resourceContactsPromise = null; // Allow retry if needed
-            });
+        .then(ResourceContacts => {
+            this._resourceContacts = ResourceContacts ?? [];
+            this._resourceContactsSubject.next(this._resourceContacts);
+            return this._resourceContacts;
+         })
+        .catch(err => {
+            this._resourceContacts = [];
+            this._resourceContactsSubject.next(this._resourceContacts);
+            throw err;
+        })
+        .finally(() => {
+            this._resourceContactsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -792,19 +779,19 @@ export class ResourceData {
         this._rateSheetsPromise = lastValueFrom(
             ResourceService.Instance.GetRateSheetsForResource(this.id)
         )
-            .then(RateSheets => {
-                this._rateSheets = RateSheets ?? [];
-                this._rateSheetsSubject.next(this._rateSheets);
-                return this._rateSheets;
-            })
-            .catch(err => {
-                this._rateSheets = [];
-                this._rateSheetsSubject.next(this._rateSheets);
-                throw err;
-            })
-            .finally(() => {
-                this._rateSheetsPromise = null; // Allow retry if needed
-            });
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
+            this._rateSheetsSubject.next(this._rateSheets);
+            return this._rateSheets;
+         })
+        .catch(err => {
+            this._rateSheets = [];
+            this._rateSheetsSubject.next(this._rateSheets);
+            throw err;
+        })
+        .finally(() => {
+            this._rateSheetsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -857,19 +844,19 @@ export class ResourceData {
         this._resourceQualificationsPromise = lastValueFrom(
             ResourceService.Instance.GetResourceQualificationsForResource(this.id)
         )
-            .then(ResourceQualifications => {
-                this._resourceQualifications = ResourceQualifications ?? [];
-                this._resourceQualificationsSubject.next(this._resourceQualifications);
-                return this._resourceQualifications;
-            })
-            .catch(err => {
-                this._resourceQualifications = [];
-                this._resourceQualificationsSubject.next(this._resourceQualifications);
-                throw err;
-            })
-            .finally(() => {
-                this._resourceQualificationsPromise = null; // Allow retry if needed
-            });
+        .then(ResourceQualifications => {
+            this._resourceQualifications = ResourceQualifications ?? [];
+            this._resourceQualificationsSubject.next(this._resourceQualifications);
+            return this._resourceQualifications;
+         })
+        .catch(err => {
+            this._resourceQualifications = [];
+            this._resourceQualificationsSubject.next(this._resourceQualifications);
+            throw err;
+        })
+        .finally(() => {
+            this._resourceQualificationsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -922,19 +909,19 @@ export class ResourceData {
         this._resourceAvailabilitiesPromise = lastValueFrom(
             ResourceService.Instance.GetResourceAvailabilitiesForResource(this.id)
         )
-            .then(ResourceAvailabilities => {
-                this._resourceAvailabilities = ResourceAvailabilities ?? [];
-                this._resourceAvailabilitiesSubject.next(this._resourceAvailabilities);
-                return this._resourceAvailabilities;
-            })
-            .catch(err => {
-                this._resourceAvailabilities = [];
-                this._resourceAvailabilitiesSubject.next(this._resourceAvailabilities);
-                throw err;
-            })
-            .finally(() => {
-                this._resourceAvailabilitiesPromise = null; // Allow retry if needed
-            });
+        .then(ResourceAvailabilities => {
+            this._resourceAvailabilities = ResourceAvailabilities ?? [];
+            this._resourceAvailabilitiesSubject.next(this._resourceAvailabilities);
+            return this._resourceAvailabilities;
+         })
+        .catch(err => {
+            this._resourceAvailabilities = [];
+            this._resourceAvailabilitiesSubject.next(this._resourceAvailabilities);
+            throw err;
+        })
+        .finally(() => {
+            this._resourceAvailabilitiesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -987,19 +974,19 @@ export class ResourceData {
         this._resourceShiftsPromise = lastValueFrom(
             ResourceService.Instance.GetResourceShiftsForResource(this.id)
         )
-            .then(ResourceShifts => {
-                this._resourceShifts = ResourceShifts ?? [];
-                this._resourceShiftsSubject.next(this._resourceShifts);
-                return this._resourceShifts;
-            })
-            .catch(err => {
-                this._resourceShifts = [];
-                this._resourceShiftsSubject.next(this._resourceShifts);
-                throw err;
-            })
-            .finally(() => {
-                this._resourceShiftsPromise = null; // Allow retry if needed
-            });
+        .then(ResourceShifts => {
+            this._resourceShifts = ResourceShifts ?? [];
+            this._resourceShiftsSubject.next(this._resourceShifts);
+            return this._resourceShifts;
+         })
+        .catch(err => {
+            this._resourceShifts = [];
+            this._resourceShiftsSubject.next(this._resourceShifts);
+            throw err;
+        })
+        .finally(() => {
+            this._resourceShiftsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1052,19 +1039,19 @@ export class ResourceData {
         this._crewMembersPromise = lastValueFrom(
             ResourceService.Instance.GetCrewMembersForResource(this.id)
         )
-            .then(CrewMembers => {
-                this._crewMembers = CrewMembers ?? [];
-                this._crewMembersSubject.next(this._crewMembers);
-                return this._crewMembers;
-            })
-            .catch(err => {
-                this._crewMembers = [];
-                this._crewMembersSubject.next(this._crewMembers);
-                throw err;
-            })
-            .finally(() => {
-                this._crewMembersPromise = null; // Allow retry if needed
-            });
+        .then(CrewMembers => {
+            this._crewMembers = CrewMembers ?? [];
+            this._crewMembersSubject.next(this._crewMembers);
+            return this._crewMembers;
+         })
+        .catch(err => {
+            this._crewMembers = [];
+            this._crewMembersSubject.next(this._crewMembers);
+            throw err;
+        })
+        .finally(() => {
+            this._crewMembersPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1117,19 +1104,19 @@ export class ResourceData {
         this._scheduledEventsPromise = lastValueFrom(
             ResourceService.Instance.GetScheduledEventsForResource(this.id)
         )
-            .then(ScheduledEvents => {
-                this._scheduledEvents = ScheduledEvents ?? [];
-                this._scheduledEventsSubject.next(this._scheduledEvents);
-                return this._scheduledEvents;
-            })
-            .catch(err => {
-                this._scheduledEvents = [];
-                this._scheduledEventsSubject.next(this._scheduledEvents);
-                throw err;
-            })
-            .finally(() => {
-                this._scheduledEventsPromise = null; // Allow retry if needed
-            });
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
+            this._scheduledEventsSubject.next(this._scheduledEvents);
+            return this._scheduledEvents;
+         })
+        .catch(err => {
+            this._scheduledEvents = [];
+            this._scheduledEventsSubject.next(this._scheduledEvents);
+            throw err;
+        })
+        .finally(() => {
+            this._scheduledEventsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1182,19 +1169,19 @@ export class ResourceData {
         this._eventChargesPromise = lastValueFrom(
             ResourceService.Instance.GetEventChargesForResource(this.id)
         )
-            .then(EventCharges => {
-                this._eventCharges = EventCharges ?? [];
-                this._eventChargesSubject.next(this._eventCharges);
-                return this._eventCharges;
-            })
-            .catch(err => {
-                this._eventCharges = [];
-                this._eventChargesSubject.next(this._eventCharges);
-                throw err;
-            })
-            .finally(() => {
-                this._eventChargesPromise = null; // Allow retry if needed
-            });
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
+            this._eventChargesSubject.next(this._eventCharges);
+            return this._eventCharges;
+         })
+        .catch(err => {
+            this._eventCharges = [];
+            this._eventChargesSubject.next(this._eventCharges);
+            throw err;
+        })
+        .finally(() => {
+            this._eventChargesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1247,19 +1234,19 @@ export class ResourceData {
         this._notificationSubscriptionsPromise = lastValueFrom(
             ResourceService.Instance.GetNotificationSubscriptionsForResource(this.id)
         )
-            .then(NotificationSubscriptions => {
-                this._notificationSubscriptions = NotificationSubscriptions ?? [];
-                this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-                return this._notificationSubscriptions;
-            })
-            .catch(err => {
-                this._notificationSubscriptions = [];
-                this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-                throw err;
-            })
-            .finally(() => {
-                this._notificationSubscriptionsPromise = null; // Allow retry if needed
-            });
+        .then(NotificationSubscriptions => {
+            this._notificationSubscriptions = NotificationSubscriptions ?? [];
+            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+            return this._notificationSubscriptions;
+         })
+        .catch(err => {
+            this._notificationSubscriptions = [];
+            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+            throw err;
+        })
+        .finally(() => {
+            this._notificationSubscriptionsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1312,19 +1299,19 @@ export class ResourceData {
         this._volunteerProfilesPromise = lastValueFrom(
             ResourceService.Instance.GetVolunteerProfilesForResource(this.id)
         )
-            .then(VolunteerProfiles => {
-                this._volunteerProfiles = VolunteerProfiles ?? [];
-                this._volunteerProfilesSubject.next(this._volunteerProfiles);
-                return this._volunteerProfiles;
-            })
-            .catch(err => {
-                this._volunteerProfiles = [];
-                this._volunteerProfilesSubject.next(this._volunteerProfiles);
-                throw err;
-            })
-            .finally(() => {
-                this._volunteerProfilesPromise = null; // Allow retry if needed
-            });
+        .then(VolunteerProfiles => {
+            this._volunteerProfiles = VolunteerProfiles ?? [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            return this._volunteerProfiles;
+         })
+        .catch(err => {
+            this._volunteerProfiles = [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerProfilesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1377,19 +1364,19 @@ export class ResourceData {
         this._volunteerGroupMembersPromise = lastValueFrom(
             ResourceService.Instance.GetVolunteerGroupMembersForResource(this.id)
         )
-            .then(VolunteerGroupMembers => {
-                this._volunteerGroupMembers = VolunteerGroupMembers ?? [];
-                this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
-                return this._volunteerGroupMembers;
-            })
-            .catch(err => {
-                this._volunteerGroupMembers = [];
-                this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
-                throw err;
-            })
-            .finally(() => {
-                this._volunteerGroupMembersPromise = null; // Allow retry if needed
-            });
+        .then(VolunteerGroupMembers => {
+            this._volunteerGroupMembers = VolunteerGroupMembers ?? [];
+            this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
+            return this._volunteerGroupMembers;
+         })
+        .catch(err => {
+            this._volunteerGroupMembers = [];
+            this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerGroupMembersPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1442,19 +1429,19 @@ export class ResourceData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             ResourceService.Instance.GetEventResourceAssignmentsForResource(this.id)
         )
-            .then(EventResourceAssignments => {
-                this._eventResourceAssignments = EventResourceAssignments ?? [];
-                this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-                return this._eventResourceAssignments;
-            })
-            .catch(err => {
-                this._eventResourceAssignments = [];
-                this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-                throw err;
-            })
-            .finally(() => {
-                this._eventResourceAssignmentsPromise = null; // Allow retry if needed
-            });
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            return this._eventResourceAssignments;
+         })
+        .catch(err => {
+            this._eventResourceAssignments = [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            throw err;
+        })
+        .finally(() => {
+            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1534,7 +1521,7 @@ export class ResourceData {
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class ResourceService extends SecureEndpointBase {
 
@@ -1574,7 +1561,7 @@ export class ResourceService extends SecureEndpointBase {
     }
 
     public static get Instance(): ResourceService {
-        return ResourceService._instance;
+      return ResourceService._instance;
     }
 
 
@@ -1583,7 +1570,7 @@ export class ResourceService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-            this.listCache.delete(configHash);
+          this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -1641,7 +1628,7 @@ export class ResourceService extends SecureEndpointBase {
         return output;
     }
 
-    public GetResource(id: bigint | number, includeRelations: boolean = true): Observable<ResourceData> {
+    public GetResource(id: bigint | number, includeRelations: boolean = true) : Observable<ResourceData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -1651,7 +1638,7 @@ export class ResourceService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get Resource", error);
 
                     return throwError(() => error);
@@ -1666,7 +1653,7 @@ export class ResourceService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<ResourceData>;
     }
 
-    private requestResource(id: bigint | number, includeRelations: boolean = true): Observable<ResourceData> {
+    private requestResource(id: bigint | number, includeRelations: boolean = true) : Observable<ResourceData> {
 
         let queryParams = new HttpParams();
 
@@ -1674,17 +1661,16 @@ export class ResourceService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<ResourceData>(this.baseUrl + 'api/Resource/' + id.toString(), {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<ResourceData>(this.baseUrl + 'api/Resource/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(raw => this.ReviveResource(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestResource(id, includeRelations));
             }));
     }
 
-    public GetResourceList(config: ResourceQueryParameters | any = null): Observable<Array<ResourceData>> {
+    public GetResourceList(config: ResourceQueryParameters | any = null) : Observable<Array<ResourceData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1709,7 +1695,7 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    private requestResourceList(config: ResourceQueryParameters | any): Observable<Array<ResourceData>> {
+    private requestResourceList(config: ResourceQueryParameters | any) : Observable <Array<ResourceData>> {
 
         let queryParams = new HttpParams();
 
@@ -1724,17 +1710,16 @@ export class ResourceService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ResourceData>>(this.baseUrl + 'api/Resources', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<Array<ResourceData>>(this.baseUrl + 'api/Resources', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveResourceList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestResourceList(config));
             }));
     }
 
-    public GetResourcesRowCount(config: ResourceQueryParameters | any = null): Observable<bigint | number> {
+    public GetResourcesRowCount(config: ResourceQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1743,7 +1728,7 @@ export class ResourceService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get Resources row count", error);
 
                     return throwError(() => error);
@@ -1758,7 +1743,7 @@ export class ResourceService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestResourcesRowCount(config: ResourceQueryParameters | any): Observable<bigint | number> {
+    private requestResourcesRowCount(config: ResourceQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -1779,7 +1764,7 @@ export class ResourceService extends SecureEndpointBase {
             }));
     }
 
-    public GetResourcesBasicListData(config: ResourceQueryParameters | any = null): Observable<Array<ResourceBasicListData>> {
+    public GetResourcesBasicListData(config: ResourceQueryParameters | any = null) : Observable<Array<ResourceBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1794,7 +1779,7 @@ export class ResourceService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-
+      
             this.basicListDataCache.set(configHash, resourcesBasicListData$);
 
             return resourcesBasicListData$;
@@ -1804,7 +1789,7 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    private requestResourcesBasicListData(config: ResourceQueryParameters | any): Observable<Array<ResourceBasicListData>> {
+    private requestResourcesBasicListData(config: ResourceQueryParameters | any) : Observable<Array<ResourceBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -1827,11 +1812,11 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    public PutResource(id: bigint | number, resource: ResourceSubmitData): Observable<ResourceData> {
+    public PutResource(id: bigint | number, resource: ResourceSubmitData) : Observable<ResourceData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<ResourceData>(this.baseUrl + 'api/Resource/' + id.toString(), resource, { headers: authenticationHeaders }).pipe(
+        return this.http.put<ResourceData>(this.baseUrl + 'api/Resource/' + id.toString(), resource, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveResource(raw)),
             catchError(error => {
@@ -1840,31 +1825,31 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    public PostResource(resource: ResourceSubmitData): Observable<ResourceData> {
+    public PostResource(resource: ResourceSubmitData) : Observable<ResourceData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<ResourceData>(this.baseUrl + 'api/Resource', resource, { headers: authenticationHeaders }).pipe(
+        return this.http.post<ResourceData>(this.baseUrl + 'api/Resource', resource, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveResource(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PostResource(resource));
+              return this.handleError(error, () => this.PostResource(resource));
             }));
     }
 
-
-    public DeleteResource(id: bigint | number): Observable<any> {
+  
+    public DeleteResource(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/Resource/' + id.toString(), { headers: authenticationHeaders }).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/Resource/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteResource(id));
             }));
     }
 
-    public RollbackResource(id: bigint | number, versionNumber: bigint | number): Observable<ResourceData> {
+    public RollbackResource(id: bigint | number, versionNumber: bigint | number) : Observable<ResourceData>{
 
         let queryParams = new HttpParams();
 
@@ -1878,7 +1863,7 @@ export class ResourceService extends SecureEndpointBase {
             map(raw => this.ReviveResource(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.RollbackResource(id, versionNumber));
-            }));
+        }));
     }
 
 
@@ -2025,13 +2010,13 @@ export class ResourceService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to Scheduler.Resources
         //
         if (userIsSchedulerResourceWriter == true) {
-            let user = this.authService.currentUser;
+          let user = this.authService.currentUser;
 
-            if (user != null) {
-                userIsSchedulerResourceWriter = user.writePermission >= 50;
-            } else {
-                userIsSchedulerResourceWriter = false;
-            }
+          if (user != null) {
+            userIsSchedulerResourceWriter = user.writePermission >= 30;
+          } else {
+            userIsSchedulerResourceWriter = false;
+          }      
         }
 
         return userIsSchedulerResourceWriter;
@@ -2167,354 +2152,341 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    /**
-      *
-      * Revives a plain object from the server into a full ResourceData instance.
-      *
-      * This is critical for the lazy-loading pattern to work correctly.
-      *
-      * When the server returns JSON, it is a plain object with no prototype methods
-      * or observable properties. This method:
-      * 1. Re-attaches the ResourceData prototype
-      * 2. Copies all properties from the raw object
-      * 3. Re-initializes all private caches and BehaviorSubjects
-      * 4. Re-creates all public observable properties ($ suffixed) with their
-      *    original tap() triggers that initiate lazy loading on first subscription
-      *
-      * Without this, revived objects would not trigger loads when ResourceTags$ etc.
-      * are subscribed to in templates.
-      *
-      */
-    public ReviveResource(raw: any): ResourceData {
-        if (!raw) return raw;
-
-        //
-        // Create a ResourceData object instance with correct prototype
-        //
-        const revived = Object.create(ResourceData.prototype) as ResourceData;
-
-        //
-        // Copy all raw properties
-        //
-        Object.assign(revived, raw);
-
-        //
-        // Explicitly initialize all private caches
-        // This ensures the getters work correctly on revived objects
-        //
-        (revived as any)._resourceChangeHistories = null;
-        (revived as any)._resourceChangeHistoriesPromise = null;
-        (revived as any)._resourceChangeHistoriesSubject = new BehaviorSubject<ResourceChangeHistoryData[] | null>(null);
-
-        (revived as any)._resourceContacts = null;
-        (revived as any)._resourceContactsPromise = null;
-        (revived as any)._resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
-
-        (revived as any)._rateSheets = null;
-        (revived as any)._rateSheetsPromise = null;
-        (revived as any)._rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
-
-        (revived as any)._resourceQualifications = null;
-        (revived as any)._resourceQualificationsPromise = null;
-        (revived as any)._resourceQualificationsSubject = new BehaviorSubject<ResourceQualificationData[] | null>(null);
-
-        (revived as any)._resourceAvailabilities = null;
-        (revived as any)._resourceAvailabilitiesPromise = null;
-        (revived as any)._resourceAvailabilitiesSubject = new BehaviorSubject<ResourceAvailabilityData[] | null>(null);
-
-        (revived as any)._resourceShifts = null;
-        (revived as any)._resourceShiftsPromise = null;
-        (revived as any)._resourceShiftsSubject = new BehaviorSubject<ResourceShiftData[] | null>(null);
-
-        (revived as any)._crewMembers = null;
-        (revived as any)._crewMembersPromise = null;
-        (revived as any)._crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
-
-        (revived as any)._scheduledEvents = null;
-        (revived as any)._scheduledEventsPromise = null;
-        (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
-
-        (revived as any)._eventCharges = null;
-        (revived as any)._eventChargesPromise = null;
-        (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
-
-        (revived as any)._notificationSubscriptions = null;
-        (revived as any)._notificationSubscriptionsPromise = null;
-        (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
-
-        (revived as any)._volunteerProfiles = null;
-        (revived as any)._volunteerProfilesPromise = null;
-        (revived as any)._volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
-
-        (revived as any)._volunteerGroupMembers = null;
-        (revived as any)._volunteerGroupMembersPromise = null;
-        (revived as any)._volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
-
-        (revived as any)._eventResourceAssignments = null;
-        (revived as any)._eventResourceAssignmentsPromise = null;
-        (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
-
-
-        //
-        // Re-attach ALL public observables with their lazy-load tap() triggers
-        // This mirrors the original class definition exactly
-        //
-        //
-        // Re-create all public observables with their lazy-load triggers
-        // We use 'as any' because:
-        // 1. The revived object has the correct prototype
-        // 2. But private methods (loadResourceXYZ, etc.) are not accessible via the typed variable
-        // 3. This is a controlled revival context — safe and necessary
-        //
-        (revived as any).ResourceChangeHistories$ = (revived as any)._resourceChangeHistoriesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._resourceChangeHistories === null && (revived as any)._resourceChangeHistoriesPromise === null) {
-                    (revived as any).loadResourceChangeHistories();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ResourceContacts$ = (revived as any)._resourceContactsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._resourceContacts === null && (revived as any)._resourceContactsPromise === null) {
-                    (revived as any).loadResourceContacts();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._rateSheets === null && (revived as any)._rateSheetsPromise === null) {
-                    (revived as any).loadRateSheets();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ResourceQualifications$ = (revived as any)._resourceQualificationsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._resourceQualifications === null && (revived as any)._resourceQualificationsPromise === null) {
-                    (revived as any).loadResourceQualifications();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ResourceAvailabilities$ = (revived as any)._resourceAvailabilitiesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._resourceAvailabilities === null && (revived as any)._resourceAvailabilitiesPromise === null) {
-                    (revived as any).loadResourceAvailabilities();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ResourceShifts$ = (revived as any)._resourceShiftsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._resourceShifts === null && (revived as any)._resourceShiftsPromise === null) {
-                    (revived as any).loadResourceShifts();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).CrewMembers$ = (revived as any)._crewMembersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._crewMembers === null && (revived as any)._crewMembersPromise === null) {
-                    (revived as any).loadCrewMembers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._scheduledEvents === null && (revived as any)._scheduledEventsPromise === null) {
-                    (revived as any).loadScheduledEvents();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._eventCharges === null && (revived as any)._eventChargesPromise === null) {
-                    (revived as any).loadEventCharges();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
-                    (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._volunteerProfiles === null && (revived as any)._volunteerProfilesPromise === null) {
-                    (revived as any).loadVolunteerProfiles();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._volunteerGroupMembers === null && (revived as any)._volunteerGroupMembersPromise === null) {
-                    (revived as any).loadVolunteerGroupMembers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
-                    (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({
-            resourceId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-
-        //
-        // Version history metadata cache and observable
-        //
-        (revived as any)._currentVersionInfo = null;
-        (revived as any)._currentVersionInfoPromise = null;
-        (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ResourceData> | null>(null);
-
-        (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
-                    (revived as any).loadCurrentVersionInfo();
-                }
-            }),
-            shareReplay(1)
-        );
-
-
-        return revived;
+ /**
+   *
+   * Revives a plain object from the server into a full ResourceData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the ResourceData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when ResourceTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveResource(raw: any): ResourceData {
+    if (!raw) return raw;
+
+    //
+    // Create a ResourceData object instance with correct prototype
+    //
+    const revived = Object.create(ResourceData.prototype) as ResourceData;
+
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
+
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._resourceChangeHistories = null;
+    (revived as any)._resourceChangeHistoriesPromise = null;
+    (revived as any)._resourceChangeHistoriesSubject = new BehaviorSubject<ResourceChangeHistoryData[] | null>(null);
+
+    (revived as any)._resourceContacts = null;
+    (revived as any)._resourceContactsPromise = null;
+    (revived as any)._resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
+
+    (revived as any)._rateSheets = null;
+    (revived as any)._rateSheetsPromise = null;
+    (revived as any)._rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
+
+    (revived as any)._resourceQualifications = null;
+    (revived as any)._resourceQualificationsPromise = null;
+    (revived as any)._resourceQualificationsSubject = new BehaviorSubject<ResourceQualificationData[] | null>(null);
+
+    (revived as any)._resourceAvailabilities = null;
+    (revived as any)._resourceAvailabilitiesPromise = null;
+    (revived as any)._resourceAvailabilitiesSubject = new BehaviorSubject<ResourceAvailabilityData[] | null>(null);
+
+    (revived as any)._resourceShifts = null;
+    (revived as any)._resourceShiftsPromise = null;
+    (revived as any)._resourceShiftsSubject = new BehaviorSubject<ResourceShiftData[] | null>(null);
+
+    (revived as any)._crewMembers = null;
+    (revived as any)._crewMembersPromise = null;
+    (revived as any)._crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
+
+    (revived as any)._scheduledEvents = null;
+    (revived as any)._scheduledEventsPromise = null;
+    (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
+
+    (revived as any)._eventCharges = null;
+    (revived as any)._eventChargesPromise = null;
+    (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
+
+    (revived as any)._notificationSubscriptions = null;
+    (revived as any)._notificationSubscriptionsPromise = null;
+    (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+
+    (revived as any)._volunteerProfiles = null;
+    (revived as any)._volunteerProfilesPromise = null;
+    (revived as any)._volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
+
+    (revived as any)._volunteerGroupMembers = null;
+    (revived as any)._volunteerGroupMembersPromise = null;
+    (revived as any)._volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
+
+    (revived as any)._eventResourceAssignments = null;
+    (revived as any)._eventResourceAssignmentsPromise = null;
+    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
+
+
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadResourceXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).ResourceChangeHistories$ = (revived as any)._resourceChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._resourceChangeHistories === null && (revived as any)._resourceChangeHistoriesPromise === null) {
+                (revived as any).loadResourceChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ResourceContacts$ = (revived as any)._resourceContactsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._resourceContacts === null && (revived as any)._resourceContactsPromise === null) {
+                (revived as any).loadResourceContacts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._rateSheets === null && (revived as any)._rateSheetsPromise === null) {
+                (revived as any).loadRateSheets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ResourceQualifications$ = (revived as any)._resourceQualificationsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._resourceQualifications === null && (revived as any)._resourceQualificationsPromise === null) {
+                (revived as any).loadResourceQualifications();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ResourceAvailabilities$ = (revived as any)._resourceAvailabilitiesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._resourceAvailabilities === null && (revived as any)._resourceAvailabilitiesPromise === null) {
+                (revived as any).loadResourceAvailabilities();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ResourceShifts$ = (revived as any)._resourceShiftsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._resourceShifts === null && (revived as any)._resourceShiftsPromise === null) {
+                (revived as any).loadResourceShifts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).CrewMembers$ = (revived as any)._crewMembersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._crewMembers === null && (revived as any)._crewMembersPromise === null) {
+                (revived as any).loadCrewMembers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduledEvents === null && (revived as any)._scheduledEventsPromise === null) {
+                (revived as any).loadScheduledEvents();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventCharges === null && (revived as any)._eventChargesPromise === null) {
+                (revived as any).loadEventCharges();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
+                (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerProfiles === null && (revived as any)._volunteerProfilesPromise === null) {
+                (revived as any).loadVolunteerProfiles();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerGroupMembers === null && (revived as any)._volunteerGroupMembersPromise === null) {
+                (revived as any).loadVolunteerGroupMembers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
+                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ResourceData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    return revived;
+  }
+
+  private ReviveResourceList(rawList: any[]): ResourceData[] {
+
+    if (!rawList) {
+        return [];
     }
 
-    private ReviveResourceList(rawList: any[]): ResourceData[] {
-
-        if (!rawList) {
-            return [];
-        }
-
-        return rawList.map(raw => this.ReviveResource(raw));
-    }
+    return rawList.map(raw => this.ReviveResource(raw));
+  }
 
 }

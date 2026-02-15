@@ -1,0 +1,72 @@
+<div class="page-container">
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">Volunteer Groups</h3>
+                    <small class="text-white-50">Manage Volunteer Teams & Groups</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <span class="badge badge-glass mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+                    <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                </span>
+
+                <span *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                    <ng-container *ngIf="totalGroupCount$ | async as total; else loading">
+                        <span class="badge badge-glass mx-2">
+                            <ng-container *ngIf="filteredGroupCount$ | async as filteredCount">
+                                <span *ngIf="filterText && (filteredCount ?? 0) > 0">
+                                    {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Groups' : 'Group' }}
+                                </span>
+                            </ng-container>
+                            <span *ngIf="total > 0 && filterText && (filteredGroupCount$ | async) === 0">
+                                No matching Groups
+                            </span>
+                            <span *ngIf="!filterText">
+                                {{ total }} {{ total !== 1 ? 'Groups' : 'Group' }}
+                            </span>
+                            <span *ngIf="total === 0">
+                                No Groups
+                            </span>
+                        </span>
+                    </ng-container>
+
+                    <ng-template #loading>
+                        <span class="badge badge-glass mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
+                            <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                        </span>
+                        <span class="badge badge-glass mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                            No Groups
+                        </span>
+                    </ng-template>
+                </span>
+
+                <div class="search-bar me-2 position-relative">
+                    <i class="fa fa-search search-icon text-white-50"></i>
+                    <input type="text" class="form-control search-input glass-input" placeholder="Search Groups..."
+                        [(ngModel)]="filterText" (ngModelChange)="onFilterChange()">
+                    <button *ngIf="filterText" class="clear-search btn text-white"
+                        (click)="filterText=''; onFilterChange()" title="Clear Search">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="add-button-wrapper">
+                    <app-volunteer-group-custom-add-edit
+                        [navigateToDetailsAfterAdd]="false"></app-volunteer-group-custom-add-edit>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <app-volunteer-group-custom-table *ngIf="userIsGroupReader() == true" [filterText]="filterText"
+        [isSmallScreen]="isSmallScreen">
+    </app-volunteer-group-custom-table>
+</div>

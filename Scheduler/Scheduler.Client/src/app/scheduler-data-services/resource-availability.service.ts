@@ -834,7 +834,7 @@ export class ResourceAvailabilityService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerResourceAvailabilityWriter = user.writePermission >= 50;
+            userIsSchedulerResourceAvailabilityWriter = user.writePermission >= 30;
           } else {
             userIsSchedulerResourceAvailabilityWriter = false;
           }      

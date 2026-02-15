@@ -834,7 +834,7 @@ export class ResourceQualificationService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerResourceQualificationWriter = user.writePermission >= 50;
+            userIsSchedulerResourceQualificationWriter = user.writePermission >= 30;
           } else {
             userIsSchedulerResourceQualificationWriter = false;
           }      

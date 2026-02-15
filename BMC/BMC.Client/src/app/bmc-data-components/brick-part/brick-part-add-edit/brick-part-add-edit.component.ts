@@ -44,6 +44,7 @@ interface BrickPartFormValues {
   keywords: string | null,
   author: string | null,
   brickCategoryId: number | bigint,       // For FK link number
+  rebrickablePartNum: string | null,
   widthLdu: string | null,     // Stored as string for form input, converted to number on submit.
   heightLdu: string | null,     // Stored as string for form input, converted to number on submit.
   depthLdu: string | null,     // Stored as string for form input, converted to number on submit.
@@ -92,6 +93,7 @@ export class BrickPartAddEditComponent {
         keywords: [''],
         author: [''],
         brickCategoryId: [null, Validators.required],
+        rebrickablePartNum: [''],
         widthLdu: [''],
         heightLdu: [''],
         depthLdu: [''],
@@ -247,6 +249,7 @@ export class BrickPartAddEditComponent {
         keywords: formValue.keywords?.trim() || null,
         author: formValue.author?.trim() || null,
         brickCategoryId: Number(formValue.brickCategoryId),
+        rebrickablePartNum: formValue.rebrickablePartNum?.trim() || null,
         widthLdu: formValue.widthLdu ? Number(formValue.widthLdu) : null,
         heightLdu: formValue.heightLdu ? Number(formValue.heightLdu) : null,
         depthLdu: formValue.depthLdu ? Number(formValue.depthLdu) : null,
@@ -391,6 +394,7 @@ export class BrickPartAddEditComponent {
         keywords: '',
         author: '',
         brickCategoryId: null,
+        rebrickablePartNum: '',
         widthLdu: '',
         heightLdu: '',
         depthLdu: '',
@@ -418,6 +422,7 @@ export class BrickPartAddEditComponent {
         keywords: brickPartData.keywords ?? '',
         author: brickPartData.author ?? '',
         brickCategoryId: brickPartData.brickCategoryId,
+        rebrickablePartNum: brickPartData.rebrickablePartNum ?? '',
         widthLdu: brickPartData.widthLdu?.toString() ?? '',
         heightLdu: brickPartData.heightLdu?.toString() ?? '',
         depthLdu: brickPartData.depthLdu?.toString() ?? '',

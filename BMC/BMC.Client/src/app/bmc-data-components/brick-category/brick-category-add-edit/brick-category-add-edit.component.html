@@ -35,6 +35,10 @@
                     Description is required
                 </div>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rebrickablePartCategoryId')">
+                <label for="BrickCategory-rebrickablePartCategoryId" id="label-BrickCategory-rebrickablePartCategoryId">Rebrickable Part Category Id</label>
+                <input type="number" id="BrickCategory-rebrickablePartCategoryId" formControlName="rebrickablePartCategoryId" placeholder="Enter Rebrickable Part Category Id" class="form-control brick-category-input" [disabled]="!userIsBMCBrickCategoryWriter()" aria-labelledby="label-rebrickablePartCategoryId" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                 <label for="BrickCategory-sequence" id="label-BrickCategory-sequence">Sequence</label>
                 <input type="number" id="BrickCategory-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control brick-category-input" [disabled]="!userIsBMCBrickCategoryWriter()" aria-labelledby="label-sequence" />

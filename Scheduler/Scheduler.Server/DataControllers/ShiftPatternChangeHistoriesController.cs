@@ -75,6 +75,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -86,8 +89,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -222,6 +223,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -231,8 +235,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -313,6 +315,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -323,8 +328,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			
 			Guid userTenantGuid;
 
@@ -408,7 +411,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			StartAuditEventClock();
 
-			// Admin privilege needed to write to this table.
+			//
+			// Scheduler Administrator role needed to write to this table.
+			//
 			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
@@ -425,8 +430,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -538,7 +541,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			StartAuditEventClock();
 
-			// Admin privilege needed to write to this table.
+			//
+			// Scheduler Administrator role needed to write to this table.
+			//
 			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
@@ -549,8 +554,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -622,6 +625,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Scheduler Administrator role needed to write to this table.
+			//
 			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
@@ -630,7 +636,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
 			
 			
 			Guid userTenantGuid;
@@ -716,17 +721,20 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
 		{
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
 
@@ -828,12 +836,17 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/ShiftPatternChangeHistory/CreateAuditEvent")]
-		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null, CancellationToken cancellationToken = default)
 		{
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+
+			//
+			// Scheduler Administrator role needed to write to this table.
+			//
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
+
 
 		    await CreateAuditEventAsync(type, message, primaryKey);
 

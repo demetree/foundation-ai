@@ -74,6 +74,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
+			string rebrickablePartNum = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
 			float? depthLdu = null,
@@ -151,6 +152,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (brickCategoryId.HasValue == true)
 			{
 				query = query.Where(bp => bp.brickCategoryId == brickCategoryId.Value);
+			}
+			if (string.IsNullOrEmpty(rebrickablePartNum) == false)
+			{
+				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
 			}
 			if (widthLdu.HasValue == true)
 			{
@@ -243,6 +248,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.ldrawCategory.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
+			       || x.rebrickablePartNum.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || (includeRelations == true && x.brickCategory.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickCategory.description.Contains(anyStringContains))
@@ -298,6 +304,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
+			string rebrickablePartNum = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
 			float? depthLdu = null,
@@ -357,6 +364,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (brickCategoryId.HasValue == true)
 			{
 				query = query.Where(bp => bp.brickCategoryId == brickCategoryId.Value);
+			}
+			if (rebrickablePartNum != null)
+			{
+				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
 			}
 			if (widthLdu.HasValue == true)
 			{
@@ -433,6 +444,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.ldrawCategory.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
+			       || x.rebrickablePartNum.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
@@ -656,6 +668,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.author = brickPart.author.Substring(0, 100);
 				}
 
+				if (brickPart.rebrickablePartNum != null && brickPart.rebrickablePartNum.Length > 100)
+				{
+					brickPart.rebrickablePartNum = brickPart.rebrickablePartNum.Substring(0, 100);
+				}
+
 				if (brickPart.geometryFilePath != null && brickPart.geometryFilePath.Length > 250)
 				{
 					brickPart.geometryFilePath = brickPart.geometryFilePath.Substring(0, 250);
@@ -775,6 +792,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.author = brickPart.author.Substring(0, 100);
 				}
 
+				if (brickPart.rebrickablePartNum != null && brickPart.rebrickablePartNum.Length > 100)
+				{
+					brickPart.rebrickablePartNum = brickPart.rebrickablePartNum.Substring(0, 100);
+				}
+
 				if (brickPart.geometryFilePath != null && brickPart.geometryFilePath.Length > 250)
 				{
 					brickPart.geometryFilePath = brickPart.geometryFilePath.Substring(0, 250);
@@ -801,9 +823,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					brickPart.BrickElements = null;
 					brickPart.BrickPartChangeHistories = null;
 					brickPart.BrickPartColours = null;
 					brickPart.BrickPartConnectors = null;
+					brickPart.BrickPartRelationshipchildBrickParts = null;
+					brickPart.BrickPartRelationshipparentBrickParts = null;
 					brickPart.LegoSetParts = null;
 					brickPart.PlacedBricks = null;
 					brickPart.UserCollectionParts = null;
@@ -909,9 +934,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.BrickElements = null;
 				cloneOfExisting.BrickPartChangeHistories = null;
 				cloneOfExisting.BrickPartColours = null;
 				cloneOfExisting.BrickPartConnectors = null;
+				cloneOfExisting.BrickPartRelationshipchildBrickParts = null;
+				cloneOfExisting.BrickPartRelationshipparentBrickParts = null;
 				cloneOfExisting.LegoSetParts = null;
 				cloneOfExisting.PlacedBricks = null;
 				cloneOfExisting.UserCollectionParts = null;
@@ -953,6 +981,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    brickPart.keywords = oldBrickPart.keywords;
 				    brickPart.author = oldBrickPart.author;
 				    brickPart.brickCategoryId = oldBrickPart.brickCategoryId;
+				    brickPart.rebrickablePartNum = oldBrickPart.rebrickablePartNum;
 				    brickPart.widthLdu = oldBrickPart.widthLdu;
 				    brickPart.heightLdu = oldBrickPart.heightLdu;
 				    brickPart.depthLdu = oldBrickPart.depthLdu;
@@ -1337,6 +1366,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
+			string rebrickablePartNum = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
 			float? depthLdu = null,
@@ -1412,6 +1442,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (brickCategoryId.HasValue == true)
 			{
 				query = query.Where(bp => bp.brickCategoryId == brickCategoryId.Value);
+			}
+			if (string.IsNullOrEmpty(rebrickablePartNum) == false)
+			{
+				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
 			}
 			if (widthLdu.HasValue == true)
 			{
@@ -1489,6 +1523,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.ldrawCategory.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
+			       || x.rebrickablePartNum.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)

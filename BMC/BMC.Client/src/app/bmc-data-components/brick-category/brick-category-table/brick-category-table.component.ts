@@ -168,6 +168,7 @@ export class BrickCategoryTableComponent implements OnInit, OnChanges, AfterView
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickcategory', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
+    { key: 'rebrickablePartCategoryId', label: 'Rebrickable Part Category Id', width: undefined },
     { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
@@ -314,6 +315,7 @@ export class BrickCategoryTableComponent implements OnInit, OnChanges, AfterView
         const filterFields = [
                       'name',
                       'description',
+                      'rebrickablePartCategoryId',
                       'sequence',
         ];
 

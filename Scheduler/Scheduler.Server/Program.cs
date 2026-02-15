@@ -192,9 +192,9 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(DataController));                    // For Excel export
                 controllers.Add(typeof(TenantProfileController));           // For profile access with auto creation
                 controllers.Add(typeof(GeocodingController));                // For address-to-coordinate resolution
-                //
-                // End of Scheduler custom controllers
-                //
+                                                                             //
+                                                                             // End of Scheduler custom controllers
+                                                                             //
 
                 //
                 // Start of code generated controller list for Scheduler module
@@ -330,12 +330,19 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(TributesController));
                 controllers.Add(typeof(TributeChangeHistoriesController));
                 controllers.Add(typeof(TributeTypesController));
+                controllers.Add(typeof(VolunteerGroupsController));
+                controllers.Add(typeof(VolunteerGroupChangeHistoriesController));
+                controllers.Add(typeof(VolunteerGroupMembersController));
+                controllers.Add(typeof(VolunteerGroupMemberChangeHistoriesController));
+                controllers.Add(typeof(VolunteerProfilesController));
+                controllers.Add(typeof(VolunteerProfileChangeHistoriesController));
+                controllers.Add(typeof(VolunteerStatusesController));
                 //
                 // End of code generated controller list for Scheduler module
                 //
 
 
-                
+
 
                 logger.LogInformation("Controllers have been configured.");
 

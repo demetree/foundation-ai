@@ -754,7 +754,7 @@ export class VolunteerStatusService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerVolunteerStatusWriter = user.writePermission >= 50;
+            userIsSchedulerVolunteerStatusWriter = user.writePermission >= 40;
           } else {
             userIsSchedulerVolunteerStatusWriter = false;
           }      

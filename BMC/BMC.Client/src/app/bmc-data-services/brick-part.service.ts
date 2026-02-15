@@ -23,6 +23,8 @@ import { BrickPartConnectorService, BrickPartConnectorData } from './brick-part-
 import { BrickPartColourService, BrickPartColourData } from './brick-part-colour.service';
 import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
 import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
+import { BrickPartRelationshipService, BrickPartRelationshipData } from './brick-part-relationship.service';
+import { BrickElementService, BrickElementData } from './brick-element.service';
 import { UserCollectionPartService, UserCollectionPartData } from './user-collection-part.service';
 import { UserWishlistItemService, UserWishlistItemData } from './user-wishlist-item.service';
 
@@ -44,6 +46,7 @@ export class BrickPartQueryParameters {
     keywords: string | null | undefined = null;
     author: string | null | undefined = null;
     brickCategoryId: bigint | number | null | undefined = null;
+    rebrickablePartNum: string | null | undefined = null;
     widthLdu: number | null | undefined = null;
     heightLdu: number | null | undefined = null;
     depthLdu: number | null | undefined = null;
@@ -75,6 +78,7 @@ export class BrickPartSubmitData {
     keywords: string | null = null;
     author: string | null = null;
     brickCategoryId!: bigint | number;
+    rebrickablePartNum: string | null = null;
     widthLdu: number | null = null;
     heightLdu: number | null = null;
     depthLdu: number | null = null;
@@ -160,6 +164,7 @@ export class BrickPartData {
     keywords!: string | null;
     author!: string | null;
     brickCategoryId!: bigint | number;
+    rebrickablePartNum!: string | null;
     widthLdu!: number | null;
     heightLdu!: number | null;
     depthLdu!: number | null;
@@ -200,6 +205,19 @@ export class BrickPartData {
     private _legoSetParts: LegoSetPartData[] | null = null;
     private _legoSetPartsPromise: Promise<LegoSetPartData[]> | null  = null;
     private _legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
+
+                
+    private _brickPartRelationshipChildBrickParts: BrickPartRelationshipData[] | null = null;
+    private _brickPartRelationshipChildBrickPartsPromise: Promise<BrickPartRelationshipData[]> | null  = null;
+    private _brickPartRelationshipChildBrickPartsSubject = new BehaviorSubject<BrickPartRelationshipData[] | null>(null);
+                    
+    private _brickPartRelationshipParentBrickParts: BrickPartRelationshipData[] | null = null;
+    private _brickPartRelationshipParentBrickPartsPromise: Promise<BrickPartRelationshipData[]> | null  = null;
+    private _brickPartRelationshipParentBrickPartsSubject = new BehaviorSubject<BrickPartRelationshipData[] | null>(null);
+                    
+    private _brickElements: BrickElementData[] | null = null;
+    private _brickElementsPromise: Promise<BrickElementData[]> | null  = null;
+    private _brickElementsSubject = new BehaviorSubject<BrickElementData[] | null>(null);
 
                 
     private _userCollectionParts: UserCollectionPartData[] | null = null;
@@ -323,6 +341,61 @@ export class BrickPartData {
 
 
 
+    public BrickPartRelationshipChildBrickParts$ = this._brickPartRelationshipChildBrickPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickPartRelationshipChildBrickParts === null && this._brickPartRelationshipChildBrickPartsPromise === null) {
+            this.loadBrickPartRelationshipChildBrickParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickPartRelationshipChildBrickPartsCount$ = BrickPartRelationshipService.Instance.GetBrickPartRelationshipsRowCount({childBrickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+    public BrickPartRelationshipParentBrickParts$ = this._brickPartRelationshipParentBrickPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickPartRelationshipParentBrickParts === null && this._brickPartRelationshipParentBrickPartsPromise === null) {
+            this.loadBrickPartRelationshipParentBrickParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickPartRelationshipParentBrickPartsCount$ = BrickPartRelationshipService.Instance.GetBrickPartRelationshipsRowCount({parentBrickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+    public BrickElements$ = this._brickElementsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickElements === null && this._brickElementsPromise === null) {
+            this.loadBrickElements(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
     public UserCollectionParts$ = this._userCollectionPartsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -418,6 +491,18 @@ export class BrickPartData {
      this._legoSetParts = null;
      this._legoSetPartsPromise = null;
      this._legoSetPartsSubject.next(null);
+
+     this._brickPartRelationshipChildBrickParts = null;
+     this._brickPartRelationshipChildBrickPartsPromise = null;
+     this._brickPartRelationshipChildBrickPartsSubject.next(null);
+
+     this._brickPartRelationshipParentBrickParts = null;
+     this._brickPartRelationshipParentBrickPartsPromise = null;
+     this._brickPartRelationshipParentBrickPartsSubject.next(null);
+
+     this._brickElements = null;
+     this._brickElementsPromise = null;
+     this._brickElementsSubject.next(null);
 
      this._userCollectionParts = null;
      this._userCollectionPartsPromise = null;
@@ -763,6 +848,201 @@ export class BrickPartData {
 
     /**
      *
+     * Gets the BrickPartRelationshipChildBrickParts for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.BrickPartRelationshipChildBrickParts.then(childBrickParts => { ... })
+     *   or
+     *   await this.brickPart.childBrickParts
+     *
+    */
+    public get BrickPartRelationshipChildBrickParts(): Promise<BrickPartRelationshipData[]> {
+        if (this._brickPartRelationshipChildBrickParts !== null) {
+            return Promise.resolve(this._brickPartRelationshipChildBrickParts);
+        }
+
+        if (this._brickPartRelationshipChildBrickPartsPromise !== null) {
+            return this._brickPartRelationshipChildBrickPartsPromise;
+        }
+
+        // Start the load
+        this.loadBrickPartRelationshipChildBrickParts();
+
+        return this._brickPartRelationshipChildBrickPartsPromise!;
+    }
+
+
+
+    private loadBrickPartRelationshipChildBrickParts(): void {
+
+        this._brickPartRelationshipChildBrickPartsPromise = lastValueFrom(
+            BrickPartService.Instance.GetBrickPartRelationshipChildBrickPartsForBrickPart(this.id)
+        )
+        .then(BrickPartRelationshipChildBrickParts => {
+            this._brickPartRelationshipChildBrickParts = BrickPartRelationshipChildBrickParts ?? [];
+            this._brickPartRelationshipChildBrickPartsSubject.next(this._brickPartRelationshipChildBrickParts);
+            return this._brickPartRelationshipChildBrickParts;
+         })
+        .catch(err => {
+            this._brickPartRelationshipChildBrickParts = [];
+            this._brickPartRelationshipChildBrickPartsSubject.next(this._brickPartRelationshipChildBrickParts);
+            throw err;
+        })
+        .finally(() => {
+            this._brickPartRelationshipChildBrickPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickPartRelationshipChildBrickPart. Call after mutations to force refresh.
+     */
+    public ClearBrickPartRelationshipChildBrickPartsCache(): void {
+        this._brickPartRelationshipChildBrickParts = null;
+        this._brickPartRelationshipChildBrickPartsPromise = null;
+        this._brickPartRelationshipChildBrickPartsSubject.next(this._brickPartRelationshipChildBrickParts);      // Emit to observable
+    }
+
+    public get HasBrickPartRelationshipChildBrickParts(): Promise<boolean> {
+        return this.BrickPartRelationshipChildBrickParts.then(brickPartRelationshipChildBrickParts => brickPartRelationshipChildBrickParts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickPartRelationshipParentBrickParts for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.BrickPartRelationshipParentBrickParts.then(parentBrickParts => { ... })
+     *   or
+     *   await this.brickPart.parentBrickParts
+     *
+    */
+    public get BrickPartRelationshipParentBrickParts(): Promise<BrickPartRelationshipData[]> {
+        if (this._brickPartRelationshipParentBrickParts !== null) {
+            return Promise.resolve(this._brickPartRelationshipParentBrickParts);
+        }
+
+        if (this._brickPartRelationshipParentBrickPartsPromise !== null) {
+            return this._brickPartRelationshipParentBrickPartsPromise;
+        }
+
+        // Start the load
+        this.loadBrickPartRelationshipParentBrickParts();
+
+        return this._brickPartRelationshipParentBrickPartsPromise!;
+    }
+
+
+
+    private loadBrickPartRelationshipParentBrickParts(): void {
+
+        this._brickPartRelationshipParentBrickPartsPromise = lastValueFrom(
+            BrickPartService.Instance.GetBrickPartRelationshipParentBrickPartsForBrickPart(this.id)
+        )
+        .then(BrickPartRelationshipParentBrickParts => {
+            this._brickPartRelationshipParentBrickParts = BrickPartRelationshipParentBrickParts ?? [];
+            this._brickPartRelationshipParentBrickPartsSubject.next(this._brickPartRelationshipParentBrickParts);
+            return this._brickPartRelationshipParentBrickParts;
+         })
+        .catch(err => {
+            this._brickPartRelationshipParentBrickParts = [];
+            this._brickPartRelationshipParentBrickPartsSubject.next(this._brickPartRelationshipParentBrickParts);
+            throw err;
+        })
+        .finally(() => {
+            this._brickPartRelationshipParentBrickPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickPartRelationshipParentBrickPart. Call after mutations to force refresh.
+     */
+    public ClearBrickPartRelationshipParentBrickPartsCache(): void {
+        this._brickPartRelationshipParentBrickParts = null;
+        this._brickPartRelationshipParentBrickPartsPromise = null;
+        this._brickPartRelationshipParentBrickPartsSubject.next(this._brickPartRelationshipParentBrickParts);      // Emit to observable
+    }
+
+    public get HasBrickPartRelationshipParentBrickParts(): Promise<boolean> {
+        return this.BrickPartRelationshipParentBrickParts.then(brickPartRelationshipParentBrickParts => brickPartRelationshipParentBrickParts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickElements for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.BrickElements.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get BrickElements(): Promise<BrickElementData[]> {
+        if (this._brickElements !== null) {
+            return Promise.resolve(this._brickElements);
+        }
+
+        if (this._brickElementsPromise !== null) {
+            return this._brickElementsPromise;
+        }
+
+        // Start the load
+        this.loadBrickElements();
+
+        return this._brickElementsPromise!;
+    }
+
+
+
+    private loadBrickElements(): void {
+
+        this._brickElementsPromise = lastValueFrom(
+            BrickPartService.Instance.GetBrickElementsForBrickPart(this.id)
+        )
+        .then(BrickElements => {
+            this._brickElements = BrickElements ?? [];
+            this._brickElementsSubject.next(this._brickElements);
+            return this._brickElements;
+         })
+        .catch(err => {
+            this._brickElements = [];
+            this._brickElementsSubject.next(this._brickElements);
+            throw err;
+        })
+        .finally(() => {
+            this._brickElementsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickElement. Call after mutations to force refresh.
+     */
+    public ClearBrickElementsCache(): void {
+        this._brickElements = null;
+        this._brickElementsPromise = null;
+        this._brickElementsSubject.next(this._brickElements);      // Emit to observable
+    }
+
+    public get HasBrickElements(): Promise<boolean> {
+        return this.BrickElements.then(brickElements => brickElements.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the UserCollectionParts for this BrickPart.
      *
      * If already loaded, returns cached array.
@@ -974,6 +1254,8 @@ export class BrickPartService extends SecureEndpointBase {
         private brickPartColourService: BrickPartColourService,
         private placedBrickService: PlacedBrickService,
         private legoSetPartService: LegoSetPartService,
+        private brickPartRelationshipService: BrickPartRelationshipService,
+        private brickElementService: BrickElementService,
         private userCollectionPartService: UserCollectionPartService,
         private userWishlistItemService: UserWishlistItemService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -1041,6 +1323,7 @@ export class BrickPartService extends SecureEndpointBase {
         output.keywords = data.keywords;
         output.author = data.author;
         output.brickCategoryId = data.brickCategoryId;
+        output.rebrickablePartNum = data.rebrickablePartNum;
         output.widthLdu = data.widthLdu;
         output.heightLdu = data.heightLdu;
         output.depthLdu = data.depthLdu;
@@ -1499,6 +1782,36 @@ export class BrickPartService extends SecureEndpointBase {
     }
 
 
+    public GetBrickPartRelationshipChildBrickPartsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickPartRelationshipData[]> {
+        return this.brickPartRelationshipService.GetBrickPartRelationshipList({
+            childBrickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBrickPartRelationshipParentBrickPartsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickPartRelationshipData[]> {
+        return this.brickPartRelationshipService.GetBrickPartRelationshipList({
+            parentBrickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBrickElementsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickElementData[]> {
+        return this.brickElementService.GetBrickElementList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetUserCollectionPartsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserCollectionPartData[]> {
         return this.userCollectionPartService.GetUserCollectionPartList({
             brickPartId: brickPartId,
@@ -1573,6 +1886,14 @@ export class BrickPartService extends SecureEndpointBase {
     (revived as any)._legoSetParts = null;
     (revived as any)._legoSetPartsPromise = null;
     (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
+
+    (revived as any)._brickPartRelationships = null;
+    (revived as any)._brickPartRelationshipsPromise = null;
+    (revived as any)._brickPartRelationshipsSubject = new BehaviorSubject<BrickPartRelationshipData[] | null>(null);
+
+    (revived as any)._brickElements = null;
+    (revived as any)._brickElementsPromise = null;
+    (revived as any)._brickElementsSubject = new BehaviorSubject<BrickElementData[] | null>(null);
 
     (revived as any)._userCollectionParts = null;
     (revived as any)._userCollectionPartsPromise = null;
@@ -1668,6 +1989,38 @@ export class BrickPartService extends SecureEndpointBase {
       );
 
     (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BrickPartRelationships$ = (revived as any)._brickPartRelationshipsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickPartRelationships === null && (revived as any)._brickPartRelationshipsPromise === null) {
+                (revived as any).loadBrickPartRelationships();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickPartRelationshipsCount$ = BrickPartRelationshipService.Instance.GetBrickPartRelationshipsRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BrickElements$ = (revived as any)._brickElementsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickElements === null && (revived as any)._brickElementsPromise === null) {
+                (revived as any).loadBrickElements();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickPartId: (revived as any).id,
       active: true,
       deleted: false
     });

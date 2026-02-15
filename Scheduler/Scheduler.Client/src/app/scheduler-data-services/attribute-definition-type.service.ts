@@ -637,7 +637,7 @@ export class AttributeDefinitionTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerAttributeDefinitionTypeWriter = user.writePermission >= 50;
+            userIsSchedulerAttributeDefinitionTypeWriter = user.writePermission >= 255;
           } else {
             userIsSchedulerAttributeDefinitionTypeWriter = false;
           }      

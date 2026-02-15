@@ -67,6 +67,10 @@
                                     Brick Category is required
                                 </div>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickablePartNum')">
+                                <label for="BrickPart-rebrickablePartNum" id="label-BrickPart-rebrickablePartNum">Rebrickable Part Num</label>
+                                <input type="text" id="BrickPart-rebrickablePartNum" formControlName="rebrickablePartNum" placeholder="Enter Rebrickable Part Num" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-rebrickablePartNum" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('widthLdu')">
                                 <label for="BrickPart-widthLdu" id="label-BrickPart-widthLdu">Width Ldu</label>
                                 <input type="number" id="BrickPart-widthLdu" formControlName="widthLdu" placeholder="Enter Width Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-widthLdu" />
@@ -211,6 +215,57 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <app-lego-set-part-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-lego-set-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="brickPartRelationshipService.userIsBMCBrickPartRelationshipReader()">
+                            <button ngbNavLink>Brick Part Relationships Child Brick Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.BrickPartRelationshipChildBrickPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-part-relationship-table [queryParams]="{ childBrickPartId: brickPartData?.id }"></app-brick-part-relationship-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-brick-part-relationship-add-edit [preSeededData]="{ childBrickPartId: brickPartData?.id }" [hiddenFields]="['childBrickPartId']"></app-brick-part-relationship-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="brickPartRelationshipService.userIsBMCBrickPartRelationshipReader()">
+                            <button ngbNavLink>Brick Part Relationships Parent Brick Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.BrickPartRelationshipParentBrickPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-part-relationship-table [queryParams]="{ parentBrickPartId: brickPartData?.id }"></app-brick-part-relationship-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-brick-part-relationship-add-edit [preSeededData]="{ parentBrickPartId: brickPartData?.id }" [hiddenFields]="['parentBrickPartId']"></app-brick-part-relationship-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="brickElementService.userIsBMCBrickElementReader()">
+                            <button ngbNavLink>Brick Elements
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.BrickElementsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-element-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-brick-element-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-brick-element-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-element-add-edit>
                                 </div>
                             </div>
                             </ng-template>

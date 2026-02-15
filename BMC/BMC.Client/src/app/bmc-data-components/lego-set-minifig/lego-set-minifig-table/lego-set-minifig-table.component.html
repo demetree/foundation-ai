@@ -1,0 +1,287 @@
+<app-lego-set-minifig-add-edit [showAddButton]="false"></app-lego-set-minifig-add-edit>
+<div class="row" *ngIf="userIsBMCLegoSetMinifigReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCLegoSetMinifigWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCLegoSetMinifigWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('legoSet.name')">
+                Lego  Set
+                <span *ngIf="sortColumn === 'legoSet.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('legoMinifig.name')">
+                Lego  Minifig
+                <span *ngIf="sortColumn === 'legoMinifig.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('quantity')">
+                Quantity
+                <span *ngIf="sortColumn === 'quantity'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let legoSetMinifig of filteredLegoSetMinifigs; trackBy: getLegoSetMinifigId"
+              [ngClass]="{
+                 'row-inactive': legoSetMinifig.active == false,
+                 'row-deleted': legoSetMinifig.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCLegoSetMinifigWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(legoSetMinifig)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCLegoSetMinifigWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(legoSetMinifig)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="legoSetMinifig.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(legoSetMinifig)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="legoSetMinifig.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(legoSetMinifig, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(legoSetMinifig, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(legoSetMinifig, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(legoSetMinifig, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(legoSetMinifig, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(legoSetMinifig, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(legoSetMinifig, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(legoSetMinifig, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/legoset', legoSetMinifig.legoSetId]" class="btn btn-link text-left" ngbTooltip="Open Lego Set details">{{legoSetMinifig.legoSet?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/legominifig', legoSetMinifig.legoMinifigId]" class="btn btn-link text-left" ngbTooltip="Open Lego Minifig details">{{legoSetMinifig.legoMinifig?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/legosetminifig', legoSetMinifig.id]" class="btn btn-link text-left" ngbTooltip="Open Lego Set Minifig details">{{legoSetMinifig.quantity | bigNumberFormat : '1.0-2'}}</a></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let legoSetMinifig of filteredLegoSetMinifigs; trackBy: getLegoSetMinifigId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': legoSetMinifig.active == false,
+                 'row-deleted': legoSetMinifig.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(legoSetMinifig, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(legoSetMinifig, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(legoSetMinifig, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(legoSetMinifig, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(legoSetMinifig, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(legoSetMinifig, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(legoSetMinifig, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(legoSetMinifig, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(legoSetMinifig, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(legoSetMinifig, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(legoSetMinifig, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(legoSetMinifig, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(legoSetMinifig, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/legosetminifig', legoSetMinifig.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(legoSetMinifig)" *ngIf="userIsBMCLegoSetMinifigWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(legoSetMinifig)" *ngIf="userIsBMCLegoSetMinifigWriter() && legoSetMinifig.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(legoSetMinifig)" *ngIf="userIsBMCLegoSetMinifigWriter() && legoSetMinifig.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{legoSetMinifig.id}}</strong>
+               <small class="text-muted d-block">{{legoSetMinifig.legoSet?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/legosetminifig', legoSetMinifig.id]"
+                        ngbTooltip="Lego Set Minifig Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(legoSetMinifig)"
+                        ngbTooltip="Edit Lego Set Minifig">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(legoSetMinifig)"
+                      ngbTooltip="Delete Lego Set Minifig" 
+                      placement="top"
+                      *ngIf="legoSetMinifig.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(legoSetMinifig)"
+                      ngbTooltip="Undelete Lego Set Minifig" 
+                      placement="top"
+                      *ngIf="legoSetMinifig.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="lego-set-minifig-info" *ngIf="legoSetMinifig.legoSetId != null">
+              <strong>Lego Set: </strong>
+              <a [routerLink]="['/legoset', legoSetMinifig.legoSetId]" class="text-left p-0 m-0" ngbTooltip="Open Lego Set details">{{legoSetMinifig.legoSet?.name}}</a>
+            </p>
+            <p class="lego-set-minifig-info" *ngIf="legoSetMinifig.legoMinifigId != null">
+              <strong>Lego Minifig: </strong>
+              <a [routerLink]="['/legominifig', legoSetMinifig.legoMinifigId]" class="text-left p-0 m-0" ngbTooltip="Open Lego Minifig details">{{legoSetMinifig.legoMinifig?.name}}</a>
+            </p>
+            <p class="lego-set-minifig-info" *ngIf="legoSetMinifig.quantity != null">
+              <strong>Quantity: </strong>
+              {{legoSetMinifig.quantity | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

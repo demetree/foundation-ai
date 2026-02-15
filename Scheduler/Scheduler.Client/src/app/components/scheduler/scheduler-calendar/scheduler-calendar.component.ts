@@ -19,6 +19,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { ScheduledEventService, ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
+import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
@@ -121,6 +122,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
   constructor(
     private scheduledEventService: ScheduledEventService,
+    private schedulerHelperService: SchedulerHelperService,
     private calendarService: CalendarService,
     private modalService: NgbModal,
     private conflictDetectionService: ConflictDetectionService,
@@ -335,7 +337,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       : undefined;
 
     forkJoin({
-      events: this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd, calendarIds),
+      events: this.schedulerHelperService.GetCalendarEvents(rangeStart, rangeEnd, calendarIds),
       deps: this.dependencyService.GetScheduledEventDependencyList({ active: true, deleted: false })
     }).subscribe(({ events, deps }) => {
 

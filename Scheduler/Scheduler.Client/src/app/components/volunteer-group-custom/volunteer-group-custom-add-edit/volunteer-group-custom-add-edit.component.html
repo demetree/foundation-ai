@@ -1,0 +1,161 @@
+<div class="add-group" *ngIf="showAddButton == true">
+    <button type="button" class="btn btn-sm btn-add-group me-2" (click)="openModal()" ngbTooltip="Add Group"
+        *ngIf="userIsGroupWriter() == true" placement="top" style="min-width: 75px;">
+        Add
+    </button>
+</div>
+
+<ng-template #groupModal let-modal>
+    <div class="modal-header bg-dark text-light group-modal-header">
+        <h5 class="modal-title mb-0" id="groupModalLabel" ngbTooltip="{{objectGuid}}">
+            {{ isEditMode ? 'Edit Volunteer Group' : 'Add Volunteer Group' }}
+        </h5>
+        <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body group-modal-body">
+        <form [formGroup]="groupForm" (ngSubmit)="submitForm()">
+
+            <!-- Name -->
+            <div class="form-group mb-3">
+                <label for="name" class="form-label"><span class="text-danger">*</span>Group Name</label>
+                <input type="text" id="name" formControlName="name" class="form-control group-input"
+                    placeholder="e.g., Weekend Kitchen Team">
+                <div *ngIf="groupForm.get('name')?.invalid && groupForm.get('name')?.touched" class="text-danger small">
+                    Name is required
+                </div>
+            </div>
+
+            <!-- Description / Purpose -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" formControlName="description" class="form-control group-input" rows="2"
+                        placeholder="Brief description of this group"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label for="purpose" class="form-label">Purpose</label>
+                    <textarea id="purpose" formControlName="purpose" class="form-control group-input" rows="2"
+                        placeholder="Mission or role of this group"></textarea>
+                </div>
+            </div>
+
+            <!-- Office / Status / Max Members -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="officeId" class="form-label">Office</label>
+                    <select id="officeId" formControlName="officeId" class="form-select group-select">
+                        <option [ngValue]="null">Select Office</option>
+                        <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="volunteerStatusId" class="form-label">Status</label>
+                    <select id="volunteerStatusId" formControlName="volunteerStatusId" class="form-select group-select">
+                        <option [ngValue]="null">Select Status</option>
+                        <option *ngFor="let status of volunteerStatuses$ | async" [ngValue]="status.id">{{status.name}}
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="maxMembers" class="form-label">Max Members</label>
+                    <input type="number" id="maxMembers" formControlName="maxMembers" class="form-control group-input"
+                        min="1">
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group mb-3">
+                <label for="notes" class="form-label">Notes</label>
+                <textarea id="notes" formControlName="notes" class="form-control group-input" rows="2"
+                    placeholder="Any additional notes about this group"></textarea>
+            </div>
+
+            <!-- Avatar Upload -->
+            <div class="mb-3">
+                <label class="form-label">Group Avatar</label>
+                <div class="avatar-upload-container border rounded-3 text-center p-3" [class.drag-over]="isDragOver"
+                    (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+                    (click)="avatarInput.click()">
+                    <input #avatarInput type="file" accept="image/*" class="d-none" (change)="onAvatarSelect($event)">
+                    <div *ngIf="!avatarPreviewUrl" class="text-muted">
+                        <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i>
+                        <p class="mb-0 small">Drop an image here or click to browse</p>
+                    </div>
+                    <div *ngIf="avatarPreviewUrl" class="d-flex flex-column align-items-center">
+                        <div class="avatar-preview" [style.background-image]="'url(' + avatarPreviewUrl + ')'"></div>
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-2"
+                            (click)="removeAvatar(); $event.stopPropagation()">
+                            <i class="fa-solid fa-trash me-1"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Appearance Panel -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
+                    (click)="isAppearancePanelOpen = !isAppearancePanelOpen">
+                    <h6 class="mb-0 fw-semibold">
+                        <i [class]="isAppearancePanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
+                            class="me-2"></i>
+                        Appearance
+                    </h6>
+                </div>
+                <div [@collapse]="isAppearancePanelOpen ? 'true' : 'false'" class="mt-3">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="color" class="form-label">Color</label>
+                            <input type="color" id="color" formControlName="color"
+                                class="form-control form-control-color color-picker" title="Choose Color">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="iconId" class="form-label">Icon</label>
+                            <select id="iconId" formControlName="iconId" class="form-select group-select">
+                                <option [ngValue]="null">Select Icon</option>
+                                <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced (Edit Only) -->
+            <fieldset class="mb-4 mt-4" *ngIf="isEditMode">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="versionNumber" class="form-label">Version</label>
+                        <input type="text" id="versionNumber" [value]="groupForm.get('versionNumber')?.value"
+                            class="form-control" disabled />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-3">
+                        <div class="form-check">
+                            <input type="checkbox" id="active" formControlName="active" class="form-check-input" />
+                            <label class="form-check-label" for="active">Active</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" />
+                            <label class="form-check-label" for="deleted">Deleted</label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="modal-footer group-modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()"
+                    ngbTooltip="Cancel">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary"
+                    [disabled]="isSaving || !groupForm.valid || groupForm.pristine || !userIsGroupWriter()"
+                    ngbTooltip="Save">
+                    <span *ngIf="isSaving">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        Saving...
+                    </span>
+                    <span *ngIf="!isSaving">
+                        <i class="fa-solid fa-check me-1"></i>
+                        {{ isEditMode ? 'Save' : 'Create' }}
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>

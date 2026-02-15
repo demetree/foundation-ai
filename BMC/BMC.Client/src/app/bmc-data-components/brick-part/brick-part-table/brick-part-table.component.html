@@ -55,6 +55,10 @@
                 Brick  Category
                 <span *ngIf="sortColumn === 'brickCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('rebrickablePartNum')">
+                Rebrickable  Part  Num
+                <span *ngIf="sortColumn === 'rebrickablePartNum'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('widthLdu')">
                 Width  Ldu
                 <span *ngIf="sortColumn === 'widthLdu'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -173,6 +177,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{brickPart.keywords}}</td>
             <td class="text-truncate">{{brickPart.author}}</td>
             <td class="text-truncate"><a [routerLink]="['/brickcategory', brickPart.brickCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Brick Category details">{{brickPart.brickCategory?.name}}</a></td>
+            <td class="text-truncate">{{brickPart.rebrickablePartNum}}</td>
             <td class="text-truncate">{{brickPart.widthLdu | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.heightLdu | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.depthLdu | bigNumberFormat : '1.0-2'}}</td>
@@ -358,6 +363,10 @@ End of commented block for alternate definition option -->
             <p class="brick-part-info" *ngIf="brickPart.brickCategoryId != null">
               <strong>Brick Category: </strong>
               <a [routerLink]="['/brickcategory', brickPart.brickCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Brick Category details">{{brickPart.brickCategory?.name}}</a>
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.rebrickablePartNum != null">
+              <strong>Rebrickable Part Num: </strong>
+              {{brickPart.rebrickablePartNum}}
             </p>
             <p class="brick-part-info" *ngIf="brickPart.widthLdu != null">
               <strong>Width Ldu: </strong>

@@ -827,7 +827,7 @@ export class ContactContactService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerContactContactWriter = user.writePermission >= 1;
+            userIsSchedulerContactContactWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerContactContactWriter = false;
           }      

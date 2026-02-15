@@ -1121,7 +1121,7 @@ export class AppealService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerAppealWriter = user.writePermission >= 50;
+            userIsSchedulerAppealWriter = user.writePermission >= 60;
           } else {
             userIsSchedulerAppealWriter = false;
           }      

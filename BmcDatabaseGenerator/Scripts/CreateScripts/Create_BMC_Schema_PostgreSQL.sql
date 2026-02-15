@@ -38,6 +38,11 @@ CREATE SCHEMA "BMC"
 -- DROP TABLE "BMC"."UserCollectionPart"
 -- DROP TABLE "BMC"."UserCollectionChangeHistory"
 -- DROP TABLE "BMC"."UserCollection"
+-- DROP TABLE "BMC"."LegoSetSubset"
+-- DROP TABLE "BMC"."LegoSetMinifig"
+-- DROP TABLE "BMC"."LegoMinifig"
+-- DROP TABLE "BMC"."BrickElement"
+-- DROP TABLE "BMC"."BrickPartRelationship"
 -- DROP TABLE "BMC"."LegoSetPart"
 -- DROP TABLE "BMC"."LegoSet"
 -- DROP TABLE "BMC"."LegoTheme"
@@ -80,6 +85,11 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "UserCollectionPart" DISABLE
 -- ALTER INDEX ALL ON "UserCollectionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "UserCollection" DISABLE
+-- ALTER INDEX ALL ON "LegoSetSubset" DISABLE
+-- ALTER INDEX ALL ON "LegoSetMinifig" DISABLE
+-- ALTER INDEX ALL ON "LegoMinifig" DISABLE
+-- ALTER INDEX ALL ON "BrickElement" DISABLE
+-- ALTER INDEX ALL ON "BrickPartRelationship" DISABLE
 -- ALTER INDEX ALL ON "LegoSetPart" DISABLE
 -- ALTER INDEX ALL ON "LegoSet" DISABLE
 -- ALTER INDEX ALL ON "LegoTheme" DISABLE
@@ -122,6 +132,11 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "UserCollectionPart" REBUILD
 -- ALTER INDEX ALL ON "UserCollectionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "UserCollection" REBUILD
+-- ALTER INDEX ALL ON "LegoSetSubset" REBUILD
+-- ALTER INDEX ALL ON "LegoSetMinifig" REBUILD
+-- ALTER INDEX ALL ON "LegoMinifig" REBUILD
+-- ALTER INDEX ALL ON "BrickElement" REBUILD
+-- ALTER INDEX ALL ON "BrickPartRelationship" REBUILD
 -- ALTER INDEX ALL ON "LegoSetPart" REBUILD
 -- ALTER INDEX ALL ON "LegoSet" REBUILD
 -- ALTER INDEX ALL ON "LegoTheme" REBUILD
@@ -153,6 +168,7 @@ CREATE TABLE "BMC"."BrickCategory"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"name" VARCHAR(100) NOT NULL UNIQUE,
 	"description" VARCHAR(500) NOT NULL,
+	"rebrickablePartCategoryId" INT NULL,		-- Rebrickable part_cat_id for cross-referencing during bulk import
 	"sequence" INT NULL,		-- Sequence to use for sorting.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
@@ -428,6 +444,7 @@ CREATE TABLE "BMC"."BrickPart"
 	"keywords" TEXT NULL,		-- Comma-separated keywords from LDraw !KEYWORDS meta lines for search
 	"author" VARCHAR(100) NULL,		-- Part author from the LDraw Author: header line
 	"brickCategoryId" INT NOT NULL,		-- The category this part belongs to
+	"rebrickablePartNum" VARCHAR(100) NULL,		-- Rebrickable part_num when it differs from ldrawPartId (e.g. for prints, patterns, or alternate IDs)
 	"widthLdu" REAL NULL,		-- Part width in LDraw units (null if not yet computed)
 	"heightLdu" REAL NULL,		-- Part height in LDraw units (null if not yet computed)
 	"depthLdu" REAL NULL,		-- Part depth in LDraw units (null if not yet computed)
@@ -1007,6 +1024,7 @@ CREATE TABLE "BMC"."LegoTheme"
 	"name" VARCHAR(100) NOT NULL UNIQUE,
 	"description" VARCHAR(500) NOT NULL,
 	"legoThemeId" INT NULL,		-- Parent theme for hierarchical nesting (self-referencing FK, null = top-level)
+	"rebrickableThemeId" INT NULL,		-- Rebrickable theme ID for cross-referencing during bulk import
 	"sequence" INT NULL,		-- Sequence to use for sorting.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
@@ -1099,6 +1117,150 @@ CREATE INDEX "I_LegoSetPart_active" ON "BMC"."LegoSetPart" ("active")
 
 -- Index on the LegoSetPart table's deleted field.
 CREATE INDEX "I_LegoSetPart_deleted" ON "BMC"."LegoSetPart" ("deleted")
+;
+
+
+-- Relationships between parts: alternates, molds, prints, pairs, sub-parts, and patterns. Bulk-loaded from Rebrickable part_relationships.csv.
+CREATE TABLE "BMC"."BrickPartRelationship"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"childBrickPartId" INT NOT NULL,		-- The child part in the relationship
+	"parentBrickPartId" INT NOT NULL,		-- The parent part in the relationship
+	"relationshipType" VARCHAR(50) NOT NULL,		-- Type of relationship: Print, Pair, SubPart, Mold, Pattern, or Alternate
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "childBrickPartId" FOREIGN KEY ("childBrickPartId") REFERENCES "BMC"."BrickPart"("id"),		-- Foreign key to the BrickPart table.
+	CONSTRAINT "parentBrickPartId" FOREIGN KEY ("parentBrickPartId") REFERENCES "BMC"."BrickPart"("id")		-- Foreign key to the BrickPart table.
+);
+-- Index on the BrickPartRelationship table's childBrickPartId field.
+CREATE INDEX "I_BrickPartRelationship_childBrickPartId" ON "BMC"."BrickPartRelationship" ("childBrickPartId")
+;
+
+-- Index on the BrickPartRelationship table's parentBrickPartId field.
+CREATE INDEX "I_BrickPartRelationship_parentBrickPartId" ON "BMC"."BrickPartRelationship" ("parentBrickPartId")
+;
+
+-- Index on the BrickPartRelationship table's active field.
+CREATE INDEX "I_BrickPartRelationship_active" ON "BMC"."BrickPartRelationship" ("active")
+;
+
+-- Index on the BrickPartRelationship table's deleted field.
+CREATE INDEX "I_BrickPartRelationship_deleted" ON "BMC"."BrickPartRelationship" ("deleted")
+;
+
+
+-- LEGO element IDs representing specific part+colour combinations. Used for cross-referencing with official LEGO catalogues and BrickLink.
+CREATE TABLE "BMC"."BrickElement"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"elementId" VARCHAR(50) NOT NULL,		-- Official LEGO element ID (unique identifier for a specific part+colour combination)
+	"brickPartId" INT NOT NULL,		-- The part this element represents
+	"brickColourId" INT NOT NULL,		-- The colour of this element
+	"designId" VARCHAR(50) NULL,		-- LEGO design ID (null if not available)
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "brickPartId" FOREIGN KEY ("brickPartId") REFERENCES "BMC"."BrickPart"("id"),		-- Foreign key to the BrickPart table.
+	CONSTRAINT "brickColourId" FOREIGN KEY ("brickColourId") REFERENCES "BMC"."BrickColour"("id"),		-- Foreign key to the BrickColour table.
+	CONSTRAINT "UC_BrickElement_elementId" UNIQUE ( "elementId") 		-- Uniqueness enforced on the BrickElement table's elementId field.
+);
+-- Index on the BrickElement table's brickPartId field.
+CREATE INDEX "I_BrickElement_brickPartId" ON "BMC"."BrickElement" ("brickPartId")
+;
+
+-- Index on the BrickElement table's brickColourId field.
+CREATE INDEX "I_BrickElement_brickColourId" ON "BMC"."BrickElement" ("brickColourId")
+;
+
+-- Index on the BrickElement table's active field.
+CREATE INDEX "I_BrickElement_active" ON "BMC"."BrickElement" ("active")
+;
+
+-- Index on the BrickElement table's deleted field.
+CREATE INDEX "I_BrickElement_deleted" ON "BMC"."BrickElement" ("deleted")
+;
+
+
+-- Official LEGO minifigure definitions. Each row represents a distinct minifig (e.g. fig-000001 Han Solo).
+CREATE TABLE "BMC"."LegoMinifig"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"name" VARCHAR(500) NOT NULL,		-- Minifig name — can be long descriptive text from Rebrickable
+	"figNumber" VARCHAR(100) NOT NULL,		-- Rebrickable minifig number (e.g. 'fig-000001')
+	"partCount" INT NOT NULL,		-- Total number of parts in the minifig
+	"imageUrl" VARCHAR(250) NULL,		-- URL to the minifig's image
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "UC_LegoMinifig_figNumber" UNIQUE ( "figNumber") 		-- Uniqueness enforced on the LegoMinifig table's figNumber field.
+);
+-- Index on the LegoMinifig table's active field.
+CREATE INDEX "I_LegoMinifig_active" ON "BMC"."LegoMinifig" ("active")
+;
+
+-- Index on the LegoMinifig table's deleted field.
+CREATE INDEX "I_LegoMinifig_deleted" ON "BMC"."LegoMinifig" ("deleted")
+;
+
+
+-- Minifigs included in each official LEGO set's inventory, with quantities.
+CREATE TABLE "BMC"."LegoSetMinifig"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"legoSetId" INT NOT NULL,		-- The set this minifig belongs to
+	"legoMinifigId" INT NOT NULL,		-- The minifig included in the set
+	"quantity" INT NULL,		-- Number of this minifig included in the set
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "legoSetId" FOREIGN KEY ("legoSetId") REFERENCES "BMC"."LegoSet"("id"),		-- Foreign key to the LegoSet table.
+	CONSTRAINT "legoMinifigId" FOREIGN KEY ("legoMinifigId") REFERENCES "BMC"."LegoMinifig"("id")		-- Foreign key to the LegoMinifig table.
+);
+-- Index on the LegoSetMinifig table's legoSetId field.
+CREATE INDEX "I_LegoSetMinifig_legoSetId" ON "BMC"."LegoSetMinifig" ("legoSetId")
+;
+
+-- Index on the LegoSetMinifig table's legoMinifigId field.
+CREATE INDEX "I_LegoSetMinifig_legoMinifigId" ON "BMC"."LegoSetMinifig" ("legoMinifigId")
+;
+
+-- Index on the LegoSetMinifig table's active field.
+CREATE INDEX "I_LegoSetMinifig_active" ON "BMC"."LegoSetMinifig" ("active")
+;
+
+-- Index on the LegoSetMinifig table's deleted field.
+CREATE INDEX "I_LegoSetMinifig_deleted" ON "BMC"."LegoSetMinifig" ("deleted")
+;
+
+
+-- Sets included within other sets (e.g. polybags inside a larger set). Derived from Rebrickable inventory_sets.csv.
+CREATE TABLE "BMC"."LegoSetSubset"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"parentLegoSetId" INT NOT NULL,		-- The parent set that contains the subset
+	"childLegoSetId" INT NOT NULL,		-- The subset included within the parent set
+	"quantity" INT NULL,		-- Number of copies of the subset included in the parent
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "parentLegoSetId" FOREIGN KEY ("parentLegoSetId") REFERENCES "BMC"."LegoSet"("id"),		-- Foreign key to the LegoSet table.
+	CONSTRAINT "childLegoSetId" FOREIGN KEY ("childLegoSetId") REFERENCES "BMC"."LegoSet"("id")		-- Foreign key to the LegoSet table.
+);
+-- Index on the LegoSetSubset table's parentLegoSetId field.
+CREATE INDEX "I_LegoSetSubset_parentLegoSetId" ON "BMC"."LegoSetSubset" ("parentLegoSetId")
+;
+
+-- Index on the LegoSetSubset table's childLegoSetId field.
+CREATE INDEX "I_LegoSetSubset_childLegoSetId" ON "BMC"."LegoSetSubset" ("childLegoSetId")
+;
+
+-- Index on the LegoSetSubset table's active field.
+CREATE INDEX "I_LegoSetSubset_active" ON "BMC"."LegoSetSubset" ("active")
+;
+
+-- Index on the LegoSetSubset table's deleted field.
+CREATE INDEX "I_LegoSetSubset_deleted" ON "BMC"."LegoSetSubset" ("deleted")
 ;
 
 
