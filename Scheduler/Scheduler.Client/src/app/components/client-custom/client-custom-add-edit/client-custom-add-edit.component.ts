@@ -1,4 +1,5 @@
 import { Component, ViewChild, Output, Input, TemplateRef } from '@angular/core';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
@@ -16,7 +17,14 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-client-custom-add-edit',
   templateUrl: './client-custom-add-edit.component.html',
-  styleUrls: ['./client-custom-add-edit.component.scss']
+  styleUrls: ['./client-custom-add-edit.component.scss'],
+  animations: [
+    trigger('collapse', [
+      state('false', style({ height: '0', overflow: 'hidden', opacity: 0 })),
+      state('true', style({ height: '*', opacity: 1 })),
+      transition('false <=> true', animate('300ms ease-in-out'))
+    ])
+  ]
 })
 export class ClientCustomAddEditComponent {
   @ViewChild('clientModal') clientModal!: TemplateRef<any>;
@@ -26,6 +34,10 @@ export class ClientCustomAddEditComponent {
   @Input() showAddButton: boolean = true;
 
   public attributesParsed: any = {};
+
+  public currentAvatarUrl: string | null = null;
+  public isAvatarPanelOpen = false;
+  public isDragOver = false;
 
   /** Tracked latitude from the map component. */
   public mapLatitude: number | null = null;
@@ -155,7 +167,102 @@ export class ClientCustomAddEditComponent {
     if (this.modalRef) {
       this.modalRef.dismiss('cancel');
     }
+    this.isAvatarPanelOpen = false;
     this.modalIsDisplayed = false;
+  }
+
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      this.alertService.showMessage('Invalid file type', 'Please drop an image file', MessageSeverity.warn);
+      return;
+    }
+
+    // Reuse existing logic — simulate file input change
+    const fakeEvent = { target: { files: [file] } } as any;
+    this.onAvatarSelected(fakeEvent);
+  }
+
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+
+    // Enforce 2MB limit
+    if (file.size > 2 * 1024 * 1024) {
+      this.alertService.showMessage(
+        'Image too large',
+        'Please select an image under 2MB',
+        MessageSeverity.warn
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+
+      if (!result) return;
+
+      // Extract only the base64 part (remove data:image/png;base64, prefix)
+      const base64Data = result.split(',')[1];
+
+      if (!base64Data) {
+        this.alertService.showMessage('Invalid image data', '', MessageSeverity.error);
+        return;
+      }
+
+      this.currentAvatarUrl = result; // Full data URL for preview (includes prefix)
+
+      // Populate form fields
+      this.clientForm.patchValue({
+        avatarFileName: file.name,
+        avatarSize: file.size,
+        avatarData: base64Data,         // ← Only the raw base64 string
+        avatarMimeType: file.type
+      });
+
+      this.clientForm.markAsDirty();
+    };
+
+    reader.onerror = () => {
+      this.alertService.showMessage('Failed to read file', '', MessageSeverity.error);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  clearAvatar(): void {
+    this.currentAvatarUrl = null;
+    this.clientForm.patchValue({
+      avatarFileName: null,
+      avatarSize: null,
+      avatarData: null,
+      avatarMimeType: null
+    });
+    this.clientForm.markAsDirty();
   }
 
 
@@ -338,6 +445,7 @@ export class ClientCustomAddEditComponent {
       this.attributesParsed = {};
       this.mapLatitude = null;
       this.mapLongitude = null;
+      this.currentAvatarUrl = null;
 
       //
       // Reset the form group to null state, but don't change the form instance.
@@ -384,6 +492,13 @@ export class ClientCustomAddEditComponent {
       this.mapLatitude = clientData.latitude ?? null;
       this.mapLongitude = clientData.longitude ?? null;
 
+      // Reconstruct full data URL for preview if we have base64 data
+      if (clientData.avatarData && clientData.avatarMimeType) {
+        this.currentAvatarUrl = `data:${clientData.avatarMimeType};base64,${clientData.avatarData}`;
+      } else {
+        this.currentAvatarUrl = null;
+      }
+
       //
       // Reset the form with properly formatted values that support dates in datetime-local inputs
       //
@@ -428,5 +543,9 @@ export class ClientCustomAddEditComponent {
 
   public userIsSchedulerClientWriter(): boolean {
     return this.clientService.userIsSchedulerClientWriter();
+  }
+
+  public userIsFoundationAdministrator(): boolean {
+    return this.authService.isFoundationAdmin;
   }
 }

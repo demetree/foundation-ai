@@ -16,46 +16,53 @@
   width: 60px;
 }
 
-.client-modal-header {
-}
+.client-modal-header {}
 
 .client-modal-body {
   padding: 15px;
   font-size: 1rem;
 }
 
-.section-heading {
-  font-weight: bold;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: black;
+.avatar-upload-container {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.client-input, .client-select {
-  margin-bottom: 15px;
-  border-radius: 5px;
+.avatar-upload-container.drag-over {
+  background-color: rgba(1, 118, 211, 0.1);
+  border-color: #0176d3;
+  box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.2);
 }
 
-.client-input::placeholder, .client-select::placeholder {
-  color: #6c757d;
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-
+.no-avatar {
+  background-color: #6c757d;
+}
 
 // Styles for the color picker
 .color-picker {
-  // Native color inputs are usually square and small; make it a reasonable size
   width: 60px;
   height: 42px;
   padding: 4px;
   cursor: pointer;
 }
-
-// Style for the read-only hex display next to the picker
-.input-color-display {
-  margin-bottom: 0; // Align properly with the picker
-}
-
 
 .client-modal-footer {
   display: flex;
