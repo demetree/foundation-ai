@@ -19,7 +19,7 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
   @Input() Clients: ClientData[] | null = null; // Optional prefiltered data
   @Input() isSmallScreen: boolean = false;
   @Input() filterText: string | null = null; // Optional filter text 
-  @Input() queryParams: Partial<ClientQueryParameters> = { } // Optional query parameters
+  @Input() queryParams: Partial<ClientQueryParameters> = {} // Optional query parameters
 
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
@@ -54,9 +54,9 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
 
 
   constructor(private clientService: ClientService,
-              private authService: AuthService,
-              private alertService: AlertService,
-              private confirmationService: ConfirmationService) { }
+    private authService: AuthService,
+    private alertService: AlertService,
+    private confirmationService: ConfirmationService) { }
 
   ngOnInit(): void {
 
@@ -67,13 +67,13 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
 
     if (!this.Clients) {
 
-        this.isManagingData = true; // Component is managing data loading
-        this.loadData(); // Load data on initialization
+      this.isManagingData = true; // Component is managing data loading
+      this.loadData(); // Load data on initialization
 
     } else {
 
-        this.applyFiltersAndSort();
-        this.isLoadingSubject.next(false);
+      this.applyFiltersAndSort();
+      this.isLoadingSubject.next(false);
 
     }
   }
@@ -84,15 +84,15 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
     // Subscribe to the clientChanged observable on the add/edit component so that when a Client changes we can reload the list, if component is available and not disabled..
     //
     if (this.addEditClientComponent && !this.disableDefaultEdit) {
-        this.addEditClientComponent.clientChanged.subscribe({
+      this.addEditClientComponent.clientChanged.subscribe({
         next: (result: ClientData[] | null) => {
-            this.loadData();
+          this.loadData();
         },
         error: (err: any) => {
-             this.alertService.showMessage("Error during Client changed notification", JSON.stringify(err), MessageSeverity.error);
+          this.alertService.showMessage("Error during Client changed notification", JSON.stringify(err), MessageSeverity.error);
         }
-        });
-     }
+      });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -108,103 +108,90 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
     //
     // Reset the whole page - note that this only makes sense when this component is managing the loading of data.  Don't use the filterText input property when you are providing your own data via the data input.
     //
-    if (changes['filterText'] && this.isManagingData == true)
-    {
-       clearTimeout(this.debounceTimeout);
-       this.debounceTimeout = setTimeout(() => {
+    if (changes['filterText'] && this.isManagingData == true) {
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = setTimeout(() => {
 
-         if (this.isManagingData)
-         {
-             this.loadData();
-         }
-         else
-         {
-             this.applyFiltersAndSort();
-         }
+        if (this.isManagingData) {
+          this.loadData();
+        }
+        else {
+          this.applyFiltersAndSort();
+        }
 
-       }, 200); // 200ms debounce delay
+      }, 200); // 200ms debounce delay
     }
 
-    if (changes['queryParams'])
-    {
-        this.loadData()
+    if (changes['queryParams']) {
+      this.loadData()
     }
   }
 
 
- /**
+  /**
    * Construct the default column array based on user entitlements.
    */
   private buildDefaultColumns(): void {
 
     //
-    // Add the fields to the column config.  Refinements to widths and such can be made easily by custom users by tweaking the input as need be.
-    //
-    // This is the default set to start with something for customization
-    //
-    // Note width purposely set to undefined so the reader knows the property is there for use.  It is to be overridden as appropriate by users 
-    // providing custom column specs.
-    //
-    // Start with the common columns that everyone sees
+    // Core columns visible to all readers — a scannable summary of the client
     //
     const defaultColumns: TableColumn[] = [
-    { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/client', 'id']  },
-    { key: 'description', label: 'Description', width: undefined },
-    { key: 'clientType.name', label: 'Client Type', width: undefined, template: 'link', linkPath: ['/clienttype', 'clientTypeId'] },
-    { key: 'currency.name', label: 'Currency', width: undefined, template: 'link', linkPath: ['/currency', 'currencyId'] },
-    { key: 'timeZone.name', label: 'Time Zone', width: undefined, template: 'link', linkPath: ['/timezone', 'timeZoneId'] },
-    { key: 'calendar.name', label: 'Calendar', width: undefined, template: 'link', linkPath: ['/calendar', 'calendarId'] },
-    { key: 'addressLine1', label: 'Address Line 1', width: undefined },
-    { key: 'addressLine2', label: 'Address Line 2', width: undefined },
-    { key: 'city', label: 'City', width: undefined },
-    { key: 'postalCode', label: 'Postal Code', width: undefined },
-    { key: 'stateProvince.name', label: 'State Province', width: undefined, template: 'link', linkPath: ['/stateprovince', 'stateProvinceId'] },
-    { key: 'country.name', label: 'Country', width: undefined, template: 'link', linkPath: ['/country', 'countryId'] },
-    { key: 'phone', label: 'Phone', width: undefined },
-    { key: 'email', label: 'Email', width: undefined },
-    { key: 'latitude', label: 'Latitude', width: undefined },
-    { key: 'longitude', label: 'Longitude', width: undefined },
-    { key: 'notes', label: 'Notes', width: undefined },
-    // { key: 'externalId', label: 'External Id', width: undefined },
-    { key: 'color', label: 'Color', width: "50px", template: 'color' },
-    // { key: 'attributes', label: 'Attributes', width: undefined },
-    // { key: 'avatarFileName', label: 'Avatar File Name', width: undefined },
-    // { key: 'avatarSize', label: 'Avatar Size', width: undefined },
-    // { key: 'avatarData', label: 'Avatar Data', width: undefined },
-    // { key: 'avatarMimeType', label: 'Avatar Mime Type', width: undefined },
-
+      { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/client', 'id'] },
+      { key: 'clientType.name', label: 'Type', width: undefined, template: 'link', linkPath: ['/clienttype', 'clientTypeId'] },
+      { key: 'addressLine1', label: 'Address', width: undefined },
+      { key: 'city', label: 'City', width: undefined },
+      { key: 'stateProvince.name', label: 'State', width: undefined, template: 'link', linkPath: ['/stateprovince', 'stateProvinceId'] },
+      { key: 'country.name', label: 'Country', width: undefined, template: 'link', linkPath: ['/country', 'countryId'] },
+      { key: 'phone', label: 'Phone', width: undefined },
+      { key: 'email', label: 'Email', width: undefined },
+      { key: 'color', label: 'Color', width: "50px", template: 'color' },
     ];
 
 
     //
-    // Note that CSS stylng shows deleted rows with a strike through, and inactive as italicized, both with transparency so they stand out, regardless of if there are active/deleted columns
+    // Note that CSS styling shows deleted rows with a strike through, and inactive as italicized, both with transparency so they stand out, regardless of if there are active/deleted columns
     //
     const isWriter = this.clientService.userIsSchedulerClientWriter();
-    const isAdmin = this.authService.isSchedulerAdministrator; 
+    const isAdmin = this.authService.isSchedulerAdministrator;
+
+    //
+    // Writers get additional detail columns
+    //
+    if (isWriter) {
+      // Insert secondary detail columns before 'color' (which is always last of the common set)
+      const colorIdx = defaultColumns.findIndex(c => c.key === 'color');
+      const writerColumns: TableColumn[] = [
+        { key: 'description', label: 'Description', width: undefined },
+        { key: 'currency.name', label: 'Currency', width: undefined, template: 'link', linkPath: ['/currency', 'currencyId'] },
+        { key: 'timeZone.name', label: 'Time Zone', width: undefined, template: 'link', linkPath: ['/timezone', 'timeZoneId'] },
+        { key: 'calendar.name', label: 'Calendar', width: undefined, template: 'link', linkPath: ['/calendar', 'calendarId'] },
+      ];
+      defaultColumns.splice(colorIdx, 0, ...writerColumns);
+    }
 
     if (isAdmin) {
-     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
-     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
-     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
-
+      defaultColumns.push({ key: 'versionNumber', label: 'Version', width: undefined });
+      defaultColumns.push({ key: 'active', label: 'Active', width: '80px', template: 'boolean' });
+      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '80px', template: 'boolean' });
     }
     else if (isWriter) {
-     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
+      defaultColumns.push({ key: 'versionNumber', label: 'Version', width: undefined });
     }
 
-    
+
     // Assign the built array as the active columns
     this.columns = defaultColumns;
   }
 
 
-  public sortBy(column: string) : void {
+  public sortBy(column: string): void {
 
     if (this.sortColumn === column) {
-        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-        this.sortColumn = column;
-        this.sortDirection = 'asc';
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
     }
 
     this.applyFiltersAndSort();
@@ -226,8 +213,8 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
     // Server side filtering using the any string contains parameter
     //
     const clientQueryParams = {
-        ...this.queryParams,
-        anyStringContains: this.filterText || undefined
+      ...this.queryParams,
+      anyStringContains: this.filterText || undefined
     };
 
     //
@@ -269,7 +256,7 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
         //
         this.setErrorState();
 
-         this.alertService.showMessage("Error getting Client data", JSON.stringify(err), MessageSeverity.error);
+        this.alertService.showMessage("Error getting Client data", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
@@ -292,7 +279,7 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
   }
 
 
-   private applyFiltersAndSort(): void {
+  private applyFiltersAndSort(): void {
 
     if (!this.Clients) {
       this.filteredClients = null;
@@ -317,39 +304,39 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
 
         // Define fields to filter on, including nested properties
         const filterFields = [
-                      'name',
-                      'description',
-                      'clientType.name',
-                      'currency.name',
-                      'timeZone.name',
-                      'calendar.name',
-                      'addressLine1',
-                      'addressLine2',
-                      'city',
-                      'postalCode',
-                      'stateProvince.name',
-                      'country.name',
-                      'phone',
-                      'email',
-                      'latitude',
-                      'longitude',
-                      'notes',
-                      'externalId',
-                      'color',
-                      'attributes',
-                      'avatarFileName',
-                      'avatarSize',
-                      'avatarData',
-                      'avatarMimeType',
+          'name',
+          'description',
+          'clientType.name',
+          'currency.name',
+          'timeZone.name',
+          'calendar.name',
+          'addressLine1',
+          'addressLine2',
+          'city',
+          'postalCode',
+          'stateProvince.name',
+          'country.name',
+          'phone',
+          'email',
+          'latitude',
+          'longitude',
+          'notes',
+          'externalId',
+          'color',
+          'attributes',
+          'avatarFileName',
+          'avatarSize',
+          'avatarData',
+          'avatarMimeType',
         ];
 
         result = result.filter((client) =>
 
-        filterFields.some((field) => {
-        const value = getNestedValue(client, field);
+          filterFields.some((field) => {
+            const value = getNestedValue(client, field);
             return value && value.toString().toLowerCase().includes(searchText);
           })
-          );
+        );
       }
     }
 
@@ -366,7 +353,7 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
 
         const aStr = aValue ? aValue.toString() : '';
         const bStr = bValue ? bValue.toString() : '';
-        const comparison = aStr.localeCompare(bStr, undefined, {sensitivity: 'base' });
+        const comparison = aStr.localeCompare(bStr, undefined, { sensitivity: 'base' });
         return this.sortDirection === 'asc' ? comparison : -comparison;
       });
     }
@@ -376,41 +363,35 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
 
 
   public handleEdit(client: ClientData): void {
-    if (this.disableDefaultEdit)
-    {
-        this.edit.emit(client); // Let parent handle edit
+    if (this.disableDefaultEdit) {
+      this.edit.emit(client); // Let parent handle edit
     }
-    else if (this.addEditClientComponent)
-    {
-        this.addEditClientComponent.openModal(client); // Default edit behavior
+    else if (this.addEditClientComponent) {
+      this.addEditClientComponent.openModal(client); // Default edit behavior
     }
-    else
-    {
-        this.alertService.showMessage(
-          'Edit functionality unavailable',
-          'Add/Edit component not initialized',
-          MessageSeverity.warn
-        );
+    else {
+      this.alertService.showMessage(
+        'Edit functionality unavailable',
+        'Add/Edit component not initialized',
+        MessageSeverity.warn
+      );
     }
-}
+  }
 
 
   public handleDelete(client: ClientData): void {
-    if (this.disableDefaultDelete)
-    {
-        this.delete.emit(client); // Let parent handle delete
+    if (this.disableDefaultDelete) {
+      this.delete.emit(client); // Let parent handle delete
     }
-    else
-    {
-        this.confirmationService
-          .confirm('Delete Client', 'Are you sure you want to delete this Client?')
-          .then((result) => {
-              if (result)
-              {
-                  this.deleteClient(client);
-              }
-          })
-          .catch(() => { });
+    else {
+      this.confirmationService
+        .confirm('Delete Client', 'Are you sure you want to delete this Client?')
+        .then((result) => {
+          if (result) {
+            this.deleteClient(client);
+          }
+        })
+        .catch(() => { });
     }
   }
 
@@ -418,48 +399,45 @@ export class ClientCustomTableComponent implements OnInit, OnChanges, AfterViewI
   private deleteClient(clientData: ClientData): void {
     this.clientService.DeleteClient(clientData.id).subscribe({
       next: () => {
-       this.clientService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+        this.clientService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after deletion
       },
       error: (err) => {
-         this.alertService.showMessage("Error deleting Client", JSON.stringify(err), MessageSeverity.error);
+        this.alertService.showMessage("Error deleting Client", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
 
 
   public handleUndelete(client: ClientData): void {
-    if (this.disableDefaultUndelete)
-    {
-        this.undelete.emit(client); // Let parent handle undelete
+    if (this.disableDefaultUndelete) {
+      this.undelete.emit(client); // Let parent handle undelete
     }
-    else
-    {
-        this.confirmationService
-          .confirm('Undelete Client', 'Are you sure you want to undelete this Client?')
-          .then((result) => {
-              if (result)
-              {
-                  this.undeleteClient(client);
-              }
-          })
-          .catch(() => { });
+    else {
+      this.confirmationService
+        .confirm('Undelete Client', 'Are you sure you want to undelete this Client?')
+        .then((result) => {
+          if (result) {
+            this.undeleteClient(client);
+          }
+        })
+        .catch(() => { });
     }
-}
+  }
 
 
   private undeleteClient(clientData: ClientData): void {
 
-      var clientToSubmit = this.clientService.ConvertToClientSubmitData(clientData); // Convert Client data to post object for undeleting
-      clientToSubmit.deleted = false;
+    var clientToSubmit = this.clientService.ConvertToClientSubmitData(clientData); // Convert Client data to post object for undeleting
+    clientToSubmit.deleted = false;
 
-      this.clientService.PutClient(clientToSubmit.id, clientToSubmit).subscribe({
+    this.clientService.PutClient(clientToSubmit.id, clientToSubmit).subscribe({
       next: () => {
-       this.clientService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+        this.clientService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after un-deletion
       },
       error: (err) => {
-         this.alertService.showMessage("Error undeleting Client", JSON.stringify(err), MessageSeverity.error);
+        this.alertService.showMessage("Error undeleting Client", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }

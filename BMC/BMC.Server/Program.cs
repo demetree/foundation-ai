@@ -170,6 +170,7 @@ namespace Foundation.BMC
                 // Custom BMC controllers will be added here as they are created
                 //
                 controllers.Add(typeof(LDrawController));
+                controllers.Add(typeof(CollectionController));
 
 
                 //
@@ -189,7 +190,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BuildStepAnnotationsController));
                 controllers.Add(typeof(BuildStepAnnotationTypesController));
                 controllers.Add(typeof(BuildStepPartsController));
-                controllers.Add(typeof(ColourFinishsController));
+                controllers.Add(typeof(ColourFinishesController));
                 controllers.Add(typeof(ConnectorTypesController));
                 controllers.Add(typeof(ExportFormatsController));
                 controllers.Add(typeof(LegoSetsController));

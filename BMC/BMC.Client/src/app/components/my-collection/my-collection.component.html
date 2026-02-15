@@ -1,0 +1,322 @@
+<!-- My Collection — Premium Collection Management UI -->
+<div class="my-collection-container">
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner-wrap">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading your collection…</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="collection-header" *ngIf="!loading">
+        <div class="header-left">
+            <h1 class="page-title">
+                <i class="fas fa-layer-group"></i>
+                My Collection
+            </h1>
+            <p class="page-subtitle" *ngIf="activeCollection">{{ activeCollection.description || 'Your personal brick
+                inventory' }}</p>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn btn-import" (click)="openImportModal()" title="Import a LEGO set">
+                <i class="fas fa-file-import"></i>
+                <span>Import Set</span>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- Stats Cards -->
+    <div class="stats-row" *ngIf="activeCollection && !loading">
+        <div class="stat-card">
+            <div class="stat-icon unique"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ activeCollection.uniquePartCount | number }}</span>
+                <span class="stat-label">Unique Parts</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon total"><i class="fas fa-cubes"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ activeCollection.totalBrickCount | number }}</span>
+                <span class="stat-label">Total Bricks</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon wishlist"><i class="fas fa-star"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ activeCollection.wishlistItemCount | number }}</span>
+                <span class="stat-label">Wishlist</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon sets"><i class="fas fa-box-open"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ activeCollection.importedSetCount | number }}</span>
+                <span class="stat-label">Imported Sets</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Tabs -->
+    <div class="tab-bar" *ngIf="!loading">
+        <button class="tab-btn" [class.active]="activeTab === 'parts'" (click)="setTab('parts')">
+            <i class="fas fa-th"></i> Parts
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'imported-sets'" (click)="setTab('imported-sets')">
+            <i class="fas fa-box-open"></i> Imported Sets
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'wishlist'" (click)="setTab('wishlist')">
+            <i class="fas fa-star"></i> Wishlist
+        </button>
+    </div>
+
+
+    <!-- ===== PARTS TAB ===== -->
+    <div class="tab-content" *ngIf="activeTab === 'parts' && !loading">
+
+        <!-- Toolbar -->
+        <div class="parts-toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search parts, colours, categories…" (input)="onSearch($event)"
+                    [value]="searchTerm" />
+            </div>
+
+            <div class="toolbar-right">
+                <span class="result-count">{{ filteredParts.length }} parts</span>
+                <div class="view-toggle">
+                    <button [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grid view">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="List view">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading parts -->
+        <div class="loading-inline" *ngIf="loadingParts">
+            <i class="fas fa-spinner fa-spin"></i> Loading parts…
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!loadingParts && filteredParts.length === 0">
+            <i class="fas fa-cube"></i>
+            <h3>No parts yet</h3>
+            <p *ngIf="!searchTerm">Import a LEGO set to get started, or add parts from the Parts Catalog.</p>
+            <p *ngIf="searchTerm">No parts match "{{ searchTerm }}"</p>
+        </div>
+
+
+        <!-- Grid View -->
+        <div class="parts-grid" *ngIf="!loadingParts && viewMode === 'grid' && displayedParts.length > 0">
+            <div class="part-card" *ngFor="let part of displayedParts">
+
+                <!-- Thumbnail -->
+                <div class="card-thumbnail">
+                    <img *ngIf="thumbnails.get(part.geometryFilePath)" [src]="thumbnails.get(part.geometryFilePath)"
+                        alt="Part thumbnail" />
+                    <div class="placeholder-thumb" *ngIf="!thumbnails.get(part.geometryFilePath)">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <span class="colour-dot" [style.background-color]="getColourStyle(part.colourHex)"
+                        [title]="part.colourName"></span>
+                </div>
+
+                <!-- Info -->
+                <div class="card-body">
+                    <h4 class="part-name" [title]="part.ldrawTitle || part.partName">
+                        {{ part.ldrawTitle || part.partName || part.ldrawPartId }}
+                    </h4>
+                    <span class="part-id">{{ part.ldrawPartId }}</span>
+                    <span class="colour-label">{{ part.colourName }}</span>
+                </div>
+
+                <!-- Quantities -->
+                <div class="card-footer">
+                    <div class="qty-group">
+                        <span class="qty-badge owned" title="Owned">{{ part.quantityOwned }}</span>
+                        <span class="qty-separator">/</span>
+                        <span class="qty-badge available" title="Available">{{ getQuantityAvailable(part) }}</span>
+                    </div>
+                    <button class="btn-icon danger" (click)="removePart(part)" title="Remove part">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- List View -->
+        <div class="parts-table-wrap" *ngIf="!loadingParts && viewMode === 'list' && displayedParts.length > 0">
+            <table class="parts-table">
+                <thead>
+                    <tr>
+                        <th>Part</th>
+                        <th>Colour</th>
+                        <th>Category</th>
+                        <th class="num">Owned</th>
+                        <th class="num">Used</th>
+                        <th class="num">Available</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let part of displayedParts">
+                        <td>
+                            <div class="part-cell">
+                                <strong>{{ part.ldrawTitle || part.partName }}</strong>
+                                <span class="part-id-small">{{ part.ldrawPartId }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="colour-chip" [style.background-color]="getColourStyle(part.colourHex)"></span>
+                            {{ part.colourName }}
+                        </td>
+                        <td>{{ part.categoryName || '—' }}</td>
+                        <td class="num">{{ part.quantityOwned }}</td>
+                        <td class="num">{{ part.quantityUsed }}</td>
+                        <td class="num">{{ getQuantityAvailable(part) }}</td>
+                        <td>
+                            <button class="btn-icon danger" (click)="removePart(part)" title="Remove">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <button class="page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="page-btn" *ngFor="let p of getVisiblePages()" [class.active]="p === currentPage"
+                (click)="goToPage(p)">
+                {{ p }}
+            </button>
+            <button class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ===== IMPORTED SETS TAB ===== -->
+    <div class="tab-content" *ngIf="activeTab === 'imported-sets' && !loading">
+
+        <div class="loading-inline" *ngIf="loadingImports">
+            <i class="fas fa-spinner fa-spin"></i> Loading imported sets…
+        </div>
+
+        <div class="empty-state" *ngIf="!loadingImports && importedSets.length === 0">
+            <i class="fas fa-box-open"></i>
+            <h3>No imported sets</h3>
+            <p>Import your first LEGO set to see it here.</p>
+        </div>
+
+        <div class="sets-grid" *ngIf="!loadingImports && importedSets.length > 0">
+            <div class="set-card" *ngFor="let s of importedSets">
+                <div class="set-icon"><i class="fas fa-box"></i></div>
+                <div class="set-info">
+                    <h4>{{ s.setName || 'Unknown Set' }}</h4>
+                    <span class="set-number">{{ s.setNumber }}</span>
+                </div>
+                <div class="set-meta">
+                    <span class="set-qty" *ngIf="s.quantity > 1">×{{ s.quantity }}</span>
+                    <span class="set-date">{{ s.importedDate | date:'mediumDate' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===== WISHLIST TAB ===== -->
+    <div class="tab-content" *ngIf="activeTab === 'wishlist' && !loading">
+
+        <div class="loading-inline" *ngIf="loadingWishlist">
+            <i class="fas fa-spinner fa-spin"></i> Loading wishlist…
+        </div>
+
+        <div class="empty-state" *ngIf="!loadingWishlist && wishlistItems.length === 0">
+            <i class="fas fa-star"></i>
+            <h3>Wishlist is empty</h3>
+            <p>Add parts you're looking for to your wishlist.</p>
+        </div>
+
+        <div class="wishlist-grid" *ngIf="!loadingWishlist && wishlistItems.length > 0">
+            <div class="wishlist-card" *ngFor="let w of wishlistItems">
+                <div class="wish-colour">
+                    <span class="colour-dot lg" [style.background-color]="getColourStyle(w.colourHex || '')"
+                        [title]="w.colourName"></span>
+                </div>
+                <div class="wish-info">
+                    <h4>{{ w.partName || w.ldrawPartId }}</h4>
+                    <span class="wish-colour-name">{{ w.colourName }}</span>
+                    <p class="wish-notes" *ngIf="w.notes">{{ w.notes }}</p>
+                </div>
+                <div class="wish-qty" *ngIf="w.quantityDesired">
+                    <span class="qty-badge want">{{ w.quantityDesired }}</span>
+                    <span class="qty-label">wanted</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ===== IMPORT SET MODAL ===== -->
+<div class="modal-backdrop" *ngIf="showImportModal" (click)="closeImportModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2><i class="fas fa-file-import"></i> Import LEGO Set</h2>
+            <button class="btn-close" (click)="closeImportModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="setId">Set ID</label>
+                <input id="setId" type="text" class="form-input" [(ngModel)]="importSetNumber" placeholder="e.g. 42"
+                    [disabled]="importing" />
+                <small class="form-hint">Enter the database ID of the LEGO set to import</small>
+            </div>
+            <div class="form-group">
+                <label for="setQty">Quantity</label>
+                <input id="setQty" type="number" class="form-input" [(ngModel)]="importQuantity" min="1" max="99"
+                    [disabled]="importing" />
+                <small class="form-hint">How many copies of this set do you own?</small>
+            </div>
+
+            <!-- Import results -->
+            <div class="import-result" *ngIf="lastImportResult">
+                <div class="result-row success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ lastImportResult.partsAdded }} new parts added</span>
+                </div>
+                <div class="result-row info">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>{{ lastImportResult.partsUpdated }} existing parts updated</span>
+                </div>
+                <div class="result-row accent">
+                    <i class="fas fa-cubes"></i>
+                    <span>{{ lastImportResult.totalQuantityAdded }} total bricks imported</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="importing">Cancel</button>
+            <button class="btn btn-primary" (click)="importSet()" [disabled]="importing || !importSetNumber">
+                <i class="fas fa-spinner fa-spin" *ngIf="importing"></i>
+                <span *ngIf="!importing">Import</span>
+                <span *ngIf="importing">Importing…</span>
+            </button>
+        </div>
+    </div>
+</div>

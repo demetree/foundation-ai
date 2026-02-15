@@ -57,8 +57,8 @@ export class LegoThemeSubmitData {
 
 
 export class LegoThemeBasicListData {
-  id!: bigint | number;
-  name!: string;
+    id!: bigint | number;
+    name!: string;
 }
 
 
@@ -108,16 +108,16 @@ export class LegoThemeData {
     active!: boolean;
     deleted!: boolean;
     legoTheme: LegoThemeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
-    legoTheme: LegoThemeData | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)
+    parentLegoTheme: LegoThemeData | null | undefined = null;     // Self referencing navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
     //
     private _legoSets: LegoSetData[] | null = null;
-    private _legoSetsPromise: Promise<LegoSetData[]> | null  = null;
+    private _legoSetsPromise: Promise<LegoSetData[]> | null = null;
     private _legoSetsSubject = new BehaviorSubject<LegoSetData[] | null>(null);
 
-                
+
 
     //
     // Public observables — use with | async in templates
@@ -129,64 +129,65 @@ export class LegoThemeData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._legoSets === null && this._legoSetsPromise === null) {
-            this.loadLegoSets(); // Private method to start fetch
-          }
+            if (this._legoSets === null && this._legoSetsPromise === null) {
+                this.loadLegoSets(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: this.id,
-      active: true,
-      deleted: false
+
+    public LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({
+        legoThemeId: this.id,
+        active: true,
+        deleted: false
     });
 
 
 
 
-  //
-  // Full reload — refreshes the entire object and clears all lazy caches 
-  //
-  // Promise based reload method to allow rebuilding of any LegoThemeData object with all of it's relations on demand.  Useful for navigating into nav property
-  // objects and getting full state after put or post that may not have returned all nav properties.
-  //
-  // Usage examples:;
-  //
-  //  Async:
-  //   await this.legoTheme.Reload();
-  //
-  //  Non Async:
-  //
-  //     legoTheme[0].Reload().then(x => {
-  //        this.legoTheme = x;
-  //    });
-  //
-  public async Reload(includeRelations: boolean = true): Promise<this> {
+    //
+    // Full reload — refreshes the entire object and clears all lazy caches 
+    //
+    // Promise based reload method to allow rebuilding of any LegoThemeData object with all of it's relations on demand.  Useful for navigating into nav property
+    // objects and getting full state after put or post that may not have returned all nav properties.
+    //
+    // Usage examples:;
+    //
+    //  Async:
+    //   await this.legoTheme.Reload();
+    //
+    //  Non Async:
+    //
+    //     legoTheme[0].Reload().then(x => {
+    //        this.legoTheme = x;
+    //    });
+    //
+    public async Reload(includeRelations: boolean = true): Promise<this> {
 
-    const fresh = await lastValueFrom(
-      LegoThemeService.Instance.GetLegoTheme(this.id, includeRelations)
-    );
+        const fresh = await lastValueFrom(
+            LegoThemeService.Instance.GetLegoTheme(this.id, includeRelations)
+        );
 
-    // Merge fresh data into this instance (preserves reference)
-    this.UpdateFrom(fresh as this);
+        // Merge fresh data into this instance (preserves reference)
+        this.UpdateFrom(fresh as this);
 
-    // Clear all lazy caches to force re-load on next access
-    this.clearAllLazyCaches();
+        // Clear all lazy caches to force re-load on next access
+        this.clearAllLazyCaches();
 
-    return this;
-  }
+        return this;
+    }
 
 
-  private clearAllLazyCaches(): void {
-     //
-     // Reset every collection cache and notify subscribers
-     //
-     this._legoSets = null;
-     this._legoSetsPromise = null;
-     this._legoSetsSubject.next(null);
+    private clearAllLazyCaches(): void {
+        //
+        // Reset every collection cache and notify subscribers
+        //
+        this._legoSets = null;
+        this._legoSetsPromise = null;
+        this._legoSetsSubject.next(null);
 
-  }
+    }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -228,19 +229,19 @@ export class LegoThemeData {
         this._legoSetsPromise = lastValueFrom(
             LegoThemeService.Instance.GetLegoSetsForLegoTheme(this.id)
         )
-        .then(LegoSets => {
-            this._legoSets = LegoSets ?? [];
-            this._legoSetsSubject.next(this._legoSets);
-            return this._legoSets;
-         })
-        .catch(err => {
-            this._legoSets = [];
-            this._legoSetsSubject.next(this._legoSets);
-            throw err;
-        })
-        .finally(() => {
-            this._legoSetsPromise = null; // Allow retry if needed
-        });
+            .then(LegoSets => {
+                this._legoSets = LegoSets ?? [];
+                this._legoSetsSubject.next(this._legoSets);
+                return this._legoSets;
+            })
+            .catch(err => {
+                this._legoSets = [];
+                this._legoSetsSubject.next(this._legoSets);
+                throw err;
+            })
+            .finally(() => {
+                this._legoSetsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -277,7 +278,7 @@ export class LegoThemeData {
 
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class LegoThemeService extends SecureEndpointBase {
 
@@ -305,7 +306,7 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
     public static get Instance(): LegoThemeService {
-      return LegoThemeService._instance;
+        return LegoThemeService._instance;
     }
 
 
@@ -314,7 +315,7 @@ export class LegoThemeService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-          this.listCache.delete(configHash);
+            this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -360,7 +361,7 @@ export class LegoThemeService extends SecureEndpointBase {
         return output;
     }
 
-    public GetLegoTheme(id: bigint | number, includeRelations: boolean = true) : Observable<LegoThemeData> {
+    public GetLegoTheme(id: bigint | number, includeRelations: boolean = true): Observable<LegoThemeData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -370,7 +371,7 @@ export class LegoThemeService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-          
+
                     //this.alertService.showHttpErrorMessage("Unable to get LegoTheme", error);
 
                     return throwError(() => error);
@@ -385,7 +386,7 @@ export class LegoThemeService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<LegoThemeData>;
     }
 
-    private requestLegoTheme(id: bigint | number, includeRelations: boolean = true) : Observable<LegoThemeData> {
+    private requestLegoTheme(id: bigint | number, includeRelations: boolean = true): Observable<LegoThemeData> {
 
         let queryParams = new HttpParams();
 
@@ -393,16 +394,17 @@ export class LegoThemeService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<LegoThemeData>(this.baseUrl + 'api/LegoTheme/' + id.toString(), { 
-            params: queryParams, 
-            headers: authenticationHeaders }).pipe(
+        return this.http.get<LegoThemeData>(this.baseUrl + 'api/LegoTheme/' + id.toString(), {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
             map(raw => this.ReviveLegoTheme(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestLegoTheme(id, includeRelations));
             }));
     }
 
-    public GetLegoThemeList(config: LegoThemeQueryParameters | any = null) : Observable<Array<LegoThemeData>> {
+    public GetLegoThemeList(config: LegoThemeQueryParameters | any = null): Observable<Array<LegoThemeData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -427,7 +429,7 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
 
-    private requestLegoThemeList(config: LegoThemeQueryParameters | any) : Observable <Array<LegoThemeData>> {
+    private requestLegoThemeList(config: LegoThemeQueryParameters | any): Observable<Array<LegoThemeData>> {
 
         let queryParams = new HttpParams();
 
@@ -442,16 +444,17 @@ export class LegoThemeService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<LegoThemeData>>(this.baseUrl + 'api/LegoThemes', { 
-            params: queryParams, 
-            headers: authenticationHeaders }).pipe(
+        return this.http.get<Array<LegoThemeData>>(this.baseUrl + 'api/LegoThemes', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
             map(rawList => this.ReviveLegoThemeList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestLegoThemeList(config));
             }));
     }
 
-    public GetLegoThemesRowCount(config: LegoThemeQueryParameters | any = null) : Observable<bigint | number> {
+    public GetLegoThemesRowCount(config: LegoThemeQueryParameters | any = null): Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -460,7 +463,7 @@ export class LegoThemeService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-          
+
                     //this.alertService.showHttpErrorMessage("Unable to get LegoThemes row count", error);
 
                     return throwError(() => error);
@@ -475,7 +478,7 @@ export class LegoThemeService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestLegoThemesRowCount(config: LegoThemeQueryParameters | any) : Observable<bigint | number> {
+    private requestLegoThemesRowCount(config: LegoThemeQueryParameters | any): Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -496,7 +499,7 @@ export class LegoThemeService extends SecureEndpointBase {
             }));
     }
 
-    public GetLegoThemesBasicListData(config: LegoThemeQueryParameters | any = null) : Observable<Array<LegoThemeBasicListData>> {
+    public GetLegoThemesBasicListData(config: LegoThemeQueryParameters | any = null): Observable<Array<LegoThemeBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -511,7 +514,7 @@ export class LegoThemeService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-      
+
             this.basicListDataCache.set(configHash, legoThemesBasicListData$);
 
             return legoThemesBasicListData$;
@@ -521,7 +524,7 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
 
-    private requestLegoThemesBasicListData(config: LegoThemeQueryParameters | any) : Observable<Array<LegoThemeBasicListData>> {
+    private requestLegoThemesBasicListData(config: LegoThemeQueryParameters | any): Observable<Array<LegoThemeBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -544,11 +547,11 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
 
-    public PutLegoTheme(id: bigint | number, legoTheme: LegoThemeSubmitData) : Observable<LegoThemeData> {
+    public PutLegoTheme(id: bigint | number, legoTheme: LegoThemeSubmitData): Observable<LegoThemeData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<LegoThemeData>(this.baseUrl + 'api/LegoTheme/' + id.toString(), legoTheme, { headers: authenticationHeaders } ).pipe(
+        return this.http.put<LegoThemeData>(this.baseUrl + 'api/LegoTheme/' + id.toString(), legoTheme, { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveLegoTheme(raw)),
             catchError(error => {
@@ -557,24 +560,24 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
 
-    public PostLegoTheme(legoTheme: LegoThemeSubmitData) : Observable<LegoThemeData> {
+    public PostLegoTheme(legoTheme: LegoThemeSubmitData): Observable<LegoThemeData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<LegoThemeData>(this.baseUrl + 'api/LegoTheme', legoTheme, { headers: authenticationHeaders } ).pipe(
+        return this.http.post<LegoThemeData>(this.baseUrl + 'api/LegoTheme', legoTheme, { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveLegoTheme(raw)),
             catchError(error => {
-              return this.handleError(error, () => this.PostLegoTheme(legoTheme));
+                return this.handleError(error, () => this.PostLegoTheme(legoTheme));
             }));
     }
 
-  
-    public DeleteLegoTheme(id: bigint | number) : Observable<any> {
+
+    public DeleteLegoTheme(id: bigint | number): Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/LegoTheme/' + id.toString(), { headers: authenticationHeaders } ).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/LegoTheme/' + id.toString(), { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteLegoTheme(id));
@@ -640,13 +643,13 @@ export class LegoThemeService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to BMC.LegoThemes
         //
         if (userIsBMCLegoThemeWriter == true) {
-          let user = this.authService.currentUser;
+            let user = this.authService.currentUser;
 
-          if (user != null) {
-            userIsBMCLegoThemeWriter = user.writePermission >= 255;
-          } else {
-            userIsBMCLegoThemeWriter = false;
-          }      
+            if (user != null) {
+                userIsBMCLegoThemeWriter = user.writePermission >= 255;
+            } else {
+                userIsBMCLegoThemeWriter = false;
+            }
         }
 
         return userIsBMCLegoThemeWriter;
@@ -662,104 +665,106 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
 
- /**
-   *
-   * Revives a plain object from the server into a full LegoThemeData instance.
-   *
-   * This is critical for the lazy-loading pattern to work correctly.
-   *
-   * When the server returns JSON, it is a plain object with no prototype methods
-   * or observable properties. This method:
-   * 1. Re-attaches the LegoThemeData prototype
-   * 2. Copies all properties from the raw object
-   * 3. Re-initializes all private caches and BehaviorSubjects
-   * 4. Re-creates all public observable properties ($ suffixed) with their
-   *    original tap() triggers that initiate lazy loading on first subscription
-   *
-   * Without this, revived objects would not trigger loads when LegoThemeTags$ etc.
-   * are subscribed to in templates.
-   *
-   */
-  public ReviveLegoTheme(raw: any): LegoThemeData {
-    if (!raw) return raw;
+    /**
+      *
+      * Revives a plain object from the server into a full LegoThemeData instance.
+      *
+      * This is critical for the lazy-loading pattern to work correctly.
+      *
+      * When the server returns JSON, it is a plain object with no prototype methods
+      * or observable properties. This method:
+      * 1. Re-attaches the LegoThemeData prototype
+      * 2. Copies all properties from the raw object
+      * 3. Re-initializes all private caches and BehaviorSubjects
+      * 4. Re-creates all public observable properties ($ suffixed) with their
+      *    original tap() triggers that initiate lazy loading on first subscription
+      *
+      * Without this, revived objects would not trigger loads when LegoThemeTags$ etc.
+      * are subscribed to in templates.
+      *
+      */
+    public ReviveLegoTheme(raw: any): LegoThemeData {
+        if (!raw) return raw;
 
-    //
-    // Create a LegoThemeData object instance with correct prototype
-    //
-    const revived = Object.create(LegoThemeData.prototype) as LegoThemeData;
+        //
+        // Create a LegoThemeData object instance with correct prototype
+        //
+        const revived = Object.create(LegoThemeData.prototype) as LegoThemeData;
 
-    //
-    // Copy all raw properties
-    //
-    Object.assign(revived, raw);
+        //
+        // Copy all raw properties
+        //
+        Object.assign(revived, raw);
 
-    //
-    // Explicitly initialize all private caches
-    // This ensures the getters work correctly on revived objects
-    //
-    (revived as any)._legoThemes = null;
-    (revived as any)._legoThemesPromise = null;
-    (revived as any)._legoThemesSubject = new BehaviorSubject<LegoThemeData[] | null>(null);
+        //
+        // Explicitly initialize all private caches
+        // This ensures the getters work correctly on revived objects
+        //
+        (revived as any)._legoThemes = null;
+        (revived as any)._legoThemesPromise = null;
+        (revived as any)._legoThemesSubject = new BehaviorSubject<LegoThemeData[] | null>(null);
 
-    (revived as any)._legoSets = null;
-    (revived as any)._legoSetsPromise = null;
-    (revived as any)._legoSetsSubject = new BehaviorSubject<LegoSetData[] | null>(null);
-
-
-    //
-    // Re-attach ALL public observables with their lazy-load tap() triggers
-    // This mirrors the original class definition exactly
-    //
-    //
-    // Re-create all public observables with their lazy-load triggers
-    // We use 'as any' because:
-    // 1. The revived object has the correct prototype
-    // 2. But private methods (loadLegoThemeXYZ, etc.) are not accessible via the typed variable
-    // 3. This is a controlled revival context — safe and necessary
-    //
-    (revived as any).LegoThemes$ = (revived as any)._legoThemesSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._legoThemes === null && (revived as any)._legoThemesPromise === null) {
-                (revived as any).loadLegoThemes();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).LegoThemesCount$ = LegoThemeService.Instance.GetLegoThemesRowCount({legoThemeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any)._legoSets = null;
+        (revived as any)._legoSetsPromise = null;
+        (revived as any)._legoSetsSubject = new BehaviorSubject<LegoSetData[] | null>(null);
 
 
+        //
+        // Re-attach ALL public observables with their lazy-load tap() triggers
+        // This mirrors the original class definition exactly
+        //
+        //
+        // Re-create all public observables with their lazy-load triggers
+        // We use 'as any' because:
+        // 1. The revived object has the correct prototype
+        // 2. But private methods (loadLegoThemeXYZ, etc.) are not accessible via the typed variable
+        // 3. This is a controlled revival context — safe and necessary
+        //
+        (revived as any).LegoThemes$ = (revived as any)._legoThemesSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._legoThemes === null && (revived as any)._legoThemesPromise === null) {
+                    (revived as any).loadLegoThemes();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).LegoSets$ = (revived as any)._legoSetsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._legoSets === null && (revived as any)._legoSetsPromise === null) {
-                (revived as any).loadLegoSets();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).LegoThemesCount$ = LegoThemeService.Instance.GetLegoThemesRowCount({
+            legoThemeId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
+        (revived as any).LegoSets$ = (revived as any)._legoSetsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._legoSets === null && (revived as any)._legoSetsPromise === null) {
+                    (revived as any).loadLegoSets();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    return revived;
-  }
+        (revived as any).LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({
+            legoThemeId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
-  private ReviveLegoThemeList(rawList: any[]): LegoThemeData[] {
 
-    if (!rawList) {
-        return [];
+
+
+        return revived;
     }
 
-    return rawList.map(raw => this.ReviveLegoTheme(raw));
-  }
+    private ReviveLegoThemeList(rawList: any[]): LegoThemeData[] {
+
+        if (!rawList) {
+            return [];
+        }
+
+        return rawList.map(raw => this.ReviveLegoTheme(raw));
+    }
 
 }

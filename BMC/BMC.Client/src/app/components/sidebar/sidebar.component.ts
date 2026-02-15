@@ -20,6 +20,7 @@ export class SidebarComponent {
     navItems: NavItem[] = [
         { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
         { icon: 'fas fa-cubes', label: 'Parts Catalog', route: '/parts' },
+        { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' },
         { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
         { icon: 'fas fa-palette', label: 'Colours', route: '/colours' },
         { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' },

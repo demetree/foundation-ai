@@ -272,8 +272,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     brickColourId = cp.brickColourId,
                     colourName = cp.brickColour.name,
                     colourHex = cp.brickColour.hexRgb,
-                    quantityOwned = cp.quantityOwned,
-                    quantityUsed = cp.quantityUsed
+                    quantityOwned = cp.quantityOwned ?? 0,
+                    quantityUsed = cp.quantityUsed ?? 0
                 });
 
             //
