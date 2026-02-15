@@ -95,6 +95,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMC.LDraw.Import", "BMC.LDr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMC.Rebrickable.Import", "BMC.Rebrickable.Import\BMC.Rebrickable.Import.csproj", "{988A40FB-E221-4A46-B259-76D8144AD833}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VolunteerHub", "VolunteerHub", "{0A19924D-C216-53F2-1AB4-036A9BE387AD}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "VolunteerHub.Client", "VolunteerHub\VolunteerHub.Client\VolunteerHub.Client.esproj", "{7A98C2D0-7720-43CA-AAAC-325683DD387F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -525,6 +529,12 @@ Global
 		{988A40FB-E221-4A46-B259-76D8144AD833}.Release|x64.Build.0 = Release|Any CPU
 		{988A40FB-E221-4A46-B259-76D8144AD833}.Release|x86.ActiveCfg = Release|Any CPU
 		{988A40FB-E221-4A46-B259-76D8144AD833}.Release|x86.Build.0 = Release|Any CPU
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F}.Release|x64.ActiveCfg = Release|Any CPU
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -569,6 +579,7 @@ Global
 		{DE12C069-26CA-4367-BF5D-9C5DDD899C42} = {DE252BAE-87B4-BA70-9EE8-0F878DF1CFFE}
 		{C730C25C-055D-4699-AE89-79A7896B3431} = {DE252BAE-87B4-BA70-9EE8-0F878DF1CFFE}
 		{988A40FB-E221-4A46-B259-76D8144AD833} = {DE252BAE-87B4-BA70-9EE8-0F878DF1CFFE}
+		{7A98C2D0-7720-43CA-AAAC-325683DD387F} = {0A19924D-C216-53F2-1AB4-036A9BE387AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {64464076-9137-4F9B-A685-E1FC99778638}
