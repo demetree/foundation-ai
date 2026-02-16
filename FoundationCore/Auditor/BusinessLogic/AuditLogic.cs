@@ -16,7 +16,8 @@ namespace Foundation.Auditor
         {
             InProcess = 1,                              // slowest to the end user because it writes right away in the same thread
             DispatchToBackgroundImmediately = 2,        // much faster and almost immediate write because it pushes the log writing into the hangfire worker threads
-            MemoryQueueWithOneMinuteFlush = 3           // way faster but messages won't write into the db for up to one minute and < 1 minute old ones will be lost on IIS restart
+            MemoryQueueWithOneMinuteFlush = 3,          // way faster but messages won't write into the db for up to one minute and < 1 minute old ones will be lost on IIS restart
+            DurableLocalBuffer = 4                      // fastest + crash safe. writes to local SQLite via Foundation.IndexedDB, flushed to SQL Server by a background worker
         }
 
         public enum AuditAccessType
@@ -251,6 +252,12 @@ namespace Foundation.Auditor
 
         private AuditorMode auditorMode = AuditorMode.InProcess;      // default to in process writing.
 
+        /// <summary>
+        /// Delegate wired by FoundationCore.Web to buffer events to local SQLite.
+        /// Set during DI registration via AddAuditBuffer(), avoids circular project reference.
+        /// </summary>
+        public static Func<EventDetails, Task> BufferEventDelegate { get; set; }
+
         private static volatile AuditEngine instance;
         public static object syncRoot = new object();
         public static object memoryCacheSyncRoot = new object();
@@ -279,7 +286,11 @@ namespace Foundation.Auditor
 
         public void SetAuditorMode(string mode)
         {
-            if (mode.Trim().ToUpper() == AuditorMode.MemoryQueueWithOneMinuteFlush.ToString().ToUpper())
+            if (mode.Trim().ToUpper() == AuditorMode.DurableLocalBuffer.ToString().ToUpper())
+            {
+                SetAuditorMode(AuditorMode.DurableLocalBuffer);
+            }
+            else if (mode.Trim().ToUpper() == AuditorMode.MemoryQueueWithOneMinuteFlush.ToString().ToUpper())
             {
                 SetAuditorMode(AuditorMode.MemoryQueueWithOneMinuteFlush);
             }
@@ -559,7 +570,29 @@ namespace Foundation.Auditor
         {
             EventDetails e = new EventDetails(startTime, stopTime, completedSuccessfully, accessType, auditType, user, session, source, userAgent, module, moduleEntity, resource, hostSystem, primaryKey, threadId, message, entityBeforeState, entityAfterState, errorMessages);
 
-            if (auditorMode == AuditorMode.MemoryQueueWithOneMinuteFlush)
+            if (auditorMode == AuditorMode.DurableLocalBuffer)
+            {
+                //
+                // Write to local SQLite buffer via delegate. A background worker flushes to SQL Server.
+                //
+                if (BufferEventDelegate != null)
+                {
+                    try
+                    {
+                        await BufferEventDelegate(e);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Auditor local buffer write error.  Details are: " + ex.ToString());
+                    }
+                }
+                else
+                {
+                    // Delegate not wired — fall back to in-process write
+                    await CreateAuditEventAsync(e);
+                }
+            }
+            else if (auditorMode == AuditorMode.MemoryQueueWithOneMinuteFlush)
             {
                 //
                 // A recurring job runs each minute to flush the memory queue to the database
@@ -613,7 +646,29 @@ namespace Foundation.Auditor
         {
             EventDetails e = new EventDetails(startTime, stopTime, completedSuccessfully, accessType, auditType, user, session, source, userAgent, module, moduleEntity, resource, hostSystem, primaryKey, threadId, message, entityBeforeState, entityAfterState, errorMessages);
 
-            if (auditorMode == AuditorMode.MemoryQueueWithOneMinuteFlush)
+            if (auditorMode == AuditorMode.DurableLocalBuffer)
+            {
+                //
+                // Write to local SQLite buffer via delegate. A background worker flushes to SQL Server.
+                //
+                if (BufferEventDelegate != null)
+                {
+                    try
+                    {
+                        BufferEventDelegate(e).GetAwaiter().GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Auditor local buffer write error.  Details are: " + ex.ToString());
+                    }
+                }
+                else
+                {
+                    // Delegate not wired — fall back to in-process write
+                    CreateAuditEvent(e);
+                }
+            }
+            else if (auditorMode == AuditorMode.MemoryQueueWithOneMinuteFlush)
             {
                 //
                 // Runs a recurring job each minute to flush the memory queue to the database

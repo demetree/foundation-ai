@@ -118,6 +118,7 @@ namespace Foundation.Scheduler
                 // Enable local IndexedDB-backed session cache for per-request validation
                 //
                 builder.Services.AddSessionCache();
+                builder.Services.AddAuditBuffer();
 
                 // Register Donor Journey Calculator
                 builder.Services.AddScoped<Foundation.Scheduler.Services.DonorJourneyCalculator>();

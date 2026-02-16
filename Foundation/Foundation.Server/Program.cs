@@ -114,6 +114,7 @@ namespace Foundation.Server
                 // Enable local IndexedDB-backed session cache for per-request validation
                 //
                 builder.Services.AddSessionCache();
+                builder.Services.AddAuditBuffer();
 
 
 
