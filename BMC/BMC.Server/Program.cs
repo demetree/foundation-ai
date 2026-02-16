@@ -23,6 +23,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
+using Foundation.Web.Services;
 
 
 namespace Foundation.BMC
@@ -113,6 +114,11 @@ namespace Foundation.BMC
                 // Configure the foundation services
                 //
                 BuildFoundationServices(builder, logger);
+
+                //
+                // Enable local IndexedDB-backed session cache for per-request validation
+                //
+                builder.Services.AddSessionCache();
 
 
                 //

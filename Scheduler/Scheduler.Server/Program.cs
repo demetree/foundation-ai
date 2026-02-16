@@ -24,6 +24,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
+using Foundation.Web.Services;
 
 
 namespace Foundation.Scheduler
@@ -112,6 +113,11 @@ namespace Foundation.Scheduler
                 // Configure the foundation services
                 //
                 BuildFoundationServices(builder, logger);
+
+                //
+                // Enable local IndexedDB-backed session cache for per-request validation
+                //
+                builder.Services.AddSessionCache();
 
                 // Register Donor Journey Calculator
                 builder.Services.AddScoped<Foundation.Scheduler.Services.DonorJourneyCalculator>();

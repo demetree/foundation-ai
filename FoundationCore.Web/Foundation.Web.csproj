@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Foundation.IndexedDB\Foundation.IndexedDB.csproj" />
     <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
   </ItemGroup>
 

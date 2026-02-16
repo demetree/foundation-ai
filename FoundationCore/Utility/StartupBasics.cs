@@ -73,7 +73,9 @@ namespace Foundation
             builder.Services.AddSingleton<ICredentialCacheService, CredentialCacheService>();
 
             //
-            // Add session tracking service for compliance-grade audit trails
+            // Add session tracking service for compliance-grade audit trails.
+            // Note: Apps that want local IndexedDB-backed caching should override
+            // this registration with CachedSessionTrackingService from Foundation.Web.
             //
             builder.Services.AddScoped<ISessionTrackingService, SessionTrackingService>();
 

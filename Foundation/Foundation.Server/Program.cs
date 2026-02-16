@@ -27,6 +27,7 @@ using Foundation.Telemetry.Database;
 using Foundation.Web.Services.Alerting;
 using Foundation.OIDC;
 using Foundation.Server.Controllers;
+using Foundation.Web.Services;
 
 
 namespace Foundation.Server
@@ -108,6 +109,11 @@ namespace Foundation.Server
                 // Configure the foundation services
                 //
                 BuildFoundationServices(builder, logger);
+
+                //
+                // Enable local IndexedDB-backed session cache for per-request validation
+                //
+                builder.Services.AddSessionCache();
 
 
 

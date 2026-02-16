@@ -10,6 +10,7 @@ using Foundation.Security.Configuration;
 using Foundation.Security.Controllers.WebAPI;
 using Foundation.Security.Database;
 using Foundation.Security.OIDC;
+using Foundation.Web.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -110,6 +111,11 @@ namespace Foundation.Alerting
                 // Configure the foundation services
                 //
                 BuildFoundationServices(builder, logger);
+
+                //
+                // Enable local IndexedDB-backed session cache for per-request validation
+                //
+                builder.Services.AddSessionCache();
 
 
                 //
