@@ -34,7 +34,7 @@ export class WebhookDeliveryAttemptQueryParameters {
     integrationId: bigint | number | null | undefined = null;
     incidentTimelineEventId: bigint | number | null | undefined = null;
     attemptNumber: bigint | number | null | undefined = null;
-    attemptedAt: string | null | undefined = null;        // ISO 8601
+    attemptedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     httpStatusCode: bigint | number | null | undefined = null;
     success: boolean | null | undefined = null;
     payloadJson: string | null | undefined = null;
@@ -59,7 +59,7 @@ export class WebhookDeliveryAttemptSubmitData {
     integrationId!: bigint | number;
     incidentTimelineEventId: bigint | number | null = null;
     attemptNumber!: bigint | number;
-    attemptedAt!: string;      // ISO 8601
+    attemptedAt!: string;      // ISO 8601 (full datetime)
     httpStatusCode: bigint | number | null = null;
     success!: boolean;
     payloadJson: string | null = null;
@@ -118,7 +118,7 @@ export class WebhookDeliveryAttemptData {
     integrationId!: bigint | number;
     incidentTimelineEventId!: bigint | number;
     attemptNumber!: bigint | number;
-    attemptedAt!: string;      // ISO 8601
+    attemptedAt!: string;      // ISO 8601 (full datetime)
     httpStatusCode!: bigint | number;
     success!: boolean;
     payloadJson!: string | null;

@@ -76,6 +76,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
     <ProjectReference Include="..\..\AlertingDatabase\AlertingDatabase.csproj" />
+    <ProjectReference Include="..\..\Foundation.IndexedDB\Foundation.IndexedDB.csproj" />
     <ProjectReference Include="..\Alerting.Client\Alerting.Client.esproj" />
   </ItemGroup>
 

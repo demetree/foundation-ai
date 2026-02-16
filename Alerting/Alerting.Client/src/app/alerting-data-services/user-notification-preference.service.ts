@@ -35,7 +35,7 @@ export class UserNotificationPreferenceQueryParameters {
     quietHoursEnd: string | null | undefined = null;
     isDoNotDisturb: boolean | null | undefined = null;
     isDoNotDisturbPermanent: boolean | null | undefined = null;
-    doNotDisturbUntil: string | null | undefined = null;        // ISO 8601
+    doNotDisturbUntil: string | null | undefined = null;        // ISO 8601 (full datetime)
     customSettingsJson: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -59,7 +59,7 @@ export class UserNotificationPreferenceSubmitData {
     quietHoursEnd: string | null = null;
     isDoNotDisturb!: boolean;
     isDoNotDisturbPermanent!: boolean;
-    doNotDisturbUntil: string | null = null;     // ISO 8601
+    doNotDisturbUntil: string | null = null;     // ISO 8601 (full datetime)
     customSettingsJson: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
@@ -137,7 +137,7 @@ export class UserNotificationPreferenceData {
     quietHoursEnd!: string | null;
     isDoNotDisturb!: boolean;
     isDoNotDisturbPermanent!: boolean;
-    doNotDisturbUntil!: string | null;   // ISO 8601
+    doNotDisturbUntil!: string | null;   // ISO 8601 (full datetime)
     customSettingsJson!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;

@@ -33,9 +33,9 @@ export class IncidentNotificationQueryParameters {
     incidentId: bigint | number | null | undefined = null;
     escalationRuleId: bigint | number | null | undefined = null;
     userObjectGuid: string | null | undefined = null;
-    firstNotifiedAt: string | null | undefined = null;        // ISO 8601
-    lastNotifiedAt: string | null | undefined = null;        // ISO 8601
-    acknowledgedAt: string | null | undefined = null;        // ISO 8601
+    firstNotifiedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
+    lastNotifiedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
+    acknowledgedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     acknowledgedByObjectGuid: string | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -55,9 +55,9 @@ export class IncidentNotificationSubmitData {
     incidentId!: bigint | number;
     escalationRuleId: bigint | number | null = null;
     userObjectGuid!: string;
-    firstNotifiedAt!: string;      // ISO 8601
-    lastNotifiedAt: string | null = null;     // ISO 8601
-    acknowledgedAt: string | null = null;     // ISO 8601
+    firstNotifiedAt!: string;      // ISO 8601 (full datetime)
+    lastNotifiedAt: string | null = null;     // ISO 8601 (full datetime)
+    acknowledgedAt: string | null = null;     // ISO 8601 (full datetime)
     acknowledgedByObjectGuid: string | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -111,9 +111,9 @@ export class IncidentNotificationData {
     incidentId!: bigint | number;
     escalationRuleId!: bigint | number;
     userObjectGuid!: string;
-    firstNotifiedAt!: string;      // ISO 8601
-    lastNotifiedAt!: string | null;   // ISO 8601
-    acknowledgedAt!: string | null;   // ISO 8601
+    firstNotifiedAt!: string;      // ISO 8601 (full datetime)
+    lastNotifiedAt!: string | null;   // ISO 8601 (full datetime)
+    acknowledgedAt!: string | null;   // ISO 8601 (full datetime)
     acknowledgedByObjectGuid!: string | null;
     objectGuid!: string;
     active!: boolean;

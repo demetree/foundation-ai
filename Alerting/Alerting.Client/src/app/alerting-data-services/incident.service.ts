@@ -42,12 +42,12 @@ export class IncidentQueryParameters {
     description: string | null | undefined = null;
     severityTypeId: bigint | number | null | undefined = null;
     incidentStatusTypeId: bigint | number | null | undefined = null;
-    createdAt: string | null | undefined = null;        // ISO 8601
+    createdAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     escalationRuleId: bigint | number | null | undefined = null;
     currentRepeatCount: bigint | number | null | undefined = null;
-    nextEscalationAt: string | null | undefined = null;        // ISO 8601
-    acknowledgedAt: string | null | undefined = null;        // ISO 8601
-    resolvedAt: string | null | undefined = null;        // ISO 8601
+    nextEscalationAt: string | null | undefined = null;        // ISO 8601 (full datetime)
+    acknowledgedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
+    resolvedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     currentAssigneeObjectGuid: string | null | undefined = null;
     sourcePayloadJson: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -72,12 +72,12 @@ export class IncidentSubmitData {
     description: string | null = null;
     severityTypeId!: bigint | number;
     incidentStatusTypeId!: bigint | number;
-    createdAt!: string;      // ISO 8601
+    createdAt!: string;      // ISO 8601 (full datetime)
     escalationRuleId: bigint | number | null = null;
     currentRepeatCount: bigint | number | null = null;
-    nextEscalationAt: string | null = null;     // ISO 8601
-    acknowledgedAt: string | null = null;     // ISO 8601
-    resolvedAt: string | null = null;     // ISO 8601
+    nextEscalationAt: string | null = null;     // ISO 8601 (full datetime)
+    acknowledgedAt: string | null = null;     // ISO 8601 (full datetime)
+    resolvedAt: string | null = null;     // ISO 8601 (full datetime)
     currentAssigneeObjectGuid: string | null = null;
     sourcePayloadJson: string | null = null;
     versionNumber!: bigint | number;
@@ -156,12 +156,12 @@ export class IncidentData {
     description!: string | null;
     severityTypeId!: bigint | number;
     incidentStatusTypeId!: bigint | number;
-    createdAt!: string;      // ISO 8601
+    createdAt!: string;      // ISO 8601 (full datetime)
     escalationRuleId!: bigint | number;
     currentRepeatCount!: bigint | number;
-    nextEscalationAt!: string | null;   // ISO 8601
-    acknowledgedAt!: string | null;   // ISO 8601
-    resolvedAt!: string | null;   // ISO 8601
+    nextEscalationAt!: string | null;   // ISO 8601 (full datetime)
+    acknowledgedAt!: string | null;   // ISO 8601 (full datetime)
+    resolvedAt!: string | null;   // ISO 8601 (full datetime)
     currentAssigneeObjectGuid!: string | null;
     sourcePayloadJson!: string | null;
     versionNumber!: bigint | number;

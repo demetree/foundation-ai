@@ -33,8 +33,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class ScheduleOverrideQueryParameters {
     onCallScheduleId: bigint | number | null | undefined = null;
     scheduleLayerId: bigint | number | null | undefined = null;
-    startDateTime: string | null | undefined = null;        // ISO 8601
-    endDateTime: string | null | undefined = null;        // ISO 8601
+    startDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    endDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     scheduleOverrideTypeId: bigint | number | null | undefined = null;
     originalUserObjectGuid: string | null | undefined = null;
     replacementUserObjectGuid: string | null | undefined = null;
@@ -58,8 +58,8 @@ export class ScheduleOverrideSubmitData {
     id!: bigint | number;
     onCallScheduleId!: bigint | number;
     scheduleLayerId: bigint | number | null = null;
-    startDateTime!: string;      // ISO 8601
-    endDateTime!: string;      // ISO 8601
+    startDateTime!: string;      // ISO 8601 (full datetime)
+    endDateTime!: string;      // ISO 8601 (full datetime)
     scheduleOverrideTypeId!: bigint | number;
     originalUserObjectGuid: string | null = null;
     replacementUserObjectGuid: string | null = null;
@@ -137,8 +137,8 @@ export class ScheduleOverrideData {
     id!: bigint | number;
     onCallScheduleId!: bigint | number;
     scheduleLayerId!: bigint | number;
-    startDateTime!: string;      // ISO 8601
-    endDateTime!: string;      // ISO 8601
+    startDateTime!: string;      // ISO 8601 (full datetime)
+    endDateTime!: string;      // ISO 8601 (full datetime)
     scheduleOverrideTypeId!: bigint | number;
     originalUserObjectGuid!: string | null;
     replacementUserObjectGuid!: string | null;

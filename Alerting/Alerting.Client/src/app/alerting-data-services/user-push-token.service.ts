@@ -33,8 +33,8 @@ export class UserPushTokenQueryParameters {
     deviceFingerprint: string | null | undefined = null;
     platform: string | null | undefined = null;
     userAgent: string | null | undefined = null;
-    registeredAt: string | null | undefined = null;        // ISO 8601
-    lastUpdatedAt: string | null | undefined = null;        // ISO 8601
+    registeredAt: string | null | undefined = null;        // ISO 8601 (full datetime)
+    lastUpdatedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -56,8 +56,8 @@ export class UserPushTokenSubmitData {
     deviceFingerprint!: string;
     platform!: string;
     userAgent: string | null = null;
-    registeredAt!: string;      // ISO 8601
-    lastUpdatedAt!: string;      // ISO 8601
+    registeredAt!: string;      // ISO 8601 (full datetime)
+    lastUpdatedAt!: string;      // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -133,8 +133,8 @@ export class UserPushTokenData {
     deviceFingerprint!: string;
     platform!: string;
     userAgent!: string | null;
-    registeredAt!: string;      // ISO 8601
-    lastUpdatedAt!: string;      // ISO 8601
+    registeredAt!: string;      // ISO 8601 (full datetime)
+    lastUpdatedAt!: string;      // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;

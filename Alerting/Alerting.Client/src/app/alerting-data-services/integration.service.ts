@@ -38,7 +38,7 @@ export class IntegrationQueryParameters {
     callbackWebhookUrl: string | null | undefined = null;
     maxRetryAttempts: bigint | number | null | undefined = null;
     retryBackoffSeconds: bigint | number | null | undefined = null;
-    lastCallbackSuccessAt: string | null | undefined = null;        // ISO 8601
+    lastCallbackSuccessAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     consecutiveCallbackFailures: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -63,7 +63,7 @@ export class IntegrationSubmitData {
     callbackWebhookUrl: string | null = null;
     maxRetryAttempts: bigint | number | null = null;
     retryBackoffSeconds: bigint | number | null = null;
-    lastCallbackSuccessAt: string | null = null;     // ISO 8601
+    lastCallbackSuccessAt: string | null = null;     // ISO 8601 (full datetime)
     consecutiveCallbackFailures: bigint | number | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
@@ -142,7 +142,7 @@ export class IntegrationData {
     callbackWebhookUrl!: string | null;
     maxRetryAttempts!: bigint | number;
     retryBackoffSeconds!: bigint | number;
-    lastCallbackSuccessAt!: string | null;   // ISO 8601
+    lastCallbackSuccessAt!: string | null;   // ISO 8601 (full datetime)
     consecutiveCallbackFailures!: bigint | number;
     versionNumber!: bigint | number;
     objectGuid!: string;

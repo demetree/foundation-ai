@@ -2,7 +2,7 @@
   "profiles": {
     "BMC.LDraw.Import": {
       "commandName": "Project",
-      "commandLineArgs": "--source d:\\ldraw --import colours parts --copy-data"
+      "commandLineArgs": "--download --import colours parts --copy-data"
     }
   }
 }

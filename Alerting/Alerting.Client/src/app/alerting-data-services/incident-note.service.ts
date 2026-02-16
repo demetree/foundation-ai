@@ -31,7 +31,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class IncidentNoteQueryParameters {
     incidentId: bigint | number | null | undefined = null;
     authorObjectGuid: string | null | undefined = null;
-    createdAt: string | null | undefined = null;        // ISO 8601
+    createdAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     content: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -51,7 +51,7 @@ export class IncidentNoteSubmitData {
     id!: bigint | number;
     incidentId!: bigint | number;
     authorObjectGuid!: string;
-    createdAt!: string;      // ISO 8601
+    createdAt!: string;      // ISO 8601 (full datetime)
     content!: string;
     versionNumber!: bigint | number;
     active!: boolean;
@@ -125,7 +125,7 @@ export class IncidentNoteData {
     id!: bigint | number;
     incidentId!: bigint | number;
     authorObjectGuid!: string;
-    createdAt!: string;      // ISO 8601
+    createdAt!: string;      // ISO 8601 (full datetime)
     content!: string;
     versionNumber!: bigint | number;
     objectGuid!: string;

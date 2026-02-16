@@ -32,7 +32,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class IncidentTimelineEventQueryParameters {
     incidentId: bigint | number | null | undefined = null;
     incidentEventTypeId: bigint | number | null | undefined = null;
-    timestamp: string | null | undefined = null;        // ISO 8601
+    timestamp: string | null | undefined = null;        // ISO 8601 (full datetime)
     actorObjectGuid: string | null | undefined = null;
     detailsJson: string | null | undefined = null;
     notes: string | null | undefined = null;
@@ -54,7 +54,7 @@ export class IncidentTimelineEventSubmitData {
     id!: bigint | number;
     incidentId!: bigint | number;
     incidentEventTypeId!: bigint | number;
-    timestamp!: string;      // ISO 8601
+    timestamp!: string;      // ISO 8601 (full datetime)
     actorObjectGuid: string | null = null;
     detailsJson: string | null = null;
     notes: string | null = null;
@@ -110,7 +110,7 @@ export class IncidentTimelineEventData {
     id!: bigint | number;
     incidentId!: bigint | number;
     incidentEventTypeId!: bigint | number;
-    timestamp!: string;      // ISO 8601
+    timestamp!: string;      // ISO 8601 (full datetime)
     actorObjectGuid!: string | null;
     detailsJson!: string | null;
     notes!: string | null;

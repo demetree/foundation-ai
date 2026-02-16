@@ -35,7 +35,7 @@ export class ScheduleLayerQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     layerLevel: bigint | number | null | undefined = null;
-    rotationStart: string | null | undefined = null;        // ISO 8601
+    rotationStart: string | null | undefined = null;        // ISO 8601 (full datetime)
     rotationDays: bigint | number | null | undefined = null;
     handoffTime: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -58,7 +58,7 @@ export class ScheduleLayerSubmitData {
     name!: string;
     description: string | null = null;
     layerLevel!: bigint | number;
-    rotationStart!: string;      // ISO 8601
+    rotationStart!: string;      // ISO 8601 (full datetime)
     rotationDays!: bigint | number;
     handoffTime!: string;
     versionNumber!: bigint | number;
@@ -135,7 +135,7 @@ export class ScheduleLayerData {
     name!: string;
     description!: string | null;
     layerLevel!: bigint | number;
-    rotationStart!: string;      // ISO 8601
+    rotationStart!: string;      // ISO 8601 (full datetime)
     rotationDays!: bigint | number;
     handoffTime!: string;
     versionNumber!: bigint | number;

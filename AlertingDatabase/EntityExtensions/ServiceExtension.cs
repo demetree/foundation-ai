@@ -261,7 +261,7 @@ namespace Foundation.Alerting.Database
 
                 if (includeData == true)
                 {
-                    version.data = await chts.GetVersionAsync(this, 1).ConfigureAwait(false);
+                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
                 }
 
                 versions.Add(version);

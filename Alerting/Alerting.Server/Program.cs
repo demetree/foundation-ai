@@ -360,6 +360,12 @@ namespace Foundation.Alerting
                 builder.Services.AddHostedService<NotificationRetryWorker>();
 
                 //
+                // Notification Audit Local Buffer (IndexedDB)
+                //
+                builder.Services.AddSingleton<INotificationAuditBuffer, NotificationAuditBuffer>();
+                builder.Services.AddHostedService<NotificationAuditBufferWorker>();
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

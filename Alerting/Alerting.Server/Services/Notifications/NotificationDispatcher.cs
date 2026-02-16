@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Alerting.Server.Services;
 using Foundation.Alerting.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,17 +24,20 @@ namespace Alerting.Server.Services.Notifications
         private readonly AlertingContext _context;
         private readonly IEnumerable<INotificationProvider> _providers;
         private readonly IUserService _userService;
+        private readonly INotificationAuditBuffer _auditBuffer;
         private readonly ILogger<NotificationDispatcher> _logger;
 
         public NotificationDispatcher(
             AlertingContext context,
             IEnumerable<INotificationProvider> providers,
             IUserService userService,
+            INotificationAuditBuffer auditBuffer,
             ILogger<NotificationDispatcher> logger)
         {
             _context = context;
             _providers = providers;
             _userService = userService;
+            _auditBuffer = auditBuffer;
             _logger = logger;
 
             NotificationLogger.Debug($"NotificationDispatcher initialized with {_providers.Count()} providers: {string.Join(", ", _providers.Select(p => p.GetType().Name))}");
@@ -212,6 +216,10 @@ namespace Alerting.Server.Services.Notifications
             }
 
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            // Buffer to local audit store (fire-and-forget-safe — SQL Server write already succeeded)
+            await _auditBuffer.RecordAttemptAsync(attempt).ConfigureAwait(false);
+
             NotificationLogger.Debug($"Delivery attempt {attempt.id} final status: {attempt.status}");
             NotificationLogger.Debug($"--- END DispatchToChannelAsync ---");
         }

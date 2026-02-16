@@ -32,7 +32,7 @@ export class NotificationDeliveryAttemptQueryParameters {
     incidentNotificationId: bigint | number | null | undefined = null;
     notificationChannelTypeId: bigint | number | null | undefined = null;
     attemptNumber: bigint | number | null | undefined = null;
-    attemptedAt: string | null | undefined = null;        // ISO 8601
+    attemptedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     status: string | null | undefined = null;
     errorMessage: string | null | undefined = null;
     response: string | null | undefined = null;
@@ -57,7 +57,7 @@ export class NotificationDeliveryAttemptSubmitData {
     incidentNotificationId!: bigint | number;
     notificationChannelTypeId!: bigint | number;
     attemptNumber!: bigint | number;
-    attemptedAt!: string;      // ISO 8601
+    attemptedAt!: string;      // ISO 8601 (full datetime)
     status!: string;
     errorMessage: string | null = null;
     response: string | null = null;
@@ -116,7 +116,7 @@ export class NotificationDeliveryAttemptData {
     incidentNotificationId!: bigint | number;
     notificationChannelTypeId!: bigint | number;
     attemptNumber!: bigint | number;
-    attemptedAt!: string;      // ISO 8601
+    attemptedAt!: string;      // ISO 8601 (full datetime)
     status!: string;
     errorMessage!: string | null;
     response!: string | null;
