@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Threading;
 using Foundation.IndexedDB;
 using Foundation.IndexedDB.Dexter;
 using Foundation.Services;
@@ -109,6 +110,9 @@ namespace Foundation.Web.Services
         private readonly IDBFactory _factory;
         private SessionEventDb _db;
         private bool _initialized;
+        private readonly SemaphoreSlim _initLock = new SemaphoreSlim(1, 1);
+        private const int MaxInitRetries = 3;
+        private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(500);
 
         public SessionEventBuffer(ILogger<SessionEventBuffer> logger)
         {
@@ -126,19 +130,45 @@ namespace Foundation.Web.Services
             if (_initialized && _db != null)
                 return _db;
 
+            await _initLock.WaitAsync().ConfigureAwait(false);
             try
             {
-                var request = await _factory.OpenAsync("SessionEvents", version: 1).ConfigureAwait(false);
-                _db = new SessionEventDb(request.Result);
-                _initialized = true;
+                // Double-check after acquiring lock
+                if (_initialized && _db != null)
+                    return _db;
 
-                _logger.LogInformation("SessionEventBuffer database opened successfully.");
-                return _db;
+                for (int attempt = 1; attempt <= MaxInitRetries; attempt++)
+                {
+                    try
+                    {
+                        var request = await _factory.OpenAsync("SessionEvents", version: 1).ConfigureAwait(false);
+                        _db = new SessionEventDb(request.Result);
+                        _initialized = true;
+
+                        _logger.LogInformation("SessionEventBuffer database opened successfully.");
+                        return _db;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "SessionEventBuffer database open attempt {Attempt}/{Max} failed.",
+                            attempt, MaxInitRetries);
+
+                        if (attempt < MaxInitRetries)
+                        {
+                            await Task.Delay(RetryDelay).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+
+                throw new InvalidOperationException("Failed to open SessionEventBuffer database after retries.");
             }
-            catch (Exception ex)
+            finally
             {
-                _logger.LogError(ex, "Failed to open SessionEventBuffer database.");
-                throw;
+                _initLock.Release();
             }
         }
 
