@@ -165,15 +165,8 @@ public sealed class Collection : IDisposable
                     collection._nextDocId = docId;
             }
         }
-        else
-        {
-            // Still need to track max docId
-            foreach (var docId in storage.AllDocIds())
-            {
-                if (docId > collection._nextDocId)
-                    collection._nextDocId = docId;
-            }
-        }
+        // Note: _nextDocId is already restored from persisted metadata (line 131),
+        // so no need to scan AllDocIds() again when indexes loaded from disk.
 
         return collection;
     }
@@ -338,10 +331,8 @@ public sealed class Collection : IDisposable
                 if (!docId.HasValue) continue;
 
                 RemoveFromIndexes(docId.Value);
-                _deletedDocIds.Add(docId.Value);
                 _storage.Delete(docId.Value);
                 _storage.RemovePrimaryKey(pk);
-                _deletedDocIds.Remove(docId.Value); // doc removed entirely
             }
         }
         finally

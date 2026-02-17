@@ -2,6 +2,8 @@
 // Index persistence — serializes/deserializes HNSW and IVF graphs to/from disk
 
 using System.Text.Json;
+using Foundation.AI.Zvec.Engine.Core;
+using Foundation.AI.Zvec.Engine.Math;
 
 namespace Foundation.AI.Zvec.Engine.Index;
 
@@ -45,10 +47,19 @@ public static class IndexPersistence
         // Header
         writer.Write((byte)'H'); writer.Write((byte)'N');
         writer.Write((byte)'S'); writer.Write((byte)'W');
-        writer.Write(1); // version
+        writer.Write(2); // version 2 — adds quantization
         writer.Write(snapshot.Nodes.Count);
         writer.Write(snapshot.EntryPoint);
         writer.Write(snapshot.MaxLayer);
+
+        // Quantization header
+        writer.Write((byte)snapshot.Quantize);
+        writer.Write(snapshot.Calibrated);
+        writer.Write(snapshot.Dimension);
+        writer.Write(snapshot.Int8Cal.MinVal);
+        writer.Write(snapshot.Int8Cal.MaxVal);
+        writer.Write(snapshot.Int4Cal.MinVal);
+        writer.Write(snapshot.Int4Cal.MaxVal);
 
         // Nodes
         foreach (var node in snapshot.Nodes)
@@ -56,10 +67,29 @@ public static class IndexPersistence
             writer.Write(node.DocId);
             writer.Write(node.Level);
             writer.Write(node.IsDeleted);
-            writer.Write(node.Vector.Length);
 
-            foreach (float v in node.Vector)
-                writer.Write(v);
+            // Vector (nullable)
+            if (node.Vector != null)
+            {
+                writer.Write(node.Vector.Length);
+                foreach (float v in node.Vector)
+                    writer.Write(v);
+            }
+            else
+            {
+                writer.Write(0); // zero-length = no FP32 vector
+            }
+
+            // Quantized vector
+            if (node.QuantizedVector != null)
+            {
+                writer.Write(node.QuantizedVector.Length);
+                writer.Write(node.QuantizedVector);
+            }
+            else
+            {
+                writer.Write(0);
+            }
 
             // Connections for each layer
             for (int layer = 0; layer <= node.Level; layer++)
@@ -87,12 +117,36 @@ public static class IndexPersistence
             throw new InvalidDataException("Invalid HNSW index file");
 
         int version = reader.ReadInt32();
-        if (version != 1)
+        if (version < 1 || version > 2)
             throw new InvalidDataException($"Unsupported HNSW index version: {version}");
 
         int nodeCount = reader.ReadInt32();
         int entryPoint = reader.ReadInt32();
         int maxLayer = reader.ReadInt32();
+
+        // Quantization header (v2+)
+        var quantize = QuantizeType.Undefined;
+        bool calibrated = false;
+        int dimension = 0;
+        var int8Cal = new Quantization.Int8Calibration();
+        var int4Cal = new Quantization.Int4Calibration();
+
+        if (version >= 2)
+        {
+            quantize = (QuantizeType)reader.ReadByte();
+            calibrated = reader.ReadBoolean();
+            dimension = reader.ReadInt32();
+            int8Cal = new Quantization.Int8Calibration
+            {
+                MinVal = reader.ReadSingle(),
+                MaxVal = reader.ReadSingle()
+            };
+            int4Cal = new Quantization.Int4Calibration
+            {
+                MinVal = reader.ReadSingle(),
+                MaxVal = reader.ReadSingle()
+            };
+        }
 
         // Read nodes
         var nodes = new List<HnswNodeSnapshot>(nodeCount);
@@ -103,9 +157,21 @@ public static class IndexPersistence
             bool isDeleted = reader.ReadBoolean();
             int vecLen = reader.ReadInt32();
 
-            var vector = new float[vecLen];
-            for (int v = 0; v < vecLen; v++)
-                vector[v] = reader.ReadSingle();
+            float[]? vector = vecLen > 0 ? new float[vecLen] : null;
+            if (vector != null)
+            {
+                for (int v = 0; v < vecLen; v++)
+                    vector[v] = reader.ReadSingle();
+            }
+
+            // Quantized vector (v2+)
+            byte[]? qvec = null;
+            if (version >= 2)
+            {
+                int qLen = reader.ReadInt32();
+                if (qLen > 0)
+                    qvec = reader.ReadBytes(qLen);
+            }
 
             var connections = new List<int>[level + 1];
             for (int layer = 0; layer <= level; layer++)
@@ -116,10 +182,11 @@ public static class IndexPersistence
                     connections[layer].Add(reader.ReadInt32());
             }
 
-            nodes.Add(new HnswNodeSnapshot(docId, vector, level, isDeleted, connections));
+            nodes.Add(new HnswNodeSnapshot(docId, vector, level, isDeleted, connections, qvec));
         }
 
-        index.LoadSnapshot(new HnswSnapshot(nodes, entryPoint, maxLayer));
+        index.LoadSnapshot(new HnswSnapshot(nodes, entryPoint, maxLayer,
+            quantize, int8Cal, int4Cal, calibrated, dimension));
     }
 
     public static bool HasHnswIndex(string indexPath)
@@ -158,18 +225,21 @@ public static class IndexPersistence
 public sealed class HnswNodeSnapshot
 {
     public long DocId { get; }
-    public float[] Vector { get; }
+    public float[]? Vector { get; }
     public int Level { get; }
     public bool IsDeleted { get; }
+    public byte[]? QuantizedVector { get; }
     private readonly List<int>[] _connections;
 
-    public HnswNodeSnapshot(long docId, float[] vector, int level, bool isDeleted, List<int>[] connections)
+    public HnswNodeSnapshot(long docId, float[]? vector, int level, bool isDeleted,
+                            List<int>[] connections, byte[]? quantizedVector = null)
     {
         DocId = docId;
         Vector = vector;
         Level = level;
         IsDeleted = isDeleted;
         _connections = connections;
+        QuantizedVector = quantizedVector;
     }
 
     public List<int> GetConnections(int layer) =>
@@ -182,12 +252,26 @@ public sealed class HnswSnapshot
     public IReadOnlyList<HnswNodeSnapshot> Nodes { get; }
     public int EntryPoint { get; }
     public int MaxLayer { get; }
+    public QuantizeType Quantize { get; }
+    public Quantization.Int8Calibration Int8Cal { get; }
+    public Quantization.Int4Calibration Int4Cal { get; }
+    public bool Calibrated { get; }
+    public int Dimension { get; }
 
-    public HnswSnapshot(IReadOnlyList<HnswNodeSnapshot> nodes, int entryPoint, int maxLayer)
+    public HnswSnapshot(IReadOnlyList<HnswNodeSnapshot> nodes, int entryPoint, int maxLayer,
+        QuantizeType quantize = QuantizeType.Undefined,
+        Quantization.Int8Calibration int8Cal = default,
+        Quantization.Int4Calibration int4Cal = default,
+        bool calibrated = false, int dimension = 0)
     {
         Nodes = nodes;
         EntryPoint = entryPoint;
         MaxLayer = maxLayer;
+        Quantize = quantize;
+        Int8Cal = int8Cal;
+        Int4Cal = int4Cal;
+        Calibrated = calibrated;
+        Dimension = dimension;
     }
 }
 
@@ -197,12 +281,21 @@ public sealed class IvfSnapshot
     public float[][] Centroids { get; set; } = [];
     public List<IvfEntry>[] Lists { get; set; } = [];
     public bool Trained { get; set; }
+
+    // Quantization state
+    public float Int8CalMin { get; set; }
+    public float Int8CalMax { get; set; }
+    public float Int4CalMin { get; set; }
+    public float Int4CalMax { get; set; }
+    public bool QCalibrated { get; set; }
+    public int Dimension { get; set; }
 }
 
 public sealed class IvfEntry
 {
     public long DocId { get; set; }
     public float[] Vector { get; set; } = [];
+    public byte[]? QVec { get; set; }
 }
 
 [System.Text.Json.Serialization.JsonSerializable(typeof(IvfSnapshot))]

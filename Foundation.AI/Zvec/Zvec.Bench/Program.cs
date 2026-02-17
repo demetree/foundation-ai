@@ -1,16 +1,16 @@
 // Copyright 2025-present the zvec project — Pure C# Engine
 // Benchmark suite — measures insert throughput, query latency, memory, and quantization
-
 using System.Diagnostics;
 using Foundation.AI.Zvec;
 using Foundation.AI.Zvec.Engine.Math;
 
-namespace Foundation.AI.Zvec;
+namespace Foundation.AI;
 
 internal class Program
 {
     static void Main()
     {
+
         const int DIM = 128;
         const int DOC_COUNT = 10_000;
         const int QUERY_COUNT = 100;

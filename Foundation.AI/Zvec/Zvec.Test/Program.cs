@@ -1,9 +1,10 @@
-namespace Foundation.AI.Zvec;
+using Foundation.AI.Zvec;
 
 internal class Program
 {
     static void Main()
     {
+
         Console.WriteLine("=== Zvec C# Binding Test ===\n");
 
         string testPath = Path.Combine(Path.GetTempPath(), "zvec_test_collection");

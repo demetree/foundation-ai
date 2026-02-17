@@ -95,6 +95,8 @@ public sealed class HnswIndex : IVectorIndex
         try
         {
             int nodeIdx = _nodes.Count;
+            // For quantized indexes, node.Vector is only needed until
+            // calibration is stable; DropOriginalVectors() can free it.
             var node = new HnswNode(docId, vecCopy, nodeLevel, quantizedData);
             _nodes.Add(node);
             _docIdMap[docId] = nodeIdx;
@@ -129,7 +131,7 @@ public sealed class HnswIndex : IVectorIndex
 
                     // Shrink neighbor connections if over limit
                     int maxConn = layer == 0 ? _m0 : _m;
-                    PruneConnections(_nodes[nIdx], layer, maxConn, vecCopy);
+                    PruneConnections(_nodes[nIdx], layer, maxConn);
                 }
 
                 if (candidates.Count > 0)
@@ -251,8 +253,7 @@ public sealed class HnswIndex : IVectorIndex
                         _nodes[candidateIdx].AddConnection(layer, nIdx);
 
                         // Prune if needed
-                        PruneConnections(_nodes[candidateIdx], layer, maxConn,
-                            _nodes[candidateIdx].Vector);
+                        PruneConnections(_nodes[candidateIdx], layer, maxConn);
 
                         if (_nodes[nIdx].GetConnections(layer).Count >= maxConn)
                             break;
@@ -338,12 +339,10 @@ public sealed class HnswIndex : IVectorIndex
 
                 float nDist = DistanceToNode(query, _nodes[nIdx]);
 
-                // Skip deleted nodes as candidates but still traverse through them
+                // Deleted nodes: still traverse through them but don't add to results
                 if (_nodes[nIdx].IsDeleted)
                 {
-                    // Still add to candidates for graph traversal
-                    if (!visited.Contains(nIdx))
-                        candidates.Add((nDist, nIdx));
+                    candidates.Add((nDist, nIdx));
                     continue;
                 }
 
@@ -419,8 +418,7 @@ public sealed class HnswIndex : IVectorIndex
     /// Prune a node's connections if they exceed the maximum.
     /// Keeps the best connections by distance.
     /// </summary>
-    private void PruneConnections(HnswNode node, int layer, int maxConn,
-                                   ReadOnlySpan<float> _)
+    private void PruneConnections(HnswNode node, int layer, int maxConn)
     {
         var connections = node.GetConnections(layer);
         if (connections.Count <= maxConn) return;
@@ -429,7 +427,7 @@ public sealed class HnswIndex : IVectorIndex
         var scored = new List<(int Idx, float Dist)>(connections.Count);
         foreach (int nIdx in connections)
         {
-            float d = Distance(node.Vector, _nodes[nIdx].Vector);
+            float d = DistanceBetweenNodes(node, _nodes[nIdx]);
             scored.Add((nIdx, d));
         }
 
@@ -509,7 +507,26 @@ public sealed class HnswIndex : IVectorIndex
             var decompressed = DecompressVector(node.QuantizedVector);
             return _distFunc(query, decompressed);
         }
-        return _distFunc(query, node.Vector);
+        if (node.Vector != null)
+            return _distFunc(query, node.Vector);
+        throw new InvalidOperationException(
+            "Node has no vector data — was DropOriginalVectors called without quantization?");
+    }
+
+    /// <summary>
+    /// Distance between two stored nodes, using quantized data if available.
+    /// Used by PruneConnections where both sides are stored nodes.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float DistanceBetweenNodes(HnswNode a, HnswNode b)
+    {
+        // Prefer original FP32 for pruning accuracy if available
+        if (a.Vector != null && b.Vector != null)
+            return _distFunc(a.Vector, b.Vector);
+        // Fall back to decompression
+        ReadOnlySpan<float> aVec = a.Vector ?? DecompressVector(a.QuantizedVector!);
+        ReadOnlySpan<float> bVec = b.Vector ?? DecompressVector(b.QuantizedVector!);
+        return _distFunc(aVec, bVec);
     }
 
     // ====================================================================
@@ -544,7 +561,11 @@ public sealed class HnswIndex : IVectorIndex
         _lock.EnterWriteLock();
         try
         {
-            var allVectors = _nodes.Where(n => !n.IsDeleted).Select(n => n.Vector);
+            // Need original vectors to recalibrate — skip if already dropped
+            var withVectors = _nodes.Where(n => !n.IsDeleted && n.Vector != null).ToList();
+            if (withVectors.Count == 0) return;
+
+            var allVectors = withVectors.Select(n => n.Vector!);
             switch (_quantize)
             {
                 case QuantizeType.Int8:
@@ -558,11 +579,37 @@ public sealed class HnswIndex : IVectorIndex
             // Re-quantize all existing nodes with new calibration
             foreach (var node in _nodes)
             {
-                if (node.IsDeleted) continue;
+                if (node.IsDeleted || node.Vector == null) continue;
                 node.QuantizedVector = QuantizeVector(node.Vector);
             }
 
             _calibrated = true;
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
+
+    /// <summary>
+    /// Drop original FP32 vectors from all nodes to reclaim memory.
+    /// Only safe to call after Recalibrate() when calibration is stable.
+    /// After this, search uses quantized vectors only. Graph-building
+    /// operations (new inserts) still work — new nodes store their own FP32
+    /// until the next Recalibrate + DropOriginalVectors cycle.
+    /// </summary>
+    public void DropOriginalVectors()
+    {
+        if (_quantize == QuantizeType.Undefined) return;
+
+        _lock.EnterWriteLock();
+        try
+        {
+            foreach (var node in _nodes)
+            {
+                if (node.QuantizedVector != null)
+                    node.ClearVector();
+            }
         }
         finally
         {
@@ -622,9 +669,11 @@ public sealed class HnswIndex : IVectorIndex
                     connections[layer] = new List<int>(node.GetConnections(layer));
 
                 nodeSnapshots.Add(new HnswNodeSnapshot(
-                    node.DocId, node.Vector, node.Level, node.IsDeleted, connections));
+                    node.DocId, node.Vector, node.Level, node.IsDeleted,
+                    connections, node.QuantizedVector));
             }
-            return new HnswSnapshot(nodeSnapshots, _entryPoint, _maxLayerReached);
+            return new HnswSnapshot(nodeSnapshots, _entryPoint, _maxLayerReached,
+                _quantize, _int8Cal, _int4Cal, _calibrated, _dimension);
         }
         finally
         {
@@ -641,9 +690,16 @@ public sealed class HnswIndex : IVectorIndex
             _nodes.Clear();
             _docIdMap.Clear();
 
+            // Restore quantization state
+            _int8Cal = snapshot.Int8Cal;
+            _int4Cal = snapshot.Int4Cal;
+            _calibrated = snapshot.Calibrated;
+            if (snapshot.Dimension > 0)
+                _dimension = snapshot.Dimension;
+
             foreach (var ns in snapshot.Nodes)
             {
-                var node = new HnswNode(ns.DocId, ns.Vector, ns.Level);
+                var node = new HnswNode(ns.DocId, ns.Vector, ns.Level, ns.QuantizedVector);
 
                 // Restore connections
                 for (int layer = 0; layer <= ns.Level; layer++)
@@ -688,15 +744,15 @@ public sealed class HnswIndex : IVectorIndex
 internal sealed class HnswNode
 {
     public readonly long DocId;
-    public readonly float[] Vector;       // FP32 original (kept for graph building + recalibration)
-    public byte[]? QuantizedVector;        // compressed storage (FP16/INT8/INT4)
+    public float[]? Vector;                // FP32 original — nullable after DropOriginalVectors()
+    public byte[]? QuantizedVector;         // compressed storage (FP16/INT8/INT4)
     public readonly int Level;
     public bool IsDeleted { get; private set; }
 
     // connections[layer] = list of neighbor node indices
     private readonly List<int>[] _connections;
 
-    public HnswNode(long docId, float[] vector, int level, byte[]? quantizedVector = null)
+    public HnswNode(long docId, float[]? vector, int level, byte[]? quantizedVector = null)
     {
         DocId = docId;
         Vector = vector;
@@ -706,6 +762,9 @@ internal sealed class HnswNode
         for (int i = 0; i <= level; i++)
             _connections[i] = [];
     }
+
+    /// <summary>Clear the FP32 vector to free memory. Only safe when QuantizedVector is set.</summary>
+    public void ClearVector() => Vector = null;
 
     public void MarkDeleted() => IsDeleted = true;
 

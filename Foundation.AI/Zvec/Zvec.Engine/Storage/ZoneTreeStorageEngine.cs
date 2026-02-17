@@ -27,6 +27,7 @@ public sealed class ZoneTreeStorageEngine : IStorageEngine
     private readonly IZoneTree<string, long> _pkTree;
     private readonly IMaintainer _docMaintainer;
     private readonly IMaintainer _pkMaintainer;
+    private long _docCount;  // O(1) document count
 
     public ZoneTreeStorageEngine(string dataPath)
     {
@@ -50,12 +51,27 @@ public sealed class ZoneTreeStorageEngine : IStorageEngine
 
         _docMaintainer = _docTree.CreateMaintainer();
         _pkMaintainer = _pkTree.CreateMaintainer();
+
+        // Initialize count by scanning once at startup
+        _docCount = CountKeys();
+    }
+
+    private long CountKeys()
+    {
+        long count = 0;
+        using var iter = _docTree.CreateIterator();
+        iter.SeekFirst();
+        while (iter.Next())
+            count++;
+        return count;
     }
 
     public void Put(long docId, Document doc)
     {
+        bool isNew = !_docTree.ContainsKey(docId);
         var bytes = SerializeDocument(doc);
         _docTree.Upsert(docId, bytes);
+        if (isNew) Interlocked.Increment(ref _docCount);
     }
 
     public Document? Get(long docId)
@@ -68,6 +84,7 @@ public sealed class ZoneTreeStorageEngine : IStorageEngine
     public void Delete(long docId)
     {
         _docTree.ForceDelete(docId);
+        Interlocked.Decrement(ref _docCount);
     }
 
     public void MapPrimaryKey(string pk, long docId)
@@ -93,18 +110,7 @@ public sealed class ZoneTreeStorageEngine : IStorageEngine
         _pkMaintainer.EvictToDisk();
     }
 
-    public long DocumentCount
-    {
-        get
-        {
-            long count = 0;
-            using var iter = _docTree.CreateIterator();
-            iter.SeekFirst();
-            while (iter.Next())
-                count++;
-            return count;
-        }
-    }
+    public long DocumentCount => Interlocked.Read(ref _docCount);
 
     public IEnumerable<long> AllDocIds()
     {
