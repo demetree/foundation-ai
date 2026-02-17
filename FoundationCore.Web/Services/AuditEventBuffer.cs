@@ -89,6 +89,13 @@ namespace Foundation.Web.Services
         private const int MaxInitRetries = 3;
         private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(500);
 
+        //
+        // Operation-level lock to serialize all DbContext access.
+        // EF Core DbContext is not thread-safe, and this buffer is a singleton,
+        // so concurrent callers must be serialized.
+        //
+        private readonly SemaphoreSlim _opLock = new SemaphoreSlim(1, 1);
+
         public AuditEventBuffer(ILogger<AuditEventBuffer> logger)
         {
             _logger = logger;
@@ -151,6 +158,7 @@ namespace Foundation.Web.Services
         /// <inheritdoc/>
         public async Task BufferEventAsync(AuditEngine.EventDetails e)
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -185,6 +193,10 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to buffer audit event locally.");
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
@@ -193,6 +205,7 @@ namespace Foundation.Web.Services
         {
             var drained = new List<LocalAuditEventRecord>();
 
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -211,6 +224,10 @@ namespace Foundation.Web.Services
             {
                 _logger.LogError(ex, "Failed to drain audit event batch from local buffer.");
             }
+            finally
+            {
+                _opLock.Release();
+            }
 
             return drained;
         }
@@ -219,6 +236,7 @@ namespace Foundation.Web.Services
         /// <inheritdoc/>
         public async Task<int> GetPendingCountAsync()
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -229,11 +247,16 @@ namespace Foundation.Web.Services
                 _logger.LogWarning(ex, "Failed to get pending count from audit event buffer.");
                 return -1;
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         public void Dispose()
         {
+            _opLock?.Dispose();
             _db?.Dispose();
         }
     }

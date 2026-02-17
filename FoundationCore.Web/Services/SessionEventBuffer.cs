@@ -114,6 +114,13 @@ namespace Foundation.Web.Services
         private const int MaxInitRetries = 3;
         private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(500);
 
+        //
+        // Operation-level lock to serialize all DbContext access.
+        // EF Core DbContext is not thread-safe, and this buffer is a singleton,
+        // so concurrent callers must be serialized.
+        //
+        private readonly SemaphoreSlim _opLock = new SemaphoreSlim(1, 1);
+
         public SessionEventBuffer(ILogger<SessionEventBuffer> logger)
         {
             _logger = logger;
@@ -176,6 +183,7 @@ namespace Foundation.Web.Services
         /// <inheritdoc/>
         public async Task CacheSessionAsync(SessionInfo info, int sessionId)
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -201,12 +209,17 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to cache session {SessionId} locally.", sessionId);
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         /// <inheritdoc/>
         public async Task<bool?> IsSessionValidLocallyAsync(int sessionId)
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -235,6 +248,10 @@ namespace Foundation.Web.Services
                     sessionId);
                 return null; // Fall through to SQL Server on error
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
@@ -244,6 +261,7 @@ namespace Foundation.Web.Services
             if (string.IsNullOrEmpty(tokenId))
                 return null;
 
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -275,12 +293,17 @@ namespace Foundation.Web.Services
                 _logger.LogWarning(ex, "Local session validity check by token failed. Falling through to SQL.");
                 return null;
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         /// <inheritdoc/>
         public async Task RevokeLocalSessionAsync(int sessionId)
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -300,12 +323,17 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to locally revoke session {SessionId}.", sessionId);
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         /// <inheritdoc/>
         public async Task RevokeAllUserSessionsLocallyAsync(int securityUserId)
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -330,12 +358,17 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to locally revoke sessions for user {UserId}.", securityUserId);
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         /// <inheritdoc/>
         public async Task UpdateCachedValidityAsync(int sessionId, bool isValid)
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -366,6 +399,10 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to update cached validity for session {SessionId}.", sessionId);
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
@@ -375,6 +412,7 @@ namespace Foundation.Web.Services
             if (string.IsNullOrEmpty(tokenId))
                 return;
 
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -397,12 +435,17 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to update cached validity by token.");
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         /// <inheritdoc/>
         public async Task CleanupExpiredSessionsAsync()
         {
+            await _opLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 var db = await GetDatabaseAsync().ConfigureAwait(false);
@@ -429,11 +472,16 @@ namespace Foundation.Web.Services
             {
                 _logger.LogWarning(ex, "Failed to clean up expired sessions from local cache.");
             }
+            finally
+            {
+                _opLock.Release();
+            }
         }
 
 
         public void Dispose()
         {
+            _opLock?.Dispose();
             _db?.Dispose();
         }
     }
