@@ -1,9 +1,34 @@
 <nav class="bmc-navbar">
     <div class="navbar-left">
         <a class="navbar-brand" routerLink="/dashboard">
-            <span class="brand-icon">
-                <i class="fas fa-cubes"></i>
-            </span>
+            <!-- Isometric brick stack logo — theme-aware via CSS custom properties -->
+            <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 40" aria-hidden="true">
+                <g transform="translate(18, 22)">
+                    <!-- BASE: 2x4 Brick (Bottom) -->
+                    <path d="M-8,4 L0,8 L8,4 L0,0 Z" class="brick-top-face" />
+                    <path d="M-8,4 L0,8 L0,14.4 L-8,10.4 Z" class="brick-left-face" />
+                    <path d="M8,4 L0,8 L0,14.4 L8,10.4 Z" class="brick-right-face" />
+                    <!-- Studs on Base -->
+                    <ellipse cx="-4" cy="4" rx="1.2" ry="0.8" class="brick-stud" />
+                    <ellipse cx="4" cy="4" rx="1.2" ry="0.8" class="brick-stud" />
+
+                    <!-- MIDDLE: 2x2 Brick (Left side, stacked) -->
+                    <g transform="translate(-4, -4.8)">
+                        <path d="M-4,2 L0,4 L4,2 L0,0 Z" class="brick-top-face" />
+                        <path d="M-4,2 L0,4 L0,9.6 L-4,7.6 Z" class="brick-left-face" />
+                        <path d="M4,2 L0,4 L0,9.6 L4,7.6 Z" class="brick-right-face" />
+                        <ellipse cx="0" cy="2" rx="1.2" ry="0.8" class="brick-stud" />
+                    </g>
+
+                    <!-- TOP: 2x2 Brick (Stepped up on top of middle) -->
+                    <g transform="translate(-4, -9.6)">
+                        <path d="M-4,2 L0,4 L4,2 L0,0 Z" class="brick-top-face" />
+                        <path d="M-4,2 L0,4 L0,9.6 L-4,7.6 Z" class="brick-left-face" />
+                        <path d="M4,2 L0,4 L0,9.6 L4,7.6 Z" class="brick-right-face" />
+                        <ellipse cx="0" cy="2" rx="1.2" ry="0.8" class="brick-stud" />
+                    </g>
+                </g>
+            </svg>
             <span class="brand-text">BMC</span>
             <span class="brand-sub">Brick Machine Construction</span>
         </a>

@@ -21,6 +21,12 @@ body[data-theme="default"] {
     --bmc-accent: #e65100;
     --bmc-accent-light: #ff6d00;
 
+    // Isometric brick logo fills — lighter slate for dark backgrounds
+    --bmc-brick-face: #4A5D6A;
+    --bmc-brick-shadow: #354550;
+    --bmc-brick-light: #5A7080;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.3);
+
     // Surface Colors
     --bmc-bg-deep: #0f0a04;
     --bmc-bg-dark: #1a1005;
@@ -114,6 +120,12 @@ body[data-theme="miami-vice"] {
     --bmc-primary-light: #ffb3e0;
     --bmc-accent: #ff8a00;
     --bmc-accent-light: #ffab40;
+
+    // Isometric brick logo fills — purple-tinted slate for Miami Vice
+    --bmc-brick-face: #5A4A6A;
+    --bmc-brick-shadow: #453558;
+    --bmc-brick-light: #6A5A7A;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.3);
 
     // Surface Colors — deep purple base
     --bmc-bg-deep: #1a0a2e;
@@ -211,6 +223,12 @@ body[data-theme="matrix"] {
     --bmc-primary-light: #b5ffcc;
     --bmc-accent: #00ff41;
     --bmc-accent-light: #33ff77;
+
+    // Isometric brick logo fills — green-tinted slate for Matrix
+    --bmc-brick-face: #3A5A3A;
+    --bmc-brick-shadow: #2A4A2A;
+    --bmc-brick-light: #4A6A4A;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.3);
 
     // Surface Colors — deep black / dark green tint
     --bmc-bg-deep: #0a0a0a;

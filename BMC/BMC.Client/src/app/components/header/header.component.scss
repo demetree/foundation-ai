@@ -33,20 +33,40 @@
     }
 }
 
-.brand-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    background: linear-gradient(135deg, var(--bmc-primary-dark), var(--bmc-primary));
-    border-radius: 8px;
-    color: #fff;
-    font-size: 16px;
-    box-shadow: var(--bmc-btn-shadow);
+/* Isometric brick stack SVG logo — theme-aware fills */
+.brand-logo {
+    width: 32px;
+    height: 36px;
+    flex-shrink: 0;
+
+    .brick-top-face {
+        fill: var(--bmc-brick-face, #4A5D6A);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
+
+    .brick-left-face {
+        fill: var(--bmc-brick-shadow, #354550);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
+
+    .brick-right-face {
+        fill: var(--bmc-brick-light, #5A7080);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
+
+    .brick-stud {
+        fill: var(--bmc-primary);
+    }
 }
 
 .brand-text {
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);

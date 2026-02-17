@@ -26,36 +26,44 @@
     margin-bottom: 36px;
 }
 
-.brand-brick-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
+/* Isometric hero mark SVG — theme-aware fills */
+.brand-logo-hero {
+    width: 120px;
+    height: 120px;
     margin-bottom: 20px;
-}
 
-.brick {
-    height: 14px;
-    border-radius: 3px;
-}
+    .brick-top-face {
+        fill: var(--bmc-brick-face, #4A5D6A);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
 
-.brick-1 {
-    width: 44px;
-    background: linear-gradient(135deg, var(--bmc-accent) 0%, var(--bmc-accent-light) 100%);
-}
+    .brick-left-face {
+        fill: var(--bmc-brick-shadow, #354550);
+    }
 
-.brick-2 {
-    width: 38px;
-    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
-    margin-left: 6px;
-}
+    .brick-right-face {
+        fill: var(--bmc-brick-light, #5A7080);
+    }
 
-.brick-3 {
-    width: 44px;
-    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
+    .brick-stud {
+        fill: var(--bmc-primary);
+    }
+
+    .gloss-start {
+        stop-color: var(--bmc-primary-light);
+        stop-opacity: 0.8;
+    }
+
+    .gloss-end {
+        stop-color: var(--bmc-primary);
+        stop-opacity: 0;
+    }
 }
 
 .brand-title {
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
     font-size: 1.8rem;
     font-weight: 800;
     background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
