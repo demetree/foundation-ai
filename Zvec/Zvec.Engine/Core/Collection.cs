@@ -67,14 +67,16 @@ public sealed class Collection : IDisposable
     {
         int m = config?.M > 0 ? config.M : 16;
         int efConstruction = config?.EfConstruction > 0 ? config.EfConstruction : 200;
-        return new HnswIndex(metric, m, efConstruction);
+        var quantize = config?.Quantize ?? QuantizeType.Undefined;
+        return new HnswIndex(metric, m, efConstruction, quantize);
     }
 
     private static IVectorIndex CreateIvfIndex(MetricType metric, IndexConfig? config)
     {
         int nlist = config?.Nlist > 0 ? config.Nlist : 128;
         int nprobe = config?.Nprobe > 0 ? config.Nprobe : 8;
-        return new IvfIndex(metric, nlist, nprobe);
+        var quantize = config?.Quantize ?? QuantizeType.Undefined;
+        return new IvfIndex(metric, nlist, nprobe, quantize);
     }
 
     // =========================================================================
@@ -128,21 +130,49 @@ public sealed class Collection : IDisposable
         var collection = new Collection(path, schema, opts, storage);
         collection._nextDocId = metadata.NextDocId;
 
-        // Rebuild vector indexes from stored documents
-        foreach (var docId in storage.AllDocIds())
+        // Try to load persisted indexes first (much faster than rebuild)
+        bool indexesLoaded = false;
+        foreach (var (fieldName, index) in collection._vectorIndexes)
         {
-            var doc = storage.Get(docId);
-            if (doc == null) continue;
-
-            foreach (var (fieldName, vector) in doc.Vectors)
+            if (index is HnswIndex hnsw && IndexPersistence.HasHnswIndex(path))
             {
-                if (collection._vectorIndexes.TryGetValue(fieldName, out var index))
-                    index.Add(docId, vector);
+                IndexPersistence.LoadHnsw(path, hnsw);
+                indexesLoaded = true;
             }
+            else if (index is IvfIndex ivf && IndexPersistence.HasIvfIndex(path))
+            {
+                IndexPersistence.LoadIvf(path, ivf);
+                indexesLoaded = true;
+            }
+        }
 
-            // Track the highest docId for ID generation
-            if (docId > collection._nextDocId)
-                collection._nextDocId = docId;
+        // Fallback: rebuild indexes from stored documents if no persisted index
+        if (!indexesLoaded)
+        {
+            foreach (var docId in storage.AllDocIds())
+            {
+                var doc = storage.Get(docId);
+                if (doc == null) continue;
+
+                foreach (var (fieldName, vector) in doc.Vectors)
+                {
+                    if (collection._vectorIndexes.TryGetValue(fieldName, out var index))
+                        index.Add(docId, vector);
+                }
+
+                // Track the highest docId for ID generation
+                if (docId > collection._nextDocId)
+                    collection._nextDocId = docId;
+            }
+        }
+        else
+        {
+            // Still need to track max docId
+            foreach (var docId in storage.AllDocIds())
+            {
+                if (docId > collection._nextDocId)
+                    collection._nextDocId = docId;
+            }
         }
 
         return collection;
@@ -463,6 +493,16 @@ public sealed class Collection : IDisposable
     public void Flush()
     {
         _storage.Flush();
+
+        // Persist vector indexes
+        foreach (var (_, index) in _vectorIndexes)
+        {
+            if (index is HnswIndex hnsw)
+                IndexPersistence.SaveHnsw(_path, hnsw);
+            else if (index is IvfIndex ivf)
+                IndexPersistence.SaveIvf(_path, ivf);
+        }
+
         // Update metadata with current state
         MetadataPersistence.Save(_path,
             MetadataPersistence.FromSchema(_schema, _nextDocId));
@@ -476,9 +516,12 @@ public sealed class Collection : IDisposable
         {
             foreach (var (_, index) in _vectorIndexes)
             {
-                // Train IVF indexes that haven't been trained yet
                 if (index is IvfIndex ivf)
                     ivf.Train();
+
+                // Recalibrate quantization with global min/max
+                if (index is HnswIndex hnsw)
+                    hnsw.Recalibrate();
             }
         }
         finally

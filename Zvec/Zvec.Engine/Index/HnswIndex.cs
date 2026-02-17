@@ -28,6 +28,13 @@ public sealed class HnswIndex : IVectorIndex
     private readonly Func<ReadOnlySpan<float>, ReadOnlySpan<float>, float> _distFunc;
     private readonly bool _lowerIsBetter;
 
+    // ── Quantization ────────────────────────────────────────────────────
+    private readonly QuantizeType _quantize;
+    private Quantization.Int8Calibration _int8Cal;
+    private Quantization.Int4Calibration _int4Cal;
+    private bool _calibrated;
+    private int _dimension;  // cached dimension for decompression
+
     // ── Graph storage ───────────────────────────────────────────────────
     private readonly List<HnswNode> _nodes = [];       // dense node list
     private readonly Dictionary<long, int> _docIdMap = []; // docId → node index
@@ -38,20 +45,24 @@ public sealed class HnswIndex : IVectorIndex
 
     public IndexType Type => IndexType.Hnsw;
     public int Count => _nodes.Count;
+    public QuantizeType Quantize => _quantize;
+    internal Quantization.Int8Calibration Int8Cal => _int8Cal;
+    internal Quantization.Int4Calibration Int4Cal => _int4Cal;
+    internal bool IsCalibrated => _calibrated;
+    internal int Dimension => _dimension;
 
     /// <summary>
     /// Create a new HNSW index.
     /// </summary>
-    /// <param name="metric">Distance metric type.</param>
-    /// <param name="m">Max connections per layer (default 16).</param>
-    /// <param name="efConstruction">Build-time beam width (default 200).</param>
-    public HnswIndex(MetricType metric, int m = 16, int efConstruction = 200)
+    public HnswIndex(MetricType metric, int m = 16, int efConstruction = 200,
+                     QuantizeType quantize = QuantizeType.Undefined)
     {
         _m = m <= 0 ? 16 : m;
         _m0 = _m * 2;
         _efConstruction = efConstruction <= 0 ? 200 : efConstruction;
         _levelMult = 1.0 / System.Math.Log(_m);
         _maxLevel = 30; // practical ceiling
+        _quantize = quantize;
 
         _distFunc = DistanceFunction.Get(metric);
         _lowerIsBetter = DistanceFunction.IsLowerBetter(metric);
@@ -64,13 +75,27 @@ public sealed class HnswIndex : IVectorIndex
     public void Add(long docId, ReadOnlySpan<float> vector)
     {
         var vecCopy = vector.ToArray();
+        if (_dimension == 0) _dimension = vecCopy.Length;
+
+        // Quantize if configured
+        byte[]? quantizedData = null;
+        if (_quantize != QuantizeType.Undefined)
+        {
+            // Auto-calibrate from first batch of vectors (or recalibrate later)
+            if (!_calibrated)
+            {
+                CalibrateFromVector(vecCopy);
+            }
+            quantizedData = QuantizeVector(vecCopy);
+        }
+
         int nodeLevel = RandomLevel();
 
         _lock.EnterWriteLock();
         try
         {
             int nodeIdx = _nodes.Count;
-            var node = new HnswNode(docId, vecCopy, nodeLevel);
+            var node = new HnswNode(docId, vecCopy, nodeLevel, quantizedData);
             _nodes.Add(node);
             _docIdMap[docId] = nodeIdx;
 
@@ -188,13 +213,74 @@ public sealed class HnswIndex : IVectorIndex
 
     public void Remove(long docId)
     {
-        // HNSW doesn't support true deletion without rebuild.
-        // We mark for exclusion; the caller tracks deleted IDs.
-        // For correctness, we remove from the docId map.
         _lock.EnterWriteLock();
         try
         {
+            if (!_docIdMap.TryGetValue(docId, out int nodeIdx))
+                return;
+
             _docIdMap.Remove(docId);
+            var node = _nodes[nodeIdx];
+
+            // Repair connections: for each layer, reconnect neighbors to each other
+            for (int layer = 0; layer <= node.Level; layer++)
+            {
+                var neighbors = node.GetConnections(layer);
+
+                // Remove deleted node from each neighbor's connection list
+                foreach (int nIdx in neighbors)
+                {
+                    _nodes[nIdx].RemoveConnection(layer, nodeIdx);
+                }
+
+                // Reconnect orphaned neighbors: for each neighbor, find new
+                // connections from among the deleted node's other neighbors
+                int maxConn = layer == 0 ? _m0 : _m;
+                foreach (int nIdx in neighbors)
+                {
+                    var nConns = _nodes[nIdx].GetConnections(layer);
+                    if (nConns.Count >= maxConn) continue;
+
+                    // Try to connect this neighbor to the deleted node's other neighbors
+                    foreach (int candidateIdx in neighbors)
+                    {
+                        if (candidateIdx == nIdx) continue;
+                        if (nConns.Contains(candidateIdx)) continue;
+
+                        _nodes[nIdx].AddConnection(layer, candidateIdx);
+                        _nodes[candidateIdx].AddConnection(layer, nIdx);
+
+                        // Prune if needed
+                        PruneConnections(_nodes[candidateIdx], layer, maxConn,
+                            _nodes[candidateIdx].Vector);
+
+                        if (_nodes[nIdx].GetConnections(layer).Count >= maxConn)
+                            break;
+                    }
+                }
+
+                // Clear deleted node's connections
+                node.SetConnections(layer, []);
+            }
+
+            // Mark node as deleted (vector is kept for index stability)
+            node.MarkDeleted();
+
+            // If we deleted the entry point, find a new one
+            if (nodeIdx == _entryPoint)
+            {
+                _entryPoint = -1;
+                int bestLevel = -1;
+                foreach (var (_, idx) in _docIdMap)
+                {
+                    if (_nodes[idx].Level > bestLevel)
+                    {
+                        bestLevel = _nodes[idx].Level;
+                        _entryPoint = idx;
+                        _maxLayerReached = bestLevel;
+                    }
+                }
+            }
         }
         finally
         {
@@ -213,7 +299,7 @@ public sealed class HnswIndex : IVectorIndex
     private List<(int NodeIdx, float Dist)> SearchLayer(
         ReadOnlySpan<float> query, int entryIdx, int ef, int layer)
     {
-        float entryDist = Distance(query, _nodes[entryIdx].Vector);
+        float entryDist = DistanceToNode(query, _nodes[entryIdx]);
 
         // candidates: best-first (sorted ascending for lower-is-better)
         var candidates = new SortedSet<(float Dist, int Idx)>(
@@ -250,7 +336,17 @@ public sealed class HnswIndex : IVectorIndex
             {
                 if (!visited.Add(nIdx)) continue;
 
-                float nDist = Distance(query, _nodes[nIdx].Vector);
+                float nDist = DistanceToNode(query, _nodes[nIdx]);
+
+                // Skip deleted nodes as candidates but still traverse through them
+                if (_nodes[nIdx].IsDeleted)
+                {
+                    // Still add to candidates for graph traversal
+                    if (!visited.Contains(nIdx))
+                        candidates.Add((nDist, nIdx));
+                    continue;
+                }
+
                 var worstResult = _lowerIsBetter ? result.Max : result.Min;
 
                 if (result.Count < ef ||
@@ -284,7 +380,7 @@ public sealed class HnswIndex : IVectorIndex
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int GreedyClosest(ReadOnlySpan<float> query, int epIdx, int layer)
     {
-        float bestDist = Distance(query, _nodes[epIdx].Vector);
+        float bestDist = DistanceToNode(query, _nodes[epIdx]);
         bool changed = true;
 
         while (changed)
@@ -292,7 +388,7 @@ public sealed class HnswIndex : IVectorIndex
             changed = false;
             foreach (int nIdx in _nodes[epIdx].GetConnections(layer))
             {
-                float d = Distance(query, _nodes[nIdx].Vector);
+                float d = DistanceToNode(query, _nodes[nIdx]);
                 if (IsBetter(d, bestDist))
                 {
                     bestDist = d;
@@ -362,10 +458,11 @@ public sealed class HnswIndex : IVectorIndex
 
         foreach (var node in _nodes)
         {
+            if (node.IsDeleted) continue;
             if (deletedFilter != null && deletedFilter.Contains(node.DocId))
                 continue;
 
-            float dist = Distance(query, node.Vector);
+            float dist = DistanceToNode(query, node);
             if (heap.Count < topk)
                 heap.Enqueue(node.DocId, dist);
             else
@@ -402,9 +499,177 @@ public sealed class HnswIndex : IVectorIndex
     private float Distance(ReadOnlySpan<float> a, ReadOnlySpan<float> b)
         => _distFunc(a, b);
 
+    /// <summary>Compute distance between query and a node, decompressing quantized data if needed.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float DistanceToNode(ReadOnlySpan<float> query, HnswNode node)
+    {
+        if (node.QuantizedVector != null && _quantize != QuantizeType.Undefined)
+        {
+            // ADC: decompress stored vector, compute distance against FP32 query
+            var decompressed = DecompressVector(node.QuantizedVector);
+            return _distFunc(query, decompressed);
+        }
+        return _distFunc(query, node.Vector);
+    }
+
+    // ====================================================================
+    // Quantization helpers
+    // ====================================================================
+
+    private void CalibrateFromVector(float[] vector)
+    {
+        // Simple calibration from first vector — will be refined on Recalibrate()
+        switch (_quantize)
+        {
+            case QuantizeType.Int8:
+                _int8Cal = Quantization.CalibrateInt8(vector);
+                _calibrated = true;
+                break;
+            case QuantizeType.Int4:
+                _int4Cal = Quantization.CalibrateInt4(vector);
+                _calibrated = true;
+                break;
+            case QuantizeType.FP16:
+                _calibrated = true; // FP16 doesn't need calibration
+                break;
+        }
+    }
+
+    /// <summary>Recalibrate quantization using all current vectors. Call during Optimize.</summary>
+    public void Recalibrate()
+    {
+        if (_quantize == QuantizeType.Undefined
+            || _quantize == QuantizeType.FP16) return;
+
+        _lock.EnterWriteLock();
+        try
+        {
+            var allVectors = _nodes.Where(n => !n.IsDeleted).Select(n => n.Vector);
+            switch (_quantize)
+            {
+                case QuantizeType.Int8:
+                    _int8Cal = Quantization.CalibrateInt8Batch(allVectors);
+                    break;
+                case QuantizeType.Int4:
+                    _int4Cal = Quantization.CalibrateInt4Batch(allVectors);
+                    break;
+            }
+
+            // Re-quantize all existing nodes with new calibration
+            foreach (var node in _nodes)
+            {
+                if (node.IsDeleted) continue;
+                node.QuantizedVector = QuantizeVector(node.Vector);
+            }
+
+            _calibrated = true;
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
+
+    private byte[] QuantizeVector(float[] vector) => _quantize switch
+    {
+        QuantizeType.FP16 => FP16ToBytes(Quantization.ToFP16(vector)),
+        QuantizeType.Int8 => Quantization.ToInt8(vector, _int8Cal),
+        QuantizeType.Int4 => Quantization.ToInt4(vector, _int4Cal),
+        _ => throw new InvalidOperationException($"Unsupported quantize type: {_quantize}")
+    };
+
+    private float[] DecompressVector(byte[] quantized) => _quantize switch
+    {
+        QuantizeType.FP16 => Quantization.FromFP16(BytesToFP16(quantized)),
+        QuantizeType.Int8 => Quantization.FromInt8(quantized, _int8Cal),
+        QuantizeType.Int4 => Quantization.FromInt4(quantized, _dimension, _int4Cal),
+        _ => throw new InvalidOperationException($"Unsupported quantize type: {_quantize}")
+    };
+
+    private static byte[] FP16ToBytes(Half[] halfs)
+    {
+        var bytes = new byte[halfs.Length * 2];
+        Buffer.BlockCopy(halfs, 0, bytes, 0, bytes.Length);
+        return bytes;
+    }
+
+    private static Half[] BytesToFP16(byte[] bytes)
+    {
+        var halfs = new Half[bytes.Length / 2];
+        Buffer.BlockCopy(bytes, 0, halfs, 0, bytes.Length);
+        return halfs;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsBetter(float candidate, float current)
         => _lowerIsBetter ? candidate < current : candidate > current;
+
+    // ====================================================================
+    // Snapshot (for persistence)
+    // ====================================================================
+
+    /// <summary>Create a serializable snapshot of the entire graph.</summary>
+    public HnswSnapshot GetSnapshot()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            var nodeSnapshots = new List<HnswNodeSnapshot>(_nodes.Count);
+            foreach (var node in _nodes)
+            {
+                var connections = new List<int>[node.Level + 1];
+                for (int layer = 0; layer <= node.Level; layer++)
+                    connections[layer] = new List<int>(node.GetConnections(layer));
+
+                nodeSnapshots.Add(new HnswNodeSnapshot(
+                    node.DocId, node.Vector, node.Level, node.IsDeleted, connections));
+            }
+            return new HnswSnapshot(nodeSnapshots, _entryPoint, _maxLayerReached);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
+
+    /// <summary>Restore graph state from a snapshot.</summary>
+    public void LoadSnapshot(HnswSnapshot snapshot)
+    {
+        _lock.EnterWriteLock();
+        try
+        {
+            _nodes.Clear();
+            _docIdMap.Clear();
+
+            foreach (var ns in snapshot.Nodes)
+            {
+                var node = new HnswNode(ns.DocId, ns.Vector, ns.Level);
+
+                // Restore connections
+                for (int layer = 0; layer <= ns.Level; layer++)
+                {
+                    var conns = ns.GetConnections(layer);
+                    node.SetConnections(layer, new List<int>(conns));
+                }
+
+                if (ns.IsDeleted)
+                    node.MarkDeleted();
+
+                int idx = _nodes.Count;
+                _nodes.Add(node);
+
+                if (!ns.IsDeleted)
+                    _docIdMap[ns.DocId] = idx;
+            }
+
+            _entryPoint = snapshot.EntryPoint;
+            _maxLayerReached = snapshot.MaxLayer;
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
 
     public void Dispose()
     {
@@ -423,21 +688,26 @@ public sealed class HnswIndex : IVectorIndex
 internal sealed class HnswNode
 {
     public readonly long DocId;
-    public readonly float[] Vector;
+    public readonly float[] Vector;       // FP32 original (kept for graph building + recalibration)
+    public byte[]? QuantizedVector;        // compressed storage (FP16/INT8/INT4)
     public readonly int Level;
+    public bool IsDeleted { get; private set; }
 
     // connections[layer] = list of neighbor node indices
     private readonly List<int>[] _connections;
 
-    public HnswNode(long docId, float[] vector, int level)
+    public HnswNode(long docId, float[] vector, int level, byte[]? quantizedVector = null)
     {
         DocId = docId;
         Vector = vector;
         Level = level;
+        QuantizedVector = quantizedVector;
         _connections = new List<int>[level + 1];
         for (int i = 0; i <= level; i++)
             _connections[i] = [];
     }
+
+    public void MarkDeleted() => IsDeleted = true;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public List<int> GetConnections(int layer)
@@ -453,6 +723,12 @@ internal sealed class HnswNode
         var conn = _connections[layer];
         if (!conn.Contains(nodeIdx))
             conn.Add(nodeIdx);
+    }
+
+    public void RemoveConnection(int layer, int nodeIdx)
+    {
+        if (layer < _connections.Length)
+            _connections[layer].Remove(nodeIdx);
     }
 
     public void SetConnections(int layer, List<int> connections)
