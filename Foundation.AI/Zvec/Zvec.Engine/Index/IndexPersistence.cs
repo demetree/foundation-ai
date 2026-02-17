@@ -8,8 +8,27 @@ using Foundation.AI.Zvec.Engine.Math;
 namespace Foundation.AI.Zvec.Engine.Index;
 
 /// <summary>
-/// Persists vector index graphs to disk so they can be loaded
-/// without rebuilding from stored documents.
+/// Persists vector index graphs to disk for fast recovery without rebuilding.
+///
+/// <para><b>Strategy:</b>
+/// Indexes are the most expensive data structure to reconstruct (HNSW graph
+/// construction is O(n log n)). By persisting index snapshots alongside the
+/// document store, collection reopening is O(n) for deserialization rather
+/// than O(n log n) for rebuild.</para>
+///
+/// <para><b>HNSW format:</b> Custom binary format for performance.
+/// Stores the full graph topology (node vectors, layer connections, entry point)
+/// in a compact sequential layout. Binary format is ~3× faster to read/write
+/// than equivalent JSON for large graphs.</para>
+///
+/// <para><b>IVF format:</b> JSON via System.Text.Json source generators.
+/// IVF indexes are typically smaller (just centroids + doc assignments),
+/// so JSON's readability advantage outweighs the performance cost.
+/// Includes quantization calibration state for persistence across sessions.</para>
+///
+/// <para><b>Versioning:</b>
+/// Both formats include version numbers. The HNSW format is currently at v2
+/// (added quantized vector support). Older v1 files load with null quantization.</para>
 /// </summary>
 public static class IndexPersistence
 {

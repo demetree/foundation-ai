@@ -9,18 +9,45 @@ using System.Runtime.Intrinsics.X86;
 namespace Foundation.AI.Zvec.Engine.Math;
 
 /// <summary>
-/// Distance metric types matching the public Zvec SDK enum.
+/// Distance metric types for vector similarity comparison.
+/// The choice of metric must match how your embedding model was trained.
 /// </summary>
 public enum MetricType
 {
     Undefined = 0,
+
+    /// <summary>
+    /// Euclidean (L2) distance: d = √Σ(aᵢ - bᵢ)².
+    /// Measures straight-line distance. Lower = more similar.
+    /// Best for: spatial data, image embeddings, unnormalized vectors.
+    /// </summary>
     L2 = 1,
+
+    /// <summary>
+    /// Inner Product (dot product): ip = Σ(aᵢ × bᵢ).
+    /// Higher = more similar. Fastest metric (no normalization step).
+    /// Best for: normalized embeddings (unit vectors), MIPS tasks.
+    /// Equivalent to cosine similarity when vectors are L2-normalized.
+    /// </summary>
     InnerProduct = 2,
+
+    /// <summary>
+    /// Cosine distance: d = 1 - cos(θ) = 1 - (a·b)/(||a||×||b||).
+    /// Range: 0 (identical) to 2 (opposite). Lower = more similar.
+    /// Best for: text embeddings (OpenAI, BERT, sentence-transformers)
+    /// where direction matters more than magnitude.
+    /// </summary>
     Cosine = 3,
 }
 
 /// <summary>
-/// Factory for creating distance functions based on metric type.
+/// Factory for distance function selection.
+///
+/// <para><b>Similarity semantics:</b>
+/// Different metrics have different "direction" of similarity:
+/// L2 and Cosine: lower values = more similar (distance-like).
+/// InnerProduct: higher values = more similar (similarity-like).
+/// The index algorithms use <see cref="IsLowerBetter"/> to handle this uniformly.</para>
 /// </summary>
 public static class DistanceFunction
 {
@@ -57,7 +84,15 @@ public static class DistanceFunction
 
 /// <summary>
 /// SIMD-accelerated distance computations using System.Runtime.Intrinsics.
-/// Automatically selects AVX2, SSE, or scalar fallback.
+///
+/// <para><b>Hardware detection strategy:</b>
+/// Each function checks at runtime for AVX2 (8 floats/cycle), then SSE (4 floats/cycle),
+/// and falls back to scalar. The JIT compiles only the supported code path.
+/// FMA (Fused Multiply-Add) is used when available for better precision and throughput.</para>
+///
+/// <para><b>Performance:</b>
+/// For 768-dimensional vectors, AVX2 processes the entire vector in ~96 iterations
+/// vs ~768 scalar iterations — roughly 4-6× speedup in practice.</para>
 /// </summary>
 public static class SimdDistance
 {

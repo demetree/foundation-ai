@@ -1,7 +1,12 @@
 // Copyright 2025-present the zvec project — Pure C# Engine
 // Filter expression parser and evaluator
 //
-// Supports expressions like:
+// Implements a recursive-descent parser that converts SQL-like filter strings
+// into an AST (Abstract Syntax Tree), which is then evaluated per-document
+// during vector search. Filters are applied post-retrieval: the vector index
+// returns candidates by similarity, and the filter engine narrows them down.
+//
+// Supported expressions:
 //   category == "electronics"
 //   category == "electronics" AND price > 10.0
 //   (category == "books" OR category == "toys") AND price <= 50
@@ -17,9 +22,14 @@ namespace Foundation.AI.Zvec.Engine.Filter;
 
 /// <summary>
 /// Base interface for filter expression AST nodes.
+/// Each node can evaluate itself against a <see cref="Document"/>
+/// to determine if the document passes the filter.
+/// The AST forms a tree: logical operators (AND/OR/NOT) at interior nodes,
+/// field comparisons at leaf nodes.
 /// </summary>
 public interface IFilterNode
 {
+    /// <summary>Evaluate this filter node against a document. Returns true if the document matches.</summary>
     bool Evaluate(Document doc);
 }
 
@@ -142,16 +152,27 @@ public enum ComparisonOp
 // ========================================================================
 
 /// <summary>
-/// Parses filter expressions into an AST.
-/// Grammar:
+/// Recursive-descent parser for filter expressions.
+///
+/// <para><b>Architecture:</b>
+/// Tokenizer → Parser → AST. The parser follows standard precedence rules:
+/// OR (lowest) → AND → NOT (highest), with parentheses for explicit grouping.</para>
+///
+/// <para><b>Grammar (EBNF):</b></para>
+/// <code>
 ///   expr     → or_expr
 ///   or_expr  → and_expr ("OR" and_expr)*
 ///   and_expr → unary ("AND" unary)*
 ///   unary    → "NOT" unary | primary
 ///   primary  → comparison | "(" expr ")"
 ///   comparison → IDENTIFIER op value
-///   op       → "==" | "!=" | "<" | "<=" | ">" | ">="
+///   op       → "==" | "!=" | "&lt;" | "&lt;=" | "&gt;" | "&gt;="
 ///   value    → STRING | NUMBER | "true" | "false"
+/// </code>
+///
+/// <para><b>Type coercion:</b>
+/// Numeric comparisons convert both sides to double. String comparisons
+/// are case-sensitive. Null fields always fail the comparison (return false).</para>
 /// </summary>
 public static class FilterParser
 {
