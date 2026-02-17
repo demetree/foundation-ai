@@ -302,14 +302,26 @@ public sealed class IvfIndex : IVectorIndex
             {
                 Trained = _trained,
                 Centroids = _centroids.Where(c => c != null).ToArray(),
-                Lists = new List<IvfEntry>[_lists.Length]
+                Lists = new List<IvfEntry>[_lists.Length],
+                Int8CalMin = _int8Cal.MinVal,
+                Int8CalMax = _int8Cal.MaxVal,
+                Int4CalMin = _int4Cal.MinVal,
+                Int4CalMax = _int4Cal.MaxVal,
+                QCalibrated = _qCalibrated,
+                Dimension = _dimension
             };
 
             for (int i = 0; i < _lists.Length; i++)
             {
-                snapshot.Lists[i] = _lists[i]
-                    .Select(x => new IvfEntry { DocId = x.DocId, Vector = x.Vector })
-                    .ToList();
+                var entries = new List<IvfEntry>(_lists[i].Count);
+                for (int j = 0; j < _lists[i].Count; j++)
+                {
+                    var (docId, vector) = _lists[i][j];
+                    byte[]? qvec = (i < _qLists.Length && j < _qLists[i].Count)
+                        ? _qLists[i][j].QVec : null;
+                    entries.Add(new IvfEntry { DocId = docId, Vector = vector, QVec = qvec });
+                }
+                snapshot.Lists[i] = entries;
             }
 
             return snapshot;
@@ -327,14 +339,24 @@ public sealed class IvfIndex : IVectorIndex
         {
             _trained = snapshot.Trained;
 
+            // Restore quantization calibration
+            _int8Cal = new Quantization.Int8Calibration(snapshot.Int8CalMin, snapshot.Int8CalMax);
+            _int4Cal = new Quantization.Int4Calibration(snapshot.Int4CalMin, snapshot.Int4CalMax);
+            _qCalibrated = snapshot.QCalibrated;
+            if (snapshot.Dimension > 0)
+                _dimension = snapshot.Dimension;
+
             // Restore centroids
             for (int i = 0; i < snapshot.Centroids.Length && i < _centroids.Length; i++)
                 _centroids[i] = snapshot.Centroids[i];
 
-            // Restore inverted lists and doc map
+            // Restore inverted lists, quantized lists, and doc map
             _docMap.Clear();
             for (int i = 0; i < _lists.Length; i++)
+            {
                 _lists[i].Clear();
+                _qLists[i].Clear();
+            }
 
             for (int i = 0; i < snapshot.Lists.Length && i < _lists.Length; i++)
             {
@@ -344,6 +366,10 @@ public sealed class IvfIndex : IVectorIndex
                     _docMap[entry.DocId] = (entry.Vector, i);
                     if (_dimension == 0 && entry.Vector.Length > 0)
                         _dimension = entry.Vector.Length;
+
+                    // Restore quantized vector if present
+                    if (entry.QVec != null)
+                        _qLists[i].Add((entry.DocId, entry.QVec));
                 }
             }
         }
