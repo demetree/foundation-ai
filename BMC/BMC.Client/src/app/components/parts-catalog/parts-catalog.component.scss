@@ -2,6 +2,7 @@
    Parts Catalog — Premium Card Grid with Filter Sidebar
    Uses BMC design tokens from styles.scss
    ================================================================ */
+@import '../../assets/styles/glass';
 
 :host {
     display: block;
@@ -146,7 +147,7 @@
         &:focus {
             outline: none;
             border-color: var(--bmc-primary);
-            box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.1);
+            box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
         }
     }
 }
@@ -208,9 +209,7 @@
    Filter Sidebar
    ---------------------------------------------------------------- */
 .filter-sidebar {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md);
+    @include glass-effect;
     padding: 16px;
     height: fit-content;
     position: sticky;
@@ -278,7 +277,7 @@
     }
 
     &.active {
-        background: rgba(255, 167, 38, 0.12);
+        background: var(--bmc-surface-hover);
         color: var(--bmc-primary);
         font-weight: 500;
     }
@@ -366,9 +365,7 @@
 }
 
 .part-card {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md);
+    @include glass-effect;
     padding: 16px;
     cursor: pointer;
     transition: all var(--transition-smooth);

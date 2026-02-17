@@ -1,0 +1,22 @@
+/**
+ * BMC Glassmorphism Mixin
+ *
+ * AI-DEVELOPED: Shared glass-effect mixin ported from BCDC.
+ * Uses --bmc-glass-bg and --bmc-glass-border from _themes.scss.
+ */
+
+@mixin glass-effect {
+    background: var(--bmc-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+}
+
+@mixin glass-effect-lg {
+    background: var(--bmc-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-lg);
+}

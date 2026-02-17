@@ -1,0 +1,284 @@
+/**
+ * BMC Theme System — CSS Custom Properties
+ *
+ * AI-DEVELOPED: Theme system ported and adapted from BasecampDataCollector.client
+ *
+ * Three themes: Default (warm amber), Miami Vice (sunset neon), Matrix (green-on-black)
+ * Applied via [data-theme] attribute on <body>
+ *
+ * Phase 2 additions: glassmorphism, background images, overlays, gradient tokens
+ */
+
+
+// ─── Default Theme (warm amber / brick builder) ─────────────────────────────
+body,
+body[data-theme="default"] {
+
+    // Brand Colors
+    --bmc-primary: #ffa726;
+    --bmc-primary-dark: #ff8f00;
+    --bmc-primary-light: #ffcc80;
+    --bmc-accent: #e65100;
+    --bmc-accent-light: #ff6d00;
+
+    // Surface Colors
+    --bmc-bg-deep: #0f0a04;
+    --bmc-bg-dark: #1a1005;
+    --bmc-bg-card: #221608;
+    --bmc-bg-elevated: #2d1a08;
+    --bmc-bg-hover: #3a2210;
+
+    // Host background gradient (for :host blocks)
+    --bmc-bg-host-gradient: linear-gradient(135deg, #0f0a04 0%, #1a1005 100%);
+
+    // Glassmorphism
+    --bmc-glass-bg: rgba(255, 255, 255, 0.05);
+    --bmc-glass-border: rgba(255, 255, 255, 0.1);
+
+    // Text
+    --bmc-text-primary: rgba(255, 255, 255, 0.92);
+    --bmc-text-secondary: rgba(255, 255, 255, 0.65);
+    --bmc-text-muted: rgba(255, 255, 255, 0.4);
+
+    // Borders
+    --bmc-border: rgba(255, 167, 38, 0.1);
+    --bmc-border-strong: rgba(255, 167, 38, 0.2);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --bmc-glow: 0 0 20px rgba(255, 167, 38, 0.08);
+
+    // Gradients
+    --bmc-gradient-primary: linear-gradient(135deg, #ff8f00 0%, #ffa726 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #e65100 0%, #ff6d00 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(255, 167, 38, 0.3);
+    --bmc-accent-glow-soft: rgba(255, 167, 38, 0.15);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #1a1005 0%, #2d1a08 100%);
+    --bmc-header-border: rgba(255, 167, 38, 0.1);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #1a1005 0%, #0f0a04 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(255, 167, 38, 0.15), rgba(230, 81, 0, 0.08));
+    --bmc-sidebar-active-border: #ffa726;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(255, 255, 255, 0.03);
+    --bmc-surface-hover: rgba(255, 167, 38, 0.06);
+    --bmc-surface-border: rgba(255, 167, 38, 0.08);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(255, 167, 38, 0.2);
+    --bmc-scrollbar-thumb-hover: rgba(255, 167, 38, 0.35);
+
+    // Table
+    --bmc-table-striped-bg: rgba(255, 167, 38, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(255, 143, 0, 0.2);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(255, 143, 0, 0.35);
+
+    // Dashboard radial accents
+    --bmc-radial-accent-1: rgba(255, 167, 38, 0.12);
+    --bmc-radial-accent-2: rgba(230, 81, 0, 0.08);
+
+    // Theme-specific overlay (none for default)
+    --bmc-theme-overlay: none;
+
+    // Theme-specific background image (none for default)
+    --bmc-theme-skyline: none;
+    --bmc-theme-skyline-opacity: 0;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+}
+
+
+// ─── Miami Vice Theme ────────────────────────────────────────────────────────
+body[data-theme="miami-vice"] {
+
+    // Brand Colors — hot pink / orange
+    --bmc-primary: #ff6ec7;
+    --bmc-primary-dark: #e040fb;
+    --bmc-primary-light: #ffb3e0;
+    --bmc-accent: #ff8a00;
+    --bmc-accent-light: #ffab40;
+
+    // Surface Colors — deep purple base
+    --bmc-bg-deep: #1a0a2e;
+    --bmc-bg-dark: #2d1b4e;
+    --bmc-bg-card: #301f52;
+    --bmc-bg-elevated: #3a2560;
+    --bmc-bg-hover: #4a306e;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
+
+    // Glassmorphism — pink tint, balanced for skyline visibility + readability
+    --bmc-glass-bg: rgba(26, 10, 46, 0.65);
+    --bmc-glass-border: rgba(255, 110, 199, 0.25);
+
+    // Text — warm white / light rose
+    --bmc-text-primary: #fff0f5;
+    --bmc-text-secondary: rgba(255, 200, 230, 0.7);
+    --bmc-text-muted: rgba(255, 200, 230, 0.4);
+
+    // Borders — pink tint
+    --bmc-border: rgba(255, 110, 199, 0.15);
+    --bmc-border-strong: rgba(255, 110, 199, 0.25);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --bmc-glow: 0 0 20px rgba(255, 110, 199, 0.12);
+
+    // Gradients — hot pink / orange / cyan
+    --bmc-gradient-primary: linear-gradient(135deg, #ff6ec7 0%, #ff8a00 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #00e5ff 0%, #00bcd4 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #ff6ec7 0%, #ffab40 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(255, 110, 199, 0.4);
+    --bmc-accent-glow-soft: rgba(255, 110, 199, 0.15);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
+    --bmc-header-border: rgba(255, 110, 199, 0.15);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #1a0a2e 0%, #0d0520 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(255, 110, 199, 0.2), rgba(255, 138, 0, 0.12));
+    --bmc-sidebar-active-border: #ff6ec7;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(26, 10, 46, 0.45);
+    --bmc-surface-hover: rgba(255, 100, 200, 0.1);
+    --bmc-surface-border: rgba(255, 110, 199, 0.15);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(255, 110, 199, 0.2);
+    --bmc-scrollbar-thumb-hover: rgba(255, 110, 199, 0.35);
+
+    // Table
+    --bmc-table-striped-bg: rgba(255, 110, 199, 0.03);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(255, 110, 199, 0.2);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(255, 110, 199, 0.35);
+
+    // Dashboard radial accents — pink & orange
+    --bmc-radial-accent-1: rgba(255, 110, 199, 0.15);
+    --bmc-radial-accent-2: rgba(255, 138, 0, 0.12);
+
+    // Sunset sky overlay — warm gradient across the top
+    --bmc-theme-overlay:
+        linear-gradient(180deg,
+            rgba(255, 110, 80, 0.08) 0%,
+            rgba(255, 60, 150, 0.04) 30%,
+            transparent 60%);
+
+    // Miami skyline background
+    --bmc-theme-skyline: url('/assets/images/backgrounds/miami-skyline.jpg');
+    --bmc-theme-skyline-opacity: 1;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+}
+
+
+// ─── Matrix Theme ────────────────────────────────────────────────────────────
+body[data-theme="matrix"] {
+
+    // Brand Colors — phosphor green
+    --bmc-primary: #00cc33;
+    --bmc-primary-dark: #009926;
+    --bmc-primary-light: #b5ffcc;
+    --bmc-accent: #00ff41;
+    --bmc-accent-light: #33ff77;
+
+    // Surface Colors — deep black / dark green tint
+    --bmc-bg-deep: #0a0a0a;
+    --bmc-bg-dark: #0d1a0d;
+    --bmc-bg-card: #0f1f0f;
+    --bmc-bg-elevated: #142814;
+    --bmc-bg-hover: #1a331a;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #0a0a0a 0%, #0d1a0d 100%);
+
+    // Glassmorphism — semi-opaque dark with green neon edge
+    --bmc-glass-bg: rgba(10, 10, 10, 0.7);
+    --bmc-glass-border: rgba(0, 255, 65, 0.2);
+
+    // Text — softer phosphor green
+    --bmc-text-primary: #b5ffcc;
+    --bmc-text-secondary: rgba(0, 255, 65, 0.45);
+    --bmc-text-muted: rgba(0, 255, 65, 0.25);
+
+    // Borders — green neon edge
+    --bmc-border: rgba(0, 255, 65, 0.1);
+    --bmc-border-strong: rgba(0, 255, 65, 0.2);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+    --bmc-glow: 0 0 20px rgba(0, 255, 65, 0.06);
+
+    // Gradients — darker greens
+    --bmc-gradient-primary: linear-gradient(135deg, #00cc33 0%, #006622 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #00cc33 0%, #33ff77 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #00cc33 0%, #009926 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(0, 255, 65, 0.3);
+    --bmc-accent-glow-soft: rgba(0, 255, 65, 0.08);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #0d1a0d 0%, #142814 100%);
+    --bmc-header-border: rgba(0, 255, 65, 0.12);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #0d1a0d 0%, #050a05 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(0, 255, 65, 0.12), rgba(0, 204, 51, 0.06));
+    --bmc-sidebar-active-border: #00ff41;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(10, 10, 10, 0.5);
+    --bmc-surface-hover: rgba(0, 255, 65, 0.08);
+    --bmc-surface-border: rgba(0, 255, 65, 0.1);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(0, 255, 65, 0.15);
+    --bmc-scrollbar-thumb-hover: rgba(0, 255, 65, 0.3);
+
+    // Table
+    --bmc-table-striped-bg: rgba(0, 255, 65, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(0, 204, 51, 0.15);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(0, 204, 51, 0.3);
+
+    // Dashboard radial accents — subtle green glow
+    --bmc-radial-accent-1: rgba(0, 255, 65, 0.06);
+    --bmc-radial-accent-2: rgba(0, 204, 51, 0.04);
+
+    // CRT scanline overlay
+    --bmc-theme-overlay:
+        repeating-linear-gradient(0deg,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 3px);
+
+    // Matrix rain background — auto size allows tiling + scroll
+    --bmc-theme-skyline: url('/assets/images/backgrounds/matrix-rain.jpg');
+    --bmc-theme-skyline-opacity: 0.4;
+    --bmc-theme-skyline-size: auto;
+    --bmc-theme-skyline-repeat: repeat;
+}

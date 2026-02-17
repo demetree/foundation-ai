@@ -16,6 +16,25 @@
     min-height: calc(100vh - var(--header-height));
     transition: margin-left var(--transition-smooth);
     animation: fadeIn 0.4s ease-out;
+    position: relative;
+    z-index: 1;
+
+    /* Theme skyline background + overlay layer */
+    &::after {
+        content: '';
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: var(--bmc-theme-overlay), var(--bmc-theme-skyline);
+        background-size: auto, var(--bmc-theme-skyline-size);
+        background-position: center, center bottom;
+        background-repeat: repeat, var(--bmc-theme-skyline-repeat);
+        opacity: var(--bmc-theme-skyline-opacity);
+        pointer-events: none;
+        z-index: -1;
+    }
 
     &.sidebar-expanded {
         margin-left: var(--sidebar-width);
@@ -28,6 +47,11 @@
     &.no-sidebar {
         margin-left: 0;
     }
+}
+
+/* Matrix rain scroll animation on the background layer */
+:host-context(body[data-theme="matrix"]) .app-main::after {
+    animation: matrix-rain-scroll 20s linear infinite;
 }
 
 .app-main-mobile {

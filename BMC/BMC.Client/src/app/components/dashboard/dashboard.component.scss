@@ -1,3 +1,5 @@
+@import '../../assets/styles/glass';
+
 .dashboard {
     max-width: 1200px;
 }
@@ -32,6 +34,7 @@
 }
 
 .stat-card {
+    @include glass-effect;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -56,7 +59,8 @@
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: rgba(255, 167, 38, 0.08);
+    background: var(--bmc-surface-subtle);
+    border: 1px solid var(--bmc-surface-border);
     font-size: 1.2rem;
     flex-shrink: 0;
 }
@@ -101,20 +105,20 @@
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
+    background: var(--bmc-glass-bg);
+    border: 1px solid var(--bmc-glass-border);
     border-radius: var(--radius-md);
     text-decoration: none;
     color: var(--bmc-text-primary);
     transition: all var(--transition-fast);
 
     &:hover {
-        background: var(--bmc-bg-hover);
+        background: var(--bmc-surface-hover);
         border-color: var(--bmc-border-strong);
         color: var(--bmc-text-primary);
 
         .action-icon {
-            background: rgba(255, 167, 38, 0.15);
+            background: var(--bmc-surface-hover);
             color: var(--bmc-primary);
         }
 
@@ -132,7 +136,7 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: rgba(255, 167, 38, 0.06);
+    background: var(--bmc-surface-subtle);
     color: var(--bmc-text-secondary);
     font-size: 1rem;
     transition: all var(--transition-fast);
@@ -165,11 +169,11 @@
 
 /* Welcome Banner */
 .welcome-banner {
+    @include glass-effect;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 32px;
-    background: linear-gradient(135deg, rgba(255, 143, 0, 0.06) 0%, rgba(255, 167, 38, 0.03) 100%);
     overflow: hidden;
 }
 
@@ -215,7 +219,7 @@
 .fb-1 {
     width: 40px;
     height: 16px;
-    background: linear-gradient(135deg, #e65100, #ff6d00);
+    background: linear-gradient(135deg, var(--bmc-accent) 0%, var(--bmc-accent-light) 100%);
     top: 10px;
     left: 20px;
     animation-delay: 0s;
@@ -224,7 +228,7 @@
 .fb-2 {
     width: 32px;
     height: 16px;
-    background: linear-gradient(135deg, #ff8f00, #ffa726);
+    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
     top: 32px;
     left: 40px;
     animation-delay: 0.5s;
@@ -233,7 +237,7 @@
 .fb-3 {
     width: 44px;
     height: 16px;
-    background: linear-gradient(135deg, #ffb74d, #ffcc02);
+    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
     top: 54px;
     left: 10px;
     animation-delay: 1s;
@@ -242,7 +246,7 @@
 .fb-4 {
     width: 28px;
     height: 16px;
-    background: linear-gradient(135deg, #ff6d00, #ff8f00);
+    background: linear-gradient(135deg, var(--bmc-accent-light) 0%, var(--bmc-primary-dark) 100%);
     top: 76px;
     left: 50px;
     animation-delay: 1.5s;

@@ -1,47 +1,34 @@
 /* ================================================================
    BMC - Global Styles
-   Warm amber/orange palette with dark mode
+   Theme-aware design via CSS custom properties
    ================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Theme system — CSS custom property definitions for Default, Miami Vice, Matrix */
+@import 'app/assets/styles/themes';
+@import 'app/assets/styles/glass';
+
+
+/* Matrix rain scroll animation — loops the background image downward */
+@keyframes matrix-rain-scroll {
+    from {
+        background-position: center 0;
+    }
+
+    to {
+        background-position: center 100vh;
+    }
+}
+
 /* ----------------------------------------------------------------
-   CSS Custom Properties — BMC Design Tokens
+   Layout Constants (theme-independent)
    ---------------------------------------------------------------- */
 :root {
-    /* Brand Colors */
-    --bmc-primary: #ffa726;
-    --bmc-primary-dark: #ff8f00;
-    --bmc-primary-light: #ffcc80;
-    --bmc-accent: #e65100;
-    --bmc-accent-light: #ff6d00;
-
-    /* Surface Colors */
-    --bmc-bg-deep: #0f0a04;
-    --bmc-bg-dark: #1a1005;
-    --bmc-bg-card: #221608;
-    --bmc-bg-elevated: #2d1a08;
-    --bmc-bg-hover: #3a2210;
-
-    /* Text */
-    --bmc-text-primary: rgba(255, 255, 255, 0.92);
-    --bmc-text-secondary: rgba(255, 255, 255, 0.65);
-    --bmc-text-muted: rgba(255, 255, 255, 0.4);
-
-    /* Borders */
-    --bmc-border: rgba(255, 167, 38, 0.1);
-    --bmc-border-strong: rgba(255, 167, 38, 0.2);
-
     /* Sidebar */
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 68px;
     --header-height: 56px;
-
-    /* Shadows */
-    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-    --bmc-glow: 0 0 20px rgba(255, 167, 38, 0.08);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -107,22 +94,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 167, 38, 0.2);
+    background: var(--bmc-scrollbar-thumb);
     border-radius: 4px;
 
     &:hover {
-        background: rgba(255, 167, 38, 0.35);
+        background: var(--bmc-scrollbar-thumb-hover);
     }
 }
 
 
 /* ----------------------------------------------------------------
-   BMC Card System
+   BMC Card System (Glassmorphism)
    ---------------------------------------------------------------- */
 .bmc-card {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-lg);
+    @include glass-effect-lg;
     padding: 24px;
     transition: all var(--transition-smooth);
 
@@ -167,11 +152,11 @@ body {
     letter-spacing: 0.02em;
     cursor: pointer;
     transition: all var(--transition-fast);
-    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.2);
+    box-shadow: var(--bmc-btn-shadow);
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(255, 143, 0, 0.35);
+        box-shadow: var(--bmc-btn-shadow-hover);
         color: #fff;
     }
 
@@ -274,7 +259,7 @@ body {
     color: var(--bmc-text-primary);
     --bs-table-bg: transparent;
     --bs-table-hover-bg: var(--bmc-bg-hover);
-    --bs-table-striped-bg: rgba(255, 167, 38, 0.02);
+    --bs-table-striped-bg: var(--bmc-table-striped-bg);
     border-color: var(--bmc-border);
 
     thead th {

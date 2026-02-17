@@ -1,3 +1,5 @@
+/* AI-DEVELOPED: Header styling updated to be theme-aware via --bmc-* CSS custom properties */
+
 .bmc-navbar {
     position: fixed;
     top: 0;
@@ -9,8 +11,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    background: linear-gradient(135deg, #1a1005 0%, #2d1a08 100%);
-    border-bottom: 1px solid rgba(255, 167, 38, 0.1);
+    background: var(--bmc-header-bg);
+    border-bottom: 1px solid var(--bmc-header-border);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -37,17 +39,17 @@
     justify-content: center;
     width: 34px;
     height: 34px;
-    background: linear-gradient(135deg, #ff8f00, #ffa726);
+    background: linear-gradient(135deg, var(--bmc-primary-dark), var(--bmc-primary));
     border-radius: 8px;
     color: #fff;
     font-size: 16px;
-    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.25);
+    box-shadow: var(--bmc-btn-shadow);
 }
 
 .brand-text {
     font-size: 1.2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #ffa726 0%, #ffcc80 100%);
+    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -97,4 +99,65 @@
     text-decoration: none;
     font-size: 0.82rem;
     padding: 6px 18px;
+}
+
+
+/* ─── Theme Picker ──────────────────────────────────────────────────────── */
+.theme-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+.theme-picker-label {
+    font-size: 0.8rem;
+    color: var(--bmc-text-secondary);
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.theme-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+
+    // Inner gradient fill
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        border-radius: 50%;
+    }
+
+    &:hover {
+        transform: scale(1.15);
+    }
+
+    &.active {
+        border-color: var(--bmc-text-primary);
+        box-shadow: 0 0 8px var(--bmc-glow);
+    }
+
+    // Default theme swatch — warm amber
+    &.swatch-default {
+        background: linear-gradient(135deg, #ffa726 0%, #ff8f00 100%);
+    }
+
+    // Miami Vice swatch — hot pink / orange
+    &.swatch-miami-vice {
+        background: linear-gradient(135deg, #ff6ec7 0%, #ff8a00 100%);
+    }
+
+    // Matrix swatch — phosphor green
+    &.swatch-matrix {
+        background: linear-gradient(135deg, #00ff41 0%, #00cc33 100%);
+    }
 }

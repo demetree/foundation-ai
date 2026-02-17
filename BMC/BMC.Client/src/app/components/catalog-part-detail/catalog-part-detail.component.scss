@@ -45,7 +45,7 @@
     &:hover {
         border-color: var(--bmc-primary);
         color: var(--bmc-primary);
-        background: rgba(255, 167, 38, 0.08);
+        background: var(--bmc-surface-subtle);
     }
 
     i {
@@ -306,7 +306,7 @@
     margin-left: auto;
     padding: 2px 8px;
     border-radius: var(--radius-xl);
-    background: rgba(255, 167, 38, 0.12);
+    background: var(--bmc-surface-hover);
     color: var(--bmc-primary);
     font-size: 0.72rem;
     font-weight: 600;

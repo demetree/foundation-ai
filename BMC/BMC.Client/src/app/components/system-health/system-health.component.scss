@@ -2,6 +2,7 @@
    System Health — BMC Dark Theme
    Uses BMC design tokens from styles.scss
    ================================================================ */
+@import '../../assets/styles/glass';
 
 :host {
     display: block;
@@ -175,9 +176,7 @@
 }
 
 .health-card {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md);
+    @include glass-effect;
     transition: all var(--transition-smooth);
 
     &:hover {
@@ -208,7 +207,8 @@
     font-size: 1rem;
 
     &.icon-primary {
-        background: rgba(255, 167, 38, 0.12);
+        background: var(--bmc-surface-subtle);
+        border: 1px solid var(--bmc-surface-border);
         color: var(--bmc-primary);
     }
 
@@ -238,8 +238,9 @@
     }
 
     &.icon-accent {
-        background: rgba(255, 109, 0, 0.12);
-        color: #ff6d00;
+        background: var(--bmc-surface-subtle);
+        border: 1px solid var(--bmc-surface-border);
+        color: var(--bmc-accent-light);
     }
 }
 
@@ -496,8 +497,8 @@
     border: 1px solid var(--bmc-border);
 
     &.app-drive {
-        border-color: rgba(255, 167, 38, 0.2);
-        background: rgba(255, 167, 38, 0.04);
+        border-color: var(--bmc-surface-border);
+        background: var(--bmc-surface-subtle);
     }
 }
 
@@ -637,9 +638,7 @@
 }
 
 .table-modal {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border-strong);
-    border-radius: var(--radius-lg);
+    @include glass-effect-lg;
     width: 90%;
     max-width: 700px;
     max-height: 80vh;

@@ -9,13 +9,14 @@
 .login-container {
     width: 100%;
     max-width: 420px;
-    background: rgba(255, 167, 38, 0.03);
+    background: var(--bmc-glass-bg);
     backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 167, 38, 0.08);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--bmc-glass-border);
     border-radius: var(--radius-xl);
     padding: 48px 40px;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5),
-        0 0 40px rgba(255, 167, 38, 0.04);
+        0 0 40px var(--bmc-accent-glow-soft);
 }
 
 
@@ -40,24 +41,24 @@
 
 .brick-1 {
     width: 44px;
-    background: linear-gradient(135deg, #e65100, #ff6d00);
+    background: linear-gradient(135deg, var(--bmc-accent) 0%, var(--bmc-accent-light) 100%);
 }
 
 .brick-2 {
     width: 38px;
-    background: linear-gradient(135deg, #ff8f00, #ffa726);
+    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
     margin-left: 6px;
 }
 
 .brick-3 {
     width: 44px;
-    background: linear-gradient(135deg, #ffb74d, #ffcc02);
+    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
 }
 
 .brand-title {
     font-size: 1.8rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #ffa726 0%, #ffcc80 100%);
+    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

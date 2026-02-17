@@ -16,11 +16,32 @@
 
     <style>
         /* ================================================================
-       Pre-Bootstrap Loading Screen - BMC Warm Brick Theme
+       Pre-Bootstrap Loading Screen — Theme-Aware
+       Reads bmc-theme from localStorage to match the active theme.
        ================================================================ */
 
+        :root {
+            --pbl-bg-start: #1a1005;
+            --pbl-bg-mid: #2d1a08;
+            --pbl-border: rgba(255, 167, 38, 0.12);
+            --pbl-brand-1: #ffa726;
+            --pbl-brand-2: #ff8f00;
+            --pbl-brand-3: #ffb74d;
+            --pbl-brick-1a: #e65100;
+            --pbl-brick-1b: #ff6d00;
+            --pbl-brick-2a: #ff8f00;
+            --pbl-brick-2b: #ffa726;
+            --pbl-brick-3a: #ffb74d;
+            --pbl-brick-3b: #ffcc02;
+            --pbl-glass-bg: rgba(255, 167, 38, 0.04);
+            --pbl-glass-border: rgba(255, 167, 38, 0.1);
+            --pbl-glow: rgba(255, 167, 38, 0.06);
+            --pbl-spinner: #ffa726;
+            --pbl-spinner-faint: rgba(255, 167, 38, 0.3);
+        }
+
         #pre-bootstrap {
-            background: linear-gradient(135deg, #1a1005 0%, #2d1a08 35%, #1a1005 100%);
+            background: linear-gradient(135deg, var(--pbl-bg-start) 0%, var(--pbl-bg-mid) 35%, var(--pbl-bg-start) 100%);
             bottom: 0;
             left: 0;
             position: fixed;
@@ -30,8 +51,8 @@
         }
 
         #pre-bootstrap div.pre-load-navbar-simulator {
-            background: linear-gradient(135deg, #1a1005 0%, #2d1a08 100%);
-            border-bottom: 1px solid rgba(255, 167, 38, 0.12);
+            background: linear-gradient(135deg, var(--pbl-bg-start) 0%, var(--pbl-bg-mid) 100%);
+            border-bottom: 1px solid var(--pbl-border);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             font-size: 20px;
@@ -47,7 +68,7 @@
         }
 
         #pre-bootstrap .navbar-brand {
-            background: linear-gradient(135deg, #ffa726 0%, #ff8f00 50%, #ffb74d 100%);
+            background: linear-gradient(135deg, var(--pbl-brand-1) 0%, var(--pbl-brand-2) 50%, var(--pbl-brand-3) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -71,9 +92,9 @@
         }
 
         .cs-loader-container {
-            background: rgba(255, 167, 38, 0.04);
+            background: var(--pbl-glass-bg);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 167, 38, 0.1);
+            border: 1px solid var(--pbl-glass-border);
             border-radius: 24px;
             padding: 48px 64px;
             display: flex;
@@ -81,7 +102,7 @@
             align-items: center;
             gap: 28px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-                0 0 40px rgba(255, 167, 38, 0.06);
+                0 0 40px var(--pbl-glow);
         }
 
         /* Brick icon assembly animation */
@@ -107,13 +128,13 @@
         }
 
         .cs-brick-1 {
-            background: linear-gradient(135deg, #e65100, #ff6d00);
+            background: linear-gradient(135deg, var(--pbl-brick-1a), var(--pbl-brick-1b));
             animation: slide-in 0.6s ease-out both;
             animation-delay: 0.3s;
         }
 
         .cs-brick-2 {
-            background: linear-gradient(135deg, #ff8f00, #ffa726);
+            background: linear-gradient(135deg, var(--pbl-brick-2a), var(--pbl-brick-2b));
             width: 48px;
             margin-left: 8px;
             animation: slide-in 0.6s ease-out both;
@@ -121,7 +142,7 @@
         }
 
         .cs-brick-3 {
-            background: linear-gradient(135deg, #ffb74d, #ffcc02);
+            background: linear-gradient(135deg, var(--pbl-brick-3a), var(--pbl-brick-3b));
             animation: slide-in 0.6s ease-out both;
             animation-delay: 0.9s;
         }
@@ -154,8 +175,8 @@
             width: 96px;
             height: 96px;
             border: 2px solid transparent;
-            border-top-color: #ffa726;
-            border-right-color: rgba(255, 167, 38, 0.3);
+            border-top-color: var(--pbl-spinner);
+            border-right-color: var(--pbl-spinner-faint);
             border-radius: 50%;
             animation: spin 1.5s linear infinite;
         }
@@ -241,7 +262,7 @@
 
             .cs-loader::before {
                 animation: none;
-                border-color: rgba(255, 167, 38, 0.3);
+                border-color: var(--pbl-spinner-faint);
             }
 
             .cs-loading-text::after {
@@ -250,6 +271,48 @@
             }
         }
     </style>
+
+    <!-- Theme-aware pre-bootstrap: set CSS custom props before Angular loads -->
+    <script>
+        (function () {
+            var theme = localStorage.getItem('bmc-theme') || 'default';
+            var palettes = {
+                'miami-vice': {
+                    '--pbl-bg-start': '#1a0a2e', '--pbl-bg-mid': '#2d1b4e',
+                    '--pbl-border': 'rgba(255, 110, 199, 0.15)',
+                    '--pbl-brand-1': '#ff6ec7', '--pbl-brand-2': '#e040fb', '--pbl-brand-3': '#ffab40',
+                    '--pbl-brick-1a': '#ff6ec7', '--pbl-brick-1b': '#e040fb',
+                    '--pbl-brick-2a': '#ff8a00', '--pbl-brick-2b': '#ffab40',
+                    '--pbl-brick-3a': '#00e5ff', '--pbl-brick-3b': '#00bcd4',
+                    '--pbl-glass-bg': 'rgba(26, 10, 46, 0.65)',
+                    '--pbl-glass-border': 'rgba(255, 110, 199, 0.25)',
+                    '--pbl-glow': 'rgba(255, 110, 199, 0.12)',
+                    '--pbl-spinner': '#ff6ec7', '--pbl-spinner-faint': 'rgba(255, 110, 199, 0.3)'
+                },
+                'matrix': {
+                    '--pbl-bg-start': '#0a0a0a', '--pbl-bg-mid': '#0d1a0d',
+                    '--pbl-border': 'rgba(0, 255, 65, 0.12)',
+                    '--pbl-brand-1': '#00cc33', '--pbl-brand-2': '#009926', '--pbl-brand-3': '#33ff77',
+                    '--pbl-brick-1a': '#009926', '--pbl-brick-1b': '#00cc33',
+                    '--pbl-brick-2a': '#00cc33', '--pbl-brick-2b': '#00ff41',
+                    '--pbl-brick-3a': '#33ff77', '--pbl-brick-3b': '#b5ffcc',
+                    '--pbl-glass-bg': 'rgba(10, 10, 10, 0.7)',
+                    '--pbl-glass-border': 'rgba(0, 255, 65, 0.2)',
+                    '--pbl-glow': 'rgba(0, 255, 65, 0.06)',
+                    '--pbl-spinner': '#00ff41', '--pbl-spinner-faint': 'rgba(0, 255, 65, 0.3)'
+                }
+            };
+            var palette = palettes[theme];
+            if (palette) {
+                var root = document.documentElement;
+                for (var key in palette) {
+                    if (palette.hasOwnProperty(key)) {
+                        root.style.setProperty(key, palette[key]);
+                    }
+                }
+            }
+        })();
+    </script>
 </head>
 
 <body class="pre-login-background no-select">

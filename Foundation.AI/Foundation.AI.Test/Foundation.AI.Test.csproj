@@ -22,6 +22,11 @@
     <ProjectReference Include="..\Foundation.AI.VectorStore\Foundation.AI.VectorStore.csproj" />
     <ProjectReference Include="..\Foundation.AI.VectorStore.Zvec\Foundation.AI.VectorStore.Zvec.csproj" />
     <ProjectReference Include="..\Foundation.AI.Embed\Foundation.AI.Embed.csproj" />
+    <ProjectReference Include="..\Foundation.AI.Inference\Foundation.AI.Inference.csproj" />
+    <ProjectReference Include="..\Foundation.AI.Rag\Foundation.AI.Rag.csproj" />
+    <ProjectReference Include="..\Foundation.AI.Vision\Foundation.AI.Vision.csproj" />
+    <ProjectReference Include="..\..\BMC.AI\BMC.AI.csproj" />
+    <ProjectReference Include="..\..\BmcDatabase\BmcDatabase.csproj" />
   </ItemGroup>
 
 </Project>

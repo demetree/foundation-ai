@@ -169,7 +169,7 @@
     &:focus {
         outline: none;
         border-color: var(--bmc-primary);
-        box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.1);
+        box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
     }
 
     &.textarea {
@@ -244,7 +244,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15), rgba(255, 109, 0, 0.1));
+    background: linear-gradient(135deg, var(--bmc-accent-glow-soft), var(--bmc-surface-subtle));
     color: var(--bmc-text-muted);
     font-size: 2rem;
 }
@@ -280,8 +280,8 @@
     align-items: center;
     gap: 6px;
     padding: 7px 16px;
-    background: rgba(255, 167, 38, 0.08);
-    border: 1px solid rgba(255, 167, 38, 0.25);
+    background: var(--bmc-surface-subtle);
+    border: 1px solid var(--bmc-surface-border);
     border-radius: var(--radius-sm);
     color: var(--bmc-primary);
     cursor: pointer;
@@ -290,7 +290,7 @@
     transition: all var(--transition-fast);
 
     &:hover:not(:disabled) {
-        background: rgba(255, 167, 38, 0.15);
+        background: var(--bmc-surface-hover);
         border-color: var(--bmc-primary);
     }
 
@@ -350,7 +350,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: rgba(255, 167, 38, 0.03);
+    background: var(--bmc-surface-subtle);
     color: var(--bmc-text-muted);
 
     i {
@@ -495,8 +495,8 @@
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
-    background: rgba(255, 167, 38, 0.08);
-    border: 1px solid rgba(255, 167, 38, 0.2);
+    background: var(--bmc-surface-subtle);
+    border: 1px solid var(--bmc-surface-border);
     border-radius: var(--radius-sm);
     color: var(--bmc-primary);
     cursor: pointer;
@@ -505,7 +505,7 @@
     transition: all var(--transition-fast);
 
     &:hover {
-        background: rgba(255, 167, 38, 0.15);
+        background: var(--bmc-surface-hover);
         border-color: var(--bmc-primary);
     }
 }
@@ -599,7 +599,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 28px;
-    background: linear-gradient(135deg, var(--bmc-primary) 0%, #ff6d00 100%);
+    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-accent-light) 100%);
     border: none;
     border-radius: var(--radius-md);
     color: white;

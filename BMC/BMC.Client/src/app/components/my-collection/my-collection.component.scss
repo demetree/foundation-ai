@@ -116,11 +116,11 @@
     background: linear-gradient(135deg, var(--bmc-primary), #ff8f00);
     color: #000;
     border: none;
-    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.3);
+    box-shadow: 0 2px 8px var(--bmc-accent-glow);
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(255, 167, 38, 0.4);
+        box-shadow: 0 4px 16px var(--bmc-accent-glow);
     }
 }
 
@@ -130,7 +130,7 @@
     border-color: var(--bmc-primary);
 
     &:hover:not(:disabled) {
-        box-shadow: 0 4px 12px rgba(255, 167, 38, 0.3);
+        box-shadow: 0 4px 12px var(--bmc-accent-glow);
     }
 
     &:disabled {
@@ -220,7 +220,7 @@
     }
 
     &.total {
-        background: rgba(255, 167, 38, 0.12);
+        background: var(--bmc-surface-hover);
         color: var(--bmc-primary);
     }
 
@@ -294,7 +294,7 @@
         background: var(--bmc-primary);
         color: #000;
         font-weight: 600;
-        box-shadow: 0 2px 6px rgba(255, 167, 38, 0.25);
+        box-shadow: 0 2px 6px var(--bmc-accent-glow-soft);
     }
 }
 
@@ -350,7 +350,7 @@
         &:focus {
             outline: none;
             border-color: var(--bmc-primary);
-            box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.1);
+            box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
         }
     }
 }
@@ -828,7 +828,7 @@
     }
 
     &.badge-parts {
-        background: rgba(255, 167, 38, 0.1);
+        background: var(--bmc-accent-glow-soft);
         color: var(--bmc-primary);
     }
 
@@ -1019,7 +1019,7 @@
         &:focus {
             outline: none;
             border-color: var(--bmc-primary);
-            box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.1);
+            box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
         }
 
         &:disabled {
@@ -1219,7 +1219,7 @@
     align-items: center;
     gap: 16px;
     background: var(--bmc-bg-elevated);
-    border: 1px solid rgba(255, 167, 38, 0.3);
+    border: 1px solid var(--bmc-accent-glow);
     border-radius: var(--radius-md, 8px);
     padding: 14px;
     margin-bottom: 16px;
