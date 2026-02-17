@@ -8,8 +8,28 @@ namespace Foundation.AI.Zvec.Engine.Index;
 
 /// <summary>
 /// IVF (Inverted File) index for approximate nearest neighbor search.
-/// Partitions vectors into clusters via mini-batch k-means, then
-/// searches only the nearest nprobe clusters at query time.
+///
+/// <para><b>Algorithm Overview:</b>
+/// IVF partitions the vector space into clusters (Voronoi cells) using k-means.
+/// Each cluster has a centroid and an inverted list of vectors assigned to it.
+/// At query time, only the nearest <c>nprobe</c> clusters are searched, reducing
+/// the search space from O(n) to O(nprobe × n/nlist).</para>
+///
+/// <para><b>Training:</b>
+/// IVF requires a training phase (<see cref="Train"/>) to compute centroids via k-means.
+/// Before training completes, search falls back to brute-force linear scan.
+/// Training should be triggered after a sufficient number of vectors are inserted
+/// (minimum 10, but more vectors yield better cluster quality).</para>
+///
+/// <para><b>Quantization:</b>
+/// Supports optional quantized inverted lists (INT8/INT4/FP16). When enabled,
+/// both FP32 and quantized copies are maintained per cluster. The search path
+/// uses ADC (Asymmetric Distance Computation): query stays FP32, stored vectors
+/// are decompressed on-the-fly. Calibration happens during training.</para>
+///
+/// <para><b>Concurrency:</b>
+/// Uses ReaderWriterLockSlim — multiple concurrent searches with single-writer
+/// insert/delete/train.</para>
 /// </summary>
 public sealed class IvfIndex : IVectorIndex
 {
@@ -43,6 +63,22 @@ public sealed class IvfIndex : IVectorIndex
     private const int MaxKMeansIterations = 20;
     private const int MinTrainingSamples = 10;
 
+    /// <summary>Create a new IVF index.</summary>
+    /// <param name="metric">Distance metric (must match your embedding model).</param>
+    /// <param name="nlist">
+    /// Number of clusters (Voronoi cells). More clusters = smaller inverted lists = faster search,
+    /// but too many clusters relative to data size causes underpopulated lists.
+    /// Rule of thumb: nlist ≈ √n where n is the expected number of vectors.
+    /// </param>
+    /// <param name="nprobe">
+    /// Number of clusters to scan per query (default: 8).
+    /// Higher nprobe = better recall but slower search. nprobe=1 is fastest but least accurate.
+    /// nprobe=nlist degenerates to exact search. Start with nprobe = nlist/10.
+    /// </param>
+    /// <param name="quantize">
+    /// Optional vector quantization type. Quantized inverted lists are maintained
+    /// alongside FP32 lists. Calibration occurs during <see cref="Train"/>.
+    /// </param>
     public IvfIndex(MetricType metric, int nlist = 128, int nprobe = 8,
                     QuantizeType quantize = QuantizeType.Undefined)
     {

@@ -18,8 +18,28 @@ internal sealed class BlobSerializer : ISerializer<byte[]>
 }
 
 /// <summary>
-/// Persistent storage engine backed by ZoneTree.
-/// Provides durable document storage with ACID guarantees.
+/// Persistent storage engine backed by ZoneTree, a .NET LSM-tree implementation.
+///
+/// <para><b>Why ZoneTree / LSM-tree?</b>
+/// LSM-trees are write-optimized — inserts append to an in-memory buffer (memtable)
+/// and WAL, then flush to sorted immutable segments on disk. This gives O(1)
+/// amortized writes vs B-tree's O(log n). Reads are slightly slower (must check
+/// memtable + disk segments) but ZoneTree uses bloom filters and sparse indexes
+/// to mitigate this.</para>
+///
+/// <para><b>Dual-tree architecture:</b>
+/// <c>_docTree</c> (long → byte[]): Maps docId to JSON-serialized document bytes.
+/// <c>_pkTree</c> (string → long): Maps primary key to docId for O(1) PK lookups.
+/// Both trees are independently maintained with their own WAL and compaction.</para>
+///
+/// <para><b>Document encoding:</b>
+/// Documents are serialized to JSON byte arrays using System.Text.Json source
+/// generators. The key is a 64-bit document ID (monotonically increasing).
+/// Deleted documents are marked but not physically removed until compaction.</para>
+///
+/// <para><b>ACID guarantees:</b>
+/// ZoneTree provides crash-safety via WAL recovery. Ongoing writes survive
+/// process crashes; the WAL is replayed on next open to restore consistent state.</para>
 /// </summary>
 public sealed class ZoneTreeStorageEngine : IStorageEngine
 {

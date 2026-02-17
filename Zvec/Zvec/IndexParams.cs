@@ -13,7 +13,11 @@ public abstract class IndexParams : IDisposable
 }
 
 /// <summary>
-/// HNSW index parameters.
+/// HNSW index parameters — best general-purpose choice for most workloads.
+///
+/// <para><b>When to use:</b> Default choice for datasets under ~10M vectors.
+/// Offers the best recall/speed tradeoff of all index types.
+/// Supports incremental inserts (no training phase required).</para>
 /// </summary>
 public sealed class HnswIndexParams : IndexParams
 {
@@ -22,6 +26,16 @@ public sealed class HnswIndexParams : IndexParams
     private readonly int _efConstruction;
     private readonly QuantizeType _quantize;
 
+    /// <param name="metric">Distance metric (default: IP). Must match your embedding model.</param>
+    /// <param name="m">
+    /// Max connections per node (default: auto/16). Higher M = better recall, more memory.
+    /// Recommended: 12–48. Set 0 for engine default (16).
+    /// </param>
+    /// <param name="efConstruction">
+    /// Build-time beam width (default: 200). Higher = better graph quality, slower build.
+    /// Recommended: 100–500. This does NOT affect search speed.
+    /// </param>
+    /// <param name="quantize">Optional compression. Reduces memory 2–8× with small accuracy cost.</param>
     public HnswIndexParams(
         MetricType metric = MetricType.IP,
         int m = 0,
@@ -53,7 +67,11 @@ public sealed class HnswIndexParams : IndexParams
 }
 
 /// <summary>
-/// Flat (brute-force) index parameters.
+/// Flat (brute-force) index parameters — exact search, no approximation.
+///
+/// <para><b>When to use:</b> Small datasets (&lt; 10K vectors) where exact results are needed,
+/// or as a baseline for benchmarking ANN recall. No build phase required.
+/// O(n) per query — becomes impractical above ~100K vectors.</para>
 /// </summary>
 public sealed class FlatIndexParams : IndexParams
 {
@@ -77,7 +95,11 @@ public sealed class FlatIndexParams : IndexParams
 }
 
 /// <summary>
-/// IVF index parameters.
+/// IVF (Inverted File) index parameters — cluster-based search.
+///
+/// <para><b>When to use:</b> Large datasets (1M+ vectors) with batch insert patterns.
+/// Requires a training phase (<c>Optimize()</c>) before clustered search works.
+/// Before training, falls back to brute-force scan.</para>
 /// </summary>
 public sealed class IvfIndexParams : IndexParams
 {
@@ -86,6 +108,16 @@ public sealed class IvfIndexParams : IndexParams
     private readonly int _nIters;
     private readonly QuantizeType _quantize;
 
+    /// <param name="metric">Distance metric (default: IP). Must match your embedding model.</param>
+    /// <param name="nList">
+    /// Number of clusters. Rule of thumb: nlist ≈ √(n).
+    /// Set 0 for engine default (128).
+    /// </param>
+    /// <param name="nIters">
+    /// K-means training iterations. Set 0 for engine default (20).
+    /// More iterations improve cluster quality at diminishing returns.
+    /// </param>
+    /// <param name="quantize">Optional compression for inverted lists.</param>
     public IvfIndexParams(
         MetricType metric = MetricType.IP,
         int nList = 0,
@@ -109,7 +141,11 @@ public sealed class IvfIndexParams : IndexParams
 }
 
 /// <summary>
-/// Inverted index parameters (for scalar fields).
+/// Inverted index parameters for scalar fields — enables filtered queries.
+///
+/// <para><b>When to use:</b> Add to scalar fields (strings, numbers) that you want
+/// to filter on during vector searches. Range optimization enables efficient
+/// greater-than / less-than comparisons on numeric fields.</para>
 /// </summary>
 public sealed class InvertIndexParams : IndexParams
 {

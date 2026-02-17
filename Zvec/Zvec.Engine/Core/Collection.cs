@@ -19,8 +19,26 @@ public sealed class EngineCollectionOptions
 }
 
 /// <summary>
-/// The core managed collection engine. This replaces the native C++ Collection.
-/// Manages document storage, vector indexes, and query execution.
+/// The core managed collection engine — the central orchestration layer.
+///
+/// <para><b>Responsibilities:</b>
+/// Coordinates storage (ZoneTree), vector indexes (HNSW/IVF/Flat), and the filter
+/// engine to provide unified document CRUD and vector similarity search.</para>
+///
+/// <para><b>Lifecycle:</b>
+/// <c>CreateAndOpen</c> → initializes storage + schema + indexes from scratch.
+/// <c>Open</c> → loads persisted metadata, reopens storage, restores index snapshots.
+/// <c>Flush</c> → persists metadata, index snapshots, and flushes storage WAL.
+/// <c>Dispose</c> → closes storage and releases resources.</para>
+///
+/// <para><b>Persistence model:</b>
+/// Documents are stored in ZoneTree (LSM-tree with WAL). Vector indexes are
+/// persisted as separate snapshot files (binary for HNSW, JSON for IVF).
+/// Collection metadata (schema, nextDocId, index configs) is stored as JSON.</para>
+///
+/// <para><b>Concurrency:</b>
+/// Uses ReaderWriterLockSlim — multiple concurrent reads (queries/fetches)
+/// with single-writer mutations (insert/update/delete/optimize).</para>
 /// </summary>
 public sealed class Collection : IDisposable
 {

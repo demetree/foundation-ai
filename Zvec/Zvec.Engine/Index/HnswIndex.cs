@@ -13,9 +13,33 @@ using Foundation.AI.Zvec.Engine.Math;
 namespace Foundation.AI.Zvec.Engine.Index;
 
 /// <summary>
-/// HNSW vector index — graph-based approximate nearest neighbor search.
-/// Supports concurrent search with single-writer insert.
+/// HNSW (Hierarchical Navigable Small World) vector index.
+///
+/// <para><b>Algorithm Overview:</b>
+/// HNSW organizes vectors in a multi-layer graph, inspired by skip lists.
+/// Top layers are sparse (few nodes, long-distance connections) for fast global navigation.
+/// Bottom layers are dense (all nodes, short connections) for precise local search.
+/// Search starts at the top and greedily descends, narrowing the neighborhood at each level.</para>
+///
+/// <para><b>Complexity:</b>
+/// Insert: O(log n) expected — random level selection with exponential decay.
+/// Search: O(log n) expected — greedy descent + beam search at layer 0.
+/// Memory: O(n × M) — each node stores M connections per layer.</para>
+///
+/// <para><b>Concurrency:</b>
+/// Uses ReaderWriterLockSlim — multiple concurrent searches with single-writer insert/delete.
+/// Searches acquire read lock; inserts, deletes, and recalibration acquire write lock.</para>
+///
+/// <para><b>Quantization:</b>
+/// Supports optional ADC (Asymmetric Distance Computation) where stored vectors are
+/// compressed to INT8/INT4/FP16 and the query stays in FP32. Decompression happens on-the-fly
+/// during distance computation. Call <see cref="Recalibrate"/> after bulk inserts for
+/// optimal calibration across the full dataset.</para>
 /// </summary>
+/// <remarks>
+/// Reference: Malkov &amp; Yashunin, "Efficient and robust approximate nearest neighbor
+/// using Hierarchical Navigable Small World graphs", 2018 (arXiv:1603.09320)
+/// </remarks>
 public sealed class HnswIndex : IVectorIndex
 {
     // ── Configuration ───────────────────────────────────────────────────
@@ -54,14 +78,30 @@ public sealed class HnswIndex : IVectorIndex
     /// <summary>
     /// Create a new HNSW index.
     /// </summary>
+    /// <param name="metric">Distance metric for similarity comparison (must match your embedding model).</param>
+    /// <param name="m">
+    /// Maximum connections per node per layer (default: 16).
+    /// Higher M → better recall but more memory and slower build.
+    /// Recommended: 12–48. Layer 0 uses 2×M connections for denser local connectivity.
+    /// </param>
+    /// <param name="efConstruction">
+    /// Beam width during index construction (default: 200).
+    /// Higher values build a better-connected graph but take longer.
+    /// Recommended: 100–500. Has no effect on query speed.
+    /// </param>
+    /// <param name="quantize">
+    /// Optional vector quantization type. When set, vectors are compressed
+    /// for reduced memory. The original FP32 vectors are kept alongside
+    /// quantized copies until <see cref="DropOriginalVectors"/> is called.
+    /// </param>
     public HnswIndex(MetricType metric, int m = 16, int efConstruction = 200,
                      QuantizeType quantize = QuantizeType.Undefined)
     {
         _m = m <= 0 ? 16 : m;
-        _m0 = _m * 2;
+        _m0 = _m * 2;  // Layer 0 gets 2× connections for denser local graph
         _efConstruction = efConstruction <= 0 ? 200 : efConstruction;
-        _levelMult = 1.0 / System.Math.Log(_m);
-        _maxLevel = 30; // practical ceiling
+        _levelMult = 1.0 / System.Math.Log(_m);  // Controls layer assignment probability
+        _maxLevel = 30; // practical ceiling — rarely reached in practice
         _quantize = quantize;
 
         _distFunc = DistanceFunction.Get(metric);
@@ -486,6 +526,12 @@ public sealed class HnswIndex : IVectorIndex
     // Helpers
     // ====================================================================
 
+    /// <summary>
+    /// Assign a random layer for a new node using exponential distribution.
+    /// Most nodes get layer 0; the probability of layer L is roughly 1/M^L.
+    /// This creates the skip-list-like structure: sparse top layers, dense bottom.
+    /// Formula from the HNSW paper: level = floor(-ln(uniform) × 1/ln(M))
+    /// </summary>
     private int RandomLevel()
     {
         double r = _rng.NextDouble();

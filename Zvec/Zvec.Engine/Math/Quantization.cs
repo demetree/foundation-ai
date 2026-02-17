@@ -5,7 +5,32 @@ namespace Foundation.AI.Zvec.Engine.Math;
 
 /// <summary>
 /// Vector quantization utilities for reducing memory footprint.
-/// Supports FP16, INT8, and INT4 with automatic min/max calibration.
+///
+/// <para><b>Why quantize?</b>
+/// Full-precision vectors use 4 bytes per component (FP32). A 768-dimensional
+/// embedding is 3KB. At scale, quantization provides 2–8× memory reduction
+/// with controlled accuracy loss.</para>
+///
+/// <para><b>Supported types:</b></para>
+/// <list type="bullet">
+/// <item><b>FP16</b> — 2 bytes/component. Lossless within Half precision (~3.3 decimal digits).
+/// No calibration needed. Good default for moderate savings.</item>
+/// <item><b>INT8</b> — 1 byte/component. Uniform scalar quantization mapping [min,max] → [0,255].
+/// Requires calibration. Low error for most embedding distributions.</item>
+/// <item><b>INT4</b> — 0.5 bytes/component. Packed nibble mapping [min,max] → [0,15].
+/// Requires calibration. Noticeable accuracy loss — best for coarse retrieval.</item>
+/// </list>
+///
+/// <para><b>Calibration:</b>
+/// INT8 and INT4 require min/max calibration to establish the quantization range.
+/// Global calibration (across all vectors) is preferred over per-vector calibration
+/// because it ensures consistent scale for distance computation (ADC).
+/// Values outside the calibrated range are <b>clipped</b> to the bounds.</para>
+///
+/// <para><b>ADC (Asymmetric Distance Computation):</b>
+/// During search, the query vector stays in FP32 while stored vectors are decompressed
+/// on-the-fly. This asymmetry gives better accuracy than symmetric (both quantized)
+/// comparison with only a small decompression overhead.</para>
 /// </summary>
 public static class Quantization
 {
@@ -50,14 +75,22 @@ public static class Quantization
 
     /// <summary>
     /// Calibration parameters for INT8 quantization.
-    /// Maps [minVal, maxVal] → [0, 255].
+    /// Maps the continuous range [MinVal, MaxVal] into 256 uniform bins [0, 255].
+    /// The Scale property gives the width of each bin in the original value space.
     /// </summary>
     public readonly record struct Int8Calibration(float MinVal, float MaxVal)
     {
+        /// <summary>Width of each quantization bin: (MaxVal - MinVal) / 255.</summary>
         public float Scale => (MaxVal - MinVal) / 255f;
     }
 
-    /// <summary>Calibrate INT8 by scanning the vector for min/max.</summary>
+    /// <summary>
+    /// Calibrate INT8 from a single vector.
+    /// Scans all components to find min/max range. Ensures a non-zero range
+    /// (adds epsilon if all values are identical) to prevent division by zero.
+    /// Note: Global calibration via <see cref="CalibrateInt8Batch"/> is preferred
+    /// for better accuracy across the full dataset.
+    /// </summary>
     public static Int8Calibration CalibrateInt8(ReadOnlySpan<float> vector)
     {
         float min = float.MaxValue, max = float.MinValue;
