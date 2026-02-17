@@ -2,6 +2,7 @@
    My Collection — Premium Collection Management UI
    Uses BMC design tokens from styles.scss
    ================================================================ */
+@import '../../assets/styles/glass';
 
 :host {
     display: block;
@@ -188,12 +189,14 @@
 }
 
 .stat-card {
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     display: flex;
     align-items: center;
     gap: 14px;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md, 8px);
     padding: 16px 20px;
     transition: all 0.25s ease;
 
@@ -259,11 +262,13 @@
    Tab Bar
    ---------------------------------------------------------------- */
 .tab-bar {
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     display: flex;
     gap: 4px;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-lg, 8px);
     padding: 4px;
     margin-bottom: 20px;
 }
@@ -335,8 +340,8 @@
     input {
         width: 100%;
         padding: 10px 16px 10px 40px;
-        background: var(--bmc-bg-card);
-        border: 1px solid var(--bmc-border);
+        background: var(--bmc-glass-bg);
+        border: 1px solid var(--bmc-glass-border);
         border-radius: var(--radius-lg, 8px);
         color: var(--bmc-text-primary);
         font-size: 0.9rem;
@@ -369,8 +374,8 @@
 
 .view-toggle {
     display: flex;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
+    background: var(--bmc-glass-bg);
+    border: 1px solid var(--bmc-glass-border);
     border-radius: var(--radius-md, 6px);
     overflow: hidden;
 
@@ -433,9 +438,11 @@
 }
 
 .part-card {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md, 8px);
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     display: flex;
     flex-direction: column;
     transition: all 0.25s ease;
@@ -459,7 +466,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bmc-bg-elevated);
+    background: var(--bmc-glass-bg);
     overflow: hidden;
 
     img {
@@ -583,7 +590,7 @@
     border-collapse: collapse;
 
     thead tr {
-        background: var(--bmc-bg-elevated);
+        background: var(--bmc-glass-bg);
     }
 
     th {
@@ -668,8 +675,8 @@
     width: 36px;
     height: 36px;
     border-radius: var(--radius-sm, 4px);
-    border: 1px solid var(--bmc-border);
-    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-glass-border);
+    background: var(--bmc-glass-bg);
     color: var(--bmc-text-secondary);
     font-size: 0.82rem;
     font-family: 'Inter', sans-serif;
@@ -708,12 +715,14 @@
 }
 
 .set-card {
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     display: flex;
     align-items: center;
     gap: 14px;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md, 8px);
     padding: 16px;
     transition: all 0.2s ease;
 
@@ -728,7 +737,7 @@
     width: 72px;
     height: 72px;
     border-radius: var(--radius-md, 8px);
-    background: var(--bmc-bg-elevated);
+    background: var(--bmc-glass-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -849,12 +858,14 @@
 }
 
 .wishlist-card {
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
-    border-radius: var(--radius-md, 8px);
     padding: 16px;
     transition: all 0.2s ease;
 

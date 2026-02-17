@@ -2,6 +2,7 @@
    Colour Library — Premium Swatch Grid
    Uses BMC design tokens from styles.scss
    ================================================================ */
+@import '../../assets/styles/glass';
 
 :host {
     display: block;
@@ -56,11 +57,10 @@
 }
 
 .stat-pill {
+    @include glass-effect;
     display: flex;
     align-items: center;
     gap: 6px;
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
     border-radius: var(--radius-xl);
     padding: 8px 16px;
     cursor: default;
@@ -129,8 +129,8 @@
     .search-input {
         width: 100%;
         padding: 10px 16px 10px 40px;
-        background: var(--bmc-bg-card);
-        border: 1px solid var(--bmc-border);
+        background: var(--bmc-glass-bg);
+        border: 1px solid var(--bmc-glass-border);
         border-radius: var(--radius-lg);
         color: var(--bmc-text-primary);
         font-size: 0.9rem;
@@ -158,8 +158,8 @@
 .finish-chip {
     padding: 7px 14px;
     border-radius: var(--radius-xl);
-    border: 1px solid var(--bmc-border);
-    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-glass-border);
+    background: var(--bmc-glass-bg);
     color: var(--bmc-text-secondary);
     font-size: 0.8rem;
     font-family: 'Inter', sans-serif;
@@ -224,9 +224,11 @@
 }
 
 .swatch-card {
-    background: var(--bmc-bg-card);
-    border: 1px solid var(--bmc-border);
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
     border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     padding: 12px;
     cursor: pointer;
     transition: all var(--transition-smooth);
@@ -419,17 +421,20 @@
    Detail Panel
    ---------------------------------------------------------------- */
 .detail-panel {
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     position: fixed;
     bottom: 0;
     left: var(--sidebar-width);
     right: 0;
-    background: var(--bmc-bg-card);
-    border-top: 1px solid var(--bmc-border-strong);
+    border-top: 1px solid var(--bmc-glass-border);
     padding: 24px 32px;
     z-index: 100;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     animation: slideUp 0.25s ease-out;
-    backdrop-filter: blur(20px);
 }
 
 .detail-header {

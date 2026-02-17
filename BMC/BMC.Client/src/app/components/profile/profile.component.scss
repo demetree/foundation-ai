@@ -1,5 +1,13 @@
 .profile {
     width: 100%;
+
+    /* Use theme-aware panel surfaces for data panels */
+    .bmc-card {
+        background: var(--bmc-panel-bg);
+        border-color: var(--bmc-panel-border);
+        backdrop-filter: var(--bmc-panel-backdrop);
+        -webkit-backdrop-filter: var(--bmc-panel-backdrop);
+    }
 }
 
 

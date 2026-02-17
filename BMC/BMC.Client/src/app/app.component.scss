@@ -49,10 +49,6 @@
     }
 }
 
-/* Matrix rain scroll animation on the background layer */
-:host-context(body[data-theme="matrix"]) .app-main::after {
-    animation: matrix-rain-scroll 20s linear infinite;
-}
 
 .app-main-mobile {
     flex: 1;

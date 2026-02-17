@@ -88,6 +88,7 @@ body[data-theme="default"] {
     --bmc-radial-accent-1: rgba(255, 167, 38, 0.12);
     --bmc-radial-accent-2: rgba(230, 81, 0, 0.08);
 
+
     // Theme-specific overlay (none for default)
     --bmc-theme-overlay: none;
 
@@ -96,6 +97,11 @@ body[data-theme="default"] {
     --bmc-theme-skyline-opacity: 0;
     --bmc-theme-skyline-size: cover;
     --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — solid for Default (no animated background)
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
 }
 
 
@@ -188,6 +194,11 @@ body[data-theme="miami-vice"] {
     --bmc-theme-skyline-opacity: 1;
     --bmc-theme-skyline-size: cover;
     --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — glass for Miami Vice (static skyline looks great through panels)
+    --bmc-panel-bg: var(--bmc-glass-bg);
+    --bmc-panel-border: var(--bmc-glass-border);
+    --bmc-panel-backdrop: blur(20px);
 }
 
 
@@ -211,8 +222,8 @@ body[data-theme="matrix"] {
     // Host background gradient
     --bmc-bg-host-gradient: linear-gradient(135deg, #0a0a0a 0%, #0d1a0d 100%);
 
-    // Glassmorphism — semi-opaque dark with green neon edge
-    --bmc-glass-bg: rgba(10, 10, 10, 0.7);
+    // Glassmorphism — semi-transparent dark with green neon edge
+    --bmc-glass-bg: rgba(10, 10, 10, 0.45);
     --bmc-glass-border: rgba(0, 255, 65, 0.2);
 
     // Text — softer phosphor green
@@ -277,8 +288,13 @@ body[data-theme="matrix"] {
             transparent 3px);
 
     // Matrix rain background — auto size allows tiling + scroll
-    --bmc-theme-skyline: url('/assets/images/backgrounds/matrix-rain.jpg');
-    --bmc-theme-skyline-opacity: 0.4;
+    --bmc-theme-skyline: none;
+    --bmc-theme-skyline-opacity: 0;
     --bmc-theme-skyline-size: auto;
-    --bmc-theme-skyline-repeat: repeat;
+    --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — solid for Matrix (animated rain is distracting through panels)
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
 }

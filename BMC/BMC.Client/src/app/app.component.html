@@ -8,6 +8,7 @@
 <!-- Desktop Layout -->
 <div *ngIf="!isMobile && isAppLoaded" class="app-layout">
     <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+    <app-matrix-rain></app-matrix-rain>
 
     <div class="app-body">
         <app-sidebar *ngIf="isUserLoggedIn" [isCollapsed]="isSidebarCollapsed"

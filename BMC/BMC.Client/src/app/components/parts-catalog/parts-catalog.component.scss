@@ -209,7 +209,11 @@
    Filter Sidebar
    ---------------------------------------------------------------- */
 .filter-sidebar {
-    @include glass-effect;
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     padding: 16px;
     height: fit-content;
     position: sticky;
@@ -365,7 +369,11 @@
 }
 
 .part-card {
-    @include glass-effect;
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
     padding: 16px;
     cursor: pointer;
     transition: all var(--transition-smooth);
