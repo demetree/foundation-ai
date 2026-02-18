@@ -383,3 +383,5 @@ appsettings.Development.json
 web.debug.config
 environment.development.ts
 
+/BMC/BMC.Server/ai-data/vectors/bmc-parts/docs
+/BMC/BMC.Server/ai-data/vectors/bmc-parts
