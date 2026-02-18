@@ -67,4 +67,30 @@ public static class EmbedServiceExtensions
         services.AddSingleton<IEmbeddingProvider, OnnxEmbeddingProvider>();
         return services;
     }
+
+    /// <summary>
+    /// Register an OpenAI-compatible embedding provider with configuration.
+    /// Works with OpenAI, Azure OpenAI, and Ollama.
+    ///
+    /// <para><b>Ollama (local):</b>
+    /// <code>
+    /// services.AddOpenAiEmbedding(c => {
+    ///     c.Endpoint = "http://localhost:11434/v1/embeddings";
+    ///     c.Model = "nomic-embed-text";
+    ///     c.Dimension = 768;
+    ///     c.ApiKey = "ollama";
+    /// });
+    /// </code></para>
+    /// </summary>
+    public static IServiceCollection AddOpenAiEmbedding(
+        this IServiceCollection services,
+        Action<OpenAiEmbeddingConfig> configure)
+    {
+        var config = new OpenAiEmbeddingConfig();
+        configure(config);
+
+        services.AddSingleton(config);
+        services.AddSingleton<IEmbeddingProvider, OpenAiEmbeddingProvider>();
+        return services;
+    }
 }
