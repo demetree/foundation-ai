@@ -1,0 +1,185 @@
+<div class="ai-assistant">
+
+    <!-- Hero Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div>
+                <h1 class="page-title">AI Assistant</h1>
+                <p class="page-subtitle">Search your collection with natural language or chat with your AI-powered brick
+                    expert</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+        <button class="tab-btn" [class.active]="activeTab === 'search'" (click)="activeTab = 'search'">
+            <i class="fas fa-search"></i>
+            <span>Semantic Search</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'chat'" (click)="activeTab = 'chat'">
+            <i class="fas fa-comments"></i>
+            <span>AI Chat</span>
+        </button>
+    </div>
+
+
+    <!-- ─────────────────────── Search Tab ─────────────────────── -->
+    <div class="tab-content" *ngIf="activeTab === 'search'">
+
+        <!-- Search Input -->
+        <div class="search-bar">
+            <div class="search-input-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Describe what you're looking for..."
+                    [(ngModel)]="searchQuery" (keydown)="onSearchKeydown($event)" [disabled]="isSearching" />
+                <button class="search-btn" (click)="search()" [disabled]="isSearching || !searchQuery.trim()">
+                    <i class="fas" [class.fa-arrow-right]="!isSearching" [class.fa-spinner]="isSearching"
+                        [class.fa-spin]="isSearching"></i>
+                </button>
+            </div>
+
+            <div class="search-mode-toggle">
+                <button class="mode-btn" [class.active]="searchMode === 'parts'" (click)="searchMode = 'parts'">
+                    <i class="fas fa-puzzle-piece"></i> Parts
+                </button>
+                <button class="mode-btn" [class.active]="searchMode === 'sets'" (click)="searchMode = 'sets'">
+                    <i class="fas fa-box"></i> Sets
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Search Error -->
+        <div class="search-error" *ngIf="searchError">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ searchError }}</span>
+        </div>
+
+
+        <!-- Search Results -->
+        <div class="results-grid" *ngIf="searchResults.length > 0">
+            <div class="result-card" *ngFor="let result of searchResults; let i = index"
+                [style.animation-delay]="(i * 60) + 'ms'">
+
+                <div class="result-header">
+                    <span class="result-type-badge" [class.type-part]="result.type === 'part'"
+                        [class.type-set]="result.type === 'set'">
+                        <i class="fas" [class.fa-puzzle-piece]="result.type === 'part'"
+                            [class.fa-box]="result.type === 'set'"></i>
+                        {{ result.type }}
+                    </span>
+                    <span class="result-score" [ngClass]="getScoreClass(result.score)">
+                        {{ getScorePercent(result.score) }}%
+                    </span>
+                </div>
+
+                <h3 class="result-name">{{ result.name }}</h3>
+
+                <div class="result-meta">
+                    <span *ngIf="result.category" class="meta-tag">
+                        <i class="fas fa-tag"></i> {{ result.category }}
+                    </span>
+                    <span *ngIf="result.year" class="meta-tag">
+                        <i class="fas fa-calendar"></i> {{ result.year }}
+                    </span>
+                    <span class="meta-tag meta-id">
+                        <i class="fas fa-hashtag"></i> {{ result.id }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!isSearching && searchResults.length === 0 && !searchError">
+            <div class="empty-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3>Semantic Search</h3>
+            <p>Try natural language queries like:<br>
+                <em>"red gear with 24 teeth"</em> or <em>"space themed sets from the 90s"</em>
+            </p>
+        </div>
+    </div>
+
+
+    <!-- ─────────────────────── Chat Tab ─────────────────────── -->
+    <div class="tab-content chat-tab" *ngIf="activeTab === 'chat'">
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" #chatScroll>
+
+            <!-- Welcome message -->
+            <div class="chat-welcome" *ngIf="chatMessages.length === 0">
+                <div class="welcome-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI Brick Expert</h3>
+                <p>Ask me anything about LEGO parts, sets, or building techniques.
+                    I'll search your indexed data to give grounded answers.</p>
+                <div class="suggestion-chips">
+                    <button class="chip" (click)="chatInput = 'What Technic gears are available?'; sendChat()">
+                        What Technic gears are available?
+                    </button>
+                    <button class="chip" (click)="chatInput = 'Show me Star Wars sets from 2020'; sendChat()">
+                        Star Wars sets from 2020
+                    </button>
+                    <button class="chip" (click)="chatInput = 'What are the largest sets by part count?'; sendChat()">
+                        Largest sets by part count
+                    </button>
+                </div>
+            </div>
+
+            <!-- Message bubbles -->
+            <div *ngFor="let msg of chatMessages" class="chat-bubble-wrap" [ngClass]="'role-' + msg.role">
+
+                <div class="bubble-avatar">
+                    <i class="fas" [class.fa-user]="msg.role === 'user'" [class.fa-robot]="msg.role === 'assistant'"
+                        [class.fa-exclamation-triangle]="msg.role === 'error'"></i>
+                </div>
+
+                <div class="chat-bubble">
+                    <div class="bubble-content">{{ msg.content }}<span class="cursor-blink"
+                            *ngIf="msg.isStreaming">▌</span></div>
+
+                    <!-- Sources -->
+                    <div class="bubble-sources" *ngIf="msg.sources && msg.sources.length > 0">
+                        <div class="sources-label">
+                            <i class="fas fa-link"></i> Sources
+                        </div>
+                        <div class="source-chip" *ngFor="let src of msg.sources">
+                            <span class="source-id">{{ src.docId }}</span>
+                            <span class="source-score">{{ (src.score * 100) | number:'1.0-0' }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Chat Input -->
+        <div class="chat-input-bar">
+            <div class="chat-input-wrap">
+                <input type="text" class="chat-input" placeholder="Ask a question..." [(ngModel)]="chatInput"
+                    (keydown)="onChatKeydown($event)" [disabled]="isChatStreaming" />
+                <button class="chat-send-btn" (click)="sendChat()" [disabled]="isChatStreaming || !chatInput.trim()">
+                    <i class="fas" [class.fa-paper-plane]="!isChatStreaming" [class.fa-spinner]="isChatStreaming"
+                        [class.fa-spin]="isChatStreaming"></i>
+                </button>
+            </div>
+            <div class="chat-actions">
+                <button class="action-btn" (click)="clearChat()" title="Clear chat"
+                    [disabled]="chatMessages.length === 0">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <span class="connection-dot" [class.connected]="isChatConnected"
+                    [title]="isChatConnected ? 'Connected' : 'Disconnected'"></span>
+            </div>
+        </div>
+    </div>
+</div>

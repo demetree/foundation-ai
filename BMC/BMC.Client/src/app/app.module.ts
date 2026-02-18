@@ -461,6 +461,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
 import { PublicProfileComponent } from './components/public-profile/public-profile.component';
 import { MatrixRainComponent } from './components/matrix-rain/matrix-rain.component';
+import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { CollectionService } from './services/collection.service';
 
 
@@ -493,6 +494,7 @@ import { CollectionService } from './services/collection.service';
         ProfileSettingsComponent,
         PublicProfileComponent,
         MatrixRainComponent,
+        AiAssistantComponent,
 
 
         //

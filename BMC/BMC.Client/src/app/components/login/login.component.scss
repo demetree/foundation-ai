@@ -47,18 +47,12 @@
         fill: var(--bmc-brick-light, #5A7080);
     }
 
+    .brick-stud-wall {
+        fill: var(--bmc-primary-dark, #cc8400);
+    }
+
     .brick-stud {
         fill: var(--bmc-primary);
-    }
-
-    .gloss-start {
-        stop-color: var(--bmc-primary-light);
-        stop-opacity: 0.8;
-    }
-
-    .gloss-end {
-        stop-color: var(--bmc-primary);
-        stop-opacity: 0;
     }
 }
 

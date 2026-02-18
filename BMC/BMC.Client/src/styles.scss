@@ -5,7 +5,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Theme system — CSS custom property definitions for Default, Miami Vice, Matrix */
+/* Theme system — CSS custom property definitions for all 8 themes */
 @import 'app/assets/styles/themes';
 @import 'app/assets/styles/glass';
 
@@ -183,7 +183,7 @@ body {
     transition: all var(--transition-fast);
 
     &:hover {
-        background: rgba(255, 167, 38, 0.08);
+        background: var(--bmc-surface-hover);
         border-color: var(--bmc-primary);
         color: var(--bmc-primary);
     }
@@ -210,9 +210,9 @@ body {
    BMC Badges
    ---------------------------------------------------------------- */
 .badge-bmc {
-    background: rgba(255, 167, 38, 0.15);
+    background: var(--bmc-accent-glow-soft);
     color: var(--bmc-primary);
-    border: 1px solid rgba(255, 167, 38, 0.2);
+    border: 1px solid var(--bmc-border-strong);
     border-radius: 20px;
     padding: 3px 10px;
     font-size: 0.75rem;
@@ -234,7 +234,7 @@ body {
         background: var(--bmc-bg-dark);
         color: var(--bmc-text-primary);
         border-color: var(--bmc-primary);
-        box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.12);
+        box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
     }
 
     &::placeholder {
@@ -301,7 +301,7 @@ body {
     }
 
     .btn-close {
-        filter: invert(1) brightness(0.8);
+        filter: var(--bmc-close-btn-filter);
     }
 }
 
@@ -371,7 +371,7 @@ body {
 }
 
 .glow-amber {
-    box-shadow: 0 0 20px rgba(255, 167, 38, 0.15);
+    box-shadow: var(--bmc-glow);
 }
 
 

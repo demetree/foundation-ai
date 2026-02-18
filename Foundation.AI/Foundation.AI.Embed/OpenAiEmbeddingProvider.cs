@@ -6,7 +6,7 @@ namespace Foundation.AI.Embed;
 
 /// <summary>
 /// Configuration for the OpenAI embedding provider.
-/// Compatible with both OpenAI and Azure OpenAI endpoints.
+/// Compatible with OpenAI, Azure OpenAI, and Ollama (OpenAI-compatible endpoints).
 /// </summary>
 public sealed class OpenAiEmbeddingConfig
 {
@@ -14,21 +14,30 @@ public sealed class OpenAiEmbeddingConfig
     /// API key for authentication.
     /// For OpenAI: starts with "sk-".
     /// For Azure OpenAI: the deployment key from Azure portal.
+    /// For Ollama: any non-empty string (e.g., "ollama").
     /// </summary>
     public string ApiKey { get; set; } = "";
 
     /// <summary>
     /// API endpoint URL.
     /// Default: OpenAI's production embeddings endpoint.
-    /// For Azure OpenAI, use: https://{resource}.openai.azure.com/openai/deployments/{deployment}/embeddings?api-version=2024-06-01
+    /// For Ollama: "http://localhost:11434/v1/embeddings"
+    /// For Azure OpenAI: https://{resource}.openai.azure.com/openai/deployments/{deployment}/embeddings?api-version=2024-06-01
     /// </summary>
     public string Endpoint { get; set; } = "https://api.openai.com/v1/embeddings";
 
     /// <summary>
-    /// Model name for OpenAI (e.g., "text-embedding-3-small", "text-embedding-3-large").
+    /// Model name (e.g., "text-embedding-3-small", "nomic-embed-text").
     /// Ignored for Azure OpenAI (model is specified in the deployment).
     /// </summary>
     public string Model { get; set; } = "text-embedding-3-small";
+
+    /// <summary>
+    /// Explicit embedding dimension override. When set (&gt; 0), overrides the
+    /// auto-detected dimension based on model name. Required for Ollama and custom models.
+    /// Common values: 384 (MiniLM), 768 (nomic-embed-text), 1536 (OpenAI small).
+    /// </summary>
+    public int Dimension { get; set; }
 
     /// <summary>
     /// Whether to use the Azure OpenAI authentication header (api-key) instead of
@@ -83,14 +92,16 @@ public sealed class OpenAiEmbeddingProvider : IEmbeddingProvider
             _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.ApiKey);
 
-        // Dimension depends on model
-        _dimension = config.Model switch
-        {
-            "text-embedding-3-small" => 1536,
-            "text-embedding-3-large" => 3072,
-            "text-embedding-ada-002" => 1536,
-            _ => 1536 // default assumption
-        };
+        // Dimension: use explicit config if set, otherwise auto-detect from known models
+        _dimension = config.Dimension > 0
+            ? config.Dimension
+            : config.Model switch
+            {
+                "text-embedding-3-small" => 1536,
+                "text-embedding-3-large" => 3072,
+                "text-embedding-ada-002" => 1536,
+                _ => 1536 // default assumption
+            };
 
         _modelName = $"openai:{config.Model}";
     }

@@ -24,6 +24,7 @@ export class SidebarComponent {
         { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' },
         { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
         { icon: 'fas fa-palette', label: 'Colours', route: '/colours' },
+        { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
         { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' },
     ];
 

@@ -24,6 +24,13 @@ using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
 using Foundation.Web.Services;
+using Foundation.AI;
+using Foundation.AI.Embed;
+using Foundation.AI.Inference;
+using Foundation.AI.Rag;
+using Foundation.AI.VectorStore;
+using Foundation.AI.VectorStore.Zvec;
+using BMC.AI;
 
 
 namespace Foundation.BMC
@@ -132,6 +139,53 @@ namespace Foundation.BMC
                 });
 
 
+                //
+                // Configure Foundation.AI services (embedding, vector store, inference, RAG)
+                //
+                builder.Services.AddFoundationAI(ai =>
+                {
+                    // Embedding provider — uses Ollama's OpenAI-compatible /v1/embeddings endpoint
+                    var embeddingSection = builder.Configuration.GetSection("AI:Embedding");
+                    ai.Services.AddOpenAiEmbedding(c =>
+                    {
+                        c.Endpoint = embeddingSection.GetValue<string>("Endpoint") ?? "http://localhost:11434/v1/embeddings";
+                        c.Model = embeddingSection.GetValue<string>("Model") ?? "nomic-embed-text";
+                        c.Dimension = embeddingSection.GetValue<int>("Dimension");
+                        c.ApiKey = embeddingSection.GetValue<string>("ApiKey") ?? "ollama";
+                    });
+
+                    // Vector store — Zvec local file-based store
+                    string vectorBasePath = builder.Configuration.GetValue<string>("AI:VectorStore:BasePath") ?? "./ai-data/vectors";
+                    ai.Services.AddVectorStore(sp => new ZvecVectorStore(new ZvecVectorStoreConfig
+                    {
+                        BasePath = vectorBasePath
+                    }));
+
+                    // Inference provider — OpenAI-compatible (supports OpenAI, Azure, Ollama)
+                    var inferenceSection = builder.Configuration.GetSection("AI:Inference");
+                    ai.Services.AddOpenAiInference(c =>
+                    {
+                        c.Endpoint = inferenceSection.GetValue<string>("Endpoint") ?? "http://localhost:11434/v1/chat/completions";
+                        c.ApiKey = inferenceSection.GetValue<string>("ApiKey") ?? "ollama";
+                        c.Model = inferenceSection.GetValue<string>("Model") ?? "qwen3:30b-a3b";
+                    });
+
+                    // RAG orchestration — ties embed + vectorstore + inference together
+                    ai.Services.AddRag();
+                });
+
+                //
+                // Register BMC AI services (BmcSearchIndex + BmcAiService)
+                //
+                builder.Services.AddBmcAI();
+
+
+                //
+                // Add SignalR for streaming AI chat
+                //
+                builder.Services.AddSignalR();
+
+
                 // Configure Kestrel server options
                 builder.WebHost.ConfigureKestrel(options =>
                 {
@@ -185,6 +239,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(CollectionController));
                 controllers.Add(typeof(PartsCatalogController));
                 controllers.Add(typeof(ProfileController));
+                controllers.Add(typeof(AiController));
 
                 //
                 // Start of code generated controller list for BMC module
@@ -474,6 +529,8 @@ namespace Foundation.BMC
 
 
                 app.MapControllers();
+
+                app.MapHub<AiChatHub>("/AiChatSignal");
 
                 app.MapFallbackToFile("/index.html");
 

@@ -105,108 +105,76 @@
                 0 0 40px var(--pbl-glow);
         }
 
-        /* ─── Auto-Build Isometric Loader ──────────────────────────────── */
+        /* ─── Single Isometric Brick Loader ──────────────────────────── */
         .bmc-loader {
             width: 80px;
             height: 80px;
             position: relative;
+            animation: cycle 2.5s infinite;
         }
 
-        /* Isometric brick shapes using clip-path diamonds */
-        .brick-base,
-        .brick-middle,
-        .brick-top {
+        /* Single brick body — isometric diamond top + side faces */
+        .brick-body {
             position: absolute;
+            width: 60px;
+            height: 50px;
             left: 50%;
-        }
-
-        /* Base Brick (2x4) — drops in first */
-        .brick-base {
-            width: 40px;
-            height: 24px;
-            margin-left: -20px;
-            top: 42px;
+            margin-left: -30px;
+            top: 14px;
             opacity: 0;
-            animation: baseDrop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            animation: brickDrop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
 
-        .brick-base::before {
+        /* Top diamond face */
+        .brick-body::before {
             content: '';
             position: absolute;
-            inset: 0;
+            width: 100%;
+            height: 50%;
+            top: 0;
             background: var(--pbl-brick-face);
-            clip-path: polygon(50% 0%, 100% 33%, 50% 66%, 0% 33%);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
         }
 
-        .brick-base::after {
+        /* Left side face */
+        .brick-body::after {
             content: '';
             position: absolute;
-            top: 33%;
-            left: 0;
             width: 50%;
-            height: 67%;
-            background: var(--pbl-brick-shadow);
-            clip-path: polygon(0% 0%, 100% 50%, 100% 100%, 0% 50%);
-        }
-
-        /* Middle Brick (2x2) — clicks into left side */
-        .brick-middle {
-            width: 24px;
-            height: 16px;
-            margin-left: -24px;
-            top: 26px;
-            opacity: 0;
-            animation: middleClick 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.6s forwards;
-        }
-
-        .brick-middle::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--pbl-brick-face);
-            clip-path: polygon(50% 0%, 100% 33%, 50% 66%, 0% 33%);
-        }
-
-        .brick-middle::after {
-            content: '';
-            position: absolute;
-            top: 33%;
+            height: 56%;
+            top: 50%;
             left: 0;
-            width: 50%;
-            height: 67%;
             background: var(--pbl-brick-shadow);
-            clip-path: polygon(0% 0%, 100% 50%, 100% 100%, 0% 50%);
+            clip-path: polygon(0% 0%, 100% -7%, 100% 100%, 0% 64%);
+            transform: translateY(-3px);
         }
 
-        /* Top Brick (2x2) — clicks into place last, has accent stud */
-        .brick-top {
-            width: 24px;
-            height: 16px;
-            margin-left: -24px;
-            top: 10px;
+        /* Right side face via the stud-host element */
+        .brick-right-face {
+            position: absolute;
+            width: 50%;
+            height: 56%;
+            top: 50%;
+            right: 0;
+            background: var(--pbl-brick-light);
+            clip-path: polygon(0% -7%, 100% 0%, 100% 64%, 0% 100%);
+            transform: translateY(-3px);
             opacity: 0;
-            animation: topClick 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.1s forwards;
+            animation: brickDrop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
 
-        .brick-top::before {
-            content: '';
+        /* Accent stud — pops on after brick lands */
+        .brick-stud {
             position: absolute;
-            inset: 0;
-            background: var(--pbl-brick-face);
-            clip-path: polygon(50% 0%, 100% 33%, 50% 66%, 0% 33%);
-        }
-
-        /* Accent stud on top brick */
-        .brick-top::after {
-            content: '';
-            position: absolute;
-            width: 8px;
-            height: 5px;
+            width: 16px;
+            height: 10px;
             background: var(--pbl-stud);
             border-radius: 50%;
-            top: 8%;
             left: 50%;
-            margin-left: -4px;
+            margin-left: -8px;
+            top: 16px;
+            opacity: 0;
+            animation: studPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s forwards;
         }
 
         /* Spinning ring around the loader */
@@ -218,11 +186,6 @@
             border-right-color: var(--pbl-spinner-faint);
             border-radius: 50%;
             animation: spin 1.5s linear infinite;
-        }
-
-        /* Cycle: build, hold, fade, reset */
-        .bmc-loader {
-            animation: cycle 2.5s infinite;
         }
 
         .cs-loading-text {
@@ -239,7 +202,7 @@
         }
 
         /* ─── Keyframes ──────────────────────────────────────────────── */
-        @keyframes baseDrop {
+        @keyframes brickDrop {
             0% {
                 transform: translateY(-40px) scale(0.8);
                 opacity: 0;
@@ -251,34 +214,14 @@
             }
         }
 
-        @keyframes middleClick {
+        @keyframes studPop {
             0% {
-                transform: translateY(-30px) translateX(-5px);
+                transform: scale(0);
                 opacity: 0;
             }
 
-            70% {
-                transform: translateY(2px) translateX(0);
-            }
-
             100% {
-                transform: translateY(0) translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes topClick {
-            0% {
-                transform: translateY(-50px) translateX(-2px);
-                opacity: 0;
-            }
-
-            70% {
-                transform: translateY(2px) translateX(0);
-            }
-
-            100% {
-                transform: translateY(0) translateX(0);
+                transform: scale(1);
                 opacity: 1;
             }
         }
@@ -340,9 +283,9 @@
 
             .bmc-loader,
             .bmc-loader-ring,
-            .brick-base,
-            .brick-middle,
-            .brick-top {
+            .brick-body,
+            .brick-right-face,
+            .brick-stud {
                 animation: none !important;
                 opacity: 1 !important;
                 transform: none !important;
@@ -407,9 +350,9 @@
             <div class="messaging">
                 <div class="cs-loader-container">
                     <div class="bmc-loader" role="status" aria-label="Loading BMC">
-                        <div class="brick-base"></div>
-                        <div class="brick-middle"></div>
-                        <div class="brick-top"></div>
+                        <div class="brick-body"></div>
+                        <div class="brick-right-face"></div>
+                        <div class="brick-stud"></div>
                         <div class="bmc-loader-ring"></div>
                     </div>
                     <span class="cs-loading-text">Constructing</span>

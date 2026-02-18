@@ -3,7 +3,7 @@
 
         <!-- Brand Header — Isometric hero mark -->
         <div class="login-brand">
-            <svg class="brand-logo-hero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true">
+            <svg class="brand-logo-hero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
                 <defs>
                     <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
                         <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
@@ -22,29 +22,17 @@
                     </linearGradient>
                 </defs>
 
-                <g transform="translate(100, 100)" filter="url(#softShadow)">
-                    <!-- Base (2x4) -->
-                    <path d="M-16,8 L0,16 L16,8 L0,0 Z" class="brick-top-face" />
-                    <path d="M-16,8 L0,16 L0,28.8 L-16,20.8 Z" class="brick-left-face" />
-                    <path d="M16,8 L0,16 L0,28.8 L16,20.8 Z" class="brick-right-face" />
-
-                    <!-- Middle (2x2 on left) -->
-                    <g transform="translate(-8, -9.6)">
-                        <path d="M-8,4 L0,8 L8,4 L0,0 Z" class="brick-top-face" />
-                        <path d="M-8,4 L0,8 L0,19.2 L-8,15.2 Z" class="brick-left-face" />
-                        <path d="M8,4 L0,8 L0,19.2 L8,15.2 Z" class="brick-right-face" />
-                    </g>
-
-                    <!-- Top (2x2 on top of middle) -->
-                    <g transform="translate(-8, -19.2)">
-                        <path d="M-8,4 L0,8 L8,4 L0,0 Z" class="brick-top-face" />
-                        <path d="M-8,4 L0,8 L0,19.2 L-8,15.2 Z" class="brick-left-face" />
-                        <path d="M8,4 L0,8 L0,19.2 L8,15.2 Z" class="brick-right-face" />
-
-                        <!-- Stud with gloss -->
-                        <ellipse cx="0" cy="4" rx="2.4" ry="1.6" class="brick-stud" />
-                        <ellipse cx="0" cy="3.2" rx="1.6" ry="0.8" fill="url(#studGloss)" opacity="0.6" />
-                    </g>
+                <g transform="translate(60, 38)" filter="url(#softShadow)">
+                    <!-- Top face (diamond) -->
+                    <path d="M0,-20 L34,0 L0,20 L-34,0 Z" class="brick-top-face" />
+                    <!-- Left face — shorter -->
+                    <path d="M-34,0 L0,20 L0,36 L-34,16 Z" class="brick-left-face" />
+                    <!-- Right face — shorter -->
+                    <path d="M34,0 L0,20 L0,36 L34,16 Z" class="brick-right-face" />
+                    <!-- Solid cylinder stud — centered on face, proportional -->
+                    <path d="M-12,0 C-12,4 -6.6,7 0,7 C6.6,7 12,4 12,0 L12,-6 C12,-2 6.6,1 0,1 C-6.6,1 -12,-2 -12,-6 Z"
+                        class="brick-stud-wall" />
+                    <ellipse cx="0" cy="-6" rx="12" ry="7" class="brick-stud" />
                 </g>
             </svg>
             <h1 class="brand-title">BMC</h1>

@@ -61,6 +61,48 @@ export class ThemeService {
             label: 'Matrix',
             icon: 'fas fa-terminal',
             swatchColors: ['#00ff41', '#00cc33', '#0a0a0a']
+        },
+        {
+            id: 'cyberpunk',
+            label: 'Cyberpunk',
+            icon: 'fas fa-bolt',
+            swatchColors: ['#fcee09', '#ff003c', '#121212']
+        },
+        {
+            id: 'retro-arcade',
+            label: 'Retro Arcade',
+            icon: 'fas fa-gamepad',
+            swatchColors: ['#ff00ff', '#00e5ff', '#050505']
+        },
+        {
+            id: 'brick-builder',
+            label: 'Brick Builder',
+            icon: 'fas fa-shapes',
+            swatchColors: ['#E3000B', '#006CB7', '#FFCD03']
+        },
+        {
+            id: 'blueprint',
+            label: 'Blueprint',
+            icon: 'fas fa-drafting-compass',
+            swatchColors: ['#4fc3f7', '#b0bec5', '#0a1628']
+        },
+        {
+            id: 'pastel-dreams',
+            label: 'Pastel Dreams',
+            icon: 'fas fa-moon',
+            swatchColors: ['#b388ff', '#f48fb1', '#1a1025']
+        },
+        {
+            id: 'blueprint-light',
+            label: 'Blueprint Light',
+            icon: 'fas fa-ruler-combined',
+            swatchColors: ['#0288d1', '#546e7a', '#eceff1']
+        },
+        {
+            id: 'pastel-light',
+            label: 'Pastel Light',
+            icon: 'fas fa-star',
+            swatchColors: ['#7c4dff', '#ec407a', '#f3eff8']
         }
     ];
 

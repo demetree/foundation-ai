@@ -19,8 +19,9 @@ public static class BmcAiExtensions
     /// </summary>
     public static IServiceCollection AddBmcAI(this IServiceCollection services)
     {
-        services.AddSingleton<BmcSearchIndex>();
-        services.AddSingleton<IBmcAiService, BmcAiService>();
+        services.AddScoped<BmcSearchIndex>();
+        services.AddScoped<IBmcAiService, BmcAiService>();
+        services.AddHostedService<BmcAiIndexingService>();
         return services;
     }
 }

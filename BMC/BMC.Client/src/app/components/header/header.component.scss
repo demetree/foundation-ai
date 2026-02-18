@@ -60,6 +60,10 @@
         stroke-linejoin: round;
     }
 
+    .brick-stud-wall {
+        fill: var(--bmc-primary-dark, #cc8400);
+    }
+
     .brick-stud {
         fill: var(--bmc-primary);
     }
@@ -122,62 +126,158 @@
 }
 
 
-/* ─── Theme Picker ──────────────────────────────────────────────────────── */
-.theme-picker {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* ─── Theme Dropdown ───────────────────────────────────────────────────── */
+.theme-dropdown {
+    position: relative;
     margin-right: 8px;
 }
 
-.theme-picker-label {
-    font-size: 0.8rem;
-    color: var(--bmc-text-secondary);
-    margin-right: 4px;
+.theme-dropdown-trigger {
     display: flex;
     align-items: center;
-    gap: 4px;
-}
-
-.theme-swatch {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 2px solid transparent;
+    gap: 6px;
+    background: var(--bmc-surface-subtle, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--bmc-border, rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    padding: 5px 10px 5px 6px;
     cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    position: relative;
-    overflow: hidden;
-
-    // Inner gradient fill
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 2px;
-        border-radius: 50%;
-    }
+    transition: background 0.2s ease, border-color 0.2s ease;
 
     &:hover {
-        transform: scale(1.15);
+        background: var(--bmc-surface-hover, rgba(255, 255, 255, 0.1));
+        border-color: var(--bmc-border-strong, rgba(255, 255, 255, 0.2));
+    }
+}
+
+.trigger-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: block;
+    flex-shrink: 0;
+}
+
+.trigger-chevron {
+    font-size: 0.6rem;
+    color: var(--bmc-text-secondary);
+    transition: transform 0.2s ease;
+
+    .open & {
+        transform: rotate(180deg);
+    }
+}
+
+.theme-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 200px;
+    background: var(--bmc-bg-elevated, #1a1a2e);
+    border: 1px solid var(--bmc-border, rgba(255, 255, 255, 0.1));
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: var(--bmc-shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.5));
+    z-index: 1000;
+    animation: dropdownFadeIn 0.15s ease-out;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.theme-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-align: left;
+
+    &:hover {
+        background: var(--bmc-surface-hover, rgba(255, 255, 255, 0.08));
     }
 
     &.active {
-        border-color: var(--bmc-text-primary);
-        box-shadow: 0 0 8px var(--bmc-glow);
+        background: var(--bmc-surface-hover, rgba(255, 255, 255, 0.08));
     }
+}
 
-    // Default theme swatch — warm amber
-    &.swatch-default {
-        background: linear-gradient(135deg, #ffa726 0%, #ff8f00 100%);
-    }
+.item-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid var(--bmc-border, rgba(255, 255, 255, 0.1));
+}
 
-    // Miami Vice swatch — hot pink / orange
-    &.swatch-miami-vice {
-        background: linear-gradient(135deg, #ff6ec7 0%, #ff8a00 100%);
-    }
+.item-label {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--bmc-text-primary);
+    white-space: nowrap;
+}
 
-    // Matrix swatch — phosphor green
-    &.swatch-matrix {
-        background: linear-gradient(135deg, #00ff41 0%, #00cc33 100%);
-    }
+.item-check {
+    font-size: 0.75rem;
+    color: var(--bmc-primary);
+    margin-left: auto;
+}
+
+
+/* ─── Swatch gradients (shared by trigger + dropdown items) ────────────── */
+
+.swatch-default {
+    background: linear-gradient(135deg, #ffa726 0%, #e65100 100%);
+}
+
+.swatch-miami-vice {
+    background: linear-gradient(135deg, #ff6ec7 0%, #ff8a00 100%);
+}
+
+.swatch-matrix {
+    background: linear-gradient(135deg, #00ff41 0%, #003300 100%);
+}
+
+.swatch-cyberpunk {
+    background: linear-gradient(135deg, #fcee09 0%, #ff003c 100%);
+}
+
+.swatch-retro-arcade {
+    background: linear-gradient(135deg, #ff00ff 0%, #00e5ff 100%);
+}
+
+.swatch-brick-builder {
+    background: conic-gradient(from 180deg, #E3000B, #006CB7, #FFCD03, #E3000B);
+}
+
+.swatch-blueprint {
+    background: linear-gradient(135deg, #4fc3f7 0%, #0a1628 100%);
+}
+
+.swatch-pastel-dreams {
+    background: linear-gradient(135deg, #b388ff 0%, #f48fb1 100%);
+}
+
+.swatch-blueprint-light {
+    background: linear-gradient(135deg, #4fc3f7 0%, #e1f5fe 100%);
+}
+
+.swatch-pastel-light {
+    background: linear-gradient(135deg, #ce93d8 0%, #f3eff8 100%);
 }

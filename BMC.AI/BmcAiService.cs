@@ -120,6 +120,13 @@ public class BmcAiService : IBmcAiService
     {
         _logger.LogInformation("BMC Chat (streaming): {Question}", question);
 
+        if (!await _vectorStore.CollectionExistsAsync(BmcSearchIndex.PartsCollection, ct))
+        {
+            _logger.LogWarning("Collection '{Collection}' does not exist — chat unavailable until indexing is run", BmcSearchIndex.PartsCollection);
+            yield return "The AI knowledge base hasn't been indexed yet. Please run indexing from the admin panel first (POST /api/ai/index).";
+            yield break;
+        }
+
         await foreach (var token in _rag.QueryStreamAsync(question, new RagOptions
         {
             Collection = BmcSearchIndex.PartsCollection,

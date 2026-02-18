@@ -10,6 +10,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
 import { CatalogPartDetailComponent } from './components/catalog-part-detail/catalog-part-detail.component';
 
 import { AuthGuard } from './services/auth-guard';
+import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 
 
 import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
@@ -189,6 +190,7 @@ const routes: Routes = [
     // Premium custom UI routes
     { path: 'parts', component: PartsCatalogComponent, canActivate: [AuthGuard], title: 'Parts Catalog' },
     { path: 'colours', component: ColourLibraryComponent, canActivate: [AuthGuard], title: 'Colour Library' },
+    { path: 'ai', component: AiAssistantComponent, canActivate: [AuthGuard], title: 'AI Assistant' },
     { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
     { path: 'my-collection', component: MyCollectionComponent, canActivate: [AuthGuard], title: 'My Collection' },
     { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], title: 'My Profile' },

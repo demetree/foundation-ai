@@ -28,9 +28,9 @@
         right: 0;
         bottom: 0;
         background-image: var(--bmc-theme-overlay), var(--bmc-theme-skyline);
-        background-size: auto, var(--bmc-theme-skyline-size);
-        background-position: center, center bottom;
-        background-repeat: repeat, var(--bmc-theme-skyline-repeat);
+        background-size: var(--bmc-theme-bg-size, auto, cover);
+        background-position: var(--bmc-theme-bg-position, center, center bottom);
+        background-repeat: var(--bmc-theme-bg-repeat, repeat, no-repeat);
         opacity: var(--bmc-theme-skyline-opacity);
         pointer-events: none;
         z-index: -1;

@@ -1,15 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- Single isometric 1x1 plate with solid cylinder stud — BMC favicon -->
   <defs>
     <style>
-      .brick-face { fill: #2B3A42; }
-      .stud { fill: #FF5722; }
+      .face-top { fill: #2B3A42; }
+      .face-left { fill: #1F2A30; }
+      .face-right { fill: #36454F; }
+      .stud-wall { fill: #cc8400; }
+      .stud-top { fill: #FF5722; }
     </style>
   </defs>
-  <!-- Isometric top face (diamond) -->
-  <path class="brick-face" d="M8 2 L14 6 L8 10 L2 6 Z"/>
-  <!-- Stud (ellipse, foreshortened) -->
-  <ellipse class="stud" cx="8" cy="6" rx="2.5" ry="1.5"/>
-  <!-- Subtle edge definition for high-DPI screens -->
-  <path fill="none" stroke="#1A1A1A" stroke-width="0.5" opacity="0.3"
-        d="M8 2 L14 6 L8 10 L2 6 Z"/>
+  <!-- Top face (diamond) -->
+  <path class="face-top" d="M8 2 L14 6 L8 10 L2 6 Z"/>
+  <!-- Left face -->
+  <path class="face-left" d="M2 6 L8 10 L8 12.5 L2 8.5 Z"/>
+  <!-- Right face -->
+  <path class="face-right" d="M14 6 L8 10 L8 12.5 L14 8.5 Z"/>
+  <!-- Stud cylinder wall — centered on diamond face -->
+  <path class="stud-wall" d="M5.2,6 C5.2,6.8 6.4,7.5 8,7.5 C9.6,7.5 10.8,6.8 10.8,6 L10.8,4.8 C10.8,5.6 9.6,6.3 8,6.3 C6.4,6.3 5.2,5.6 5.2,4.8 Z"/>
+  <!-- Stud top (solid flat cap) -->
+  <ellipse class="stud-top" cx="8" cy="4.8" rx="2.8" ry="1.5"/>
+  <!-- Edge definition -->
+  <path fill="none" stroke="#1A1A1A" stroke-width="0.4" opacity="0.25"
+        d="M8 2 L14 6 L8 10 L2 6 Z M2 6 L2 8.5 L8 12.5 L14 8.5 L14 6"/>
 </svg>

@@ -67,6 +67,9 @@
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
     <ProjectReference Include="..\..\BmcDatabase\BmcDatabase.csproj" />
     <ProjectReference Include="..\..\BMC.Physics\BMC.Physics.csproj" />
+    <ProjectReference Include="..\..\BMC.AI\BMC.AI.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI\Foundation.AI\Foundation.AI.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI\Foundation.AI.VectorStore.Zvec\Foundation.AI.VectorStore.Zvec.csproj" />
     <ProjectReference Include="..\BMC.Client\BMC.Client.esproj" />
   </ItemGroup>
 

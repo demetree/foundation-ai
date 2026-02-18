@@ -108,6 +108,9 @@ body[data-theme="default"] {
     --bmc-panel-bg: var(--bmc-bg-card);
     --bmc-panel-border: var(--bmc-border);
     --bmc-panel-backdrop: none;
+
+    // Modal close button filter — invert for dark themes
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
 }
 
 
@@ -211,6 +214,9 @@ body[data-theme="miami-vice"] {
     --bmc-panel-bg: var(--bmc-glass-bg);
     --bmc-panel-border: var(--bmc-glass-border);
     --bmc-panel-backdrop: blur(20px);
+
+    // Modal close button filter
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
 }
 
 
@@ -315,4 +321,777 @@ body[data-theme="matrix"] {
     --bmc-panel-bg: var(--bmc-bg-card);
     --bmc-panel-border: var(--bmc-border);
     --bmc-panel-backdrop: none;
+
+    // Modal close button filter
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
+}
+
+
+// ─── Cyberpunk Theme ─────────────────────────────────────────────────────────
+body[data-theme="cyberpunk"] {
+
+    // Brand Colors — electric yellow / neon red
+    --bmc-primary: #fcee09;
+    --bmc-primary-dark: #e0d500;
+    --bmc-primary-light: #fff9a0;
+    --bmc-accent: #ff003c;
+    --bmc-accent-light: #ff4070;
+
+    // Isometric brick logo fills — warm charcoal for Cyberpunk
+    --bmc-brick-face: #5A5040;
+    --bmc-brick-shadow: #403828;
+    --bmc-brick-light: #6A6050;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.3);
+
+    // Surface Colors — dark charcoal base
+    --bmc-bg-deep: #0c0c0c;
+    --bmc-bg-dark: #141414;
+    --bmc-bg-card: #1a1a1a;
+    --bmc-bg-elevated: #222222;
+    --bmc-bg-hover: #2c2c2c;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #0c0c0c 0%, #141414 100%);
+
+    // Glassmorphism — dark with yellow neon edge
+    --bmc-glass-bg: rgba(12, 12, 12, 0.55);
+    --bmc-glass-border: rgba(252, 238, 9, 0.2);
+
+    // Text — warm off-white
+    --bmc-text-primary: #f0ece0;
+    --bmc-text-secondary: rgba(252, 238, 9, 0.55);
+    --bmc-text-muted: rgba(252, 238, 9, 0.3);
+
+    // Borders — yellow neon
+    --bmc-border: rgba(252, 238, 9, 0.1);
+    --bmc-border-strong: rgba(252, 238, 9, 0.2);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+    --bmc-glow: 0 0 20px rgba(252, 238, 9, 0.08);
+
+    // Gradients — yellow / red
+    --bmc-gradient-primary: linear-gradient(135deg, #fcee09 0%, #ff003c 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #ff003c 0%, #ff4070 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(252, 238, 9, 0.35);
+    --bmc-accent-glow-soft: rgba(252, 238, 9, 0.12);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+    --bmc-header-border: rgba(252, 238, 9, 0.12);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #141414 0%, #080808 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(252, 238, 9, 0.15), rgba(255, 0, 60, 0.08));
+    --bmc-sidebar-active-border: #fcee09;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(12, 12, 12, 0.5);
+    --bmc-surface-hover: rgba(252, 238, 9, 0.06);
+    --bmc-surface-border: rgba(252, 238, 9, 0.1);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(252, 238, 9, 0.2);
+    --bmc-scrollbar-thumb-hover: rgba(252, 238, 9, 0.35);
+
+    // Table
+    --bmc-table-striped-bg: rgba(252, 238, 9, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(252, 238, 9, 0.15);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(252, 238, 9, 0.3);
+
+    // Dashboard radial accents — yellow & red
+    --bmc-radial-accent-1: rgba(252, 238, 9, 0.1);
+    --bmc-radial-accent-2: rgba(255, 0, 60, 0.06);
+
+    // Horizontal noise overlay — cyberpunk static
+    --bmc-theme-overlay:
+        repeating-linear-gradient(0deg,
+            rgba(252, 238, 9, 0.02) 0px,
+            transparent 1px,
+            transparent 4px,
+            rgba(255, 0, 60, 0.015) 4px,
+            transparent 5px,
+            transparent 8px);
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/cyberpunk.jpg');
+    --bmc-theme-skyline-opacity: 0.2;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — solid
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button filter
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
+}
+
+
+// ─── Retro Arcade Theme ─────────────────────────────────────────────────────
+body[data-theme="retro-arcade"] {
+
+    // Brand Colors — neon magenta / electric cyan
+    --bmc-primary: #ff00ff;
+    --bmc-primary-dark: #cc00cc;
+    --bmc-primary-light: #ff80ff;
+    --bmc-accent: #00e5ff;
+    --bmc-accent-light: #66f0ff;
+
+    // Isometric brick logo fills — purple-blue tint for Arcade
+    --bmc-brick-face: #4A3A6A;
+    --bmc-brick-shadow: #352858;
+    --bmc-brick-light: #5A4A7A;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.3);
+
+    // Surface Colors — pure black base
+    --bmc-bg-deep: #050505;
+    --bmc-bg-dark: #0a0a12;
+    --bmc-bg-card: #0f0f1a;
+    --bmc-bg-elevated: #181825;
+    --bmc-bg-hover: #222235;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #050505 0%, #0a0a12 100%);
+
+    // Glassmorphism — dark with magenta neon edge
+    --bmc-glass-bg: rgba(5, 5, 5, 0.55);
+    --bmc-glass-border: rgba(255, 0, 255, 0.2);
+
+    // Text — bright white / magenta tint
+    --bmc-text-primary: #f0e6ff;
+    --bmc-text-secondary: rgba(255, 0, 255, 0.5);
+    --bmc-text-muted: rgba(255, 0, 255, 0.28);
+
+    // Borders — magenta neon
+    --bmc-border: rgba(255, 0, 255, 0.12);
+    --bmc-border-strong: rgba(255, 0, 255, 0.22);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.7);
+    --bmc-glow: 0 0 24px rgba(255, 0, 255, 0.1);
+
+    // Gradients — magenta / cyan
+    --bmc-gradient-primary: linear-gradient(135deg, #ff00ff 0%, #00e5ff 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #00e676 0%, #00e5ff 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #00e5ff 0%, #66f0ff 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(255, 0, 255, 0.35);
+    --bmc-accent-glow-soft: rgba(255, 0, 255, 0.12);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #050505 0%, #0f0f1a 100%);
+    --bmc-header-border: rgba(255, 0, 255, 0.12);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #0a0a12 0%, #030308 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(255, 0, 255, 0.15), rgba(0, 229, 255, 0.08));
+    --bmc-sidebar-active-border: #ff00ff;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(5, 5, 5, 0.5);
+    --bmc-surface-hover: rgba(255, 0, 255, 0.06);
+    --bmc-surface-border: rgba(255, 0, 255, 0.1);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(255, 0, 255, 0.18);
+    --bmc-scrollbar-thumb-hover: rgba(255, 0, 255, 0.32);
+
+    // Table
+    --bmc-table-striped-bg: rgba(255, 0, 255, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(255, 0, 255, 0.18);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(255, 0, 255, 0.32);
+
+    // Dashboard radial accents — magenta & cyan
+    --bmc-radial-accent-1: rgba(255, 0, 255, 0.1);
+    --bmc-radial-accent-2: rgba(0, 229, 255, 0.06);
+
+    // Pixel grid overlay — retro CRT feel
+    --bmc-theme-overlay:
+        repeating-linear-gradient(0deg,
+            rgba(255, 0, 255, 0.03) 0px,
+            transparent 1px,
+            transparent 3px),
+        repeating-linear-gradient(90deg,
+            rgba(0, 229, 255, 0.02) 0px,
+            transparent 1px,
+            transparent 3px);
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/retro-arcade.jpg');
+    --bmc-theme-skyline-opacity: 0.2;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+
+    // 3-layer background (2 overlay gradients + skyline)
+    --bmc-theme-bg-size: auto, auto, cover;
+    --bmc-theme-bg-repeat: repeat, repeat, no-repeat;
+    --bmc-theme-bg-position: center, center, center bottom;
+
+    // Data panel surfaces — solid
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button filter
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
+}
+
+
+// ─── Brick Builder Theme (Light) ────────────────────────────────────────────
+body[data-theme="brick-builder"] {
+
+    // Brand Colors — classic LEGO primaries
+    --bmc-primary: #E3000B;
+    --bmc-primary-dark: #b80009;
+    --bmc-primary-light: #ff4d55;
+    --bmc-accent: #006CB7;
+    --bmc-accent-light: #338fd4;
+
+    // Isometric brick logo fills — classic bright colors for kid-friendly
+    --bmc-brick-face: #E3000B;
+    --bmc-brick-shadow: #b80009;
+    --bmc-brick-light: #ff4d55;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.15);
+
+    // Surface Colors — light cream / white base
+    --bmc-bg-deep: #f5f5f0;
+    --bmc-bg-dark: #eeeee8;
+    --bmc-bg-card: #ffffff;
+    --bmc-bg-elevated: #f8f8f5;
+    --bmc-bg-hover: #eaeae5;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #f5f5f0 0%, #eeeee8 100%);
+
+    // Glassmorphism — light with subtle shadow
+    --bmc-glass-bg: rgba(255, 255, 255, 0.8);
+    --bmc-glass-border: rgba(0, 0, 0, 0.08);
+
+    // Text — dark readable
+    --bmc-text-primary: #1a1a1a;
+    --bmc-text-secondary: #555555;
+    --bmc-text-muted: #999999;
+
+    // Borders — light gray
+    --bmc-border: rgba(0, 0, 0, 0.08);
+    --bmc-border-strong: rgba(0, 0, 0, 0.15);
+
+    // Shadows — softer for light theme
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+    --bmc-glow: 0 0 20px rgba(227, 0, 11, 0.08);
+
+    // Gradients — LEGO primaries
+    --bmc-gradient-primary: linear-gradient(135deg, #E3000B 0%, #ff4d55 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #00a84f 0%, #2ecc71 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #006CB7 0%, #338fd4 100%);
+
+    // Accent glow — subtle red
+    --bmc-accent-glow: rgba(227, 0, 11, 0.2);
+    --bmc-accent-glow-soft: rgba(227, 0, 11, 0.08);
+
+    // Header / Navbar — white with subtle shadow
+    --bmc-header-bg: linear-gradient(135deg, #ffffff 0%, #f8f8f5 100%);
+    --bmc-header-border: rgba(0, 0, 0, 0.08);
+
+    // Sidebar — clean white
+    --bmc-sidebar-bg: linear-gradient(180deg, #ffffff 0%, #f5f5f0 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(227, 0, 11, 0.08), rgba(0, 108, 183, 0.04));
+    --bmc-sidebar-active-border: #E3000B;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(0, 0, 0, 0.02);
+    --bmc-surface-hover: rgba(227, 0, 11, 0.04);
+    --bmc-surface-border: rgba(0, 0, 0, 0.06);
+
+    // Scrollbar — light gray
+    --bmc-scrollbar-thumb: rgba(0, 0, 0, 0.15);
+    --bmc-scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+    // Table
+    --bmc-table-striped-bg: rgba(0, 0, 0, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(227, 0, 11, 0.15);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(227, 0, 11, 0.25);
+
+    // Dashboard radial accents — red & blue
+    --bmc-radial-accent-1: rgba(227, 0, 11, 0.06);
+    --bmc-radial-accent-2: rgba(0, 108, 183, 0.04);
+
+    // No overlay for light theme
+    --bmc-theme-overlay: none;
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/brick-builder.jpg');
+    --bmc-theme-skyline-opacity: 0.5;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — solid white
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button — no inversion needed on light backgrounds
+    --bmc-close-btn-filter: none;
+}
+
+
+// ─── Blueprint Theme ─────────────────────────────────────────────────────────
+body[data-theme="blueprint"] {
+
+    // Brand Colors — technical blue / silver
+    --bmc-primary: #4fc3f7;
+    --bmc-primary-dark: #0097c7;
+    --bmc-primary-light: #a6e1fa;
+    --bmc-accent: #b0bec5;
+    --bmc-accent-light: #cfd8dc;
+
+    // Isometric brick logo fills — steel blue for Blueprint
+    --bmc-brick-face: #37474f;
+    --bmc-brick-shadow: #263238;
+    --bmc-brick-light: #455a64;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.3);
+
+    // Surface Colors — dark navy base
+    --bmc-bg-deep: #0a1628;
+    --bmc-bg-dark: #0e1e36;
+    --bmc-bg-card: #122240;
+    --bmc-bg-elevated: #18294a;
+    --bmc-bg-hover: #1e3358;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #0a1628 0%, #0e1e36 100%);
+
+    // Glassmorphism — dark navy with blue edge
+    --bmc-glass-bg: rgba(10, 22, 40, 0.55);
+    --bmc-glass-border: rgba(79, 195, 247, 0.18);
+
+    // Text — cool white / pale blue
+    --bmc-text-primary: #e3f2fd;
+    --bmc-text-secondary: rgba(79, 195, 247, 0.6);
+    --bmc-text-muted: rgba(79, 195, 247, 0.32);
+
+    // Borders — blue-tinted
+    --bmc-border: rgba(79, 195, 247, 0.1);
+    --bmc-border-strong: rgba(79, 195, 247, 0.2);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.55);
+    --bmc-glow: 0 0 20px rgba(79, 195, 247, 0.08);
+
+    // Gradients — blue / silver
+    --bmc-gradient-primary: linear-gradient(135deg, #4fc3f7 0%, #0097c7 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #4dd0e1 0%, #00acc1 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #b0bec5 0%, #78909c 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(79, 195, 247, 0.3);
+    --bmc-accent-glow-soft: rgba(79, 195, 247, 0.1);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #0a1628 0%, #122240 100%);
+    --bmc-header-border: rgba(79, 195, 247, 0.1);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #0e1e36 0%, #060e1a 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(79, 195, 247, 0.12), rgba(176, 190, 197, 0.06));
+    --bmc-sidebar-active-border: #4fc3f7;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(10, 22, 40, 0.5);
+    --bmc-surface-hover: rgba(79, 195, 247, 0.06);
+    --bmc-surface-border: rgba(79, 195, 247, 0.08);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(79, 195, 247, 0.18);
+    --bmc-scrollbar-thumb-hover: rgba(79, 195, 247, 0.3);
+
+    // Table
+    --bmc-table-striped-bg: rgba(79, 195, 247, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(79, 195, 247, 0.15);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(79, 195, 247, 0.28);
+
+    // Dashboard radial accents — blue & silver
+    --bmc-radial-accent-1: rgba(79, 195, 247, 0.08);
+    --bmc-radial-accent-2: rgba(176, 190, 197, 0.05);
+
+    // Blueprint grid overlay — technical drawing lines
+    --bmc-theme-overlay:
+        repeating-linear-gradient(0deg,
+            rgba(79, 195, 247, 0.04) 0px,
+            transparent 1px,
+            transparent 20px),
+        repeating-linear-gradient(90deg,
+            rgba(79, 195, 247, 0.04) 0px,
+            transparent 1px,
+            transparent 20px);
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/blueprint.jpg');
+    --bmc-theme-skyline-opacity: 0.1;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+    --bmc-theme-skyline-position: center top;
+
+    // 3-layer background (2 overlay gradients + skyline) — stretch to width, tile vertically
+    --bmc-theme-bg-size: auto, auto, 100% auto;
+    --bmc-theme-bg-repeat: repeat, repeat, repeat-y;
+    --bmc-theme-bg-position: center, center, center top;
+
+    // Data panel surfaces — solid
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button filter
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
+}
+
+
+// ─── Pastel Dreams Theme ────────────────────────────────────────────────────
+body[data-theme="pastel-dreams"] {
+
+    // Brand Colors — lavender / soft pink
+    --bmc-primary: #b388ff;
+    --bmc-primary-dark: #9c5cff;
+    --bmc-primary-light: #d4b8ff;
+    --bmc-accent: #f48fb1;
+    --bmc-accent-light: #f8bbd0;
+
+    // Isometric brick logo fills — soft purple for Pastel Dreams
+    --bmc-brick-face: #5A4070;
+    --bmc-brick-shadow: #452D5E;
+    --bmc-brick-light: #6A5080;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.2);
+
+    // Surface Colors — deep plum base
+    --bmc-bg-deep: #1a1025;
+    --bmc-bg-dark: #221530;
+    --bmc-bg-card: #281a38;
+    --bmc-bg-elevated: #302042;
+    --bmc-bg-hover: #3a2850;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #1a1025 0%, #221530 100%);
+
+    // Glassmorphism — plum with rose shimmer
+    --bmc-glass-bg: rgba(26, 16, 37, 0.55);
+    --bmc-glass-border: rgba(179, 136, 255, 0.2);
+
+    // Text — soft cream / lavender
+    --bmc-text-primary: #f5f0ff;
+    --bmc-text-secondary: rgba(212, 184, 255, 0.65);
+    --bmc-text-muted: rgba(212, 184, 255, 0.35);
+
+    // Borders — lavender tint
+    --bmc-border: rgba(179, 136, 255, 0.12);
+    --bmc-border-strong: rgba(179, 136, 255, 0.22);
+
+    // Shadows
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
+    --bmc-glow: 0 0 20px rgba(179, 136, 255, 0.1);
+
+    // Gradients — lavender / pink / mint
+    --bmc-gradient-primary: linear-gradient(135deg, #b388ff 0%, #f48fb1 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #80cbc4 0%, #4db6ac 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #f48fb1 0%, #f8bbd0 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(179, 136, 255, 0.35);
+    --bmc-accent-glow-soft: rgba(179, 136, 255, 0.12);
+
+    // Header / Navbar
+    --bmc-header-bg: linear-gradient(135deg, #1a1025 0%, #281a38 100%);
+    --bmc-header-border: rgba(179, 136, 255, 0.12);
+
+    // Sidebar
+    --bmc-sidebar-bg: linear-gradient(180deg, #221530 0%, #120a1a 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(179, 136, 255, 0.15), rgba(244, 143, 177, 0.08));
+    --bmc-sidebar-active-border: #b388ff;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(26, 16, 37, 0.5);
+    --bmc-surface-hover: rgba(179, 136, 255, 0.06);
+    --bmc-surface-border: rgba(179, 136, 255, 0.1);
+
+    // Scrollbar
+    --bmc-scrollbar-thumb: rgba(179, 136, 255, 0.18);
+    --bmc-scrollbar-thumb-hover: rgba(179, 136, 255, 0.3);
+
+    // Table
+    --bmc-table-striped-bg: rgba(179, 136, 255, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(179, 136, 255, 0.15);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(179, 136, 255, 0.28);
+
+    // Dashboard radial accents — lavender & pink
+    --bmc-radial-accent-1: rgba(179, 136, 255, 0.1);
+    --bmc-radial-accent-2: rgba(244, 143, 177, 0.06);
+
+    // Soft pastel gradient wash overlay
+    --bmc-theme-overlay:
+        linear-gradient(135deg,
+            rgba(179, 136, 255, 0.04) 0%,
+            rgba(244, 143, 177, 0.03) 50%,
+            rgba(128, 203, 196, 0.02) 100%);
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/pastel-dreams.jpg');
+    --bmc-theme-skyline-opacity: 0.7;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — solid
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button filter
+    --bmc-close-btn-filter: invert(1) brightness(0.8);
+}
+
+
+// ─── Blueprint Light Theme ──────────────────────────────────────────────────
+body[data-theme="blueprint-light"] {
+
+    // Brand Colors — technical blue / darker for light bg contrast
+    --bmc-primary: #0288d1;
+    --bmc-primary-dark: #01579b;
+    --bmc-primary-light: #4fc3f7;
+    --bmc-accent: #546e7a;
+    --bmc-accent-light: #78909c;
+
+    // Isometric brick logo fills — steel blue on light
+    --bmc-brick-face: #0288d1;
+    --bmc-brick-shadow: #01579b;
+    --bmc-brick-light: #4fc3f7;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.12);
+
+    // Surface Colors — light gray-blue base
+    --bmc-bg-deep: #eceff1;
+    --bmc-bg-dark: #e0e6ea;
+    --bmc-bg-card: #ffffff;
+    --bmc-bg-elevated: #f5f7f9;
+    --bmc-bg-hover: #dce4e8;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #eceff1 0%, #e0e6ea 100%);
+
+    // Glassmorphism — light with blue edge
+    --bmc-glass-bg: rgba(255, 255, 255, 0.82);
+    --bmc-glass-border: rgba(2, 136, 209, 0.12);
+
+    // Text — dark readable
+    --bmc-text-primary: #1a2a3a;
+    --bmc-text-secondary: #455a64;
+    --bmc-text-muted: #90a4ae;
+
+    // Borders — cool gray
+    --bmc-border: rgba(0, 0, 0, 0.08);
+    --bmc-border-strong: rgba(0, 0, 0, 0.14);
+
+    // Shadows — soft for light theme
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.1);
+    --bmc-glow: 0 0 20px rgba(2, 136, 209, 0.1);
+
+    // Gradients — blue tones
+    --bmc-gradient-primary: linear-gradient(135deg, #0288d1 0%, #4fc3f7 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #00897b 0%, #4db6ac 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #546e7a 0%, #78909c 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(2, 136, 209, 0.2);
+    --bmc-accent-glow-soft: rgba(2, 136, 209, 0.08);
+
+    // Header / Navbar — white with blue hint
+    --bmc-header-bg: linear-gradient(135deg, #ffffff 0%, #f5f7f9 100%);
+    --bmc-header-border: rgba(2, 136, 209, 0.1);
+
+    // Sidebar — clean white
+    --bmc-sidebar-bg: linear-gradient(180deg, #ffffff 0%, #eceff1 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(2, 136, 209, 0.08), rgba(84, 110, 122, 0.04));
+    --bmc-sidebar-active-border: #0288d1;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(0, 0, 0, 0.02);
+    --bmc-surface-hover: rgba(2, 136, 209, 0.05);
+    --bmc-surface-border: rgba(0, 0, 0, 0.06);
+
+    // Scrollbar — cool gray
+    --bmc-scrollbar-thumb: rgba(0, 0, 0, 0.12);
+    --bmc-scrollbar-thumb-hover: rgba(0, 0, 0, 0.22);
+
+    // Table
+    --bmc-table-striped-bg: rgba(2, 136, 209, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(2, 136, 209, 0.18);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(2, 136, 209, 0.28);
+
+    // Dashboard radial accents — blue & gray
+    --bmc-radial-accent-1: rgba(2, 136, 209, 0.06);
+    --bmc-radial-accent-2: rgba(84, 110, 122, 0.04);
+
+    // Blueprint grid overlay — lighter lines for light background
+    --bmc-theme-overlay:
+        repeating-linear-gradient(0deg,
+            rgba(2, 136, 209, 0.06) 0px,
+            transparent 1px,
+            transparent 20px),
+        repeating-linear-gradient(90deg,
+            rgba(2, 136, 209, 0.06) 0px,
+            transparent 1px,
+            transparent 20px);
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/blueprint-light.jpg');
+    --bmc-theme-skyline-opacity: 0.1;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+    --bmc-theme-skyline-position: center top;
+
+    // 3-layer background (2 overlay gradients + skyline) — stretch to width, tile vertically
+    --bmc-theme-bg-size: auto, auto, 100% auto;
+    --bmc-theme-bg-repeat: repeat, repeat, repeat-y;
+    --bmc-theme-bg-position: center, center, center top;
+
+    // Data panel surfaces — solid white
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button — no inversion on light background
+    --bmc-close-btn-filter: none;
+}
+
+
+// ─── Pastel Light Theme ─────────────────────────────────────────────────────
+body[data-theme="pastel-light"] {
+
+    // Brand Colors — deeper pastel for light bg contrast
+    --bmc-primary: #7c4dff;
+    --bmc-primary-dark: #651fff;
+    --bmc-primary-light: #b388ff;
+    --bmc-accent: #ec407a;
+    --bmc-accent-light: #f48fb1;
+
+    // Isometric brick logo fills — pastel purple on light
+    --bmc-brick-face: #7c4dff;
+    --bmc-brick-shadow: #651fff;
+    --bmc-brick-light: #b388ff;
+    --bmc-brick-stroke: rgba(0, 0, 0, 0.1);
+
+    // Surface Colors — soft warm white with lavender tint
+    --bmc-bg-deep: #f3eff8;
+    --bmc-bg-dark: #ebe5f2;
+    --bmc-bg-card: #ffffff;
+    --bmc-bg-elevated: #f8f5fc;
+    --bmc-bg-hover: #e8e0f0;
+
+    // Host background gradient
+    --bmc-bg-host-gradient: linear-gradient(135deg, #f3eff8 0%, #ebe5f2 100%);
+
+    // Glassmorphism — light with lavender edge
+    --bmc-glass-bg: rgba(255, 255, 255, 0.82);
+    --bmc-glass-border: rgba(124, 77, 255, 0.1);
+
+    // Text — soft dark
+    --bmc-text-primary: #2a1f3d;
+    --bmc-text-secondary: #5a4a70;
+    --bmc-text-muted: #a090b8;
+
+    // Borders — lavender gray
+    --bmc-border: rgba(0, 0, 0, 0.07);
+    --bmc-border-strong: rgba(0, 0, 0, 0.12);
+
+    // Shadows — gentle for light theme
+    --bmc-shadow-sm: 0 2px 8px rgba(124, 77, 255, 0.06);
+    --bmc-shadow-md: 0 8px 24px rgba(124, 77, 255, 0.08);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.08);
+    --bmc-glow: 0 0 20px rgba(124, 77, 255, 0.1);
+
+    // Gradients — lavender / pink / mint
+    --bmc-gradient-primary: linear-gradient(135deg, #7c4dff 0%, #b388ff 100%);
+    --bmc-gradient-success: linear-gradient(135deg, #26a69a 0%, #80cbc4 100%);
+    --bmc-gradient-accent: linear-gradient(135deg, #ec407a 0%, #f48fb1 100%);
+
+    // Accent glow
+    --bmc-accent-glow: rgba(124, 77, 255, 0.18);
+    --bmc-accent-glow-soft: rgba(124, 77, 255, 0.07);
+
+    // Header / Navbar — white with pastel tint
+    --bmc-header-bg: linear-gradient(135deg, #ffffff 0%, #f8f5fc 100%);
+    --bmc-header-border: rgba(124, 77, 255, 0.08);
+
+    // Sidebar — soft white
+    --bmc-sidebar-bg: linear-gradient(180deg, #ffffff 0%, #f3eff8 100%);
+    --bmc-sidebar-active-bg: linear-gradient(90deg, rgba(124, 77, 255, 0.08), rgba(236, 64, 122, 0.04));
+    --bmc-sidebar-active-border: #7c4dff;
+
+    // Subtle surfaces
+    --bmc-surface-subtle: rgba(0, 0, 0, 0.015);
+    --bmc-surface-hover: rgba(124, 77, 255, 0.04);
+    --bmc-surface-border: rgba(0, 0, 0, 0.05);
+
+    // Scrollbar — soft purple gray
+    --bmc-scrollbar-thumb: rgba(124, 77, 255, 0.12);
+    --bmc-scrollbar-thumb-hover: rgba(124, 77, 255, 0.22);
+
+    // Table
+    --bmc-table-striped-bg: rgba(124, 77, 255, 0.02);
+
+    // Button glow
+    --bmc-btn-shadow: 0 4px 12px rgba(124, 77, 255, 0.15);
+    --bmc-btn-shadow-hover: 0 6px 20px rgba(124, 77, 255, 0.25);
+
+    // Dashboard radial accents — lavender & pink
+    --bmc-radial-accent-1: rgba(124, 77, 255, 0.05);
+    --bmc-radial-accent-2: rgba(236, 64, 122, 0.03);
+
+    // Soft pastel gradient wash — very subtle on light
+    --bmc-theme-overlay:
+        linear-gradient(135deg,
+            rgba(124, 77, 255, 0.03) 0%,
+            rgba(236, 64, 122, 0.02) 50%,
+            rgba(128, 203, 196, 0.015) 100%);
+
+    // No background image
+    --bmc-theme-skyline: url('/assets/images/backgrounds/pastel-light.jpg');
+    --bmc-theme-skyline-opacity: 0.7;
+    --bmc-theme-skyline-size: cover;
+    --bmc-theme-skyline-repeat: no-repeat;
+
+    // Data panel surfaces — solid white
+    --bmc-panel-bg: var(--bmc-bg-card);
+    --bmc-panel-border: var(--bmc-border);
+    --bmc-panel-backdrop: none;
+
+    // Modal close button — no inversion on light background
+    --bmc-close-btn-filter: none;
 }
