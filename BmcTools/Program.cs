@@ -136,7 +136,7 @@ namespace Foundation.BMC.CodeGeneration
             //
             // Create Angular Components to interact with the data services
             //
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("BMC", typeof(Foundation.BMC.Database.BMCContext), bmcDatabaseGenerator.database, outputFolder);
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("BMC", typeof(Foundation.BMC.Database.BMCContext), bmcDatabaseGenerator.database, outputFolder, applicationThemePrefix: "bmc");
 
 
             Console.WriteLine();

@@ -238,7 +238,7 @@ namespace Foundation.CodeGeneration
         }
 
 
-        protected static string BuildDefaultAngularListingComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable)
+        protected static string BuildDefaultAngularListingComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable, string applicationThemePrefix = null)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -328,6 +328,65 @@ namespace Foundation.CodeGeneration
   }
 }
 ");
+
+            //
+            // Theme-aware post-processing — when a theme prefix is provided, replace hardcoded
+            // light-theme colors with CSS custom properties so the output respects the application's theme system.
+            //
+            if (applicationThemePrefix != null)
+            {
+                string hostBlock = $":host {{\n  color: var(--{applicationThemePrefix}-text-primary);\n}}\n\n";
+
+                string themed = sb.ToString();
+
+                //
+                // Background colors
+                //
+                themed = themed.Replace("background-color: #f4f6f9", $"background-color: var(--{applicationThemePrefix}-bg-deep)");
+                themed = themed.Replace("background-color: #fff", $"background-color: var(--{applicationThemePrefix}-bg-card)");
+
+                //
+                // Shadow
+                //
+                themed = themed.Replace("0 2px 5px rgba(0, 0, 0, 0.08)", $"var(--{applicationThemePrefix}-shadow-sm)");
+
+                //
+                // Text colors
+                //
+                themed = themed.Replace("color: #6c757d", $"color: var(--{applicationThemePrefix}-text-muted)");
+
+                //
+                // Borders and focus states
+                //
+                themed = themed.Replace("1px solid #ced4da", $"1px solid var(--{applicationThemePrefix}-border)");
+                themed = themed.Replace("border-color: #0176d3", $"border-color: var(--{applicationThemePrefix}-primary)");
+                themed = themed.Replace("rgba(1, 118, 211, 0.25)", $"var(--{applicationThemePrefix}-accent-glow-soft)");
+
+                //
+                // Form control overrides for theme-aware inputs
+                //
+                string formBlock = $@"
+/* Theme-aware form controls */
+.form-control, .form-select {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+.form-control:focus, .form-select:focus {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-primary);
+  box-shadow: 0 0 0 0.2rem var(--{applicationThemePrefix}-accent-glow-soft);
+}}
+
+.form-control::placeholder {{
+  color: var(--{applicationThemePrefix}-text-muted);
+}}
+";
+
+                return hostBlock + themed + formBlock;
+            }
 
             return sb.ToString();
         }
@@ -1432,7 +1491,7 @@ namespace Foundation.CodeGeneration
         }
 
 
-        protected static string BuildDefaultAngularTableComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable)
+        protected static string BuildDefaultAngularTableComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable, string applicationThemePrefix = null)
         {
             string entityName;
 
@@ -1660,6 +1719,55 @@ td .color-swatch,
 
 ");
 
+
+            //
+            // Theme-aware post-processing — when a theme prefix is provided, replace hardcoded
+            // light-theme colors with CSS custom properties so the output respects the application's theme system.
+            //
+            if (applicationThemePrefix != null)
+            {
+                string hostBlock = $":host {{\n  color: var(--{applicationThemePrefix}-text-primary);\n}}\n\n";
+
+                string themed = sb.ToString();
+
+                //
+                // Background colors
+                //
+                themed = themed.Replace("background: white", $"background: var(--{applicationThemePrefix}-bg-card)");
+                themed = themed.Replace("background-color: white", $"background-color: var(--{applicationThemePrefix}-bg-card)");
+                themed = themed.Replace("background-color: #f8f9fa", $"background-color: var(--{applicationThemePrefix}-bg-elevated)");
+                themed = themed.Replace("background-color: #e9ecef", $"background-color: var(--{applicationThemePrefix}-bg-hover)");
+
+                //
+                // Borders
+                //
+                themed = themed.Replace("2px solid #dee2e6", $"2px solid var(--{applicationThemePrefix}-border-strong)");
+                themed = themed.Replace("1px solid #ced4da", $"1px solid var(--{applicationThemePrefix}-border)");
+
+                //
+                // Shadows
+                //
+                themed = themed.Replace("0 2px 5px rgba(0,0,0,0.08)", $"var(--{applicationThemePrefix}-shadow-sm)");
+                themed = themed.Replace("0 2px 4px rgba(0,0,0,0.05)", $"var(--{applicationThemePrefix}-shadow-sm)");
+
+                //
+                // Text colors
+                //
+                themed = themed.Replace("color: #999", $"color: var(--{applicationThemePrefix}-text-muted)");
+
+                //
+                // Sort arrow colors
+                //
+                themed = themed.Replace("5px solid #000", $"5px solid var(--{applicationThemePrefix}-text-primary)");
+
+                //
+                // Scrollbar colors
+                //
+                themed = themed.Replace("background: rgba(0,0,0,0.2)", $"background: var(--{applicationThemePrefix}-scrollbar-thumb)");
+                themed = themed.Replace("background: rgba(0,0,0,0.4)", $"background: var(--{applicationThemePrefix}-scrollbar-thumb-hover)");
+
+                return hostBlock + themed;
+            }
 
             return sb.ToString();
         }
@@ -2769,7 +2877,7 @@ td .color-swatch,
             return output.ToString();
         }
 
-        protected static string BuildDefaultAngularAddEditComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable)
+        protected static string BuildDefaultAngularAddEditComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable, string applicationThemePrefix = null)
         {
             string entityName;
 
@@ -2865,6 +2973,54 @@ td .color-swatch,
             sb.AppendLine(".text-danger {");
             sb.AppendLine("  color: #dc3545 !important;");
             sb.AppendLine("}");
+
+            //
+            // Theme-aware post-processing — when a theme prefix is provided, replace hardcoded
+            // light-theme colors with CSS custom properties so the output respects the application's theme system.
+            //
+            if (applicationThemePrefix != null)
+            {
+                string hostBlock = $":host {{\n  color: var(--{applicationThemePrefix}-text-primary);\n}}\n\n";
+
+                string themed = sb.ToString();
+
+                //
+                // Button colors
+                //
+                themed = themed.Replace("background-color: #0176d3", $"background-color: var(--{applicationThemePrefix}-primary)");
+                themed = themed.Replace("border-color: #0176d3", $"border-color: var(--{applicationThemePrefix}-primary)");
+
+                //
+                // Text colors — note: 'color: #fff' is intentionally kept for button text
+                //
+                themed = themed.Replace("color: black", $"color: var(--{applicationThemePrefix}-text-primary)");
+                themed = themed.Replace("color: #6c757d", $"color: var(--{applicationThemePrefix}-text-muted)");
+
+                //
+                // Form control overrides for theme-aware inputs
+                //
+                string formBlock = $@"
+/* Theme-aware form controls */
+.form-control, .form-select {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+.form-control:focus, .form-select:focus {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-primary);
+  box-shadow: 0 0 0 0.2rem var(--{applicationThemePrefix}-accent-glow-soft);
+}}
+
+.form-control::placeholder {{
+  color: var(--{applicationThemePrefix}-text-muted);
+}}
+";
+
+                return hostBlock + themed + formBlock;
+            }
 
             return sb.ToString();
         }
@@ -3637,7 +3793,7 @@ td .color-swatch,
         }
 
 
-        protected static string BuildDefaultAngularDetailComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable)
+        protected static string BuildDefaultAngularDetailComponentSCSSImplementation(string module, Type type, DatabaseGenerator.Database.Table scriptGenTable, string applicationThemePrefix = null)
         {
             string entityName;
 
@@ -3775,6 +3931,58 @@ td .color-swatch,
             sb.AppendLine(".hidden {");
             sb.AppendLine("  display: none;");
             sb.AppendLine("}");
+
+            //
+            // Theme-aware post-processing — when a theme prefix is provided, replace hardcoded
+            // light-theme colors with CSS custom properties so the output respects the application's theme system.
+            //
+            if (applicationThemePrefix != null)
+            {
+                string hostBlock = $":host {{\n  color: var(--{applicationThemePrefix}-text-primary);\n}}\n\n";
+
+                string themed = sb.ToString();
+
+                //
+                // Background colors
+                //
+                themed = themed.Replace("background-color: #fff", $"background-color: var(--{applicationThemePrefix}-bg-card)");
+                themed = themed.Replace("background-color: #f4f6f9", $"background-color: var(--{applicationThemePrefix}-bg-deep)");
+
+                //
+                // Shadow
+                //
+                themed = themed.Replace("0 2px 5px rgba(0, 0, 0, 0.08)", $"var(--{applicationThemePrefix}-shadow-sm)");
+
+                //
+                // Text colors
+                //
+                themed = themed.Replace("color: #6c757d", $"color: var(--{applicationThemePrefix}-text-muted)");
+
+                //
+                // Form control overrides for theme-aware inputs
+                //
+                string formBlock = $@"
+/* Theme-aware form controls */
+.form-control, .form-select {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+.form-control:focus, .form-select:focus {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-primary);
+  box-shadow: 0 0 0 0.2rem var(--{applicationThemePrefix}-accent-glow-soft);
+}}
+
+.form-control::placeholder {{
+  color: var(--{applicationThemePrefix}-text-muted);
+}}
+";
+
+                return hostBlock + themed + formBlock;
+            }
 
             return sb.ToString();
         }
@@ -4797,7 +5005,7 @@ td .color-swatch,
             return output;
         }
 
-        public static void BuildAngularComponentImplementationFromEntityFrameworkContext(string moduleName, Type contextType, DatabaseGenerator.Database database, string filePath = "c:\\temp", bool addAuthorization = true)
+        public static void BuildAngularComponentImplementationFromEntityFrameworkContext(string moduleName, Type contextType, DatabaseGenerator.Database database, string filePath = "c:\\temp", bool addAuthorization = true, string applicationThemePrefix = null)
         {
             if (filePath.EndsWith("\\") == false)
             {
@@ -4903,7 +5111,7 @@ td .color-swatch,
                         //
                         // Create the default list component SCSS code
                         //
-                        string listingSCSSCode = BuildDefaultAngularListingComponentSCSSImplementation(moduleName, type, scriptGenTable);
+                        string listingSCSSCode = BuildDefaultAngularListingComponentSCSSImplementation(moduleName, type, scriptGenTable, applicationThemePrefix);
 
                         //
                         // Write out the listing SCSS
@@ -4953,7 +5161,7 @@ td .color-swatch,
                         //
                         // Create the default Add/Edit component SCSS code
                         //
-                        string addEditSCSSCode = BuildDefaultAngularAddEditComponentSCSSImplementation(moduleName, type, scriptGenTable);
+                        string addEditSCSSCode = BuildDefaultAngularAddEditComponentSCSSImplementation(moduleName, type, scriptGenTable, applicationThemePrefix);
 
                         //
                         // Write out the Add/Edit component SCSS
@@ -5003,7 +5211,7 @@ td .color-swatch,
                         //
                         // Create the default detail component SCSS code
                         //
-                        string detailSCSSCode = BuildDefaultAngularDetailComponentSCSSImplementation(moduleName, type, scriptGenTable);
+                        string detailSCSSCode = BuildDefaultAngularDetailComponentSCSSImplementation(moduleName, type, scriptGenTable, applicationThemePrefix);
 
                         //
                         // Write out the detail component SCSS
@@ -5054,7 +5262,7 @@ td .color-swatch,
                         //
                         // Create the default table component SCSS code
                         //
-                        string tableSCSSCode = BuildDefaultAngularTableComponentSCSSImplementation(moduleName, type, scriptGenTable);
+                        string tableSCSSCode = BuildDefaultAngularTableComponentSCSSImplementation(moduleName, type, scriptGenTable, applicationThemePrefix);
 
                         //
                         // Write out the table SCSS
