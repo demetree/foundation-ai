@@ -69,7 +69,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -145,27 +144,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Brick Part Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || (includeRelations == true && x.brickPart.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawPartId.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawTitle.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawCategory.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.keywords.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.author.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.rebrickablePartNum.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.geometryFilePath.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.BrickPartChangeHistory> materialized = await query.ToListAsync(cancellationToken);
@@ -210,7 +188,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -255,27 +232,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bpch => bpch.data == data);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Brick Part Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.brickPart.name.Contains(anyStringContains)
-			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
-			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
-			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
-			       || x.brickPart.keywords.Contains(anyStringContains)
-			       || x.brickPart.author.Contains(anyStringContains)
-			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
-			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -622,7 +578,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -682,27 +637,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(data) == false)
 			{
 				query = query.Where(bpch => bpch.data == data);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Brick Part Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.brickPart.name.Contains(anyStringContains)
-			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
-			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
-			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
-			       || x.brickPart.keywords.Contains(anyStringContains)
-			       || x.brickPart.author.Contains(anyStringContains)
-			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
-			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
-			   );
 			}
 
 

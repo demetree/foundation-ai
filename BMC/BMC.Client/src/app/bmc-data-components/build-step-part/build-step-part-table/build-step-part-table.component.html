@@ -46,24 +46,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': buildStepPart.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCBuildStepPartWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(buildStepPart)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCBuildStepPartWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(buildStepPart)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="buildStepPart.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(buildStepPart)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="buildStepPart.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -210,17 +213,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/buildsteppart', buildStepPart.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/buildsteppart', buildStepPart.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(buildStepPart)" *ngIf="userIsBMCBuildStepPartWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(buildStepPart)" *ngIf="userIsBMCBuildStepPartWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(buildStepPart)" *ngIf="userIsBMCBuildStepPartWriter() && buildStepPart.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(buildStepPart)" *ngIf="userIsBMCBuildStepPartWriter() && buildStepPart.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(buildStepPart)" *ngIf="userIsBMCBuildStepPartWriter() && buildStepPart.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(buildStepPart)" *ngIf="userIsBMCBuildStepPartWriter() && buildStepPart.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -235,24 +238,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{buildStepPart.buildManualStep?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/buildsteppart', buildStepPart.id]"
                         ngbTooltip="Build Step Part Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(buildStepPart)"
                         ngbTooltip="Edit Build Step Part">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(buildStepPart)"
                       ngbTooltip="Delete Build Step Part" 
                       placement="top"
                       *ngIf="buildStepPart.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(buildStepPart)"
                       ngbTooltip="Undelete Build Step Part" 
                       placement="top"

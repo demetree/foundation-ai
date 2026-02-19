@@ -70,7 +70,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -181,25 +180,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Achievement, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.achievement.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.achievement.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.achievement.iconCssClass.Contains(anyStringContains))
-			       || (includeRelations == true && x.achievement.iconImagePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.achievement.criteria.Contains(anyStringContains))
-			       || (includeRelations == true && x.achievement.criteriaCode.Contains(anyStringContains))
-			       || (includeRelations == true && x.achievement.rarity.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.UserAchievement> materialized = await query.ToListAsync(cancellationToken);
@@ -245,7 +225,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -323,25 +302,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(ua => ua.active == true);
 				query = query.Where(ua => ua.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Achievement, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.achievement.name.Contains(anyStringContains)
-			       || x.achievement.description.Contains(anyStringContains)
-			       || x.achievement.iconCssClass.Contains(anyStringContains)
-			       || x.achievement.iconImagePath.Contains(anyStringContains)
-			       || x.achievement.criteria.Contains(anyStringContains)
-			       || x.achievement.criteriaCode.Contains(anyStringContains)
-			       || x.achievement.rarity.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -790,7 +750,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -886,25 +845,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(ua => ua.active == true);
 				query = query.Where(ua => ua.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Achievement, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.achievement.name.Contains(anyStringContains)
-			       || x.achievement.description.Contains(anyStringContains)
-			       || x.achievement.iconCssClass.Contains(anyStringContains)
-			       || x.achievement.iconImagePath.Contains(anyStringContains)
-			       || x.achievement.criteria.Contains(anyStringContains)
-			       || x.achievement.criteriaCode.Contains(anyStringContains)
-			       || x.achievement.rarity.Contains(anyStringContains)
-			   );
 			}
 
 

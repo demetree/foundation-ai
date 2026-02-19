@@ -70,7 +70,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -159,28 +158,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Lego Set Subset, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.childLegoSet.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.childLegoSet.setNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.childLegoSet.imageUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.childLegoSet.brickLinkUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.childLegoSet.rebrickableUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.parentLegoSet.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.parentLegoSet.setNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.parentLegoSet.imageUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.parentLegoSet.brickLinkUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.parentLegoSet.rebrickableUrl.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.LegoSetSubset> materialized = await query.ToListAsync(cancellationToken);
@@ -226,7 +203,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -283,28 +259,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(lss => lss.active == true);
 				query = query.Where(lss => lss.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Lego Set Subset, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.childLegoSet.name.Contains(anyStringContains)
-			       || x.childLegoSet.setNumber.Contains(anyStringContains)
-			       || x.childLegoSet.imageUrl.Contains(anyStringContains)
-			       || x.childLegoSet.brickLinkUrl.Contains(anyStringContains)
-			       || x.childLegoSet.rebrickableUrl.Contains(anyStringContains)
-			       || x.parentLegoSet.name.Contains(anyStringContains)
-			       || x.parentLegoSet.setNumber.Contains(anyStringContains)
-			       || x.parentLegoSet.imageUrl.Contains(anyStringContains)
-			       || x.parentLegoSet.brickLinkUrl.Contains(anyStringContains)
-			       || x.parentLegoSet.rebrickableUrl.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -668,7 +622,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -740,28 +693,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(lss => lss.active == true);
 				query = query.Where(lss => lss.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Lego Set Subset, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.childLegoSet.name.Contains(anyStringContains)
-			       || x.childLegoSet.setNumber.Contains(anyStringContains)
-			       || x.childLegoSet.imageUrl.Contains(anyStringContains)
-			       || x.childLegoSet.brickLinkUrl.Contains(anyStringContains)
-			       || x.childLegoSet.rebrickableUrl.Contains(anyStringContains)
-			       || x.parentLegoSet.name.Contains(anyStringContains)
-			       || x.parentLegoSet.setNumber.Contains(anyStringContains)
-			       || x.parentLegoSet.imageUrl.Contains(anyStringContains)
-			       || x.parentLegoSet.brickLinkUrl.Contains(anyStringContains)
-			       || x.parentLegoSet.rebrickableUrl.Contains(anyStringContains)
-			   );
 			}
 
 

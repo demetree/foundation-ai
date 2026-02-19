@@ -62,24 +62,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': colourFinish.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCColourFinishWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(colourFinish)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCColourFinishWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(colourFinish)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="colourFinish.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(colourFinish)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="colourFinish.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -230,17 +233,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/colourfinish', colourFinish.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/colourfinish', colourFinish.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(colourFinish)" *ngIf="userIsBMCColourFinishWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(colourFinish)" *ngIf="userIsBMCColourFinishWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(colourFinish)" *ngIf="userIsBMCColourFinishWriter() && colourFinish.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(colourFinish)" *ngIf="userIsBMCColourFinishWriter() && colourFinish.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(colourFinish)" *ngIf="userIsBMCColourFinishWriter() && colourFinish.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(colourFinish)" *ngIf="userIsBMCColourFinishWriter() && colourFinish.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -254,24 +257,24 @@ End of commented block for alternate definition option -->
                <strong>{{colourFinish.name}}</strong>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/colourfinish', colourFinish.id]"
                         ngbTooltip="Colour Finish Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(colourFinish)"
                         ngbTooltip="Edit Colour Finish">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(colourFinish)"
                       ngbTooltip="Delete Colour Finish" 
                       placement="top"
                       *ngIf="colourFinish.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(colourFinish)"
                       ngbTooltip="Undelete Colour Finish" 
                       placement="top"

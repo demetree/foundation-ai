@@ -74,7 +74,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -202,27 +201,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Build Challenge Entry, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.entryNotes.Contains(anyStringContains)
-			       || (includeRelations == true && x.buildChallenge.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.buildChallenge.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.buildChallenge.rules.Contains(anyStringContains))
-			       || (includeRelations == true && x.buildChallenge.thumbnailImagePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.publishedMoc.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.publishedMoc.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.publishedMoc.thumbnailImagePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.publishedMoc.tags.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.BuildChallengeEntry> materialized = await query.ToListAsync(cancellationToken);
@@ -272,7 +250,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -366,27 +343,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bce => bce.active == true);
 				query = query.Where(bce => bce.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Build Challenge Entry, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.entryNotes.Contains(anyStringContains)
-			       || x.buildChallenge.name.Contains(anyStringContains)
-			       || x.buildChallenge.description.Contains(anyStringContains)
-			       || x.buildChallenge.rules.Contains(anyStringContains)
-			       || x.buildChallenge.thumbnailImagePath.Contains(anyStringContains)
-			       || x.publishedMoc.name.Contains(anyStringContains)
-			       || x.publishedMoc.description.Contains(anyStringContains)
-			       || x.publishedMoc.thumbnailImagePath.Contains(anyStringContains)
-			       || x.publishedMoc.tags.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -840,7 +796,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -952,27 +907,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bce => bce.active == true);
 				query = query.Where(bce => bce.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Build Challenge Entry, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.entryNotes.Contains(anyStringContains)
-			       || x.buildChallenge.name.Contains(anyStringContains)
-			       || x.buildChallenge.description.Contains(anyStringContains)
-			       || x.buildChallenge.rules.Contains(anyStringContains)
-			       || x.buildChallenge.thumbnailImagePath.Contains(anyStringContains)
-			       || x.publishedMoc.name.Contains(anyStringContains)
-			       || x.publishedMoc.description.Contains(anyStringContains)
-			       || x.publishedMoc.thumbnailImagePath.Contains(anyStringContains)
-			       || x.publishedMoc.tags.Contains(anyStringContains)
-			   );
 			}
 
 

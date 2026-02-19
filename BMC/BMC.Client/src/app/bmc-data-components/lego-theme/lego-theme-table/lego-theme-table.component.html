@@ -58,24 +58,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': legoTheme.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCLegoThemeWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(legoTheme)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCLegoThemeWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(legoTheme)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="legoTheme.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(legoTheme)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="legoTheme.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -225,17 +228,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/legotheme', legoTheme.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/legotheme', legoTheme.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(legoTheme)" *ngIf="userIsBMCLegoThemeWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(legoTheme)" *ngIf="userIsBMCLegoThemeWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(legoTheme)" *ngIf="userIsBMCLegoThemeWriter() && legoTheme.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(legoTheme)" *ngIf="userIsBMCLegoThemeWriter() && legoTheme.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(legoTheme)" *ngIf="userIsBMCLegoThemeWriter() && legoTheme.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(legoTheme)" *ngIf="userIsBMCLegoThemeWriter() && legoTheme.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -250,24 +253,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{legoTheme.legoTheme?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/legotheme', legoTheme.id]"
                         ngbTooltip="Lego Theme Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(legoTheme)"
                         ngbTooltip="Edit Lego Theme">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(legoTheme)"
                       ngbTooltip="Delete Lego Theme" 
                       placement="top"
                       *ngIf="legoTheme.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(legoTheme)"
                       ngbTooltip="Undelete Lego Theme" 
                       placement="top"

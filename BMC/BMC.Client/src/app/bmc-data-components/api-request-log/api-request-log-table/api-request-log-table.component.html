@@ -66,24 +66,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': apiRequestLog.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCApiRequestLogWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(apiRequestLog)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCApiRequestLogWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(apiRequestLog)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="apiRequestLog.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(apiRequestLog)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="apiRequestLog.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -235,17 +238,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/apirequestlog', apiRequestLog.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/apirequestlog', apiRequestLog.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(apiRequestLog)" *ngIf="userIsBMCApiRequestLogWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(apiRequestLog)" *ngIf="userIsBMCApiRequestLogWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(apiRequestLog)" *ngIf="userIsBMCApiRequestLogWriter() && apiRequestLog.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(apiRequestLog)" *ngIf="userIsBMCApiRequestLogWriter() && apiRequestLog.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(apiRequestLog)" *ngIf="userIsBMCApiRequestLogWriter() && apiRequestLog.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(apiRequestLog)" *ngIf="userIsBMCApiRequestLogWriter() && apiRequestLog.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -260,24 +263,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{apiRequestLog.apiKey?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/apirequestlog', apiRequestLog.id]"
                         ngbTooltip="Api Request Log Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(apiRequestLog)"
                         ngbTooltip="Edit Api Request Log">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(apiRequestLog)"
                       ngbTooltip="Delete Api Request Log" 
                       placement="top"
                       *ngIf="apiRequestLog.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(apiRequestLog)"
                       ngbTooltip="Undelete Api Request Log" 
                       placement="top"

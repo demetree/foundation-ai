@@ -54,24 +54,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': publishedMocImage.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCPublishedMocImageWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(publishedMocImage)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCPublishedMocImageWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(publishedMocImage)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="publishedMocImage.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(publishedMocImage)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="publishedMocImage.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -220,17 +223,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/publishedmocimage', publishedMocImage.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/publishedmocimage', publishedMocImage.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(publishedMocImage)" *ngIf="userIsBMCPublishedMocImageWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(publishedMocImage)" *ngIf="userIsBMCPublishedMocImageWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(publishedMocImage)" *ngIf="userIsBMCPublishedMocImageWriter() && publishedMocImage.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(publishedMocImage)" *ngIf="userIsBMCPublishedMocImageWriter() && publishedMocImage.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(publishedMocImage)" *ngIf="userIsBMCPublishedMocImageWriter() && publishedMocImage.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(publishedMocImage)" *ngIf="userIsBMCPublishedMocImageWriter() && publishedMocImage.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -245,24 +248,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{publishedMocImage.publishedMoc?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/publishedmocimage', publishedMocImage.id]"
                         ngbTooltip="Published Moc Image Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(publishedMocImage)"
                         ngbTooltip="Edit Published Moc Image">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(publishedMocImage)"
                       ngbTooltip="Delete Published Moc Image" 
                       placement="top"
                       *ngIf="publishedMocImage.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(publishedMocImage)"
                       ngbTooltip="Undelete Published Moc Image" 
                       placement="top"

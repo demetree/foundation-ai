@@ -50,17 +50,19 @@ End of commented block for alternate definition option -->
             <!-- Only visible rows are rendered -->
           <tr *cdkVirtualFor="let buildManualChangeHistory of filteredBuildManualChangeHistories; trackBy: getBuildManualChangeHistoryId">
             <td class="header-action-button" *ngIf="userIsBMCBuildManualChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(buildManualChangeHistory)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCBuildManualChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(buildManualChangeHistory)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-trash"></i>
               </button>
@@ -204,14 +206,14 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/buildmanualchangehistory', buildManualChangeHistory.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/buildmanualchangehistory', buildManualChangeHistory.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(buildManualChangeHistory)" *ngIf="userIsBMCBuildManualChangeHistoryWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(buildManualChangeHistory)" *ngIf="userIsBMCBuildManualChangeHistoryWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(buildManualChangeHistory)" *ngIf="userIsBMCBuildManualChangeHistoryWriter()" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(buildManualChangeHistory)" *ngIf="userIsBMCBuildManualChangeHistoryWriter()" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
 
@@ -226,17 +228,17 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{buildManualChangeHistory.buildManual?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/buildmanualchangehistory', buildManualChangeHistory.id]"
                         ngbTooltip="Build Manual Change History Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(buildManualChangeHistory)"
                         ngbTooltip="Edit Build Manual Change History">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                      (click)="handleDelete(buildManualChangeHistory)"
                      ngbTooltip="Delete Build Manual Change History" 
                      placement="top">

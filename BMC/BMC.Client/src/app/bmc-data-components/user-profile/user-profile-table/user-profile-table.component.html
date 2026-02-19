@@ -94,24 +94,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': userProfile.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCUserProfileWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(userProfile)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCUserProfileWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(userProfile)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="userProfile.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(userProfile)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="userProfile.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -270,17 +273,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/userprofile', userProfile.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/userprofile', userProfile.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(userProfile)" *ngIf="userIsBMCUserProfileWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(userProfile)" *ngIf="userIsBMCUserProfileWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(userProfile)" *ngIf="userIsBMCUserProfileWriter() && userProfile.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(userProfile)" *ngIf="userIsBMCUserProfileWriter() && userProfile.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(userProfile)" *ngIf="userIsBMCUserProfileWriter() && userProfile.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(userProfile)" *ngIf="userIsBMCUserProfileWriter() && userProfile.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -294,24 +297,24 @@ End of commented block for alternate definition option -->
                <strong>{{userProfile.id}}</strong>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/userprofile', userProfile.id]"
                         ngbTooltip="User Profile Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(userProfile)"
                         ngbTooltip="Edit User Profile">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(userProfile)"
                       ngbTooltip="Delete User Profile" 
                       placement="top"
                       *ngIf="userProfile.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(userProfile)"
                       ngbTooltip="Undelete User Profile" 
                       placement="top"

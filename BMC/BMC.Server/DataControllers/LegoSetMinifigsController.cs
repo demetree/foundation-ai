@@ -70,7 +70,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -159,26 +158,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Lego Set Minifig, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.legoMinifig.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoMinifig.figNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoMinifig.imageUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoSet.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoSet.setNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoSet.imageUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoSet.brickLinkUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.legoSet.rebrickableUrl.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.LegoSetMinifig> materialized = await query.ToListAsync(cancellationToken);
@@ -224,7 +203,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -281,26 +259,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(lsm => lsm.active == true);
 				query = query.Where(lsm => lsm.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Lego Set Minifig, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.legoMinifig.name.Contains(anyStringContains)
-			       || x.legoMinifig.figNumber.Contains(anyStringContains)
-			       || x.legoMinifig.imageUrl.Contains(anyStringContains)
-			       || x.legoSet.name.Contains(anyStringContains)
-			       || x.legoSet.setNumber.Contains(anyStringContains)
-			       || x.legoSet.imageUrl.Contains(anyStringContains)
-			       || x.legoSet.brickLinkUrl.Contains(anyStringContains)
-			       || x.legoSet.rebrickableUrl.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -664,7 +622,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -736,26 +693,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(lsm => lsm.active == true);
 				query = query.Where(lsm => lsm.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Lego Set Minifig, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.legoMinifig.name.Contains(anyStringContains)
-			       || x.legoMinifig.figNumber.Contains(anyStringContains)
-			       || x.legoMinifig.imageUrl.Contains(anyStringContains)
-			       || x.legoSet.name.Contains(anyStringContains)
-			       || x.legoSet.setNumber.Contains(anyStringContains)
-			       || x.legoSet.imageUrl.Contains(anyStringContains)
-			       || x.legoSet.brickLinkUrl.Contains(anyStringContains)
-			       || x.legoSet.rebrickableUrl.Contains(anyStringContains)
-			   );
 			}
 
 

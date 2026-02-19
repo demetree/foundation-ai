@@ -75,7 +75,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -200,21 +199,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Build Step Annotation, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.text.Contains(anyStringContains)
-			       || (includeRelations == true && x.buildStepAnnotationType.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.buildStepAnnotationType.description.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.BuildStepAnnotation> materialized = await query.ToListAsync(cancellationToken);
@@ -265,7 +249,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -355,21 +338,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bsa => bsa.active == true);
 				query = query.Where(bsa => bsa.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Build Step Annotation, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.text.Contains(anyStringContains)
-			       || x.buildStepAnnotationType.name.Contains(anyStringContains)
-			       || x.buildStepAnnotationType.description.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -815,7 +783,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -923,21 +890,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bsa => bsa.active == true);
 				query = query.Where(bsa => bsa.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Build Step Annotation, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.text.Contains(anyStringContains)
-			       || x.buildStepAnnotationType.name.Contains(anyStringContains)
-			       || x.buildStepAnnotationType.description.Contains(anyStringContains)
-			   );
 			}
 
 

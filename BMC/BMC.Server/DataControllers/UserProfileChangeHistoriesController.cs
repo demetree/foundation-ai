@@ -69,7 +69,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -160,27 +159,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Profile Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || (includeRelations == true && x.userProfile.displayName.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.bio.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.location.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.bannerFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.bannerMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.userProfile.websiteUrl.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.UserProfileChangeHistory> materialized = await query.ToListAsync(cancellationToken);
@@ -225,7 +203,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -283,27 +260,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(upch => upch.data == data);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Profile Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.userProfile.displayName.Contains(anyStringContains)
-			       || x.userProfile.bio.Contains(anyStringContains)
-			       || x.userProfile.location.Contains(anyStringContains)
-			       || x.userProfile.avatarFileName.Contains(anyStringContains)
-			       || x.userProfile.avatarMimeType.Contains(anyStringContains)
-			       || x.userProfile.bannerFileName.Contains(anyStringContains)
-			       || x.userProfile.bannerMimeType.Contains(anyStringContains)
-			       || x.userProfile.websiteUrl.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -726,7 +682,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -802,27 +757,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(data) == false)
 			{
 				query = query.Where(upch => upch.data == data);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Profile Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.userProfile.displayName.Contains(anyStringContains)
-			       || x.userProfile.bio.Contains(anyStringContains)
-			       || x.userProfile.location.Contains(anyStringContains)
-			       || x.userProfile.avatarFileName.Contains(anyStringContains)
-			       || x.userProfile.avatarMimeType.Contains(anyStringContains)
-			       || x.userProfile.bannerFileName.Contains(anyStringContains)
-			       || x.userProfile.bannerMimeType.Contains(anyStringContains)
-			       || x.userProfile.websiteUrl.Contains(anyStringContains)
-			   );
 			}
 
 

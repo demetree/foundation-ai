@@ -46,24 +46,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': projectTagAssignment.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCProjectTagAssignmentWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(projectTagAssignment)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCProjectTagAssignmentWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(projectTagAssignment)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="projectTagAssignment.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(projectTagAssignment)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="projectTagAssignment.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -210,17 +213,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/projecttagassignment', projectTagAssignment.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/projecttagassignment', projectTagAssignment.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(projectTagAssignment)" *ngIf="userIsBMCProjectTagAssignmentWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(projectTagAssignment)" *ngIf="userIsBMCProjectTagAssignmentWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(projectTagAssignment)" *ngIf="userIsBMCProjectTagAssignmentWriter() && projectTagAssignment.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(projectTagAssignment)" *ngIf="userIsBMCProjectTagAssignmentWriter() && projectTagAssignment.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(projectTagAssignment)" *ngIf="userIsBMCProjectTagAssignmentWriter() && projectTagAssignment.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(projectTagAssignment)" *ngIf="userIsBMCProjectTagAssignmentWriter() && projectTagAssignment.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -235,24 +238,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{projectTagAssignment.project?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/projecttagassignment', projectTagAssignment.id]"
                         ngbTooltip="Project Tag Assignment Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(projectTagAssignment)"
                         ngbTooltip="Edit Project Tag Assignment">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(projectTagAssignment)"
                       ngbTooltip="Delete Project Tag Assignment" 
                       placement="top"
                       *ngIf="projectTagAssignment.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(projectTagAssignment)"
                       ngbTooltip="Undelete Project Tag Assignment" 
                       placement="top"

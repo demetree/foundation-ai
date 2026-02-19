@@ -72,7 +72,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -191,25 +190,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Badge Assignment, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.reason.Contains(anyStringContains)
-			       || (includeRelations == true && x.userBadge.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.userBadge.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.userBadge.iconCssClass.Contains(anyStringContains))
-			       || (includeRelations == true && x.userBadge.iconImagePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.userBadge.badgeColor.Contains(anyStringContains))
-			       || (includeRelations == true && x.userBadge.automaticCriteriaCode.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.UserBadgeAssignment> materialized = await query.ToListAsync(cancellationToken);
@@ -257,7 +237,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -343,25 +322,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(uba => uba.active == true);
 				query = query.Where(uba => uba.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Badge Assignment, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.reason.Contains(anyStringContains)
-			       || x.userBadge.name.Contains(anyStringContains)
-			       || x.userBadge.description.Contains(anyStringContains)
-			       || x.userBadge.iconCssClass.Contains(anyStringContains)
-			       || x.userBadge.iconImagePath.Contains(anyStringContains)
-			       || x.userBadge.badgeColor.Contains(anyStringContains)
-			       || x.userBadge.automaticCriteriaCode.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -812,7 +772,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -916,25 +875,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(uba => uba.active == true);
 				query = query.Where(uba => uba.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Badge Assignment, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.reason.Contains(anyStringContains)
-			       || x.userBadge.name.Contains(anyStringContains)
-			       || x.userBadge.description.Contains(anyStringContains)
-			       || x.userBadge.iconCssClass.Contains(anyStringContains)
-			       || x.userBadge.iconImagePath.Contains(anyStringContains)
-			       || x.userBadge.badgeColor.Contains(anyStringContains)
-			       || x.userBadge.automaticCriteriaCode.Contains(anyStringContains)
-			   );
 			}
 
 

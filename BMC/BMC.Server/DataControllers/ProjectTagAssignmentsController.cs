@@ -69,7 +69,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -169,24 +168,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Project Tag Assignment, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.project.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.thumbnailImagePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.projectTag.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.projectTag.description.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.ProjectTagAssignment> materialized = await query.ToListAsync(cancellationToken);
@@ -231,7 +212,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -297,24 +277,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(pta => pta.active == true);
 				query = query.Where(pta => pta.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Project Tag Assignment, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.project.name.Contains(anyStringContains)
-			       || x.project.description.Contains(anyStringContains)
-			       || x.project.notes.Contains(anyStringContains)
-			       || x.project.thumbnailImagePath.Contains(anyStringContains)
-			       || x.projectTag.name.Contains(anyStringContains)
-			       || x.projectTag.description.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -753,7 +715,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -837,24 +798,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pta => pta.active == true);
 				query = query.Where(pta => pta.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Project Tag Assignment, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.project.name.Contains(anyStringContains)
-			       || x.project.description.Contains(anyStringContains)
-			       || x.project.notes.Contains(anyStringContains)
-			       || x.project.thumbnailImagePath.Contains(anyStringContains)
-			       || x.projectTag.name.Contains(anyStringContains)
-			       || x.projectTag.description.Contains(anyStringContains)
-			   );
 			}
 
 

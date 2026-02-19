@@ -84,7 +84,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -229,33 +228,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Placed Brick, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.brickColour.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickColour.hexRgb.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickColour.hexEdgeColour.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawPartId.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawTitle.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawCategory.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.keywords.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.author.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.rebrickablePartNum.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.geometryFilePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.project.thumbnailImagePath.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.PlacedBrick> materialized = await query.ToListAsync(cancellationToken);
@@ -311,7 +283,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -421,33 +392,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(pb => pb.active == true);
 				query = query.Where(pb => pb.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Placed Brick, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.brickColour.name.Contains(anyStringContains)
-			       || x.brickColour.hexRgb.Contains(anyStringContains)
-			       || x.brickColour.hexEdgeColour.Contains(anyStringContains)
-			       || x.brickPart.name.Contains(anyStringContains)
-			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
-			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
-			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
-			       || x.brickPart.keywords.Contains(anyStringContains)
-			       || x.brickPart.author.Contains(anyStringContains)
-			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
-			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
-			       || x.project.name.Contains(anyStringContains)
-			       || x.project.description.Contains(anyStringContains)
-			       || x.project.notes.Contains(anyStringContains)
-			       || x.project.thumbnailImagePath.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1437,7 +1381,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1565,33 +1508,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pb => pb.active == true);
 				query = query.Where(pb => pb.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Placed Brick, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.brickColour.name.Contains(anyStringContains)
-			       || x.brickColour.hexRgb.Contains(anyStringContains)
-			       || x.brickColour.hexEdgeColour.Contains(anyStringContains)
-			       || x.brickPart.name.Contains(anyStringContains)
-			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
-			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
-			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
-			       || x.brickPart.keywords.Contains(anyStringContains)
-			       || x.brickPart.author.Contains(anyStringContains)
-			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
-			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
-			       || x.project.name.Contains(anyStringContains)
-			       || x.project.description.Contains(anyStringContains)
-			       || x.project.notes.Contains(anyStringContains)
-			       || x.project.thumbnailImagePath.Contains(anyStringContains)
-			   );
 			}
 
 

@@ -82,24 +82,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': buildManualStep.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCBuildManualStepWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(buildManualStep)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCBuildManualStepWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(buildManualStep)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="buildManualStep.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(buildManualStep)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="buildManualStep.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -255,17 +258,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/buildmanualstep', buildManualStep.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/buildmanualstep', buildManualStep.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(buildManualStep)" *ngIf="userIsBMCBuildManualStepWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(buildManualStep)" *ngIf="userIsBMCBuildManualStepWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(buildManualStep)" *ngIf="userIsBMCBuildManualStepWriter() && buildManualStep.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(buildManualStep)" *ngIf="userIsBMCBuildManualStepWriter() && buildManualStep.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(buildManualStep)" *ngIf="userIsBMCBuildManualStepWriter() && buildManualStep.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(buildManualStep)" *ngIf="userIsBMCBuildManualStepWriter() && buildManualStep.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -280,24 +283,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{buildManualStep.buildManualPage?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/buildmanualstep', buildManualStep.id]"
                         ngbTooltip="Build Manual Step Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(buildManualStep)"
                         ngbTooltip="Edit Build Manual Step">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(buildManualStep)"
                       ngbTooltip="Delete Build Manual Step" 
                       placement="top"
                       *ngIf="buildManualStep.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(buildManualStep)"
                       ngbTooltip="Undelete Build Manual Step" 
                       placement="top"

@@ -340,10 +340,11 @@ namespace Foundation.CodeGeneration
                 string themed = sb.ToString();
 
                 //
-                // Background colors
+                // Background colors — page container is transparent so theme backdrop shows through;
+                // header card uses glassmorphism panel styling for a frosted-glass effect.
                 //
-                themed = themed.Replace("background-color: #f4f6f9", $"background-color: var(--{applicationThemePrefix}-bg-deep)");
-                themed = themed.Replace("background-color: #fff", $"background-color: var(--{applicationThemePrefix}-bg-card)");
+                themed = themed.Replace("background-color: #f4f6f9", "background-color: transparent");
+                themed = themed.Replace("background-color: #fff", $"background-color: var(--{applicationThemePrefix}-panel-bg)");
 
                 //
                 // Shadow
@@ -361,6 +362,46 @@ namespace Foundation.CodeGeneration
                 themed = themed.Replace("1px solid #ced4da", $"1px solid var(--{applicationThemePrefix}-border)");
                 themed = themed.Replace("border-color: #0176d3", $"border-color: var(--{applicationThemePrefix}-primary)");
                 themed = themed.Replace("rgba(1, 118, 211, 0.25)", $"var(--{applicationThemePrefix}-accent-glow-soft)");
+
+                //
+                // Glassmorphism + text contrast overrides for the header card
+                //
+                string glassBlock = $@"
+/* Glassmorphism header card */
+.header-card {{
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--{applicationThemePrefix}-panel-border);
+}}
+
+.header-card .page-title {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.header-card .text-muted {{
+  color: var(--{applicationThemePrefix}-text-muted) !important;
+}}
+
+/* Theme-aware buttons */
+.btn-light {{
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}}
+
+.btn-light:hover {{
+  background-color: var(--{applicationThemePrefix}-bg-hover);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.btn-secondary {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+";
 
                 //
                 // Form control overrides for theme-aware inputs
@@ -385,7 +426,7 @@ namespace Foundation.CodeGeneration
 }}
 ";
 
-                return hostBlock + themed + formBlock;
+                return hostBlock + themed + glassBlock + formBlock;
             }
 
             return sb.ToString();
@@ -830,9 +871,10 @@ namespace Foundation.CodeGeneration
             {
                 sb.AppendLine("            <td class=\"header-action-button\" >");
             }
-            sb.AppendLine("              <button class=\"btn btn-sm\"");
+            sb.AppendLine("              <button class=\"action-btn action-edit\"");
             sb.AppendLine($"                      (click)=\"handleEdit({camelCaseName})\"");
             sb.AppendLine("                      ngbTooltip=\"Edit\" ");
+            sb.AppendLine("                      container=\"body\"");
             sb.AppendLine("                      placement=\"top\">");
             sb.AppendLine("                <i class=\"fa fa-pen\"></i>");
             sb.AppendLine("              </button>");
@@ -855,16 +897,18 @@ namespace Foundation.CodeGeneration
                 //
                 // Have deleted field.  Add conditional delete and undelete.
                 //
-                sb.AppendLine("              <button class=\"btn btn-sm\"");
+                sb.AppendLine("              <button class=\"action-btn action-delete\"");
                 sb.AppendLine($"                      (click)=\"handleDelete({camelCaseName})\"");
                 sb.AppendLine($"                      ngbTooltip=\"Delete\" ");
+                sb.AppendLine($"                      container=\"body\"");
                 sb.AppendLine($"                      placement=\"top\"");
                 sb.AppendLine($"                      *ngIf=\"{camelCaseName}.deleted == false\">");
                 sb.AppendLine("                <i class=\"fa fa-trash\"></i>");
                 sb.AppendLine("              </button>");
-                sb.AppendLine("              <button class=\"btn btn-sm\"");
+                sb.AppendLine("              <button class=\"action-btn action-undelete\"");
                 sb.AppendLine($"                      (click)=\"handleUndelete({camelCaseName})\"");
                 sb.AppendLine($"                      ngbTooltip=\"Undelete\" ");
+                sb.AppendLine($"                      container=\"body\"");
                 sb.AppendLine($"                      placement=\"top\"");
                 sb.AppendLine($"                      *ngIf=\"{camelCaseName}.deleted == true\">");
                 sb.AppendLine($"                <i class=\"fa fa-trash-arrow-up\"></i>");
@@ -875,9 +919,10 @@ namespace Foundation.CodeGeneration
                 //
                 // No deleted field, so we can't do an undelete.
                 //
-                sb.AppendLine("              <button class=\"btn btn-sm\"");
+                sb.AppendLine("              <button class=\"action-btn action-delete\"");
                 sb.AppendLine($"                      (click)=\"handleDelete({camelCaseName})\"");
                 sb.AppendLine($"                      ngbTooltip=\"Delete\" ");
+                sb.AppendLine($"                      container=\"body\"");
                 sb.AppendLine($"                      placement=\"top\">");
                 sb.AppendLine("                <i class=\"fa fa-trash\"></i>");
                 sb.AppendLine("              </button>");
@@ -1186,10 +1231,10 @@ namespace Foundation.CodeGeneration
         <!-- Action buttons -->
         <div class=""card-footer bg-transparent border-0 pt-0"">
           <div class=""btn-group w-100"" role=""group"">
-            <button class=""btn btn-sm btn-outline-primary flex-fill"" [routerLink]=""['/{camelCaseName.ToLower()}', {camelCaseName}.id]"" ngbTooltip=""View"">
+            <button class=""action-btn action-view"" [routerLink]=""['/{camelCaseName.ToLower()}', {camelCaseName}.id]"" ngbTooltip=""View"">
               <i class=""fa fa-magnifying-glass""></i> View
             </button>
-            <button class=""btn btn-sm btn-outline-secondary"" (click)=""handleEdit({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer()\"" : "")} ngbTooltip=""Edit"">
+            <button class=""action-btn action-edit"" (click)=""handleEdit({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer()\"" : "")} ngbTooltip=""Edit"">
               <i class=""fa fa-pen""></i> Edit
             </button>");
 
@@ -1200,10 +1245,10 @@ namespace Foundation.CodeGeneration
             if (haveDeletedField == true)
             {
                 sb.AppendLine($@"
-            <button class=""btn btn-sm btn-outline-danger"" (click)=""handleDelete({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer() && {camelCaseName}.deleted == false\"" : $"*ngIf=\"{camelCaseName}.deleted == false\"")} ngbTooltip=""Delete"">
+            <button class=""action-btn action-delete"" (click)=""handleDelete({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer() && {camelCaseName}.deleted == false\"" : $"*ngIf=\"{camelCaseName}.deleted == false\"")} ngbTooltip=""Delete"">
               <i class=""fa fa-trash""></i> Delete
             </button>
-            <button class=""btn btn-sm btn-outline-warning"" (click)=""handleUndelete({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer() && {camelCaseName}.deleted == true\"" : $"*ngIf=\"{camelCaseName}.deleted == true\"")} ngbTooltip=""Undelete"">
+            <button class=""action-btn action-undelete"" (click)=""handleUndelete({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer() && {camelCaseName}.deleted == true\"" : $"*ngIf=\"{camelCaseName}.deleted == true\"")} ngbTooltip=""Undelete"">
               <i class=""fa fa-trash-arrow-upp""></i> UnDelete
             </button>");
 
@@ -1214,7 +1259,7 @@ namespace Foundation.CodeGeneration
                 // Add just a delete button
                 //
                 sb.AppendLine($@"
-            <button class=""btn btn-sm btn-outline-danger"" (click)=""handleDelete({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer()\"" : "")} ngbTooltip=""Delete"">
+            <button class=""action-btn action-delete"" (click)=""handleDelete({camelCaseName})"" {(addAuthorization == true ? $"*ngIf=\"userIs{module}{entityName}Writer()\"" : "")} ngbTooltip=""Delete"">
               <i class=""fa fa-trash""></i> Delete
             </button>");
             }
@@ -1293,12 +1338,12 @@ namespace Foundation.CodeGeneration
 
             sb.AppendLine($"             </div>");
             sb.AppendLine($"             <div>");
-            sb.AppendLine($"                <button class=\"btn btn-sm\"");
+            sb.AppendLine($"                <button class=\"action-btn action-view\"");
             sb.AppendLine($"                        [routerLink]=\"['/{suffixableCamelCaseName.ToLower()}', {camelCaseName}.id]\"");
             sb.AppendLine($"                        ngbTooltip=\"{titleName} Details\">");
             sb.AppendLine($"                <i class=\"fa fa-magnifying-glass\"></i>");
             sb.AppendLine($"                </button>");
-            sb.AppendLine($"                <button class=\"btn btn-sm\"");
+            sb.AppendLine($"                <button class=\"action-btn action-edit\"");
             sb.AppendLine($"                        (click)=\"handleEdit({camelCaseName})\"");
             sb.AppendLine($"                        ngbTooltip=\"Edit {titleName}\">");
             sb.AppendLine($"                <i class=\"fa fa-pen\"></i>");
@@ -1309,14 +1354,14 @@ namespace Foundation.CodeGeneration
                 //
                 // Have deleted field.  Add conditional delete and undelete.
                 //
-                sb.AppendLine("                <button class=\"btn btn-sm\"");
+                sb.AppendLine("                <button class=\"action-btn action-delete\"");
                 sb.AppendLine($"                      (click)=\"handleDelete({camelCaseName})\"");
                 sb.AppendLine($"                      ngbTooltip=\"Delete {titleName}\" ");
                 sb.AppendLine($"                      placement=\"top\"");
                 sb.AppendLine($"                      *ngIf=\"{camelCaseName}.deleted == false\">");
                 sb.AppendLine("                  <i class=\"fa fa-trash\"></i>");
                 sb.AppendLine("                </button>");
-                sb.AppendLine("                <button class=\"btn btn-sm\"");
+                sb.AppendLine("                <button class=\"action-btn action-undelete\"");
                 sb.AppendLine($"                      (click)=\"handleUndelete({camelCaseName})\"");
                 sb.AppendLine($"                      ngbTooltip=\"Undelete {titleName}\" ");
                 sb.AppendLine($"                      placement=\"top\"");
@@ -1329,7 +1374,7 @@ namespace Foundation.CodeGeneration
                 //
                 // No deleted field, so we can't do an undelete.
                 //
-                sb.AppendLine("                <button class=\"btn btn-sm\"");
+                sb.AppendLine("                <button class=\"action-btn action-delete\"");
                 sb.AppendLine($"                     (click)=\"handleDelete({camelCaseName})\"");
                 sb.AppendLine($"                     ngbTooltip=\"Delete {titleName}\" ");
                 sb.AppendLine($"                     placement=\"top\">");
@@ -1731,10 +1776,11 @@ td .color-swatch,
                 string themed = sb.ToString();
 
                 //
-                // Background colors
+                // Background colors — table container and header use glassmorphism panel styling;
+                // row backgrounds use subtle transparent variations for stripe/hover contrast.
                 //
-                themed = themed.Replace("background: white", $"background: var(--{applicationThemePrefix}-bg-card)");
-                themed = themed.Replace("background-color: white", $"background-color: var(--{applicationThemePrefix}-bg-card)");
+                themed = themed.Replace("background: white", $"background: var(--{applicationThemePrefix}-panel-bg)");
+                themed = themed.Replace("background-color: white", $"background-color: transparent");
                 themed = themed.Replace("background-color: #f8f9fa", $"background-color: var(--{applicationThemePrefix}-bg-elevated)");
                 themed = themed.Replace("background-color: #e9ecef", $"background-color: var(--{applicationThemePrefix}-bg-hover)");
 
@@ -1766,7 +1812,94 @@ td .color-swatch,
                 themed = themed.Replace("background: rgba(0,0,0,0.2)", $"background: var(--{applicationThemePrefix}-scrollbar-thumb)");
                 themed = themed.Replace("background: rgba(0,0,0,0.4)", $"background: var(--{applicationThemePrefix}-scrollbar-thumb-hover)");
 
-                return hostBlock + themed;
+                //
+                // Glassmorphism + text contrast overrides for the table
+                //
+                string glassBlock = $@"
+/* Glassmorphism table container */
+.virtual-table-container {{
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--{applicationThemePrefix}-panel-border);
+}}
+
+/* Table header text contrast */
+.table-header-fixed th,
+.table-header-fixed .sortable {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+/* Table cell and link text contrast */
+.viewport .custom-table td {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.viewport .custom-table a {{
+  color: var(--{applicationThemePrefix}-primary);
+}}
+
+/* Card-style rows (mobile) text contrast */
+.card.data-card {{
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--{applicationThemePrefix}-panel-border);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.card.data-card .card-header {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-bottom-color: var(--{applicationThemePrefix}-border);
+}}
+
+/* Custom action buttons — no Bootstrap, full theme control */
+.action-btn {{
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--{applicationThemePrefix}-text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}}
+
+.action-btn:hover {{
+  background-color: var(--{applicationThemePrefix}-bg-hover);
+}}
+
+.action-view {{
+  color: var(--{applicationThemePrefix}-primary);
+}}
+
+.action-view:hover {{
+  color: var(--{applicationThemePrefix}-primary);
+}}
+
+.action-edit {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.action-delete {{
+  color: #dc3545;
+}}
+
+.action-delete:hover {{
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}}
+
+.action-undelete {{
+  color: #ffc107;
+}}
+
+.action-undelete:hover {{
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}}
+";
+
+                return hostBlock + themed + glassBlock;
             }
 
             return sb.ToString();
@@ -3017,6 +3150,85 @@ td .color-swatch,
 .form-control::placeholder {{
   color: var(--{applicationThemePrefix}-text-muted);
 }}
+
+/* Premium checkbox styling */
+.form-check {{
+  padding-left: 2rem;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}}
+
+.form-check-input {{
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0;
+  margin-left: -2rem;
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  border: 2px solid var(--{applicationThemePrefix}-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+}}
+
+.form-check-input:checked {{
+  background-color: var(--{applicationThemePrefix}-primary);
+  border-color: var(--{applicationThemePrefix}-primary);
+  background-image: url(""data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e"");
+  background-size: 0.75em;
+  background-repeat: no-repeat;
+  background-position: center;
+}}
+
+.form-check-input:focus {{
+  border-color: var(--{applicationThemePrefix}-primary);
+  box-shadow: 0 0 0 0.2rem var(--{applicationThemePrefix}-accent-glow-soft);
+  outline: none;
+}}
+
+.form-check-input:disabled {{
+  opacity: 0.5;
+  cursor: not-allowed;
+}}
+
+.form-check-label {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  cursor: pointer;
+  padding-left: 0.5rem;
+  font-weight: 500;
+}}
+
+/* Theme-aware buttons */
+.btn-secondary {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+/* Modal and form contrast */
+.modal-content {{
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--{applicationThemePrefix}-panel-border);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.modal-header {{
+  border-bottom-color: var(--{applicationThemePrefix}-border);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.modal-footer {{
+  border-top-color: var(--{applicationThemePrefix}-border);
+}}
+
+label {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
 ";
 
                 return hostBlock + themed + formBlock;
@@ -3943,10 +4155,11 @@ td .color-swatch,
                 string themed = sb.ToString();
 
                 //
-                // Background colors
+                // Background colors — header card uses glassmorphism panel styling;
+                // details container is transparent so theme backdrop shows through.
                 //
-                themed = themed.Replace("background-color: #fff", $"background-color: var(--{applicationThemePrefix}-bg-card)");
-                themed = themed.Replace("background-color: #f4f6f9", $"background-color: var(--{applicationThemePrefix}-bg-deep)");
+                themed = themed.Replace("background-color: #fff", $"background-color: var(--{applicationThemePrefix}-panel-bg)");
+                themed = themed.Replace("background-color: #f4f6f9", "background-color: transparent");
 
                 //
                 // Shadow
@@ -3957,6 +4170,51 @@ td .color-swatch,
                 // Text colors
                 //
                 themed = themed.Replace("color: #6c757d", $"color: var(--{applicationThemePrefix}-text-muted)");
+
+                //
+                // Glassmorphism + text contrast overrides for the header card
+                //
+                string glassBlock = $@"
+/* Glassmorphism header card */
+.header-card {{
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--{applicationThemePrefix}-panel-border);
+}}
+
+.header-card .page-title {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.header-card .text-muted {{
+  color: var(--{applicationThemePrefix}-text-muted) !important;
+}}
+
+/* Theme-aware buttons */
+.btn-light {{
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}}
+
+.btn-light:hover {{
+  background-color: var(--{applicationThemePrefix}-bg-hover);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.btn-secondary {{
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+/* Form labels */
+label {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+";
 
                 //
                 // Form control overrides for theme-aware inputs
@@ -3979,9 +4237,131 @@ td .color-swatch,
 .form-control::placeholder {{
   color: var(--{applicationThemePrefix}-text-muted);
 }}
+
+/* Premium checkbox styling */
+.form-check {{
+  padding-left: 2rem;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}}
+
+.form-check-input {{
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0;
+  margin-left: -2rem;
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  border: 2px solid var(--{applicationThemePrefix}-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+}}
+
+.form-check-input:checked {{
+  background-color: var(--{applicationThemePrefix}-primary);
+  border-color: var(--{applicationThemePrefix}-primary);
+  background-image: url(""data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e"");
+  background-size: 0.75em;
+  background-repeat: no-repeat;
+  background-position: center;
+}}
+
+.form-check-input:focus {{
+  border-color: var(--{applicationThemePrefix}-primary);
+  box-shadow: 0 0 0 0.2rem var(--{applicationThemePrefix}-accent-glow-soft);
+  outline: none;
+}}
+
+.form-check-input:disabled {{
+  opacity: 0.5;
+  cursor: not-allowed;
+}}
+
+.form-check-label {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  cursor: pointer;
+  padding-left: 0.5rem;
+  font-weight: 500;
+}}
 ";
 
-                return hostBlock + themed + formBlock;
+                //
+                // Tab theming for child table tabs
+                //
+                string tabBlock = $@"
+/* Theme-aware child table tabs */
+.nav-tabs {{
+  border-bottom-color: var(--{applicationThemePrefix}-border);
+}}
+
+.nav-tabs .nav-link {{
+  color: var(--{applicationThemePrefix}-primary);
+  border-color: transparent;
+}}
+
+.nav-tabs .nav-link:hover {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border) var(--{applicationThemePrefix}-border) transparent;
+  background-color: var(--{applicationThemePrefix}-bg-hover);
+}}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  border-color: var(--{applicationThemePrefix}-border) var(--{applicationThemePrefix}-border) transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}}
+
+/* Tab badges */
+.nav-link .badge {{
+  background-color: var(--{applicationThemePrefix}-primary) !important;
+}}
+
+/* Tab content panel */
+.tab-content {{
+  background-color: transparent;
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.tab-pane {{
+  background-color: transparent;
+}}
+
+/* Child table inside tabs */
+.tab-pane .card {{
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--{applicationThemePrefix}-panel-border);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.tab-pane table {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.tab-pane th {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+.tab-pane td {{
+  color: var(--{applicationThemePrefix}-text-primary);
+  border-color: var(--{applicationThemePrefix}-border);
+}}
+
+.tab-pane a {{
+  color: var(--{applicationThemePrefix}-primary);
+}}
+";
+
+                return hostBlock + themed + glassBlock + formBlock + tabBlock;
             }
 
             return sb.ToString();

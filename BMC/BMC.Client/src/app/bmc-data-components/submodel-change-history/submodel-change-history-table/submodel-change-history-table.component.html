@@ -50,17 +50,19 @@ End of commented block for alternate definition option -->
             <!-- Only visible rows are rendered -->
           <tr *cdkVirtualFor="let submodelChangeHistory of filteredSubmodelChangeHistories; trackBy: getSubmodelChangeHistoryId">
             <td class="header-action-button" *ngIf="userIsBMCSubmodelChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(submodelChangeHistory)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCSubmodelChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(submodelChangeHistory)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-trash"></i>
               </button>
@@ -204,14 +206,14 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/submodelchangehistory', submodelChangeHistory.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/submodelchangehistory', submodelChangeHistory.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(submodelChangeHistory)" *ngIf="userIsBMCSubmodelChangeHistoryWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(submodelChangeHistory)" *ngIf="userIsBMCSubmodelChangeHistoryWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(submodelChangeHistory)" *ngIf="userIsBMCSubmodelChangeHistoryWriter()" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(submodelChangeHistory)" *ngIf="userIsBMCSubmodelChangeHistoryWriter()" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
 
@@ -226,17 +228,17 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{submodelChangeHistory.submodel?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/submodelchangehistory', submodelChangeHistory.id]"
                         ngbTooltip="Submodel Change History Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(submodelChangeHistory)"
                         ngbTooltip="Edit Submodel Change History">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                      (click)="handleDelete(submodelChangeHistory)"
                      ngbTooltip="Delete Submodel Change History" 
                      placement="top">

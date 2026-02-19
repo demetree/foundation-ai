@@ -50,17 +50,19 @@ End of commented block for alternate definition option -->
             <!-- Only visible rows are rendered -->
           <tr *cdkVirtualFor="let publishedMocChangeHistory of filteredPublishedMocChangeHistories; trackBy: getPublishedMocChangeHistoryId">
             <td class="header-action-button" *ngIf="userIsBMCPublishedMocChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(publishedMocChangeHistory)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCPublishedMocChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(publishedMocChangeHistory)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-trash"></i>
               </button>
@@ -204,14 +206,14 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/publishedmocchangehistory', publishedMocChangeHistory.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/publishedmocchangehistory', publishedMocChangeHistory.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(publishedMocChangeHistory)" *ngIf="userIsBMCPublishedMocChangeHistoryWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(publishedMocChangeHistory)" *ngIf="userIsBMCPublishedMocChangeHistoryWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(publishedMocChangeHistory)" *ngIf="userIsBMCPublishedMocChangeHistoryWriter()" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(publishedMocChangeHistory)" *ngIf="userIsBMCPublishedMocChangeHistoryWriter()" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
 
@@ -226,17 +228,17 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{publishedMocChangeHistory.publishedMoc?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/publishedmocchangehistory', publishedMocChangeHistory.id]"
                         ngbTooltip="Published Moc Change History Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(publishedMocChangeHistory)"
                         ngbTooltip="Edit Published Moc Change History">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                      (click)="handleDelete(publishedMocChangeHistory)"
                      ngbTooltip="Delete Published Moc Change History" 
                      placement="top">

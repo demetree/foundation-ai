@@ -1,7 +1,11 @@
+:host {
+  color: var(--bmc-text-primary);
+}
+
 .header-card {
-  background-color: #fff;
+  background-color: var(--bmc-panel-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--bmc-shadow-sm);
 
   .card-header {
     background-color: transparent;
@@ -57,7 +61,7 @@
   padding-left: 10px;
   padding-right: 10px;
   padding-bottom: 3px;
-  background-color: #f4f6f9;
+  background-color: transparent;
 }
 
 /* Body section that allows for scrolling */
@@ -92,7 +96,7 @@
 }
 
 .project-input::placeholder, .project-select::placeholder {
-  color: #6c757d;
+  color: var(--bmc-text-muted);
 }
 
 .text-danger {
@@ -110,4 +114,129 @@
 
 .hidden {
   display: none;
+}
+
+/* Glassmorphism header card */
+.header-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bmc-panel-border);
+}
+
+.header-card .page-title {
+  color: var(--bmc-text-primary);
+}
+
+.header-card .text-muted {
+  color: var(--bmc-text-muted) !important;
+}
+
+/* Theme-aware buttons */
+.btn-light {
+  background-color: var(--bmc-panel-bg);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-light:hover {
+  background-color: var(--bmc-bg-hover);
+  color: var(--bmc-text-primary);
+}
+
+.btn-secondary {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+}
+
+/* Form labels */
+label {
+  color: var(--bmc-text-primary);
+}
+
+/* Theme-aware form controls */
+.form-control, .form-select {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-primary);
+  box-shadow: 0 0 0 0.2rem var(--bmc-accent-glow-soft);
+}
+
+.form-control::placeholder {
+  color: var(--bmc-text-muted);
+}
+
+/* Theme-aware child table tabs */
+.nav-tabs {
+  border-bottom-color: var(--bmc-border);
+}
+
+.nav-tabs .nav-link {
+  color: var(--bmc-primary);
+  border-color: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border) var(--bmc-border) transparent;
+  background-color: var(--bmc-bg-hover);
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: var(--bmc-text-primary);
+  background-color: var(--bmc-panel-bg);
+  border-color: var(--bmc-border) var(--bmc-border) transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Tab badges */
+.nav-link .badge {
+  background-color: var(--bmc-primary) !important;
+}
+
+/* Tab content panel */
+.tab-content {
+  background-color: transparent;
+  color: var(--bmc-text-primary);
+}
+
+.tab-pane {
+  background-color: transparent;
+}
+
+/* Child table inside tabs */
+.tab-pane .card {
+  background-color: var(--bmc-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--bmc-panel-border);
+  color: var(--bmc-text-primary);
+}
+
+.tab-pane table {
+  color: var(--bmc-text-primary);
+}
+
+.tab-pane th {
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+}
+
+.tab-pane td {
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+}
+
+.tab-pane a {
+  color: var(--bmc-primary);
 }

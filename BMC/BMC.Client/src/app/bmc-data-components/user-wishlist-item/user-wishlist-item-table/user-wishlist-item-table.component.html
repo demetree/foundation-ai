@@ -58,24 +58,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': userWishlistItem.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCUserWishlistItemWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(userWishlistItem)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCUserWishlistItemWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(userWishlistItem)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="userWishlistItem.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(userWishlistItem)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="userWishlistItem.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -225,17 +228,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/userwishlistitem', userWishlistItem.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/userwishlistitem', userWishlistItem.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(userWishlistItem)" *ngIf="userIsBMCUserWishlistItemWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(userWishlistItem)" *ngIf="userIsBMCUserWishlistItemWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(userWishlistItem)" *ngIf="userIsBMCUserWishlistItemWriter() && userWishlistItem.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(userWishlistItem)" *ngIf="userIsBMCUserWishlistItemWriter() && userWishlistItem.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(userWishlistItem)" *ngIf="userIsBMCUserWishlistItemWriter() && userWishlistItem.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(userWishlistItem)" *ngIf="userIsBMCUserWishlistItemWriter() && userWishlistItem.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -250,24 +253,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{userWishlistItem.userCollection?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/userwishlistitem', userWishlistItem.id]"
                         ngbTooltip="User Wishlist Item Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(userWishlistItem)"
                         ngbTooltip="Edit User Wishlist Item">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(userWishlistItem)"
                       ngbTooltip="Delete User Wishlist Item" 
                       placement="top"
                       *ngIf="userWishlistItem.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(userWishlistItem)"
                       ngbTooltip="Undelete User Wishlist Item" 
                       placement="top"

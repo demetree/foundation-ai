@@ -556,7 +556,9 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t\tint? pageNumber = null,");
             }
 
-            if (scriptGenTable != null && scriptGenTable.AddAnyStringContainsParameterToWebAPI == true)
+            if (scriptGenTable != null && 
+                scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
             {
                 sb.AppendLine("\t\t\tstring anyStringContains = null,");
             }
@@ -908,10 +910,12 @@ namespace Foundation.CodeGeneration
 
             sb.AppendLine("\t\t\t}");
             sb.AppendLine();
+
             //
             // Add the any string contains parameter
             //
-            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true)
+            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
             {
                 AddAnyStringsContainsQueryAdditions(type, sb, rootNameSpace, true);
             }
@@ -1362,7 +1366,8 @@ namespace Foundation.CodeGeneration
                 processingFirstProperty = false;
             }
 
-            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true)
+            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
             {
                 sb.AppendLine(",");
                 sb.AppendLine("\t\t\tstring anyStringContains = null,");
@@ -1571,7 +1576,8 @@ namespace Foundation.CodeGeneration
             //
             // Add the any string contains parameter to the RowCount method
             //
-            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true)
+            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
             {
                 AddAnyStringsContainsQueryAdditions(type, sb, rootNameSpace, false);
             }
@@ -4525,7 +4531,8 @@ namespace Foundation.CodeGeneration
             }
             sb.AppendLine($@",");
 
-            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true)
+            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
             {
                 sb.AppendLine("\t\t\tstring anyStringContains = null,");
             }
@@ -4751,7 +4758,8 @@ namespace Foundation.CodeGeneration
 
 
             // Add in the query parameters for any string contains
-            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true)
+            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
             {
                 AddAnyStringsContainsQueryAdditions(type, sb, rootNameSpace, false);
             }

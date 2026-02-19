@@ -74,24 +74,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': apiKey.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCApiKeyWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(apiKey)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCApiKeyWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(apiKey)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="apiKey.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(apiKey)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="apiKey.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -245,17 +248,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/apikey', apiKey.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/apikey', apiKey.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(apiKey)" *ngIf="userIsBMCApiKeyWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(apiKey)" *ngIf="userIsBMCApiKeyWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(apiKey)" *ngIf="userIsBMCApiKeyWriter() && apiKey.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(apiKey)" *ngIf="userIsBMCApiKeyWriter() && apiKey.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(apiKey)" *ngIf="userIsBMCApiKeyWriter() && apiKey.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(apiKey)" *ngIf="userIsBMCApiKeyWriter() && apiKey.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -269,24 +272,24 @@ End of commented block for alternate definition option -->
                <strong>{{apiKey.name}}</strong>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/apikey', apiKey.id]"
                         ngbTooltip="Api Key Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(apiKey)"
                         ngbTooltip="Edit Api Key">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(apiKey)"
                       ngbTooltip="Delete Api Key" 
                       placement="top"
                       *ngIf="apiKey.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(apiKey)"
                       ngbTooltip="Undelete Api Key" 
                       placement="top"

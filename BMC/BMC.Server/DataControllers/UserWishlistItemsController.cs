@@ -72,7 +72,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -185,32 +184,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Wishlist Item, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || (includeRelations == true && x.brickColour.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickColour.hexRgb.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickColour.hexEdgeColour.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawPartId.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawTitle.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.ldrawCategory.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.keywords.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.author.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.rebrickablePartNum.Contains(anyStringContains))
-			       || (includeRelations == true && x.brickPart.geometryFilePath.Contains(anyStringContains))
-			       || (includeRelations == true && x.userCollection.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.userCollection.description.Contains(anyStringContains))
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.UserWishlistItem> materialized = await query.ToListAsync(cancellationToken);
@@ -258,7 +231,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -336,32 +308,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(uwi => uwi.active == true);
 				query = query.Where(uwi => uwi.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Wishlist Item, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || x.brickColour.name.Contains(anyStringContains)
-			       || x.brickColour.hexRgb.Contains(anyStringContains)
-			       || x.brickColour.hexEdgeColour.Contains(anyStringContains)
-			       || x.brickPart.name.Contains(anyStringContains)
-			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
-			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
-			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
-			       || x.brickPart.keywords.Contains(anyStringContains)
-			       || x.brickPart.author.Contains(anyStringContains)
-			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
-			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
-			       || x.userCollection.name.Contains(anyStringContains)
-			       || x.userCollection.description.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -804,7 +750,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -900,32 +845,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(uwi => uwi.active == true);
 				query = query.Where(uwi => uwi.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the User Wishlist Item, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || x.brickColour.name.Contains(anyStringContains)
-			       || x.brickColour.hexRgb.Contains(anyStringContains)
-			       || x.brickColour.hexEdgeColour.Contains(anyStringContains)
-			       || x.brickPart.name.Contains(anyStringContains)
-			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
-			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
-			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
-			       || x.brickPart.keywords.Contains(anyStringContains)
-			       || x.brickPart.author.Contains(anyStringContains)
-			       || x.brickPart.rebrickablePartNum.Contains(anyStringContains)
-			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
-			       || x.userCollection.name.Contains(anyStringContains)
-			       || x.userCollection.description.Contains(anyStringContains)
-			   );
 			}
 
 

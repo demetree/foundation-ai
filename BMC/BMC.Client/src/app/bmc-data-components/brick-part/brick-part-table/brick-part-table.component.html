@@ -102,24 +102,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': brickPart.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsBMCBrickPartWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(brickPart)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsBMCBrickPartWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(brickPart)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="brickPart.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(brickPart)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="brickPart.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -280,17 +283,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/brickpart', brickPart.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/brickpart', brickPart.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(brickPart)" *ngIf="userIsBMCBrickPartWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(brickPart)" *ngIf="userIsBMCBrickPartWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(brickPart)" *ngIf="userIsBMCBrickPartWriter() && brickPart.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(brickPart)" *ngIf="userIsBMCBrickPartWriter() && brickPart.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(brickPart)" *ngIf="userIsBMCBrickPartWriter() && brickPart.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(brickPart)" *ngIf="userIsBMCBrickPartWriter() && brickPart.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -305,24 +308,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{brickPart.partType?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/brickpart', brickPart.id]"
                         ngbTooltip="Brick Part Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(brickPart)"
                         ngbTooltip="Edit Brick Part">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(brickPart)"
                       ngbTooltip="Delete Brick Part" 
                       placement="top"
                       *ngIf="brickPart.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(brickPart)"
                       ngbTooltip="Undelete Brick Part" 
                       placement="top"

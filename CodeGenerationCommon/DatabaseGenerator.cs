@@ -1937,6 +1937,20 @@ namespace Foundation.CodeGeneration
                     }
                 }
 
+                public bool HasStringFields()
+                {
+                    return (from x in this.fields where x.dataType == DataType.STRING_10 ||
+                            x.dataType == DataType.STRING_100 ||
+                            x.dataType == DataType.STRING_50 ||
+                            x.dataType == DataType.STRING_1000 ||
+                            x.dataType == DataType.STRING_2000 ||
+                            x.dataType == DataType.STRING_250 ||
+                            x.dataType == DataType.STRING_500 ||
+                            x.dataType == DataType.STRING_850
+                            select x).Any();
+                }
+
+
 
                 public bool HasField(string fieldName)
                 {
@@ -1994,6 +2008,7 @@ namespace Foundation.CodeGeneration
                         return false;
                     }
                 }
+
 
                 public bool IsDataVisibilityEnabled()
                 {
