@@ -143,10 +143,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-change-history-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-brick-part-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-change-history-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-part-change-history-add-edit>
+                                    <app-brick-part-change-history-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-part-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -160,10 +157,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-connector-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-brick-part-connector-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-connector-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-part-connector-add-edit>
+                                    <app-brick-part-connector-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-part-connector-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -177,10 +171,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-colour-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-brick-part-colour-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-colour-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-part-colour-add-edit>
+                                    <app-brick-part-colour-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-part-colour-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -194,10 +185,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-placed-brick-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-placed-brick-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-placed-brick-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-placed-brick-add-edit>
+                                    <app-placed-brick-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-placed-brick-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -211,10 +199,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-part-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-lego-set-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-part-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-lego-set-part-add-edit>
+                                    <app-lego-set-part-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-lego-set-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -228,10 +213,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-relationship-table [queryParams]="{ childBrickPartId: brickPartData?.id }"></app-brick-part-relationship-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-relationship-add-edit [preSeededData]="{ childBrickPartId: brickPartData?.id }" [hiddenFields]="['childBrickPartId']"></app-brick-part-relationship-add-edit>
+                                    <app-brick-part-relationship-table [queryParams]="{ childBrickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ childBrickPartId: brickPartData?.id }" [hiddenFields]="['childBrickPartId']"></app-brick-part-relationship-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -245,10 +227,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-relationship-table [queryParams]="{ parentBrickPartId: brickPartData?.id }"></app-brick-part-relationship-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-relationship-add-edit [preSeededData]="{ parentBrickPartId: brickPartData?.id }" [hiddenFields]="['parentBrickPartId']"></app-brick-part-relationship-add-edit>
+                                    <app-brick-part-relationship-table [queryParams]="{ parentBrickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ parentBrickPartId: brickPartData?.id }" [hiddenFields]="['parentBrickPartId']"></app-brick-part-relationship-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -262,10 +241,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-element-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-brick-element-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-element-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-element-add-edit>
+                                    <app-brick-element-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-brick-element-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -279,10 +255,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-collection-part-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-user-collection-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-collection-part-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-collection-part-add-edit>
+                                    <app-user-collection-part-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-collection-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -296,10 +269,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-wishlist-item-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-user-wishlist-item-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-wishlist-item-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-wishlist-item-add-edit>
+                                    <app-user-wishlist-item-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-wishlist-item-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -42,6 +42,10 @@ export class ProjectChangeHistoryTableComponent implements OnInit, OnChanges, Af
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<ProjectChangeHistoryData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<ProjectChangeHistoryData>(); // Emitted for custom delete handling
 
@@ -365,6 +369,14 @@ export class ProjectChangeHistoryTableComponent implements OnInit, OnChanges, Af
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditProjectChangeHistoryComponent)
+    {
+        this.addEditProjectChangeHistoryComponent.openModal(); // Open in add mode (no data)
     }
 }
 

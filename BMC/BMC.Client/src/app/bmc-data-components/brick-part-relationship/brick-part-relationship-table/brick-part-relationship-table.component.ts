@@ -43,6 +43,10 @@ export class BrickPartRelationshipTableComponent implements OnInit, OnChanges, A
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<BrickPartRelationshipData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<BrickPartRelationshipData>(); // Emitted for custom delete handling
   @Output() undelete = new EventEmitter<BrickPartRelationshipData>(); // Emitted for custom undelete handling
@@ -365,6 +369,14 @@ export class BrickPartRelationshipTableComponent implements OnInit, OnChanges, A
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditBrickPartRelationshipComponent)
+    {
+        this.addEditBrickPartRelationshipComponent.openModal(); // Open in add mode (no data)
     }
 }
 

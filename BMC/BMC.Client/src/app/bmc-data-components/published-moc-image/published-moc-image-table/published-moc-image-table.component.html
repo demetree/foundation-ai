@@ -1,4 +1,4 @@
-<app-published-moc-image-add-edit [showAddButton]="false"></app-published-moc-image-add-edit>
+<app-published-moc-image-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-published-moc-image-add-edit>
 <div class="row" *ngIf="userIsBMCPublishedMocImageReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCPublishedMocImageWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCPublishedMocImageWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Published Moc Image">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCPublishedMocImageWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

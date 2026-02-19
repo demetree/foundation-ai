@@ -79,10 +79,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-export-table [queryParams]="{ exportFormatId: exportFormatData?.id }"></app-project-export-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-export-add-edit [preSeededData]="{ exportFormatId: exportFormatData?.id }" [hiddenFields]="['exportFormatId']"></app-project-export-add-edit>
+                                    <app-project-export-table [queryParams]="{ exportFormatId: exportFormatData?.id }" [showAddButton]="true" [preSeededData]="{ exportFormatId: exportFormatData?.id }" [hiddenFields]="['exportFormatId']"></app-project-export-table>
                                 </div>
                             </div>
                             </ng-template>

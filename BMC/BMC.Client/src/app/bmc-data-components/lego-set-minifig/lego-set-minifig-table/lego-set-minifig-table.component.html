@@ -1,4 +1,4 @@
-<app-lego-set-minifig-add-edit [showAddButton]="false"></app-lego-set-minifig-add-edit>
+<app-lego-set-minifig-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-lego-set-minifig-add-edit>
 <div class="row" *ngIf="userIsBMCLegoSetMinifigReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCLegoSetMinifigWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCLegoSetMinifigWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Lego Set Minifig">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCLegoSetMinifigWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

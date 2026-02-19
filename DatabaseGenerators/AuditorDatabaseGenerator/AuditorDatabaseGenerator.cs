@@ -124,8 +124,9 @@ namespace Foundation.Auditor.Database
             auditEventTable.isWritable = true;
             auditEventTable.adminAccessNeededToWrite = true;
             auditEventTable.AddIdField();
-            auditEventTable.AddDateTimeField("startTime", false).CreateIndex();                                               // when this event started occurred
-            auditEventTable.AddDateTimeField("stopTime", false).CreateIndex();                                                // when this event finished
+            Database.Table.Field auditEventStartTimeField = auditEventTable.AddDateTimeField("startTime", false);  // when this event started occurred
+            auditEventStartTimeField.CreateIndex();
+            auditEventTable.AddDateTimeField("stopTime", false).CreateIndex();                                                  // when this event finished
             auditEventTable.AddBoolField("completedSuccessfully", false).defaultValue = "1";                    // whether or not this event was completed as intended.
             Database.Table.Field auditEventUserLinkField = auditEventTable.AddForeignKeyField("auditUserId", auditUserTable, false);
 
@@ -143,6 +144,14 @@ namespace Foundation.Auditor.Database
             auditEventTable.AddTextField("message", false);                                                     // message to record
             auditEventTable.AddSortSequence("id", true);
             auditEventTable.SetDisplayNameField("message");
+
+            //
+            // Composite indexes for analytics aggregate queries (User Activity Insights Dashboard)
+            //
+            auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventStartTimeField, auditEventUserLinkField });      // Activity by day per user, top users
+            auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventStartTimeField, auditEventModuleLinkField });    // Top modules, module usage over time
+            auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventStartTimeField, auditEventTypeLinkField });      // Event type breakdown by time range
+            auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventUserLinkField });                                // Single-user session drill-down
 
             //
             // Set the expected override state for this table.  

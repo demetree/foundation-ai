@@ -183,6 +183,9 @@ label {
   background-color: var(--bmc-bg-elevated);
   color: var(--bmc-text-primary);
   border-color: var(--bmc-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
 }
 
 .form-control:focus, .form-select:focus {
@@ -246,29 +249,37 @@ label {
   font-weight: 500;
 }
 
-/* Theme-aware child table tabs */
+/* Theme-aware child table tabs — premium underline style */
 .nav-tabs {
-  border-bottom-color: var(--bmc-border);
+  border-bottom: 2px solid var(--bmc-border);
+  padding: 0 1rem;
 }
 
 .nav-tabs .nav-link {
-  color: var(--bmc-primary);
-  border-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--bmc-text-secondary);
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
 }
 
 .nav-tabs .nav-link:hover {
-  color: var(--bmc-text-primary);
-  border-color: var(--bmc-border) var(--bmc-border) transparent;
-  background-color: var(--bmc-bg-hover);
+  color: var(--bmc-primary);
+  border-color: transparent;
+  background-color: transparent;
 }
 
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-item.show .nav-link {
-  color: var(--bmc-text-primary);
-  background-color: var(--bmc-panel-bg);
-  border-color: var(--bmc-border) var(--bmc-border) transparent;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  color: var(--bmc-primary);
+  background: transparent;
+  border-bottom-color: var(--bmc-primary);
+}
+
+.nav-tabs .nav-link i {
+  opacity: 0.7;
 }
 
 /* Tab badges */

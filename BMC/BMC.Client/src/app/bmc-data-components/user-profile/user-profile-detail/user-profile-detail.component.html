@@ -120,10 +120,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-profile-change-history-table [queryParams]="{ userProfileId: userProfileData?.id }"></app-user-profile-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-profile-change-history-add-edit [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-change-history-add-edit>
+                                    <app-user-profile-change-history-table [queryParams]="{ userProfileId: userProfileData?.id }" [showAddButton]="true" [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -137,10 +134,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-profile-link-table [queryParams]="{ userProfileId: userProfileData?.id }"></app-user-profile-link-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-profile-link-add-edit [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-link-add-edit>
+                                    <app-user-profile-link-table [queryParams]="{ userProfileId: userProfileData?.id }" [showAddButton]="true" [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-link-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -154,10 +148,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-profile-stat-table [queryParams]="{ userProfileId: userProfileData?.id }"></app-user-profile-stat-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-profile-stat-add-edit [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-stat-add-edit>
+                                    <app-user-profile-stat-table [queryParams]="{ userProfileId: userProfileData?.id }" [showAddButton]="true" [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-stat-table>
                                 </div>
                             </div>
                             </ng-template>

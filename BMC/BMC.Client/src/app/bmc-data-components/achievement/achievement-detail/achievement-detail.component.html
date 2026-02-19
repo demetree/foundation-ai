@@ -119,10 +119,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-achievement-table [queryParams]="{ achievementId: achievementData?.id }"></app-user-achievement-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-achievement-add-edit [preSeededData]="{ achievementId: achievementData?.id }" [hiddenFields]="['achievementId']"></app-user-achievement-add-edit>
+                                    <app-user-achievement-table [queryParams]="{ achievementId: achievementData?.id }" [showAddButton]="true" [preSeededData]="{ achievementId: achievementData?.id }" [hiddenFields]="['achievementId']"></app-user-achievement-table>
                                 </div>
                             </div>
                             </ng-template>

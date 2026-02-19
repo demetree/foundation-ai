@@ -79,10 +79,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-table [queryParams]="{ brickCategoryId: brickCategoryData?.id }"></app-brick-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-add-edit [preSeededData]="{ brickCategoryId: brickCategoryData?.id }" [hiddenFields]="['brickCategoryId']"></app-brick-part-add-edit>
+                                    <app-brick-part-table [queryParams]="{ brickCategoryId: brickCategoryData?.id }" [showAddButton]="true" [preSeededData]="{ brickCategoryId: brickCategoryData?.id }" [hiddenFields]="['brickCategoryId']"></app-brick-part-table>
                                 </div>
                             </div>
                             </ng-template>

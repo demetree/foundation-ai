@@ -42,6 +42,10 @@ export class UserCollectionChangeHistoryTableComponent implements OnInit, OnChan
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<UserCollectionChangeHistoryData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<UserCollectionChangeHistoryData>(); // Emitted for custom delete handling
 
@@ -365,6 +369,14 @@ export class UserCollectionChangeHistoryTableComponent implements OnInit, OnChan
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditUserCollectionChangeHistoryComponent)
+    {
+        this.addEditUserCollectionChangeHistoryComponent.openModal(); // Open in add mode (no data)
     }
 }
 

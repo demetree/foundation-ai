@@ -87,10 +87,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-colour-table [queryParams]="{ colourFinishId: colourFinishData?.id }"></app-brick-colour-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-colour-add-edit [preSeededData]="{ colourFinishId: colourFinishData?.id }" [hiddenFields]="['colourFinishId']"></app-brick-colour-add-edit>
+                                    <app-brick-colour-table [queryParams]="{ colourFinishId: colourFinishData?.id }" [showAddButton]="true" [preSeededData]="{ colourFinishId: colourFinishData?.id }" [hiddenFields]="['colourFinishId']"></app-brick-colour-table>
                                 </div>
                             </div>
                             </ng-template>

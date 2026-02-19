@@ -1,4 +1,4 @@
-<app-build-manual-add-edit [showAddButton]="false"></app-build-manual-add-edit>
+<app-build-manual-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-build-manual-add-edit>
 <div class="row" *ngIf="userIsBMCBuildManualReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBuildManualWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBuildManualWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Build Manual">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBuildManualWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

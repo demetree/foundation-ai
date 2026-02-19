@@ -495,6 +495,7 @@ import { SystemSettingCustomTableComponent } from './components/system-setting-c
 import { SystemSettingCustomAddEditComponent } from './components/system-setting-custom/system-setting-custom-add-edit/system-setting-custom-add-edit.component';
 import { IncidentsReportComponent } from './components/incidents-report/incidents-report.component';
 import { IncidentsService } from './services/incidents.service';
+import { UserActivityInsightsComponent } from './components/user-activity-insights/user-activity-insights.component';
 
 
 @NgModule({
@@ -839,6 +840,7 @@ import { IncidentsService } from './services/incidents.service';
     SystemSettingCustomTableComponent,
     SystemSettingCustomAddEditComponent,
     IncidentsReportComponent,
+    UserActivityInsightsComponent,
   ],
   imports: [
     BrowserModule,

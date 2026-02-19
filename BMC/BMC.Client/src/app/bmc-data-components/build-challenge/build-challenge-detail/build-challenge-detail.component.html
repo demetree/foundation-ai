@@ -117,10 +117,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-challenge-change-history-table [queryParams]="{ buildChallengeId: buildChallengeData?.id }"></app-build-challenge-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-challenge-change-history-add-edit [preSeededData]="{ buildChallengeId: buildChallengeData?.id }" [hiddenFields]="['buildChallengeId']"></app-build-challenge-change-history-add-edit>
+                                    <app-build-challenge-change-history-table [queryParams]="{ buildChallengeId: buildChallengeData?.id }" [showAddButton]="true" [preSeededData]="{ buildChallengeId: buildChallengeData?.id }" [hiddenFields]="['buildChallengeId']"></app-build-challenge-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -134,10 +131,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-challenge-entry-table [queryParams]="{ buildChallengeId: buildChallengeData?.id }"></app-build-challenge-entry-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-challenge-entry-add-edit [preSeededData]="{ buildChallengeId: buildChallengeData?.id }" [hiddenFields]="['buildChallengeId']"></app-build-challenge-entry-add-edit>
+                                    <app-build-challenge-entry-table [queryParams]="{ buildChallengeId: buildChallengeData?.id }" [showAddButton]="true" [preSeededData]="{ buildChallengeId: buildChallengeData?.id }" [hiddenFields]="['buildChallengeId']"></app-build-challenge-entry-table>
                                 </div>
                             </div>
                             </ng-template>

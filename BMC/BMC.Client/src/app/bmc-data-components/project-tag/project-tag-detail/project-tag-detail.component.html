@@ -71,10 +71,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-tag-assignment-table [queryParams]="{ projectTagId: projectTagData?.id }"></app-project-tag-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-tag-assignment-add-edit [preSeededData]="{ projectTagId: projectTagData?.id }" [hiddenFields]="['projectTagId']"></app-project-tag-assignment-add-edit>
+                                    <app-project-tag-assignment-table [queryParams]="{ projectTagId: projectTagData?.id }" [showAddButton]="true" [preSeededData]="{ projectTagId: projectTagData?.id }" [hiddenFields]="['projectTagId']"></app-project-tag-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

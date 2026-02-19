@@ -116,10 +116,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-shared-instruction-change-history-table [queryParams]="{ sharedInstructionId: sharedInstructionData?.id }"></app-shared-instruction-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-shared-instruction-change-history-add-edit [preSeededData]="{ sharedInstructionId: sharedInstructionData?.id }" [hiddenFields]="['sharedInstructionId']"></app-shared-instruction-change-history-add-edit>
+                                    <app-shared-instruction-change-history-table [queryParams]="{ sharedInstructionId: sharedInstructionData?.id }" [showAddButton]="true" [preSeededData]="{ sharedInstructionId: sharedInstructionData?.id }" [hiddenFields]="['sharedInstructionId']"></app-shared-instruction-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

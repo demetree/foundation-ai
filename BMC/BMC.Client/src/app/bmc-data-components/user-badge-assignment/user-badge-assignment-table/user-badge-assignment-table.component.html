@@ -1,4 +1,4 @@
-<app-user-badge-assignment-add-edit [showAddButton]="false"></app-user-badge-assignment-add-edit>
+<app-user-badge-assignment-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-user-badge-assignment-add-edit>
 <div class="row" *ngIf="userIsBMCUserBadgeAssignmentReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserBadgeAssignmentWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserBadgeAssignmentWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add User Badge Assignment">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserBadgeAssignmentWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

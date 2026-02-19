@@ -79,10 +79,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-manual-step-table [queryParams]="{ buildManualPageId: buildManualPageData?.id }"></app-build-manual-step-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-manual-step-add-edit [preSeededData]="{ buildManualPageId: buildManualPageData?.id }" [hiddenFields]="['buildManualPageId']"></app-build-manual-step-add-edit>
+                                    <app-build-manual-step-table [queryParams]="{ buildManualPageId: buildManualPageData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualPageId: buildManualPageData?.id }" [hiddenFields]="['buildManualPageId']"></app-build-manual-step-table>
                                 </div>
                             </div>
                             </ng-template>

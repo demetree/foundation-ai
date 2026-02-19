@@ -219,6 +219,15 @@ td .color-swatch,
 .table-header-fixed th,
 .table-header-fixed .sortable {
   color: var(--bmc-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Row hover transition */
+.viewport .custom-table tbody tr {
+  transition: background-color 0.15s ease;
 }
 
 /* Table cell and link text contrast */
@@ -237,6 +246,13 @@ td .color-swatch,
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--bmc-panel-border);
   color: var(--bmc-text-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+}
+
+.card.data-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--bmc-shadow-md, rgba(0, 0, 0, 0.1));
 }
 
 .card.data-card .card-header {
@@ -270,6 +286,16 @@ td .color-swatch,
 
 .action-edit {
   color: var(--bmc-text-primary);
+}
+
+.action-add {
+  color: var(--bmc-primary);
+  font-size: 1rem;
+}
+
+.action-add:hover {
+  background-color: var(--bmc-accent-glow-soft);
+  color: var(--bmc-primary);
 }
 
 .action-delete {

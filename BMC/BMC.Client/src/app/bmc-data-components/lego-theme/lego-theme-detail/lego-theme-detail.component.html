@@ -86,10 +86,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-table [queryParams]="{ legoThemeId: legoThemeData?.id }"></app-lego-set-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-add-edit [preSeededData]="{ legoThemeId: legoThemeData?.id }" [hiddenFields]="['legoThemeId']"></app-lego-set-add-edit>
+                                    <app-lego-set-table [queryParams]="{ legoThemeId: legoThemeData?.id }" [showAddButton]="true" [preSeededData]="{ legoThemeId: legoThemeData?.id }" [hiddenFields]="['legoThemeId']"></app-lego-set-table>
                                 </div>
                             </div>
                             </ng-template>

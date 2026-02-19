@@ -43,6 +43,10 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<BuildManualStepData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<BuildManualStepData>(); // Emitted for custom delete handling
   @Output() undelete = new EventEmitter<BuildManualStepData>(); // Emitted for custom undelete handling
@@ -381,6 +385,14 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditBuildManualStepComponent)
+    {
+        this.addEditBuildManualStepComponent.openModal(); // Open in add mode (no data)
     }
 }
 

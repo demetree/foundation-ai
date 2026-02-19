@@ -43,6 +43,10 @@ export class ContentReportTableComponent implements OnInit, OnChanges, AfterView
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<ContentReportData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<ContentReportData>(); // Emitted for custom delete handling
   @Output() undelete = new EventEmitter<ContentReportData>(); // Emitted for custom undelete handling
@@ -379,6 +383,14 @@ export class ContentReportTableComponent implements OnInit, OnChanges, AfterView
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditContentReportComponent)
+    {
+        this.addEditContentReportComponent.openModal(); // Open in add mode (no data)
     }
 }
 

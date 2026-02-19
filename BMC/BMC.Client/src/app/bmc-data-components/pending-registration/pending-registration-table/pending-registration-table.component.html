@@ -1,4 +1,4 @@
-<app-pending-registration-add-edit [showAddButton]="false"></app-pending-registration-add-edit>
+<app-pending-registration-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-pending-registration-add-edit>
 <div class="row" *ngIf="userIsBMCPendingRegistrationReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCPendingRegistrationWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCPendingRegistrationWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Pending Registration">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCPendingRegistrationWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

@@ -253,7 +253,7 @@ namespace Foundation.CodeGeneration
 /* Header Card */
 .header-card {
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 16px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 
   .card-header {
@@ -304,7 +304,7 @@ namespace Foundation.CodeGeneration
 
     .search-input {
       border: 1px solid #ced4da;
-      border-radius: 4px;
+      border-radius: 50px;
       padding-left: 40px;
       width: 100%;
       height: 38px;
@@ -742,8 +742,8 @@ namespace Foundation.CodeGeneration
 
             StringBuilder sb = new StringBuilder();
 
-            // Add the add edit component with the instruction not to show the add button
-            sb.AppendLine($"<app-{angularName}-add-edit [showAddButton]=\"false\"></app-{angularName}-add-edit>");
+            // Add the add edit component — always hidden (Add button is in the table header row instead), but forwarding preSeededData and hiddenFields for Add mode
+            sb.AppendLine($"<app-{angularName}-add-edit [showAddButton]=\"false\" [preSeededData]=\"preSeededData\" [hiddenFields]=\"hiddenFields\"></app-{angularName}-add-edit>");
 
             if (addAuthorization == true)
             {
@@ -765,12 +765,20 @@ namespace Foundation.CodeGeneration
 
             if (addAuthorization == true)
             {
-                sb.AppendLine($"            <th class=\"header-action-button\" style=\"width: 1rem;\" *ngIf=\"userIs{module}{entityName}Writer() == true\"></th>");
+                sb.AppendLine($"            <th class=\"header-action-button\" style=\"width: 1rem;\" *ngIf=\"userIs{module}{entityName}Writer() == true\">");
+                sb.AppendLine($"              <button *ngIf=\"showAddButton\" class=\"action-btn action-add\" (click)=\"handleAdd()\" ngbTooltip=\"Add {titleName}\">");
+                sb.AppendLine($"                <i class=\"fa-solid fa-plus\"></i>");
+                sb.AppendLine($"              </button>");
+                sb.AppendLine($"            </th>");
                 sb.AppendLine($"            <th class=\"header-action-button\" style=\"width: 1rem;\" *ngIf=\"userIs{module}{entityName}Writer() == true\"></th>");
             }
             else
             {
-                sb.AppendLine("            <th class=\"header-action-button\" style=\"width: 1rem;\"></th>");
+                sb.AppendLine($"            <th class=\"header-action-button\" style=\"width: 1rem;\">");
+                sb.AppendLine($"              <button *ngIf=\"showAddButton\" class=\"action-btn action-add\" (click)=\"handleAdd()\" ngbTooltip=\"Add {titleName}\">");
+                sb.AppendLine($"                <i class=\"fa-solid fa-plus\"></i>");
+                sb.AppendLine($"              </button>");
+                sb.AppendLine($"            </th>");
                 sb.AppendLine("            <th class=\"header-action-button\" style=\"width: 1rem;\"></th>");
             }
 
@@ -1849,6 +1857,15 @@ td .color-swatch,
 .table-header-fixed th,
 .table-header-fixed .sortable {{
   color: var(--{applicationThemePrefix}-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}}
+
+/* Row hover transition */
+.viewport .custom-table tbody tr {{
+  transition: background-color 0.15s ease;
 }}
 
 /* Table cell and link text contrast */
@@ -1867,6 +1884,13 @@ td .color-swatch,
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--{applicationThemePrefix}-panel-border);
   color: var(--{applicationThemePrefix}-text-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+}}
+
+.card.data-card:hover {{
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--{applicationThemePrefix}-shadow-md, rgba(0, 0, 0, 0.1));
 }}
 
 .card.data-card .card-header {{
@@ -1900,6 +1924,16 @@ td .color-swatch,
 
 .action-edit {{
   color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.action-add {{
+  color: var(--{applicationThemePrefix}-primary);
+  font-size: 1rem;
+}}
+
+.action-add:hover {{
+  background-color: var(--{applicationThemePrefix}-accent-glow-soft);
+  color: var(--{applicationThemePrefix}-primary);
 }}
 
 .action-delete {{
@@ -1998,6 +2032,11 @@ td .color-swatch,
             {
                 sb.AppendLine($"  @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior");
             }
+
+            sb.AppendLine();
+            sb.AppendLine($"  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component");
+            sb.AppendLine($"  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component");
+            sb.AppendLine($"  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component");
 
             sb.AppendLine();
             sb.AppendLine($"  @Output() edit = new EventEmitter<{entityName}Data>(); // Emitted for custom edit handling");
@@ -2499,6 +2538,16 @@ td .color-swatch,
             sb.AppendLine($"          'Add/Edit component not initialized',");
             sb.AppendLine($"          MessageSeverity.warn");
             sb.AppendLine($"        );");
+            sb.AppendLine($"    }}");
+            sb.AppendLine($"}}");
+            sb.AppendLine($"");
+            sb.AppendLine($"");
+
+            // handleAdd — opens the add/edit modal in "add" mode
+            sb.AppendLine($"  public handleAdd(): void {{");
+            sb.AppendLine($"    if (this.addEdit{entityName}Component)");
+            sb.AppendLine($"    {{");
+            sb.AppendLine($"        this.addEdit{entityName}Component.openModal(); // Open in add mode (no data)");
             sb.AppendLine($"    }}");
             sb.AppendLine($"}}");
             sb.AppendLine($"");
@@ -3159,6 +3208,9 @@ td .color-swatch,
   background-color: var(--{applicationThemePrefix}-bg-elevated);
   color: var(--{applicationThemePrefix}-text-primary);
   border-color: var(--{applicationThemePrefix}-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
 }}
 
 .form-control:focus, .form-select:focus {{
@@ -3264,6 +3316,8 @@ td .color-swatch,
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--{applicationThemePrefix}-panel-border);
   color: var(--{applicationThemePrefix}-text-primary);
+  border-radius: 16px;
+  overflow: hidden;
 }}
 
 .modal-header {{
@@ -4055,10 +4109,7 @@ label {{
                     //
                     sb.AppendLine($@"                            <div class=""d-flex flex-column gap-3 p-0"">
                                 <div class=""flex-grow-1"">
-                                    <app-{angularNameForRelatedTable}-table [queryParams]=""{{ {fkFieldName}: {camelCaseName}Data?.id }}""></app-{angularNameForRelatedTable}-table>
-                                </div>
-                                <div class=""d-flex justify-content-end"">
-                                    <app-{angularNameForRelatedTable}-add-edit [preSeededData]=""{{ {fkFieldName}: {camelCaseName}Data?.id }}"" [hiddenFields]=""['{fkFieldName}']""></app-{angularNameForRelatedTable}-add-edit>
+                                    <app-{angularNameForRelatedTable}-table [queryParams]=""{{ {fkFieldName}: {camelCaseName}Data?.id }}"" [showAddButton]=""true"" [preSeededData]=""{{ {fkFieldName}: {camelCaseName}Data?.id }}"" [hiddenFields]=""['{fkFieldName}']""></app-{angularNameForRelatedTable}-table>
                                 </div>
                             </div>");
 
@@ -4327,6 +4378,9 @@ label {{
   background-color: var(--{applicationThemePrefix}-bg-elevated);
   color: var(--{applicationThemePrefix}-text-primary);
   border-color: var(--{applicationThemePrefix}-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
 }}
 
 .form-control:focus, .form-select:focus {{
@@ -4395,29 +4449,37 @@ label {{
                 // Tab theming for child table tabs
                 //
                 string tabBlock = $@"
-/* Theme-aware child table tabs */
+/* Theme-aware child table tabs — premium underline style */
 .nav-tabs {{
-  border-bottom-color: var(--{applicationThemePrefix}-border);
+  border-bottom: 2px solid var(--{applicationThemePrefix}-border);
+  padding: 0 1rem;
 }}
 
 .nav-tabs .nav-link {{
-  color: var(--{applicationThemePrefix}-primary);
-  border-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--{applicationThemePrefix}-text-secondary);
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
 }}
 
 .nav-tabs .nav-link:hover {{
-  color: var(--{applicationThemePrefix}-text-primary);
-  border-color: var(--{applicationThemePrefix}-border) var(--{applicationThemePrefix}-border) transparent;
-  background-color: var(--{applicationThemePrefix}-bg-hover);
+  color: var(--{applicationThemePrefix}-primary);
+  border-color: transparent;
+  background-color: transparent;
 }}
 
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-item.show .nav-link {{
-  color: var(--{applicationThemePrefix}-text-primary);
-  background-color: var(--{applicationThemePrefix}-panel-bg);
-  border-color: var(--{applicationThemePrefix}-border) var(--{applicationThemePrefix}-border) transparent;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  color: var(--{applicationThemePrefix}-primary);
+  background: transparent;
+  border-bottom-color: var(--{applicationThemePrefix}-primary);
+}}
+
+.nav-tabs .nav-link i {{
+  opacity: 0.7;
 }}
 
 /* Tab badges */

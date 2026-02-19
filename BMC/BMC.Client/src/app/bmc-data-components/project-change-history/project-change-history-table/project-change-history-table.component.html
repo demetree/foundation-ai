@@ -1,4 +1,4 @@
-<app-project-change-history-add-edit [showAddButton]="false"></app-project-change-history-add-edit>
+<app-project-change-history-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-project-change-history-add-edit>
 <div class="row" *ngIf="userIsBMCProjectChangeHistoryReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectChangeHistoryWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectChangeHistoryWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Project Change History">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectChangeHistoryWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

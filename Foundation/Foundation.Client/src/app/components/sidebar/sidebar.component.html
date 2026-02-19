@@ -73,6 +73,16 @@
       </a>
     </li>
 
+    <!-- User Activity Insights -->
+    <li class="nav-item">
+      <a routerLink="/user-activity-insights" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Activity Insights' : null" triggers="hover" #tInsights="ngbTooltip"
+        (click)="tInsights.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span class="label px-2">Activity Insights</span>
+      </a>
+    </li>
+
 
     <!-- Divider: User / Tenant / Module management  -->
     <li class="nav-item" *ngIf="isExpanded">

@@ -1,4 +1,4 @@
-<app-brick-part-colour-add-edit [showAddButton]="false"></app-brick-part-colour-add-edit>
+<app-brick-part-colour-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-brick-part-colour-add-edit>
 <div class="row" *ngIf="userIsBMCBrickPartColourReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBrickPartColourWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBrickPartColourWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Brick Part Colour">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBrickPartColourWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

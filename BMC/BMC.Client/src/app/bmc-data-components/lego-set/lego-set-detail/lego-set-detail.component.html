@@ -104,10 +104,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-part-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-lego-set-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-part-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-lego-set-part-add-edit>
+                                    <app-lego-set-part-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-lego-set-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -121,10 +118,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-minifig-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-lego-set-minifig-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-minifig-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-lego-set-minifig-add-edit>
+                                    <app-lego-set-minifig-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-lego-set-minifig-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -138,10 +132,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-subset-table [queryParams]="{ parentLegoSetId: legoSetData?.id }"></app-lego-set-subset-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-subset-add-edit [preSeededData]="{ parentLegoSetId: legoSetData?.id }" [hiddenFields]="['parentLegoSetId']"></app-lego-set-subset-add-edit>
+                                    <app-lego-set-subset-table [queryParams]="{ parentLegoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ parentLegoSetId: legoSetData?.id }" [hiddenFields]="['parentLegoSetId']"></app-lego-set-subset-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -155,10 +146,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-subset-table [queryParams]="{ childLegoSetId: legoSetData?.id }"></app-lego-set-subset-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-subset-add-edit [preSeededData]="{ childLegoSetId: legoSetData?.id }" [hiddenFields]="['childLegoSetId']"></app-lego-set-subset-add-edit>
+                                    <app-lego-set-subset-table [queryParams]="{ childLegoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ childLegoSetId: legoSetData?.id }" [hiddenFields]="['childLegoSetId']"></app-lego-set-subset-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -172,10 +160,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-collection-set-import-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-user-collection-set-import-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-collection-set-import-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-collection-set-import-add-edit>
+                                    <app-user-collection-set-import-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-collection-set-import-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -189,10 +174,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-set-ownership-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-user-set-ownership-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-set-ownership-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-set-ownership-add-edit>
+                                    <app-user-set-ownership-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-set-ownership-table>
                                 </div>
                             </div>
                             </ng-template>

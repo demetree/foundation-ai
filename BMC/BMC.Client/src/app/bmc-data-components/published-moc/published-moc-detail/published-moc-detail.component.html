@@ -138,10 +138,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-published-moc-change-history-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-published-moc-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-published-moc-change-history-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-published-moc-change-history-add-edit>
+                                    <app-published-moc-change-history-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-published-moc-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -155,10 +152,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-published-moc-image-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-published-moc-image-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-published-moc-image-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-published-moc-image-add-edit>
+                                    <app-published-moc-image-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-published-moc-image-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -172,10 +166,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-moc-like-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-moc-like-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-moc-like-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-like-add-edit>
+                                    <app-moc-like-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-like-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -189,10 +180,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-moc-comment-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-moc-comment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-moc-comment-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-comment-add-edit>
+                                    <app-moc-comment-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-comment-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -206,10 +194,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-moc-favourite-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-moc-favourite-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-moc-favourite-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-favourite-add-edit>
+                                    <app-moc-favourite-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-moc-favourite-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -223,10 +208,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-shared-instruction-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-shared-instruction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-shared-instruction-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-shared-instruction-add-edit>
+                                    <app-shared-instruction-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-shared-instruction-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -240,10 +222,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-challenge-entry-table [queryParams]="{ publishedMocId: publishedMocData?.id }"></app-build-challenge-entry-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-challenge-entry-add-edit [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-build-challenge-entry-add-edit>
+                                    <app-build-challenge-entry-table [queryParams]="{ publishedMocId: publishedMocData?.id }" [showAddButton]="true" [preSeededData]="{ publishedMocId: publishedMocData?.id }" [hiddenFields]="['publishedMocId']"></app-build-challenge-entry-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -169,9 +169,15 @@ namespace Foundation.Server
                 Foundation.Web.Utility.StartupBasics.AddFoundationAdvancedWebAPIControllers(controllers, true, true);           // Tenant Settings, System Settings, and Log File access
                 Foundation.Web.Utility.TelemetryStartupBasics.AddTelemetryWebAPIControllers(controllers);           // Telemetry historical data module
                 
+                //
                 // Provides visibility into the alerting system
+                //
                 controllers.Add(typeof(IncidentsController));
-                
+
+                //
+                // User activity insights dashboard needs this
+                //
+                controllers.Add(typeof(UserActivityInsightsController));
                 logger.LogInformation("Controllers have been configured.");
 
                 //

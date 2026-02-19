@@ -43,6 +43,10 @@ export class ProjectTagTableComponent implements OnInit, OnChanges, AfterViewIni
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<ProjectTagData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<ProjectTagData>(); // Emitted for custom delete handling
   @Output() undelete = new EventEmitter<ProjectTagData>(); // Emitted for custom undelete handling
@@ -363,6 +367,14 @@ export class ProjectTagTableComponent implements OnInit, OnChanges, AfterViewIni
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditProjectTagComponent)
+    {
+        this.addEditProjectTagComponent.openModal(); // Open in add mode (no data)
     }
 }
 

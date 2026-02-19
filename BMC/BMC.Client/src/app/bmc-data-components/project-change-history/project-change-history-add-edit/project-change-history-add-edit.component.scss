@@ -78,6 +78,9 @@
   background-color: var(--bmc-bg-elevated);
   color: var(--bmc-text-primary);
   border-color: var(--bmc-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
 }
 
 .form-control:focus, .form-select:focus {
@@ -183,6 +186,8 @@
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--bmc-panel-border);
   color: var(--bmc-text-primary);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .modal-header {

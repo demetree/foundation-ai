@@ -113,10 +113,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-badge-assignment-table [queryParams]="{ userBadgeId: userBadgeData?.id }"></app-user-badge-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-badge-assignment-add-edit [preSeededData]="{ userBadgeId: userBadgeData?.id }" [hiddenFields]="['userBadgeId']"></app-user-badge-assignment-add-edit>
+                                    <app-user-badge-assignment-table [queryParams]="{ userBadgeId: userBadgeData?.id }" [showAddButton]="true" [preSeededData]="{ userBadgeId: userBadgeData?.id }" [hiddenFields]="['userBadgeId']"></app-user-badge-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

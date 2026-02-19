@@ -1,0 +1,304 @@
+<!--
+  User Activity Insights Dashboard
+  Premium layout with KPI cards, D3 visualizations, and data tables.
+-->
+<div class="insights-dashboard">
+
+    <!-- Premium Hero Header -->
+    <div class="insights-hero">
+        <div class="hero-content">
+            <div class="hero-title-section">
+                <button *ngIf="canGoBack()" class="btn btn-glass back-button me-3" (click)="goBack()">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <div>
+                    <h2 class="hero-title">
+                        <i class="bi bi-graph-up-arrow"></i>User Activity Insights
+                    </h2>
+                    <p class="hero-subtitle" *ngIf="data">
+                        {{ formatDateShort(data.summary.startDate) }} – {{ formatDateShort(data.summary.endDate) }}
+                    </p>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <!-- Time range selector -->
+                <select class="form-select form-select-sm btn-glass insights-time-select"
+                    [(ngModel)]="selectedTimePreset" (change)="onTimePresetChange()">
+                    <option *ngFor="let preset of timePresets" [value]="preset.value">{{ preset.label }}</option>
+                </select>
+
+                <!-- Auto-refresh toggle -->
+                <button class="btn btn-sm btn-glass" (click)="toggleAutoRefresh()"
+                    [title]="autoRefreshEnabled ? 'Pause auto-refresh' : 'Auto-refresh every 60s'">
+                    <i class="bi" [class.bi-arrow-repeat]="!autoRefreshEnabled"
+                        [class.bi-pause-circle]="autoRefreshEnabled"></i>
+                </button>
+
+                <!-- Manual refresh -->
+                <button class="btn btn-sm btn-glass" (click)="loadData()" [disabled]="(isLoading$ | async)">
+                    <i class="bi bi-arrow-clockwise" [class.spin]="(isLoading$ | async)"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Loading state -->
+    <div *ngIf="(isLoading$ | async) && !data" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Analyzing audit activity…</p>
+    </div>
+
+
+    <!-- Main dashboard content -->
+    <div *ngIf="data" class="insights-content" [class.loading-overlay]="(isLoading$ | async)">
+
+        <!-- KPI Summary Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ data.summary.totalEvents | number }}</div>
+                    <div class="kpi-label">Total Events</div>
+                    <i class="bi bi-activity kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ data.summary.uniqueUsers }}</div>
+                    <div class="kpi-label">Active Users</div>
+                    <i class="bi bi-people kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ data.summary.uniqueSessions }}</div>
+                    <div class="kpi-label">Sessions</div>
+                    <i class="bi bi-window-stack kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div class="kpi-value" [ngClass]="getSuccessRateClass(data.summary.successRate)">{{
+                        formatSuccessRate(data.summary.successRate) }}</div>
+                    <div class="kpi-label">Success Rate</div>
+                    <i class="bi bi-check-circle kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ data.summary.avgEventsPerDay }}</div>
+                    <div class="kpi-label">Avg / Day</div>
+                    <i class="bi bi-calendar-day kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ data.eventTypeBreakdown.length }}</div>
+                    <div class="kpi-label">Event Types</div>
+                    <i class="bi bi-tags kpi-icon"></i>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Charts Row 1: Heatmap + Radial Clock -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-8">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-calendar-range me-2"></i>Activity Heatmap</h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">Daily density</span>
+                    </div>
+                    <div class="chart-body heatmap-scroll" #heatmapChart></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-clock me-2"></i>Activity by Hour</h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">Radial clock</span>
+                    </div>
+                    <div class="chart-body d-flex justify-content-center" #radialClockChart></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Charts Row 2: Module Bar + Donut -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-7">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>Module Usage</h6>
+                        <div class="d-flex gap-3 align-items-center">
+                            <span class="legend-dot" style="background:#20c997"></span><small
+                                class="text-muted">Reads</small>
+                            <span class="legend-dot" style="background:#fd7e14"></span><small
+                                class="text-muted">Writes</small>
+                            <span class="legend-dot" style="background:var(--bs-secondary); opacity:0.4"></span><small
+                                class="text-muted">Other</small>
+                        </div>
+                    </div>
+                    <div class="chart-body" #moduleBarChart></div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Event Types</h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">Breakdown</span>
+                    </div>
+                    <div class="chart-body d-flex justify-content-center" #donutChart></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Charts Row 3: Sankey Diagram -->
+        <div class="row g-3 mb-4" *ngIf="data.userModuleMatrix?.length">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>User → Module Flow</h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">Top 10 users</span>
+                    </div>
+                    <div class="chart-body" #sankeyChart></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Data Tables Row: Top Users + Recent Sessions -->
+        <div class="row g-3 mb-4">
+            <!-- Top Users Table -->
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Top Users</h6>
+                    </div>
+                    <div class="chart-body table-responsive p-0">
+                        <table class="table table-sm table-hover mb-0 insights-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th class="text-end">Events</th>
+                                    <th>Top Module</th>
+                                    <th class="text-end">Success</th>
+                                    <th class="text-end">Last Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let user of data.topUsers; let i = index">
+                                    <td>
+                                        <span class="user-rank" [class.rank-gold]="i === 0"
+                                            [class.rank-silver]="i === 1" [class.rank-bronze]="i === 2">{{ i + 1
+                                            }}</span>
+                                        {{ user.userName }}
+                                    </td>
+                                    <td class="text-end fw-semibold">{{ user.eventCount | number }}</td>
+                                    <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ user.topModule
+                                            }}</span></td>
+                                    <td class="text-end" [ngClass]="getSuccessRateClass(user.successRate)">{{
+                                        formatSuccessRate(user.successRate) }}</td>
+                                    <td class="text-end text-muted">{{ getTimeAgo(user.lastActive) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Sessions -->
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Sessions</h6>
+                    </div>
+                    <div class="chart-body table-responsive p-0" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0 insights-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th class="text-end">Events</th>
+                                    <th>Modules</th>
+                                    <th class="text-end">Started</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let session of data.recentSessions">
+                                    <td class="fw-semibold">{{ session.userName }}</td>
+                                    <td class="text-end">{{ session.eventCount }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary bg-opacity-10 text-body-secondary me-1"
+                                            *ngFor="let mod of session.modules.slice(0, 3)">{{ mod }}</span>
+                                        <span *ngIf="session.modules.length > 3" class="text-muted small">+{{
+                                            session.modules.length - 3 }}</span>
+                                    </td>
+                                    <td class="text-end text-muted">{{ getTimeAgo(session.sessionStart) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Failure Hotspots (only shown if there are failures) -->
+        <div class="row g-3 mb-4" *ngIf="data.failureHotspots?.length">
+            <div class="col-lg-6">
+                <div class="chart-card border-warning-subtle">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Failure Hotspots
+                        </h6>
+                        <span class="badge bg-warning bg-opacity-10 text-warning">Attention needed</span>
+                    </div>
+                    <div class="chart-body table-responsive p-0">
+                        <table class="table table-sm table-hover mb-0 insights-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Module</th>
+                                    <th class="text-end">Failures</th>
+                                    <th class="text-end">Last Failure</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let hotspot of data.failureHotspots">
+                                    <td>{{ hotspot.userName }}</td>
+                                    <td><span class="badge bg-danger bg-opacity-10 text-danger">{{ hotspot.moduleName
+                                            }}</span></td>
+                                    <td class="text-end text-danger fw-semibold">{{ hotspot.failureCount }}</td>
+                                    <td class="text-end text-muted">{{ getTimeAgo(hotspot.lastFailure) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Type Legend -->
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-list-check me-2"></i>Event Type Summary</h6>
+                    </div>
+                    <div class="chart-body p-3">
+                        <div class="row g-2">
+                            <div class="col-6 col-md-4" *ngFor="let eventType of data.eventTypeBreakdown">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-2">{{
+                                        eventType.count | number }}</span>
+                                    <small class="text-truncate">{{ eventType.auditTypeName }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

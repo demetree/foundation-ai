@@ -96,10 +96,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-submodel-change-history-table [queryParams]="{ submodelId: submodelData?.id }"></app-submodel-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-submodel-change-history-add-edit [preSeededData]="{ submodelId: submodelData?.id }" [hiddenFields]="['submodelId']"></app-submodel-change-history-add-edit>
+                                    <app-submodel-change-history-table [queryParams]="{ submodelId: submodelData?.id }" [showAddButton]="true" [preSeededData]="{ submodelId: submodelData?.id }" [hiddenFields]="['submodelId']"></app-submodel-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -113,10 +110,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-submodel-placed-brick-table [queryParams]="{ submodelId: submodelData?.id }"></app-submodel-placed-brick-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-submodel-placed-brick-add-edit [preSeededData]="{ submodelId: submodelData?.id }" [hiddenFields]="['submodelId']"></app-submodel-placed-brick-add-edit>
+                                    <app-submodel-placed-brick-table [queryParams]="{ submodelId: submodelData?.id }" [showAddButton]="true" [preSeededData]="{ submodelId: submodelData?.id }" [hiddenFields]="['submodelId']"></app-submodel-placed-brick-table>
                                 </div>
                             </div>
                             </ng-template>

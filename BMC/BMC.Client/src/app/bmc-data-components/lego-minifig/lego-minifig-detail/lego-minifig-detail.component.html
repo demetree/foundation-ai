@@ -82,10 +82,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-lego-set-minifig-table [queryParams]="{ legoMinifigId: legoMinifigData?.id }"></app-lego-set-minifig-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-lego-set-minifig-add-edit [preSeededData]="{ legoMinifigId: legoMinifigData?.id }" [hiddenFields]="['legoMinifigId']"></app-lego-set-minifig-add-edit>
+                                    <app-lego-set-minifig-table [queryParams]="{ legoMinifigId: legoMinifigData?.id }" [showAddButton]="true" [preSeededData]="{ legoMinifigId: legoMinifigData?.id }" [hiddenFields]="['legoMinifigId']"></app-lego-set-minifig-table>
                                 </div>
                             </div>
                             </ng-template>

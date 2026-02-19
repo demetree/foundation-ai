@@ -118,10 +118,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-moderation-action-table [queryParams]="{ contentReportId: contentReportData?.id }"></app-moderation-action-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-moderation-action-add-edit [preSeededData]="{ contentReportId: contentReportData?.id }" [hiddenFields]="['contentReportId']"></app-moderation-action-add-edit>
+                                    <app-moderation-action-table [queryParams]="{ contentReportId: contentReportData?.id }" [showAddButton]="true" [preSeededData]="{ contentReportId: contentReportData?.id }" [hiddenFields]="['contentReportId']"></app-moderation-action-table>
                                 </div>
                             </div>
                             </ng-template>

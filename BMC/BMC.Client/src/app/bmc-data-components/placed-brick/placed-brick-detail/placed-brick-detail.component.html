@@ -127,10 +127,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-placed-brick-change-history-table [queryParams]="{ placedBrickId: placedBrickData?.id }"></app-placed-brick-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-placed-brick-change-history-add-edit [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-placed-brick-change-history-add-edit>
+                                    <app-placed-brick-change-history-table [queryParams]="{ placedBrickId: placedBrickData?.id }" [showAddButton]="true" [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-placed-brick-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -144,10 +141,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-submodel-placed-brick-table [queryParams]="{ placedBrickId: placedBrickData?.id }"></app-submodel-placed-brick-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-submodel-placed-brick-add-edit [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-submodel-placed-brick-add-edit>
+                                    <app-submodel-placed-brick-table [queryParams]="{ placedBrickId: placedBrickData?.id }" [showAddButton]="true" [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-submodel-placed-brick-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -161,10 +155,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-step-part-table [queryParams]="{ placedBrickId: placedBrickData?.id }"></app-build-step-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-step-part-add-edit [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-build-step-part-add-edit>
+                                    <app-build-step-part-table [queryParams]="{ placedBrickId: placedBrickData?.id }" [showAddButton]="true" [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-build-step-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -178,10 +169,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-step-annotation-table [queryParams]="{ placedBrickId: placedBrickData?.id }"></app-build-step-annotation-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-step-annotation-add-edit [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-build-step-annotation-add-edit>
+                                    <app-build-step-annotation-table [queryParams]="{ placedBrickId: placedBrickData?.id }" [showAddButton]="true" [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-build-step-annotation-table>
                                 </div>
                             </div>
                             </ng-template>

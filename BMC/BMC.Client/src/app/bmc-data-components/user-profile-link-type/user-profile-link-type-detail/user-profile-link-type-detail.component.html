@@ -79,10 +79,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-profile-link-table [queryParams]="{ userProfileLinkTypeId: userProfileLinkTypeData?.id }"></app-user-profile-link-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-profile-link-add-edit [preSeededData]="{ userProfileLinkTypeId: userProfileLinkTypeData?.id }" [hiddenFields]="['userProfileLinkTypeId']"></app-user-profile-link-add-edit>
+                                    <app-user-profile-link-table [queryParams]="{ userProfileLinkTypeId: userProfileLinkTypeData?.id }" [showAddButton]="true" [preSeededData]="{ userProfileLinkTypeId: userProfileLinkTypeData?.id }" [hiddenFields]="['userProfileLinkTypeId']"></app-user-profile-link-table>
                                 </div>
                             </div>
                             </ng-template>

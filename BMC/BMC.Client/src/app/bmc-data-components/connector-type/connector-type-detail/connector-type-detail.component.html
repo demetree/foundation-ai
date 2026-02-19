@@ -87,10 +87,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-part-connector-table [queryParams]="{ connectorTypeId: connectorTypeData?.id }"></app-brick-part-connector-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-part-connector-add-edit [preSeededData]="{ connectorTypeId: connectorTypeData?.id }" [hiddenFields]="['connectorTypeId']"></app-brick-part-connector-add-edit>
+                                    <app-brick-part-connector-table [queryParams]="{ connectorTypeId: connectorTypeData?.id }" [showAddButton]="true" [preSeededData]="{ connectorTypeId: connectorTypeData?.id }" [hiddenFields]="['connectorTypeId']"></app-brick-part-connector-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -107,10 +107,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-step-part-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }"></app-build-step-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-step-part-add-edit [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-step-part-add-edit>
+                                    <app-build-step-part-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-step-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -124,10 +121,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-step-annotation-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }"></app-build-step-annotation-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-step-annotation-add-edit [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-step-annotation-add-edit>
+                                    <app-build-step-annotation-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-step-annotation-table>
                                 </div>
                             </div>
                             </ng-template>

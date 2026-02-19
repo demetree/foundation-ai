@@ -101,10 +101,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-activity-event-table [queryParams]="{ activityEventTypeId: activityEventTypeData?.id }"></app-activity-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-activity-event-add-edit [preSeededData]="{ activityEventTypeId: activityEventTypeData?.id }" [hiddenFields]="['activityEventTypeId']"></app-activity-event-add-edit>
+                                    <app-activity-event-table [queryParams]="{ activityEventTypeId: activityEventTypeData?.id }" [showAddButton]="true" [preSeededData]="{ activityEventTypeId: activityEventTypeData?.id }" [hiddenFields]="['activityEventTypeId']"></app-activity-event-table>
                                 </div>
                             </div>
                             </ng-template>

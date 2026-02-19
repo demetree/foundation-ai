@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-content-report-table [queryParams]="{ contentReportReasonId: contentReportReasonData?.id }"></app-content-report-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-content-report-add-edit [preSeededData]="{ contentReportReasonId: contentReportReasonData?.id }" [hiddenFields]="['contentReportReasonId']"></app-content-report-add-edit>
+                                    <app-content-report-table [queryParams]="{ contentReportReasonId: contentReportReasonData?.id }" [showAddButton]="true" [preSeededData]="{ contentReportReasonId: contentReportReasonData?.id }" [hiddenFields]="['contentReportReasonId']"></app-content-report-table>
                                 </div>
                             </div>
                             </ng-template>

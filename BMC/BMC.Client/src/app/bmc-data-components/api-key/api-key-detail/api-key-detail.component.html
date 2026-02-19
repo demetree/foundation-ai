@@ -108,10 +108,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-api-request-log-table [queryParams]="{ apiKeyId: apiKeyData?.id }"></app-api-request-log-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-api-request-log-add-edit [preSeededData]="{ apiKeyId: apiKeyData?.id }" [hiddenFields]="['apiKeyId']"></app-api-request-log-add-edit>
+                                    <app-api-request-log-table [queryParams]="{ apiKeyId: apiKeyData?.id }" [showAddButton]="true" [preSeededData]="{ apiKeyId: apiKeyData?.id }" [hiddenFields]="['apiKeyId']"></app-api-request-log-table>
                                 </div>
                             </div>
                             </ng-template>

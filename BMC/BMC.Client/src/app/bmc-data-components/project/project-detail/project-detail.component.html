@@ -91,10 +91,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-change-history-table [queryParams]="{ projectId: projectData?.id }"></app-project-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-change-history-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-change-history-add-edit>
+                                    <app-project-change-history-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -108,10 +105,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-placed-brick-table [queryParams]="{ projectId: projectData?.id }"></app-placed-brick-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-placed-brick-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-placed-brick-add-edit>
+                                    <app-placed-brick-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-placed-brick-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -125,10 +119,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-brick-connection-table [queryParams]="{ projectId: projectData?.id }"></app-brick-connection-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-brick-connection-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-brick-connection-add-edit>
+                                    <app-brick-connection-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-brick-connection-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -142,10 +133,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-submodel-table [queryParams]="{ projectId: projectData?.id }"></app-submodel-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-submodel-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-submodel-add-edit>
+                                    <app-submodel-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-submodel-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -159,10 +147,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-tag-assignment-table [queryParams]="{ projectId: projectData?.id }"></app-project-tag-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-tag-assignment-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-tag-assignment-add-edit>
+                                    <app-project-tag-assignment-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-tag-assignment-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -176,10 +161,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-camera-preset-table [queryParams]="{ projectId: projectData?.id }"></app-project-camera-preset-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-camera-preset-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-camera-preset-add-edit>
+                                    <app-project-camera-preset-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-camera-preset-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -193,10 +175,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-reference-image-table [queryParams]="{ projectId: projectData?.id }"></app-project-reference-image-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-reference-image-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-reference-image-add-edit>
+                                    <app-project-reference-image-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-reference-image-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -210,10 +189,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-manual-table [queryParams]="{ projectId: projectData?.id }"></app-build-manual-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-manual-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-build-manual-add-edit>
+                                    <app-build-manual-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-build-manual-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -227,10 +203,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-render-table [queryParams]="{ projectId: projectData?.id }"></app-project-render-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-render-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-render-add-edit>
+                                    <app-project-render-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-render-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -244,10 +217,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-project-export-table [queryParams]="{ projectId: projectData?.id }"></app-project-export-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-project-export-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-export-add-edit>
+                                    <app-project-export-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-export-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -261,10 +231,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-published-moc-table [queryParams]="{ projectId: projectData?.id }"></app-published-moc-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-published-moc-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-published-moc-add-edit>
+                                    <app-published-moc-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-published-moc-table>
                                 </div>
                             </div>
                             </ng-template>

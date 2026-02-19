@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-step-annotation-table [queryParams]="{ buildStepAnnotationTypeId: buildStepAnnotationTypeData?.id }"></app-build-step-annotation-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-step-annotation-add-edit [preSeededData]="{ buildStepAnnotationTypeId: buildStepAnnotationTypeData?.id }" [hiddenFields]="['buildStepAnnotationTypeId']"></app-build-step-annotation-add-edit>
+                                    <app-build-step-annotation-table [queryParams]="{ buildStepAnnotationTypeId: buildStepAnnotationTypeData?.id }" [showAddButton]="true" [preSeededData]="{ buildStepAnnotationTypeId: buildStepAnnotationTypeData?.id }" [hiddenFields]="['buildStepAnnotationTypeId']"></app-build-step-annotation-table>
                                 </div>
                             </div>
                             </ng-template>

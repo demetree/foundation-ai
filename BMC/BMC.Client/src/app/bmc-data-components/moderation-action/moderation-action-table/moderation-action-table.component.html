@@ -1,4 +1,4 @@
-<app-moderation-action-add-edit [showAddButton]="false"></app-moderation-action-add-edit>
+<app-moderation-action-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-moderation-action-add-edit>
 <div class="row" *ngIf="userIsBMCModerationActionReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCModerationActionWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCModerationActionWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Moderation Action">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCModerationActionWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->

@@ -97,10 +97,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-manual-change-history-table [queryParams]="{ buildManualId: buildManualData?.id }"></app-build-manual-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-manual-change-history-add-edit [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-build-manual-change-history-add-edit>
+                                    <app-build-manual-change-history-table [queryParams]="{ buildManualId: buildManualData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-build-manual-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -114,10 +111,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-build-manual-page-table [queryParams]="{ buildManualId: buildManualData?.id }"></app-build-manual-page-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-build-manual-page-add-edit [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-build-manual-page-add-edit>
+                                    <app-build-manual-page-table [queryParams]="{ buildManualId: buildManualData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-build-manual-page-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -131,10 +125,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-shared-instruction-table [queryParams]="{ buildManualId: buildManualData?.id }"></app-shared-instruction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-shared-instruction-add-edit [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-shared-instruction-add-edit>
+                                    <app-shared-instruction-table [queryParams]="{ buildManualId: buildManualData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualId: buildManualData?.id }" [hiddenFields]="['buildManualId']"></app-shared-instruction-table>
                                 </div>
                             </div>
                             </ng-template>

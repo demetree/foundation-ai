@@ -42,6 +42,10 @@ export class BrickPartChangeHistoryTableComponent implements OnInit, OnChanges, 
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<BrickPartChangeHistoryData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<BrickPartChangeHistoryData>(); // Emitted for custom delete handling
 
@@ -365,6 +369,14 @@ export class BrickPartChangeHistoryTableComponent implements OnInit, OnChanges, 
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditBrickPartChangeHistoryComponent)
+    {
+        this.addEditBrickPartChangeHistoryComponent.openModal(); // Open in add mode (no data)
     }
 }
 

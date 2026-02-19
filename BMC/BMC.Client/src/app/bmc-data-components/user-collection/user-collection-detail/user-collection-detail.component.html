@@ -79,10 +79,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-collection-change-history-table [queryParams]="{ userCollectionId: userCollectionData?.id }"></app-user-collection-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-collection-change-history-add-edit [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-collection-change-history-add-edit>
+                                    <app-user-collection-change-history-table [queryParams]="{ userCollectionId: userCollectionData?.id }" [showAddButton]="true" [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-collection-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -96,10 +93,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-collection-part-table [queryParams]="{ userCollectionId: userCollectionData?.id }"></app-user-collection-part-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-collection-part-add-edit [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-collection-part-add-edit>
+                                    <app-user-collection-part-table [queryParams]="{ userCollectionId: userCollectionData?.id }" [showAddButton]="true" [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-collection-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -113,10 +107,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-wishlist-item-table [queryParams]="{ userCollectionId: userCollectionData?.id }"></app-user-wishlist-item-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-wishlist-item-add-edit [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-wishlist-item-add-edit>
+                                    <app-user-wishlist-item-table [queryParams]="{ userCollectionId: userCollectionData?.id }" [showAddButton]="true" [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-wishlist-item-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -130,10 +121,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-collection-set-import-table [queryParams]="{ userCollectionId: userCollectionData?.id }"></app-user-collection-set-import-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-collection-set-import-add-edit [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-collection-set-import-add-edit>
+                                    <app-user-collection-set-import-table [queryParams]="{ userCollectionId: userCollectionData?.id }" [showAddButton]="true" [preSeededData]="{ userCollectionId: userCollectionData?.id }" [hiddenFields]="['userCollectionId']"></app-user-collection-set-import-table>
                                 </div>
                             </div>
                             </ng-template>
