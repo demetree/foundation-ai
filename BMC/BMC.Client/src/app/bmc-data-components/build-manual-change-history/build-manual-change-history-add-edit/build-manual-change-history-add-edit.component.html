@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #buildManualChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light build-manual-change-history-modal-header">
+   <div class="modal-header build-manual-change-history-modal-header">
       <h5 class="modal-title mb-0" id="buildManualChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Build Manual Change History' : 'Add Build Manual Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body build-manual-change-history-modal-body">
       <form [formGroup]="buildManualChangeHistoryForm" (ngSubmit)="submitForm()">

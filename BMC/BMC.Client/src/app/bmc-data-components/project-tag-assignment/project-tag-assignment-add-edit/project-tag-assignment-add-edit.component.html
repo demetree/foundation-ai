@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #projectTagAssignmentModal let-modal>
-   <div class="modal-header bg-dark text-light project-tag-assignment-modal-header">
+   <div class="modal-header project-tag-assignment-modal-header">
       <h5 class="modal-title mb-0" id="projectTagAssignmentModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Project Tag Assignment' : 'Add Project Tag Assignment' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body project-tag-assignment-modal-body">
       <form [formGroup]="projectTagAssignmentForm" (ngSubmit)="submitForm()">

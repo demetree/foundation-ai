@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #colourFinishModal let-modal>
-   <div class="modal-header bg-dark text-light colour-finish-modal-header">
+   <div class="modal-header colour-finish-modal-header">
       <h5 class="modal-title mb-0" id="colourFinishModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Colour Finish' : 'Add Colour Finish' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body colour-finish-modal-body">
       <form [formGroup]="colourFinishForm" (ngSubmit)="submitForm()">

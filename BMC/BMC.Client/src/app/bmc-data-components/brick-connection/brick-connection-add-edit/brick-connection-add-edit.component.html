@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #brickConnectionModal let-modal>
-   <div class="modal-header bg-dark text-light brick-connection-modal-header">
+   <div class="modal-header brick-connection-modal-header">
       <h5 class="modal-title mb-0" id="brickConnectionModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Brick Connection' : 'Add Brick Connection' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body brick-connection-modal-body">
       <form [formGroup]="brickConnectionForm" (ngSubmit)="submitForm()">

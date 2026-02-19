@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #brickCategoryModal let-modal>
-   <div class="modal-header bg-dark text-light brick-category-modal-header">
+   <div class="modal-header brick-category-modal-header">
       <h5 class="modal-title mb-0" id="brickCategoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Brick Category' : 'Add Brick Category' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body brick-category-modal-body">
       <form [formGroup]="brickCategoryForm" (ngSubmit)="submitForm()">

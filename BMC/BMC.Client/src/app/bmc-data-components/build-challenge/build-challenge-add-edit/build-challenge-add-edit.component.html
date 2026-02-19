@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #buildChallengeModal let-modal>
-   <div class="modal-header bg-dark text-light build-challenge-modal-header">
+   <div class="modal-header build-challenge-modal-header">
       <h5 class="modal-title mb-0" id="buildChallengeModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Build Challenge' : 'Add Build Challenge' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body build-challenge-modal-body">
       <form [formGroup]="buildChallengeForm" (ngSubmit)="submitForm()">

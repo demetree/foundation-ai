@@ -2744,14 +2744,13 @@ td .color-swatch,
             sb.AppendLine("");
             sb.AppendLine("<!-- ng-bootstrap modal -->");
             sb.AppendLine($"<ng-template #{suffixableCamelCaseName}Modal let-modal>");
-            sb.AppendLine($"   <div class=\"modal-header bg-dark text-light {angularName}-modal-header\">");
+            sb.AppendLine($"   <div class=\"modal-header {angularName}-modal-header\">");
             sb.AppendLine($"      <h5 class=\"modal-title mb-0\" id=\"{suffixableCamelCaseName}ModalLabel\" ngbTooltip=\"{{{{objectGuid}}}}\">");
             sb.AppendLine($"      {{{{ isEditMode ? 'Edit {titleName}' : 'Add {titleName}' }}}}");
             sb.AppendLine($"      </h5>");
-            sb.AppendLine($"      <button type=\"button\"");
-            sb.AppendLine($"              class=\"btn btn-sm btn-close btn-close-white\"");
-            sb.AppendLine($"              (click)=\"closeModal()\">");
-            sb.AppendLine($"       </button>");
+            sb.AppendLine($"      <button type=\"button\" class=\"modal-close-btn\" (click)=\"closeModal()\" aria-label=\"Close\">");
+            sb.AppendLine($"        <i class=\"fa fa-xmark\"></i>");
+            sb.AppendLine($"      </button>");
             sb.AppendLine($"   </div>");
             sb.AppendLine($"   <div class=\"modal-body {angularName}-modal-body\">");
 
@@ -3268,12 +3267,43 @@ td .color-swatch,
 }}
 
 .modal-header {{
-  border-bottom-color: var(--{applicationThemePrefix}-border);
+  background-color: var(--{applicationThemePrefix}-bg-elevated);
+  border-bottom: 1px solid var(--{applicationThemePrefix}-border);
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+.modal-header .modal-title {{
+  color: var(--{applicationThemePrefix}-text-primary);
+}}
+
+/* Theme-aware close button */
+.modal-close-btn {{
+  background: none;
+  border: none;
+  color: var(--{applicationThemePrefix}-text-primary);
+  font-size: 1.25rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  line-height: 1;
+  border-radius: 4px;
+  margin-left: auto;
+}}
+
+.modal-close-btn:hover {{
+  opacity: 1;
+  background-color: var(--{applicationThemePrefix}-bg-hover);
+}}
+
+.modal-body {{
+  background-color: var(--{applicationThemePrefix}-panel-bg);
   color: var(--{applicationThemePrefix}-text-primary);
 }}
 
 .modal-footer {{
-  border-top-color: var(--{applicationThemePrefix}-border);
+  background-color: var(--{applicationThemePrefix}-panel-bg);
+  border-top: 1px solid var(--{applicationThemePrefix}-border);
 }}
 
 label {{

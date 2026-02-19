@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #publishedMocModal let-modal>
-   <div class="modal-header bg-dark text-light published-moc-modal-header">
+   <div class="modal-header published-moc-modal-header">
       <h5 class="modal-title mb-0" id="publishedMocModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Published Moc' : 'Add Published Moc' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body published-moc-modal-body">
       <form [formGroup]="publishedMocForm" (ngSubmit)="submitForm()">

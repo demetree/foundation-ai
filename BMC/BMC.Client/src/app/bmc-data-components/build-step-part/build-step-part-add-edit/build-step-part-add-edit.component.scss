@@ -186,12 +186,43 @@
 }
 
 .modal-header {
-  border-bottom-color: var(--bmc-border);
+  background-color: var(--bmc-bg-elevated);
+  border-bottom: 1px solid var(--bmc-border);
+  color: var(--bmc-text-primary);
+}
+
+.modal-header .modal-title {
+  color: var(--bmc-text-primary);
+}
+
+/* Theme-aware close button */
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--bmc-text-primary);
+  font-size: 1.25rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  line-height: 1;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.modal-close-btn:hover {
+  opacity: 1;
+  background-color: var(--bmc-bg-hover);
+}
+
+.modal-body {
+  background-color: var(--bmc-panel-bg);
   color: var(--bmc-text-primary);
 }
 
 .modal-footer {
-  border-top-color: var(--bmc-border);
+  background-color: var(--bmc-panel-bg);
+  border-top: 1px solid var(--bmc-border);
 }
 
 label {

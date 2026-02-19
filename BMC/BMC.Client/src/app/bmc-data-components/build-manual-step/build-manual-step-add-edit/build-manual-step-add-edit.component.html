@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #buildManualStepModal let-modal>
-   <div class="modal-header bg-dark text-light build-manual-step-modal-header">
+   <div class="modal-header build-manual-step-modal-header">
       <h5 class="modal-title mb-0" id="buildManualStepModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Build Manual Step' : 'Add Build Manual Step' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body build-manual-step-modal-body">
       <form [formGroup]="buildManualStepForm" (ngSubmit)="submitForm()">

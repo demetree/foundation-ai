@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #userProfileStatModal let-modal>
-   <div class="modal-header bg-dark text-light user-profile-stat-modal-header">
+   <div class="modal-header user-profile-stat-modal-header">
       <h5 class="modal-title mb-0" id="userProfileStatModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit User Profile Stat' : 'Add User Profile Stat' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body user-profile-stat-modal-body">
       <form [formGroup]="userProfileStatForm" (ngSubmit)="submitForm()">

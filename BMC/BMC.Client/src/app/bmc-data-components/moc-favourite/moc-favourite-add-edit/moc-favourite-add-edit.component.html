@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #mocFavouriteModal let-modal>
-   <div class="modal-header bg-dark text-light moc-favourite-modal-header">
+   <div class="modal-header moc-favourite-modal-header">
       <h5 class="modal-title mb-0" id="mocFavouriteModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Moc Favourite' : 'Add Moc Favourite' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body moc-favourite-modal-body">
       <form [formGroup]="mocFavouriteForm" (ngSubmit)="submitForm()">

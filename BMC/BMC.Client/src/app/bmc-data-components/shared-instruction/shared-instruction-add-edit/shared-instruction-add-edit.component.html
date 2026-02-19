@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #sharedInstructionModal let-modal>
-   <div class="modal-header bg-dark text-light shared-instruction-modal-header">
+   <div class="modal-header shared-instruction-modal-header">
       <h5 class="modal-title mb-0" id="sharedInstructionModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Shared Instruction' : 'Add Shared Instruction' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body shared-instruction-modal-body">
       <form [formGroup]="sharedInstructionForm" (ngSubmit)="submitForm()">

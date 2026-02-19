@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #userSetOwnershipModal let-modal>
-   <div class="modal-header bg-dark text-light user-set-ownership-modal-header">
+   <div class="modal-header user-set-ownership-modal-header">
       <h5 class="modal-title mb-0" id="userSetOwnershipModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit User Set Ownership' : 'Add User Set Ownership' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body user-set-ownership-modal-body">
       <form [formGroup]="userSetOwnershipForm" (ngSubmit)="submitForm()">

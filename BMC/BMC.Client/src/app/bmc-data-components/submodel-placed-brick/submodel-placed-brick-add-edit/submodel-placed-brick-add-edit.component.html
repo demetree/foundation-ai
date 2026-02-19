@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #submodelPlacedBrickModal let-modal>
-   <div class="modal-header bg-dark text-light submodel-placed-brick-modal-header">
+   <div class="modal-header submodel-placed-brick-modal-header">
       <h5 class="modal-title mb-0" id="submodelPlacedBrickModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Submodel Placed Brick' : 'Add Submodel Placed Brick' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body submodel-placed-brick-modal-body">
       <form [formGroup]="submodelPlacedBrickForm" (ngSubmit)="submitForm()">
