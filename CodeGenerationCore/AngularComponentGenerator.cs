@@ -382,24 +382,46 @@ namespace Foundation.CodeGeneration
   color: var(--{applicationThemePrefix}-text-muted) !important;
 }}
 
-/* Theme-aware buttons */
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
 .btn-light {{
-  background-color: var(--{applicationThemePrefix}-panel-bg);
-  color: var(--{applicationThemePrefix}-text-primary);
-  border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-bg: var(--{applicationThemePrefix}-panel-bg);
+  --bs-btn-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-hover-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-border);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }}
 
-.btn-light:hover {{
-  background-color: var(--{applicationThemePrefix}-bg-hover);
-  color: var(--{applicationThemePrefix}-text-primary);
+.btn-primary {{
+  --bs-btn-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-active-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}}
+
+.btn-primary:hover {{
+  filter: brightness(1.15);
 }}
 
 .btn-secondary {{
-  background-color: var(--{applicationThemePrefix}-bg-elevated);
-  color: var(--{applicationThemePrefix}-text-primary);
-  border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-bg: var(--{applicationThemePrefix}-bg-elevated);
+  --bs-btn-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-hover-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-active-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-active-color: var(--{applicationThemePrefix}-text-primary);
 }}
 ";
 
@@ -3201,11 +3223,39 @@ td .color-swatch,
   font-weight: 500;
 }}
 
-/* Theme-aware buttons */
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
+.btn-primary {{
+  --bs-btn-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-active-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-disabled-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-focus-shadow-rgb: var(--{applicationThemePrefix}-primary-rgb, 13, 110, 253);
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}}
+
+.btn-primary:hover {{
+  filter: brightness(1.15);
+}}
+
 .btn-secondary {{
-  background-color: var(--{applicationThemePrefix}-bg-elevated);
-  color: var(--{applicationThemePrefix}-text-primary);
-  border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-bg: var(--{applicationThemePrefix}-bg-elevated);
+  --bs-btn-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-hover-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-active-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-active-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-active-border-color: var(--{applicationThemePrefix}-border);
 }}
 
 /* Modal and form contrast */
@@ -4190,24 +4240,46 @@ label {{
   color: var(--{applicationThemePrefix}-text-muted) !important;
 }}
 
-/* Theme-aware buttons */
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
 .btn-light {{
-  background-color: var(--{applicationThemePrefix}-panel-bg);
-  color: var(--{applicationThemePrefix}-text-primary);
-  border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-bg: var(--{applicationThemePrefix}-panel-bg);
+  --bs-btn-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-hover-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-border);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }}
 
-.btn-light:hover {{
-  background-color: var(--{applicationThemePrefix}-bg-hover);
-  color: var(--{applicationThemePrefix}-text-primary);
+.btn-primary {{
+  --bs-btn-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-primary);
+  --bs-btn-active-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--{applicationThemePrefix}-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}}
+
+.btn-primary:hover {{
+  filter: brightness(1.15);
 }}
 
 .btn-secondary {{
-  background-color: var(--{applicationThemePrefix}-bg-elevated);
-  color: var(--{applicationThemePrefix}-text-primary);
-  border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-bg: var(--{applicationThemePrefix}-bg-elevated);
+  --bs-btn-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-hover-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-hover-color: var(--{applicationThemePrefix}-text-primary);
+  --bs-btn-hover-border-color: var(--{applicationThemePrefix}-border);
+  --bs-btn-active-bg: var(--{applicationThemePrefix}-bg-hover);
+  --bs-btn-active-color: var(--{applicationThemePrefix}-text-primary);
 }}
 
 /* Form labels */

@@ -103,24 +103,46 @@
   color: var(--bmc-text-muted) !important;
 }
 
-/* Theme-aware buttons */
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
 .btn-light {
-  background-color: var(--bmc-panel-bg);
-  color: var(--bmc-text-primary);
-  border-color: var(--bmc-border);
+  --bs-btn-bg: var(--bmc-panel-bg);
+  --bs-btn-color: var(--bmc-text-primary);
+  --bs-btn-border-color: var(--bmc-border);
+  --bs-btn-hover-bg: var(--bmc-bg-hover);
+  --bs-btn-hover-color: var(--bmc-text-primary);
+  --bs-btn-hover-border-color: var(--bmc-border);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
-.btn-light:hover {
-  background-color: var(--bmc-bg-hover);
-  color: var(--bmc-text-primary);
+.btn-primary {
+  --bs-btn-bg: var(--bmc-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--bmc-primary);
+  --bs-btn-hover-bg: var(--bmc-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--bmc-primary);
+  --bs-btn-active-bg: var(--bmc-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--bmc-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
 }
 
 .btn-secondary {
-  background-color: var(--bmc-bg-elevated);
-  color: var(--bmc-text-primary);
-  border-color: var(--bmc-border);
+  --bs-btn-bg: var(--bmc-bg-elevated);
+  --bs-btn-color: var(--bmc-text-primary);
+  --bs-btn-border-color: var(--bmc-border);
+  --bs-btn-hover-bg: var(--bmc-bg-hover);
+  --bs-btn-hover-color: var(--bmc-text-primary);
+  --bs-btn-hover-border-color: var(--bmc-border);
+  --bs-btn-active-bg: var(--bmc-bg-hover);
+  --bs-btn-active-color: var(--bmc-text-primary);
 }
 
 /* Theme-aware form controls */
