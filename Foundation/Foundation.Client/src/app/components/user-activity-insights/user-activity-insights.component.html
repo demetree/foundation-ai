@@ -245,7 +245,21 @@
         </div>
 
 
-        <!-- Charts Row 3.5: Module → Entity Treemap -->
+        <!-- Charts Row 3.25: Sankey Flow — User → Module → Operation -->
+        <div class="row g-3 mb-4" *ngIf="data.userModuleMatrix?.length">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Activity Flow</h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">User → Module →
+                            Operation</span>
+                    </div>
+                    <div class="chart-body" style="padding: 0.5rem 2.5rem;" #sankeyFlowChart></div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="row g-3 mb-4" *ngIf="data.moduleEntityBreakdown?.length">
             <div class="col-12">
                 <div class="chart-card">

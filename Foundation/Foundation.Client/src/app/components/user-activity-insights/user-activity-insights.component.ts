@@ -29,6 +29,7 @@ import {
 } from '../../services/user-activity-insights.service';
 
 import * as d3 from 'd3';
+import { sankey as d3Sankey, sankeyLinkHorizontal, sankeyLeft } from 'd3-sankey';
 
 
 
@@ -80,6 +81,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
     @ViewChild('moduleBarChart', { static: false }) moduleBarChartRef!: ElementRef;
     @ViewChild('donutChart', { static: false }) donutChartRef!: ElementRef;
     @ViewChild('sankeyChart', { static: false }) sankeyChartRef!: ElementRef;
+    @ViewChild('sankeyFlowChart', { static: false }) sankeyFlowChartRef!: ElementRef;
     @ViewChild('treemapChart', { static: false }) treemapChartRef!: ElementRef;
 
     private chartsRendered = false;
@@ -310,6 +312,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
         this.renderModuleBarChart();
         this.renderDonutChart();
         this.renderSunburst();
+        this.renderSankeyFlow();
         this.renderTreemap();
 
         this.chartsRendered = true;
@@ -1040,6 +1043,189 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
                     }
                 }
             });
+    }
+
+
+    //
+    // 5b. Sankey Flow — 3-column: User → Module → Operation Type
+    //
+    private renderSankeyFlow(): void {
+        if (!this.sankeyFlowChartRef || !this.filteredData?.userModuleMatrix?.length) return;
+
+        const container = this.sankeyFlowChartRef.nativeElement;
+        d3.select(container).selectAll('*').remove();
+
+        const fd = this.filteredData!;
+        const matrix = fd.userModuleMatrix;
+        const modules = fd.topModules;
+
+        if (!modules?.length) return;
+
+        // Build node lists
+        const userNames = [...new Set(matrix.map(l => l.userName))].sort();
+        const moduleNames = [...new Set(matrix.map(l => l.moduleName))].sort();
+        const opTypes = ['Read', 'Write', 'Other'];
+
+        // Limit for readability
+        const topUserNames = userNames.slice(0, 10);
+        const topModuleNames = moduleNames.slice(0, 10);
+
+        // Build nodes: [users..., modules..., opTypes...]
+        const nodes: { name: string; column: number }[] = [
+            ...topUserNames.map(n => ({ name: n, column: 0 })),
+            ...topModuleNames.map(n => ({ name: n, column: 1 })),
+            ...opTypes.map(n => ({ name: n, column: 2 }))
+        ];
+
+        const nodeIndex = new Map(nodes.map((n, i) => [n.column + ':' + n.name, i]));
+
+        // Links: User → Module
+        const links: { source: number; target: number; value: number }[] = [];
+        for (const link of matrix) {
+            const sIdx = nodeIndex.get('0:' + link.userName);
+            const tIdx = nodeIndex.get('1:' + link.moduleName);
+            if (sIdx !== undefined && tIdx !== undefined && link.count > 0) {
+                links.push({ source: sIdx, target: tIdx, value: link.count });
+            }
+        }
+
+        // Links: Module → Operation Type
+        for (const mod of modules) {
+            const mIdx = nodeIndex.get('1:' + mod.moduleName);
+            if (mIdx === undefined) continue;
+
+            const readIdx = nodeIndex.get('2:Read')!;
+            const writeIdx = nodeIndex.get('2:Write')!;
+            const otherIdx = nodeIndex.get('2:Other')!;
+
+            if (mod.readCount > 0) links.push({ source: mIdx, target: readIdx, value: mod.readCount });
+            if (mod.writeCount > 0) links.push({ source: mIdx, target: writeIdx, value: mod.writeCount });
+            const other = mod.eventCount - mod.readCount - mod.writeCount;
+            if (other > 0) links.push({ source: mIdx, target: otherIdx, value: other });
+        }
+
+        if (links.length === 0) return;
+
+        // Layout
+        const margin = { top: 12, right: 10, bottom: 12, left: 10 };
+        const width = (container.clientWidth || 700) - margin.left - margin.right;
+        const height = Math.max(300, Math.min(500, topUserNames.length * 28 + 40));
+
+        const svg = d3.select(container)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const sankeyLayout = (d3Sankey as any)()
+            .nodeWidth(16)
+            .nodePadding(10)
+            .nodeAlign(sankeyLeft as any)
+            .extent([[0, 0], [width, height]]);
+
+        const graph = sankeyLayout({
+            nodes: nodes.map(d => ({ ...d })),
+            links: links.map(d => ({ ...d }))
+        });
+
+        // Colors
+        const userPalette = ['#6f42c1', '#0d6efd', '#0dcaf0', '#198754',
+            '#fd7e14', '#d63384', '#20c997', '#ffc107', '#6610f2', '#dc3545'];
+        const modulePalette = ['#0dcaf0', '#20c997', '#fd7e14', '#d63384',
+            '#6f42c1', '#198754', '#ffc107', '#0d6efd', '#dc3545', '#6610f2'];
+        const opColors: Record<string, string> = {
+            'Read': '#20c997', 'Write': '#fd7e14', 'Other': '#6c757d'
+        };
+
+        function nodeColor(d: any): string {
+            if (d.column === 0) return userPalette[topUserNames.indexOf(d.name) % userPalette.length];
+            if (d.column === 1) return modulePalette[topModuleNames.indexOf(d.name) % modulePalette.length];
+            return opColors[d.name] || '#6c757d';
+        }
+
+        // Tooltip
+        const tooltip = d3.select(container)
+            .append('div')
+            .attr('class', 'insights-tooltip')
+            .style('opacity', 0);
+
+        // Links
+        svg.append('g')
+            .selectAll('.sankey-link')
+            .data(graph.links)
+            .enter()
+            .append('path')
+            .attr('class', 'sankey-link')
+            .attr('d', sankeyLinkHorizontal() as any)
+            .attr('fill', 'none')
+            .attr('stroke', (d: any) => nodeColor(d.source))
+            .attr('stroke-opacity', 0.3)
+            .attr('stroke-width', (d: any) => Math.max(1, d.width))
+            .on('mouseover', function (event: any, d: any) {
+                d3.select(this).attr('stroke-opacity', 0.6);
+                tooltip.style('opacity', 1)
+                    .html(`<strong>${d.source.name}</strong> → <strong>${d.target.name}</strong><br/>${d.value.toLocaleString()} events`)
+                    .style('left', (event.offsetX + 12) + 'px')
+                    .style('top', (event.offsetY - 24) + 'px');
+            })
+            .on('mouseout', function () {
+                d3.select(this).attr('stroke-opacity', 0.3);
+                tooltip.style('opacity', 0);
+            });
+
+        // Nodes
+        svg.append('g')
+            .selectAll('.sankey-node')
+            .data(graph.nodes)
+            .enter()
+            .append('rect')
+            .attr('class', 'sankey-node')
+            .attr('x', (d: any) => d.x0)
+            .attr('y', (d: any) => d.y0)
+            .attr('width', (d: any) => d.x1 - d.x0)
+            .attr('height', (d: any) => Math.max(2, d.y1 - d.y0))
+            .attr('fill', (d: any) => nodeColor(d))
+            .attr('opacity', 0.9)
+            .attr('rx', 3);
+
+        // Node labels
+        svg.append('g')
+            .selectAll('.sankey-label')
+            .data(graph.nodes)
+            .enter()
+            .append('text')
+            .attr('class', 'sankey-label')
+            .attr('x', (d: any) => d.column === 2 ? d.x1 + 6 : d.column === 0 ? d.x0 - 6 : (d.x0 + d.x1) / 2)
+            .attr('y', (d: any) => (d.y0 + d.y1) / 2)
+            .attr('text-anchor', (d: any) => d.column === 2 ? 'start' : d.column === 0 ? 'end' : 'middle')
+            .attr('dominant-baseline', 'middle')
+            .attr('fill', 'var(--bs-body-color)')
+            .attr('font-size', '11px')
+            .attr('font-weight', (d: any) => d.column === 2 ? '700' : '400')
+            .text((d: any) => {
+                const label = d.name as string;
+                return label.length > 18 ? label.substring(0, 16) + '…' : label;
+            });
+
+        // Column headers
+        const colHeaders = [
+            { x: 0, label: 'Users' },
+            { x: width / 2, label: 'Modules' },
+            { x: width, label: 'Operations' }
+        ];
+        for (const col of colHeaders) {
+            svg.append('text')
+                .attr('x', col.x)
+                .attr('y', -2)
+                .attr('text-anchor', col.x === 0 ? 'start' : col.x === width ? 'end' : 'middle')
+                .attr('fill', 'var(--bs-secondary-color)')
+                .attr('font-size', '9px')
+                .attr('font-weight', '600')
+                .attr('text-transform', 'uppercase')
+                .attr('opacity', 0.6)
+                .text(col.label);
+        }
     }
 
 
