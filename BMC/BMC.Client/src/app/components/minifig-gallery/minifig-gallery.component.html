@@ -1,0 +1,66 @@
+<div class="minifig-gallery-page">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a routerLink="/lego">LEGO Universe</a>
+        <span class="sep">›</span>
+        <span class="current">Minifig Gallery</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="gallery-header">
+        <h1><i class="fas fa-user-friends"></i> Minifig Gallery</h1>
+        <p class="subtitle" *ngIf="totalCount">{{ totalCount | number }} minifigs</p>
+    </header>
+
+    <!-- Search bar -->
+    <div class="controls-bar">
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="search" (input)="onSearchInput()" placeholder="Search minifigs…" />
+            <button *ngIf="search" class="clear-btn" (click)="clearSearch()"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-grid">
+        <div *ngFor="let s of [1,2,3,4,5,6,7,8,9,10,11,12]" class="skeleton-card">
+            <div class="skeleton-img shimmer"></div>
+            <div class="skeleton-text shimmer"></div>
+            <div class="skeleton-text short shimmer"></div>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && minifigs.length === 0" class="empty-state">
+        <i class="fas fa-user-slash"></i>
+        <h2>No minifigs found</h2>
+        <p *ngIf="search">No results for "{{ search }}"</p>
+        <button *ngIf="search" class="btn-primary" (click)="clearSearch()">Clear Search</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="minifig-grid" *ngIf="!loading && minifigs.length > 0">
+        <div class="minifig-card" *ngFor="let mf of minifigs" (click)="openMinifig(mf)">
+            <div class="card-img">
+                <img *ngIf="mf.imageUrl" [src]="mf.imageUrl" [alt]="mf.name" loading="lazy" />
+                <div *ngIf="!mf.imageUrl" class="img-placeholder"><i class="fas fa-user"></i></div>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">{{ mf.name }}</h3>
+                <span class="fig-number">{{ mf.figNumber }}</span>
+                <div class="card-meta">
+                    <span><i class="fas fa-puzzle-piece"></i> {{ mf.partCount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="!loading && minifigs.length > 0 && totalPages > 1">
+        <button [disabled]="page === 1" (click)="goToPage(page - 1)"><i class="fas fa-chevron-left"></i></button>
+        <button *ngFor="let p of pageNumbers" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+        <button [disabled]="page === totalPages" (click)="goToPage(page + 1)"><i
+                class="fas fa-chevron-right"></i></button>
+    </div>
+</div>

@@ -146,19 +146,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.OrderBy(bpr => bpr.relationshipType);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.childBrickPart);
-				query = query.Include(x => x.parentBrickPart);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Brick Part Relationship, or on an any of the string fields on its immediate relations
@@ -188,6 +175,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.childBrickPart);
+				query = query.Include(x => x.parentBrickPart);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.BrickPartRelationship> materialized = await query.ToListAsync(cancellationToken);

@@ -866,12 +866,16 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine();
             }
 
-            sb.AppendLine("\t\t\tif (pageNumber.HasValue == true &&");
-            sb.AppendLine("\t\t\t    pageSize.HasValue == true)");
-            sb.AppendLine("\t\t\t{");
-            sb.AppendLine("\t\t\t   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);");
-            sb.AppendLine("\t\t\t}");
-            sb.AppendLine("\t\t\t");
+            //
+            // Add the any string contains parameter - MUST be applied before pagination
+            // so that filtering happens on the full result set, not just the current page.
+            //
+            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
+                scriptGenTable.HasStringFields() == true)
+            {
+                AddAnyStringsContainsQueryAdditions(type, sb, rootNameSpace, true);
+            }
+
             sb.AppendLine("\t\t\tif (includeRelations == true)");
             sb.AppendLine("\t\t\t{");
 
@@ -911,14 +915,12 @@ namespace Foundation.CodeGeneration
             sb.AppendLine("\t\t\t}");
             sb.AppendLine();
 
-            //
-            // Add the any string contains parameter
-            //
-            if (scriptGenTable.AddAnyStringContainsParameterToWebAPI == true &&
-                scriptGenTable.HasStringFields() == true)
-            {
-                AddAnyStringsContainsQueryAdditions(type, sb, rootNameSpace, true);
-            }
+            sb.AppendLine("\t\t\tif (pageNumber.HasValue == true &&");
+            sb.AppendLine("\t\t\t    pageSize.HasValue == true)");
+            sb.AppendLine("\t\t\t{");
+            sb.AppendLine("\t\t\t   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);");
+            sb.AppendLine("\t\t\t}");
+            sb.AppendLine("\t\t\t");
 
             sb.AppendLine("\t\t\tquery = query.AsNoTracking();");
 

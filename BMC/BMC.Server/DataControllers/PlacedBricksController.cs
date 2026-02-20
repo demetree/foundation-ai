@@ -214,12 +214,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.OrderBy(pb => pb.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.brickColour);
@@ -228,6 +222,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.PlacedBrick> materialized = await query.ToListAsync(cancellationToken);

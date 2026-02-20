@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, forkJoin } from 'rxjs';
+import { Subject, Subscription, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { LegoSetService, LegoSetData, LegoSetQueryParameters } from '../../bmc-data-services/lego-set.service';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
@@ -14,6 +14,7 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private searchSubject = new Subject<string>();
+    private loadSub = new Subscription();
 
     //
     // Data
@@ -101,10 +102,15 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+        this.loadSub.unsubscribe();
     }
 
     fetchSets(): void {
+        // Cancel any in-flight request and reset state
+        this.loadSub.unsubscribe();
+        this.loadSub = new Subscription();
         this.loading = true;
+        this.sets = [];
 
         const config: any = {
             active: true,
@@ -126,12 +132,18 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             config.year = this.yearMin;
         }
 
+        // Separate count params (no pagination fields)
+        const countConfig = { ...config };
+        delete countConfig.pageSize;
+        delete countConfig.pageNumber;
+        delete countConfig.includeRelations;
+
         //
         // Fetch sets and count in parallel
         //
-        forkJoin({
+        this.loadSub.add(forkJoin({
             sets: this.setService.GetLegoSetList(config),
-            count: this.setService.GetLegoSetsRowCount(config)
+            count: this.setService.GetLegoSetsRowCount(countConfig)
         }).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
@@ -164,7 +176,7 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
                 this.totalPages = 1;
                 this.loading = false;
             }
-        });
+        }));
     }
 
     private applySorting(sets: LegoSetData[]): LegoSetData[] {

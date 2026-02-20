@@ -126,7 +126,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="pagination-bar" *ngIf="!loading && totalPages > 1">
+    <div class="pagination-bar" *ngIf="!loading && sets.length > 0 && totalPages > 1">
         <button class="page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
             <i class="fas fa-chevron-left"></i>
         </button>

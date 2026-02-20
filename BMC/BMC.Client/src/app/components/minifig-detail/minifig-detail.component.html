@@ -1,0 +1,90 @@
+<div class="minifig-detail-page">
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading minifig…</p>
+    </div>
+
+    <!-- Not found -->
+    <div *ngIf="!loading && !minifig" class="empty-state">
+        <i class="fas fa-user-slash"></i>
+        <h2>Minifig Not Found</h2>
+        <p>The requested LEGO minifig could not be found.</p>
+        <button class="btn-primary" (click)="goBack()">Back to Gallery</button>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!loading && minifig" class="content">
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a routerLink="/lego">LEGO Universe</a>
+            <span class="sep">›</span>
+            <a routerLink="/lego/minifigs">Minifig Gallery</a>
+            <span class="sep">›</span>
+            <span class="current">{{ minifig.name }}</span>
+        </nav>
+
+        <!-- Hero -->
+        <section class="hero-section">
+            <div class="hero-image-wrap">
+                <img *ngIf="minifig.imageUrl" [src]="minifig.imageUrl" [alt]="minifig.name" />
+                <div *ngIf="!minifig.imageUrl" class="hero-placeholder"><i class="fas fa-user"></i></div>
+            </div>
+            <div class="hero-info">
+                <div class="fig-number-badge">{{ minifig.figNumber }}</div>
+                <h1>{{ minifig.name }}</h1>
+                <div class="meta-row">
+                    <div class="meta-item">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span class="meta-label">Parts</span>
+                        <span class="meta-value">{{ minifig.partCount | number }}</span>
+                    </div>
+                    <div class="meta-item" *ngIf="appearsIn.length > 0">
+                        <i class="fas fa-box"></i>
+                        <span class="meta-label">Appears In</span>
+                        <span class="meta-value">{{ appearsIn.length }} sets</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Force Graph -->
+        <section class="graph-section" *ngIf="appearsIn.length > 0">
+            <h2><i class="fas fa-project-diagram"></i> Relationship Graph</h2>
+            <p class="graph-hint">Drag nodes to explore. Click a set node to navigate.</p>
+            <div class="graph-container" #forceGraph>
+                <div *ngIf="setsLoading" class="graph-loading">
+                    <div class="spinner small"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appears In List (fallback / companion) -->
+        <section class="appears-section">
+            <h2><i class="fas fa-boxes"></i> Appears In</h2>
+            <div *ngIf="setsLoading" class="section-loading">
+                <div class="spinner small"></div>
+            </div>
+            <div *ngIf="!setsLoading && appearsIn.length === 0" class="section-empty">
+                <p>This minifig does not appear in any sets.</p>
+            </div>
+            <div class="set-list" *ngIf="!setsLoading && appearsIn.length > 0">
+                <div class="set-card" *ngFor="let sm of appearsIn" (click)="openSet(sm)">
+                    <div class="set-card-img">
+                        <img *ngIf="sm.legoSet?.imageUrl" [src]="sm.legoSet!.imageUrl" [alt]="sm.legoSet!.name"
+                            loading="lazy" />
+                        <div *ngIf="!sm.legoSet?.imageUrl" class="img-placeholder"><i class="fas fa-cube"></i></div>
+                    </div>
+                    <div class="set-card-info">
+                        <span class="set-name">{{ sm.legoSet?.name ?? 'Unknown' }}</span>
+                        <span class="set-number">{{ sm.legoSet?.setNumber }}</span>
+                        <span class="set-qty" *ngIf="sm.quantity > 1">×{{ sm.quantity }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>

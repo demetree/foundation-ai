@@ -153,18 +153,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.OrderBy(ml => ml.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.publishedMoc);
 				query = query.AsSplitQuery();
 			}
 
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.MocLike> materialized = await query.ToListAsync(cancellationToken);

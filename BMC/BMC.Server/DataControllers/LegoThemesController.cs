@@ -156,18 +156,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.OrderBy(lt => lt.sequence).ThenBy(lt => lt.name).ThenBy(lt => lt.description);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.legoTheme);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Lego Theme, or on an any of the string fields on its immediate relations
@@ -184,6 +172,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.legoTheme);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.LegoTheme> materialized = await query.ToListAsync(cancellationToken);
