@@ -81,6 +81,15 @@ export interface FailureHotspot {
     lastFailure: string;
 }
 
+export interface ModuleEntityDetail {
+    moduleName: string;
+    entityName: string;
+    eventCount: number;
+    readCount: number;
+    writeCount: number;
+    uniqueUsers: number;
+}
+
 export interface UserActivityInsightsResponse {
     summary: InsightsSummary;
     activityByHour: HourlyActivity[];
@@ -91,6 +100,7 @@ export interface UserActivityInsightsResponse {
     userModuleMatrix: UserModuleLink[];
     recentSessions: RecentSession[];
     failureHotspots: FailureHotspot[];
+    moduleEntityBreakdown: ModuleEntityDetail[];
 }
 
 

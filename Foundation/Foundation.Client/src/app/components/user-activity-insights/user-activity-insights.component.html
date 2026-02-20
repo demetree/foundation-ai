@@ -52,6 +52,26 @@
     </div>
 
 
+    <!-- Drill-down Breadcrumb -->
+    <div class="drill-breadcrumb" *ngIf="drillModule">
+        <nav aria-label="Drill-down navigation">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0)" (click)="clearDrill()">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>All Modules
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bi bi-box me-1"></i>{{ drillModule }}
+                </li>
+            </ol>
+        </nav>
+        <button class="btn btn-sm btn-outline-secondary" (click)="clearDrill()">
+            <i class="bi bi-x-lg me-1"></i>Clear filter
+        </button>
+    </div>
+
+
     <!-- Main dashboard content -->
     <div *ngIf="data" class="insights-content" [class.loading-overlay]="(isLoading$ | async)">
 
@@ -103,6 +123,37 @@
         </div>
 
 
+        <!-- Focus Filter Bar -->
+        <div class="filter-bar mb-4" *ngIf="data?.userModuleMatrix?.length">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="filter-label"><i class="bi bi-funnel me-1"></i>Focus</span>
+
+                <select class="form-select form-select-sm filter-select" [(ngModel)]="selectedUser"
+                    (ngModelChange)="onFilterChange()" id="userFilter">
+                    <option value="">All Users</option>
+                    <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
+                </select>
+
+                <select class="form-select form-select-sm filter-select" [(ngModel)]="selectedModule"
+                    (ngModelChange)="onFilterChange()" id="moduleFilter">
+                    <option value="">All Modules</option>
+                    <option *ngFor="let mod of availableModules" [value]="mod">{{ mod }}</option>
+                </select>
+
+                <button *ngIf="hasActiveFilter" class="btn btn-sm btn-outline-secondary filter-clear"
+                    (click)="clearFilters()">
+                    <i class="bi bi-x-lg me-1"></i>Clear
+                </button>
+
+                <span *ngIf="hasActiveFilter" class="filter-badge">
+                    <i class="bi bi-funnel-fill me-1"></i>
+                    <span *ngIf="selectedUser">{{ selectedUser }}</span>
+                    <span *ngIf="selectedUser && selectedModule"> · </span>
+                    <span *ngIf="selectedModule">{{ selectedModule }}</span>
+                </span>
+            </div>
+        </div>
+
         <!-- Charts Row 1: Heatmap + Radial Clock -->
         <div class="row g-3 mb-4">
             <div class="col-lg-8">
@@ -111,7 +162,31 @@
                         <h6 class="mb-0"><i class="bi bi-calendar-range me-2"></i>Activity Heatmap</h6>
                         <span class="badge bg-secondary bg-opacity-25 text-body-secondary">Daily density</span>
                     </div>
-                    <div class="chart-body heatmap-scroll" #heatmapChart></div>
+                    <div class="chart-body heatmap-layout">
+                        <div class="heatmap-scroll" #heatmapChart></div>
+                        <div class="heatmap-summary" *ngIf="data">
+                            <div class="heatmap-stat">
+                                <div class="heatmap-stat-value">{{ busiestDay?.count | number }}</div>
+                                <div class="heatmap-stat-label">Busiest Day</div>
+                                <div class="heatmap-stat-detail" *ngIf="busiestDay">{{ formatDateShort(busiestDay.date)
+                                    }}</div>
+                            </div>
+                            <div class="heatmap-stat">
+                                <div class="heatmap-stat-value">{{ activeDaysCount }}</div>
+                                <div class="heatmap-stat-label">Active Days</div>
+                                <div class="heatmap-stat-detail">of {{ totalDaysInRange }} days</div>
+                            </div>
+                            <div class="heatmap-stat">
+                                <div class="heatmap-stat-value">{{ data.summary.avgEventsPerDay }}</div>
+                                <div class="heatmap-stat-label">Avg / Day</div>
+                            </div>
+                            <div class="heatmap-legend">
+                                <small class="text-muted">Less</small>
+                                <div class="heatmap-legend-gradient"></div>
+                                <small class="text-muted">More</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -156,15 +231,76 @@
         </div>
 
 
-        <!-- Charts Row 3: Sankey Diagram -->
+        <!-- Charts Row 3: Sequences Sunburst -->
         <div class="row g-3 mb-4" *ngIf="data.userModuleMatrix?.length">
             <div class="col-12">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>User → Module Flow</h6>
-                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">Top 10 users</span>
+                        <h6 class="mb-0"><i class="bi bi-bullseye me-2"></i>Activity Sunburst</h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">User → Module → Entity</span>
                     </div>
-                    <div class="chart-body" #sankeyChart></div>
+                    <div class="chart-body d-flex justify-content-center" #sankeyChart></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Charts Row 3.5: Module → Entity Treemap -->
+        <div class="row g-3 mb-4" *ngIf="data.moduleEntityBreakdown?.length">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-grid-3x3 me-2"></i>
+                            <span *ngIf="!drillModule">Module → Entity Breakdown</span>
+                            <span *ngIf="drillModule">{{ drillModule }} — Entities</span>
+                        </h6>
+                        <span class="badge bg-secondary bg-opacity-25 text-body-secondary">
+                            {{ drillModule ? 'Drilled in' : 'Click to drill' }}
+                        </span>
+                    </div>
+                    <div class="chart-body treemap-container" #treemapChart></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Entity Detail Table (shown only when drilled into a module) -->
+        <div class="row g-3 mb-4" *ngIf="drillModule && drillEntities.length">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-table me-2"></i>{{ drillModule }} — Entity Details
+                        </h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary">{{ drillEntities.length }}
+                            entities</span>
+                    </div>
+                    <div class="chart-body table-responsive p-0">
+                        <table class="table table-sm table-hover mb-0 insights-table">
+                            <thead>
+                                <tr>
+                                    <th>Entity</th>
+                                    <th class="text-end">Events</th>
+                                    <th class="text-end">Reads</th>
+                                    <th class="text-end">Writes</th>
+                                    <th class="text-end">Other</th>
+                                    <th class="text-end">Users</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let entity of drillEntities">
+                                    <td class="fw-semibold">{{ entity.entityName }}</td>
+                                    <td class="text-end">{{ entity.eventCount | number }}</td>
+                                    <td class="text-end text-success">{{ entity.readCount | number }}</td>
+                                    <td class="text-end text-warning">{{ entity.writeCount | number }}</td>
+                                    <td class="text-end text-muted">{{ entity.eventCount - entity.readCount -
+                                        entity.writeCount | number }}</td>
+                                    <td class="text-end">{{ entity.uniqueUsers }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

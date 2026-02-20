@@ -209,12 +209,20 @@ $radius-md: 8px;
 }
 
 //
-// Heatmap scroll container
+// Heatmap layout — chart left, summary right
 //
+.heatmap-layout {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
 .heatmap-scroll {
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 0.5rem;
+    flex: 1;
+    min-width: 0; // allow shrinking
 
     &::-webkit-scrollbar {
         height: 6px;
@@ -229,6 +237,100 @@ $radius-md: 8px;
         background: var(--bs-secondary);
         border-radius: 3px;
     }
+}
+
+.heatmap-summary {
+    flex: 0 0 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0.25rem 0;
+    border-left: 1px solid var(--bs-border-color);
+    padding-left: 1.25rem;
+}
+
+.heatmap-stat {
+    .heatmap-stat-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.03em;
+        color: var(--bs-body-color);
+    }
+
+    .heatmap-stat-label {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bs-secondary-color);
+        font-weight: 600;
+    }
+
+    .heatmap-stat-detail {
+        font-size: 0.75rem;
+        color: var(--bs-secondary-color);
+    }
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+
+    .heatmap-legend-gradient {
+        flex: 1;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(to right, #440154, #31688e, #35b779, #fde725);
+    }
+}
+
+// Focus filter bar
+.filter-bar {
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    padding: 0.6rem 1rem;
+}
+
+.filter-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.filter-select {
+    max-width: 200px;
+    min-width: 140px;
+    font-size: 0.82rem;
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.15rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+}
+
+.filter-clear {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+}
+
+.filter-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    white-space: nowrap;
 }
 
 //
@@ -369,6 +471,57 @@ $radius-md: 8px;
 }
 
 //
+// Drill-down Breadcrumb Bar
+//
+.drill-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: $radius-md;
+    border-left: 4px solid #6f42c1;
+
+    .breadcrumb {
+        font-size: 0.85rem;
+        font-weight: 500;
+
+        .breadcrumb-item a {
+            color: var(--bs-primary);
+            text-decoration: none;
+            transition: color $transition-smooth;
+
+            &:hover {
+                color: var(--bs-link-hover-color);
+                text-decoration: underline;
+            }
+        }
+
+        .breadcrumb-item.active {
+            color: var(--bs-body-color);
+            font-weight: 600;
+        }
+    }
+}
+
+//
+// Treemap
+//
+.treemap-container {
+    min-height: 320px;
+
+    svg {
+        overflow: visible;
+    }
+}
+
+.treemap-cell rect {
+    transition: opacity $transition-smooth, stroke $transition-smooth;
+}
+
+//
 // Responsive adjustments
 //
 @media (max-width: 768px) {
@@ -384,5 +537,11 @@ $radius-md: 8px;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.25rem;
+    }
+
+    .drill-breadcrumb {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
 }

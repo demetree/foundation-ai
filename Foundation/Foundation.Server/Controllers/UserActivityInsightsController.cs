@@ -99,7 +99,7 @@ namespace Foundation.Server.Controllers
                 var auditSessions = await _context.AuditSessions.AsNoTracking()
                     .ToDictionaryAsync(s => s.id, s => s.name, cancellationToken);
                 var auditModuleEntities = await _context.AuditModuleEntities.AsNoTracking()
-                    .ToDictionaryAsync(me => me.id, me => me.name, cancellationToken);
+                    .ToDictionaryAsync(me => me.id, me => new { me.name, me.auditModuleId }, cancellationToken);
 
                 //
                 // Base query — all events in the time range, with optional user filter.
@@ -219,6 +219,34 @@ namespace Foundation.Server.Controllers
                     .ToList();
 
                 //
+                // Module → Entity breakdown (all module-entity combinations)
+                //
+                var moduleEntityBreakdown = events
+                    .Where(e => e.auditModuleEntityId > 0)
+                    .GroupBy(e => new { e.auditModuleId, e.auditModuleEntityId })
+                    .Select(g =>
+                    {
+                        string moduleName = auditModules.ContainsKey(g.Key.auditModuleId) ? auditModules[g.Key.auditModuleId] : $"Module {g.Key.auditModuleId}";
+                        string entityName = auditModuleEntities.ContainsKey(g.Key.auditModuleEntityId)
+                            ? auditModuleEntities[g.Key.auditModuleEntityId].name
+                            : $"Entity {g.Key.auditModuleEntityId}";
+                        int readCount = g.Count(e => e.auditTypeId == 3 || e.auditTypeId == 4 || e.auditTypeId == 5 || e.auditTypeId == 6 || e.auditTypeId == 15);
+                        int writeCount = g.Count(e => e.auditTypeId == 7 || e.auditTypeId == 8 || e.auditTypeId == 9 || e.auditTypeId == 10);
+
+                        return new ModuleEntityDetail
+                        {
+                            ModuleName = moduleName,
+                            EntityName = entityName,
+                            EventCount = g.Count(),
+                            ReadCount = readCount,
+                            WriteCount = writeCount,
+                            UniqueUsers = g.Select(e => e.auditUserId).Distinct().Count()
+                        };
+                    })
+                    .OrderByDescending(me => me.EventCount)
+                    .ToList();
+
+                //
                 // Event type breakdown
                 //
                 var eventTypeBreakdown = events
@@ -312,7 +340,8 @@ namespace Foundation.Server.Controllers
                     EventTypeBreakdown = eventTypeBreakdown,
                     UserModuleMatrix = userModuleMatrix,
                     RecentSessions = recentSessions,
-                    FailureHotspots = failureHotspots
+                    FailureHotspots = failureHotspots,
+                    ModuleEntityBreakdown = moduleEntityBreakdown
                 };
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.ReadList,
@@ -341,6 +370,7 @@ namespace Foundation.Server.Controllers
             public List<UserModuleLink> UserModuleMatrix { get; set; }
             public List<RecentSession> RecentSessions { get; set; }
             public List<FailureHotspot> FailureHotspots { get; set; }
+            public List<ModuleEntityDetail> ModuleEntityBreakdown { get; set; }
         }
 
         public class InsightsSummary
@@ -415,6 +445,16 @@ namespace Foundation.Server.Controllers
             public string ModuleName { get; set; }
             public int FailureCount { get; set; }
             public DateTime LastFailure { get; set; }
+        }
+
+        public class ModuleEntityDetail
+        {
+            public string ModuleName { get; set; }
+            public string EntityName { get; set; }
+            public int EventCount { get; set; }
+            public int ReadCount { get; set; }
+            public int WriteCount { get; set; }
+            public int UniqueUsers { get; set; }
         }
 
         #endregion
