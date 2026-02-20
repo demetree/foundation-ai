@@ -205,21 +205,110 @@
             </div>
 
         </div>
-    </div>
-</div>
 
 
-<!-- Full-page loading skeleton -->
-<div class="detail-skeleton" *ngIf="isLoading">
-    <div class="skeleton-header">
-        <div class="skeleton-text" style="width: 120px; height: 32px;"></div>
-        <div class="skeleton-text" style="width: 300px; height: 24px;"></div>
+        <!-- Appears In Sets Panel -->
+        <div class="sets-panel" *ngIf="!isLoadingSetParts">
+            <div class="sets-panel-header">
+                <div class="sets-panel-title">
+                    <i class="bi bi-box-seam"></i>
+                    Appears In Sets
+                    <span class="count-badge" *ngIf="setParts.length > 0">{{ setParts.length }}</span>
+                </div>
+                <div class="sets-search" *ngIf="setParts.length > 0">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Search sets or colours…" [(ngModel)]="setPartsSearch" />
+                </div>
+            </div>
+
+            <div class="sets-panel-body" *ngIf="setParts.length > 0">
+                <!-- Results count -->
+                <div class="sets-results-count" *ngIf="setPartsSearch">
+                    Showing {{ filteredSetParts.length }} of {{ setParts.length }}
+                </div>
+
+                <div class="sets-table-wrapper">
+                    <div class="sets-table">
+                        <!-- Header -->
+                        <div class="sets-header-row">
+                            <span class="sets-col-set" (click)="sortSetParts('set')">
+                                Set <i class="bi" [ngClass]="getSortIcon('set')"></i>
+                            </span>
+                            <span class="sets-col-colour" (click)="sortSetParts('colour')">
+                                Colour <i class="bi" [ngClass]="getSortIcon('colour')"></i>
+                            </span>
+                            <span class="sets-col-qty" (click)="sortSetParts('qty')">
+                                Qty <i class="bi" [ngClass]="getSortIcon('qty')"></i>
+                            </span>
+                            <span class="sets-col-spare" (click)="sortSetParts('spare')">
+                                Spare <i class="bi" [ngClass]="getSortIcon('spare')"></i>
+                            </span>
+                        </div>
+
+                        <!-- Rows -->
+                        <div class="sets-row" *ngFor="let sp of sortedSetParts">
+                            <span class="sets-col-set">
+                                {{ sp.legoSet?.name || '—' }}
+                            </span>
+                            <span class="sets-col-colour">
+                                <span class="colour-swatch" *ngIf="sp.brickColour?.hexRgb"
+                                    [style.background]="'#' + sp.brickColour!.hexRgb">
+                                </span>
+                                {{ sp.brickColour?.name || '—' }}
+                            </span>
+                            <span class="sets-col-qty">{{ sp.quantity ?? '—' }}</span>
+                            <span class="sets-col-spare">
+                                <span class="spare-badge" *ngIf="sp.isSpare">Spare</span>
+                            </span>
+                        </div>
+
+                        <!-- Empty search results -->
+                        <div class="sets-empty" *ngIf="filteredSetParts.length === 0 && setPartsSearch">
+                            <i class="bi bi-search"></i>
+                            No sets match "{{ setPartsSearch }}"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card-body" *ngIf="setParts.length === 0">
+                <div class="empty-section">
+                    <i class="bi bi-dash-circle"></i>
+                    This part does not appear in any sets
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading set parts -->
+        <div class="sets-panel loading-card" *ngIf="isLoadingSetParts">
+            <div class="sets-panel-header">
+                <div class="sets-panel-title">
+                    <i class="bi bi-box-seam"></i>
+                    Appears In Sets
+                </div>
+            </div>
+            <div class="info-card-body">
+                <div class="empty-section">
+                    <div class="loading-spinner small"></div>
+                    Loading set data…
+                </div>
+            </div>
+        </div>
+
     </div>
-    <div class="skeleton-body">
-        <div class="skeleton-viewer"></div>
-        <div class="skeleton-panels">
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card"></div>
+
+
+    <!-- Full-page loading skeleton -->
+    <div class="detail-skeleton" *ngIf="isLoading">
+        <div class="skeleton-header">
+            <div class="skeleton-text" style="width: 120px; height: 32px;"></div>
+            <div class="skeleton-text" style="width: 300px; height: 24px;"></div>
+        </div>
+        <div class="skeleton-body">
+            <div class="skeleton-viewer"></div>
+            <div class="skeleton-panels">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
         </div>
     </div>
-</div>

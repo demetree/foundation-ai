@@ -10,6 +10,14 @@
                 <h1>Parts Universe</h1>
                 <p class="subtitle">Explore every brick in the LEGO universe — ranked, visualized, and connected</p>
             </div>
+            <button class="filter-toggle-btn" *ngIf="!loading" (click)="filtersOpen = !filtersOpen"
+                [class.active]="filtersOpen" [class.has-filters]="hasActiveFilters">
+                <i class="fas fa-filter"></i>
+                <span>Filters</span>
+                <span class="filter-badge" *ngIf="hasActiveFilters">{{
+                    selectedCategories.size + selectedThemes.size + (searchText ? 1 : 0) + (minSets > 0 ? 1 : 0)
+                    }}</span>
+            </button>
         </div>
 
         <!-- Stats Row -->
@@ -33,6 +41,96 @@
                 <i class="fas fa-th-large"></i>
                 <span class="stat-value">{{ totalCategories | number }}</span>
                 <span class="stat-label">Categories</span>
+            </div>
+        </div>
+
+        <!-- Active filter pills (always visible when filters applied) -->
+        <div class="filter-pills-inline" *ngIf="!loading && hasActiveFilters && !filtersOpen">
+            <span class="filter-summary">
+                Showing {{ displayedParts.length | number }} of {{ rankedParts.length | number }} parts
+            </span>
+            <span class="filter-pill" *ngFor="let cat of selectedCategories" (click)="removeCategory(cat)">
+                {{ cat }} <i class="fas fa-times"></i>
+            </span>
+            <span class="filter-pill theme-pill" *ngFor="let theme of selectedThemes" (click)="removeTheme(theme)">
+                {{ theme }} <i class="fas fa-times"></i>
+            </span>
+            <span class="filter-pill search-pill" *ngIf="searchText" (click)="onSearchChange('')">
+                "{{ searchText }}" <i class="fas fa-times"></i>
+            </span>
+            <button class="filter-clear-inline" (click)="clearAllFilters()">
+                <i class="fas fa-times"></i> Clear all
+            </button>
+        </div>
+    </div>
+
+    <!-- Collapsible Filter Panel -->
+    <div class="filter-panel" [class.open]="filtersOpen" *ngIf="!loading">
+        <div class="filter-panel-inner">
+            <div class="filter-controls">
+                <div class="filter-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search parts..." [value]="searchText"
+                        (input)="onSearchChange($any($event.target).value)">
+                </div>
+
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-trigger" (click)="categoryDropdownOpen = !categoryDropdownOpen"
+                        [class.has-selection]="selectedCategories.size > 0">
+                        <i class="fas fa-th-large"></i>
+                        Category
+                        <span class="filter-count" *ngIf="selectedCategories.size > 0">{{ selectedCategories.size
+                            }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-dropdown" *ngIf="categoryDropdownOpen">
+                        <label *ngFor="let cat of availableCategories" class="filter-option"
+                            (click)="toggleCategory(cat); $event.stopPropagation()">
+                            <input type="checkbox" [checked]="selectedCategories.has(cat)">
+                            <span>{{ cat }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-trigger" (click)="themeDropdownOpen = !themeDropdownOpen"
+                        [class.has-selection]="selectedThemes.size > 0">
+                        <i class="fas fa-palette"></i>
+                        Theme
+                        <span class="filter-count" *ngIf="selectedThemes.size > 0">{{ selectedThemes.size }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-dropdown" *ngIf="themeDropdownOpen">
+                        <label *ngFor="let theme of availableThemes" class="filter-option"
+                            (click)="toggleTheme(theme); $event.stopPropagation()">
+                            <input type="checkbox" [checked]="selectedThemes.has(theme)">
+                            <span>{{ theme }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-min-sets">
+                    <label>Min Sets</label>
+                    <input type="number" [value]="minSets" min="0" placeholder="0"
+                        (input)="onMinSetsChange(+$any($event.target).value)">
+                </div>
+
+                <button class="filter-clear" *ngIf="hasActiveFilters" (click)="clearAllFilters()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+
+            <!-- Active filter pills inside panel -->
+            <div class="filter-pills" *ngIf="hasActiveFilters">
+                <span class="filter-summary">
+                    Showing {{ displayedParts.length | number }} of {{ rankedParts.length | number }} parts
+                </span>
+                <span class="filter-pill" *ngFor="let cat of selectedCategories" (click)="removeCategory(cat)">
+                    {{ cat }} <i class="fas fa-times"></i>
+                </span>
+                <span class="filter-pill theme-pill" *ngFor="let theme of selectedThemes" (click)="removeTheme(theme)">
+                    {{ theme }} <i class="fas fa-times"></i>
+                </span>
             </div>
         </div>
     </div>

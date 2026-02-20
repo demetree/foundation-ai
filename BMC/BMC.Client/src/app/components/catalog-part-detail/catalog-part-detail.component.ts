@@ -9,6 +9,7 @@ import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDraw
 
 import { BrickPartService, BrickPartData } from '../../bmc-data-services/brick-part.service';
 import { BrickPartConnectorData } from '../../bmc-data-services/brick-part-connector.service';
+import { LegoSetPartData } from '../../bmc-data-services/lego-set-part.service';
 import { BrickPartColourData } from '../../bmc-data-services/brick-part-colour.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
@@ -34,6 +35,13 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     colours: BrickPartColourData[] = [];
     isLoadingConnectors = false;
     isLoadingColours = false;
+
+    // Set parts panel
+    setParts: LegoSetPartData[] = [];
+    isLoadingSetParts = false;
+    setPartsSearch = '';
+    setPartsSortField: 'set' | 'colour' | 'qty' | 'spare' = 'qty';
+    setPartsSortDir: 'asc' | 'desc' = 'desc';
 
     // Three.js objects
     private scene!: THREE.Scene;
@@ -100,6 +108,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             // Load related data
             this.loadConnectors();
             this.loadColours();
+            this.loadSetParts();
 
             // Check for geometry and initialise 3D viewer
             if (part.geometryFilePath) {
@@ -153,6 +162,81 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         finally {
             this.isLoadingColours = false;
         }
+    }
+
+
+    private async loadSetParts(): Promise<void> {
+        if (this.part == null || typeof this.part.LegoSetParts === 'undefined') {
+            return;
+        }
+
+        this.isLoadingSetParts = true;
+
+        try {
+            this.setParts = await this.part.LegoSetParts;
+        }
+        catch {
+            this.setParts = [];
+        }
+        finally {
+            this.isLoadingSetParts = false;
+        }
+    }
+
+
+    get filteredSetParts(): LegoSetPartData[] {
+        if (!this.setPartsSearch.trim()) {
+            return this.setParts;
+        }
+
+        const q = this.setPartsSearch.toLowerCase();
+
+        return this.setParts.filter(sp => {
+            const setName = (sp.legoSet?.name ?? '').toLowerCase();
+            const colourName = (sp.brickColour?.name ?? '').toLowerCase();
+            return setName.includes(q) || colourName.includes(q);
+        });
+    }
+
+
+    get sortedSetParts(): LegoSetPartData[] {
+        const parts = [...this.filteredSetParts];
+        const dir = this.setPartsSortDir === 'asc' ? 1 : -1;
+
+        parts.sort((a, b) => {
+            switch (this.setPartsSortField) {
+                case 'set':
+                    return (a.legoSet?.name ?? '').localeCompare(b.legoSet?.name ?? '') * dir;
+                case 'colour':
+                    return (a.brickColour?.name ?? '').localeCompare(b.brickColour?.name ?? '') * dir;
+                case 'qty':
+                    return (Number(a.quantity ?? 0) - Number(b.quantity ?? 0)) * dir;
+                case 'spare':
+                    return ((a.isSpare ? 1 : 0) - (b.isSpare ? 1 : 0)) * dir;
+                default:
+                    return 0;
+            }
+        });
+
+        return parts;
+    }
+
+
+    sortSetParts(field: 'set' | 'colour' | 'qty' | 'spare'): void {
+        if (this.setPartsSortField === field) {
+            this.setPartsSortDir = this.setPartsSortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.setPartsSortField = field;
+            this.setPartsSortDir = field === 'qty' ? 'desc' : 'asc';
+        }
+    }
+
+
+    getSortIcon(field: string): string {
+        if (this.setPartsSortField !== field) {
+            return 'bi-chevron-expand';
+        }
+        return this.setPartsSortDir === 'asc' ? 'bi-chevron-up' : 'bi-chevron-down';
     }
 
 

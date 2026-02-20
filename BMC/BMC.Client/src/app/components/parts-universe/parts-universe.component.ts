@@ -8,9 +8,9 @@ import {
     PartsUniverseApiService,
     PartsUniversePayload,
     RankedPart,
-    SankeyData,
-    CategoryBubble,
-    HeatmapData,
+    SankeyData, SankeyNode, SankeyLink,
+    CategoryBubble, BubblePart,
+    HeatmapData, HeatmapCell, HeatmapColourLabel,
     ChordData
 } from '../../services/parts-universe.service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
@@ -36,6 +36,16 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     totalCategories = 0;
     thumbnails = new Map<string, string>();
 
+    // ── Filter state ─────────────────────────────────────
+    searchText = '';
+    selectedCategories = new Set<string>();
+    selectedThemes = new Set<string>();
+    minSets = 0;
+    filtersOpen = false;
+    categoryDropdownOpen = false;
+    themeDropdownOpen = false;
+    private _filteredParts: RankedPart[] = [];
+
     private destroy$ = new Subject<void>();
     private payload: PartsUniversePayload | null = null;
 
@@ -51,6 +61,18 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         const qp = this.route.snapshot.queryParams;
         if (qp['mode'] === 'least') {
             this.leaderboardMode = 'least';
+        }
+        if (qp['q']) {
+            this.searchText = qp['q'];
+        }
+        if (qp['cats']) {
+            qp['cats'].split(',').forEach((c: string) => this.selectedCategories.add(c));
+        }
+        if (qp['themes']) {
+            qp['themes'].split(',').forEach((t: string) => this.selectedThemes.add(t));
+        }
+        if (qp['minSets']) {
+            this.minSets = parseInt(qp['minSets'], 10) || 0;
         }
 
         // Subscribe to thumbnail render results
@@ -80,9 +102,27 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
 
     get displayedParts(): RankedPart[] {
         if (this.leaderboardMode === 'least') {
-            return [...this.rankedParts].reverse();
+            return [...this._filteredParts].reverse();
         }
-        return this.rankedParts;
+        return this._filteredParts;
+    }
+
+    get availableCategories(): string[] {
+        const cats = new Set(this.rankedParts.map(rp => rp.categoryName));
+        return [...cats].sort();
+    }
+
+    get availableThemes(): string[] {
+        const themes = new Set<string>();
+        this.rankedParts.forEach(rp => rp.themes?.forEach(t => themes.add(t.name)));
+        return [...themes].sort();
+    }
+
+    get hasActiveFilters(): boolean {
+        return this.searchText.length > 0
+            || this.selectedCategories.size > 0
+            || this.selectedThemes.size > 0
+            || this.minSets > 0;
     }
 
     setLeaderboardMode(mode: 'most' | 'least'): void {
@@ -95,11 +135,102 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         this.updateQueryParams();
     }
 
+    // ── Filter actions ───────────────────────────────────
+
+    onSearchChange(text: string): void {
+        this.searchText = text;
+        this.applyFilters();
+    }
+
+    toggleCategory(cat: string): void {
+        if (this.selectedCategories.has(cat)) {
+            this.selectedCategories.delete(cat);
+        } else {
+            this.selectedCategories.add(cat);
+        }
+        this.applyFilters();
+    }
+
+    toggleTheme(theme: string): void {
+        if (this.selectedThemes.has(theme)) {
+            this.selectedThemes.delete(theme);
+        } else {
+            this.selectedThemes.add(theme);
+        }
+        this.applyFilters();
+    }
+
+    removeCategory(cat: string): void {
+        this.selectedCategories.delete(cat);
+        this.applyFilters();
+    }
+
+    removeTheme(theme: string): void {
+        this.selectedThemes.delete(theme);
+        this.applyFilters();
+    }
+
+    onMinSetsChange(value: number): void {
+        this.minSets = value || 0;
+        this.applyFilters();
+    }
+
+    clearAllFilters(): void {
+        this.searchText = '';
+        this.selectedCategories.clear();
+        this.selectedThemes.clear();
+        this.minSets = 0;
+        this.applyFilters();
+    }
+
+    private applyFilters(): void {
+        this.rebuildFilteredParts();
+        this.updateQueryParams();
+        setTimeout(() => this.renderAllPanels(), 50);
+    }
+
+    private rebuildFilteredParts(): void {
+        let parts = this.rankedParts;
+
+        // Text search
+        if (this.searchText) {
+            const q = this.searchText.toLowerCase();
+            parts = parts.filter(rp =>
+                (rp.name?.toLowerCase().includes(q)) ||
+                (rp.ldrawPartId?.toLowerCase().includes(q)) ||
+                (rp.ldrawTitle?.toLowerCase().includes(q))
+            );
+        }
+
+        // Category filter
+        if (this.selectedCategories.size > 0) {
+            parts = parts.filter(rp => this.selectedCategories.has(rp.categoryName));
+        }
+
+        // Theme filter
+        if (this.selectedThemes.size > 0) {
+            parts = parts.filter(rp =>
+                rp.themes?.some(t => this.selectedThemes.has(t.name))
+            );
+        }
+
+        // Min sets filter
+        if (this.minSets > 0) {
+            parts = parts.filter(rp => rp.setCount >= this.minSets);
+        }
+
+        this._filteredParts = parts;
+    }
+
     private updateQueryParams(): void {
+        const qp: any = { mode: this.leaderboardMode };
+        if (this.searchText) qp.q = this.searchText;
+        if (this.selectedCategories.size > 0) qp.cats = [...this.selectedCategories].join(',');
+        if (this.selectedThemes.size > 0) qp.themes = [...this.selectedThemes].join(',');
+        if (this.minSets > 0) qp.minSets = this.minSets;
         this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { mode: this.leaderboardMode },
-            queryParamsHandling: 'merge',
+            queryParams: qp,
             replaceUrl: true
         });
     }
@@ -133,6 +264,9 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                     this.totalCategories = payload.stats.totalCategories;
                     this.loading = false;
 
+                    // Build initial filtered set
+                    this.rebuildFilteredParts();
+
                     // Request thumbnails for top 50
                     const top50 = this.rankedParts.slice(0, 50);
                     const thumbnailRequests = top50
@@ -158,16 +292,162 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     // ================================================================
-    //  RENDER ALL PANELS
+    //  RENDER ALL PANELS — rebuilds viz data from filtered parts
     // ================================================================
 
     private renderAllPanels(): void {
         if (!this.payload) return;
 
-        this.renderSankey(this.payload.sankey);
-        this.renderBubbleChart(this.payload.bubbles);
-        this.renderHeatmap(this.payload.heatmap);
-        this.renderChordDiagram(this.payload.chord);
+        const parts = this._filteredParts;
+
+        // If no filters active, use server-precomputed data for best fidelity
+        if (!this.hasActiveFilters) {
+            this.renderSankey(this.payload.sankey);
+            this.renderBubbleChart(this.payload.bubbles);
+            this.renderHeatmap(this.payload.heatmap);
+            this.renderChordDiagram(this.payload.chord);
+            return;
+        }
+
+        // Otherwise, rebuild from filtered parts
+        this.renderSankey(this.buildSankeyData(parts));
+        this.renderBubbleChart(this.buildBubbleData(parts));
+        this.renderHeatmap(this.buildHeatmapData(parts));
+        this.renderChordDiagram(this.buildChordData(parts));
+    }
+
+    // ── Viz Data Builders ────────────────────────────────
+
+    private buildSankeyData(parts: RankedPart[]): SankeyData {
+        const top = parts.slice(0, 30);
+        if (top.length === 0) return { nodes: [], links: [] };
+
+        const nodeMap = new Map<string, number>();
+        const nodes: SankeyNode[] = [];
+        const linkMap = new Map<string, number>();
+
+        const getIdx = (name: string, group: string) => {
+            const key = `${group}:${name}`;
+            if (!nodeMap.has(key)) {
+                nodeMap.set(key, nodes.length);
+                nodes.push({ name, group });
+            }
+            return nodeMap.get(key)!;
+        };
+
+        for (const rp of top) {
+            const catIdx = getIdx(rp.categoryName, 'category');
+            const partIdx = getIdx(rp.name, 'part');
+            // category → part
+            const cpKey = `${catIdx}-${partIdx}`;
+            linkMap.set(cpKey, (linkMap.get(cpKey) || 0) + rp.totalQty);
+            // part → themes
+            for (const t of (rp.themes || []).slice(0, 3)) {
+                const themeIdx = getIdx(t.name, 'theme');
+                const ptKey = `${partIdx}-${themeIdx}`;
+                linkMap.set(ptKey, (linkMap.get(ptKey) || 0) + t.qty);
+            }
+        }
+
+        const links: SankeyLink[] = [];
+        linkMap.forEach((value, key) => {
+            const [s, t] = key.split('-').map(Number);
+            links.push({ source: s, target: t, value });
+        });
+
+        return { nodes, links };
+    }
+
+    private buildBubbleData(parts: RankedPart[]): CategoryBubble[] {
+        const catMap = new Map<string, BubblePart[]>();
+        for (const rp of parts) {
+            if (!catMap.has(rp.categoryName)) catMap.set(rp.categoryName, []);
+            catMap.get(rp.categoryName)!.push({
+                name: rp.name,
+                totalQty: rp.totalQty,
+                setCount: rp.setCount,
+                dominantColourHex: rp.colours?.[0]?.hex ?? ''
+            });
+        }
+        return [...catMap.entries()].map(([categoryName, bparts]) => ({
+            categoryName,
+            parts: bparts
+        }));
+    }
+
+    private buildHeatmapData(parts: RankedPart[]): HeatmapData {
+        const top = parts.slice(0, 25);
+        if (top.length === 0) return { partLabels: [], colourLabels: [], cells: [] };
+
+        // Collect all colours across top parts
+        const colourSet = new Map<string, { hex: string; name: string }>();
+        for (const rp of top) {
+            for (const c of (rp.colours || [])) {
+                const key = c.hex.replace('#', '').toLowerCase();
+                if (!colourSet.has(key)) colourSet.set(key, { hex: c.hex, name: c.name });
+            }
+        }
+
+        // Take top 30 colours by frequency
+        const colourFreq = new Map<string, number>();
+        for (const rp of top) {
+            for (const c of (rp.colours || [])) {
+                const key = c.hex.replace('#', '').toLowerCase();
+                colourFreq.set(key, (colourFreq.get(key) || 0) + c.qty);
+            }
+        }
+        const sortedColours = [...colourFreq.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 30)
+            .map(([key]) => key);
+
+        const colourLabels: HeatmapColourLabel[] = sortedColours
+            .map(key => colourSet.get(key)!)
+            .filter(Boolean);
+
+        const colourIdxMap = new Map(sortedColours.map((key, i) => [key, i]));
+        const partLabels = top.map(rp => rp.name);
+        const cells: HeatmapCell[] = [];
+
+        top.forEach((rp, partIdx) => {
+            for (const c of (rp.colours || [])) {
+                const key = c.hex.replace('#', '').toLowerCase();
+                const colourIdx = colourIdxMap.get(key);
+                if (colourIdx !== undefined) {
+                    cells.push({ partIdx, colourIdx, hex: c.hex, qty: c.qty });
+                }
+            }
+        });
+
+        return { partLabels, colourLabels, cells };
+    }
+
+    private buildChordData(parts: RankedPart[]): ChordData {
+        // Build category ↔ theme matrix
+        const categories = [...new Set(parts.map(rp => rp.categoryName))].sort();
+        const themes = new Set<string>();
+        parts.forEach(rp => rp.themes?.forEach(t => themes.add(t.name)));
+        const themeList = [...themes].sort().slice(0, 15);
+
+        const names = [...categories, ...themeList];
+        const n = names.length;
+        if (n === 0) return { names: [], matrix: [], categoryCount: 0 };
+
+        const matrix = Array.from({ length: n }, () => new Array(n).fill(0));
+        const nameIdx = new Map(names.map((name, i) => [name, i]));
+
+        for (const rp of parts) {
+            const catIdx = nameIdx.get(rp.categoryName);
+            if (catIdx === undefined) continue;
+            for (const t of (rp.themes || [])) {
+                const themeIdx = nameIdx.get(t.name);
+                if (themeIdx === undefined) continue;
+                matrix[catIdx][themeIdx] += t.qty;
+                matrix[themeIdx][catIdx] += t.qty;
+            }
+        }
+
+        return { names, matrix, categoryCount: categories.length };
     }
 
     // ================================================================

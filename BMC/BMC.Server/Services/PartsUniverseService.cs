@@ -28,7 +28,6 @@ namespace Foundation.BMC.Services
         private const string DATA_DIRECTORY = "data";
         private const string CACHE_FILENAME = "parts-universe-cache.json";
         private const int CACHE_MAX_AGE_HOURS = 24;
-        private const int TOP_RANKED_PARTS = 200;
         private const int SANKEY_TOP_PARTS = 12;
         private const int SANKEY_TOP_THEMES = 10;
         private const int HEATMAP_TOP_PARTS = 25;
@@ -236,7 +235,6 @@ namespace Foundation.BMC.Services
             //
             List<RankedPartDto> rankedParts = partMap.Values
                 .OrderByDescending(a => a.TotalQty)
-                .Take(TOP_RANKED_PARTS)
                 .Select(a => new RankedPartDto
                 {
                     BrickPartId = a.Part.id,
@@ -250,10 +248,12 @@ namespace Foundation.BMC.Services
                     SetCount = a.SetIds.Count,
                     Colours = a.ColourMap.Values
                         .OrderByDescending(c => c.Qty)
+                        .Take(5)
                         .Select(c => new ColourEntryDto { Name = c.Name, Hex = c.Hex, Qty = c.Qty })
                         .ToList(),
                     Themes = a.ThemeMap
                         .OrderByDescending(kv => kv.Value)
+                        .Take(5)
                         .Select(kv => new ThemeEntryDto { Name = kv.Key, Qty = kv.Value })
                         .ToList()
                 })
@@ -296,7 +296,7 @@ namespace Foundation.BMC.Services
                     TotalUniqueParts = partMap.Count,
                     TotalInstances = partMap.Values.Sum(a => a.TotalQty),
                     TotalSets = allSetParts.Select(sp => sp.legoSetId).Distinct().Count(),
-                    TotalCategories = rankedParts.Select(rp => rp.CategoryName).Distinct().Count()
+                    TotalCategories = partMap.Values.Select(a => a.Part.brickCategory?.name ?? a.Part.ldrawCategory ?? "Other").Distinct().Count()
                 },
                 ComputedAtUtc = DateTime.UtcNow
             };
