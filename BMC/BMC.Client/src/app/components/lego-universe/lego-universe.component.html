@@ -22,7 +22,7 @@
                 <div class="stat-label">Minifigs</div>
                 <div class="stat-glow"></div>
             </div>
-            <div class="stat-card themes-card">
+            <div class="stat-card themes-card" (click)="navigateToThemes()">
                 <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
                 <div class="stat-value">{{ displayThemes | number }}</div>
                 <div class="stat-label">Themes</div>
@@ -118,6 +118,12 @@
             <h3>Minifig Gallery</h3>
             <p>Discover minifigs and see which sets they appear in</p>
             <span class="nav-cta">Browse Minifigs <i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="nav-card" (click)="navigateToThemes()">
+            <div class="nav-icon themes-gradient"><i class="fas fa-layer-group"></i></div>
+            <h3>Theme Explorer</h3>
+            <p>Explore LEGO themes, sub-themes, and their hierarchies</p>
+            <span class="nav-cta">Explore Themes <i class="fas fa-chevron-right"></i></span>
         </div>
     </div>
 

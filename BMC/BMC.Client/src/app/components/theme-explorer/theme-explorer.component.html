@@ -1,0 +1,98 @@
+<div class="theme-explorer">
+
+    <!-- Header -->
+    <div class="explorer-header">
+        <div class="header-left">
+            <button class="back-btn" (click)="navigateBack()">
+                <i class="fas fa-arrow-left"></i> LEGO Universe
+            </button>
+            <h1><i class="fas fa-layer-group"></i> Theme Explorer</h1>
+            <p class="header-subtitle">Browse and explore the complete hierarchy of LEGO themes</p>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" *ngIf="!loading">
+        <div class="stat-pill">
+            <i class="fas fa-layer-group"></i>
+            <span class="stat-number">{{ totalThemes }}</span>
+            <span class="stat-label">Total Themes</span>
+        </div>
+        <div class="stat-pill">
+            <i class="fas fa-sitemap"></i>
+            <span class="stat-number">{{ rootThemeCount }}</span>
+            <span class="stat-label">Root Themes</span>
+        </div>
+        <div class="stat-pill highlight" *ngIf="largestThemeName">
+            <i class="fas fa-trophy"></i>
+            <span class="stat-number">{{ largestThemeName }}</span>
+            <span class="stat-label">{{ largestThemeSetCount }} sets</span>
+        </div>
+    </div>
+
+    <!-- Sunburst Chart — full width, top -->
+    <div class="viz-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-chart-pie"></i> Theme Hierarchy</h2>
+            <span class="panel-hint">Click any arc to drill in</span>
+        </div>
+        <div class="panel-body">
+            <div class="sunburst-wrapper" #sunburstContainer>
+                <div class="viz-loading" *ngIf="loading && !sunburstReady">
+                    <div class="spinner"></div>
+                    <span>Building theme map…</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Grid — full width, below -->
+    <div class="grid-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-th-large"></i> Themes</h2>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search themes…" (input)="onSearch($event)" [value]="searchTerm">
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <!-- Loading skeleton -->
+            <div class="theme-grid" *ngIf="loading">
+                <div class="theme-card skeleton" *ngFor="let i of [1,2,3,4,5,6]">
+                    <div class="skeleton-bar wide"></div>
+                    <div class="skeleton-bar short"></div>
+                </div>
+            </div>
+
+            <!-- Theme cards -->
+            <div class="theme-grid" *ngIf="!loading">
+                <div class="theme-card" *ngFor="let card of filteredCards; let i = index"
+                    [style.animation-delay]="(i * 30) + 'ms'" (click)="navigateToTheme(card.theme.id)">
+                    <div class="card-icon">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ card.theme.name }}</h3>
+                        <div class="card-meta">
+                            <span class="meta-item" *ngIf="card.totalSets > 0">
+                                <i class="fas fa-box-open"></i> {{ card.totalSets }} sets
+                            </span>
+                            <span class="meta-item" *ngIf="card.subThemeCount > 0">
+                                <i class="fas fa-sitemap"></i> {{ card.subThemeCount }} sub-themes
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="empty-state" *ngIf="filteredCards.length === 0">
+                    <i class="fas fa-search"></i>
+                    <p>No themes found matching "{{ searchTerm }}"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

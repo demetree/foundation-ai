@@ -1,0 +1,132 @@
+<div class="theme-detail" *ngIf="!loading && theme">
+
+    <!-- Header -->
+    <div class="detail-header">
+        <div class="header-nav">
+            <button class="back-btn" (click)="navigateBack()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <button class="nav-btn" (click)="navigateToThemeExplorer()">
+                <i class="fas fa-layer-group"></i> All Themes
+            </button>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs" *ngIf="breadcrumbs.length > 1">
+            <span class="crumb root" (click)="navigateToThemeExplorer()">
+                <i class="fas fa-layer-group"></i> Themes
+            </span>
+            <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+                <i class="fas fa-chevron-right separator"></i>
+                <span class="crumb" [class.active]="last" (click)="!last && navigateToTheme(crumb.id)">
+                    {{ crumb.name }}
+                </span>
+            </ng-container>
+        </div>
+
+        <h1>
+            <i class="fas fa-puzzle-piece"></i>
+            {{ theme.name }}
+        </h1>
+        <p class="header-description" *ngIf="theme.description">{{ theme.description }}</p>
+
+        <!-- Stats pills -->
+        <div class="stats-row">
+            <div class="stat-pill" *ngIf="totalSets > 0">
+                <i class="fas fa-box-open"></i>
+                <span class="stat-number">{{ totalSets }}</span>
+                <span class="stat-label">Sets</span>
+            </div>
+            <div class="stat-pill" *ngIf="totalSubThemes > 0">
+                <i class="fas fa-sitemap"></i>
+                <span class="stat-number">{{ totalSubThemes }}</span>
+                <span class="stat-label">Sub-themes</span>
+            </div>
+            <div class="stat-pill" *ngIf="yearRange">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="stat-number">{{ yearRange }}</span>
+                <span class="stat-label">Year range</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-themes Section -->
+    <div class="section" *ngIf="subThemes.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-sitemap"></i> Sub-themes</h2>
+            <span class="section-count">{{ subThemes.length }}</span>
+        </div>
+        <div class="subtheme-grid">
+            <div class="subtheme-card" *ngFor="let sub of subThemes; let i = index"
+                [style.animation-delay]="(i * 40) + 'ms'" (click)="navigateToTheme(sub.id)">
+                <div class="sub-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <div class="sub-content">
+                    <h3>{{ sub.name }}</h3>
+                </div>
+                <div class="sub-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sets Section -->
+    <div class="section">
+        <div class="section-header">
+            <h2><i class="fas fa-box-open"></i> Sets in this theme</h2>
+            <span class="section-count" *ngIf="!setsLoading">{{ totalSets }}</span>
+        </div>
+
+        <!-- Loading -->
+        <div class="sets-loading" *ngIf="setsLoading">
+            <div class="spinner"></div>
+            <span>Loading sets…</span>
+        </div>
+
+        <!-- Sets table -->
+        <div class="sets-table-container" *ngIf="!setsLoading && sets.length > 0">
+            <table class="sets-table">
+                <thead>
+                    <tr>
+                        <th class="col-image">Image</th>
+                        <th class="col-number">Set #</th>
+                        <th class="col-name">Name</th>
+                        <th class="col-year">Year</th>
+                        <th class="col-pieces">Pieces</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let set of sets" (click)="navigateToSet(set.id)" class="set-row">
+                        <td class="col-image">
+                            <div class="set-thumb">
+                                <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                                    (error)="set.imageUrl = null">
+                                <i class="fas fa-cube" *ngIf="!set.imageUrl"></i>
+                            </div>
+                        </td>
+                        <td class="col-number">
+                            <span class="mono">{{ set.setNumber }}</span>
+                        </td>
+                        <td class="col-name">{{ set.name }}</td>
+                        <td class="col-year">{{ set.year }}</td>
+                        <td class="col-pieces">{{ set.numParts || '—' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!setsLoading && sets.length === 0">
+            <i class="fas fa-box-open"></i>
+            <p>No sets directly in this theme — try the sub-themes above</p>
+        </div>
+    </div>
+</div>
+
+<!-- Loading state -->
+<div class="theme-detail loading-state" *ngIf="loading">
+    <div class="spinner-lg"></div>
+    <span>Loading theme…</span>
+</div>

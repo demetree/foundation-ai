@@ -7,6 +7,7 @@ import { LegoSetService, LegoSetData } from '../../bmc-data-services/lego-set.se
 import { LegoSetPartData } from '../../bmc-data-services/lego-set-part.service';
 import { LegoSetMinifigData } from '../../bmc-data-services/lego-set-minifig.service';
 import { LegoSetSubsetData } from '../../bmc-data-services/lego-set-subset.service';
+import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -25,7 +26,24 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     partsLoading = true;
     minifigsLoading = true;
     subsetsLoading = true;
-    activeTab: 'minifigs' | 'subsets' = 'minifigs';
+    activeTab: 'parts' | 'minifigs' | 'subsets' = 'parts';
+    thumbnails = new Map<string, string>();
+    selectedColourFilter: string | null = null;
+    selectedCategoryFilter: string | null = null;
+
+    get filteredParts(): LegoSetPartData[] {
+        let result = this.parts;
+        if (this.selectedColourFilter) {
+            result = result.filter(p => (p.brickColour?.name ?? 'Unknown') === this.selectedColourFilter);
+        }
+        if (this.selectedCategoryFilter) {
+            result = result.filter(p => {
+                const cat = p.brickPart?.brickCategory?.name ?? p.brickPart?.ldrawCategory ?? 'Other';
+                return cat === this.selectedCategoryFilter;
+            });
+        }
+        return result;
+    }
 
     private destroy$ = new Subject<void>();
 
@@ -33,12 +51,20 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private legoSetService: LegoSetService,
+        private thumbnailService: LDrawThumbnailService,
     ) { }
 
     ngOnInit(): void {
         this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
             const id = +params['id'];
             if (id) this.loadSet(id);
+        });
+
+        // Subscribe to 3D thumbnail render results
+        this.thumbnailService.thumbnail$.pipe(
+            takeUntil(this.destroy$)
+        ).subscribe(result => {
+            this.thumbnails.set(result.cacheKey, result.dataUrl);
         });
     }
 
@@ -69,6 +95,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         try {
             this.parts = await this.set.LegoSetParts;
             this.partsLoading = false;
+            this.renderPartThumbnails();
             setTimeout(() => {
                 this.renderColourDonut();
                 this.renderCategoryBar();
@@ -161,6 +188,22 @@ export class SetDetailComponent implements OnInit, OnDestroy {
             .attr('stroke', '#ffffff')
             .attr('stroke-width', 2.5)
             .style('cursor', 'pointer')
+            .style('opacity', 1)
+            .on('click', (_event: any, d: any) => {
+                if (this.selectedColourFilter === d.data.name) {
+                    this.selectedColourFilter = null;
+                } else {
+                    this.selectedColourFilter = d.data.name;
+                    this.activeTab = 'parts';
+                }
+                // Update slice opacity to show selection
+                svg.selectAll('path')
+                    .transition().duration(200)
+                    .style('opacity', (s: any) => {
+                        if (!this.selectedColourFilter) return 1;
+                        return s.data.name === this.selectedColourFilter ? 1 : 0.25;
+                    });
+            })
             .on('mouseover', function (event: any, d: any) {
                 d3.select(this).transition().duration(150).attr('d', hoverArc as any);
                 tooltip.transition().duration(150).style('opacity', 1);
@@ -244,6 +287,22 @@ export class SetDetailComponent implements OnInit, OnDestroy {
             .attr('rx', 4)
             .attr('fill', (_, i) => barPalette[i % barPalette.length])
             .attr('opacity', 0.9)
+            .style('cursor', 'pointer')
+            .on('click', (_event: any, d: any) => {
+                if (this.selectedCategoryFilter === d.name) {
+                    this.selectedCategoryFilter = null;
+                } else {
+                    this.selectedCategoryFilter = d.name;
+                    this.activeTab = 'parts';
+                }
+                // Update bar opacity to show selection
+                svg.selectAll('rect')
+                    .transition().duration(200)
+                    .attr('opacity', (s: any) => {
+                        if (!this.selectedCategoryFilter) return 0.9;
+                        return s.name === this.selectedCategoryFilter ? 0.9 : 0.2;
+                    });
+            })
             .transition()
             .duration(600)
             .delay((_, i) => i * 40)
@@ -291,7 +350,68 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         if (url) window.open(url, '_blank');
     }
 
-    setTab(tab: 'minifigs' | 'subsets'): void {
+    openInCatalog(part: LegoSetPartData): void {
+        if (part.brickPartId) {
+            this.router.navigate(['/parts', part.brickPartId]);
+        }
+    }
+
+    getPartColourHex(p: LegoSetPartData): string {
+        let rawHex = p.brickColour?.hexRgb ?? '';
+        if (rawHex.startsWith('#')) rawHex = rawHex.substring(1);
+        return rawHex.length >= 3 ? `#${rawHex}` : '#888888';
+    }
+
+    clearColourFilter(): void {
+        this.selectedColourFilter = null;
+        if (this.colourDonutRef) {
+            d3.select(this.colourDonutRef.nativeElement)
+                .selectAll('path')
+                .transition().duration(200)
+                .style('opacity', 1);
+        }
+    }
+
+    clearCategoryFilter(): void {
+        this.selectedCategoryFilter = null;
+        if (this.categoryBarRef) {
+            d3.select(this.categoryBarRef.nativeElement)
+                .selectAll('rect')
+                .transition().duration(200)
+                .attr('opacity', 0.9);
+        }
+    }
+
+    clearAllFilters(): void {
+        this.clearColourFilter();
+        this.clearCategoryFilter();
+    }
+
+    setTab(tab: 'parts' | 'minifigs' | 'subsets'): void {
         this.activeTab = tab;
+    }
+
+    private renderPartThumbnails(): void {
+        const requests = this.parts
+            .filter(p => p.brickPart?.geometryFilePath)
+            .map(p => ({
+                geometryFilePath: p.brickPart!.geometryFilePath!,
+                colourHex: this.normalizeHex(p.brickColour?.hexRgb)
+            }));
+        if (requests.length > 0) {
+            this.thumbnailService.renderBatch(requests);
+        }
+    }
+
+    getPartThumbnailKey(p: LegoSetPartData): string {
+        return LDrawThumbnailService.cacheKey(
+            p.brickPart?.geometryFilePath ?? '',
+            this.normalizeHex(p.brickColour?.hexRgb)
+        );
+    }
+
+    private normalizeHex(hex: string | null | undefined): string | undefined {
+        if (!hex) return undefined;
+        return hex.startsWith('#') ? hex.substring(1) : hex;
     }
 }

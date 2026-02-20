@@ -447,7 +447,7 @@
    ---------------------------------------------------------------- */
 .quick-nav {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 
@@ -509,6 +509,10 @@
 
     &.minifigs-gradient {
         background: linear-gradient(135deg, #f093fb, #f5576c);
+    }
+
+    &.themes-gradient {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
     }
 }
 

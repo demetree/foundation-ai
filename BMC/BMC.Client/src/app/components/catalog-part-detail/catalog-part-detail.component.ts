@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, Inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -49,6 +50,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private location: Location,
         private http: HttpClient,
         private authService: AuthService,
         private brickPartService: BrickPartService,
@@ -79,7 +81,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
 
     goBack(): void {
-        this.router.navigate(['/parts']);
+        this.location.back();
     }
 
 

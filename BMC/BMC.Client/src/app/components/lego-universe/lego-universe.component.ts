@@ -295,7 +295,7 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                     .attr('stroke-width', 0.5);
             })
             .on('click', (_event: any, d: any) => {
-                this.navigateToSetsWithTheme(d.data.id);
+                this.router.navigate(['/lego/themes', Number(d.data.id)]);
             });
 
         //
@@ -535,6 +535,10 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
 
     navigateToMinifigs(): void {
         this.router.navigate(['/lego/minifigs']);
+    }
+
+    navigateToThemes(): void {
+        this.router.navigate(['/lego/themes']);
     }
 
     navigateToSetsWithTheme(themeId: bigint | number): void {

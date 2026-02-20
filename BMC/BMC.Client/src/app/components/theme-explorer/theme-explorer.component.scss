@@ -1,0 +1,459 @@
+/* ================================================================
+   Theme Explorer — Premium Theme Browser
+   ================================================================ */
+@import '../../assets/styles/glass';
+
+:host {
+    display: block;
+    width: 100%;
+}
+
+.theme-explorer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* ----------------------------------------------------------------
+   Header
+   ---------------------------------------------------------------- */
+.explorer-header {
+    margin-bottom: 24px;
+}
+
+.header-left {
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--bmc-border);
+        background: transparent;
+        color: var(--bmc-text-secondary);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 16px;
+
+        &:hover {
+            background: var(--bmc-bg-hover);
+            color: var(--bmc-primary);
+            border-color: var(--bmc-primary);
+        }
+
+        i {
+            font-size: 0.7rem;
+        }
+    }
+
+    h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--bmc-text-primary);
+        margin: 0;
+        letter-spacing: -0.5px;
+
+        i {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 10px;
+        }
+    }
+
+    .header-subtitle {
+        color: var(--bmc-text-secondary);
+        font-size: 0.92rem;
+        margin: 6px 0 0;
+        line-height: 1.5;
+    }
+}
+
+/* ----------------------------------------------------------------
+   Stats Row
+   ---------------------------------------------------------------- */
+.stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.stat-pill {
+    @include glass-effect;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-lg);
+    font-size: 0.82rem;
+
+    i {
+        color: #4facfe;
+        font-size: 0.85rem;
+    }
+
+    .stat-number {
+        font-weight: 700;
+        color: var(--bmc-text-primary);
+    }
+
+    .stat-label {
+        color: var(--bmc-text-muted);
+        font-size: 0.75rem;
+    }
+
+    &.highlight {
+        border-color: rgba(79, 172, 254, 0.3);
+
+        i {
+            color: #ffd700;
+        }
+    }
+}
+
+/* ----------------------------------------------------------------
+   Stacked Layout — Sunburst on top, Themes grid below
+   ---------------------------------------------------------------- */
+.viz-panel,
+.grid-panel {
+    margin-bottom: 20px;
+}
+
+/* ----------------------------------------------------------------
+   Panels
+   ---------------------------------------------------------------- */
+.viz-panel {
+    .panel-body {
+        min-height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.viz-panel,
+.grid-panel {
+    @include glass-effect-lg;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bmc-border);
+
+    h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--bmc-text-primary);
+        margin: 0;
+
+        i {
+            color: var(--bmc-primary);
+            margin-right: 8px;
+        }
+    }
+
+    .panel-hint {
+        font-size: 0.72rem;
+        color: var(--bmc-text-muted);
+        font-style: italic;
+    }
+}
+
+.panel-body {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+/* ----------------------------------------------------------------
+   Sunburst
+   ---------------------------------------------------------------- */
+.sunburst-wrapper {
+    width: 100%;
+    min-height: 420px;
+    position: relative;
+
+    :host ::ng-deep svg {
+        display: block;
+    }
+}
+
+.viz-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--bmc-text-muted);
+    font-size: 0.85rem;
+    padding: 80px 0;
+
+    .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--bmc-border);
+        border-top-color: var(--bmc-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+}
+
+// D3 tooltip
+:host ::ng-deep .sunburst-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--bmc-bg-elevated);
+    border: 1px solid var(--bmc-border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    color: var(--bmc-text-primary);
+    box-shadow: var(--bmc-shadow-md);
+    z-index: 10;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------
+   Search Bar
+   ---------------------------------------------------------------- */
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--bmc-border);
+    background: var(--bmc-bg-primary);
+    transition: border-color 0.2s ease;
+
+    &:focus-within {
+        border-color: var(--bmc-primary);
+    }
+
+    i {
+        color: var(--bmc-text-muted);
+        font-size: 0.8rem;
+    }
+
+    input {
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--bmc-text-primary);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.82rem;
+        width: 160px;
+
+        &::placeholder {
+            color: var(--bmc-text-muted);
+        }
+    }
+}
+
+/* ----------------------------------------------------------------
+   Theme Grid
+   ---------------------------------------------------------------- */
+.theme-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.theme-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--bmc-border);
+    background: var(--bmc-bg-primary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    animation: fadeInUp 0.35s ease-out both;
+
+    &:hover {
+        border-color: var(--bmc-primary);
+        background: var(--bmc-bg-hover);
+        transform: translateX(4px);
+
+        .card-arrow {
+            opacity: 1;
+            color: var(--bmc-primary);
+        }
+
+        .card-icon {
+            background: var(--bmc-primary);
+            color: #000;
+        }
+    }
+
+    &.skeleton {
+        cursor: default;
+        animation: none;
+
+        &:hover {
+            transform: none;
+            border-color: var(--bmc-border);
+        }
+    }
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--bmc-bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4facfe;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+
+.card-content {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--bmc-text-primary);
+        margin: 0 0 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.card-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--bmc-text-muted);
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        i {
+            font-size: 0.65rem;
+            opacity: 0.7;
+        }
+    }
+}
+
+.card-arrow {
+    color: var(--bmc-text-muted);
+    font-size: 0.75rem;
+    opacity: 0.3;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------------
+   Skeleton
+   ---------------------------------------------------------------- */
+.skeleton-bar {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg,
+            var(--bmc-bg-elevated) 25%,
+            var(--bmc-bg-hover) 50%,
+            var(--bmc-bg-elevated) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+
+    &.wide {
+        width: 70%;
+        height: 16px;
+        margin-bottom: 6px;
+    }
+
+    &.short {
+        width: 45%;
+        height: 12px;
+    }
+}
+
+/* ----------------------------------------------------------------
+   Empty State
+   ---------------------------------------------------------------- */
+.empty-state {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--bmc-text-muted);
+
+    i {
+        font-size: 2.5rem;
+        opacity: 0.2;
+        margin-bottom: 12px;
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.88rem;
+    }
+}
+
+/* ----------------------------------------------------------------
+   Animations
+   ---------------------------------------------------------------- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ----------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .theme-explorer {
+        padding: 16px;
+    }
+
+    .header-left h1 {
+        font-size: 1.5rem;
+    }
+
+    .stats-row {
+        flex-direction: column;
+    }
+}

@@ -92,9 +92,18 @@
             </div>
         </section>
 
-        <!-- Tabs: Minifigs + Subsets -->
+        <!-- Tabs: Parts + Minifigs + Subsets -->
         <section class="tabs-section">
             <div class="tab-header">
+                <button class="tab-btn" [class.active]="activeTab === 'parts'" (click)="setTab('parts')">
+                    <i class="fas fa-puzzle-piece"></i> Parts
+                    <span class="count-badge"
+                        *ngIf="parts.length && !selectedColourFilter && !selectedCategoryFilter">{{ parts.length
+                        }}</span>
+                    <span class="count-badge filtered" *ngIf="selectedColourFilter || selectedCategoryFilter">{{
+                        filteredParts.length }}/{{
+                        parts.length }}</span>
+                </button>
                 <button class="tab-btn" [class.active]="activeTab === 'minifigs'" (click)="setTab('minifigs')">
                     <i class="fas fa-user"></i> Minifigs
                     <span class="count-badge" *ngIf="minifigs.length">{{ minifigs.length }}</span>
@@ -103,6 +112,85 @@
                     <i class="fas fa-boxes"></i> Subsets
                     <span class="count-badge" *ngIf="subsets.length">{{ subsets.length }}</span>
                 </button>
+            </div>
+
+            <!-- Parts Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'parts'">
+                <div *ngIf="partsLoading" class="tab-loading">
+                    <div class="spinner small"></div>
+                </div>
+                <div *ngIf="!partsLoading && parts.length === 0" class="tab-empty">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <p>No parts data available</p>
+                </div>
+                <div class="parts-table-wrap" *ngIf="!partsLoading && parts.length > 0">
+                    <div class="colour-filter-bar" *ngIf="selectedColourFilter || selectedCategoryFilter">
+                        <span class="filter-label">
+                            <i class="fas fa-filter"></i>
+                            <span class="filter-chip" *ngIf="selectedColourFilter">
+                                Colour: <strong>{{ selectedColourFilter }}</strong>
+                                <button class="chip-clear" (click)="clearColourFilter()">&times;</button>
+                            </span>
+                            <span class="filter-chip" *ngIf="selectedCategoryFilter">
+                                Category: <strong>{{ selectedCategoryFilter }}</strong>
+                                <button class="chip-clear" (click)="clearCategoryFilter()">&times;</button>
+                            </span>
+                            <span class="filter-count">({{ filteredParts.length }} parts)</span>
+                        </span>
+                        <button class="filter-clear-btn" (click)="clearAllFilters()">
+                            <i class="fas fa-times"></i> Clear All
+                        </button>
+                    </div>
+                    <table class="parts-table">
+                        <thead>
+                            <tr>
+                                <th class="col-thumb"></th>
+                                <th class="col-colour">Colour</th>
+                                <th class="col-name">Part</th>
+                                <th class="col-category">Category</th>
+                                <th class="col-partnum">Part #</th>
+                                <th class="col-qty">Qty</th>
+                                <th class="col-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let p of filteredParts" [class.spare-row]="p.isSpare">
+                                <td class="col-thumb">
+                                    <div class="part-thumb-wrap">
+                                        <img *ngIf="thumbnails.get(getPartThumbnailKey(p))"
+                                            [src]="thumbnails.get(getPartThumbnailKey(p))" alt="Part thumbnail"
+                                            class="part-thumb-img" />
+                                        <i *ngIf="!thumbnails.get(getPartThumbnailKey(p))"
+                                            class="fas fa-cube part-thumb-placeholder"></i>
+                                    </div>
+                                </td>
+                                <td class="col-colour">
+                                    <span class="colour-swatch" [style.background]="getPartColourHex(p)"
+                                        [title]="p.brickColour?.name ?? 'Unknown'"></span>
+                                    <span class="colour-name">{{ p.brickColour?.name ?? '—' }}</span>
+                                </td>
+                                <td class="col-name">{{ p.brickPart?.ldrawTitle ?? p.brickPart?.name ?? '—' }}</td>
+                                <td class="col-category">{{ p.brickPart?.brickCategory?.name ??
+                                    p.brickPart?.ldrawCategory ?? '—' }}</td>
+                                <td class="col-partnum">
+                                    <span class="partnum-badge">{{ p.brickPart?.rebrickablePartNum ??
+                                        p.brickPart?.ldrawPartId ?? '—' }}</span>
+                                </td>
+                                <td class="col-qty">
+                                    <span class="qty-value">{{ p.quantity }}</span>
+                                    <span class="spare-badge" *ngIf="p.isSpare">Spare</span>
+                                </td>
+                                <td class="col-action">
+                                    <button class="catalog-link-btn"
+                                        (click)="openInCatalog(p); $event.stopPropagation()"
+                                        title="View in Parts Catalog">
+                                        <i class="fas fa-cubes"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Minifigs Tab -->
