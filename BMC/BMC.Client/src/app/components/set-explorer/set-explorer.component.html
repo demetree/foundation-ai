@@ -1,0 +1,142 @@
+<div class="set-explorer">
+
+    <!-- Header -->
+    <div class="explorer-header">
+        <div class="header-top">
+            <div class="header-title">
+                <div class="breadcrumb">
+                    <a (click)="navigateBack()" class="breadcrumb-link">
+                        <i class="fas fa-globe"></i> LEGO Universe
+                    </a>
+                    <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                    <span class="breadcrumb-current">Set Explorer</span>
+                </div>
+                <h1><i class="fas fa-box-open"></i> Set Explorer</h1>
+                <p class="header-subtitle">Browse {{ totalCount | number }} LEGO sets with images, themes, and details
+                </p>
+            </div>
+            <div class="header-actions">
+                <div class="total-badge">
+                    <span class="badge-number">{{ totalCount | number }}</span>
+                    <span class="badge-label">sets</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search + Filters Bar -->
+        <div class="filter-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search sets by name, number, or theme…"
+                    [value]="searchTerm" (input)="onSearch($event)" id="set-search-input">
+            </div>
+
+            <!-- Theme Dropdown -->
+            <select class="theme-select" [ngModel]="selectedThemeId" (ngModelChange)="selectTheme($event)"
+                id="theme-filter-select">
+                <option [ngValue]="null">All Themes</option>
+                <option *ngFor="let theme of themes" [ngValue]="theme.id">{{ theme.name }}</option>
+            </select>
+
+            <!-- Year Range -->
+            <div class="year-range">
+                <input type="number" class="year-input" placeholder="From" [ngModel]="yearMin"
+                    (ngModelChange)="yearMin = $event" [min]="availableYearMin" [max]="availableYearMax"
+                    (change)="applyYearFilter()" id="year-min-input">
+                <span class="year-dash">–</span>
+                <input type="number" class="year-input" placeholder="To" [ngModel]="yearMax"
+                    (ngModelChange)="yearMax = $event" [min]="availableYearMin" [max]="availableYearMax"
+                    (change)="applyYearFilter()" id="year-max-input">
+            </div>
+
+            <button class="clear-btn" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+
+        <!-- Sort Bar -->
+        <div class="sort-bar">
+            <span class="sort-label">Sort by:</span>
+            <button class="sort-btn" [class.active]="sortBy === 'name'" (click)="setSort('name')">
+                Name <i [class]="getSortIcon('name')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'year'" (click)="setSort('year')">
+                Year <i [class]="getSortIcon('year')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'partCount'" (click)="setSort('partCount')">
+                Parts <i [class]="getSortIcon('partCount')"></i>
+            </button>
+
+            <span class="results-text">
+                Page {{ currentPage }} of {{ totalPages }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="sets-grid" *ngIf="loading">
+        <div class="set-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text wide"></div>
+            <div class="skeleton-text short"></div>
+            <div class="skeleton-text tiny"></div>
+        </div>
+    </div>
+
+    <!-- Sets Grid -->
+    <div class="sets-grid" *ngIf="!loading && sets.length > 0">
+        <div class="set-card" *ngFor="let set of sets; let i = index" [style.animation-delay]="(i * 30) + 'ms'"
+            (click)="navigateToSet(set)">
+
+            <!-- Image -->
+            <div class="card-image">
+                <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                    (error)="set.imageUrl = null">
+                <div class="image-placeholder" *ngIf="!set.imageUrl">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="year-badge" *ngIf="set.year">{{ set.year }}</div>
+            </div>
+
+            <!-- Info -->
+            <div class="card-body">
+                <h3 class="set-name">{{ set.name }}</h3>
+                <span class="set-number">{{ set.setNumber }}</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="card-footer">
+                <div class="parts-badge">
+                    <i class="fas fa-puzzle-piece"></i>
+                    {{ set.partCount | number }} parts
+                </div>
+                <div class="theme-badge" *ngIf="set.legoTheme">
+                    {{ set.legoTheme.name }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && sets.length === 0">
+        <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+        <h3>No sets found</h3>
+        <p>Try adjusting your search or filters</p>
+        <button class="reset-btn" (click)="clearFilters()">Reset Filters</button>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" *ngIf="!loading && totalPages > 1">
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="page-btn" *ngFor="let page of getVisiblePages()" [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+            {{ page }}
+        </button>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+</div>
