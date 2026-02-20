@@ -17,6 +17,7 @@ import { SetDetailComponent } from './components/set-detail/set-detail.component
 import { MinifigGalleryComponent } from './components/minifig-gallery/minifig-gallery.component';
 import { MinifigDetailComponent } from './components/minifig-detail/minifig-detail.component';
 import { ThemeExplorerComponent } from './components/theme-explorer/theme-explorer.component';
+import { PartsUniverseComponent } from './components/parts-universe/parts-universe.component';
 import { ThemeDetailComponent } from './components/theme-detail/theme-detail.component';
 
 
@@ -213,6 +214,7 @@ const routes: Routes = [
     { path: 'lego/minifigs/:id', component: MinifigDetailComponent, canActivate: [AuthGuard], title: 'Minifig Detail' },
     { path: 'lego/themes', component: ThemeExplorerComponent, canActivate: [AuthGuard], title: 'Theme Explorer' },
     { path: 'lego/themes/:id', component: ThemeDetailComponent, canActivate: [AuthGuard], title: 'Theme Detail' },
+    { path: 'lego/parts-universe', component: PartsUniverseComponent, canActivate: [AuthGuard], title: 'Parts Universe' },
 
 
     //

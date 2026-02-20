@@ -31,6 +31,7 @@ using Foundation.AI.Rag;
 using Foundation.AI.VectorStore;
 using Foundation.AI.VectorStore.Zvec;
 using BMC.AI;
+using Foundation.BMC.Services;
 
 
 namespace Foundation.BMC
@@ -110,6 +111,13 @@ namespace Foundation.BMC
                 // In-memory cache for custom controllers (e.g. PartsCatalogController)
                 //
                 builder.Services.AddMemoryCache();
+
+
+                //
+                // Parts Universe precomputation service (background startup task)
+                //
+                builder.Services.AddSingleton<PartsUniverseService>();
+                builder.Services.AddHostedService(sp => sp.GetRequiredService<PartsUniverseService>());
 
 
                 //
@@ -240,6 +248,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(PartsCatalogController));
                 controllers.Add(typeof(ProfileController));
                 controllers.Add(typeof(AiController));
+                controllers.Add(typeof(PartsUniverseController));
 
                 //
                 // Start of code generated controller list for BMC module

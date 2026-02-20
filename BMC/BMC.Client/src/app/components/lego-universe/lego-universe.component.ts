@@ -541,6 +541,10 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         this.router.navigate(['/lego/themes']);
     }
 
+    navigateToPartsUniverse(): void {
+        this.router.navigate(['/lego/parts-universe']);
+    }
+
     navigateToSetsWithTheme(themeId: bigint | number): void {
         this.router.navigate(['/lego/sets'], { queryParams: { theme: Number(themeId) } });
     }

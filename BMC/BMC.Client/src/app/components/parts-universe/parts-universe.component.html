@@ -1,0 +1,178 @@
+<div class="parts-universe-page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-top">
+            <button class="back-btn" (click)="navigateBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-titles">
+                <h1>Parts Universe</h1>
+                <p class="subtitle">Explore every brick in the LEGO universe — ranked, visualized, and connected</p>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row" *ngIf="!loading">
+            <div class="stat-pill">
+                <i class="fas fa-puzzle-piece"></i>
+                <span class="stat-value">{{ totalParts | number }}</span>
+                <span class="stat-label">Unique Parts</span>
+            </div>
+            <div class="stat-pill">
+                <i class="fas fa-cubes"></i>
+                <span class="stat-value">{{ totalInstances | number }}</span>
+                <span class="stat-label">Total Instances</span>
+            </div>
+            <div class="stat-pill">
+                <i class="fas fa-box-open"></i>
+                <span class="stat-value">{{ totalSets | number }}</span>
+                <span class="stat-label">Sets</span>
+            </div>
+            <div class="stat-pill">
+                <i class="fas fa-th-large"></i>
+                <span class="stat-value">{{ totalCategories | number }}</span>
+                <span class="stat-label">Categories</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Loading parts universe data…</p>
+        <p class="loading-hint">Analyzing part-to-set relationships across the entire collection</p>
+    </div>
+
+    <!-- Content -->
+    <div class="panels-container" *ngIf="!loading">
+
+        <!-- PANEL 1: Part Leaderboard -->
+        <div class="viz-panel leaderboard-panel">
+            <div class="panel-header">
+                <div class="panel-icon"><i class="fas fa-trophy"></i></div>
+                <div>
+                    <h2>Part Leaderboard</h2>
+                    <p class="panel-desc">
+                        {{ leaderboardMode === 'most' ? 'The most-used' : 'The least-used' }}
+                        parts across the entire LEGO universe
+                    </p>
+                </div>
+                <div class="mode-switcher">
+                    <button class="mode-btn" [class.active]="leaderboardMode === 'most'"
+                        (click)="setLeaderboardMode('most')">
+                        <i class="fas fa-arrow-up"></i> Most Common
+                    </button>
+                    <button class="mode-btn" [class.active]="leaderboardMode === 'least'"
+                        (click)="setLeaderboardMode('least')">
+                        <i class="fas fa-arrow-down"></i> Least Common
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body" #leaderboardContainer>
+                <div class="leaderboard-table">
+                    <div class="leaderboard-row header-row">
+                        <span class="rank-col">Rank</span>
+                        <span class="thumb-col"></span>
+                        <span class="title-col">Title</span>
+                        <span class="name-col">Part</span>
+                        <span class="category-col">Category</span>
+                        <span class="qty-col">Instances</span>
+                        <span class="sets-col">Sets</span>
+                        <span class="colors-col">Top Colors</span>
+                    </div>
+                    <div class="leaderboard-row clickable-row"
+                        *ngFor="let rp of displayedParts | slice:0:50; let i = index" (click)="openPartDetail(rp)">
+                        <span class="rank-col">
+                            <span class="rank-badge" [class.gold]="i === 0" [class.silver]="i === 1"
+                                [class.bronze]="i === 2">
+                                {{ i + 1 }}
+                            </span>
+                        </span>
+                        <span class="thumb-col">
+                            <img *ngIf="thumbnails.get(getPartThumbnailKey(rp))"
+                                [src]="thumbnails.get(getPartThumbnailKey(rp))" class="part-thumb" [alt]="rp.name">
+                            <div *ngIf="!thumbnails.get(getPartThumbnailKey(rp))" class="thumb-placeholder">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                        </span>
+                        <span class="title-col">
+                            <span class="title-text">{{ rp.ldrawTitle }}</span>
+                        </span>
+                        <span class="name-col">
+                            <span class="part-name">{{ rp.name }}</span>
+                            <span class="part-id">{{ rp.ldrawPartId }}</span>
+                        </span>
+                        <span class="category-col">
+                            <span class="cat-tag">{{ rp.categoryName }}</span>
+                        </span>
+                        <span class="qty-col">{{ rp.totalQty | number }}</span>
+                        <span class="sets-col">{{ rp.setCount | number }}</span>
+                        <span class="colors-col">
+                            <span class="color-swatch" *ngFor="let c of rp.colours | slice:0:5"
+                                [style.background]="c.hex.startsWith('#') ? c.hex : '#' + c.hex"
+                                [title]="c.name + ': ' + c.qty">
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: Sankey Diagram -->
+        <div class="viz-panel sankey-panel">
+            <div class="panel-header">
+                <div class="panel-icon"><i class="fas fa-stream"></i></div>
+                <div>
+                    <h2>Parts Flow</h2>
+                    <p class="panel-desc">How parts flow from categories through top parts into themes</p>
+                </div>
+            </div>
+            <div class="panel-body sankey-body" #sankeyContainer></div>
+        </div>
+
+        <!-- Two-column row for Bubble + Chord -->
+        <div class="viz-row">
+
+            <!-- PANEL 3: Bubble Chart -->
+            <div class="viz-panel bubble-panel">
+                <div class="panel-header">
+                    <div class="panel-icon"><i class="fas fa-circle-nodes"></i></div>
+                    <div>
+                        <h2>Parts Galaxy</h2>
+                        <p class="panel-desc">Parts grouped by category — sized by usage. Click a group to zoom in.</p>
+                    </div>
+                </div>
+                <div class="panel-body bubble-body" #bubbleContainer></div>
+            </div>
+
+            <!-- PANEL 5: Chord Diagram -->
+            <div class="viz-panel chord-panel">
+                <div class="panel-header">
+                    <div class="panel-icon"><i class="fas fa-circle-notch"></i></div>
+                    <div>
+                        <h2>Category ↔ Theme</h2>
+                        <p class="panel-desc">Which part categories flow into which themes — thicker chords = more parts
+                        </p>
+                    </div>
+                </div>
+                <div class="panel-body chord-body" #chordContainer></div>
+            </div>
+
+        </div>
+
+        <!-- PANEL 4: Color Heatmap -->
+        <div class="viz-panel heatmap-panel">
+            <div class="panel-header">
+                <div class="panel-icon"><i class="fas fa-palette"></i></div>
+                <div>
+                    <h2>Color DNA</h2>
+                    <p class="panel-desc">Top parts × available colors — each cell shows quantity, colored with the
+                        actual brick color</p>
+                </div>
+            </div>
+            <div class="panel-body heatmap-body" #heatmapContainer></div>
+        </div>
+
+    </div>
+</div>

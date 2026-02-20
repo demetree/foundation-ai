@@ -469,6 +469,7 @@ import { MinifigGalleryComponent } from './components/minifig-gallery/minifig-ga
 import { MinifigDetailComponent } from './components/minifig-detail/minifig-detail.component';
 import { ThemeExplorerComponent } from './components/theme-explorer/theme-explorer.component';
 import { ThemeDetailComponent } from './components/theme-detail/theme-detail.component';
+import { PartsUniverseComponent } from './components/parts-universe/parts-universe.component';
 import { CollectionService } from './services/collection.service';
 
 
@@ -509,6 +510,7 @@ import { CollectionService } from './services/collection.service';
         MinifigDetailComponent,
         ThemeExplorerComponent,
         ThemeDetailComponent,
+        PartsUniverseComponent,
 
 
         //
