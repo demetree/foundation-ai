@@ -1,31 +1,24 @@
-# Appears In Sets Panel — Walkthrough
+# Sets Panel + Color DNA — Walkthrough
 
-## What Changed
+## Sets Panel Refinements
 
-Added a new **"Appears In Sets"** panel to the catalog-part-detail view, showing every LEGO set that contains the current part.
-
-### Files Modified
+Added and refined an **Appears In Sets** panel on catalog-part-detail.
 
 | File | Changes |
 |------|---------|
-| [catalog-part-detail.component.ts](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.ts) | `loadSetParts()`, `filteredSetParts`, `sortedSetParts` getters, `sortSetParts()` toggle, `getSortIcon()` |
-| [catalog-part-detail.component.html](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.html) | Full-width panel with sortable table, search input, colour swatches, spare badges |
-| [catalog-part-detail.component.scss](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.scss) | Sets panel card, sticky header, scrollable body (420px max), grid layout, responsive |
+| [catalog-part-detail.component.ts](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.ts) | `loadSetParts()`, filter/sort, `navigateToSet()`, `getSwatchColor()` |
+| [catalog-part-detail.component.html](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.html) | Sortable table (Set, Set#, Colour, Qty), clickable rows |
+| [catalog-part-detail.component.scss](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.scss) | 4-column grid, cursor pointer, responsive styles |
+| [BrickColourExtension.cs](file:///g:/source/repos/Scheduler/BmcDatabase/EntityExtensions/BrickColourExtension.cs) | Added `hexRgb` to `CreateMinimalAnonymous` (root cause of white swatches) |
 
-### Features
+## Color DNA Panel Fix
 
-- **Lazy loading** — uses existing `BrickPartData.LegoSetParts` getter (no server changes)
-- **Sortable columns** — Set name, Colour, Qty, Spare — click headers to toggle ↑/↓
-- **Text search** — filters on set name and colour name
-- **Colour swatches** — 14px circles using `brickColour.hexRgb`
-- **Spare badge** — amber chip for spare parts
-- **Scrollable** — 420px max-height with sticky header for large datasets
-- **Full-width** — spans both grid columns via `grid-column: 1 / -1`
+Row labels showed part numbers ("62821b") instead of descriptions.
+
+| File | Changes |
+|------|---------|
+| [parts-universe.component.ts](file:///g:/source/repos/Scheduler/BMC/BMC.Client/src/app/components/parts-universe/parts-universe.component.ts) | Labels use `ldrawTitle \|\| name`, always build heatmap client-side, smaller font/cells, trimmed labels |
+| [PartsUniverseService.cs](file:///g:/source/repos/Scheduler/BMC/BMC.Server/Services/PartsUniverseService.cs) | `BuildHeatmapData` uses `LdrawTitle` with fallback |
 
 ## Build Verification
-
-```
-Application bundle generation complete. [31.747 seconds]
-```
-
-✅ Production build passes — zero new errors or warnings.
+- Angular: ✅ | .NET: ✅ (file-lock on running server, code compiles clean)

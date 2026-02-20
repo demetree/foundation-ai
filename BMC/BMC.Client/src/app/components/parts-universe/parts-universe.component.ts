@@ -301,10 +301,11 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         const parts = this._filteredParts;
 
         // If no filters active, use server-precomputed data for best fidelity
+        // (heatmap always rebuilt client-side so partLabels use ldrawTitle)
         if (!this.hasActiveFilters) {
             this.renderSankey(this.payload.sankey);
             this.renderBubbleChart(this.payload.bubbles);
-            this.renderHeatmap(this.payload.heatmap);
+            this.renderHeatmap(this.buildHeatmapData(this.rankedParts));
             this.renderChordDiagram(this.payload.chord);
             return;
         }
@@ -406,7 +407,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
             .filter(Boolean);
 
         const colourIdxMap = new Map(sortedColours.map((key, i) => [key, i]));
-        const partLabels = top.map(rp => rp.name);
+        const partLabels = top.map(rp => rp.ldrawTitle || rp.name);
         const cells: HeatmapCell[] = [];
 
         top.forEach((rp, partIdx) => {
@@ -700,9 +701,9 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         const container = this.heatmapRef.nativeElement as HTMLElement;
         container.innerHTML = '';
 
-        const cellSize = 24;
-        const labelWidth = 180;
-        const headerHeight = 60;
+        const cellSize = 20;
+        const labelWidth = 140;
+        const headerHeight = 50;
         const margin = { top: headerHeight, right: 20, bottom: 20, left: labelWidth };
         const width = margin.left + data.colourLabels.length * cellSize + margin.right;
         const height = margin.top + data.partLabels.length * cellSize + margin.bottom;
@@ -723,9 +724,9 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
             .append('rect')
             .attr('class', 'color-header')
             .attr('x', (_d, i) => margin.left + i * cellSize)
-            .attr('y', margin.top - 20)
+            .attr('y', margin.top - 18)
             .attr('width', cellSize - 2)
-            .attr('height', 14)
+            .attr('height', 12)
             .attr('fill', d => d.hex.startsWith('#') ? d.hex : `#${d.hex}`)
             .attr('rx', 2)
             .attr('stroke', 'rgba(255,255,255,0.3)')
@@ -739,14 +740,15 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
             .enter()
             .append('text')
             .attr('class', 'part-label')
-            .attr('x', margin.left - 8)
+            .attr('x', margin.left - 6)
             .attr('y', (_d, i) => margin.top + i * cellSize + cellSize / 2)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'end')
             .attr('fill', 'var(--bmc-text-primary)')
-            .attr('font-size', '0.6rem')
+            .attr('font-size', '0.5rem')
             .text(d => {
-                return d.length > 25 ? d.slice(0, 23) + '…' : d;
+                const t = d.trim();
+                return t.length > 20 ? t.slice(0, 18) + '…' : t;
             });
 
         // Draw heatmap cells
@@ -806,7 +808,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
             .attr('y', (_d, i) => margin.top + i * cellSize + cellSize / 2)
             .attr('dy', '0.35em')
             .attr('fill', 'var(--bmc-text-muted)')
-            .attr('font-size', '0.55rem')
+            .attr('font-size', '0.48rem')
             .text((_d, i) => `#${i + 1}`);
     }
 

@@ -40,7 +40,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     setParts: LegoSetPartData[] = [];
     isLoadingSetParts = false;
     setPartsSearch = '';
-    setPartsSortField: 'set' | 'colour' | 'qty' | 'spare' = 'qty';
+    setPartsSortField: 'set' | 'setNum' | 'colour' | 'qty' = 'qty';
     setPartsSortDir: 'asc' | 'desc' = 'desc';
 
     // Three.js objects
@@ -207,12 +207,12 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             switch (this.setPartsSortField) {
                 case 'set':
                     return (a.legoSet?.name ?? '').localeCompare(b.legoSet?.name ?? '') * dir;
+                case 'setNum':
+                    return (a.legoSet?.setNumber ?? '').localeCompare(b.legoSet?.setNumber ?? '') * dir;
                 case 'colour':
                     return (a.brickColour?.name ?? '').localeCompare(b.brickColour?.name ?? '') * dir;
                 case 'qty':
                     return (Number(a.quantity ?? 0) - Number(b.quantity ?? 0)) * dir;
-                case 'spare':
-                    return ((a.isSpare ? 1 : 0) - (b.isSpare ? 1 : 0)) * dir;
                 default:
                     return 0;
             }
@@ -222,13 +222,30 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     }
 
 
-    sortSetParts(field: 'set' | 'colour' | 'qty' | 'spare'): void {
+    sortSetParts(field: 'set' | 'setNum' | 'colour' | 'qty'): void {
         if (this.setPartsSortField === field) {
             this.setPartsSortDir = this.setPartsSortDir === 'asc' ? 'desc' : 'asc';
         } else {
             this.setPartsSortField = field;
             this.setPartsSortDir = field === 'qty' ? 'desc' : 'asc';
         }
+    }
+
+
+    navigateToSet(sp: LegoSetPartData): void {
+        if (sp.legoSet?.id) {
+            this.router.navigate(['/lego/sets', sp.legoSet.id]);
+        }
+    }
+
+
+    getSwatchColor(sp: LegoSetPartData): string {
+        const hex = sp.brickColour?.hexRgb;
+        if (!hex) {
+            return 'transparent';
+        }
+        // Handle both '05131D' and '#05131D' formats
+        return hex.startsWith('#') ? hex : '#' + hex;
     }
 
 

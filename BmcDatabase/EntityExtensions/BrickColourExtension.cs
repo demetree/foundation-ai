@@ -376,6 +376,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickColour.id,
 				name = brickColour.name,
+				hexRgb = brickColour.hexRgb,
 				description = string.Join(", ", new[] { brickColour.name, brickColour.hexRgb, brickColour.hexEdgeColour}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}

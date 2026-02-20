@@ -503,13 +503,13 @@
    Appears In Sets Panel
    ---------------------------------------------------------------- */
 .sets-panel {
-    grid-column: 1 / -1;
     background: var(--bmc-bg-card);
     border: 1px solid var(--bmc-border);
     border-radius: var(--radius-md);
     overflow: hidden;
     animation: fadeInUp 0.35s ease-out both;
     animation-delay: 0.2s;
+    margin-top: 16px;
 
     &.loading-card {
         opacity: 0.7;
@@ -609,7 +609,7 @@
 
 .sets-header-row {
     display: grid;
-    grid-template-columns: 1fr 200px 70px 70px;
+    grid-template-columns: 1fr 100px 160px 50px;
     gap: 4px;
     padding: 8px 16px;
     background: var(--bmc-bg-elevated);
@@ -644,13 +644,14 @@
 
 .sets-row {
     display: grid;
-    grid-template-columns: 1fr 200px 70px 70px;
+    grid-template-columns: 1fr 100px 160px 50px;
     gap: 4px;
     padding: 6px 16px;
     border-bottom: 1px solid var(--bmc-border);
     font-size: 0.8rem;
     color: var(--bmc-text-secondary);
     align-items: center;
+    cursor: pointer;
     transition: var(--transition-fast);
 
     &:hover {
@@ -690,22 +691,6 @@
     font-family: 'Fira Code', 'Consolas', monospace;
     font-size: 0.78rem;
     text-align: right;
-}
-
-.sets-col-spare {
-    text-align: center;
-}
-
-.spare-badge {
-    display: inline-block;
-    padding: 1px 8px;
-    border-radius: var(--radius-xl);
-    background: rgba(255, 167, 38, 0.12);
-    border: 1px solid rgba(255, 167, 38, 0.25);
-    color: #ffa726;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
 }
 
 .sets-empty {

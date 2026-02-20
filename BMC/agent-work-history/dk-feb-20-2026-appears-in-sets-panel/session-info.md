@@ -2,20 +2,33 @@
 
 - **Conversation ID:** b00ccd20-bf35-44d2-9afa-ede8178f8a65
 - **Date:** 2026-02-20
-- **Time:** 17:50 NST (UTC-3:30)
-- **Duration:** ~10 minutes (this feature segment)
+- **Time:** 17:50–18:31 NST (UTC-3:30)
 
 ## Summary
 
-Added an "Appears In Sets" panel to the `CatalogPartDetailComponent` showing every LEGO set containing the current part, with sortable columns, text search filtering, colour swatches, and spare badges. No server changes required — uses existing `BrickPartData.LegoSetParts` lazy-loading getter.
+Two features in one session:
+
+### 1. Appears In Sets Panel (catalog-part-detail)
+- Full panel showing sets containing a part (sortable, searchable, clickable rows)
+- Fixed `BrickColour.CreateMinimalAnonymous` missing `hexRgb` (white swatch root cause)
+- Added Set # column, `getSwatchColor()` helper, row navigation to `/lego/sets/:id`
+
+### 2. Color DNA Panel Fix (parts-universe)
+- Heatmap row labels showed part numbers instead of descriptions
+- Fixed to use `ldrawTitle` on both server (`BuildHeatmapData`) and client (`buildHeatmapData`)
+- Always builds heatmap client-side to avoid stale server cache
+- Reduced font/cell sizes, added string trimming
 
 ## Files Modified
 
-- `BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.ts` — loadSetParts(), filter/sort getters, sort toggle
-- `BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.html` — Full-width panel with sortable table
-- `BMC.Client/src/app/components/catalog-part-detail/catalog-part-detail.component.scss` — Sets panel styling
+### Client (BMC.Client)
+- `catalog-part-detail.component.ts/html/scss`
+- `parts-universe.component.ts`
 
-## Related Sessions
+### Server
+- `BrickColourExtension.cs` (BmcDatabase)
+- `PartsUniverseService.cs` (BMC.Server)
 
-- **fe48a688** — Built the Parts Universe feature (D3 visualizations, leaderboard)
-- **b00ccd20** (earlier in this session) — Fixed Parts Universe filter data limit, refined filter bar UI
+## Verification
+- Angular production build: ✅
+- .NET build: ✅ (code compiles clean)

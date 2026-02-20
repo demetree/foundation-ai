@@ -1,6 +1,15 @@
-# Appears In Sets Panel — catalog-part-detail
+# Appears In Sets Panel + Color DNA Fix
 
-- [x] Add TS properties, filter/sort logic, and `loadSetParts()` method
-- [x] Add HTML panel with sortable table, search input, colour swatches
-- [x] Add SCSS styles for the sets panel
-- [x] Verify production build
+## Sets Panel
+- [x] Initial implementation (TS, HTML, SCSS)
+- [x] Move under 3D viewer, fix colour swatch, remove Spare column
+- [x] Add Set # column, fix `hexRgb` missing from `BrickColour.CreateMinimalAnonymous`
+- [x] Make rows clickable → navigate to `/lego/sets/:id`
+
+## Color DNA Panel
+- [x] Audit heatmap labels — `rp.name` is part number, not description
+- [x] Fix client `buildHeatmapData` to use `ldrawTitle || name`
+- [x] Fix server `BuildHeatmapData` to use `LdrawTitle` with fallback
+- [x] Always rebuild heatmap client-side to avoid stale server cache
+- [x] Reduce font/cell sizes, trim labels
+- [x] Save work history

@@ -512,7 +512,7 @@ namespace Foundation.BMC.Services
             //
             // Build parallel arrays for part labels, colour labels, and cell data
             //
-            List<string> partLabels = topParts.Select(p => p.Name).ToList();
+            List<string> partLabels = topParts.Select(p => !string.IsNullOrWhiteSpace(p.LdrawTitle) ? p.LdrawTitle : p.Name).ToList();
 
             List<HeatmapColourLabelDto> colourLabels = topColourKeys.Select(key =>
             {
