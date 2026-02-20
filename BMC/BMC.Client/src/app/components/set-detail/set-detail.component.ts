@@ -25,7 +25,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     partsLoading = true;
     minifigsLoading = true;
     subsetsLoading = true;
-    activeTab: 'parts' | 'minifigs' | 'subsets' = 'parts';
+    activeTab: 'minifigs' | 'subsets' = 'minifigs';
 
     private destroy$ = new Subject<void>();
 
@@ -82,7 +82,8 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         try {
             this.minifigs = await this.set.LegoSetMinifigs;
             this.minifigsLoading = false;
-        } catch {
+        } catch (err) {
+            console.error('[set-detail] minifigs load error:', err);
             this.minifigsLoading = false;
         }
 
@@ -290,7 +291,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         if (url) window.open(url, '_blank');
     }
 
-    setTab(tab: 'parts' | 'minifigs' | 'subsets'): void {
+    setTab(tab: 'minifigs' | 'subsets'): void {
         this.activeTab = tab;
     }
 }
