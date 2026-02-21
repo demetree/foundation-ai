@@ -132,3 +132,32 @@
     color: var(--bmc-text-muted);
     opacity: 0.6;
 }
+
+
+/* ----------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .sidebar-nav {
+        padding: 8px 6px;
+    }
+
+    .nav-item {
+        padding: 8px 10px;
+        gap: 10px;
+    }
+
+    .nav-label {
+        font-size: 0.8rem;
+    }
+
+    .sidebar-footer {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .bmc-sidebar {
+        display: none;
+    }
+}

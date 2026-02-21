@@ -22,7 +22,7 @@ namespace Foundation.IndexedDB
         private readonly ILogger<IndexedDbCacheService> _logger;
         private readonly string _dbName; // e.g., "ApiCache"
         private readonly TimeSpan _maxAge; // Configurable freshness threshold
-        private IDBDatabase? _db;
+        private IDBDatabase _db;
 
         public IndexedDbCacheService(IDBFactory factory, ILogger<IndexedDbCacheService> logger, IConfiguration config)
         {
@@ -67,7 +67,7 @@ namespace Foundation.IndexedDB
         }
 
         // High-level method: Check cache, compute if stale/missing, update
-        public async Task<T?> GetOrComputeAsync<T>(string key, Func<Task<T>> computeFunc, bool forceRefresh = false)
+        public async Task<T> GetOrComputeAsync<T>(string key, Func<Task<T>> computeFunc, bool forceRefresh = false)
         {
             var db = await GetDatabaseAsync().ConfigureAwait(false);
 

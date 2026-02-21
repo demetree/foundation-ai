@@ -12,6 +12,8 @@
 
 .app-main {
     flex: 1;
+    min-width: 0;
+    overflow-x: hidden;
     padding: 28px 32px;
     min-height: calc(100vh - var(--header-height));
     transition: margin-left var(--transition-smooth);
@@ -55,4 +57,14 @@
     padding: 16px;
     margin-top: var(--header-height);
     min-height: calc(100vh - var(--header-height));
+}
+
+
+/* ----------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .app-main {
+        padding: 20px;
+    }
 }

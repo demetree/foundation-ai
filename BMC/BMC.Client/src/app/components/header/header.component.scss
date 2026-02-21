@@ -281,3 +281,40 @@
 .swatch-pastel-light {
     background: linear-gradient(135deg, #ce93d8 0%, #f3eff8 100%);
 }
+
+
+/* ----------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------- */
+@media (max-width: 900px) {
+    .brand-sub {
+        display: none;
+    }
+
+    .brand-text {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .bmc-navbar {
+        padding: 0 12px;
+    }
+
+    .brand-text {
+        font-size: 0.9rem;
+    }
+
+    .logout-label {
+        display: none;
+    }
+
+    .nav-btn {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+
+    .navbar-right {
+        gap: 2px;
+    }
+}
