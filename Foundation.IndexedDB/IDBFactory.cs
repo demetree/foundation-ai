@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -122,17 +123,41 @@ namespace Foundation.IndexedDB
 
             string dbPath = Path.Combine(_basePath, "IndexedDB", $"{name}.sqlite");
 
-            if (System.IO.File.Exists(dbPath))
+            if (System.IO.File.Exists(dbPath) == true)
             {
                 try
                 {
+                    //
+                    // Clear the SQLite connection pool for this database before deleting files.
+                    //
+                    // EF Core's SQLite provider pools connections by default, so even after disposing 
+                    // the IDBContext, the underlying file handle may still be held by a pooled connection.
+                    // Creating a temporary connection with the same connection string and calling ClearPool 
+                    // forces all pooled connections for this file to be fully closed and released.
+                    //
+                    string connectionString = $"Data Source={dbPath}";
+                    using (SqliteConnection tempConnection = new SqliteConnection(connectionString))
+                    {
+                        SqliteConnection.ClearPool(tempConnection);
+                    }
+
                     System.IO.File.Delete(dbPath);
 
+                    //
                     // Clean up WAL mode sidecar files
+                    //
                     string walPath = dbPath + "-wal";
                     string shmPath = dbPath + "-shm";
-                    if (System.IO.File.Exists(walPath)) System.IO.File.Delete(walPath);
-                    if (System.IO.File.Exists(shmPath)) System.IO.File.Delete(shmPath);
+
+                    if (System.IO.File.Exists(walPath) == true)
+                    {
+                        System.IO.File.Delete(walPath);
+                    }
+
+                    if (System.IO.File.Exists(shmPath) == true)
+                    {
+                        System.IO.File.Delete(shmPath);
+                    }
                 }
                 catch (Exception ex)
                 {
