@@ -21,6 +21,7 @@ import { BrickPartColourData } from '../../bmc-data-services/brick-part-colour.s
 import { BrickColourService, BrickColourData } from '../../bmc-data-services/brick-colour.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
 import { lastValueFrom } from 'rxjs';
 
 
@@ -106,6 +107,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         private authService: AuthService,
         private brickPartService: BrickPartService,
         private brickColourService: BrickColourService,
+        private fileCacheService: LDrawFileCacheService,
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
@@ -613,6 +615,12 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         if (this.rendererCanvas == null || this.part == null) {
             return;
         }
+
+        //
+        // Initialise the LDraw file cache — hydrates THREE.Cache from IndexedDB
+        // so previously-fetched geometry files load instantly without HTTP requests.
+        //
+        await this.fileCacheService.initialise();
 
         this.initScene();
         this.startAnimation();

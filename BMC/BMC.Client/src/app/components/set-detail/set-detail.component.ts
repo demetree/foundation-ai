@@ -108,6 +108,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         this.minifigsLoading = true;
         try {
             this.minifigs = await this.set.LegoSetMinifigs;
+            console.log(`[set-detail] minifigs loaded: ${this.minifigs.length} records for setId=${this.set.id}`, this.minifigs);
             this.minifigsLoading = false;
         } catch (err) {
             console.error('[set-detail] minifigs load error:', err);
@@ -117,7 +118,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         // Load subsets
         this.subsetsLoading = true;
         try {
-            this.subsets = await this.set.LegoSetSubsetChildLegoSets;
+            this.subsets = await this.set.LegoSetSubsetParentLegoSets;
             this.subsetsLoading = false;
         } catch {
             this.subsetsLoading = false;

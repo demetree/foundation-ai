@@ -1,12 +1,14 @@
 import { Injectable, Inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import Dexie, { Table } from 'dexie';
+import { LoadingManager } from 'three';
 
 import * as THREE from 'three';
 import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
 import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
 
 import { AuthService } from './auth.service';
+import { LDrawFileCacheService } from './ldraw-file-cache.service';
 
 /**
  * Lightweight request interface for thumbnail rendering.
@@ -74,8 +76,13 @@ export class LDrawThumbnailService {
     private renderer!: THREE.WebGLRenderer;
     private scene!: THREE.Scene;
     private camera!: THREE.PerspectiveCamera;
-    private loader!: LDrawLoader;
     private canvas!: HTMLCanvasElement;
+
+    //
+    // LoadingManager — used to abort in-flight FileLoader requests when a new
+    // batch starts. Each processQueue creates a fresh loader with this manager.
+    //
+    private loadingManager: LoadingManager | null = null;
 
     //
     // Cache: cacheKey → data:image/png
@@ -99,7 +106,6 @@ export class LDrawThumbnailService {
     // Internal state
     //
     private initialized = false;
-    private materialsPreloaded = false;
     private rendering = false;
     private queue: ThumbnailRequest[] = [];
     private queueGeneration = 0;  // incremented on each renderBatch to abort stale loops
@@ -109,12 +115,14 @@ export class LDrawThumbnailService {
     private readonly WIDTH = 200;
     private readonly HEIGHT = 200;
 
-    // Delay between consecutive renders (ms) — prevents 429s from sub-file requests
-    private readonly RENDER_DELAY_MS = 50;
+    // Delay between consecutive renders (ms) — gives the browser breathing room
+    // between model loads and their sub-file requests.
+    private readonly RENDER_DELAY_MS = 150;
 
 
     constructor(
         private authService: AuthService,
+        private fileCacheService: LDrawFileCacheService,
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
@@ -179,6 +187,21 @@ export class LDrawThumbnailService {
         this.queueGeneration++;
 
         //
+        // Abort any in-flight sub-file requests from the previous batch.
+        // LoadingManager.abort() signals the AbortController used by all
+        // FileLoader instances created through this manager, cancelling
+        // pending fetch() calls immediately.
+        //
+        if (this.loadingManager) {
+            try {
+                this.loadingManager.abort();
+            } catch {
+                // abort may throw if no controller exists yet — safe to ignore
+            }
+            this.loadingManager = null;
+        }
+
+        //
         // Always start a new processQueue — the previous one will self-abort
         // when it detects the generation mismatch. This prevents the "hung"
         // feeling when switching categories while rendering is in progress.
@@ -196,8 +219,30 @@ export class LDrawThumbnailService {
 
 
     /**
-     * Initialise the offscreen WebGL renderer, scene, camera, lights, and loader.
-     * Called lazily on first render request.
+     * Cancel all in-progress rendering and abort in-flight HTTP requests.
+     * Call from component ngOnDestroy() to prevent orphaned requests after navigation.
+     */
+    cancelAll(): void {
+        this.queue = [];
+        this.queueGeneration++;
+
+        if (this.loadingManager) {
+            try {
+                this.loadingManager.abort();
+            } catch {
+                // safe to ignore
+            }
+            this.loadingManager = null;
+        }
+
+        this.rendering = false;
+    }
+
+
+    /**
+     * Initialise the offscreen WebGL renderer, scene, camera, and lights.
+     * Called lazily on first render request. The LDrawLoader is NOT created
+     * here — a fresh loader is created per processQueue to clear stale state.
      */
     private ensureInitialized(): void {
         if (this.initialized) return;
@@ -243,42 +288,19 @@ export class LDrawThumbnailService {
         //
         this.camera = new THREE.PerspectiveCamera(35, this.WIDTH / this.HEIGHT, 0.1, 10000);
 
-        //
-        // LDrawLoader — shared instance with auth and paths configured
-        //
-        this.loader = new LDrawLoader();
-        (this.loader as any).setConditionalLineMaterial(LDrawConditionalLineMaterial);
-        this.loader.setPartsLibraryPath(this.baseUrl + 'api/ldraw/file/');
-
         this.initialized = true;
     }
 
 
-    /**
-     * Preload the LDraw material/colour definitions (LDConfig.ldr).
-     * Done once, before the first model load.
-     */
-    private async preloadMaterials(): Promise<void> {
-        if (this.materialsPreloaded) return;
-
-        //
-        // Set auth header before preloading
-        //
-        this.updateAuthHeaders();
-
-        const materialUrl = this.baseUrl + 'api/ldraw/file/LDConfig.ldr';
-        await (this.loader as any).preloadMaterials(materialUrl);
-        this.materialsPreloaded = true;
-    }
 
 
     /**
-     * Update auth headers on the loader (token may have refreshed).
+     * Update auth headers on a loader (token may have refreshed).
      */
-    private updateAuthHeaders(): void {
+    private updateAuthHeaders(loader: LDrawLoader): void {
         const token = this.authService.accessToken;
         if (token) {
-            this.loader.setRequestHeader({
+            loader.setRequestHeader({
                 'Authorization': `Bearer ${token}`
             });
         }
@@ -288,12 +310,37 @@ export class LDrawThumbnailService {
     /**
      * Process the render queue sequentially — one model at a time.
      * Checks queueGeneration to abort if a new batch was started.
+     *
+     * Creates a fresh LDrawLoader per invocation to clear the internal
+     * LDrawParsedCache — otherwise aborted fetch promises linger and
+     * stall subsequent loads of the same sub-files.
      */
     private async processQueue(generation: number): Promise<void> {
         this.rendering = true;
 
         this.ensureInitialized();
-        await this.preloadMaterials();
+        await this.fileCacheService.initialise();
+
+        //
+        // Create a fresh LoadingManager and LDrawLoader for this batch.
+        // The manager's AbortController will be aborted if a new batch starts,
+        // cancelling all in-flight sub-file fetches.
+        //
+        this.loadingManager = new LoadingManager();
+        const loader = new LDrawLoader(this.loadingManager);
+        (loader as any).setConditionalLineMaterial(LDrawConditionalLineMaterial);
+        loader.setPartsLibraryPath(this.baseUrl + 'api/ldraw/file/');
+
+        //
+        // Preload materials (fast — served from THREE.Cache after first fetch)
+        //
+        this.updateAuthHeaders(loader);
+        const materialUrl = this.baseUrl + 'api/ldraw/file/LDConfig.ldr';
+        try {
+            await (loader as any).preloadMaterials(materialUrl);
+        } catch {
+            // Materials preload can fail if aborted — check generation
+        }
 
         //
         // Check generation again after async preload — a new batch may have
@@ -320,7 +367,7 @@ export class LDrawThumbnailService {
             }
 
             try {
-                const dataUrl = await this.renderSinglePart(part);
+                const dataUrl = await this.renderSinglePart(loader, part);
                 if (dataUrl) {
                     this.cache.set(key, dataUrl);
                     this.thumbnailSubject.next({ cacheKey: key, dataUrl });
@@ -331,7 +378,13 @@ export class LDrawThumbnailService {
                     this.persistToIndexedDB(key, dataUrl);
                 }
             } catch (err) {
-                console.warn(`[LDrawThumbnail] Failed to render ${part.geometryFilePath}:`, err);
+                //
+                // Aborted fetches surface as errors here — only warn for
+                // non-abort failures.
+                //
+                if (generation === this.queueGeneration) {
+                    console.warn(`[LDrawThumbnail] Failed to render ${part.geometryFilePath}:`, err);
+                }
             }
 
             //
@@ -358,13 +411,13 @@ export class LDrawThumbnailService {
      * If the request includes a colourHex, all model materials are overridden
      * with that colour (preserving shading/lighting).
      */
-    private renderSinglePart(part: ThumbnailRequest): Promise<string | null> {
+    private renderSinglePart(loader: LDrawLoader, part: ThumbnailRequest): Promise<string | null> {
         return new Promise((resolve) => {
 
             //
             // Refresh auth header in case the token was renewed
             //
-            this.updateAuthHeaders();
+            this.updateAuthHeaders(loader);
 
             const modelUrl = this.baseUrl + 'api/ldraw/file/' + part.geometryFilePath;
 
@@ -376,7 +429,7 @@ export class LDrawThumbnailService {
                 resolve(null);
             }, 15000);
 
-            this.loader.load(
+            loader.load(
                 modelUrl,
                 (group: THREE.Group) => {
                     clearTimeout(timeoutId);

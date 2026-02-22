@@ -132,6 +132,13 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         this.destroy$.next();
         this.destroy$.complete();
         this.loadSub.unsubscribe();
+
+        //
+        // Cancel any in-flight thumbnail rendering and abort pending HTTP requests.
+        // Without this, sub-file fetches from the previous batch continue running
+        // in the background after navigating away, compounding with new requests.
+        //
+        this.thumbnailService.cancelAll();
     }
 
 
