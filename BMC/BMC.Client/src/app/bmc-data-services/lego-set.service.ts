@@ -70,8 +70,8 @@ export class LegoSetSubmitData {
 
 
 export class LegoSetBasicListData {
-    id!: bigint | number;
-    name!: string;
+  id!: bigint | number;
+  name!: string;
 }
 
 
@@ -130,33 +130,33 @@ export class LegoSetData {
     // Private lazy-loading caches for related collections
     //
     private _legoSetParts: LegoSetPartData[] | null = null;
-    private _legoSetPartsPromise: Promise<LegoSetPartData[]> | null = null;
+    private _legoSetPartsPromise: Promise<LegoSetPartData[]> | null  = null;
     private _legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
-
+                
     private _legoSetMinifigs: LegoSetMinifigData[] | null = null;
-    private _legoSetMinifigsPromise: Promise<LegoSetMinifigData[]> | null = null;
+    private _legoSetMinifigsPromise: Promise<LegoSetMinifigData[]> | null  = null;
     private _legoSetMinifigsSubject = new BehaviorSubject<LegoSetMinifigData[] | null>(null);
 
-
+                
     private _legoSetSubsetParentLegoSets: LegoSetSubsetData[] | null = null;
-    private _legoSetSubsetParentLegoSetsPromise: Promise<LegoSetSubsetData[]> | null = null;
+    private _legoSetSubsetParentLegoSetsPromise: Promise<LegoSetSubsetData[]> | null  = null;
     private _legoSetSubsetParentLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
-
+                    
     private _legoSetSubsetChildLegoSets: LegoSetSubsetData[] | null = null;
-    private _legoSetSubsetChildLegoSetsPromise: Promise<LegoSetSubsetData[]> | null = null;
+    private _legoSetSubsetChildLegoSetsPromise: Promise<LegoSetSubsetData[]> | null  = null;
     private _legoSetSubsetChildLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
-
+                    
     private _userCollectionSetImports: UserCollectionSetImportData[] | null = null;
-    private _userCollectionSetImportsPromise: Promise<UserCollectionSetImportData[]> | null = null;
+    private _userCollectionSetImportsPromise: Promise<UserCollectionSetImportData[]> | null  = null;
     private _userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
 
-
+                
     private _userSetOwnerships: UserSetOwnershipData[] | null = null;
-    private _userSetOwnershipsPromise: Promise<UserSetOwnershipData[]> | null = null;
+    private _userSetOwnershipsPromise: Promise<UserSetOwnershipData[]> | null  = null;
     private _userSetOwnershipsSubject = new BehaviorSubject<UserSetOwnershipData[] | null>(null);
 
-
+                
 
     //
     // Public observables — use with | async in templates
@@ -168,18 +168,17 @@ export class LegoSetData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._legoSetParts === null && this._legoSetPartsPromise === null) {
-                this.loadLegoSetParts(); // Private method to start fetch
-            }
+          if (this._legoSetParts === null && this._legoSetPartsPromise === null) {
+            this.loadLegoSetParts(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({
-        legoSetId: this.id,
-        active: true,
-        deleted: false
+  
+    public LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({legoSetId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -188,18 +187,17 @@ export class LegoSetData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._legoSetMinifigs === null && this._legoSetMinifigsPromise === null) {
-                this.loadLegoSetMinifigs(); // Private method to start fetch
-            }
+          if (this._legoSetMinifigs === null && this._legoSetMinifigsPromise === null) {
+            this.loadLegoSetMinifigs(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({
-        legoSetId: this.id,
-        active: true,
-        deleted: false
+  
+    public LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -208,18 +206,17 @@ export class LegoSetData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._legoSetSubsetParentLegoSets === null && this._legoSetSubsetParentLegoSetsPromise === null) {
-                this.loadLegoSetSubsetParentLegoSets(); // Private method to start fetch
-            }
+          if (this._legoSetSubsetParentLegoSets === null && this._legoSetSubsetParentLegoSetsPromise === null) {
+            this.loadLegoSetSubsetParentLegoSets(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({
-        parentLegoSetId: this.id,
-        active: true,
-        deleted: false
+  
+    public LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({parentLegoSetId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -227,18 +224,17 @@ export class LegoSetData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._legoSetSubsetChildLegoSets === null && this._legoSetSubsetChildLegoSetsPromise === null) {
-                this.loadLegoSetSubsetChildLegoSets(); // Private method to start fetch
-            }
+          if (this._legoSetSubsetChildLegoSets === null && this._legoSetSubsetChildLegoSetsPromise === null) {
+            this.loadLegoSetSubsetChildLegoSets(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({
-        childLegoSetId: this.id,
-        active: true,
-        deleted: false
+  
+    public LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({childLegoSetId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -246,18 +242,17 @@ export class LegoSetData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._userCollectionSetImports === null && this._userCollectionSetImportsPromise === null) {
-                this.loadUserCollectionSetImports(); // Private method to start fetch
-            }
+          if (this._userCollectionSetImports === null && this._userCollectionSetImportsPromise === null) {
+            this.loadUserCollectionSetImports(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({
-        legoSetId: this.id,
-        active: true,
-        deleted: false
+  
+    public UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({legoSetId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -266,85 +261,84 @@ export class LegoSetData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._userSetOwnerships === null && this._userSetOwnershipsPromise === null) {
-                this.loadUserSetOwnerships(); // Private method to start fetch
-            }
+          if (this._userSetOwnerships === null && this._userSetOwnershipsPromise === null) {
+            this.loadUserSetOwnerships(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({
-        legoSetId: this.id,
-        active: true,
-        deleted: false
+  
+    public UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: this.id,
+      active: true,
+      deleted: false
     });
 
 
 
 
-    //
-    // Full reload — refreshes the entire object and clears all lazy caches 
-    //
-    // Promise based reload method to allow rebuilding of any LegoSetData object with all of it's relations on demand.  Useful for navigating into nav property
-    // objects and getting full state after put or post that may not have returned all nav properties.
-    //
-    // Usage examples:;
-    //
-    //  Async:
-    //   await this.legoSet.Reload();
-    //
-    //  Non Async:
-    //
-    //     legoSet[0].Reload().then(x => {
-    //        this.legoSet = x;
-    //    });
-    //
-    public async Reload(includeRelations: boolean = true): Promise<this> {
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any LegoSetData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.legoSet.Reload();
+  //
+  //  Non Async:
+  //
+  //     legoSet[0].Reload().then(x => {
+  //        this.legoSet = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
 
-        const fresh = await lastValueFrom(
-            LegoSetService.Instance.GetLegoSet(this.id, includeRelations)
-        );
+    const fresh = await lastValueFrom(
+      LegoSetService.Instance.GetLegoSet(this.id, includeRelations)
+    );
 
-        // Merge fresh data into this instance (preserves reference)
-        this.UpdateFrom(fresh as this);
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
 
-        // Clear all lazy caches to force re-load on next access
-        this.clearAllLazyCaches();
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
 
-        return this;
-    }
+    return this;
+  }
 
 
-    private clearAllLazyCaches(): void {
-        //
-        // Reset every collection cache and notify subscribers
-        //
-        this._legoSetParts = null;
-        this._legoSetPartsPromise = null;
-        this._legoSetPartsSubject.next(null);
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._legoSetParts = null;
+     this._legoSetPartsPromise = null;
+     this._legoSetPartsSubject.next(null);
 
-        this._legoSetMinifigs = null;
-        this._legoSetMinifigsPromise = null;
-        this._legoSetMinifigsSubject.next(null);
+     this._legoSetMinifigs = null;
+     this._legoSetMinifigsPromise = null;
+     this._legoSetMinifigsSubject.next(null);
 
-        this._legoSetSubsetParentLegoSets = null;
-        this._legoSetSubsetParentLegoSetsPromise = null;
-        this._legoSetSubsetParentLegoSetsSubject.next(null);
+     this._legoSetSubsetParentLegoSets = null;
+     this._legoSetSubsetParentLegoSetsPromise = null;
+     this._legoSetSubsetParentLegoSetsSubject.next(null);
 
-        this._legoSetSubsetChildLegoSets = null;
-        this._legoSetSubsetChildLegoSetsPromise = null;
-        this._legoSetSubsetChildLegoSetsSubject.next(null);
+     this._legoSetSubsetChildLegoSets = null;
+     this._legoSetSubsetChildLegoSetsPromise = null;
+     this._legoSetSubsetChildLegoSetsSubject.next(null);
 
-        this._userCollectionSetImports = null;
-        this._userCollectionSetImportsPromise = null;
-        this._userCollectionSetImportsSubject.next(null);
+     this._userCollectionSetImports = null;
+     this._userCollectionSetImportsPromise = null;
+     this._userCollectionSetImportsSubject.next(null);
 
-        this._userSetOwnerships = null;
-        this._userSetOwnershipsPromise = null;
-        this._userSetOwnershipsSubject.next(null);
+     this._userSetOwnerships = null;
+     this._userSetOwnershipsPromise = null;
+     this._userSetOwnershipsSubject.next(null);
 
-    }
+  }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -386,19 +380,19 @@ export class LegoSetData {
         this._legoSetPartsPromise = lastValueFrom(
             LegoSetService.Instance.GetLegoSetPartsForLegoSet(this.id)
         )
-            .then(LegoSetParts => {
-                this._legoSetParts = LegoSetParts ?? [];
-                this._legoSetPartsSubject.next(this._legoSetParts);
-                return this._legoSetParts;
-            })
-            .catch(err => {
-                this._legoSetParts = [];
-                this._legoSetPartsSubject.next(this._legoSetParts);
-                throw err;
-            })
-            .finally(() => {
-                this._legoSetPartsPromise = null; // Allow retry if needed
-            });
+        .then(LegoSetParts => {
+            this._legoSetParts = LegoSetParts ?? [];
+            this._legoSetPartsSubject.next(this._legoSetParts);
+            return this._legoSetParts;
+         })
+        .catch(err => {
+            this._legoSetParts = [];
+            this._legoSetPartsSubject.next(this._legoSetParts);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetPartsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -451,19 +445,19 @@ export class LegoSetData {
         this._legoSetMinifigsPromise = lastValueFrom(
             LegoSetService.Instance.GetLegoSetMinifigsForLegoSet(this.id)
         )
-            .then(LegoSetMinifigs => {
-                this._legoSetMinifigs = LegoSetMinifigs ?? [];
-                this._legoSetMinifigsSubject.next(this._legoSetMinifigs);
-                return this._legoSetMinifigs;
-            })
-            .catch(err => {
-                this._legoSetMinifigs = [];
-                this._legoSetMinifigsSubject.next(this._legoSetMinifigs);
-                throw err;
-            })
-            .finally(() => {
-                this._legoSetMinifigsPromise = null; // Allow retry if needed
-            });
+        .then(LegoSetMinifigs => {
+            this._legoSetMinifigs = LegoSetMinifigs ?? [];
+            this._legoSetMinifigsSubject.next(this._legoSetMinifigs);
+            return this._legoSetMinifigs;
+         })
+        .catch(err => {
+            this._legoSetMinifigs = [];
+            this._legoSetMinifigsSubject.next(this._legoSetMinifigs);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetMinifigsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -516,19 +510,19 @@ export class LegoSetData {
         this._legoSetSubsetParentLegoSetsPromise = lastValueFrom(
             LegoSetService.Instance.GetLegoSetSubsetParentLegoSetsForLegoSet(this.id)
         )
-            .then(LegoSetSubsetParentLegoSets => {
-                this._legoSetSubsetParentLegoSets = LegoSetSubsetParentLegoSets ?? [];
-                this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);
-                return this._legoSetSubsetParentLegoSets;
-            })
-            .catch(err => {
-                this._legoSetSubsetParentLegoSets = [];
-                this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);
-                throw err;
-            })
-            .finally(() => {
-                this._legoSetSubsetParentLegoSetsPromise = null; // Allow retry if needed
-            });
+        .then(LegoSetSubsetParentLegoSets => {
+            this._legoSetSubsetParentLegoSets = LegoSetSubsetParentLegoSets ?? [];
+            this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);
+            return this._legoSetSubsetParentLegoSets;
+         })
+        .catch(err => {
+            this._legoSetSubsetParentLegoSets = [];
+            this._legoSetSubsetParentLegoSetsSubject.next(this._legoSetSubsetParentLegoSets);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetSubsetParentLegoSetsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -581,19 +575,19 @@ export class LegoSetData {
         this._legoSetSubsetChildLegoSetsPromise = lastValueFrom(
             LegoSetService.Instance.GetLegoSetSubsetChildLegoSetsForLegoSet(this.id)
         )
-            .then(LegoSetSubsetChildLegoSets => {
-                this._legoSetSubsetChildLegoSets = LegoSetSubsetChildLegoSets ?? [];
-                this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);
-                return this._legoSetSubsetChildLegoSets;
-            })
-            .catch(err => {
-                this._legoSetSubsetChildLegoSets = [];
-                this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);
-                throw err;
-            })
-            .finally(() => {
-                this._legoSetSubsetChildLegoSetsPromise = null; // Allow retry if needed
-            });
+        .then(LegoSetSubsetChildLegoSets => {
+            this._legoSetSubsetChildLegoSets = LegoSetSubsetChildLegoSets ?? [];
+            this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);
+            return this._legoSetSubsetChildLegoSets;
+         })
+        .catch(err => {
+            this._legoSetSubsetChildLegoSets = [];
+            this._legoSetSubsetChildLegoSetsSubject.next(this._legoSetSubsetChildLegoSets);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetSubsetChildLegoSetsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -646,19 +640,19 @@ export class LegoSetData {
         this._userCollectionSetImportsPromise = lastValueFrom(
             LegoSetService.Instance.GetUserCollectionSetImportsForLegoSet(this.id)
         )
-            .then(UserCollectionSetImports => {
-                this._userCollectionSetImports = UserCollectionSetImports ?? [];
-                this._userCollectionSetImportsSubject.next(this._userCollectionSetImports);
-                return this._userCollectionSetImports;
-            })
-            .catch(err => {
-                this._userCollectionSetImports = [];
-                this._userCollectionSetImportsSubject.next(this._userCollectionSetImports);
-                throw err;
-            })
-            .finally(() => {
-                this._userCollectionSetImportsPromise = null; // Allow retry if needed
-            });
+        .then(UserCollectionSetImports => {
+            this._userCollectionSetImports = UserCollectionSetImports ?? [];
+            this._userCollectionSetImportsSubject.next(this._userCollectionSetImports);
+            return this._userCollectionSetImports;
+         })
+        .catch(err => {
+            this._userCollectionSetImports = [];
+            this._userCollectionSetImportsSubject.next(this._userCollectionSetImports);
+            throw err;
+        })
+        .finally(() => {
+            this._userCollectionSetImportsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -711,19 +705,19 @@ export class LegoSetData {
         this._userSetOwnershipsPromise = lastValueFrom(
             LegoSetService.Instance.GetUserSetOwnershipsForLegoSet(this.id)
         )
-            .then(UserSetOwnerships => {
-                this._userSetOwnerships = UserSetOwnerships ?? [];
-                this._userSetOwnershipsSubject.next(this._userSetOwnerships);
-                return this._userSetOwnerships;
-            })
-            .catch(err => {
-                this._userSetOwnerships = [];
-                this._userSetOwnershipsSubject.next(this._userSetOwnerships);
-                throw err;
-            })
-            .finally(() => {
-                this._userSetOwnershipsPromise = null; // Allow retry if needed
-            });
+        .then(UserSetOwnerships => {
+            this._userSetOwnerships = UserSetOwnerships ?? [];
+            this._userSetOwnershipsSubject.next(this._userSetOwnerships);
+            return this._userSetOwnerships;
+         })
+        .catch(err => {
+            this._userSetOwnerships = [];
+            this._userSetOwnershipsSubject.next(this._userSetOwnerships);
+            throw err;
+        })
+        .finally(() => {
+            this._userSetOwnershipsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -760,7 +754,7 @@ export class LegoSetData {
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class LegoSetService extends SecureEndpointBase {
 
@@ -792,7 +786,7 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
     public static get Instance(): LegoSetService {
-        return LegoSetService._instance;
+      return LegoSetService._instance;
     }
 
 
@@ -801,7 +795,7 @@ export class LegoSetService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-            this.listCache.delete(configHash);
+          this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -851,7 +845,7 @@ export class LegoSetService extends SecureEndpointBase {
         return output;
     }
 
-    public GetLegoSet(id: bigint | number, includeRelations: boolean = true): Observable<LegoSetData> {
+    public GetLegoSet(id: bigint | number, includeRelations: boolean = true) : Observable<LegoSetData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -861,7 +855,7 @@ export class LegoSetService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get LegoSet", error);
 
                     return throwError(() => error);
@@ -876,7 +870,7 @@ export class LegoSetService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<LegoSetData>;
     }
 
-    private requestLegoSet(id: bigint | number, includeRelations: boolean = true): Observable<LegoSetData> {
+    private requestLegoSet(id: bigint | number, includeRelations: boolean = true) : Observable<LegoSetData> {
 
         let queryParams = new HttpParams();
 
@@ -884,17 +878,16 @@ export class LegoSetService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<LegoSetData>(this.baseUrl + 'api/LegoSet/' + id.toString(), {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<LegoSetData>(this.baseUrl + 'api/LegoSet/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(raw => this.ReviveLegoSet(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestLegoSet(id, includeRelations));
             }));
     }
 
-    public GetLegoSetList(config: LegoSetQueryParameters | any = null): Observable<Array<LegoSetData>> {
+    public GetLegoSetList(config: LegoSetQueryParameters | any = null) : Observable<Array<LegoSetData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -919,7 +912,7 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
-    private requestLegoSetList(config: LegoSetQueryParameters | any): Observable<Array<LegoSetData>> {
+    private requestLegoSetList(config: LegoSetQueryParameters | any) : Observable <Array<LegoSetData>> {
 
         let queryParams = new HttpParams();
 
@@ -934,17 +927,16 @@ export class LegoSetService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<LegoSetData>>(this.baseUrl + 'api/LegoSets', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<Array<LegoSetData>>(this.baseUrl + 'api/LegoSets', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveLegoSetList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestLegoSetList(config));
             }));
     }
 
-    public GetLegoSetsRowCount(config: LegoSetQueryParameters | any = null): Observable<bigint | number> {
+    public GetLegoSetsRowCount(config: LegoSetQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -953,7 +945,7 @@ export class LegoSetService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get LegoSets row count", error);
 
                     return throwError(() => error);
@@ -968,7 +960,7 @@ export class LegoSetService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestLegoSetsRowCount(config: LegoSetQueryParameters | any): Observable<bigint | number> {
+    private requestLegoSetsRowCount(config: LegoSetQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -989,7 +981,7 @@ export class LegoSetService extends SecureEndpointBase {
             }));
     }
 
-    public GetLegoSetsBasicListData(config: LegoSetQueryParameters | any = null): Observable<Array<LegoSetBasicListData>> {
+    public GetLegoSetsBasicListData(config: LegoSetQueryParameters | any = null) : Observable<Array<LegoSetBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1004,7 +996,7 @@ export class LegoSetService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-
+      
             this.basicListDataCache.set(configHash, legoSetsBasicListData$);
 
             return legoSetsBasicListData$;
@@ -1014,7 +1006,7 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
-    private requestLegoSetsBasicListData(config: LegoSetQueryParameters | any): Observable<Array<LegoSetBasicListData>> {
+    private requestLegoSetsBasicListData(config: LegoSetQueryParameters | any) : Observable<Array<LegoSetBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -1037,11 +1029,11 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
-    public PutLegoSet(id: bigint | number, legoSet: LegoSetSubmitData): Observable<LegoSetData> {
+    public PutLegoSet(id: bigint | number, legoSet: LegoSetSubmitData) : Observable<LegoSetData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<LegoSetData>(this.baseUrl + 'api/LegoSet/' + id.toString(), legoSet, { headers: authenticationHeaders }).pipe(
+        return this.http.put<LegoSetData>(this.baseUrl + 'api/LegoSet/' + id.toString(), legoSet, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveLegoSet(raw)),
             catchError(error => {
@@ -1050,24 +1042,24 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
-    public PostLegoSet(legoSet: LegoSetSubmitData): Observable<LegoSetData> {
+    public PostLegoSet(legoSet: LegoSetSubmitData) : Observable<LegoSetData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<LegoSetData>(this.baseUrl + 'api/LegoSet', legoSet, { headers: authenticationHeaders }).pipe(
+        return this.http.post<LegoSetData>(this.baseUrl + 'api/LegoSet', legoSet, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveLegoSet(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PostLegoSet(legoSet));
+              return this.handleError(error, () => this.PostLegoSet(legoSet));
             }));
     }
 
-
-    public DeleteLegoSet(id: bigint | number): Observable<any> {
+  
+    public DeleteLegoSet(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/LegoSet/' + id.toString(), { headers: authenticationHeaders }).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/LegoSet/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteLegoSet(id));
@@ -1133,13 +1125,13 @@ export class LegoSetService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to BMC.LegoSets
         //
         if (userIsBMCLegoSetWriter == true) {
-            let user = this.authService.currentUser;
+          let user = this.authService.currentUser;
 
-            if (user != null) {
-                userIsBMCLegoSetWriter = user.writePermission >= 255;
-            } else {
-                userIsBMCLegoSetWriter = false;
-            }
+          if (user != null) {
+            userIsBMCLegoSetWriter = user.writePermission >= 255;
+          } else {
+            userIsBMCLegoSetWriter = false;
+          }      
         }
 
         return userIsBMCLegoSetWriter;
@@ -1205,189 +1197,184 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
-    /**
-      *
-      * Revives a plain object from the server into a full LegoSetData instance.
-      *
-      * This is critical for the lazy-loading pattern to work correctly.
-      *
-      * When the server returns JSON, it is a plain object with no prototype methods
-      * or observable properties. This method:
-      * 1. Re-attaches the LegoSetData prototype
-      * 2. Copies all properties from the raw object
-      * 3. Re-initializes all private caches and BehaviorSubjects
-      * 4. Re-creates all public observable properties ($ suffixed) with their
-      *    original tap() triggers that initiate lazy loading on first subscription
-      *
-      * Without this, revived objects would not trigger loads when LegoSetTags$ etc.
-      * are subscribed to in templates.
-      *
-      */
-    public ReviveLegoSet(raw: any): LegoSetData {
-        if (!raw) return raw;
+ /**
+   *
+   * Revives a plain object from the server into a full LegoSetData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the LegoSetData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when LegoSetTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveLegoSet(raw: any): LegoSetData {
+    if (!raw) return raw;
 
-        //
-        // Create a LegoSetData object instance with correct prototype
-        //
-        const revived = Object.create(LegoSetData.prototype) as LegoSetData;
+    //
+    // Create a LegoSetData object instance with correct prototype
+    //
+    const revived = Object.create(LegoSetData.prototype) as LegoSetData;
 
-        //
-        // Copy all raw properties
-        //
-        Object.assign(revived, raw);
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
 
-        //
-        // Explicitly initialize all private caches
-        // This ensures the getters work correctly on revived objects
-        //
-        (revived as any)._legoSetParts = null;
-        (revived as any)._legoSetPartsPromise = null;
-        (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._legoSetParts = null;
+    (revived as any)._legoSetPartsPromise = null;
+    (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
-        (revived as any)._legoSetMinifigs = null;
-        (revived as any)._legoSetMinifigsPromise = null;
-        (revived as any)._legoSetMinifigsSubject = new BehaviorSubject<LegoSetMinifigData[] | null>(null);
+    (revived as any)._legoSetMinifigs = null;
+    (revived as any)._legoSetMinifigsPromise = null;
+    (revived as any)._legoSetMinifigsSubject = new BehaviorSubject<LegoSetMinifigData[] | null>(null);
 
-        (revived as any)._legoSetSubsetParentLegoSets = null;
-        (revived as any)._legoSetSubsetParentLegoSetsPromise = null;
-        (revived as any)._legoSetSubsetParentLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
+    (revived as any)._legoSetSubsetParentLegoSets = null;
+    (revived as any)._legoSetSubsetParentLegoSetsPromise = null;
+    (revived as any)._legoSetSubsetParentLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
 
-        (revived as any)._legoSetSubsetChildLegoSets = null;
-        (revived as any)._legoSetSubsetChildLegoSetsPromise = null;
-        (revived as any)._legoSetSubsetChildLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
+    (revived as any)._legoSetSubsetChildLegoSets = null;
+    (revived as any)._legoSetSubsetChildLegoSetsPromise = null;
+    (revived as any)._legoSetSubsetChildLegoSetsSubject = new BehaviorSubject<LegoSetSubsetData[] | null>(null);
 
-        (revived as any)._userCollectionSetImports = null;
-        (revived as any)._userCollectionSetImportsPromise = null;
-        (revived as any)._userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
+    (revived as any)._userCollectionSetImports = null;
+    (revived as any)._userCollectionSetImportsPromise = null;
+    (revived as any)._userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
 
-        (revived as any)._userSetOwnerships = null;
-        (revived as any)._userSetOwnershipsPromise = null;
-        (revived as any)._userSetOwnershipsSubject = new BehaviorSubject<UserSetOwnershipData[] | null>(null);
-
-
-        //
-        // Re-attach ALL public observables with their lazy-load tap() triggers
-        // This mirrors the original class definition exactly
-        //
-        //
-        // Re-create all public observables with their lazy-load triggers
-        // We use 'as any' because:
-        // 1. The revived object has the correct prototype
-        // 2. But private methods (loadLegoSetXYZ, etc.) are not accessible via the typed variable
-        // 3. This is a controlled revival context — safe and necessary
-        //
-        (revived as any).LegoSetParts$ = (revived as any)._legoSetPartsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._legoSetParts === null && (revived as any)._legoSetPartsPromise === null) {
-                    (revived as any).loadLegoSetParts();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({
-            legoSetId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any)._userSetOwnerships = null;
+    (revived as any)._userSetOwnershipsPromise = null;
+    (revived as any)._userSetOwnershipsSubject = new BehaviorSubject<UserSetOwnershipData[] | null>(null);
 
 
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadLegoSetXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).LegoSetParts$ = (revived as any)._legoSetPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetParts === null && (revived as any)._legoSetPartsPromise === null) {
+                (revived as any).loadLegoSetParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).LegoSetMinifigs$ = (revived as any)._legoSetMinifigsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._legoSetMinifigs === null && (revived as any)._legoSetMinifigsPromise === null) {
-                    (revived as any).loadLegoSetMinifigs();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({
-            legoSetId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).LegoSetSubsetParentLegoSets$ = (revived as any)._legoSetSubsetParentLegoSetsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._legoSetSubsetParentLegoSets === null && (revived as any)._legoSetSubsetParentLegoSetsPromise === null) {
-                    (revived as any).loadLegoSetSubsetParentLegoSets();
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).LegoSetMinifigs$ = (revived as any)._legoSetMinifigsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetMinifigs === null && (revived as any)._legoSetMinifigsPromise === null) {
+                (revived as any).loadLegoSetMinifigs();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({
-            parentLegoSetId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-        (revived as any).LegoSetSubsetChildLegoSets$ = (revived as any)._legoSetSubsetChildLegoSetsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._legoSetSubsetChildLegoSets === null && (revived as any)._legoSetSubsetChildLegoSetsPromise === null) {
-                    (revived as any).loadLegoSetSubsetChildLegoSets();
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({
-            childLegoSetId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).UserCollectionSetImports$ = (revived as any)._userCollectionSetImportsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._userCollectionSetImports === null && (revived as any)._userCollectionSetImportsPromise === null) {
-                    (revived as any).loadUserCollectionSetImports();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).LegoSetSubsetParentLegoSets$ = (revived as any)._legoSetSubsetParentLegoSetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetSubsetParentLegoSets === null && (revived as any)._legoSetSubsetParentLegoSetsPromise === null) {
+                (revived as any).loadLegoSetSubsetParentLegoSets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({
-            legoSetId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
+    (revived as any).LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({parentLegoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
-        (revived as any).UserSetOwnerships$ = (revived as any)._userSetOwnershipsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._userSetOwnerships === null && (revived as any)._userSetOwnershipsPromise === null) {
-                    (revived as any).loadUserSetOwnerships();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
 
-        (revived as any).UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({
-            legoSetId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).LegoSetSubsetChildLegoSets$ = (revived as any)._legoSetSubsetChildLegoSetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetSubsetChildLegoSets === null && (revived as any)._legoSetSubsetChildLegoSetsPromise === null) {
+                (revived as any).loadLegoSetSubsetChildLegoSets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({childLegoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserCollectionSetImports$ = (revived as any)._userCollectionSetImportsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userCollectionSetImports === null && (revived as any)._userCollectionSetImportsPromise === null) {
+                (revived as any).loadUserCollectionSetImports();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserSetOwnerships$ = (revived as any)._userSetOwnershipsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userSetOwnerships === null && (revived as any)._userSetOwnershipsPromise === null) {
+                (revived as any).loadUserSetOwnerships();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
 
-        return revived;
+    return revived;
+  }
+
+  private ReviveLegoSetList(rawList: any[]): LegoSetData[] {
+
+    if (!rawList) {
+        return [];
     }
 
-    private ReviveLegoSetList(rawList: any[]): LegoSetData[] {
-
-        if (!rawList) {
-            return [];
-        }
-
-        return rawList.map(raw => this.ReviveLegoSet(raw));
-    }
+    return rawList.map(raw => this.ReviveLegoSet(raw));
+  }
 
 }

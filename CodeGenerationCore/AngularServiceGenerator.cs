@@ -657,13 +657,39 @@ export interface VersionInformation<T> {
     // This ensures the getters work correctly on revived objects
     //");
 
-            foreach (string tableName in tablesThatLinkHere)
+            foreach (Database.Table.ForeignKey fk in foreignKeysThatLinkHere)
             {
-                string pluralCamelCaseNameForLinkTable = CamelCase(Pluralize(tableName), false);
+                //
+                // Skip over any self referencing FKs
+                //
+                if (fk.targetTable == fk.sourceTable)
+                {
+                    continue;
+                }
 
-                sb.AppendLine($@"    (revived as any)._{pluralCamelCaseNameForLinkTable} = null;");
-                sb.AppendLine($@"    (revived as any)._{pluralCamelCaseNameForLinkTable}Promise = null;");
-                sb.AppendLine($@"    (revived as any)._{pluralCamelCaseNameForLinkTable}Subject = new BehaviorSubject<{tableName}Data[] | null>(null);");
+                string sourceTableName = fk.sourceTable.name;
+                string sourceFieldNameWithoutId = fk.field.name;
+
+                if (sourceFieldNameWithoutId.EndsWith("Id") == true)
+                {
+                    sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
+                }
+
+                string cacheFieldName;
+                if (sourceFieldNameWithoutId.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
+                {
+                    // Simple FK — use pluralized table name
+                    cacheFieldName = Pluralize(CamelCase(sourceTableName, false));
+                }
+                else
+                {
+                    // Complex FK — use source table name + pluralized field name
+                    cacheFieldName = $"{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldNameWithoutId))}";
+                }
+
+                sb.AppendLine($@"    (revived as any)._{cacheFieldName} = null;");
+                sb.AppendLine($@"    (revived as any)._{cacheFieldName}Promise = null;");
+                sb.AppendLine($@"    (revived as any)._{cacheFieldName}Subject = new BehaviorSubject<{sourceTableName}Data[] | null>(null);");
                 sb.AppendLine();
             }
 
@@ -681,21 +707,61 @@ export interface VersionInformation<T> {
     // 3. This is a controlled revival context — safe and necessary
     //");
 
-            foreach (string tableName in tablesThatLinkHere)
+            foreach (Database.Table.ForeignKey fk in foreignKeysThatLinkHere)
             {
-                string pluralTableName = Pluralize(tableName);
-                string pluralCamelCaseNameForLinkTable = CamelCase(Pluralize(tableName), false);
+                //
+                // Skip over any self referencing FKs
+                //
+                if (fk.targetTable == fk.sourceTable)
+                {
+                    continue;
+                }
 
-                sb.AppendLine($@"    (revived as any).{pluralTableName}$ = (revived as any)._{pluralCamelCaseNameForLinkTable}Subject.asObservable().pipe(
+                string sourceTableName = fk.sourceTable.name;
+                string sourceFieldNameWithoutId = fk.field.name;
+
+                if (sourceFieldNameWithoutId.EndsWith("Id") == true)
+                {
+                    sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
+                }
+
+                string cacheFieldName;
+                string observableName;
+                string loadMethodName;
+                string countObservableName;
+
+                if (sourceFieldNameWithoutId.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
+                {
+                    // Simple FK — use pluralized source table name
+                    string pluralSourceCamelCase = Pluralize(CamelCase(sourceTableName, false));
+                    string pluralSourcePascalCase = Pluralize(CamelCaseToPascalCase(sourceTableName));
+
+                    cacheFieldName = pluralSourceCamelCase;
+                    observableName = pluralSourcePascalCase;
+                    loadMethodName = pluralSourcePascalCase;
+                    countObservableName = pluralSourcePascalCase;
+                }
+                else
+                {
+                    // Complex FK — use source table name + pluralized field name
+                    string nameToUse = $"{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldNameWithoutId))}";
+
+                    cacheFieldName = nameToUse;
+                    observableName = CamelCaseToPascalCase(nameToUse);
+                    loadMethodName = CamelCaseToPascalCase(nameToUse);
+                    countObservableName = CamelCaseToPascalCase(nameToUse);
+                }
+
+                sb.AppendLine($@"    (revived as any).{observableName}$ = (revived as any)._{cacheFieldName}Subject.asObservable().pipe(
         tap(() => {{
-              if ((revived as any)._{pluralCamelCaseNameForLinkTable} === null && (revived as any)._{pluralCamelCaseNameForLinkTable}Promise === null) {{
-                (revived as any).load{pluralTableName}();        // Need to cast to any to invoke private load method
+              if ((revived as any)._{cacheFieldName} === null && (revived as any)._{cacheFieldName}Promise === null) {{
+                (revived as any).load{loadMethodName}();        // Need to cast to any to invoke private load method
               }}
         }}),
         shareReplay(1)
       );
 
-    (revived as any).{pluralTableName}Count$ = {tableName}Service.Instance.Get{pluralTableName}RowCount({{{CamelCase(entity, false)}Id: (revived as any).id,
+    (revived as any).{countObservableName}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: (revived as any).id,
       active: true,
       deleted: false
     }});

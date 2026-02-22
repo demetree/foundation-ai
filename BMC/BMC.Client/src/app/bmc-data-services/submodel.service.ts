@@ -988,10 +988,6 @@ export class SubmodelService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
-    (revived as any)._submodels = null;
-    (revived as any)._submodelsPromise = null;
-    (revived as any)._submodelsSubject = new BehaviorSubject<SubmodelData[] | null>(null);
-
     (revived as any)._submodelChangeHistories = null;
     (revived as any)._submodelChangeHistoriesPromise = null;
     (revived as any)._submodelChangeHistoriesSubject = new BehaviorSubject<SubmodelChangeHistoryData[] | null>(null);
@@ -1012,22 +1008,6 @@ export class SubmodelService extends SecureEndpointBase {
     // 2. But private methods (loadSubmodelXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
-    (revived as any).Submodels$ = (revived as any)._submodelsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._submodels === null && (revived as any)._submodelsPromise === null) {
-                (revived as any).loadSubmodels();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({submodelId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
     (revived as any).SubmodelChangeHistories$ = (revived as any)._submodelChangeHistoriesSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._submodelChangeHistories === null && (revived as any)._submodelChangeHistoriesPromise === null) {

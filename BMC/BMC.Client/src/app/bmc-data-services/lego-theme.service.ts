@@ -805,10 +805,6 @@ export class LegoThemeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
-    (revived as any)._legoThemes = null;
-    (revived as any)._legoThemesPromise = null;
-    (revived as any)._legoThemesSubject = new BehaviorSubject<LegoThemeData[] | null>(null);
-
     (revived as any)._legoSets = null;
     (revived as any)._legoSetsPromise = null;
     (revived as any)._legoSetsSubject = new BehaviorSubject<LegoSetData[] | null>(null);
@@ -829,22 +825,6 @@ export class LegoThemeService extends SecureEndpointBase {
     // 2. But private methods (loadLegoThemeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
-    (revived as any).LegoThemes$ = (revived as any)._legoThemesSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._legoThemes === null && (revived as any)._legoThemesPromise === null) {
-                (revived as any).loadLegoThemes();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).LegoThemesCount$ = LegoThemeService.Instance.GetLegoThemesRowCount({legoThemeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
     (revived as any).LegoSets$ = (revived as any)._legoSetsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._legoSets === null && (revived as any)._legoSetsPromise === null) {

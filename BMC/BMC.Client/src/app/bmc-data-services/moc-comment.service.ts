@@ -605,10 +605,6 @@ export class MocCommentService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
-    (revived as any)._mocComments = null;
-    (revived as any)._mocCommentsPromise = null;
-    (revived as any)._mocCommentsSubject = new BehaviorSubject<MocCommentData[] | null>(null);
-
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -621,22 +617,6 @@ export class MocCommentService extends SecureEndpointBase {
     // 2. But private methods (loadMocCommentXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
-    (revived as any).MocComments$ = (revived as any)._mocCommentsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._mocComments === null && (revived as any)._mocCommentsPromise === null) {
-                (revived as any).loadMocComments();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).MocCommentsCount$ = MocCommentService.Instance.GetMocCommentsRowCount({mocCommentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
 
     return revived;
   }

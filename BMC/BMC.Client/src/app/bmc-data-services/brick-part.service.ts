@@ -1887,9 +1887,13 @@ export class BrickPartService extends SecureEndpointBase {
     (revived as any)._legoSetPartsPromise = null;
     (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
 
-    (revived as any)._brickPartRelationships = null;
-    (revived as any)._brickPartRelationshipsPromise = null;
-    (revived as any)._brickPartRelationshipsSubject = new BehaviorSubject<BrickPartRelationshipData[] | null>(null);
+    (revived as any)._brickPartRelationshipChildBrickParts = null;
+    (revived as any)._brickPartRelationshipChildBrickPartsPromise = null;
+    (revived as any)._brickPartRelationshipChildBrickPartsSubject = new BehaviorSubject<BrickPartRelationshipData[] | null>(null);
+
+    (revived as any)._brickPartRelationshipParentBrickParts = null;
+    (revived as any)._brickPartRelationshipParentBrickPartsPromise = null;
+    (revived as any)._brickPartRelationshipParentBrickPartsSubject = new BehaviorSubject<BrickPartRelationshipData[] | null>(null);
 
     (revived as any)._brickElements = null;
     (revived as any)._brickElementsPromise = null;
@@ -1995,16 +1999,32 @@ export class BrickPartService extends SecureEndpointBase {
 
 
 
-    (revived as any).BrickPartRelationships$ = (revived as any)._brickPartRelationshipsSubject.asObservable().pipe(
+    (revived as any).BrickPartRelationshipChildBrickParts$ = (revived as any)._brickPartRelationshipChildBrickPartsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._brickPartRelationships === null && (revived as any)._brickPartRelationshipsPromise === null) {
-                (revived as any).loadBrickPartRelationships();        // Need to cast to any to invoke private load method
+              if ((revived as any)._brickPartRelationshipChildBrickParts === null && (revived as any)._brickPartRelationshipChildBrickPartsPromise === null) {
+                (revived as any).loadBrickPartRelationshipChildBrickParts();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any).BrickPartRelationshipsCount$ = BrickPartRelationshipService.Instance.GetBrickPartRelationshipsRowCount({brickPartId: (revived as any).id,
+    (revived as any).BrickPartRelationshipChildBrickPartsCount$ = BrickPartRelationshipService.Instance.GetBrickPartRelationshipsRowCount({childBrickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BrickPartRelationshipParentBrickParts$ = (revived as any)._brickPartRelationshipParentBrickPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickPartRelationshipParentBrickParts === null && (revived as any)._brickPartRelationshipParentBrickPartsPromise === null) {
+                (revived as any).loadBrickPartRelationshipParentBrickParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickPartRelationshipParentBrickPartsCount$ = BrickPartRelationshipService.Instance.GetBrickPartRelationshipsRowCount({parentBrickPartId: (revived as any).id,
       active: true,
       deleted: false
     });
