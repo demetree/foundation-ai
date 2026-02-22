@@ -1,66 +1,113 @@
-<div class="minifig-gallery-page">
-
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-        <a routerLink="/lego">LEGO Universe</a>
-        <span class="sep">›</span>
-        <span class="current">Minifig Gallery</span>
-    </nav>
+<div class="minifig-gallery">
 
     <!-- Header -->
-    <header class="gallery-header">
-        <h1><i class="fas fa-user-friends"></i> Minifig Gallery</h1>
-        <p class="subtitle" *ngIf="totalCount">{{ totalCount | number }} minifigs</p>
-    </header>
-
-    <!-- Search bar -->
-    <div class="controls-bar">
-        <div class="search-wrap">
-            <i class="fas fa-search"></i>
-            <input type="text" [(ngModel)]="search" (input)="onSearchInput()" placeholder="Search minifigs…" />
-            <button *ngIf="search" class="clear-btn" (click)="clearSearch()"><i class="fas fa-times"></i></button>
-        </div>
-    </div>
-
-    <!-- Loading -->
-    <div *ngIf="loading" class="loading-grid">
-        <div *ngFor="let s of [1,2,3,4,5,6,7,8,9,10,11,12]" class="skeleton-card">
-            <div class="skeleton-img shimmer"></div>
-            <div class="skeleton-text shimmer"></div>
-            <div class="skeleton-text short shimmer"></div>
-        </div>
-    </div>
-
-    <!-- Empty state -->
-    <div *ngIf="!loading && minifigs.length === 0" class="empty-state">
-        <i class="fas fa-user-slash"></i>
-        <h2>No minifigs found</h2>
-        <p *ngIf="search">No results for "{{ search }}"</p>
-        <button *ngIf="search" class="btn-primary" (click)="clearSearch()">Clear Search</button>
-    </div>
-
-    <!-- Grid -->
-    <div class="minifig-grid" *ngIf="!loading && minifigs.length > 0">
-        <div class="minifig-card" *ngFor="let mf of minifigs" (click)="openMinifig(mf)">
-            <div class="card-img">
-                <img *ngIf="mf.imageUrl" [src]="mf.imageUrl" [alt]="mf.name" loading="lazy" />
-                <div *ngIf="!mf.imageUrl" class="img-placeholder"><i class="fas fa-user"></i></div>
+    <div class="gallery-header">
+        <div class="header-top">
+            <div class="header-title">
+                <div class="breadcrumb">
+                    <a (click)="navigateBack()" class="breadcrumb-link">
+                        <i class="fas fa-globe"></i> LEGO Universe
+                    </a>
+                    <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                    <span class="breadcrumb-current">Minifig Gallery</span>
+                </div>
+                <h1><i class="fas fa-user-astronaut"></i> Minifig Gallery</h1>
+                <p class="header-subtitle">Browse {{ totalCount | number }} LEGO minifigures with images and details
+                </p>
             </div>
-            <div class="card-body">
-                <h3 class="card-title">{{ mf.name }}</h3>
-                <span class="fig-number">{{ mf.figNumber }}</span>
-                <div class="card-meta">
-                    <span><i class="fas fa-puzzle-piece"></i> {{ mf.partCount }}</span>
+            <div class="header-actions">
+                <div class="total-badge">
+                    <span class="badge-number">{{ filteredMinifigs.length | number }}</span>
+                    <span class="badge-label">of {{ totalCount | number }} minifigs</span>
                 </div>
             </div>
         </div>
+
+        <!-- Search + Filters Bar -->
+        <div class="filter-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search minifigs by name or figure number…"
+                    [value]="searchTerm" (input)="onSearch($event)" id="minifig-search-input">
+            </div>
+
+            <button class="clear-btn" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+
+        <!-- Sort Bar -->
+        <div class="sort-bar">
+            <span class="sort-label">Sort by:</span>
+            <button class="sort-btn" [class.active]="sortBy === 'year'" (click)="setSort('year')">
+                Year <i [class]="getSortIcon('year')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'name'" (click)="setSort('name')">
+                Name <i [class]="getSortIcon('name')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'partCount'" (click)="setSort('partCount')">
+                Parts <i [class]="getSortIcon('partCount')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'figNumber'" (click)="setSort('figNumber')">
+                Fig # <i [class]="getSortIcon('figNumber')"></i>
+            </button>
+
+            <span class="results-text">
+                {{ filteredMinifigs.length | number }} results
+            </span>
+        </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="!loading && minifigs.length > 0 && totalPages > 1">
-        <button [disabled]="page === 1" (click)="goToPage(page - 1)"><i class="fas fa-chevron-left"></i></button>
-        <button *ngFor="let p of pageNumbers" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
-        <button [disabled]="page === totalPages" (click)="goToPage(page + 1)"><i
-                class="fas fa-chevron-right"></i></button>
+    <!-- Loading State -->
+    <div class="minifig-grid" *ngIf="loading">
+        <div class="minifig-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text wide"></div>
+            <div class="skeleton-text short"></div>
+        </div>
     </div>
+
+    <!-- Virtual-scroll card grid -->
+    <cdk-virtual-scroll-viewport *ngIf="!loading && cardRows.length > 0" [itemSize]="rowHeight" minBufferPx="800"
+        maxBufferPx="1600" class="card-viewport">
+
+        <div class="card-row" *cdkVirtualFor="let row of cardRows; trackBy: trackRow">
+            <div class="minifig-card" *ngFor="let mf of row.items; trackBy: trackCard" (click)="openMinifig(mf)">
+
+                <!-- Image -->
+                <div class="card-image">
+                    <img *ngIf="mf.imageUrl" [src]="mf.imageUrl" [alt]="mf.name" loading="lazy"
+                        (error)="mf.imageUrl = null">
+                    <div class="image-placeholder" *ngIf="!mf.imageUrl">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="year-badge" *ngIf="mf.year">{{ mf.year }}</div>
+                </div>
+
+                <!-- Info -->
+                <div class="card-body">
+                    <h3 class="minifig-name">{{ mf.name }}</h3>
+                    <span class="fig-number">{{ mf.figNumber }}</span>
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer">
+                    <div class="parts-badge">
+                        <i class="fas fa-puzzle-piece"></i>
+                        {{ mf.partCount | number }} parts
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </cdk-virtual-scroll-viewport>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filteredMinifigs.length === 0">
+        <div class="empty-icon"><i class="fas fa-user-astronaut"></i></div>
+        <h3>No minifigs found</h3>
+        <p>Try adjusting your search</p>
+        <button class="reset-btn" (click)="clearFilters()">Reset Filters</button>
+    </div>
+
 </div>

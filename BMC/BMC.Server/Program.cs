@@ -125,6 +125,12 @@ namespace Foundation.BMC
                 builder.Services.AddSingleton<SetExplorerService>();
                 builder.Services.AddHostedService(sp => sp.GetRequiredService<SetExplorerService>());
 
+                //
+                // Minifig Gallery precomputation service (background startup task)
+                //
+                builder.Services.AddSingleton<MinifigGalleryService>();
+                builder.Services.AddHostedService(sp => sp.GetRequiredService<MinifigGalleryService>());
+
 
                 //
                 // Add HTTP client factory
@@ -256,6 +262,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(AiController));
                 controllers.Add(typeof(PartsUniverseController));
                 controllers.Add(typeof(SetExplorerController));
+                controllers.Add(typeof(MinifigGalleryController));
 
                 //
                 // Start of code generated controller list for BMC module

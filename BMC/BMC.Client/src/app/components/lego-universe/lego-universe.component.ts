@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { LegoSetService, LegoSetData } from '../../bmc-data-services/lego-set.service';
+import { takeUntil, map } from 'rxjs/operators';
 import { LegoMinifigService } from '../../bmc-data-services/lego-minifig.service';
-import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
+import { LegoThemeService } from '../../bmc-data-services/lego-theme.service';
+import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+import { IndexedDBCacheService } from '../../services/indexeddb-cache.service';
 import * as d3 from 'd3';
 
 interface ThemeNode {
@@ -17,6 +18,16 @@ interface ThemeNode {
 interface YearBucket {
     year: number;
     count: number;
+}
+
+/**
+ * Serialisable subset of LegoThemeData — only the fields the sunburst needs.
+ * These plain objects survive IndexedDB round-trips without BehaviorSubject issues.
+ */
+interface CachedTheme {
+    id: number;
+    name: string;
+    legoThemeId: number;
 }
 
 @Component({
@@ -44,22 +55,23 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     //
     // Data
     //
-    themes: LegoThemeData[] = [];
-    sets: LegoSetData[] = [];
+    themes: CachedTheme[] = [];
+    sets: SetExplorerItem[] = [];
     loading = true;
     sunburstReady = false;
     timelineReady = false;
 
     //
-    // Recent sets for the carousel
+    // Recent sets for the carousel (derived from cached set-explorer data)
     //
-    recentSets: LegoSetData[] = [];
+    recentSets: SetExplorerItem[] = [];
 
     constructor(
         private router: Router,
-        private setService: LegoSetService,
         private minifigService: LegoMinifigService,
-        private themeService: LegoThemeService
+        private themeService: LegoThemeService,
+        private setExplorerApi: SetExplorerApiService,
+        private cacheService: IndexedDBCacheService
     ) { }
 
     ngOnInit(): void {
@@ -81,35 +93,57 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loading = true;
 
         //
-        // Fetch stats in parallel
+        // Fetch data from three cached sources in parallel:
+        //   1. Set-explorer cache (IndexedDB, 24h) — all sets, counts, and recent sets
+        //   2. Minifig count (IndexedDB, 24h)
+        //   3. Theme list (IndexedDB, 24h)
         //
         forkJoin({
-            setCount: this.setService.GetLegoSetsRowCount({ active: true, deleted: false }),
-            minifigCount: this.minifigService.GetLegoMinifigsRowCount({ active: true, deleted: false }),
-            themes: this.themeService.GetLegoThemeList({ active: true, deleted: false }),
-            recentSets: this.setService.GetLegoSetList({
-                active: true,
-                deleted: false,
-                includeRelations: true,
-                pageSize: 12,
-                pageNumber: 1
-            }),
-            allSets: this.setService.GetLegoSetList({
-                active: true,
-                deleted: false,
-                pageSize: 5000,
-                pageNumber: 1
-            })
+            allSets: this.setExplorerApi.getExploreSets(),
+            minifigCount: this.cacheService.getOrFetch<number>(
+                'lego-minifig-count',
+                {},
+                () => this.minifigService.GetLegoMinifigsRowCount({ active: true, deleted: false }).pipe(
+                    map(n => Number(n))
+                ),
+                1440
+            ),
+            themes: this.cacheService.getOrFetch<CachedTheme[]>(
+                'lego-themes',
+                {},
+                () => this.themeService.GetLegoThemeList({ active: true, deleted: false }).pipe(
+                    map(list => list.map(t => ({
+                        id: Number(t.id),
+                        name: t.name,
+                        legoThemeId: Number(t.legoThemeId)
+                    })))
+                ),
+                1440
+            )
         }).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (result) => {
-                this.totalSets = Number(result.setCount);
-                this.totalMinifigs = Number(result.minifigCount);
+                //
+                // Sets — derive count and recent (top 12 by year desc) from the full cached list
+                //
+                this.sets = result.allSets;
+                this.totalSets = result.allSets.length;
+
+                const sorted = [...result.allSets].sort((a, b) => b.year - a.year);
+                this.recentSets = sorted.slice(0, 12);
+
+                //
+                // Minifigs
+                //
+                this.totalMinifigs = result.minifigCount;
+
+                //
+                // Themes
+                //
                 this.themes = result.themes;
                 this.totalThemes = result.themes.length;
-                this.recentSets = result.recentSets;
-                this.sets = result.allSets;
+
                 this.loading = false;
 
                 //
@@ -175,8 +209,8 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         //
         // Build hierarchy: top-level themes (legoThemeId === 0 or null) → children
         //
-        const themeMap = new Map<string, LegoThemeData[]>();
-        const topLevel: LegoThemeData[] = [];
+        const themeMap = new Map<string, CachedTheme[]>();
+        const topLevel: CachedTheme[] = [];
 
         for (const theme of this.themes) {
             const parentId = Number(theme.legoThemeId);
@@ -196,11 +230,11 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         //
         const setCountByTheme = new Map<number, number>();
         for (const s of this.sets) {
-            const tid = Number(s.legoThemeId);
+            const tid = Number(s.themeId);
             setCountByTheme.set(tid, (setCountByTheme.get(tid) || 0) + 1);
         }
 
-        const buildNode = (theme: LegoThemeData): ThemeNode => {
+        const buildNode = (theme: CachedTheme): ThemeNode => {
             const children = themeMap.get(Number(theme.id).toString()) || [];
             const node: ThemeNode = {
                 name: theme.name,

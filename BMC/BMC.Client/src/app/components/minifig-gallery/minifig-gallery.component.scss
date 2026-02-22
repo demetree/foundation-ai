@@ -1,45 +1,35 @@
 @use '../../assets/styles/glass' as glass;
 
-.minifig-gallery-page {
+/* ----------------------------------------------------------------
+   Page layout
+   ---------------------------------------------------------------- */
+.minifig-gallery {
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     padding: 32px 40px;
     background: var(--bmc-bg);
     color: var(--bmc-text-primary);
 }
 
-// ── Breadcrumb ──────────────────────────────────
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 24px;
-    font-size: 0.85rem;
 
-    a {
-        color: var(--bmc-accent);
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-
-    .sep {
-        color: var(--bmc-text-secondary);
-        opacity: 0.5;
-    }
-
-    .current {
-        color: var(--bmc-text-secondary);
-    }
-}
-
-// ── Header ──────────────────────────────────────
+/* ----------------------------------------------------------------
+   Header
+   ---------------------------------------------------------------- */
 .gallery-header {
     margin-bottom: 24px;
+}
 
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.header-title {
     h1 {
-        margin: 0;
+        margin: 8px 0 6px;
         font-size: 1.8rem;
         font-weight: 700;
 
@@ -49,80 +39,207 @@
         }
     }
 
-    .subtitle {
-        margin: 6px 0 0;
+    .header-subtitle {
+        margin: 0;
         color: var(--bmc-text-secondary);
         font-size: 0.9rem;
     }
 }
 
-// ── Controls ────────────────────────────────────
-.controls-bar {
-    @include glass.glass-effect;
-    padding: 16px 20px;
-    margin-bottom: 24px;
+
+/* ----------------------------------------------------------------
+   Breadcrumb
+   ---------------------------------------------------------------- */
+.breadcrumb {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
+    font-size: 0.85rem;
 }
 
-.search-wrap {
+.breadcrumb-link {
+    color: var(--bmc-accent);
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.breadcrumb-sep {
+    color: var(--bmc-text-secondary);
+    opacity: 0.5;
+    font-size: 0.7rem;
+}
+
+.breadcrumb-current {
+    color: var(--bmc-text-secondary);
+}
+
+
+/* ----------------------------------------------------------------
+   Stats badge
+   ---------------------------------------------------------------- */
+.total-badge {
+    @include glass.glass-effect;
+    padding: 12px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.badge-number {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--bmc-accent);
+}
+
+.badge-label {
+    font-size: 0.85rem;
+    color: var(--bmc-text-secondary);
+}
+
+
+/* ----------------------------------------------------------------
+   Filter bar
+   ---------------------------------------------------------------- */
+.filter-bar {
+    @include glass.glass-effect;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.search-wrapper {
     position: relative;
     flex: 1;
-    max-width: 400px;
+    max-width: 500px;
+}
 
-    i.fa-search {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--bmc-text-secondary);
-        font-size: 0.85rem;
-    }
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bmc-text-secondary);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
 
-    input {
-        width: 100%;
-        padding: 10px 36px 10px 36px;
-        border: 1px solid var(--bmc-glass-border);
-        border-radius: var(--radius-md);
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--bmc-text-primary);
-        font-size: 0.85rem;
-        outline: none;
+.search-input {
+    width: 100%;
+    padding: 10px 16px 10px 36px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--bmc-text-primary);
+    font-size: 0.85rem;
+    outline: none;
 
-        &:focus {
-            border-color: var(--bmc-accent);
-        }
-    }
-
-    .clear-btn {
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: var(--bmc-text-secondary);
-        cursor: pointer;
-
-        &:hover {
-            color: var(--bmc-text-primary);
-        }
+    &:focus {
+        border-color: var(--bmc-accent);
     }
 }
 
-// ── Grid ────────────────────────────────────────
-.minifig-grid {
+.clear-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+        color: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+    }
+
+    i {
+        margin-right: 4px;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Sort bar
+   ---------------------------------------------------------------- */
+.sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.sort-label {
+    font-size: 0.82rem;
+    color: var(--bmc-text-secondary);
+    margin-right: 4px;
+}
+
+.sort-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+        border-color: var(--bmc-accent);
+        color: var(--bmc-text-primary);
+    }
+
+    &.active {
+        background: rgba(var(--bmc-accent-rgb, 99, 102, 241), 0.15);
+        border-color: var(--bmc-accent);
+        color: var(--bmc-accent);
+    }
+
+    i {
+        margin-left: 4px;
+        font-size: 0.7rem;
+    }
+}
+
+.results-text {
+    margin-left: auto;
+    font-size: 0.82rem;
+    color: var(--bmc-text-secondary);
+}
+
+
+/* ----------------------------------------------------------------
+   Virtual-scroll viewport + card rows
+   ---------------------------------------------------------------- */
+.card-viewport {
+    flex: 1;
+    min-height: 400px;
+}
+
+.card-row {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 18px;
+    padding-bottom: 16px;
 }
 
+
+/* ----------------------------------------------------------------
+   Minifig Card
+   ---------------------------------------------------------------- */
 .minifig-card {
     @include glass.glass-effect;
+    padding: 0;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.25s;
+    transition: all 0.3s ease;
 
     &:hover {
         border-color: var(--bmc-accent);
@@ -131,8 +248,9 @@
     }
 }
 
-.card-img {
-    height: 180px;
+.card-image {
+    position: relative;
+    height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -146,16 +264,28 @@
     }
 }
 
-.img-placeholder {
+.image-placeholder {
     font-size: 3rem;
     color: var(--bmc-text-secondary);
-    opacity: 0.1;
+    opacity: 0.15;
+}
+
+.year-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bmc-accent);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
 }
 
 .card-body {
-    padding: 14px;
+    padding: 12px 14px 4px;
 
-    .card-title {
+    .minifig-name {
         margin: 0 0 4px;
         font-size: 0.82rem;
         font-weight: 600;
@@ -170,11 +300,15 @@
         font-size: 0.72rem;
         color: var(--bmc-text-secondary);
     }
+}
 
-    .card-meta {
-        margin-top: 8px;
-        display: flex;
-        gap: 12px;
+.card-footer {
+    padding: 8px 14px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .parts-badge {
         font-size: 0.72rem;
         color: var(--bmc-text-secondary);
 
@@ -185,22 +319,20 @@
     }
 }
 
-// ── Loading skeleton ────────────────────────────
-.loading-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 18px;
-}
 
+/* ----------------------------------------------------------------
+   Loading Skeleton
+   ---------------------------------------------------------------- */
 .skeleton-card {
-    @include glass.glass-effect;
-    overflow: hidden;
     padding: 16px;
 }
 
-.skeleton-img {
-    height: 160px;
+.skeleton-image {
+    height: 180px;
     border-radius: var(--radius-md);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.02) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
     margin-bottom: 12px;
 }
 
@@ -208,16 +340,17 @@
     height: 14px;
     border-radius: 4px;
     margin-bottom: 8px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.02) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+
+    &.wide {
+        width: 85%;
+    }
 
     &.short {
         width: 60%;
     }
-}
-
-.shimmer {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.02) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
 }
 
 @keyframes shimmer {
@@ -226,7 +359,10 @@
     }
 }
 
-// ── Empty ───────────────────────────────────────
+
+/* ----------------------------------------------------------------
+   Empty State
+   ---------------------------------------------------------------- */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -236,12 +372,12 @@
     gap: 12px;
     color: var(--bmc-text-secondary);
 
-    i {
+    .empty-icon {
         font-size: 3rem;
         opacity: 0.2;
     }
 
-    h2 {
+    h3 {
         margin: 0;
         font-weight: 600;
     }
@@ -251,7 +387,7 @@
     }
 }
 
-.btn-primary {
+.reset-btn {
     padding: 10px 28px;
     border: none;
     border-radius: var(--radius-md);
@@ -265,49 +401,33 @@
     }
 }
 
-// ── Pagination ──────────────────────────────────
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 32px;
 
-    button {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        border: 1px solid var(--bmc-glass-border);
-        background: transparent;
-        color: var(--bmc-text-primary);
-        cursor: pointer;
-        font-size: 0.8rem;
-        transition: all 0.15s;
-
-        &.active {
-            background: var(--bmc-accent);
-            border-color: var(--bmc-accent);
-            color: #fff;
-        }
-
-        &:hover:not(.active):not(:disabled) {
-            border-color: var(--bmc-accent);
-        }
-
-        &:disabled {
-            opacity: 0.3;
-            cursor: default;
-        }
-    }
-}
-
-// ── Responsive ──────────────────────────────────
-@media (max-width: 600px) {
-    .minifig-gallery-page {
+/* ----------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .minifig-gallery {
         padding: 16px;
     }
 
-    .minifig-grid,
-    .loading-grid {
+    .header-top {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .filter-bar {
+        flex-wrap: wrap;
+    }
+
+    .search-wrapper {
+        max-width: 100%;
+    }
+
+    .card-row {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .sort-bar {
+        flex-wrap: wrap;
     }
 }

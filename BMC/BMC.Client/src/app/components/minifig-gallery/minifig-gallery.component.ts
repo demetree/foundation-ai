@@ -1,8 +1,18 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, Subscription, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
+import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
 
-import { LegoMinifigService, LegoMinifigData } from '../../bmc-data-services/lego-minifig.service';
+
+/**
+ * An internal type representing a single "row" inside the virtual-scroll viewport.
+ * Each row contains `columnsPerRow` minifig cards rendered horizontally.
+ */
+interface CardRow {
+    items: MinifigGalleryItem[];
+}
+
 
 @Component({
     selector: 'app-minifig-gallery',
@@ -10,42 +20,82 @@ import { LegoMinifigService, LegoMinifigData } from '../../bmc-data-services/leg
     styleUrl: './minifig-gallery.component.scss'
 })
 export class MinifigGalleryComponent implements OnInit, OnDestroy {
-    minifigs: LegoMinifigData[] = [];
+
+    private destroy$ = new Subject<void>();
+    private searchSubject = new Subject<string>();
+    private loadSub = new Subscription();
+
+    //
+    // Full dataset loaded once from the API / IndexedDB cache
+    //
+    private allMinifigs: MinifigGalleryItem[] = [];
+
+    //
+    // Derived from allMinifigs after applying filters + sort
+    //
+    filteredMinifigs: MinifigGalleryItem[] = [];
+
+    //
+    // Virtual-scroll rows: each row is a horizontal slice of N cards
+    //
+    cardRows: CardRow[] = [];
+    columnsPerRow = 6;
+    rowHeight = 370;  // px — matches the card height in SCSS
+
     loading = true;
     totalCount = 0;
-    page = 1;
-    pageSize = 48;
 
-    search = '';
-    private search$ = new Subject<string>();
-    private destroy$ = new Subject<void>();
-    private loadSub = new Subscription();
+    //
+    // Filters
+    //
+    searchTerm = '';
+    sortBy: 'year' | 'name' | 'partCount' | 'figNumber' = 'year';
+    sortDirection: 'asc' | 'desc' = 'desc';   // newest first by default
+
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private minifigService: LegoMinifigService,
+        private minifigGalleryApi: MinifigGalleryApiService
     ) { }
 
+
     ngOnInit(): void {
-        // Read query params
-        this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-            if (params['search']) this.search = params['search'];
-            if (params['page']) this.page = +params['page'];
-        });
+        //
+        // Recalculate columns on width change
+        //
+        this.calculateColumns();
 
+        //
         // Debounced search
-        this.search$.pipe(
-            debounceTime(350),
-            distinctUntilChanged(),
+        //
+        this.searchSubject.pipe(
+            debounceTime(300),
             takeUntil(this.destroy$)
-        ).subscribe(() => {
-            this.page = 1;
-            this.loadMinifigs();
+        ).subscribe(term => {
+            this.searchTerm = term;
+            this.applyPipeline();
         });
 
-        this.loadMinifigs();
+        //
+        // Load full dataset (from IndexedDB cache or server)
+        //
+        this.loadSub = this.minifigGalleryApi.getGalleryMinifigs().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (minifigs) => {
+                this.allMinifigs = minifigs;
+                this.totalCount = minifigs.length;
+                this.applyPipeline();
+                this.loading = false;
+            },
+            error: () => {
+                this.allMinifigs = [];
+                this.loading = false;
+            }
+        });
     }
+
 
     ngOnDestroy(): void {
         this.destroy$.next();
@@ -53,73 +103,165 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
         this.loadSub.unsubscribe();
     }
 
-    private loadMinifigs(): void {
-        // Cancel any in-flight requests and reset state
-        this.loadSub.unsubscribe();
-        this.loadSub = new Subscription();
-        this.loading = true;
-        this.minifigs = [];
 
-        const params: any = {
-            active: true,
-            deleted: false,
-            pageSize: this.pageSize,
-            pageNumber: this.page,
-        };
-        if (this.search.trim()) {
-            params.anyStringContains = this.search.trim();
+    // ----------------------------------------------------------------
+    //  Filter + Sort Pipeline  (operates on full dataset in memory)
+    // ----------------------------------------------------------------
+
+    private applyPipeline(): void {
+        let result = this.allMinifigs;
+
+        //
+        // Text search — name, figNumber
+        //
+        if (this.searchTerm) {
+            const lower = this.searchTerm.toLowerCase();
+            result = result.filter(mf =>
+                (mf.name || '').toLowerCase().includes(lower) ||
+                (mf.figNumber || '').toLowerCase().includes(lower)
+            );
         }
 
-        // Clone params for count (without pagination) to avoid any cross-contamination
-        const countParams: any = { ...params };
-        delete countParams.pageSize;
-        delete countParams.pageNumber;
+        //
+        // Sorting
+        //
+        result = this.applySorting(result);
 
-        this.loadSub.add(
-            this.minifigService.GetLegoMinifigList(params).pipe(takeUntil(this.destroy$)).subscribe({
-                next: (list) => {
-                    this.minifigs = list;
-                    this.loading = false;
-                },
-                error: () => { this.loading = false; }
-            })
-        );
-
-        this.loadSub.add(
-            this.minifigService.GetLegoMinifigsRowCount(countParams).pipe(takeUntil(this.destroy$)).subscribe({
-                next: (count) => { this.totalCount = Number(count); }
-            })
-        );
+        this.filteredMinifigs = result;
+        this.buildCardRows();
     }
 
-    onSearchInput(): void {
-        this.search$.next(this.search);
+
+    private applySorting(minifigs: MinifigGalleryItem[]): MinifigGalleryItem[] {
+        const dir = this.sortDirection === 'asc' ? 1 : -1;
+
+        return [...minifigs].sort((a, b) => {
+            switch (this.sortBy) {
+                case 'year':
+                    return (a.year - b.year) * dir || (a.name || '').localeCompare(b.name || '');
+                case 'partCount':
+                    return (a.partCount - b.partCount) * dir;
+                case 'figNumber':
+                    return (a.figNumber || '').localeCompare(b.figNumber || '') * dir;
+                case 'name':
+                default:
+                    return (a.name || '').localeCompare(b.name || '') * dir;
+            }
+        });
     }
 
-    clearSearch(): void {
-        this.search = '';
-        this.search$.next('');
+
+    /**
+     * Chunk filteredMinifigs into rows of `columnsPerRow` items for the virtual-scroll viewport.
+     */
+    private buildCardRows(): void {
+        const rows: CardRow[] = [];
+        for (let i = 0; i < this.filteredMinifigs.length; i += this.columnsPerRow) {
+            rows.push({ items: this.filteredMinifigs.slice(i, i + this.columnsPerRow) });
+        }
+        this.cardRows = rows;
     }
 
-    get totalPages(): number {
-        return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+
+    // ----------------------------------------------------------------
+    //  Responsive column calculation
+    // ----------------------------------------------------------------
+
+    @HostListener('window:resize')
+    onResize(): void {
+        this.calculateColumns();
     }
 
-    goToPage(p: number): void {
-        if (p < 1 || p > this.totalPages) return;
-        this.page = p;
-        this.loadMinifigs();
+    private calculateColumns(): void {
+        const width = window.innerWidth;
+        let cols: number;
+        if (width >= 1600) {
+            cols = 6;
+        } else if (width >= 1200) {
+            cols = 5;
+        } else if (width >= 992) {
+            cols = 4;
+        } else if (width >= 768) {
+            cols = 3;
+        } else {
+            cols = 2;
+        }
+
+        if (cols !== this.columnsPerRow) {
+            this.columnsPerRow = cols;
+            if (this.filteredMinifigs.length > 0) {
+                this.buildCardRows();
+            }
+        }
     }
 
-    openMinifig(mf: LegoMinifigData): void {
+
+    // ----------------------------------------------------------------
+    //  Event Handlers
+    // ----------------------------------------------------------------
+
+    onSearch(event: Event): void {
+        const term = (event.target as HTMLInputElement).value;
+        this.searchSubject.next(term);
+    }
+
+    setSort(field: 'name' | 'year' | 'partCount' | 'figNumber'): void {
+        if (this.sortBy === field) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortBy = field;
+            this.sortDirection = field === 'year' ? 'desc' : 'asc';
+        }
+        this.applyPipeline();
+    }
+
+    clearFilters(): void {
+        this.searchTerm = '';
+        this.sortBy = 'year';
+        this.sortDirection = 'desc';
+        this.applyPipeline();
+    }
+
+    hasActiveFilters(): boolean {
+        return !!this.searchTerm;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Navigation
+    // ----------------------------------------------------------------
+
+    openMinifig(mf: MinifigGalleryItem): void {
         this.router.navigate(['/lego/minifigs', mf.id]);
     }
 
-    get pageNumbers(): number[] {
-        const pages: number[] = [];
-        const start = Math.max(1, this.page - 2);
-        const end = Math.min(this.totalPages, this.page + 2);
-        for (let i = start; i <= end; i++) pages.push(i);
-        return pages;
+    navigateBack(): void {
+        this.router.navigate(['/lego']);
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Helpers
+    // ----------------------------------------------------------------
+
+    getSortIcon(field: string): string {
+        if (this.sortBy !== field) {
+            return 'fas fa-sort';
+        }
+        return this.sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+    }
+
+    /**
+     * trackBy for *cdkVirtualFor on card rows — uses the first item's id in the row.
+     */
+    trackRow(index: number, row: CardRow): number {
+        return row.items.length > 0 ? row.items[0].id : index;
+    }
+
+    /**
+     * trackBy for *ngFor on individual cards within a row.
+     */
+    trackCard(index: number, item: MinifigGalleryItem): number {
+        return item.id;
     }
 }
