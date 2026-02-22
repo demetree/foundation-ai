@@ -54,6 +54,15 @@
             </button>
         </div>
 
+        <!-- Quick theme filters from user profile -->
+        <div class="quick-themes" *ngIf="userPreferredThemes.length > 0">
+            <span class="quick-themes-label"><i class="fas fa-bolt"></i> My Themes</span>
+            <button class="quick-theme-pill" *ngFor="let t of userPreferredThemes"
+                [class.active]="selectedThemeId === t.id" (click)="selectTheme(t.id)">
+                {{ t.name }}
+            </button>
+        </div>
+
         <!-- Sort Bar -->
         <div class="sort-bar">
             <span class="sort-label">Sort by:</span>

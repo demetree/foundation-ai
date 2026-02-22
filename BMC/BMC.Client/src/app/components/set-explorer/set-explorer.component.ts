@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
+import { Subject, Subscription, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+import { AuthService } from '../../services/auth.service';
 
 
 /**
@@ -46,6 +48,7 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     // Extracted locally from the loaded data
     //
     themes: { id: number; name: string }[] = [];
+    userPreferredThemes: { id: number, name: string }[] = [];
 
     loading = true;
     totalCount = 0;
@@ -70,6 +73,8 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private http: HttpClient,
+        private authService: AuthService,
         private setExplorerApi: SetExplorerApiService
     ) { }
 
@@ -137,6 +142,8 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
                 this.loading = false;
             }
         });
+
+        this.loadUserThemes();
     }
 
 
@@ -144,6 +151,26 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.destroy$.next();
         this.destroy$.complete();
         this.loadSub.unsubscribe();
+    }
+
+    private loadUserThemes(): void {
+        const headers = this.authService.GetAuthenticationHeaders();
+        forkJoin({
+            profile: this.http.get<any>('/api/profile/mine', { headers }),
+            themes: this.http.get<any[]>('/api/LegoThemes', { headers, params: { pageSize: '500' } })
+        }).subscribe({
+            next: ({ profile, themes }) => {
+                const preferredIds = new Set<number>(
+                    (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId)
+                );
+                const themeMap = new Map<number, string>(themes.map(t => [t.id, t.name]));
+                this.userPreferredThemes = [...preferredIds]
+                    .map(id => ({ id, name: themeMap.get(id) || `Theme ${id}` }))
+                    .filter(t => t.name)
+                    .sort((a, b) => a.name.localeCompare(b.name));
+            },
+            error: () => { /* Non-critical */ }
+        });
     }
 
 

@@ -250,6 +250,60 @@
 
 
 /* ----------------------------------------------------------------
+   Quick Theme Filters (from user profile)
+   ---------------------------------------------------------------- */
+.quick-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.quick-themes-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--bmc-text-muted);
+    margin-right: 4px;
+    white-space: nowrap;
+
+    i {
+        margin-right: 3px;
+        background: linear-gradient(135deg, #f5af19, #f12711);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.quick-theme-pill {
+    padding: 5px 14px;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--bmc-border);
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.75rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+        border-color: var(--bmc-primary);
+        color: var(--bmc-primary);
+    }
+
+    &.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+}
+
+
+/* ----------------------------------------------------------------
    Sort Bar
    ---------------------------------------------------------------- */
 .sort-bar {
