@@ -83,41 +83,44 @@ namespace Foundation.IndexedDB
         /// <exception cref="Exception"></exception>
         public async Task<object> AddAsync<T>(T value, object key = null)
         {
-            try
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
-
-                string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
-
-                string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
-
-
-                // Check for existing key (constraint)
-                if (await _db._context.Data.AnyAsync(d => d.storeName == Name && d.keyJson == keyJson).ConfigureAwait(false))
+                try
                 {
-                    throw new ConstraintException($"Key {usedKey.ToString()} already exists.");
+                    object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
+
+                    string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
+
+                    string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
+
+
+                    // Check for existing key (constraint)
+                    if (await _db._context.Data.AnyAsync(d => d.storeName == Name && d.keyJson == keyJson).ConfigureAwait(false))
+                    {
+                        throw new ConstraintException($"Key {usedKey.ToString()} already exists.");
+                    }
+
+                    _db._context.Data.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+
+
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
+
+                    return usedKey;
                 }
-
-                _db._context.Data.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
-
-
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-
-                return usedKey;
-            }
-            catch (DbUpdateException dbex)
-            {
-                throw new DataException($"Failed to Add record for object of type {typeof(T).Name}.  Database error encountered.", dbex);
-            }
-            catch (ConstraintException)
-            {
-                // pass constraint exceptions up as is-is
-                throw;            
-            }
-            catch (Exception ex)
-            {
-                throw new NotSupportedException($"Unable to add data for object of type {typeof(T).Name}.", ex);
-            }
+                catch (DbUpdateException dbex)
+                {
+                    throw new DataException($"Failed to Add record for object of type {typeof(T).Name}.  Database error encountered.", dbex);
+                }
+                catch (ConstraintException)
+                {
+                    // pass constraint exceptions up as is-is
+                    throw;            
+                }
+                catch (Exception ex)
+                {
+                    throw new NotSupportedException($"Unable to add data for object of type {typeof(T).Name}.", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
 
@@ -129,43 +132,46 @@ namespace Foundation.IndexedDB
                 throw new ArgumentException("Value parameter must not be null.");
             }
 
-            try
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
-
-                string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
-                string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
-
-                Data existing = await _db._context.Data.FirstOrDefaultAsync(d => d.storeName == Name && d.keyJson == keyJson).ConfigureAwait(false);
-
-                if (existing != null)
+                try
                 {
-                    existing.valueJson = valueJson;
+                    object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
 
-                    _db._context.Data.Update(existing);
+                    string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
+                    string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
+
+                    Data existing = await _db._context.Data.FirstOrDefaultAsync(d => d.storeName == Name && d.keyJson == keyJson).ConfigureAwait(false);
+
+                    if (existing != null)
+                    {
+                        existing.valueJson = valueJson;
+
+                        _db._context.Data.Update(existing);
+                    }
+                    else
+                    {
+                        _db._context.Data.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+                    }
+
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
+
+                    return usedKey;
                 }
-                else
+                catch (DbUpdateException dbex)
                 {
-                    _db._context.Data.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+                    throw new DataException($"Failed to put record for object of type {typeof(T).Name}.  Database error encountered.", dbex);
                 }
-
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-
-                return usedKey;
-            }
-            catch (DbUpdateException dbex)
-            {
-                throw new DataException($"Failed to put record for object of type {typeof(T).Name}.  Database error encountered.", dbex);
-            }
-            catch (ConstraintException)
-            {
-                // pass constraint exceptions up as is-is
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new NotSupportedException($"Unable to put record for object of type {typeof(T).Name}.", ex);
-            }
+                catch (ConstraintException)
+                {
+                    // pass constraint exceptions up as is-is
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new NotSupportedException($"Unable to put record for object of type {typeof(T).Name}.", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -194,86 +200,81 @@ namespace Foundation.IndexedDB
                 throw new ArgumentException("If providing a key list, it must have the same number of entries as the value list.");
             }
 
-            // Get all the existing keys
-            HashSet<string> preloadedExistingKeys = await _db._context.Data.Where(d => d.storeName == Name).Select(d => d.keyJson).ToHashSetAsync().ConfigureAwait(false);
-
-            try
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                List<Data> bulkAddList = new List<Data>();
-                List<object> keysToReturn = new List<object>();
+                // Get all the existing keys
+                HashSet<string> preloadedExistingKeys = await _db._context.Data.Where(d => d.storeName == Name).Select(d => d.keyJson).ToHashSetAsync().ConfigureAwait(false);
 
-                for (int i = 0; i < valueList.Count; i++)
+                try
                 {
-                    // Get the value
-                    T value = valueList[i];
+                    List<Data> bulkAddList = new List<Data>();
+                    List<object> keysToReturn = new List<object>();
 
-                    // Get the key, if it has been provided
-                    object key = null;
-                    if (keyList != null)
+                    for (int i = 0; i < valueList.Count; i++)
                     {
-                        key = keyList[i];
+                        // Get the value
+                        T value = valueList[i];
+
+                        // Get the key, if it has been provided
+                        object key = null;
+                        if (keyList != null)
+                        {
+                            key = keyList[i];
+                        }
+
+                        object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
+
+                        string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
+
+                        string valueJson = JsonSerializer.Serialize(valueList, IDBCommon.JsonOptions);
+
+
+                        //
+                        // Check for existing key in the pre loaded list.
+                        //
+                        if (preloadedExistingKeys.Contains(keyJson) == true)
+                        {
+                            throw new ConstraintException($"Key {usedKey.ToString()} already exists.");
+                        }
+                        else
+                        {
+                            // Add the key to the list of existing to handle possible duplicates in input data pre-addition.
+                            preloadedExistingKeys.Add(keyJson);
+                        }
+
+                        bulkAddList.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+
+                        keysToReturn.Add(usedKey);
                     }
 
-                    object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
-
-                    string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
-
-                    string valueJson = JsonSerializer.Serialize(valueList, IDBCommon.JsonOptions);
-
-
                     //
-                    // Check for existing key in the pre loaded list.
+                    // Do a bulk insert
                     //
-                    if (preloadedExistingKeys.Contains(keyJson) == true)
+                    await _db._context.BulkInsertAsync(bulkAddList, options =>
                     {
-                        throw new ConstraintException($"Key {usedKey.ToString()} already exists.");
-                    }
-                    else
-                    {
-                        // Add the key to the list of existing to handle possible duplicates in input data pre-addition.
-                        preloadedExistingKeys.Add(keyJson);
-                    }
+                        options.BatchSize = 5000;
+                        options.SetOutputIdentity = false;           // we don't need to to read the ids after the bulk save
+                    }).ConfigureAwait(false);
 
-                    //
-                    // This hits the db each time.  The preloaded approach will be faster for large set of values to add.
-                    //
-                    //if (await _db._context.Data.AnyAsync(d => d.storeName == Name && d.keyJson == keyJson))
-                    //{
-                    //    throw new ConstraintException($"Key {usedKey.ToString()} already exists.");
-                    //}
 
-                    bulkAddList.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
 
-                    keysToReturn.Add(usedKey);
+                    return keysToReturn;
                 }
-
-                //
-                // Do a bulk insert
-                //
-                await _db._context.BulkInsertAsync(bulkAddList, options =>
+                catch (DbUpdateException dbex)
                 {
-                    options.BatchSize = 5000;
-                    options.SetOutputIdentity = false;           // we don't need to to read the ids after the bulk save
-                }).ConfigureAwait(false);
-
-
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-
-                return keysToReturn;
-            }
-            catch (DbUpdateException dbex)
-            {
-                throw new DataException($"Failed to add list of records for object of type {typeof(T).Name}.  Database error encountered.", dbex);
-            }
-            catch (ConstraintException)
-            {
-                // pass constraint exceptions up as is-is
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new NotSupportedException($"Unable to add list of data for object of type {typeof(T).Name}.", ex);
-            }
+                    throw new DataException($"Failed to add list of records for object of type {typeof(T).Name}.  Database error encountered.", dbex);
+                }
+                catch (ConstraintException)
+                {
+                    // pass constraint exceptions up as is-is
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new NotSupportedException($"Unable to add list of data for object of type {typeof(T).Name}.", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
 
@@ -290,151 +291,160 @@ namespace Foundation.IndexedDB
                 throw new ArgumentException("If providing a key list, it must have the same number of entries as the value list.");
             }
 
-            // Get all the existing keys
-            HashSet<string> preloadedExistingKeys = await _db._context.Data.Where(d => d.storeName == Name).Select(d => d.keyJson).ToHashSetAsync().ConfigureAwait(false);
-
-            try
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                List<Data> bulkAddList = new List<Data>();
-                List<object> keysToReturn = new List<object>();
+                // Get all the existing keys
+                HashSet<string> preloadedExistingKeys = await _db._context.Data.Where(d => d.storeName == Name).Select(d => d.keyJson).ToHashSetAsync().ConfigureAwait(false);
 
-                for (int i = 0; i < valueList.Count; i++)
+                try
                 {
-                   try
+                    List<Data> bulkAddList = new List<Data>();
+                    List<object> keysToReturn = new List<object>();
+
+                    for (int i = 0; i < valueList.Count; i++)
                     {
-                        // Get the value
-                        T value = valueList[i];
-
-                        // Get the key, if it has been provided
-                        object key = null;
-                        if (keyList != null)
+                       try
                         {
-                            key = keyList[i];
-                        }
+                            // Get the value
+                            T value = valueList[i];
 
-                        object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
-
-                        string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
-                        string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
-
-
-                        //
-                        // Check for existing key in the pre loaded list.
-                        //
-                        if (preloadedExistingKeys.Contains(keyJson) == true)
-                        {
-                            Data existing = await _db._context.Data.FirstOrDefaultAsync(d => d.storeName == Name && d.keyJson == keyJson).ConfigureAwait(false);
-
-                            if (existing != null)
+                            // Get the key, if it has been provided
+                            object key = null;
+                            if (keyList != null)
                             {
-                                existing.valueJson = valueJson;
+                                key = keyList[i];
+                            }
 
-                                // Do an update on the changed entities.
+                            object usedKey = await DetermineKeyAsync(value, key).ConfigureAwait(false);
 
-                                _db._context.Data.Update(existing);
+                            string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
+                            string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
+
+
+                            //
+                            // Check for existing key in the pre loaded list.
+                            //
+                            if (preloadedExistingKeys.Contains(keyJson) == true)
+                            {
+                                Data existing = await _db._context.Data.FirstOrDefaultAsync(d => d.storeName == Name && d.keyJson == keyJson).ConfigureAwait(false);
+
+                                if (existing != null)
+                                {
+                                    existing.valueJson = valueJson;
+
+                                    // Do an update on the changed entities.
+
+                                    _db._context.Data.Update(existing);
+                                }
+                                else
+                                {
+                                    // Shouldn't happen
+                                    bulkAddList.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+                                }
                             }
                             else
                             {
-                                // Shouldn't happen
+                                // directly add a new item to the bulk insert list
                                 bulkAddList.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
                             }
+
+                            keysToReturn.Add(usedKey);
                         }
-                        else
+                        catch (DbUpdateException dbex)
                         {
-                            // directly add a new item to the bulk insert list
-                            bulkAddList.Add(new Data { storeName = Name, keyJson = keyJson, valueJson = valueJson });
+                            throw new DataException($"Failed to put record for object of type {typeof(T).Name}.  Database error encountered.", dbex);
                         }
+                        catch (ConstraintException)
+                        {
+                            // pass constraint exceptions up as is-is
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new NotSupportedException($"Unable to put record for object of type {typeof(T).Name}.", ex);
+                        }
+                    }
 
-                        keysToReturn.Add(usedKey);
-                    }
-                    catch (DbUpdateException dbex)
+                    // First save the queued changes for the updated entities, just to get them flushed and make sure that the bulk insert starts fresh.
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
+
+                    //
+                    // Do a bulk insert for the new records
+                    //
+                    await _db._context.BulkInsertAsync(bulkAddList, options =>
                     {
-                        throw new DataException($"Failed to put record for object of type {typeof(T).Name}.  Database error encountered.", dbex);
-                    }
-                    catch (ConstraintException)
-                    {
-                        // pass constraint exceptions up as is-is
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new NotSupportedException($"Unable to put record for object of type {typeof(T).Name}.", ex);
-                    }
+                        options.BatchSize = 5000;
+                        options.SetOutputIdentity = false;           // we don't need to to read the ids after the bulk save
+                    }).ConfigureAwait(false);
+
+
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
+
+                    return keysToReturn;
                 }
-
-                // First save the queued changes for the updated entities, just to get them flushed and make sure that the bulk insert starts fresh.
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-
-                //
-                // Do a bulk insert for the new records
-                //
-                await _db._context.BulkInsertAsync(bulkAddList, options =>
+                catch (DbUpdateException dbex)
                 {
-                    options.BatchSize = 5000;
-                    options.SetOutputIdentity = false;           // we don't need to to read the ids after the bulk save
-                }).ConfigureAwait(false);
-
-
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-
-                return keysToReturn;
-            }
-            catch (DbUpdateException dbex)
-            {
-                throw new DataException($"Failed to add list of records for object of type {typeof(T).Name}.  Database error encountered.", dbex);
-            }
-            catch (ConstraintException)
-            {
-                // pass constraint exceptions up as is-is
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new NotSupportedException($"Unable to add list of data for object of type {typeof(T).Name}.", ex);
-            }
+                    throw new DataException($"Failed to add list of records for object of type {typeof(T).Name}.  Database error encountered.", dbex);
+                }
+                catch (ConstraintException)
+                {
+                    // pass constraint exceptions up as is-is
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new NotSupportedException($"Unable to add list of data for object of type {typeof(T).Name}.", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
 
         // Delete by key or range
         public async Task DeleteAsync(object query)
         {
-            try
+            await _db.ExecuteWithLockAsync(async () =>
             {
-                IQueryable<Data> q = _db._context.Data.Where(d => d.storeName == Name);
-                if (query is IDBKeyRange range)
+                try
                 {
-                    q = ApplyKeyRange(q, range);
-                }
-                else
-                {
-                   var keyJson = JsonSerializer.Serialize(query, IDBCommon.JsonOptions);
-                    q = q.Where(d => d.keyJson == keyJson);
-                }
+                    IQueryable<Data> q = _db._context.Data.Where(d => d.storeName == Name);
+                    if (query is IDBKeyRange range)
+                    {
+                        q = ApplyKeyRange(q, range);
+                    }
+                    else
+                    {
+                       var keyJson = JsonSerializer.Serialize(query, IDBCommon.JsonOptions);
+                        q = q.Where(d => d.keyJson == keyJson);
+                    }
 
-                _db._context.Data.RemoveRange(await q.ToListAsync().ConfigureAwait(false));
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-            }
-            catch (DbUpdateException ex)
-            {
-                throw new DataException("Failed to delete record(s).", ex);
-            }
+                    _db._context.Data.RemoveRange(await q.ToListAsync().ConfigureAwait(false));
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
+                }
+                catch (DbUpdateException ex)
+                {
+                    throw new DataException("Failed to delete record(s).", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
         // Clear all records
         public async Task ClearAsync()
         {
-            try
+            await _db.ExecuteWithLockAsync(async () =>
             {
-                List<Data> toClear = await _db._context.Data.Where(d => d.storeName == _name).ToListAsync().ConfigureAwait(false);
+                try
+                {
+                    List<Data> toClear = await _db._context.Data.Where(d => d.storeName == _name).ToListAsync().ConfigureAwait(false);
 
-                _db._context.Data.RemoveRange(toClear);
+                    _db._context.Data.RemoveRange(toClear);
 
-                await _db._context.SaveChangesAsync().ConfigureAwait(false);
-            }
-            catch (DbUpdateException ex)
-            {
-                throw new DataException($"Failed to clear store {_name}.", ex);
-            }
+                    await _db._context.SaveChangesAsync().ConfigureAwait(false);
+                }
+                catch (DbUpdateException ex)
+                {
+                    throw new DataException($"Failed to clear store {_name}.", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
         //
@@ -442,14 +452,17 @@ namespace Foundation.IndexedDB
         //
         public async Task<long> CountAsync(IDBKeyRange range = null)
         {
-            var q = _db._context.Data.Where(d => d.storeName == Name);
-
-            if (range != null)
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                q = ApplyKeyRange(q, range);
-            }
+                var q = _db._context.Data.Where(d => d.storeName == Name);
 
-            return await q.LongCountAsync().ConfigureAwait(false);
+                if (range != null)
+                {
+                    q = ApplyKeyRange(q, range);
+                }
+
+                return await q.LongCountAsync().ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
         // Get Index
@@ -479,7 +492,15 @@ namespace Foundation.IndexedDB
 
             _db.UpdateMetaAsync($"store_{Name}", JsonSerializer.Serialize(_config, IDBCommon.JsonOptions)).Wait();
 
-            _db._context.Database.ExecuteSqlRawAsync($"DROP INDEX IF EXISTS idx_{Name}_{name}");
+            _db.Semaphore.Wait();
+            try
+            {
+                _db._context.Database.ExecuteSqlRawAsync($"DROP INDEX IF EXISTS idx_{Name}_{name}").Wait();
+            }
+            finally
+            {
+                _db.Semaphore.Release();
+            }
         }
 
 
@@ -613,21 +634,24 @@ namespace Foundation.IndexedDB
         /// <returns></returns>
         public async Task<object> GetAsync(object key)
         {
-            string  keyJson = JsonSerializer.Serialize(key, IDBCommon.JsonOptions);
-
-            string valueJson = await _db._context.Data.Where(d => d.storeName == Name && d.keyJson == keyJson)
-                                                      .Select(d => d.valueJson)
-                                                      .FirstOrDefaultAsync()
-                                                      .ConfigureAwait(false);
-
-            if (valueJson == null)
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                return null;
-            }
-            else
-            {
-                return JsonSerializer.Deserialize<object>(valueJson, IDBCommon.JsonOptions);
-            }
+                string  keyJson = JsonSerializer.Serialize(key, IDBCommon.JsonOptions);
+
+                string valueJson = await _db._context.Data.Where(d => d.storeName == Name && d.keyJson == keyJson)
+                                                          .Select(d => d.valueJson)
+                                                          .FirstOrDefaultAsync()
+                                                          .ConfigureAwait(false);
+
+                if (valueJson == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return JsonSerializer.Deserialize<object>(valueJson, IDBCommon.JsonOptions);
+                }
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -642,31 +666,34 @@ namespace Foundation.IndexedDB
         /// <exception cref="Exception"></exception>
         public async Task<T> GetAsync<T>(object key)
         {
-            string keyJson = JsonSerializer.Serialize(key, IDBCommon.JsonOptions);
-
-            string valueJson = await _db._context.Data.Where(d => d.storeName == Name && d.keyJson == keyJson)
-                                                      .Select(d => d.valueJson)
-                                                      .FirstOrDefaultAsync()
-                                                      .ConfigureAwait(false);
-
-
-            if (valueJson == null)
+            return await _db.ExecuteWithLockAsync(async () =>
             {
-                return default;
-            }
+                string keyJson = JsonSerializer.Serialize(key, IDBCommon.JsonOptions);
 
-            try
-            {
-                return JsonSerializer.Deserialize<T>(valueJson, IDBCommon.JsonOptions);
-            }
-            catch (JsonException jex)
-            {
-                throw new InvalidOperationException($"Failed to deserialize to type {typeof(T).Name}. Ensure the stored data matches the expected type.", jex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Could not get object of type {typeof(T).Name} with key of {keyJson}", ex);
-            }
+                string valueJson = await _db._context.Data.Where(d => d.storeName == Name && d.keyJson == keyJson)
+                                                          .Select(d => d.valueJson)
+                                                          .FirstOrDefaultAsync()
+                                                          .ConfigureAwait(false);
+
+
+                if (valueJson == null)
+                {
+                    return default;
+                }
+
+                try
+                {
+                    return JsonSerializer.Deserialize<T>(valueJson, IDBCommon.JsonOptions);
+                }
+                catch (JsonException jex)
+                {
+                    throw new InvalidOperationException($"Failed to deserialize to type {typeof(T).Name}. Ensure the stored data matches the expected type.", jex);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Could not get object of type {typeof(T).Name} with key of {keyJson}", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
 
@@ -724,7 +751,8 @@ namespace Foundation.IndexedDB
                     }
                 }
 
-                await _db.UpdateMetaAsync($"nextKey_{Name}", (nextKey + 1).ToString()).ConfigureAwait(false);
+                // Use internal (no-lock) variant — we're already inside ExecuteWithLockAsync
+                await _db.UpdateMetaInternalAsync($"nextKey_{Name}", (nextKey + 1).ToString()).ConfigureAwait(false);
 
                 return nextKey;
             }
@@ -830,7 +858,10 @@ namespace Foundation.IndexedDB
             //
             // https://sqldocs.org/sqlite-database/sqlite-json-data/
             //
-            await _db._context.Database.ExecuteSqlRawAsync($"CREATE {uniqueStr}INDEX IF NOT EXISTS idx_{Name}_{name} ON Data (json_extract(ValueJson, '$.{path}')) WHERE StoreName = '{Name}'").ConfigureAwait(false);
+            await _db.ExecuteWithLockAsync(async () =>
+            {
+                await _db._context.Database.ExecuteSqlRawAsync($"CREATE {uniqueStr}INDEX IF NOT EXISTS idx_{Name}_{name} ON Data (json_extract(ValueJson, '$.{path}')) WHERE StoreName = '{Name}'").ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
     }
 }

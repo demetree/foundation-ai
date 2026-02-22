@@ -29,7 +29,7 @@ namespace Foundation.IndexedDB
         /// <param name="name">The name of the database (must be a valid file name).</param>
         /// <param name="version">The target version (optional; defaults to current or 1 if new).</param>
         /// <returns>An IDBOpenDBRequest that resolves to the opened database.</returns>
-        public async Task<IDBOpenDBRequest> OpenAsync(string name, 
+        public async Task<IDBOpenDBRequest> OpenAsync(string name,
                                                       uint? version = null,
                                                       Action<IDBDatabase, uint, uint> upgradeNeededHandler = null)
         {
@@ -52,10 +52,10 @@ namespace Foundation.IndexedDB
                 // Configure EF with SQLite; enable logging if needed (e.g., via constructor injection in future).
                 DbContextOptionsBuilder<IDBContext> optionsBuilder = new DbContextOptionsBuilder<IDBContext>().UseSqlite($"Data Source={dbPath}")
                                                                                                               .UseLazyLoadingProxies(false);
-                      
+
                 // This turns on debug logging to the console.
-                      // .EnableSensitiveDataLogging()
-                      //.LogTo((message) => Console.WriteLine(message), Microsoft.Extensions.Logging.LogLevel.Debug);
+                // .EnableSensitiveDataLogging()
+                //.LogTo((message) => Console.WriteLine(message), Microsoft.Extensions.Logging.LogLevel.Debug);
 
 
                 //
@@ -170,5 +170,5 @@ namespace Foundation.IndexedDB
 
             return request;
         }
-   }
+    }
 }

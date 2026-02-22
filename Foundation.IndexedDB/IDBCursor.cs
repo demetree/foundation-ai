@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.IndexedDB
@@ -39,21 +40,41 @@ namespace Foundation.IndexedDB
 
         public async Task<bool> ContinueAsync()
         {
-            if (await _enumerator.MoveNextAsync().ConfigureAwait(false))
+            // Acquire the database semaphore to prevent concurrent DbContext access.
+            // Each MoveNextAsync call executes a query against the DbContext.
+            SemaphoreSlim semaphore = _store.DB.Semaphore;
+            await semaphore.WaitAsync().ConfigureAwait(false);
+            try
             {
-                EnumeratorEntry entry = _enumerator.Current;
-                _currentKey = JsonSerializer.Deserialize<object>(entry.Key, IDBCommon.JsonOptions);
-                _currentValue = JsonSerializer.Deserialize<T>(entry.Value, IDBCommon.JsonOptions);
-                return true;
+                if (await _enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    EnumeratorEntry entry = _enumerator.Current;
+                    _currentKey = JsonSerializer.Deserialize<object>(entry.Key, IDBCommon.JsonOptions);
+                    _currentValue = JsonSerializer.Deserialize<T>(entry.Value, IDBCommon.JsonOptions);
+                    return true;
+                }
+                return false;
             }
-            return false;
+            finally
+            {
+                semaphore.Release();
+            }
         }
 
         // TODO: Advance, Update, Delete (in transaction)
 
         public void Dispose()
         {
-            _enumerator.DisposeAsync().AsTask().Wait();
+            SemaphoreSlim semaphore = _store.DB.Semaphore;
+            semaphore.Wait();
+            try
+            {
+                _enumerator.DisposeAsync().AsTask().Wait();
+            }
+            finally
+            {
+                semaphore.Release();
+            }
         }
     }
 }

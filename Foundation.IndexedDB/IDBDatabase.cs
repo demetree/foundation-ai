@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using static Foundation.IndexedDB.IDBTransaction;
 
@@ -17,6 +18,12 @@ namespace Foundation.IndexedDB
     public class IDBDatabase : IDisposable
     {
         internal readonly IDBContext _context;
+
+        /// <summary>
+        /// Semaphore to ensure only one async operation runs against the DbContext at a time.
+        /// EF Core DbContext is not thread-safe — concurrent operations cause InvalidOperationException.
+        /// </summary>
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         private string _name;
 
@@ -37,15 +44,22 @@ namespace Foundation.IndexedDB
 
         public async Task LoadConfigsAsync()
         {
-            List<Metadata> storeMetas = await _context.Metadata.Where(m => m.Key.StartsWith("store_"))
-                                                                .ToListAsync()
-                                                                .ConfigureAwait(false);
-
-
-            foreach (Metadata metaEntry in storeMetas)
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
             {
-                string storeName = metaEntry.Key.Substring(6);
-                _storeConfigs[storeName] = JsonSerializer.Deserialize<ObjectStoreConfig>(metaEntry.Value);
+                List<Metadata> storeMetas = await _context.Metadata.Where(m => m.Key.StartsWith("store_"))
+                                                                    .ToListAsync()
+                                                                    .ConfigureAwait(false);
+
+                foreach (Metadata metaEntry in storeMetas)
+                {
+                    string storeName = metaEntry.Key.Substring(6);
+                    _storeConfigs[storeName] = JsonSerializer.Deserialize<ObjectStoreConfig>(metaEntry.Value);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -61,18 +75,26 @@ namespace Foundation.IndexedDB
         {
             get
             {
-                // Retrieve current version from metadata (default to 0 if absent).
-                string currentVersionString = _context.Metadata.Where(m => m.Key == "version")
-                                                               .Select(m => m.Value)
-                                                               .FirstOrDefault() ?? "0";
+                _semaphore.Wait();
+                try
+                {
+                    // Retrieve current version from metadata (default to 0 if absent).
+                    string currentVersionString = _context.Metadata.Where(m => m.Key == "version")
+                                                                   .Select(m => m.Value)
+                                                                   .FirstOrDefault() ?? "0";
 
-                if (uint.TryParse(currentVersionString, out uint version) == true)
-                {
-                    return version;
+                    if (uint.TryParse(currentVersionString, out uint version) == true)
+                    {
+                        return version;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
-                else
+                finally
                 {
-                    return 0;
+                    _semaphore.Release();
                 }
             }
         }
@@ -84,23 +106,51 @@ namespace Foundation.IndexedDB
         /// <returns></returns>
         public async Task<uint> VersionAsync()
         {
-            // Retrieve current version from metadata (default to 0 if absent).
-            string currentVersionString = await _context.Metadata.Where(m => m.Key == "version")
-                                                                 .Select(m => m.Value)
-                                                                 .FirstOrDefaultAsync().ConfigureAwait(false) ?? "0";
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                // Retrieve current version from metadata (default to 0 if absent).
+                string currentVersionString = await _context.Metadata.Where(m => m.Key == "version")
+                                                                     .Select(m => m.Value)
+                                                                     .FirstOrDefaultAsync().ConfigureAwait(false) ?? "0";
 
-            if (uint.TryParse(currentVersionString, out uint version) == true)
-            {
-                return version;
+                if (uint.TryParse(currentVersionString, out uint version) == true)
+                {
+                    return version;
+                }
+                else
+                {
+                    return 0;
+                }
             }
-            else
+            finally
             {
-                return 0;
+                _semaphore.Release();
             }
         }
 
 
+        /// <summary>
+        /// Updates metadata under the concurrency semaphore. Safe to call from non-locked contexts.
+        /// </summary>
         internal async Task UpdateMetaAsync(string key, string value)
+        {
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                await UpdateMetaInternalAsync(key, value).ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Updates metadata WITHOUT acquiring the semaphore. 
+        /// Must only be called from within an already-locked context (e.g. inside ExecuteWithLockAsync).
+        /// </summary>
+        internal async Task UpdateMetaInternalAsync(string key, string value)
         {
             await _context.Database.ExecuteSqlRawAsync("INSERT OR REPLACE INTO Metadata (Key, Value) VALUES ({0}, {1})", key, value).ConfigureAwait(false);
         }
@@ -120,11 +170,19 @@ namespace Foundation.IndexedDB
                 Indexes = new List<IndexConfig>()
             };
 
-            // Save config
-            await UpdateMetaAsync($"store_{name}", JsonSerializer.Serialize(config)).ConfigureAwait(false); // Sync in upgrade event
+            // Save config — UpdateMetaAsync acquires its own lock
+            await UpdateMetaAsync($"store_{name}", JsonSerializer.Serialize(config)).ConfigureAwait(false);
 
             // Create key unique index
-            _ = await _context.Database.ExecuteSqlRawAsync($"CREATE UNIQUE INDEX IF NOT EXISTS uk_{name}_key ON Data (KeyJson) WHERE StoreName = '{name}'").ConfigureAwait(false);
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                _ = await _context.Database.ExecuteSqlRawAsync($"CREATE UNIQUE INDEX IF NOT EXISTS uk_{name}_key ON Data (KeyJson) WHERE StoreName = '{name}'").ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
 
             if (config.AutoIncrement)
             {
@@ -175,11 +233,19 @@ namespace Foundation.IndexedDB
                 throw new InvalidOperationException("Object store not found.");
             }
 
-            // Remove all data entries for this store
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM Data WHERE StoreName = {0}", name).ConfigureAwait(false);
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                // Remove all data entries for this store
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM Data WHERE StoreName = {0}", name).ConfigureAwait(false);
 
-            // Remove metadata entries
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM Metadata WHERE Key = {0} OR Key = {1}", $"store_{name}", $"nextKey_{name}").ConfigureAwait(false);
+                // Remove metadata entries
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM Metadata WHERE Key = {0} OR Key = {1}", $"store_{name}", $"nextKey_{name}").ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
 
             // Remove from cache
             _storeConfigs.Remove(name);
@@ -214,9 +280,50 @@ namespace Foundation.IndexedDB
         }
 
 
+        /// <summary>
+        /// Provides direct access to the concurrency semaphore for internal use by cursors
+        /// and other components that need to acquire/release the lock around individual operations.
+        /// </summary>
+        internal SemaphoreSlim Semaphore => _semaphore;
+
+
+        /// <summary>
+        /// Helper to execute database operations under the concurrency semaphore.
+        /// </summary>
+        internal async Task<T> ExecuteWithLockAsync<T>(Func<Task<T>> operation)
+        {
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                return await operation().ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Helper to execute void database operations under the concurrency semaphore.
+        /// </summary>
+        internal async Task ExecuteWithLockAsync(Func<Task> operation)
+        {
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                await operation().ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+
         public void Dispose()
         {
             _context.Dispose();
+            _semaphore.Dispose();
         }
     }
 
