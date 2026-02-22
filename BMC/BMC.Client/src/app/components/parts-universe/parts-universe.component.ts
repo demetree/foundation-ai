@@ -44,6 +44,11 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     filtersOpen = false;
     categoryDropdownOpen = false;
     themeDropdownOpen = false;
+
+    // ── Layout state ─────────────────────────────────────
+    leaderboardLimit = 15;
+    readonly leaderboardLimitOptions = [15, 25, 50, 0]; // 0 = all
+    activeVizTab: 'leaderboard' | 'galaxy' | 'flow' | 'colordna' | 'connections' = 'leaderboard';
     private _filteredParts: RankedPart[] = [];
 
     private destroy$ = new Subject<void>();
@@ -74,6 +79,13 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         if (qp['minSets']) {
             this.minSets = parseInt(qp['minSets'], 10) || 0;
         }
+        if (qp['viz'] && ['leaderboard', 'galaxy', 'flow', 'colordna', 'connections'].includes(qp['viz'])) {
+            this.activeVizTab = qp['viz'];
+        }
+        if (qp['limit']) {
+            const lim = parseInt(qp['limit'], 10);
+            this.leaderboardLimit = lim === 0 || this.leaderboardLimitOptions.includes(lim) ? lim : 15;
+        }
 
         // Subscribe to thumbnail render results
         this.thumbnailService.thumbnail$.pipe(
@@ -101,10 +113,10 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     get displayedParts(): RankedPart[] {
-        if (this.leaderboardMode === 'least') {
-            return [...this._filteredParts].reverse();
-        }
-        return this._filteredParts;
+        const parts = this.leaderboardMode === 'least'
+            ? [...this._filteredParts].reverse()
+            : this._filteredParts;
+        return this.leaderboardLimit > 0 ? parts.slice(0, this.leaderboardLimit) : parts;
     }
 
     get availableCategories(): string[] {
@@ -133,6 +145,19 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     toggleLeaderboardMode(): void {
         this.leaderboardMode = this.leaderboardMode === 'most' ? 'least' : 'most';
         this.updateQueryParams();
+    }
+
+    setLeaderboardLimit(n: number): void {
+        this.leaderboardLimit = n;
+        this.updateQueryParams();
+    }
+
+    setVizTab(tab: 'leaderboard' | 'galaxy' | 'flow' | 'colordna' | 'connections'): void {
+        if (this.activeVizTab === tab) return;
+        this.activeVizTab = tab;
+        this.updateQueryParams();
+        // Render the newly active tab after DOM updates
+        setTimeout(() => this.renderActiveTab(), 50);
     }
 
     // ── Filter actions ───────────────────────────────────
@@ -223,7 +248,8 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     private updateQueryParams(): void {
-        const qp: any = { mode: this.leaderboardMode };
+        const qp: any = { mode: this.leaderboardMode, viz: this.activeVizTab };
+        if (this.leaderboardLimit !== 15) qp.limit = this.leaderboardLimit;
         if (this.searchText) qp.q = this.searchText;
         if (this.selectedCategories.size > 0) qp.cats = [...this.selectedCategories].join(',');
         if (this.selectedThemes.size > 0) qp.themes = [...this.selectedThemes].join(',');
@@ -296,25 +322,30 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     // ================================================================
 
     private renderAllPanels(): void {
+        this.renderActiveTab();
+    }
+
+    private renderActiveTab(): void {
         if (!this.payload) return;
+        if (this.activeVizTab === 'leaderboard') return; // no D3 render needed
 
         const parts = this._filteredParts;
+        const useServer = !this.hasActiveFilters;
 
-        // If no filters active, use server-precomputed data for best fidelity
-        // (heatmap always rebuilt client-side so partLabels use ldrawTitle)
-        if (!this.hasActiveFilters) {
-            this.renderSankey(this.payload.sankey);
-            this.renderBubbleChart(this.payload.bubbles);
-            this.renderHeatmap(this.buildHeatmapData(this.rankedParts));
-            this.renderChordDiagram(this.payload.chord);
-            return;
+        switch (this.activeVizTab) {
+            case 'galaxy':
+                this.renderBubbleChart(useServer ? this.payload.bubbles : this.buildBubbleData(parts));
+                break;
+            case 'flow':
+                this.renderSankey(useServer ? this.payload.sankey : this.buildSankeyData(parts));
+                break;
+            case 'colordna':
+                this.renderHeatmap(this.buildHeatmapData(useServer ? this.rankedParts : parts));
+                break;
+            case 'connections':
+                this.renderChordDiagram(useServer ? this.payload.chord : this.buildChordData(parts));
+                break;
         }
-
-        // Otherwise, rebuild from filtered parts
-        this.renderSankey(this.buildSankeyData(parts));
-        this.renderBubbleChart(this.buildBubbleData(parts));
-        this.renderHeatmap(this.buildHeatmapData(parts));
-        this.renderChordDiagram(this.buildChordData(parts));
     }
 
     // ── Viz Data Builders ────────────────────────────────
@@ -364,7 +395,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         for (const rp of parts) {
             if (!catMap.has(rp.categoryName)) catMap.set(rp.categoryName, []);
             catMap.get(rp.categoryName)!.push({
-                name: rp.name,
+                name: rp.ldrawTitle || rp.name,
                 totalQty: rp.totalQty,
                 setCount: rp.setCount,
                 dominantColourHex: rp.colours?.[0]?.hex ?? ''
@@ -555,6 +586,50 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     // ================================================================
+    //  COLOR HELPERS — hybrid fill for the bubble chart
+    // ================================================================
+
+    /** Convert hex (#RRGGBB) to HSL [0-360, 0-100, 0-100] */
+    private hexToHsl(hex: string): [number, number, number] {
+        const h = hex.replace('#', '');
+        const r = parseInt(h.substring(0, 2), 16) / 255;
+        const g = parseInt(h.substring(2, 4), 16) / 255;
+        const b = parseInt(h.substring(4, 6), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const l = (max + min) / 2;
+        if (max === min) return [0, 0, l * 100];
+        const d = max - min;
+        const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        let hue = 0;
+        if (max === r) hue = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        else if (max === g) hue = ((b - r) / d + 2) / 6;
+        else hue = ((r - g) / d + 4) / 6;
+        return [hue * 360, s * 100, l * 100];
+    }
+
+    /** Build a tinted color from a category hue + original lightness */
+    private tintFromCategory(catHex: string, originalHex: string): string {
+        const [catH] = this.hexToHsl(catHex);
+        const [, , origL] = this.hexToHsl(originalHex);
+        // Use category hue at moderate saturation, preserve original lightness with slight shift
+        const s = 35;
+        const l = Math.max(25, Math.min(70, origL + (origL < 40 ? 10 : -5)));
+        return `hsl(${catH}, ${s}%, ${l}%)`;
+    }
+
+    /** True if the color is neutral/grey (low saturation) */
+    private isNeutralColor(hex: string): boolean {
+        if (!hex || hex === '#888' || hex === '#888888') return true;
+        try {
+            const [, s, l] = this.hexToHsl(hex);
+            // Very low saturation, or very dark/light with low-ish saturation
+            if (s < 15) return true;
+            if (s < 25 && l > 20 && l < 80) return true;
+            return false;
+        } catch { return true; }
+    }
+
+    // ================================================================
     //  PANEL 3: ZOOMABLE BUBBLE CHART
     // ================================================================
 
@@ -567,13 +642,25 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
 
         const size = Math.min(container.clientWidth || 600, 700);
 
-        // Build D3 hierarchy from server-provided data
+        // Build lookups from part name → ldrawTitle and brickPartId
+        const titleLookup = new Map<string, string>();
+        const idLookup = new Map<string, number>();
+        if (this.rankedParts) {
+            for (const rp of this.rankedParts) {
+                if (rp.ldrawTitle) titleLookup.set(rp.name, rp.ldrawTitle);
+                if (rp.brickPartId) idLookup.set(rp.name, rp.brickPartId);
+            }
+        }
+
+        // Build D3 hierarchy — enrich with human-readable label + part ID
         const hierarchyData = {
             name: 'Parts',
             children: bubbles.map(cat => ({
                 name: cat.categoryName,
                 children: cat.parts.map(p => ({
                     name: p.name,
+                    label: titleLookup.get(p.name) || p.name,
+                    brickPartId: idLookup.get(p.name) ?? 0,
                     value: p.totalQty,
                     dominantColor: p.dominantColourHex ? ('#' + p.dominantColourHex.replace('#', '')) : '#888',
                     setCount: p.setCount
@@ -593,12 +680,29 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
 
         const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
 
+        // ── Rich HTML tooltip ──
+        const tooltip = d3.select(container)
+            .append('div')
+            .attr('class', 'bubble-tooltip')
+            .style('position', 'absolute')
+            .style('pointer-events', 'none')
+            .style('opacity', 0)
+            .style('background', 'var(--bmc-bg-elevated, rgba(20,20,30,0.95))')
+            .style('border', '1px solid var(--bmc-border, rgba(255,255,255,0.12))')
+            .style('border-radius', '8px')
+            .style('padding', '8px 14px')
+            .style('font-size', '0.75rem')
+            .style('color', 'var(--bmc-text-primary, #fff)')
+            .style('backdrop-filter', 'blur(12px)')
+            .style('z-index', '100')
+            .style('max-width', '260px')
+            .style('line-height', '1.4');
+
         const svg = d3.select(container)
             .append('svg')
             .attr('viewBox', `0 0 ${size} ${size}`)
             .attr('width', '100%')
-            .attr('height', '100%')
-            .style('cursor', 'pointer');
+            .attr('height', '100%');
 
         // Current focus
         let focus: any = packed;
@@ -619,14 +723,39 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                     return `translate(${(dd.x - target[0]) * k + size / 2},${(dd.y - target[1]) * k + size / 2})`;
                 });
 
-            labels.transition(transition as any)
+            // Show leaf labels for the focused category, hide others
+            leafLabels.transition(transition as any)
                 .style('fill-opacity', (dd: any) => dd.parent === focus ? 1 : 0)
                 .style('display', (dd: any) => dd.parent === focus ? 'inline' : 'none');
+
+            // Hide category labels + background pills when zoomed in, show when zoomed out to root
+            catLabels.transition(transition as any)
+                .style('fill-opacity', focus === packed ? 0.95 : 0)
+                .style('display', focus === packed ? 'inline' : 'none');
+            svg.selectAll('.cat-label-bg')
+                .transition(transition as any)
+                .style('opacity', focus === packed ? 1 : 0)
+                .style('display', focus === packed ? 'inline' : 'none');
+
+            // Update cursors — leaf circles become 'pointer' when at drill-through depth
+            node.select('circle')
+                .style('cursor', (dd: any) => {
+                    if (!dd.children && focus === dd.parent) return 'pointer';
+                    return 'zoom-in';
+                });
+
+            // Update background cursor
+            svg.style('cursor', focus === packed ? 'default' : 'zoom-out');
 
             view = target;
         };
 
-        svg.on('click', (event) => zoom(event, packed));
+        // Click background → zoom out to root
+        svg.on('click', (event) => {
+            if (focus !== packed) {
+                zoom(event, packed);
+            }
+        });
 
         const node = svg.selectAll('g.bubble-node')
             .data(packed.descendants().slice(1))
@@ -645,48 +774,135 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                     return colorScale(d.data.name);
                 }
                 const hex = d.data.dominantColor;
-                return hex && hex !== '#888' ? hex : colorScale(d.parent?.data?.name ?? '');
+                if (!hex || hex === '#888') {
+                    return colorScale(d.parent?.data?.name ?? '');
+                }
+                // Hybrid: use real color if saturated, category-tinted if neutral/grey
+                if (this.isNeutralColor(hex)) {
+                    const catHex = colorScale(d.parent?.data?.name ?? '');
+                    return this.tintFromCategory(catHex, hex);
+                }
+                return hex;
             })
             .attr('fill-opacity', (d: any) => d.children ? 0.2 : 0.75)
             .attr('stroke', (d: any) => d.children ? colorScale(d.data.name) : 'rgba(255,255,255,0.3)')
             .attr('stroke-width', (d: any) => d.children ? 2 : 0.5)
+            .style('cursor', (d: any) => {
+                if (!d.children && focus === d.parent) return 'pointer';
+                return 'zoom-in';
+            })
             .on('click', (event: any, d: any) => {
-                if (focus !== d && d.children) {
-                    zoom(event, d);
-                    event.stopPropagation();
+                event.stopPropagation();
+                if (d.children) {
+                    // Category circle → zoom into it
+                    if (focus !== d) zoom(event, d);
+                    else zoom(event, packed); // already focused → zoom out
+                } else {
+                    // Leaf part — if already drilled into this category, navigate to detail
+                    if (focus === d.parent && d.data.brickPartId) {
+                        this.router.navigate(['/parts', d.data.brickPartId]);
+                    } else if (d.parent && d.parent !== packed && focus !== d.parent) {
+                        zoom(event, d.parent);
+                    } else if (focus !== packed) {
+                        zoom(event, packed);
+                    }
                 }
             })
-            .append('title')
-            .text((d: any) => {
-                if (d.children) return `${d.data.name}\n${d.children.length} parts`;
-                return `${d.data.name}\n${(d.value ?? 0).toLocaleString()} instances across ${d.data.setCount ?? 0} sets`;
+            .on('mouseenter', function (_event: MouseEvent, d: any) {
+                d3.select(this)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', d.children ? 3 : 2)
+                    .attr('stroke-opacity', 1);
+
+                if (d.children) {
+                    const catName = d.data.name;
+                    const partCount = d.children.length;
+                    const totalQty = (d.value ?? 0).toLocaleString();
+                    tooltip.style('opacity', 1).html(
+                        `<strong style="font-size:0.85rem">${catName}</strong><br>` +
+                        `<span style="color:var(--bmc-text-muted)">${partCount} parts · ${totalQty} total instances</span>`
+                    );
+                } else {
+                    const label = d.data.label || d.data.name;
+                    const catName = d.parent?.data?.name ?? '';
+                    const qty = (d.value ?? 0).toLocaleString();
+                    const sets = d.data.setCount ?? 0;
+                    tooltip.style('opacity', 1).html(
+                        `<strong style="font-size:0.85rem">${label}</strong><br>` +
+                        `<span style="color:var(--bmc-text-muted)">${catName}</span><br>` +
+                        `${qty} instances · ${sets} sets`
+                    );
+                }
+            })
+            .on('mousemove', function (event: MouseEvent) {
+                tooltip
+                    .style('left', (event.offsetX + 16) + 'px')
+                    .style('top', (event.offsetY - 12) + 'px');
+            })
+            .on('mouseleave', function (_event: MouseEvent, d: any) {
+                d3.select(this)
+                    .attr('stroke', d.children ? colorScale(d.data.name) : 'rgba(255,255,255,0.3)')
+                    .attr('stroke-width', d.children ? 2 : 0.5);
+                tooltip.style('opacity', 0);
             });
 
-        // Labels
-        const labels = svg.selectAll('text.bubble-label')
-            .data(packed.descendants().filter((d: any) => !d.children && d.r > 12))
-            .enter()
+        // ── Category labels with background pills (inside node groups, shown at root zoom) ──
+        const catNodes = node.filter((d: any) => d.children && d.depth === 1 && d.r > 25);
+
+        const catLabels = catNodes
+            .append('text')
+            .attr('class', 'cat-label')
+            .attr('text-anchor', 'middle')
+            .attr('dy', '0.35em')
+            .attr('fill', '#1a1a2e')
+            .attr('font-size', '0.8rem')
+            .attr('font-weight', '600')
+            .attr('pointer-events', 'none')
+            .style('fill-opacity', 0.95)
+            .text((d: any) => {
+                const name = d.data.name ?? '';
+                const maxLen = Math.max(6, Math.floor(d.r / 5));
+                return name.length > maxLen ? name.slice(0, maxLen - 1) + '…' : name;
+            });
+
+        // Add background pill rects behind category labels using measured text bbox
+        catLabels.each(function () {
+            const textEl = this as SVGTextElement;
+            const parent = textEl.parentNode as SVGGElement;
+            try {
+                const bbox = textEl.getBBox();
+                const pad = { x: 6, y: 3 };
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('class', 'cat-label-bg');
+                rect.setAttribute('x', String(bbox.x - pad.x));
+                rect.setAttribute('y', String(bbox.y - pad.y));
+                rect.setAttribute('width', String(bbox.width + pad.x * 2));
+                rect.setAttribute('height', String(bbox.height + pad.y * 2));
+                rect.setAttribute('rx', '4');
+                rect.setAttribute('fill', 'rgba(255,255,255,0.82)');
+                rect.setAttribute('pointer-events', 'none');
+                parent.insertBefore(rect, textEl);
+            } catch (_) { /* getBBox can fail if not rendered yet */ }
+        });
+
+        // ── Leaf part labels (inside node groups, shown when zoomed into a category) ──
+        const leafLabels = node.filter((d: any) => !d.children && d.r > 10)
             .append('text')
             .attr('class', 'bubble-label')
             .attr('text-anchor', 'middle')
             .attr('dy', '0.3em')
-            .attr('fill', 'var(--bmc-text-primary)')
-            .attr('font-size', '0.55rem')
+            .attr('fill', '#1a1a2e')
+            .attr('stroke', 'rgba(255,255,255,0.85)')
+            .attr('stroke-width', 2.5)
+            .style('paint-order', 'stroke')
+            .attr('font-size', '0.7rem')
             .attr('pointer-events', 'none')
             .style('fill-opacity', (d: any) => d.parent === focus ? 1 : 0)
             .style('display', (d: any) => d.parent === focus ? 'inline' : 'none')
             .text((d: any) => {
-                const name = d.data.name ?? '';
-                return name.length > 14 ? name.slice(0, 12) + '…' : name;
-            });
-
-        labels.attr('x', (d: any) => {
-            const k = size / view[2];
-            return (d.x - view[0]) * k + size / 2;
-        })
-            .attr('y', (d: any) => {
-                const k = size / view[2];
-                return (d.y - view[1]) * k + size / 2;
+                const label = d.data.label || d.data.name || '';
+                const maxLen = Math.max(6, Math.floor(d.r / 4));
+                return label.length > maxLen ? label.slice(0, maxLen - 1) + '…' : label;
             });
     }
 

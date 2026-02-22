@@ -148,13 +148,67 @@
     gap: 24px;
 }
 
-.viz-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+// ── Visualization Tabs ───────────────────────────────
 
-    @media (max-width: 1100px) {
-        grid-template-columns: 1fr;
+.viz-tabs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.viz-tab-bar {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    background: var(--bmc-bg-elevated, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--bmc-border, rgba(255, 255, 255, 0.08));
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.viz-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bmc-text-muted, #888);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    i {
+        font-size: 0.85rem;
+    }
+
+    &:hover {
+        color: var(--bmc-text-primary, #fff);
+        background: var(--bmc-bg-hover, rgba(255, 255, 255, 0.04));
+    }
+
+    &.active {
+        background: var(--bmc-accent, #667eea);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+}
+
+.viz-tab-content {
+    .viz-panel {
+        border-radius: 0 0 16px 16px;
+        border-top: none;
     }
 }
 
@@ -189,8 +243,44 @@
     }
 }
 
-.mode-switcher {
+// ── Header Controls ──────────────────────────────────
+
+.header-controls {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.show-n-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    label {
+        font-size: 0.72rem;
+        color: var(--bmc-text-muted, #999);
+        white-space: nowrap;
+    }
+
+    select {
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--bmc-border, rgba(255, 255, 255, 0.12));
+        background: var(--bmc-bg-input, rgba(255, 255, 255, 0.06));
+        color: var(--bmc-text-primary, #fff);
+        font-size: 0.72rem;
+        cursor: pointer;
+
+        &:focus {
+            outline: none;
+            border-color: var(--bmc-accent, #6c7ae0);
+        }
+    }
+}
+
+.mode-switcher {
     display: flex;
     gap: 4px;
     flex-shrink: 0;
@@ -608,6 +698,16 @@
     width: 100%;
 }
 
+.leaderboard-viewport {
+    height: 70vh;
+    min-height: 400px;
+
+    // Style the CDK wrapper that wraps all virtual items
+    .cdk-virtual-scroll-content-wrapper {
+        width: 100%;
+    }
+}
+
 .leaderboard-row {
     display: grid;
     grid-template-columns: 50px 48px 1.2fr 0.8fr 140px 100px 80px 130px;
@@ -785,10 +885,16 @@
     display: flex;
     justify-content: center;
     overflow: hidden;
+    position: relative;
 
     svg {
         max-width: 700px;
     }
+}
+
+.bubble-tooltip {
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 // ── Panel 4: Heatmap ──────────────────────────────────
