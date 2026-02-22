@@ -30,7 +30,7 @@ export interface ThemeDefinition {
 export class ThemeService {
 
     private static readonly STORAGE_KEY = 'bmc-theme';
-    private static readonly DEFAULT_THEME = 'default';
+    private static readonly DEFAULT_THEME = 'brick-builder';
 
     private themeSubject = new BehaviorSubject<string>(ThemeService.DEFAULT_THEME);
 
@@ -45,10 +45,10 @@ export class ThemeService {
     /** All available themes for the theme picker. */
     public readonly availableThemes: ThemeDefinition[] = [
         {
-            id: 'default',
-            label: 'Default',
-            icon: 'fas fa-cubes',
-            swatchColors: ['#ffa726', '#ff8f00', '#0f0a04']
+            id: 'brick-builder',
+            label: 'Brick Builder',
+            icon: 'fas fa-shapes',
+            swatchColors: ['#E3000B', '#006CB7', '#FFCD03']
         },
         {
             id: 'miami-vice',
@@ -75,10 +75,10 @@ export class ThemeService {
             swatchColors: ['#ff00ff', '#00e5ff', '#050505']
         },
         {
-            id: 'brick-builder',
-            label: 'Brick Builder',
-            icon: 'fas fa-shapes',
-            swatchColors: ['#E3000B', '#006CB7', '#FFCD03']
+            id: 'default',
+            label: 'BMC',
+            icon: 'fas fa-cubes',
+            swatchColors: ['#ffa726', '#ff8f00', '#0f0a04']
         },
         {
             id: 'blueprint',

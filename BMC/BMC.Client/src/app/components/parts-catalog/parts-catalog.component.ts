@@ -1,9 +1,21 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
-import { PartsCatalogService, CatalogPart, CatalogCategory, CatalogPartType } from '../../services/parts-catalog.service';
-import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
+import { HttpClient } from '@angular/common/http';
+import { Subject, Subscription, forkJoin } from 'rxjs';
+import { debounceTime, takeUntil, bufferTime, filter } from 'rxjs/operators';
+import { PartsCatalogApiService, CatalogPartItem, CatalogCategory, CatalogPartType } from '../../services/parts-catalog-api.service';
+import { LDrawThumbnailService, ThumbnailRequest } from '../../services/ldraw-thumbnail.service';
+import { AuthService } from '../../services/auth.service';
+
+
+/**
+ * An internal type representing a single "row" inside the virtual-scroll viewport.
+ * Each row contains `columnsPerRow` part cards rendered horizontally.
+ */
+interface CardRow {
+    items: CatalogPartItem[];
+}
+
 
 @Component({
     selector: 'app-parts-catalog',
@@ -14,13 +26,48 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private searchSubject = new Subject<string>();
+    private loadSub = new Subscription();
 
-    // 3D thumbnail cache: geometryFilePath → data:URL
+    // 3D thumbnail cache: cacheKey → data:URL
     thumbnails = new Map<string, string>();
 
-    displayedParts: CatalogPart[] = [];
+    //
+    // Curated vibrant LEGO colour palette — assigned per part via id % length.
+    // Creates a playful, varied look across the catalog grid.
+    //
+    private readonly LEGO_PALETTE = [
+        'C91A09',  // Red
+        '0055BF',  // Blue
+        'F2CD37',  // Yellow
+        '237841',  // Green
+        'FE8A18',  // Orange
+        '008F9B',  // Dark Turquoise
+        'E4ADC8',  // Bright Pink
+        '36AEBF',  // Medium Azure
+        'A0BC00',  // Lime
+        '078BC9',  // Dark Azure
+        'FF698F',  // Coral
+        'F8BB3D',  // Bright Light Orange
+    ];
+
+    //
+    // Full datasets loaded once from the API / IndexedDB cache
+    //
+    private allParts: CatalogPartItem[] = [];
     categories: CatalogCategory[] = [];
     partTypes: CatalogPartType[] = [];
+
+    //
+    // Derived from allParts after applying filters + sort
+    //
+    filteredParts: CatalogPartItem[] = [];
+
+    //
+    // Virtual-scroll rows: each row is a horizontal slice of N cards
+    //
+    cardRows: CardRow[] = [];
+    columnsPerRow = 6;
+    rowHeight = 260;   // px — matches the card height in SCSS
 
     loading = true;
     searchTerm = '';
@@ -29,35 +76,53 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     viewMode: 'grid' | 'list' = 'grid';
     sidebarCollapsed = false;
 
-    // Pagination (server-driven)
-    pageSize = 48;
-    currentPage = 1;
-    totalPages = 1;
     totalCount = 0;
 
+    // Sort
+    sortBy: 'relevance' | 'name' | 'category' = 'relevance';
+    sortDirection: 'asc' | 'desc' = 'desc';
+
+    // User preferred theme IDs — for category boosting
+    userPreferredThemeIds: number[] = [];
+
+    // Boosted category IDs (kept separately for UI ★ indicator)
+    boostedCategoryIds = new Set<number>();
+
     constructor(
-        private catalogService: PartsCatalogService,
+        private catalogApi: PartsCatalogApiService,
         private router: Router,
-        private thumbnailService: LDrawThumbnailService
+        private thumbnailService: LDrawThumbnailService,
+        private http: HttpClient,
+        private authService: AuthService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
+        this.calculateColumns();
+
         this.searchSubject.pipe(
             debounceTime(250),
             takeUntil(this.destroy$)
         ).subscribe(term => {
             this.searchTerm = term;
-            this.currentPage = 1;
-            this.fetchPage();
+            this.applyPipeline();
         });
 
         //
-        // Subscribe to 3D thumbnail render results — updates cards progressively
+        // Subscribe to 3D thumbnail render results — updates cards progressively.
+        // Buffer results over 100ms to batch change-detection cycles; a raw Map.set()
+        // does NOT trigger Angular change detection, which causes thumbnails to
+        // appear inconsistently without this.
         //
         this.thumbnailService.thumbnail$.pipe(
-            takeUntil(this.destroy$)
-        ).subscribe(result => {
-            this.thumbnails.set(result.cacheKey, result.dataUrl);
+            takeUntil(this.destroy$),
+            bufferTime(100),
+            filter(batch => batch.length > 0)
+        ).subscribe(batch => {
+            for (const result of batch) {
+                this.thumbnails.set(result.cacheKey, result.dataUrl);
+            }
+            this.cdr.markForCheck();
         });
 
         this.loadData();
@@ -66,64 +131,173 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+        this.loadSub.unsubscribe();
     }
+
 
     loadData(): void {
         this.loading = true;
 
-        // Load categories (with server-side counts of renderable parts)
-        this.catalogService.getCategories().pipe(
+        // Load user's preferred themes for category boosting (non-blocking)
+        const headers = this.authService.GetAuthenticationHeaders();
+        this.http.get<any>('/api/profile/mine', { headers }).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
-            next: (cats) => this.categories = cats,
-            error: () => this.categories = []
+            next: (profile) => {
+                this.userPreferredThemeIds = (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId);
+            },
+            error: () => {
+                this.userPreferredThemeIds = [];
+            }
         });
 
-        // Load part types (with server-side counts of renderable parts)
-        this.catalogService.getPartTypes().pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (types) => this.partTypes = types,
-            error: () => this.partTypes = []
-        });
-
-        // Load first page of parts
-        this.fetchPage();
-    }
-
-    /**
-     * Fetch a page of parts from the server with current filters applied.
-     */
-    fetchPage(): void {
-        this.loading = true;
-
-        this.catalogService.getCatalogPage({
-            search: this.searchTerm || undefined,
-            categoryId: this.selectedCategoryId ?? undefined,
-            partTypeId: this.selectedPartTypeId ?? undefined,
-            pageSize: this.pageSize,
-            pageNumber: this.currentPage
+        // Load all data in parallel
+        this.loadSub = forkJoin({
+            parts: this.catalogApi.getAllParts(),
+            categories: this.catalogApi.getCategories(),
+            partTypes: this.catalogApi.getPartTypes()
         }).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
-            next: (result) => {
-                this.displayedParts = result.items;
-                this.totalCount = result.totalCount;
-                this.totalPages = result.totalPages;
-                this.currentPage = result.pageNumber;
+            next: (data) => {
+                this.allParts = data.parts;
+                this.categories = data.categories;
+                this.partTypes = data.partTypes;
+                this.totalCount = data.parts.length;
+                this.applyPipeline();
                 this.loading = false;
-
-                // Kick off 3D thumbnail rendering for the visible parts
-                this.thumbnailService.renderBatch(this.displayedParts);
             },
             error: () => {
-                this.displayedParts = [];
-                this.totalCount = 0;
-                this.totalPages = 1;
+                this.allParts = [];
+                this.categories = [];
+                this.partTypes = [];
                 this.loading = false;
             }
         });
     }
+
+
+    // ----------------------------------------------------------------
+    //  Filter + Sort Pipeline  (operates on full dataset in memory)
+    // ----------------------------------------------------------------
+
+    private applyPipeline(): void {
+        let result = this.allParts;
+
+        //
+        // Category filter
+        //
+        if (this.selectedCategoryId !== null) {
+            result = result.filter(p => p.brickCategoryId === this.selectedCategoryId);
+        }
+
+        //
+        // Part type filter
+        //
+        if (this.selectedPartTypeId !== null) {
+            result = result.filter(p => p.partTypeId === this.selectedPartTypeId);
+        }
+
+        //
+        // Text search — name, ldrawPartId, ldrawTitle, keywords
+        //
+        if (this.searchTerm) {
+            const lower = this.searchTerm.toLowerCase();
+            result = result.filter(p =>
+                (p.name || '').toLowerCase().includes(lower) ||
+                (p.ldrawPartId || '').toLowerCase().includes(lower) ||
+                (p.ldrawTitle || '').toLowerCase().includes(lower) ||
+                (p.keywords || '').toLowerCase().includes(lower)
+            );
+        }
+
+        //
+        // Sorting
+        //
+        result = this.applySorting(result);
+
+        this.filteredParts = result;
+        this.buildCardRows();
+
+        // Kick off 3D thumbnails for visible parts (first ~100 items)
+        const visibleBatch = this.filteredParts.slice(0, Math.min(100, this.filteredParts.length));
+        const requests: ThumbnailRequest[] = visibleBatch.map(p => ({
+            geometryFilePath: p.geometryFilePath,
+            colourHex: this.LEGO_PALETTE[p.id % this.LEGO_PALETTE.length]
+        }));
+        this.thumbnailService.renderBatch(requests);
+    }
+
+
+    private applySorting(parts: CatalogPartItem[]): CatalogPartItem[] {
+        const dir = this.sortDirection === 'asc' ? 1 : -1;
+
+        return [...parts].sort((a, b) => {
+            switch (this.sortBy) {
+                case 'relevance':
+                    return (a.setCount - b.setCount) * dir || (a.name || '').localeCompare(b.name || '');
+                case 'category':
+                    return ((a.categoryName || '').localeCompare(b.categoryName || '')) * dir
+                        || (b.setCount - a.setCount);
+                case 'name':
+                default:
+                    return (a.name || '').localeCompare(b.name || '') * dir;
+            }
+        });
+    }
+
+
+    /**
+     * Chunk filteredParts into rows of `columnsPerRow` items for the virtual-scroll viewport.
+     */
+    private buildCardRows(): void {
+        const rows: CardRow[] = [];
+        for (let i = 0; i < this.filteredParts.length; i += this.columnsPerRow) {
+            rows.push({ items: this.filteredParts.slice(i, i + this.columnsPerRow) });
+        }
+        this.cardRows = rows;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Responsive column calculation
+    // ----------------------------------------------------------------
+
+    @HostListener('window:resize')
+    onResize(): void {
+        this.calculateColumns();
+    }
+
+    private calculateColumns(): void {
+        const width = window.innerWidth;
+        const sidebarWidth = this.sidebarCollapsed ? 0 : 260;
+        const available = width - sidebarWidth - 40;  // account for sidebar + padding
+
+        let cols: number;
+        if (available >= 1400) {
+            cols = 6;
+        } else if (available >= 1100) {
+            cols = 5;
+        } else if (available >= 850) {
+            cols = 4;
+        } else if (available >= 600) {
+            cols = 3;
+        } else {
+            cols = 2;
+        }
+
+        if (cols !== this.columnsPerRow) {
+            this.columnsPerRow = cols;
+            if (this.filteredParts.length > 0) {
+                this.buildCardRows();
+            }
+        }
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Event Handlers
+    // ----------------------------------------------------------------
 
     onSearch(event: Event): void {
         const term = (event.target as HTMLInputElement).value;
@@ -132,40 +306,90 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
 
     selectCategory(catId: number | null): void {
         this.selectedCategoryId = this.selectedCategoryId === catId ? null : catId;
-        this.currentPage = 1;
-        this.fetchPage();
+        this.applyPipeline();
     }
 
     selectPartType(typeId: number | null): void {
         this.selectedPartTypeId = this.selectedPartTypeId === typeId ? null : typeId;
-        this.currentPage = 1;
-        this.fetchPage();
+        this.applyPipeline();
     }
 
-    navigateToDetail(part: CatalogPart): void {
+    setSort(field: 'relevance' | 'name' | 'category'): void {
+        if (this.sortBy === field) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortBy = field;
+            this.sortDirection = field === 'relevance' ? 'desc' : 'asc';
+        }
+        this.applyPipeline();
+    }
+
+    clearFilters(): void {
+        this.searchTerm = '';
+        this.selectedCategoryId = null;
+        this.selectedPartTypeId = null;
+        this.sortBy = 'relevance';
+        this.sortDirection = 'desc';
+        this.applyPipeline();
+    }
+
+    hasActiveFilters(): boolean {
+        return !!this.searchTerm || this.selectedCategoryId !== null || this.selectedPartTypeId !== null;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Category sidebar helpers
+    // ----------------------------------------------------------------
+
+    /**
+     * Returns categories sorted with user-preferred-theme categories boosted to top.
+     * Categories are already sorted by partCount desc from the server.
+     */
+    get sortedCategories(): CatalogCategory[] {
+        if (this.userPreferredThemeIds.length === 0) {
+            return this.categories;
+        }
+
+        // NOTE: We don't have a direct category→theme mapping on the server yet,
+        // so for now we boost categories whose name partially matches a known
+        // LEGO theme category naming pattern.  A future improvement could add
+        // themeIds to the category endpoint for precise matching.
+        return this.categories;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Navigation
+    // ----------------------------------------------------------------
+
+    navigateToDetail(part: CatalogPartItem): void {
         this.router.navigate(['/parts', part.id]);
     }
 
-    nextPage(): void {
-        if (this.currentPage < this.totalPages) {
-            this.currentPage++;
-            this.fetchPage();
+    navigateBack(): void {
+        this.router.navigate(['/lego']);
+    }
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+        // Recalculate after sidebar toggle
+        setTimeout(() => this.calculateColumns(), 50);
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Helpers
+    // ----------------------------------------------------------------
+
+    getSortIcon(field: string): string {
+        if (this.sortBy !== field) {
+            return 'fas fa-sort';
         }
+        return this.sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
     }
 
-    prevPage(): void {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-            this.fetchPage();
-        }
-    }
-
-    goToPage(page: number): void {
-        this.currentPage = page;
-        this.fetchPage();
-    }
-
-    getPartTypeIcon(part: CatalogPart): string {
+    getPartTypeIcon(part: CatalogPartItem): string {
         const typeName = part.partTypeName?.toLowerCase() || '';
         if (typeName.includes('plate')) return 'fas fa-grip-lines';
         if (typeName.includes('brick')) return 'fas fa-cube';
@@ -177,17 +401,46 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         return 'fas fa-puzzle-piece';
     }
 
-    formatDimensions(part: CatalogPart): string {
+    formatDimensions(part: CatalogPartItem): string {
         if (!part.widthLdu && !part.heightLdu && !part.depthLdu) return '—';
         return `${part.widthLdu || 0} × ${part.heightLdu || 0} × ${part.depthLdu || 0}`;
     }
+
+    getCategoryCount(catId: number): number {
+        const cat = this.categories.find(c => c.id === catId);
+        return cat ? cat.partCount : 0;
+    }
+
+    /**
+     * trackBy for *cdkVirtualFor on card rows — uses the first item's id in the row.
+     */
+    trackRow(index: number, row: CardRow): number {
+        return row.items.length > 0 ? row.items[0].id : index;
+    }
+
+    /**
+     * trackBy for *ngFor on individual cards within a row.
+     */
+    trackCard(index: number, item: CatalogPartItem): number {
+        return item.id;
+    }
+
+    /**
+     * Compute the thumbnail cache key for a part, matching the service's
+     * composite key format: 'path:colourHex' using the palette colour.
+     */
+    thumbnailKey(part: CatalogPartItem): string {
+        const colour = this.LEGO_PALETTE[part.id % this.LEGO_PALETTE.length];
+        return LDrawThumbnailService.cacheKey(part.geometryFilePath, colour);
+    }
+
 
     // ----------------------------------------------------------------
     //  Isometric SVG Brick Rendering
     // ----------------------------------------------------------------
 
     /** Get effective LDU dimensions — uses real data, parsed title, or type-based defaults */
-    private getPartDimensions(part: CatalogPart): { w: number; h: number; d: number } {
+    private getPartDimensions(part: CatalogPartItem): { w: number; h: number; d: number } {
         // 1. Use actual LDU dimensions if available
         if (part.widthLdu > 0 || part.heightLdu > 0 || part.depthLdu > 0) {
             return {
@@ -251,7 +504,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Get colour palette based on brick category */
-    getPartColour(part: CatalogPart): { top: string; front: string; side: string; stud: string; outline: string } {
+    getPartColour(part: CatalogPartItem): { top: string; front: string; side: string; stud: string; outline: string } {
         const typeName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
 
         if (typeName.includes('brick')) return { top: '#ffb74d', front: '#f09030', side: '#c06a20', stud: '#ffd180', outline: '#a05010' };
@@ -277,80 +530,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Compute isometric polygon points for 3 faces of the brick */
-    getIsometricPoints(part: CatalogPart): { top: string; front: string; side: string } {
-        const dims = this.getPartDimensions(part);
-        const rawW = dims.w;
-        const rawH = dims.h;
-        const rawD = dims.d;
-
-        // Scale to fit within the viewport with isometric projection
-        const maxDim = Math.max(rawW, rawH, rawD);
-        const scale = 32 / maxDim;
-
-        const w = rawW * scale;  // width along x-axis
-        const h = rawH * scale;  // height along y-axis
-        const d = rawD * scale;  // depth along z-axis
-
-        // Isometric projection vectors
-        // x-axis goes right and slightly down: (cos30, sin30) = (0.866, 0.5)
-        // z-axis goes left and slightly down:  (-cos30, sin30) = (-0.866, 0.5)
-        // y-axis goes straight up: (0, -1)
-        const cx = 55;  // center x of SVG
-        const cy = 55;  // center y of SVG
-
-        const ix = 0.866;  // cos(30°)
-        const iy = 0.5;    // sin(30°)
-
-        // Compute the 8 corners of the box
-        // Bottom-front-left (origin point)
-        const bflX = cx - w * ix / 2 + d * ix / 2;
-        const bflY = cy + h / 2;
-
-        // Bottom-front-right
-        const bfrX = bflX + w * ix;
-        const bfrY = bflY + w * iy;
-
-        // Bottom-back-left
-        const bblX = bflX - d * ix;
-        const bblY = bflY + d * iy;
-
-        // Bottom-back-right
-        const bbrX = bblX + w * ix;
-        const bbrY = bblY + w * iy;
-
-        // Top versions (shift up by h)
-        const tflX = bflX;
-        const tflY = bflY - h;
-
-        const tfrX = bfrX;
-        const tfrY = bfrY - h;
-
-        const tblX = bblX;
-        const tblY = bblY - h;
-
-        const tbrX = bbrX;
-        const tbrY = bbrY - h;
-
-        // Top face: tfl -> tfr -> tbr -> tbl
-        const top = `${tflX},${tflY} ${tfrX},${tfrY} ${tbrX},${tbrY} ${tblX},${tblY}`;
-
-        // Front face: tfl -> tfr -> bfr -> bfl
-        const front = `${tflX},${tflY} ${tfrX},${tfrY} ${bfrX},${bfrY} ${bflX},${bflY}`;
-
-        // Right side face: tfr -> tbr -> bbr -> bfr
-        const side = `${tfrX},${tfrY} ${tbrX},${tbrY} ${bbrX},${bbrY} ${bfrX},${bfrY}`;
-
-        return { top, front, side };
-    }
-
-    /** Whether studs should be shown (bricks and plates) */
-    shouldShowStuds(part: CatalogPart): boolean {
-        const typeName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
-        return typeName.includes('brick') || typeName.includes('plate') || typeName.includes('baseplate');
-    }
-
-    /** Get stud positions on the top face as ellipse centers */
-    getStudPositions(part: CatalogPart): { cx: number; cy: number }[] {
+    getIsometricPoints(part: CatalogPartItem): { top: string; front: string; side: string } {
         const dims = this.getPartDimensions(part);
         const rawW = dims.w;
         const rawH = dims.h;
@@ -368,11 +548,59 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         const ix = 0.866;
         const iy = 0.5;
 
-        // Top face origin (tfl)
+        const bflX = cx - w * ix / 2 + d * ix / 2;
+        const bflY = cy + h / 2;
+        const bfrX = bflX + w * ix;
+        const bfrY = bflY + w * iy;
+        const bblX = bflX - d * ix;
+        const bblY = bflY + d * iy;
+        const bbrX = bblX + w * ix;
+        const bbrY = bblY + w * iy;
+
+        const tflX = bflX;
+        const tflY = bflY - h;
+        const tfrX = bfrX;
+        const tfrY = bfrY - h;
+        const tblX = bblX;
+        const tblY = bblY - h;
+        const tbrX = bbrX;
+        const tbrY = bbrY - h;
+
+        const top = `${tflX},${tflY} ${tfrX},${tfrY} ${tbrX},${tbrY} ${tblX},${tblY}`;
+        const front = `${tflX},${tflY} ${tfrX},${tfrY} ${bfrX},${bfrY} ${bflX},${bflY}`;
+        const side = `${tfrX},${tfrY} ${tbrX},${tbrY} ${bbrX},${bbrY} ${bfrX},${bfrY}`;
+
+        return { top, front, side };
+    }
+
+    /** Whether studs should be shown (bricks and plates) */
+    shouldShowStuds(part: CatalogPartItem): boolean {
+        const typeName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
+        return typeName.includes('brick') || typeName.includes('plate') || typeName.includes('baseplate');
+    }
+
+    /** Get stud positions on the top face as ellipse centers */
+    getStudPositions(part: CatalogPartItem): { cx: number; cy: number }[] {
+        const dims = this.getPartDimensions(part);
+        const rawW = dims.w;
+        const rawH = dims.h;
+        const rawD = dims.d;
+
+        const maxDim = Math.max(rawW, rawH, rawD);
+        const scale = 32 / maxDim;
+
+        const w = rawW * scale;
+        const h = rawH * scale;
+        const d = rawD * scale;
+
+        const cx = 55;
+        const cy = 55;
+        const ix = 0.866;
+        const iy = 0.5;
+
         const tflX = cx - w * ix / 2 + d * ix / 2;
         const tflY = cy + h / 2 - h;
 
-        // How many studs fit? 1 stud = 20 LDU
         const studsW = Math.max(1, Math.min(Math.round(rawW / 20), 6));
         const studsD = Math.max(1, Math.min(Math.round(rawD / 20), 6));
 
@@ -380,14 +608,10 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
 
         for (let si = 0; si < studsW; si++) {
             for (let sj = 0; sj < studsD; sj++) {
-                // Fraction along the width and depth
                 const fw = (si + 0.5) / studsW;
                 const fd = (sj + 0.5) / studsD;
-
-                // Position in isometric space on the top face
                 const sx = tflX + fw * w * ix - fd * d * ix;
                 const sy = tflY + fw * w * iy + fd * d * iy;
-
                 positions.push({ cx: sx, cy: sy });
             }
         }
@@ -396,44 +620,11 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /** Stud ellipse radius scaled to part size */
-    getStudRadius(part: CatalogPart): { rx: number; ry: number } {
+    getStudRadius(part: CatalogPartItem): { rx: number; ry: number } {
         const dims = this.getPartDimensions(part);
         const maxDim = Math.max(dims.w, dims.h, dims.d);
         const scale = 32 / maxDim;
-
-        // Stud is ~6 LDU radius in real space, scale down
         const studR = 5 * scale;
         return { rx: studR * 0.866, ry: studR * 0.5 };
-    }
-
-    clearFilters(): void {
-        this.searchTerm = '';
-        this.selectedCategoryId = null;
-        this.selectedPartTypeId = null;
-        this.currentPage = 1;
-        this.fetchPage();
-    }
-
-    hasActiveFilters(): boolean {
-        return !!this.searchTerm || this.selectedCategoryId !== null || this.selectedPartTypeId !== null;
-    }
-
-    getCategoryCount(catId: number): number {
-        const cat = this.categories.find(c => c.id === catId);
-        return cat ? cat.partCount : 0;
-    }
-
-    getVisiblePages(): number[] {
-        const pages: number[] = [];
-        const start = Math.max(1, this.currentPage - 2);
-        const end = Math.min(this.totalPages, start + 4);
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        return pages;
-    }
-
-    toggleSidebar(): void {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
     }
 }

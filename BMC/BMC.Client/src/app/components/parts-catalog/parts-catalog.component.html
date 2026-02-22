@@ -4,8 +4,15 @@
     <div class="catalog-header">
         <div class="header-top">
             <div class="header-title">
+                <div class="breadcrumb">
+                    <a (click)="navigateBack()" class="breadcrumb-link">
+                        <i class="fas fa-globe"></i> Universe
+                    </a>
+                    <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                    <span class="breadcrumb-current">Parts Catalog</span>
+                </div>
                 <h1><i class="fas fa-cubes me-2"></i>Parts Catalog</h1>
-                <p class="header-subtitle">Browse and explore the brick parts library</p>
+                <p class="header-subtitle">Browse {{ totalCount | number }} renderable parts sorted by relevance</p>
             </div>
             <div class="header-actions">
                 <div class="view-toggle">
@@ -19,8 +26,8 @@
                     </button>
                 </div>
                 <div class="total-badge" *ngIf="!loading">
-                    <span class="badge-number">{{ totalCount }}</span>
-                    <span class="badge-label">parts</span>
+                    <span class="badge-number">{{ filteredParts.length | number }}</span>
+                    <span class="badge-label">of {{ totalCount | number }} parts</span>
                 </div>
             </div>
         </div>
@@ -41,6 +48,24 @@
                 <i class="fas fa-undo me-1"></i>Clear
             </button>
         </div>
+
+        <!-- Sort Bar -->
+        <div class="sort-bar">
+            <span class="sort-label">Sort by:</span>
+            <button class="sort-btn" [class.active]="sortBy === 'relevance'" (click)="setSort('relevance')">
+                Relevance <i [class]="getSortIcon('relevance')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'name'" (click)="setSort('name')">
+                Name <i [class]="getSortIcon('name')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'category'" (click)="setSort('category')">
+                Category <i [class]="getSortIcon('category')"></i>
+            </button>
+
+            <span class="results-text">
+                {{ filteredParts.length | number }} results
+            </span>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -59,7 +84,7 @@
                         <span class="cat-name">All Categories</span>
                         <span class="cat-count">{{ totalCount }}</span>
                     </button>
-                    <button *ngFor="let cat of categories" class="category-item"
+                    <button *ngFor="let cat of sortedCategories" class="category-item"
                         [class.active]="selectedCategoryId === cat.id" (click)="selectCategory(cat.id)">
                         <span class="cat-name">{{ cat.name }}</span>
                         <span class="cat-count">{{ cat.partCount }}</span>
@@ -80,19 +105,8 @@
             </div>
         </aside>
 
-        <!-- Parts Grid/List -->
+        <!-- Parts Content -->
         <main class="parts-content">
-
-            <!-- Results Info -->
-            <div class="results-info" *ngIf="!loading">
-                <span class="results-text">
-                    {{ totalCount }} part{{ totalCount !== 1 ? 's' : '' }}
-                    <span *ngIf="hasActiveFilters()"> matching filters</span>
-                </span>
-                <span class="page-info" *ngIf="totalPages > 1">
-                    Page {{ currentPage }} of {{ totalPages }}
-                </span>
-            </div>
 
             <!-- Loading Skeleton -->
             <div *ngIf="loading" class="parts-grid">
@@ -104,111 +118,103 @@
                 </div>
             </div>
 
-            <!-- Grid View -->
-            <div *ngIf="!loading && viewMode === 'grid'" class="parts-grid">
-                <div *ngFor="let part of displayedParts; let i = index" class="part-card"
-                    (click)="navigateToDetail(part)" [style.animation-delay]="(i % 12) * 30 + 'ms'">
+            <!-- Grid View — Virtual Scroll -->
+            <cdk-virtual-scroll-viewport *ngIf="!loading && viewMode === 'grid' && cardRows.length > 0"
+                [itemSize]="rowHeight" minBufferPx="800" maxBufferPx="1600" class="card-viewport">
 
-                    <div class="card-visual">
-                        <!-- 3D thumbnail (rendered offscreen by LDrawThumbnailService) -->
-                        <img *ngIf="thumbnails.get(part.geometryFilePath)" [src]="thumbnails.get(part.geometryFilePath)"
-                            class="thumbnail-3d" alt="3D preview" />
+                <div class="card-row" *cdkVirtualFor="let row of cardRows; trackBy: trackRow">
+                    <div class="part-card" *ngFor="let part of row.items; trackBy: trackCard"
+                        (click)="navigateToDetail(part)">
 
-                        <!-- SVG fallback (shown while 3D loads, or if no geometry file) -->
-                        <svg *ngIf="!thumbnails.get(part.geometryFilePath)" viewBox="0 0 110 110" class="brick-svg"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <ellipse cx="55" cy="90" rx="26" ry="8" fill="rgba(0,0,0,0.25)" />
-                            <polygon [attr.points]="getIsometricPoints(part).side"
-                                [attr.fill]="getPartColour(part).side" [attr.stroke]="getPartColour(part).outline"
-                                stroke-width="0.8" />
-                            <polygon [attr.points]="getIsometricPoints(part).front"
-                                [attr.fill]="getPartColour(part).front" [attr.stroke]="getPartColour(part).outline"
-                                stroke-width="0.8" />
-                            <polygon [attr.points]="getIsometricPoints(part).top" [attr.fill]="getPartColour(part).top"
-                                [attr.stroke]="getPartColour(part).outline" stroke-width="0.8" />
-                            <ng-container *ngIf="shouldShowStuds(part)">
-                                <ellipse *ngFor="let stud of getStudPositions(part)" [attr.cx]="stud.cx"
-                                    [attr.cy]="stud.cy" [attr.rx]="getStudRadius(part).rx"
-                                    [attr.ry]="getStudRadius(part).ry" [attr.fill]="getPartColour(part).stud"
-                                    [attr.stroke]="getPartColour(part).outline" stroke-width="0.5" opacity="0.85" />
-                            </ng-container>
-                        </svg>
-                    </div>
+                        <div class="card-visual">
+                            <!-- 3D thumbnail (rendered offscreen by LDrawThumbnailService) -->
+                            <img *ngIf="thumbnails.get(thumbnailKey(part))" [src]="thumbnails.get(thumbnailKey(part))"
+                                class="thumbnail-3d" alt="3D preview" />
 
-                    <div class="card-body">
-                        <h3 class="part-name">{{ part.ldrawTitle || part.name }}</h3>
-                        <span class="part-ldraw">{{ part.ldrawPartId }}</span>
+                            <!-- SVG fallback (shown while 3D loads) -->
+                            <svg *ngIf="!thumbnails.get(thumbnailKey(part))" viewBox="0 0 110 110" class="brick-svg"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <ellipse cx="55" cy="90" rx="26" ry="8" fill="rgba(0,0,0,0.25)" />
+                                <polygon [attr.points]="getIsometricPoints(part).side"
+                                    [attr.fill]="getPartColour(part).side" [attr.stroke]="getPartColour(part).outline"
+                                    stroke-width="0.8" />
+                                <polygon [attr.points]="getIsometricPoints(part).front"
+                                    [attr.fill]="getPartColour(part).front" [attr.stroke]="getPartColour(part).outline"
+                                    stroke-width="0.8" />
+                                <polygon [attr.points]="getIsometricPoints(part).top"
+                                    [attr.fill]="getPartColour(part).top" [attr.stroke]="getPartColour(part).outline"
+                                    stroke-width="0.8" />
+                                <ng-container *ngIf="shouldShowStuds(part)">
+                                    <ellipse *ngFor="let stud of getStudPositions(part)" [attr.cx]="stud.cx"
+                                        [attr.cy]="stud.cy" [attr.rx]="getStudRadius(part).rx"
+                                        [attr.ry]="getStudRadius(part).ry" [attr.fill]="getPartColour(part).stud"
+                                        [attr.stroke]="getPartColour(part).outline" stroke-width="0.5" opacity="0.85" />
+                                </ng-container>
+                            </svg>
 
-                        <div class="part-meta">
-                            <span class="meta-item category-badge" *ngIf="part.categoryName" title="Category">
-                                <i class="fas fa-tag me-1"></i>{{ part.categoryName }}
+                            <!-- Set count badge -->
+                            <div class="set-count-badge" *ngIf="part.setCount > 0" title="Appears in sets">
+                                <i class="fas fa-box-open"></i> {{ part.setCount }}
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="part-name">{{ part.ldrawTitle || part.name }}</h3>
+                            <span class="part-ldraw">{{ part.ldrawPartId }}</span>
+
+                            <div class="part-meta">
+                                <span class="meta-item category-badge" *ngIf="part.categoryName" title="Category">
+                                    <i class="fas fa-tag me-1"></i>{{ part.categoryName }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <span class="dim-badge" title="Dimensions (LDU)">
+                                <i class="fas fa-ruler-combined me-1"></i>{{ formatDimensions(part) }}
                             </span>
-                            <span class="meta-item" *ngIf="part.author" title="Author">
-                                <i class="fas fa-user me-1"></i>{{ part.author }}
-                            </span>
-                            <span class="meta-item keywords-text" *ngIf="part.keywords" title="Keywords">
-                                <i class="fas fa-key me-1"></i>{{ part.keywords }}
+                            <span class="mass-badge" *ngIf="part.massGrams > 0" title="Mass">
+                                {{ part.massGrams }}g
                             </span>
                         </div>
                     </div>
-
-                    <div class="card-footer">
-                        <span class="dim-badge" title="Dimensions (LDU)">
-                            <i class="fas fa-ruler-combined me-1"></i>{{ formatDimensions(part) }}
-                        </span>
-                        <span class="mass-badge" *ngIf="part.massGrams > 0" title="Mass">
-                            {{ part.massGrams }}g
-                        </span>
-                        <span class="version-badge" *ngIf="part.versionNumber">
-                            v{{ part.versionNumber }}
-                        </span>
-                    </div>
                 </div>
-            </div>
 
-            <!-- List View -->
-            <div *ngIf="!loading && viewMode === 'list'" class="parts-list">
+            </cdk-virtual-scroll-viewport>
+
+            <!-- List View — Virtual Scroll -->
+            <cdk-virtual-scroll-viewport *ngIf="!loading && viewMode === 'list' && cardRows.length > 0" [itemSize]="42"
+                minBufferPx="600" maxBufferPx="1200" class="list-viewport">
+
                 <div class="list-header">
                     <span class="lh-name">Name</span>
                     <span class="lh-ldraw">LDraw ID</span>
                     <span class="lh-category">Category</span>
-                    <span class="lh-type">Type</span>
+                    <span class="lh-sets">Sets</span>
                     <span class="lh-dims">Dimensions</span>
                 </div>
-                <div *ngFor="let part of displayedParts; let i = index" class="list-row"
-                    (click)="navigateToDetail(part)" [style.animation-delay]="(i % 20) * 15 + 'ms'">
+
+                <div class="list-row" *cdkVirtualFor="let part of filteredParts; trackBy: trackCard"
+                    (click)="navigateToDetail(part)">
                     <span class="lr-name">
                         <i [class]="getPartTypeIcon(part)" class="row-icon me-2"></i>
                         {{ part.ldrawTitle || part.name }}
                     </span>
                     <span class="lr-ldraw">{{ part.ldrawPartId }}</span>
                     <span class="lr-category">{{ part.categoryName || '—' }}</span>
-                    <span class="lr-type">{{ part.partTypeName || '—' }}</span>
+                    <span class="lr-sets">{{ part.setCount > 0 ? part.setCount : '—' }}</span>
                     <span class="lr-dims">{{ formatDimensions(part) }}</span>
                 </div>
-            </div>
+
+            </cdk-virtual-scroll-viewport>
 
             <!-- Empty State -->
-            <div *ngIf="!loading && displayedParts.length === 0" class="empty-state">
+            <div *ngIf="!loading && filteredParts.length === 0" class="empty-state">
                 <i class="fas fa-cubes empty-icon"></i>
                 <h3>No parts found</h3>
                 <p>Try adjusting your search or category filters</p>
                 <button class="reset-btn" (click)="clearFilters()">
                     <i class="fas fa-undo me-2"></i>Reset Filters
-                </button>
-            </div>
-
-            <!-- Pagination -->
-            <div *ngIf="!loading && totalPages > 1" class="pagination-bar">
-                <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button *ngFor="let page of getVisiblePages()" class="page-btn" [class.active]="page === currentPage"
-                    (click)="goToPage(page)">
-                    {{ page }}
-                </button>
-                <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
-                    <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
         </main>

@@ -22,22 +22,22 @@
        ================================================================ */
 
         :root {
-            --pbl-bg-start: #1a1005;
-            --pbl-bg-mid: #2d1a08;
-            --pbl-border: rgba(255, 167, 38, 0.12);
-            --pbl-brand-1: #ffa726;
-            --pbl-brand-2: #ff8f00;
-            --pbl-brand-3: #ffb74d;
-            --pbl-glass-bg: rgba(255, 167, 38, 0.04);
-            --pbl-glass-border: rgba(255, 167, 38, 0.1);
-            --pbl-glow: rgba(255, 167, 38, 0.06);
-            --pbl-spinner: #ffa726;
-            --pbl-spinner-faint: rgba(255, 167, 38, 0.3);
-            --pbl-brick-face: #4A5D6A;
-            --pbl-brick-shadow: #354550;
-            --pbl-brick-light: #5A7080;
-            --pbl-brick-stroke: rgba(0, 0, 0, 0.3);
-            --pbl-stud: #FF5722;
+            --pbl-bg-start: #f5f5f0;
+            --pbl-bg-mid: #eeeee8;
+            --pbl-border: rgba(0, 0, 0, 0.08);
+            --pbl-brand-1: #E3000B;
+            --pbl-brand-2: #006CB7;
+            --pbl-brand-3: #FFCD03;
+            --pbl-glass-bg: rgba(255, 255, 255, 0.8);
+            --pbl-glass-border: rgba(0, 0, 0, 0.08);
+            --pbl-glow: rgba(227, 0, 11, 0.08);
+            --pbl-spinner: #E3000B;
+            --pbl-spinner-faint: rgba(227, 0, 11, 0.3);
+            --pbl-brick-face: #E3000B;
+            --pbl-brick-shadow: #b80009;
+            --pbl-brick-light: #ff4d55;
+            --pbl-brick-stroke: rgba(0, 0, 0, 0.15);
+            --pbl-stud: #FFCD03;
         }
 
         #pre-bootstrap {
@@ -301,8 +301,20 @@
     <!-- Theme-aware pre-bootstrap: set CSS custom props before Angular loads -->
     <script>
         (function () {
-            var theme = localStorage.getItem('bmc-theme') || 'default';
+            var theme = localStorage.getItem('bmc-theme') || 'brick-builder';
             var palettes = {
+                'default': {
+                    '--pbl-bg-start': '#1a1005', '--pbl-bg-mid': '#2d1a08',
+                    '--pbl-border': 'rgba(255, 167, 38, 0.12)',
+                    '--pbl-brand-1': '#ffa726', '--pbl-brand-2': '#ff8f00', '--pbl-brand-3': '#ffb74d',
+                    '--pbl-glass-bg': 'rgba(255, 167, 38, 0.04)',
+                    '--pbl-glass-border': 'rgba(255, 167, 38, 0.1)',
+                    '--pbl-glow': 'rgba(255, 167, 38, 0.06)',
+                    '--pbl-spinner': '#ffa726', '--pbl-spinner-faint': 'rgba(255, 167, 38, 0.3)',
+                    '--pbl-brick-face': '#4A5D6A', '--pbl-brick-shadow': '#354550',
+                    '--pbl-brick-light': '#5A7080', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.3)',
+                    '--pbl-stud': '#FF5722'
+                },
                 'miami-vice': {
                     '--pbl-bg-start': '#1a0a2e', '--pbl-bg-mid': '#2d1b4e',
                     '--pbl-border': 'rgba(255, 110, 199, 0.15)',
@@ -326,6 +338,78 @@
                     '--pbl-brick-face': '#3A5A3A', '--pbl-brick-shadow': '#2A4A2A',
                     '--pbl-brick-light': '#4A6A4A', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.3)',
                     '--pbl-stud': '#00ff41'
+                },
+                'cyberpunk': {
+                    '--pbl-bg-start': '#0c0c0c', '--pbl-bg-mid': '#141414',
+                    '--pbl-border': 'rgba(252, 238, 9, 0.12)',
+                    '--pbl-brand-1': '#fcee09', '--pbl-brand-2': '#e0d500', '--pbl-brand-3': '#fff9a0',
+                    '--pbl-glass-bg': 'rgba(12, 12, 12, 0.55)',
+                    '--pbl-glass-border': 'rgba(252, 238, 9, 0.2)',
+                    '--pbl-glow': 'rgba(252, 238, 9, 0.08)',
+                    '--pbl-spinner': '#fcee09', '--pbl-spinner-faint': 'rgba(252, 238, 9, 0.3)',
+                    '--pbl-brick-face': '#5A5040', '--pbl-brick-shadow': '#403828',
+                    '--pbl-brick-light': '#6A6050', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.3)',
+                    '--pbl-stud': '#ff003c'
+                },
+                'retro-arcade': {
+                    '--pbl-bg-start': '#050505', '--pbl-bg-mid': '#0a0a12',
+                    '--pbl-border': 'rgba(255, 0, 255, 0.12)',
+                    '--pbl-brand-1': '#ff00ff', '--pbl-brand-2': '#cc00cc', '--pbl-brand-3': '#00e5ff',
+                    '--pbl-glass-bg': 'rgba(5, 5, 5, 0.55)',
+                    '--pbl-glass-border': 'rgba(255, 0, 255, 0.2)',
+                    '--pbl-glow': 'rgba(255, 0, 255, 0.1)',
+                    '--pbl-spinner': '#ff00ff', '--pbl-spinner-faint': 'rgba(255, 0, 255, 0.3)',
+                    '--pbl-brick-face': '#4A3A6A', '--pbl-brick-shadow': '#352858',
+                    '--pbl-brick-light': '#5A4A7A', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.3)',
+                    '--pbl-stud': '#00e5ff'
+                },
+                'blueprint': {
+                    '--pbl-bg-start': '#0a1628', '--pbl-bg-mid': '#0e1e36',
+                    '--pbl-border': 'rgba(79, 195, 247, 0.1)',
+                    '--pbl-brand-1': '#4fc3f7', '--pbl-brand-2': '#0097c7', '--pbl-brand-3': '#a6e1fa',
+                    '--pbl-glass-bg': 'rgba(10, 22, 40, 0.55)',
+                    '--pbl-glass-border': 'rgba(79, 195, 247, 0.18)',
+                    '--pbl-glow': 'rgba(79, 195, 247, 0.08)',
+                    '--pbl-spinner': '#4fc3f7', '--pbl-spinner-faint': 'rgba(79, 195, 247, 0.3)',
+                    '--pbl-brick-face': '#37474f', '--pbl-brick-shadow': '#263238',
+                    '--pbl-brick-light': '#455a64', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.3)',
+                    '--pbl-stud': '#4fc3f7'
+                },
+                'pastel-dreams': {
+                    '--pbl-bg-start': '#1a1025', '--pbl-bg-mid': '#221530',
+                    '--pbl-border': 'rgba(179, 136, 255, 0.12)',
+                    '--pbl-brand-1': '#b388ff', '--pbl-brand-2': '#9c5cff', '--pbl-brand-3': '#f48fb1',
+                    '--pbl-glass-bg': 'rgba(26, 16, 37, 0.55)',
+                    '--pbl-glass-border': 'rgba(179, 136, 255, 0.2)',
+                    '--pbl-glow': 'rgba(179, 136, 255, 0.1)',
+                    '--pbl-spinner': '#b388ff', '--pbl-spinner-faint': 'rgba(179, 136, 255, 0.3)',
+                    '--pbl-brick-face': '#5A4070', '--pbl-brick-shadow': '#452D5E',
+                    '--pbl-brick-light': '#6A5080', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.2)',
+                    '--pbl-stud': '#f48fb1'
+                },
+                'blueprint-light': {
+                    '--pbl-bg-start': '#eceff1', '--pbl-bg-mid': '#e0e6ea',
+                    '--pbl-border': 'rgba(2, 136, 209, 0.1)',
+                    '--pbl-brand-1': '#0288d1', '--pbl-brand-2': '#01579b', '--pbl-brand-3': '#4fc3f7',
+                    '--pbl-glass-bg': 'rgba(255, 255, 255, 0.82)',
+                    '--pbl-glass-border': 'rgba(2, 136, 209, 0.12)',
+                    '--pbl-glow': 'rgba(2, 136, 209, 0.1)',
+                    '--pbl-spinner': '#0288d1', '--pbl-spinner-faint': 'rgba(2, 136, 209, 0.3)',
+                    '--pbl-brick-face': '#0288d1', '--pbl-brick-shadow': '#01579b',
+                    '--pbl-brick-light': '#4fc3f7', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.12)',
+                    '--pbl-stud': '#0288d1'
+                },
+                'pastel-light': {
+                    '--pbl-bg-start': '#f3eff8', '--pbl-bg-mid': '#ebe5f2',
+                    '--pbl-border': 'rgba(124, 77, 255, 0.08)',
+                    '--pbl-brand-1': '#7c4dff', '--pbl-brand-2': '#651fff', '--pbl-brand-3': '#ec407a',
+                    '--pbl-glass-bg': 'rgba(255, 255, 255, 0.82)',
+                    '--pbl-glass-border': 'rgba(124, 77, 255, 0.1)',
+                    '--pbl-glow': 'rgba(124, 77, 255, 0.1)',
+                    '--pbl-spinner': '#7c4dff', '--pbl-spinner-faint': 'rgba(124, 77, 255, 0.3)',
+                    '--pbl-brick-face': '#7c4dff', '--pbl-brick-shadow': '#651fff',
+                    '--pbl-brick-light': '#b388ff', '--pbl-brick-stroke': 'rgba(0, 0, 0, 0.1)',
+                    '--pbl-stud': '#ec407a'
                 }
             };
             var palette = palettes[theme];

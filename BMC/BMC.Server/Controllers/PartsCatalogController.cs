@@ -76,6 +76,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             public float? depthLdu { get; set; }
             public float? massGrams { get; set; }
             public int versionNumber { get; set; }
+            public int setCount { get; set; }
         }
 
         /// <summary>
@@ -243,6 +244,88 @@ namespace Foundation.BMC.Controllers.WebAPI
             _cache.Set(cacheKey, result, PageCacheDuration);
 
             return Ok(result);
+        }
+
+
+        /// <summary>
+        /// GET /api/parts-catalog/all
+        ///
+        /// Returns the full list of renderable parts (those with LDraw geometry data)
+        /// with a setCount field indicating how many distinct sets each part appears in.
+        /// Designed for client-side caching in IndexedDB with full in-memory filter/sort.
+        /// Cached server-side for 10 minutes.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/parts-catalog/all")]
+        public async Task<IActionResult> GetAllCatalogParts(CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            const string cacheKey = "catalog:all-parts";
+
+            if (_cache.TryGetValue(cacheKey, out List<CatalogPartDto> cached))
+            {
+                return Ok(cached);
+            }
+
+            //
+            // Step 1: Pre-compute set counts per part.
+            // GroupBy brickPartId, count distinct legoSetId values.
+            //
+            Dictionary<int, int> setCountsByPartId = await _context.LegoSetParts
+                .Where(sp => sp.active == true && sp.deleted == false)
+                .GroupBy(sp => sp.brickPartId)
+                .Select(g => new { PartId = g.Key, SetCount = g.Select(sp => sp.legoSetId).Distinct().Count() })
+                .ToDictionaryAsync(x => x.PartId, x => x.SetCount, cancellationToken);
+
+            //
+            // Step 2: Load all renderable parts.
+            //
+            List<CatalogPartDto> items = await _context.BrickParts
+                .Where(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false)
+                .OrderByDescending(bp => bp.id)   // deterministic order; client re-sorts
+                .Select(bp => new CatalogPartDto
+                {
+                    id = bp.id,
+                    name = bp.name,
+                    ldrawPartId = bp.ldrawPartId,
+                    ldrawTitle = bp.ldrawTitle,
+                    ldrawCategory = bp.ldrawCategory,
+                    brickCategoryId = bp.brickCategoryId,
+                    categoryName = bp.brickCategory != null ? bp.brickCategory.name : null,
+                    partTypeId = bp.partTypeId,
+                    partTypeName = bp.partType != null ? bp.partType.name : null,
+                    geometryFilePath = bp.geometryFilePath,
+                    keywords = bp.keywords,
+                    author = bp.author,
+                    widthLdu = bp.widthLdu,
+                    heightLdu = bp.heightLdu,
+                    depthLdu = bp.depthLdu,
+                    massGrams = bp.massGrams,
+                    versionNumber = bp.versionNumber,
+                    setCount = 0  // populated below
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            //
+            // Step 3: Merge set counts into the DTOs.
+            //
+            foreach (var item in items)
+            {
+                if (setCountsByPartId.TryGetValue(item.id, out int count))
+                {
+                    item.setCount = count;
+                }
+            }
+
+            _cache.Set(cacheKey, items, SidebarCacheDuration);
+
+            return Ok(items);
         }
 
 

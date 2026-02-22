@@ -42,7 +42,7 @@ class ThumbnailCacheDatabase extends Dexie {
     thumbnails!: Table<ThumbnailCacheEntry, string>;
 
     constructor() {
-        super('bmc-thumbnails-v2');
+        super('bmc-thumbnails-v4');
 
         this.version(1).stores({
             thumbnails: 'cacheKey'
@@ -398,6 +398,12 @@ export class LDrawThumbnailService {
                         // Add model to scene
                         //
                         this.scene.add(group);
+
+                        //
+                        // LDraw uses Y-down convention; Three.js uses Y-up.
+                        // Rotate 180° around X to flip the model right-side-up.
+                        //
+                        group.rotation.x = Math.PI;
 
                         //
                         // Frame the model — compute bounding box, position camera
