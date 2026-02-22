@@ -119,6 +119,12 @@ namespace Foundation.BMC
                 builder.Services.AddSingleton<PartsUniverseService>();
                 builder.Services.AddHostedService(sp => sp.GetRequiredService<PartsUniverseService>());
 
+                //
+                // Set Explorer precomputation service (background startup task)
+                //
+                builder.Services.AddSingleton<SetExplorerService>();
+                builder.Services.AddHostedService(sp => sp.GetRequiredService<SetExplorerService>());
+
 
                 //
                 // Add HTTP client factory
@@ -249,6 +255,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(ProfileController));
                 controllers.Add(typeof(AiController));
                 controllers.Add(typeof(PartsUniverseController));
+                controllers.Add(typeof(SetExplorerController));
 
                 //
                 // Start of code generated controller list for BMC module

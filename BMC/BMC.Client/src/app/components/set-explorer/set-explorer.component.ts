@@ -1,9 +1,18 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, Subscription, forkJoin } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
-import { LegoSetService, LegoSetData, LegoSetQueryParameters } from '../../bmc-data-services/lego-set.service';
-import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
+import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+
+
+/**
+ * An internal type representing a single "row" inside the virtual-scroll viewport.
+ * Each row contains `columnsPerRow` set cards rendered horizontally.
+ */
+interface CardRow {
+    items: SetExplorerItem[];
+}
+
 
 @Component({
     selector: 'app-set-explorer',
@@ -17,21 +26,39 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     private loadSub = new Subscription();
 
     //
-    // Data
+    // Full dataset loaded once from the API / IndexedDB cache
     //
-    sets: LegoSetData[] = [];
-    themes: LegoThemeData[] = [];
+    private allSets: SetExplorerItem[] = [];
+
+    //
+    // Derived from allSets after applying filters + sort
+    //
+    filteredSets: SetExplorerItem[] = [];
+
+    //
+    // Virtual-scroll rows: each row is a horizontal slice of N cards
+    //
+    cardRows: CardRow[] = [];
+    columnsPerRow = 6;
+    rowHeight = 370;  // px — matches the card height in SCSS
+
+    //
+    // Extracted locally from the loaded data
+    //
+    themes: { id: number; name: string }[] = [];
+
     loading = true;
+    totalCount = 0;
 
     //
     // Filters
     //
     searchTerm = '';
-    selectedThemeId: number | bigint | null = null;
+    selectedThemeId: number | null = null;
     yearMin: number | null = null;
     yearMax: number | null = null;
-    sortBy: 'name' | 'year' | 'partCount' = 'name';
-    sortDirection: 'asc' | 'desc' = 'asc';
+    sortBy: 'year' | 'name' | 'partCount' = 'year';
+    sortDirection: 'asc' | 'desc' = 'desc';   // newest first by default
 
     //
     // Year range for UI
@@ -39,22 +66,20 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     availableYearMin = 1950;
     availableYearMax = 2026;
 
-    //
-    // Pagination
-    //
-    pageSize = 36;
-    currentPage = 1;
-    totalCount = 0;
-    totalPages = 1;
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private setService: LegoSetService,
-        private themeService: LegoThemeService
+        private setExplorerApi: SetExplorerApiService
     ) { }
 
+
     ngOnInit(): void {
+        //
+        // Recalculate columns on width change
+        //
+        this.calculateColumns();
+
         //
         // Debounced search
         //
@@ -63,22 +88,7 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             takeUntil(this.destroy$)
         ).subscribe(term => {
             this.searchTerm = term;
-            this.currentPage = 1;
-            this.fetchSets();
-        });
-
-        //
-        // Load theme list for filter dropdown
-        //
-        this.themeService.GetLegoThemeList({ active: true, deleted: false }).pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (themes) => {
-                this.themes = themes.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            },
-            error: () => {
-                this.themes = [];
-            }
+            this.applyPipeline();
         });
 
         //
@@ -95,9 +105,40 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
                 this.yearMin = y;
                 this.yearMax = y;
             }
-            this.fetchSets();
+        });
+
+        //
+        // Load full dataset (from IndexedDB cache or server)
+        //
+        this.loadSub = this.setExplorerApi.getExploreSets().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (sets) => {
+                this.allSets = sets;
+                this.totalCount = sets.length;
+
+                //
+                // Extract unique themes from the data
+                //
+                const themeMap = new Map<number, string>();
+                for (const s of sets) {
+                    if (s.themeId != null && s.themeName) {
+                        themeMap.set(s.themeId, s.themeName);
+                    }
+                }
+                this.themes = Array.from(themeMap, ([id, name]) => ({ id, name }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                this.applyPipeline();
+                this.loading = false;
+            },
+            error: () => {
+                this.allSets = [];
+                this.loading = false;
+            }
         });
     }
+
 
     ngOnDestroy(): void {
         this.destroy$.next();
@@ -105,95 +146,114 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.loadSub.unsubscribe();
     }
 
-    fetchSets(): void {
-        // Cancel any in-flight request and reset state
-        this.loadSub.unsubscribe();
-        this.loadSub = new Subscription();
-        this.loading = true;
-        this.sets = [];
 
-        const config: any = {
-            active: true,
-            deleted: false,
-            includeRelations: true,
-            pageSize: this.pageSize,
-            pageNumber: this.currentPage
-        };
+    // ----------------------------------------------------------------
+    //  Filter + Sort Pipeline  (operates on full dataset in memory)
+    // ----------------------------------------------------------------
 
+    private applyPipeline(): void {
+        let result = this.allSets;
+
+        //
+        // Text search — name, setNumber, themeName
+        //
         if (this.searchTerm) {
-            config.anyStringContains = this.searchTerm;
+            const lower = this.searchTerm.toLowerCase();
+            result = result.filter(s =>
+                (s.name || '').toLowerCase().includes(lower) ||
+                (s.setNumber || '').toLowerCase().includes(lower) ||
+                (s.themeName || '').toLowerCase().includes(lower)
+            );
         }
 
+        //
+        // Theme filter
+        //
         if (this.selectedThemeId !== null) {
-            config.legoThemeId = this.selectedThemeId;
+            result = result.filter(s => s.themeId === this.selectedThemeId);
         }
 
-        if (this.yearMin !== null && this.yearMax !== null && this.yearMin === this.yearMax) {
-            config.year = this.yearMin;
+        //
+        // Year range
+        //
+        if (this.yearMin !== null) {
+            result = result.filter(s => s.year >= this.yearMin!);
+        }
+        if (this.yearMax !== null) {
+            result = result.filter(s => s.year <= this.yearMax!);
         }
 
-        // Separate count params (no pagination fields)
-        const countConfig = { ...config };
-        delete countConfig.pageSize;
-        delete countConfig.pageNumber;
-        delete countConfig.includeRelations;
-
         //
-        // Fetch sets and count in parallel
+        // Sorting
         //
-        this.loadSub.add(forkJoin({
-            sets: this.setService.GetLegoSetList(config),
-            count: this.setService.GetLegoSetsRowCount(countConfig)
-        }).pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (result) => {
-                let sorted = result.sets;
+        result = this.applySorting(result);
 
-                //
-                // Client-side year range filtering (API only supports exact year)
-                //
-                if (this.yearMin !== null && this.yearMax !== null && this.yearMin !== this.yearMax) {
-                    sorted = sorted.filter(s => {
-                        const y = Number(s.year);
-                        return y >= this.yearMin! && y <= this.yearMax!;
-                    });
-                }
-
-                //
-                // Client-side sorting
-                //
-                sorted = this.applySorting(sorted);
-
-                this.sets = sorted;
-                this.totalCount = Number(result.count);
-                this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
-                this.loading = false;
-            },
-            error: () => {
-                this.sets = [];
-                this.totalCount = 0;
-                this.totalPages = 1;
-                this.loading = false;
-            }
-        }));
+        this.filteredSets = result;
+        this.buildCardRows();
     }
 
-    private applySorting(sets: LegoSetData[]): LegoSetData[] {
+
+    private applySorting(sets: SetExplorerItem[]): SetExplorerItem[] {
         const dir = this.sortDirection === 'asc' ? 1 : -1;
 
         return [...sets].sort((a, b) => {
             switch (this.sortBy) {
                 case 'year':
-                    return (Number(a.year) - Number(b.year)) * dir;
+                    return (a.year - b.year) * dir || (a.partCount - b.partCount) * -1;
                 case 'partCount':
-                    return (Number(a.partCount) - Number(b.partCount)) * dir;
+                    return (a.partCount - b.partCount) * dir;
                 case 'name':
                 default:
                     return (a.name || '').localeCompare(b.name || '') * dir;
             }
         });
     }
+
+
+    /**
+     * Chunk filteredSets into rows of `columnsPerRow` items for the virtual-scroll viewport.
+     */
+    private buildCardRows(): void {
+        const rows: CardRow[] = [];
+        for (let i = 0; i < this.filteredSets.length; i += this.columnsPerRow) {
+            rows.push({ items: this.filteredSets.slice(i, i + this.columnsPerRow) });
+        }
+        this.cardRows = rows;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Responsive column calculation
+    // ----------------------------------------------------------------
+
+    @HostListener('window:resize')
+    onResize(): void {
+        this.calculateColumns();
+    }
+
+    private calculateColumns(): void {
+        const width = window.innerWidth;
+        let cols: number;
+        if (width >= 1600) {
+            cols = 6;
+        } else if (width >= 1200) {
+            cols = 5;
+        } else if (width >= 992) {
+            cols = 4;
+        } else if (width >= 768) {
+            cols = 3;
+        } else {
+            cols = 2;
+        }
+
+        if (cols !== this.columnsPerRow) {
+            this.columnsPerRow = cols;
+            if (this.filteredSets.length > 0) {
+                this.buildCardRows();
+            }
+        }
+    }
+
 
     // ----------------------------------------------------------------
     //  Event Handlers
@@ -204,22 +264,19 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.searchSubject.next(term);
     }
 
-    selectTheme(themeId: number | bigint | null): void {
+    selectTheme(themeId: number | null): void {
         this.selectedThemeId = this.selectedThemeId === themeId ? null : themeId;
-        this.currentPage = 1;
-        this.fetchSets();
+        this.applyPipeline();
     }
 
     applyYearFilter(): void {
-        this.currentPage = 1;
-        this.fetchSets();
+        this.applyPipeline();
     }
 
     clearYearFilter(): void {
         this.yearMin = null;
         this.yearMax = null;
-        this.currentPage = 1;
-        this.fetchSets();
+        this.applyPipeline();
     }
 
     setSort(field: 'name' | 'year' | 'partCount'): void {
@@ -227,9 +284,9 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             this.sortBy = field;
-            this.sortDirection = 'asc';
+            this.sortDirection = field === 'year' ? 'desc' : 'asc';
         }
-        this.sets = this.applySorting(this.sets);
+        this.applyPipeline();
     }
 
     clearFilters(): void {
@@ -237,10 +294,9 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.selectedThemeId = null;
         this.yearMin = null;
         this.yearMax = null;
-        this.sortBy = 'name';
-        this.sortDirection = 'asc';
-        this.currentPage = 1;
-        this.fetchSets();
+        this.sortBy = 'year';
+        this.sortDirection = 'desc';
+        this.applyPipeline();
     }
 
     hasActiveFilters(): boolean {
@@ -248,11 +304,12 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             this.yearMin !== null || this.yearMax !== null;
     }
 
+
     // ----------------------------------------------------------------
     //  Navigation
     // ----------------------------------------------------------------
 
-    navigateToSet(set: LegoSetData): void {
+    navigateToSet(set: SetExplorerItem): void {
         this.router.navigate(['/lego/sets', set.id]);
     }
 
@@ -260,55 +317,29 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.router.navigate(['/lego']);
     }
 
-    // ----------------------------------------------------------------
-    //  Pagination
-    // ----------------------------------------------------------------
-
-    nextPage(): void {
-        if (this.currentPage < this.totalPages) {
-            this.currentPage++;
-            this.fetchSets();
-        }
-    }
-
-    prevPage(): void {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-            this.fetchSets();
-        }
-    }
-
-    goToPage(page: number): void {
-        this.currentPage = page;
-        this.fetchSets();
-    }
-
-    getVisiblePages(): number[] {
-        const pages: number[] = [];
-        const start = Math.max(1, this.currentPage - 2);
-        const end = Math.min(this.totalPages, start + 4);
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        return pages;
-    }
 
     // ----------------------------------------------------------------
     //  Helpers
     // ----------------------------------------------------------------
-
-    getThemeName(themeId: bigint | number | null): string {
-        if (themeId === null) {
-            return 'Unknown';
-        }
-        const theme = this.themes.find(t => Number(t.id) === Number(themeId));
-        return theme ? theme.name : 'Unknown';
-    }
 
     getSortIcon(field: string): string {
         if (this.sortBy !== field) {
             return 'fas fa-sort';
         }
         return this.sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+    }
+
+    /**
+     * trackBy for *cdkVirtualFor on card rows — uses the first item's id in the row.
+     */
+    trackRow(index: number, row: CardRow): number {
+        return row.items.length > 0 ? row.items[0].id : index;
+    }
+
+    /**
+     * trackBy for *ngFor on individual cards within a row.
+     */
+    trackCard(index: number, item: SetExplorerItem): number {
+        return item.id;
     }
 }

@@ -17,8 +17,8 @@
             </div>
             <div class="header-actions">
                 <div class="total-badge">
-                    <span class="badge-number">{{ totalCount | number }}</span>
-                    <span class="badge-label">sets</span>
+                    <span class="badge-number">{{ filteredSets.length | number }}</span>
+                    <span class="badge-label">of {{ totalCount | number }} sets</span>
                 </div>
             </div>
         </div>
@@ -57,18 +57,18 @@
         <!-- Sort Bar -->
         <div class="sort-bar">
             <span class="sort-label">Sort by:</span>
-            <button class="sort-btn" [class.active]="sortBy === 'name'" (click)="setSort('name')">
-                Name <i [class]="getSortIcon('name')"></i>
-            </button>
             <button class="sort-btn" [class.active]="sortBy === 'year'" (click)="setSort('year')">
                 Year <i [class]="getSortIcon('year')"></i>
+            </button>
+            <button class="sort-btn" [class.active]="sortBy === 'name'" (click)="setSort('name')">
+                Name <i [class]="getSortIcon('name')"></i>
             </button>
             <button class="sort-btn" [class.active]="sortBy === 'partCount'" (click)="setSort('partCount')">
                 Parts <i [class]="getSortIcon('partCount')"></i>
             </button>
 
             <span class="results-text">
-                Page {{ currentPage }} of {{ totalPages }}
+                {{ filteredSets.length | number }} results
             </span>
         </div>
     </div>
@@ -83,60 +83,50 @@
         </div>
     </div>
 
-    <!-- Sets Grid -->
-    <div class="sets-grid" *ngIf="!loading && sets.length > 0">
-        <div class="set-card" *ngFor="let set of sets; let i = index" [style.animation-delay]="(i * 30) + 'ms'"
-            (click)="navigateToSet(set)">
+    <!-- Virtual-scroll card grid -->
+    <cdk-virtual-scroll-viewport *ngIf="!loading && cardRows.length > 0" [itemSize]="rowHeight" minBufferPx="800"
+        maxBufferPx="1600" class="card-viewport">
 
-            <!-- Image -->
-            <div class="card-image">
-                <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
-                    (error)="set.imageUrl = null">
-                <div class="image-placeholder" *ngIf="!set.imageUrl">
-                    <i class="fas fa-cube"></i>
+        <div class="card-row" *cdkVirtualFor="let row of cardRows; trackBy: trackRow">
+            <div class="set-card" *ngFor="let set of row.items; trackBy: trackCard" (click)="navigateToSet(set)">
+
+                <!-- Image -->
+                <div class="card-image">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                        (error)="set.imageUrl = null">
+                    <div class="image-placeholder" *ngIf="!set.imageUrl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="year-badge" *ngIf="set.year">{{ set.year }}</div>
                 </div>
-                <div class="year-badge" *ngIf="set.year">{{ set.year }}</div>
-            </div>
 
-            <!-- Info -->
-            <div class="card-body">
-                <h3 class="set-name">{{ set.name }}</h3>
-                <span class="set-number">{{ set.setNumber }}</span>
-            </div>
-
-            <!-- Footer -->
-            <div class="card-footer">
-                <div class="parts-badge">
-                    <i class="fas fa-puzzle-piece"></i>
-                    {{ set.partCount | number }} parts
+                <!-- Info -->
+                <div class="card-body">
+                    <h3 class="set-name">{{ set.name }}</h3>
+                    <span class="set-number">{{ set.setNumber }}</span>
                 </div>
-                <div class="theme-badge" *ngIf="set.legoTheme">
-                    {{ set.legoTheme.name }}
+
+                <!-- Footer -->
+                <div class="card-footer">
+                    <div class="parts-badge">
+                        <i class="fas fa-puzzle-piece"></i>
+                        {{ set.partCount | number }} parts
+                    </div>
+                    <div class="theme-badge" *ngIf="set.themeName">
+                        {{ set.themeName }}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+    </cdk-virtual-scroll-viewport>
 
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!loading && sets.length === 0">
+    <div class="empty-state" *ngIf="!loading && filteredSets.length === 0">
         <div class="empty-icon"><i class="fas fa-box-open"></i></div>
         <h3>No sets found</h3>
         <p>Try adjusting your search or filters</p>
         <button class="reset-btn" (click)="clearFilters()">Reset Filters</button>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-bar" *ngIf="!loading && sets.length > 0 && totalPages > 1">
-        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="page-btn" *ngFor="let page of getVisiblePages()" [class.active]="page === currentPage"
-            (click)="goToPage(page)">
-            {{ page }}
-        </button>
-        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
-            <i class="fas fa-chevron-right"></i>
-        </button>
     </div>
 
 </div>
