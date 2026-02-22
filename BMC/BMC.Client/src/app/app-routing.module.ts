@@ -209,7 +209,7 @@ const routes: Routes = [
     { path: 'parts/:partId', component: CatalogPartDetailComponent, canActivate: [AuthGuard], title: 'Part Detail' },
 
     // LEGO Explorer routes
-    { path: 'lego', component: LegoUniverseComponent, canActivate: [AuthGuard], title: 'LEGO Universe' },
+    { path: 'lego', component: LegoUniverseComponent, canActivate: [AuthGuard], title: 'Universe' },
     { path: 'lego/sets', component: SetExplorerComponent, canActivate: [AuthGuard], title: 'Set Explorer' },
     { path: 'lego/sets/:id', component: SetDetailComponent, canActivate: [AuthGuard], title: 'Set Detail' },
     { path: 'lego/minifigs', component: MinifigGalleryComponent, canActivate: [AuthGuard], title: 'Minifig Gallery' },

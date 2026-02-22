@@ -78,6 +78,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             // Nested links
             public List<ProfileLinkDto> links { get; set; } = new();
+
+            // Nested preferred themes
+            public List<PreferredThemeDto> preferredThemes { get; set; } = new();
         }
 
         /// <summary>
@@ -115,6 +118,26 @@ namespace Foundation.BMC.Controllers.WebAPI
             public int userProfileLinkTypeId { get; set; }
             public string url { get; set; }
             public string displayLabel { get; set; }
+            public int? sequence { get; set; }
+        }
+
+        /// <summary>
+        /// Preferred theme DTO with theme name denormalized.
+        /// </summary>
+        public class PreferredThemeDto
+        {
+            public int id { get; set; }
+            public int legoThemeId { get; set; }
+            public string themeName { get; set; }
+            public int? sequence { get; set; }
+        }
+
+        /// <summary>
+        /// Request body for PUT /api/profile/mine/preferred-themes — array of these.
+        /// </summary>
+        public class SavePreferredThemeRequest
+        {
+            public int legoThemeId { get; set; }
             public int? sequence { get; set; }
         }
 
@@ -229,6 +252,22 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .ToListAsync(cancellationToken);
 
             //
+            // Load preferred themes with theme name
+            //
+            List<PreferredThemeDto> preferredThemes = await _context.UserProfilePreferredThemes
+                .Where(pt => pt.userProfileId == profile.id && pt.active == true && pt.deleted == false)
+                .OrderBy(pt => pt.sequence)
+                .Select(pt => new PreferredThemeDto
+                {
+                    id = pt.id,
+                    legoThemeId = pt.legoThemeId,
+                    themeName = pt.legoTheme.name,
+                    sequence = pt.sequence
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            //
             // Build composite DTO
             //
             var dto = new ProfileDto
@@ -252,7 +291,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 totalFollowing = profileStat?.totalFollowing ?? 0,
                 totalLikesReceived = profileStat?.totalLikesReceived ?? 0,
                 totalAchievementPoints = profileStat?.totalAchievementPoints ?? 0,
-                links = links
+                links = links,
+                preferredThemes = preferredThemes
             };
 
             return Ok(dto);
@@ -788,6 +828,159 @@ namespace Foundation.BMC.Controllers.WebAPI
         #endregion
 
 
+        #region Preferred Themes
+
+        /// <summary>
+        /// GET /api/profile/mine/preferred-themes
+        ///
+        /// Returns the user's preferred LEGO themes.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/preferred-themes")]
+        public async Task<IActionResult> GetMyPreferredThemes(CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            UserProfile profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.tenantGuid == userTenantGuid && p.active == true && p.deleted == false, cancellationToken);
+
+            if (profile == null)
+            {
+                return Ok(new List<PreferredThemeDto>());
+            }
+
+            List<PreferredThemeDto> themes = await _context.UserProfilePreferredThemes
+                .Where(pt => pt.userProfileId == profile.id && pt.active == true && pt.deleted == false)
+                .OrderBy(pt => pt.sequence)
+                .Select(pt => new PreferredThemeDto
+                {
+                    id = pt.id,
+                    legoThemeId = pt.legoThemeId,
+                    themeName = pt.legoTheme.name,
+                    sequence = pt.sequence
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            return Ok(themes);
+        }
+
+
+        /// <summary>
+        /// PUT /api/profile/mine/preferred-themes
+        ///
+        /// Bulk-saves preferred themes (soft-delete existing + recreate).
+        /// This is simpler than individual add/remove for the settings form.
+        /// </summary>
+        [HttpPut]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/profile/mine/preferred-themes")]
+        public async Task<IActionResult> SaveMyPreferredThemes([FromBody] List<SavePreferredThemeRequest> request, CancellationToken cancellationToken = default)
+        {
+            if (request == null)
+            {
+                return BadRequest();
+            }
+
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Community Writer", cancellationToken) == false &&
+                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            UserProfile profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.tenantGuid == userTenantGuid && p.active == true && p.deleted == false, cancellationToken);
+
+            if (profile == null)
+            {
+                return NotFound("Profile not found.");
+            }
+
+            //
+            // Soft-delete all existing preferred themes for this profile
+            //
+            List<UserProfilePreferredTheme> existingThemes = await _context.UserProfilePreferredThemes
+                .Where(pt => pt.userProfileId == profile.id && pt.deleted == false)
+                .ToListAsync(cancellationToken);
+
+            foreach (var theme in existingThemes)
+            {
+                theme.deleted = true;
+                theme.active = false;
+            }
+
+            //
+            // Validate theme IDs exist
+            //
+            List<int> themeIds = request.Select(r => r.legoThemeId).Distinct().ToList();
+
+            List<int> validThemeIds = await _context.LegoThemes
+                .Where(t => themeIds.Contains(t.id) && t.active == true && t.deleted == false)
+                .Select(t => t.id)
+                .ToListAsync(cancellationToken);
+
+            //
+            // Create new preferred theme records
+            //
+            int seq = 0;
+            foreach (var item in request)
+            {
+                if (!validThemeIds.Contains(item.legoThemeId))
+                {
+                    continue; // Skip invalid theme IDs
+                }
+
+                var newPref = new UserProfilePreferredTheme
+                {
+                    tenantGuid = userTenantGuid,
+                    userProfileId = profile.id,
+                    legoThemeId = item.legoThemeId,
+                    sequence = item.sequence ?? seq,
+                    objectGuid = Guid.NewGuid(),
+                    active = true,
+                    deleted = false
+                };
+
+                _context.UserProfilePreferredThemes.Add(newPref);
+                seq++;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Ok(new { action = "saved", themeCount = request.Count(r => validThemeIds.Contains(r.legoThemeId)) });
+        }
+
+        #endregion
+
+
         #region Public Profile (Unauthenticated)
 
         /// <summary>
@@ -838,6 +1031,22 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .ToListAsync(cancellationToken);
 
             //
+            // Load preferred themes with theme name
+            //
+            List<PreferredThemeDto> preferredThemes = await _context.UserProfilePreferredThemes
+                .Where(pt => pt.userProfileId == profile.id && pt.active == true && pt.deleted == false)
+                .OrderBy(pt => pt.sequence)
+                .Select(pt => new PreferredThemeDto
+                {
+                    id = pt.id,
+                    legoThemeId = pt.legoThemeId,
+                    themeName = pt.legoTheme.name,
+                    sequence = pt.sequence
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            //
             // Build public profile DTO — same shape as ProfileDto but with public image URLs
             //
             var dto = new ProfileDto
@@ -861,7 +1070,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 totalFollowing = profileStat?.totalFollowing ?? 0,
                 totalLikesReceived = profileStat?.totalLikesReceived ?? 0,
                 totalAchievementPoints = profileStat?.totalAchievementPoints ?? 0,
-                links = links
+                links = links,
+                preferredThemes = preferredThemes
             };
 
             return Ok(dto);

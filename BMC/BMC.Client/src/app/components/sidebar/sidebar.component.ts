@@ -19,7 +19,7 @@ export class SidebarComponent {
 
     navItems: NavItem[] = [
         { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
-        { icon: 'fas fa-globe', label: 'LEGO Universe', route: '/lego' },
+        { icon: 'fas fa-globe', label: 'Universe', route: '/lego' },
         { icon: 'fas fa-user-circle', label: 'My Profile', route: '/profile' },
         { icon: 'fas fa-cubes', label: 'Parts Catalog', route: '/parts' },
         { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' },

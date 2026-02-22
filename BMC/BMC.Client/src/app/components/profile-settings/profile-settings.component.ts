@@ -18,6 +18,16 @@ interface ProfileLink {
     sequence: number;
 }
 
+interface AvailableTheme {
+    id: number;
+    name: string;
+}
+
+interface PreferredTheme {
+    legoThemeId: number;
+    sequence: number;
+}
+
 @Component({
     selector: 'app-profile-settings',
     templateUrl: './profile-settings.component.html',
@@ -43,6 +53,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     // Links
     links: ProfileLink[] = [];
     linkTypes: LinkType[] = [];
+
+    // Preferred Themes
+    availableThemes: AvailableTheme[] = [];
+    selectedThemeIds: number[] = [];
+    themeSearchTerm = '';
 
     // State
     isLoading = true;
@@ -96,6 +111,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
                     sequence: l.sequence ?? 0
                 }));
 
+                // Map preferred themes
+                this.selectedThemeIds = (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId);
+
                 this.isLoading = false;
             },
             error: (err) => {
@@ -112,6 +130,19 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('Failed to load link types:', err);
+            }
+        });
+
+        // Load available LEGO themes (top-level themes only)
+        this.http.get<any[]>('/api/LegoThemes', { headers, params: { pageSize: '500' } }).subscribe({
+            next: (themes) => {
+                this.availableThemes = themes
+                    .filter((t: any) => !t.legoThemeId)   // Top-level only
+                    .map((t: any) => ({ id: t.id, name: t.name }))
+                    .sort((a: AvailableTheme, b: AvailableTheme) => a.name.localeCompare(b.name));
+            },
+            error: (err) => {
+                console.error('Failed to load LEGO themes:', err);
             }
         });
     }
@@ -232,6 +263,30 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     }
 
 
+    // ------- Preferred Themes -------
+
+    toggleTheme(themeId: number): void {
+        const idx = this.selectedThemeIds.indexOf(themeId);
+        if (idx >= 0) {
+            this.selectedThemeIds.splice(idx, 1);
+        } else {
+            this.selectedThemeIds.push(themeId);
+        }
+    }
+
+    isThemeSelected(themeId: number): boolean {
+        return this.selectedThemeIds.includes(themeId);
+    }
+
+    get filteredThemes(): AvailableTheme[] {
+        if (!this.themeSearchTerm.trim()) {
+            return this.availableThemes;
+        }
+        const term = this.themeSearchTerm.toLowerCase();
+        return this.availableThemes.filter(t => t.name.toLowerCase().includes(term));
+    }
+
+
     // ------- Social Links -------
 
     addLink(): void {
@@ -254,7 +309,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     }
 
 
-    // ------- Save Profile + Links -------
+    // ------- Save Profile + Links + Preferred Themes -------
 
     save(): void {
         this.error = '';
@@ -286,9 +341,20 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
                 const validLinks = this.links.filter(l => l.url.trim().length > 0);
                 this.http.put('/api/profile/mine/links', validLinks, { headers }).subscribe({
                     next: () => {
-                        this.isSaving = false;
-                        this.successMessage = 'Profile saved successfully!';
-                        setTimeout(() => this.successMessage = '', 3000);
+                        // Save preferred themes
+                        const themesPayload = this.selectedThemeIds.map((id, i) => ({ legoThemeId: id, sequence: i }));
+                        this.http.put('/api/profile/mine/preferred-themes', themesPayload, { headers }).subscribe({
+                            next: () => {
+                                this.isSaving = false;
+                                this.successMessage = 'Profile saved successfully!';
+                                setTimeout(() => this.successMessage = '', 3000);
+                            },
+                            error: (err) => {
+                                this.isSaving = false;
+                                this.error = 'Saved profile and links but failed to save preferred themes.';
+                                console.error(err);
+                            }
+                        });
                     },
                     error: (err) => {
                         this.isSaving = false;
