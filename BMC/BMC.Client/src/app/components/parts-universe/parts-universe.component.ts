@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import * as d3 from 'd3';
 import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
 
@@ -14,13 +15,14 @@ import {
     ChordData
 } from '../../services/parts-universe.service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'app-parts-universe',
     templateUrl: './parts-universe.component.html',
     styleUrl: './parts-universe.component.scss'
 })
-export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PartsUniverseComponent implements OnInit, OnDestroy {
     @ViewChild('leaderboardContainer', { static: false }) leaderboardRef!: ElementRef;
     @ViewChild('sankeyContainer', { static: false }) sankeyRef!: ElementRef;
     @ViewChild('bubbleContainer', { static: false }) bubbleRef!: ElementRef;
@@ -30,10 +32,6 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     loading = true;
     rankedParts: RankedPart[] = [];
     leaderboardMode: 'most' | 'least' = 'most';
-    totalParts = 0;
-    totalInstances = 0;
-    totalSets = 0;
-    totalCategories = 0;
     thumbnails = new Map<string, string>();
 
     // ── Filter state ─────────────────────────────────────
@@ -41,15 +39,25 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     selectedCategories = new Set<string>();
     selectedThemes = new Set<string>();
     minSets = 0;
-    filtersOpen = false;
     categoryDropdownOpen = false;
     themeDropdownOpen = false;
 
     // ── Layout state ─────────────────────────────────────
     leaderboardLimit = 15;
     readonly leaderboardLimitOptions = [15, 25, 50, 0]; // 0 = all
+    sankeyLimit = 15;
+    readonly sankeyLimitOptions = [10, 15, 20, 25];
     activeVizTab: 'leaderboard' | 'galaxy' | 'flow' | 'colordna' | 'connections' = 'leaderboard';
     private _filteredParts: RankedPart[] = [];
+
+    //
+    // Cached computed arrays — rebuilt only when underlying data changes,
+    // avoiding per-change-detection recomputation in the template.
+    //
+    displayedParts: RankedPart[] = [];
+    availableCategories: string[] = [];
+    availableThemes: string[] = [];
+    userPreferredThemes: { id: number, name: string }[] = [];
 
     private destroy$ = new Subject<void>();
     private payload: PartsUniversePayload | null = null;
@@ -57,6 +65,8 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private http: HttpClient,
+        private authService: AuthService,
         private partsUniverseApi: PartsUniverseApiService,
         private thumbnailService: LDrawThumbnailService
     ) { }
@@ -95,9 +105,8 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         });
 
         this.loadData();
+        this.loadUserThemes();
     }
-
-    ngAfterViewInit(): void { }
 
     ngOnDestroy(): void {
         this.destroy$.next();
@@ -112,22 +121,30 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         );
     }
 
-    get displayedParts(): RankedPart[] {
+    //
+    // Rebuilds the cached displayedParts array based on current mode, limit, and filtered parts.
+    // Called whenever filters, mode, or limit change.
+    //
+    private rebuildDisplayedParts(): void {
         const parts = this.leaderboardMode === 'least'
             ? [...this._filteredParts].reverse()
             : this._filteredParts;
-        return this.leaderboardLimit > 0 ? parts.slice(0, this.leaderboardLimit) : parts;
+
+        this.displayedParts = this.leaderboardLimit > 0 ? parts.slice(0, this.leaderboardLimit) : parts;
     }
 
-    get availableCategories(): string[] {
-        const cats = new Set(this.rankedParts.map(rp => rp.categoryName));
-        return [...cats].sort();
-    }
 
-    get availableThemes(): string[] {
-        const themes = new Set<string>();
-        this.rankedParts.forEach(rp => rp.themes?.forEach(t => themes.add(t.name)));
-        return [...themes].sort();
+    //
+    // Rebuilds cached category and theme lists from the full rankedParts array.
+    // Called once after data loads.
+    //
+    private rebuildCachedDropdownLists(): void {
+        const categorySet = new Set(this.rankedParts.map(rp => rp.categoryName));
+        this.availableCategories = [...categorySet].sort();
+
+        const themeSet = new Set<string>();
+        this.rankedParts.forEach(rp => rp.themes?.forEach(t => themeSet.add(t.name)));
+        this.availableThemes = [...themeSet].sort();
     }
 
     get hasActiveFilters(): boolean {
@@ -139,17 +156,20 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
 
     setLeaderboardMode(mode: 'most' | 'least'): void {
         this.leaderboardMode = mode;
+        this.rebuildDisplayedParts();
         this.updateQueryParams();
     }
 
-    toggleLeaderboardMode(): void {
-        this.leaderboardMode = this.leaderboardMode === 'most' ? 'least' : 'most';
-        this.updateQueryParams();
-    }
 
     setLeaderboardLimit(n: number): void {
         this.leaderboardLimit = n;
+        this.rebuildDisplayedParts();
         this.updateQueryParams();
+    }
+
+    setSankeyLimit(n: number): void {
+        this.sankeyLimit = n;
+        setTimeout(() => this.renderActiveTab(), 50);
     }
 
     setVizTab(tab: 'leaderboard' | 'galaxy' | 'flow' | 'colordna' | 'connections'): void {
@@ -210,8 +230,9 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
 
     private applyFilters(): void {
         this.rebuildFilteredParts();
+        this.rebuildDisplayedParts();
         this.updateQueryParams();
-        setTimeout(() => this.renderAllPanels(), 50);
+        setTimeout(() => this.renderActiveTab(), 50);
     }
 
     private rebuildFilteredParts(): void {
@@ -275,6 +296,26 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     //  DATA LOADING — single API call to server-precomputed data
     // ================================================================
 
+    private loadUserThemes(): void {
+        const headers = this.authService.GetAuthenticationHeaders();
+        forkJoin({
+            profile: this.http.get<any>('/api/profile/mine', { headers }),
+            themes: this.http.get<any[]>('/api/LegoThemes', { headers, params: { pageSize: '500' } })
+        }).subscribe({
+            next: ({ profile, themes }) => {
+                const preferredIds = new Set<number>(
+                    (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId)
+                );
+                const themeMap = new Map<number, string>(themes.map(t => [t.id, t.name]));
+                this.userPreferredThemes = [...preferredIds]
+                    .map(id => ({ id, name: themeMap.get(id) || `Theme ${id}` }))
+                    .filter(t => t.name)
+                    .sort((a, b) => a.name.localeCompare(b.name));
+            },
+            error: () => { /* Non-critical — just won't show quick filters */ }
+        });
+    }
+
     private loadData(): void {
         this.loading = true;
 
@@ -284,16 +325,18 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                 next: (payload) => {
                     this.payload = payload;
                     this.rankedParts = payload.rankedParts;
-                    this.totalParts = payload.stats.totalUniqueParts;
-                    this.totalInstances = payload.stats.totalInstances;
-                    this.totalSets = payload.stats.totalSets;
-                    this.totalCategories = payload.stats.totalCategories;
                     this.loading = false;
 
-                    // Build initial filtered set
+                    //
+                    // Build cached dropdown lists and the initial filtered/displayed parts
+                    //
+                    this.rebuildCachedDropdownLists();
                     this.rebuildFilteredParts();
+                    this.rebuildDisplayedParts();
 
-                    // Request thumbnails for top 50
+                    //
+                    // Request thumbnails for top 50 parts
+                    //
                     const top50 = this.rankedParts.slice(0, 50);
                     const thumbnailRequests = top50
                         .filter(r => r.geometryFilePath)
@@ -303,12 +346,15 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                                 ? (r.colours[0].hex.startsWith('#') ? r.colours[0].hex.slice(1) : r.colours[0].hex)
                                 : undefined
                         }));
+
                     if (thumbnailRequests.length > 0) {
                         this.thumbnailService.renderBatch(thumbnailRequests);
                     }
 
-                    // Render all visualizations after DOM updates
-                    setTimeout(() => this.renderAllPanels(), 100);
+                    //
+                    // Render the active visualization tab after DOM updates
+                    //
+                    setTimeout(() => this.renderActiveTab(), 100);
                 },
                 error: (err) => {
                     console.error('[PartsUniverse] Failed to load data:', err);
@@ -318,12 +364,8 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     // ================================================================
-    //  RENDER ALL PANELS — rebuilds viz data from filtered parts
+    //  RENDER ACTIVE TAB — rebuilds viz data from filtered parts
     // ================================================================
-
-    private renderAllPanels(): void {
-        this.renderActiveTab();
-    }
 
     private renderActiveTab(): void {
         if (!this.payload) return;
@@ -337,7 +379,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                 this.renderBubbleChart(useServer ? this.payload.bubbles : this.buildBubbleData(parts));
                 break;
             case 'flow':
-                this.renderSankey(useServer ? this.payload.sankey : this.buildSankeyData(parts));
+                this.renderSankey(this.buildSankeyData(useServer ? this.rankedParts : parts));
                 break;
             case 'colordna':
                 this.renderHeatmap(this.buildHeatmapData(useServer ? this.rankedParts : parts));
@@ -351,7 +393,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
     // ── Viz Data Builders ────────────────────────────────
 
     private buildSankeyData(parts: RankedPart[]): SankeyData {
-        const top = parts.slice(0, 30);
+        const top = parts.slice(0, this.sankeyLimit);
         if (top.length === 0) return { nodes: [], links: [] };
 
         const nodeMap = new Map<string, number>();
@@ -369,12 +411,12 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
 
         for (const rp of top) {
             const catIdx = getIdx(rp.categoryName, 'category');
-            const partIdx = getIdx(rp.name, 'part');
+            const partIdx = getIdx(rp.ldrawTitle || rp.name, 'part');
             // category → part
             const cpKey = `${catIdx}-${partIdx}`;
             linkMap.set(cpKey, (linkMap.get(cpKey) || 0) + rp.totalQty);
             // part → themes
-            for (const t of (rp.themes || []).slice(0, 3)) {
+            for (const t of (rp.themes || []).slice(0, 5)) {
                 const themeIdx = getIdx(t.name, 'theme');
                 const ptKey = `${partIdx}-${themeIdx}`;
                 linkMap.set(ptKey, (linkMap.get(ptKey) || 0) + t.qty);
@@ -643,11 +685,16 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
         const size = Math.min(container.clientWidth || 600, 700);
 
         // Build lookups from part name → ldrawTitle and brickPartId
+        // Index by BOTH part number and ldrawTitle so the lookup works
+        // regardless of whether server or client-side bubble data is used
         const titleLookup = new Map<string, string>();
         const idLookup = new Map<string, number>();
         if (this.rankedParts) {
             for (const rp of this.rankedParts) {
-                if (rp.ldrawTitle) titleLookup.set(rp.name, rp.ldrawTitle);
+                if (rp.ldrawTitle) {
+                    titleLookup.set(rp.name, rp.ldrawTitle);
+                    idLookup.set(rp.ldrawTitle, rp.brickPartId);
+                }
                 if (rp.brickPartId) idLookup.set(rp.name, rp.brickPartId);
             }
         }
@@ -660,7 +707,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                 children: cat.parts.map(p => ({
                     name: p.name,
                     label: titleLookup.get(p.name) || p.name,
-                    brickPartId: idLookup.get(p.name) ?? 0,
+                    brickPartId: idLookup.get(p.name),
                     value: p.totalQty,
                     dominantColor: p.dominantColourHex ? ('#' + p.dominantColourHex.replace('#', '')) : '#888',
                     setCount: p.setCount
@@ -799,7 +846,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy, AfterViewInit 
                     else zoom(event, packed); // already focused → zoom out
                 } else {
                     // Leaf part — if already drilled into this category, navigate to detail
-                    if (focus === d.parent && d.data.brickPartId) {
+                    if (focus === d.parent && d.data.brickPartId != null) {
                         this.router.navigate(['/parts', d.data.brickPartId]);
                     } else if (d.parent && d.parent !== packed && focus !== d.parent) {
                         zoom(event, d.parent);

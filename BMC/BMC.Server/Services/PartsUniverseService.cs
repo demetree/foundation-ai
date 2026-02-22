@@ -28,8 +28,8 @@ namespace Foundation.BMC.Services
         private const string DATA_DIRECTORY = "data";
         private const string CACHE_FILENAME = "parts-universe-cache.json";
         private const int CACHE_MAX_AGE_HOURS = 24;
-        private const int SANKEY_TOP_PARTS = 12;
-        private const int SANKEY_TOP_THEMES = 10;
+        private const int SANKEY_TOP_PARTS = 15;
+        private const int SANKEY_TOP_THEMES = 12;
         private const int HEATMAP_TOP_PARTS = 25;
         private const int HEATMAP_TOP_COLOURS = 30;
         private const int CHORD_TOP_CATEGORIES = 8;
@@ -375,7 +375,8 @@ namespace Foundation.BMC.Services
 
             foreach (RankedPartDto part in topParts)
             {
-                nodes.Add(new SankeyNodeDto { Name = part.Name, Group = "part" });
+                string partLabel = !string.IsNullOrWhiteSpace(part.LdrawTitle) ? part.LdrawTitle : part.Name;
+                nodes.Add(new SankeyNodeDto { Name = partLabel, Group = "part" });
             }
 
             foreach (string theme in topThemes)
