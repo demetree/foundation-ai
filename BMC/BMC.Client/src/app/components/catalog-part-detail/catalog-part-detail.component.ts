@@ -51,6 +51,11 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     colourMode: 'part' | 'all' = 'part';
 
     //
+    // Initial colour ID from query params (when navigating from set detail)
+    //
+    private initialColourId: bigint | number | null = null;
+
+    //
     // partColours — the merged, deduplicated list of colours for this part.
     // Built from two sources: BrickPartColour records (direct mappings) and
     // LegoSetPart records (colours the part appears in across all sets).
@@ -109,6 +114,15 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
     ngOnInit(): void {
         const partId = this.route.snapshot.paramMap.get('partId');
+
+        //
+        // Read optional colourId query parameter for pre-selecting a colour
+        // when navigating from set detail.
+        //
+        const colourId = this.route.snapshot.queryParamMap.get('colourId');
+        if (colourId) {
+            this.initialColourId = parseInt(colourId, 10);
+        }
 
         if (partId) {
             this.loadPart(parseInt(partId, 10));
@@ -294,6 +308,16 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         //
         this.partColours = Array.from(colourMap.values())
             .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+
+        //
+        // If we have an initial colour ID from query params, try to find and select it
+        //
+        if (this.initialColourId != null) {
+            const matchingColour = this.partColours.find(c => c.id === this.initialColourId);
+            if (matchingColour != null) {
+                this.selectColour(matchingColour);
+            }
+        }
     }
 
 
@@ -332,6 +356,17 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             );
 
             this.allColoursLoaded = true;
+
+            //
+            // If we have an initial colour ID from query params and haven't selected a colour yet,
+            // try to find and select it from the full colour list.
+            //
+            if (this.initialColourId != null && this.selectedColour == null) {
+                const matchingColour = this.allColours.find(c => c.id === this.initialColourId);
+                if (matchingColour != null) {
+                    this.selectColour(matchingColour);
+                }
+            }
         }
         catch (error) {
             console.error('Error loading all colours:', error);

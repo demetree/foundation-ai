@@ -554,9 +554,10 @@
     tbody tr {
         border-bottom: 1px solid var(--bmc-glass-border);
         transition: background 0.15s;
+        cursor: pointer;
 
         &:hover {
-            background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.06);
+            background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.1);
         }
 
         &:last-child {

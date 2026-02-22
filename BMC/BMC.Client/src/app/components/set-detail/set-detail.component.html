@@ -150,11 +150,10 @@
                                 <th class="col-category">Category</th>
                                 <th class="col-partnum">Part #</th>
                                 <th class="col-qty">Qty</th>
-                                <th class="col-action"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let p of filteredParts" [class.spare-row]="p.isSpare">
+                            <tr *ngFor="let p of filteredParts" [class.spare-row]="p.isSpare" (click)="openInCatalog(p)">
                                 <td class="col-thumb">
                                     <div class="part-thumb-wrap">
                                         <img *ngIf="thumbnails.get(getPartThumbnailKey(p))"
@@ -179,13 +178,6 @@
                                 <td class="col-qty">
                                     <span class="qty-value">{{ p.quantity }}</span>
                                     <span class="spare-badge" *ngIf="p.isSpare">Spare</span>
-                                </td>
-                                <td class="col-action">
-                                    <button class="catalog-link-btn"
-                                        (click)="openInCatalog(p); $event.stopPropagation()"
-                                        title="View in Parts Catalog">
-                                        <i class="fas fa-cubes"></i>
-                                    </button>
                                 </td>
                             </tr>
                         </tbody>

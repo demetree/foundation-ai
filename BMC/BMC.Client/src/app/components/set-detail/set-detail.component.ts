@@ -352,7 +352,11 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     openInCatalog(part: LegoSetPartData): void {
         if (part.brickPartId) {
-            this.router.navigate(['/parts', part.brickPartId]);
+            const navigationExtras: any = {};
+            if (part.brickColourId) {
+                navigationExtras.queryParams = { colourId: part.brickColourId };
+            }
+            this.router.navigate(['/parts', part.brickPartId], navigationExtras);
         }
     }
 
