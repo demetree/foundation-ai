@@ -139,6 +139,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="userProfilePreferredThemeService.userIsBMCUserProfilePreferredThemeReader()">
+                            <button ngbNavLink>User Profile Preferred Themes
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userProfileData?.UserProfilePreferredThemesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-profile-preferred-theme-table [queryParams]="{ userProfileId: userProfileData?.id }" [showAddButton]="true" [preSeededData]="{ userProfileId: userProfileData?.id }" [hiddenFields]="['userProfileId']"></app-user-profile-preferred-theme-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="userProfileStatService.userIsBMCUserProfileStatReader()">
                             <button ngbNavLink>User Profile Stats
                                 <span class="badge bg-primary ms-2">

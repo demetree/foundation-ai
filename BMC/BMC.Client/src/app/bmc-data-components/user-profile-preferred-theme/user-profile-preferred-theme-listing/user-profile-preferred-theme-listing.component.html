@@ -1,0 +1,87 @@
+<div class="page-container">
+    <div class="card mb-3 header-card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="header-left">
+                <!-- Back Button -->
+                <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <!-- Title -->
+                <div>
+                    <h3 class="page-title mb-0">User Profile Preferred Themes</h3>
+                    <small class="text-muted">View User Profile Preferred Themes</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+              <span class="badge bg-secondary mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+                <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+              </span>
+
+              <span *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                <ng-container *ngIf="totalUserProfilePreferredThemeCount$ | async as total; else falsyObservable">
+                  <span class="badge bg-secondary mx-2">
+
+                    <!-- Filtered: some results -->
+                    <ng-container *ngIf="filteredUserProfilePreferredThemeCount$ | async as filteredCount">
+                      <span *ngIf="filterText && (filteredCount ?? 0) > 0">
+                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'User Profile Preferred Themes' : 'User Profile Preferred Theme' }}
+                      </span>
+                    </ng-container>
+                    <!-- Filtered: 0 results -->
+                    <span *ngIf="total > 0 && filterText && (filteredUserProfilePreferredThemeCount$ | async) === 0">
+                      No matching User Profile Preferred Themes
+                    </span>
+                    <!-- No filter: normal count -->
+                    <span *ngIf="!filterText">
+                      {{ total }} {{ total !== 1 ? 'User Profile Preferred Themes' : 'User Profile Preferred Theme' }}
+                    </span>
+                    <!-- No User Profile Preferred Themes at all (even unfiltered) -->
+                    <span *ngIf="total === 0">
+                      No User Profile Preferred Themes
+                    </span>
+
+                  </span>
+                </ng-container>
+
+                <!-- when observable is falsy, then decide whether to show a spinner or a loading spinner..-->
+                <ng-template #falsyObservable>
+                  <span class="badge bg-secondary mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
+                    <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                  </span>
+                  <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                    No User Profile Preferred Themes
+                  </span>
+                </ng-template>
+
+              </span>
+
+                <!-- Quick Search Input -->
+                <div class="search-bar me-2 position-relative">  
+                <i class="fa fa-search search-icon"></i>
+                <input type="text"
+                   class="form-control search-input"
+                   placeholder="Search UserProfilePreferredThemes..."
+                   [(ngModel)]="filterText"
+                   (ngModelChange)="onFilterChange()">
+                <button *ngIf="filterText"
+                    class="clear-search btn"
+                    (click)="filterText=''; onFilterChange()"
+                    title="Clear Search">
+                <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+             <!-- Add/Edit Button -->
+             <app-user-profile-preferred-theme-add-edit [navigateToDetailsAfterAdd]="false"></app-user-profile-preferred-theme-add-edit>
+          </div>
+      </div>
+    </div>
+
+  <app-user-profile-preferred-theme-table
+    *ngIf="userIsBMCUserProfilePreferredThemeReader() == true"
+    [filterText]="filterText"
+    [isSmallScreen]="isSmallScreen">
+  </app-user-profile-preferred-theme-table>
+</div>

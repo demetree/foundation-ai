@@ -50,6 +50,7 @@ CREATE SCHEMA "BMC"
 -- DROP TABLE "BMC"."UserFollow"
 -- DROP TABLE "BMC"."UserProfileStat"
 -- DROP TABLE "BMC"."UserSetOwnership"
+-- DROP TABLE "BMC"."UserProfilePreferredTheme"
 -- DROP TABLE "BMC"."UserProfileLink"
 -- DROP TABLE "BMC"."UserProfileLinkType"
 -- DROP TABLE "BMC"."UserProfileChangeHistory"
@@ -129,6 +130,7 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "UserFollow" DISABLE
 -- ALTER INDEX ALL ON "UserProfileStat" DISABLE
 -- ALTER INDEX ALL ON "UserSetOwnership" DISABLE
+-- ALTER INDEX ALL ON "UserProfilePreferredTheme" DISABLE
 -- ALTER INDEX ALL ON "UserProfileLink" DISABLE
 -- ALTER INDEX ALL ON "UserProfileLinkType" DISABLE
 -- ALTER INDEX ALL ON "UserProfileChangeHistory" DISABLE
@@ -208,6 +210,7 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "UserFollow" REBUILD
 -- ALTER INDEX ALL ON "UserProfileStat" REBUILD
 -- ALTER INDEX ALL ON "UserSetOwnership" REBUILD
+-- ALTER INDEX ALL ON "UserProfilePreferredTheme" REBUILD
 -- ALTER INDEX ALL ON "UserProfileLink" REBUILD
 -- ALTER INDEX ALL ON "UserProfileLinkType" REBUILD
 -- ALTER INDEX ALL ON "UserProfileChangeHistory" REBUILD
@@ -2111,6 +2114,42 @@ CREATE INDEX "I_UserProfileLink_tenantGuid_active" ON "BMC"."UserProfileLink" ("
 
 -- Index on the UserProfileLink table's tenantGuid,deleted fields.
 CREATE INDEX "I_UserProfileLink_tenantGuid_deleted" ON "BMC"."UserProfileLink" ("tenantGuid", "deleted")
+;
+
+
+-- Junction table linking a user profile to their preferred LEGO themes (e.g. Star Wars, Technic, City). Used to personalise the experience and display theme interests on the public profile.
+CREATE TABLE "BMC"."UserProfilePreferredTheme"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"userProfileId" INT NOT NULL,		-- The profile this preference belongs to
+	"legoThemeId" INT NOT NULL,		-- The LEGO theme the user prefers
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "userProfileId" FOREIGN KEY ("userProfileId") REFERENCES "BMC"."UserProfile"("id"),		-- Foreign key to the UserProfile table.
+	CONSTRAINT "legoThemeId" FOREIGN KEY ("legoThemeId") REFERENCES "BMC"."LegoTheme"("id"),		-- Foreign key to the LegoTheme table.
+	CONSTRAINT "UC_UserProfilePreferredTheme_tenantGuid_userProfileId_legoThemeId" UNIQUE ( "tenantGuid", "userProfileId", "legoThemeId") 		-- Uniqueness enforced on the UserProfilePreferredTheme table's tenantGuid and userProfileId and legoThemeId fields.
+);
+-- Index on the UserProfilePreferredTheme table's tenantGuid field.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid" ON "BMC"."UserProfilePreferredTheme" ("tenantGuid")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,userProfileId fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_userProfileId" ON "BMC"."UserProfilePreferredTheme" ("tenantGuid", "userProfileId")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,legoThemeId fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_legoThemeId" ON "BMC"."UserProfilePreferredTheme" ("tenantGuid", "legoThemeId")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,active fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_active" ON "BMC"."UserProfilePreferredTheme" ("tenantGuid", "active")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,deleted fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_deleted" ON "BMC"."UserProfilePreferredTheme" ("tenantGuid", "deleted")
 ;
 
 

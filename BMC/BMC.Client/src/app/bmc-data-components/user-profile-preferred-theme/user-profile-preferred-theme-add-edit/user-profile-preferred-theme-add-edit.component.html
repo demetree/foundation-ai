@@ -1,0 +1,70 @@
+<div class="add-user-profile-preferred-theme" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-profile-preferred-theme me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Profile Preferred Theme" 
+        *ngIf="userIsBMCUserProfilePreferredThemeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userProfilePreferredThemeModal let-modal>
+   <div class="modal-header user-profile-preferred-theme-modal-header">
+      <h5 class="modal-title mb-0" id="userProfilePreferredThemeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Profile Preferred Theme' : 'Add User Profile Preferred Theme' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body user-profile-preferred-theme-modal-body">
+      <form [formGroup]="userProfilePreferredThemeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userProfileId')">
+                <label for="UserProfilePreferredTheme-userProfileId" id="label-UserProfilePreferredTheme-userProfileId"><span class="text-danger">*</span>User Profile</label>
+                <select id="UserProfilePreferredTheme-userProfileId" formControlName="userProfileId" class="form-select user-profile-preferred-theme-select" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()">
+                    <option [ngValue]="null">Select User Profile</option>
+                    <option *ngFor="let userProfile of userProfiles$ | async" [ngValue]="userProfile.id">{{userProfile.displayName}}</option>
+                </select>
+                <div *ngIf="userProfilePreferredThemeForm.get('userProfileId')?.invalid && userProfilePreferredThemeForm.get('userProfileId')?.touched" class="text-danger">
+                    User Profile is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('legoThemeId')">
+                <label for="UserProfilePreferredTheme-legoThemeId" id="label-UserProfilePreferredTheme-legoThemeId"><span class="text-danger">*</span>Lego Theme</label>
+                <select id="UserProfilePreferredTheme-legoThemeId" formControlName="legoThemeId" class="form-select user-profile-preferred-theme-select" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()">
+                    <option [ngValue]="null">Select Lego Theme</option>
+                    <option *ngFor="let legoTheme of legoThemes$ | async" [ngValue]="legoTheme.id">{{legoTheme.name}}</option>
+                </select>
+                <div *ngIf="userProfilePreferredThemeForm.get('legoThemeId')?.invalid && userProfilePreferredThemeForm.get('legoThemeId')?.touched" class="text-danger">
+                    Lego Theme is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="UserProfilePreferredTheme-sequence" id="label-UserProfilePreferredTheme-sequence">Sequence</label>
+                <input type="number" id="UserProfilePreferredTheme-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control user-profile-preferred-theme-input" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfilePreferredTheme-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()" />
+                <label for="UserProfilePreferredTheme-active" class="form-check-label" id="label-UserProfilePreferredTheme-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserProfilePreferredTheme-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()" />
+                <label for="UserProfilePreferredTheme-deleted" class="form-check-label" id="label-UserProfilePreferredTheme-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-profile-preferred-theme-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Profile Preferred Theme changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfilePreferredThemeForm.valid || userProfilePreferredThemeForm.pristine  || userIsBMCUserProfilePreferredThemeWriter() == false " ngbTooltip="Save the User Profile Preferred Theme changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Profile Preferred Theme' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

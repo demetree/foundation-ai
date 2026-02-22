@@ -1,0 +1,72 @@
+<div class="container-fluid p-1 m-0 user-profile-preferred-theme-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-profile-preferred-theme-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Profile Preferred Theme</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Profile Preferred Theme' : 'Add User Profile Preferred Theme'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserProfilePreferredThemeReader()">
+                <div class="col m-2 user-profile-preferred-theme-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userProfilePreferredThemeForm" (ngSubmit)="submitForm()" class="user-profile-preferred-theme-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userProfileId')">
+                                <label for="UserProfilePreferredTheme-userProfileId" id="label-UserProfilePreferredTheme-userProfileId"><span class="text-danger">*</span>User Profile</label>
+                                <select id="UserProfilePreferredTheme-userProfileId" formControlName="userProfileId" class="form-select user-profile-preferred-theme-select" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()">
+                                    <option [ngValue]="null">Select User Profile</option>
+                                    <option *ngFor="let userProfile of userProfiles$ | async" [ngValue]="userProfile.id">{{userProfile.displayName}}</option>
+                                </select>
+                                <div *ngIf="userProfilePreferredThemeForm.get('userProfileId')?.invalid && userProfilePreferredThemeForm.get('userProfileId')?.touched" class="text-danger">
+                                    User Profile is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('legoThemeId')">
+                                <label for="UserProfilePreferredTheme-legoThemeId" id="label-UserProfilePreferredTheme-legoThemeId"><span class="text-danger">*</span>Lego Theme</label>
+                                <select id="UserProfilePreferredTheme-legoThemeId" formControlName="legoThemeId" class="form-select user-profile-preferred-theme-select" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()">
+                                    <option [ngValue]="null">Select Lego Theme</option>
+                                    <option *ngFor="let legoTheme of legoThemes$ | async" [ngValue]="legoTheme.id">{{legoTheme.name}}</option>
+                                </select>
+                                <div *ngIf="userProfilePreferredThemeForm.get('legoThemeId')?.invalid && userProfilePreferredThemeForm.get('legoThemeId')?.touched" class="text-danger">
+                                    Lego Theme is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="UserProfilePreferredTheme-sequence" id="label-UserProfilePreferredTheme-sequence">Sequence</label>
+                                <input type="number" id="UserProfilePreferredTheme-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control user-profile-preferred-theme-input" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserProfilePreferredTheme-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()" />
+                                <label for="UserProfilePreferredTheme-active" class="form-check-label" id="label-UserProfilePreferredTheme-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserProfilePreferredTheme-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserProfilePreferredThemeWriter()" />
+                                <label for="UserProfilePreferredTheme-deleted" class="form-check-label" id="label-UserProfilePreferredTheme-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-profile-preferred-theme-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userProfilePreferredThemeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Profile Preferred Theme">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userProfilePreferredThemeForm.valid || !userProfilePreferredThemeForm.dirty || userProfilePreferredThemeForm.pristine  || userIsBMCUserProfilePreferredThemeWriter() == false " ngbTooltip="Save the User Profile Preferred Theme changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Profile Preferred Theme' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

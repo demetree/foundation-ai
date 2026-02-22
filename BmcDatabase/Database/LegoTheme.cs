@@ -29,5 +29,7 @@ public partial class LegoTheme
 
     public virtual ICollection<LegoSet> LegoSets { get; set; } = new List<LegoSet>();
 
+    public virtual ICollection<UserProfilePreferredTheme> UserProfilePreferredThemes { get; set; } = new List<UserProfilePreferredTheme>();
+
     public virtual LegoTheme legoTheme { get; set; }
 }

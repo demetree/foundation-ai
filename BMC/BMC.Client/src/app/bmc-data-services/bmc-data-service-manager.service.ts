@@ -83,6 +83,7 @@ import {UserProfileService} from  './user-profile.service';
 import {UserProfileChangeHistoryService} from  './user-profile-change-history.service';
 import {UserProfileLinkService} from  './user-profile-link.service';
 import {UserProfileLinkTypeService} from  './user-profile-link-type.service';
+import {UserProfilePreferredThemeService} from  './user-profile-preferred-theme.service';
 import {UserProfileStatService} from  './user-profile-stat.service';
 import {UserSetOwnershipService} from  './user-set-ownership.service';
 import {UserWishlistItemService} from  './user-wishlist-item.service';
@@ -167,6 +168,7 @@ export class BMCDataServiceManagerService  {
               , public userProfileChangeHistoryService: UserProfileChangeHistoryService
               , public userProfileLinkService: UserProfileLinkService
               , public userProfileLinkTypeService: UserProfileLinkTypeService
+              , public userProfilePreferredThemeService: UserProfilePreferredThemeService
               , public userProfileStatService: UserProfileStatService
               , public userSetOwnershipService: UserSetOwnershipService
               , public userWishlistItemService: UserWishlistItemService
@@ -249,6 +251,7 @@ export class BMCDataServiceManagerService  {
         this.userProfileChangeHistoryService.ClearAllCaches();
         this.userProfileLinkService.ClearAllCaches();
         this.userProfileLinkTypeService.ClearAllCaches();
+        this.userProfilePreferredThemeService.ClearAllCaches();
         this.userProfileStatService.ClearAllCaches();
         this.userSetOwnershipService.ClearAllCaches();
         this.userWishlistItemService.ClearAllCaches();

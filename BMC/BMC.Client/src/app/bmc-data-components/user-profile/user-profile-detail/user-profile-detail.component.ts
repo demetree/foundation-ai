@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { UserProfileService, UserProfileData, UserProfileSubmitData } from '../../../bmc-data-services/user-profile.service';
 import { UserProfileChangeHistoryService } from '../../../bmc-data-services/user-profile-change-history.service';
 import { UserProfileLinkService } from '../../../bmc-data-services/user-profile-link.service';
+import { UserProfilePreferredThemeService } from '../../../bmc-data-services/user-profile-preferred-theme.service';
 import { UserProfileStatService } from '../../../bmc-data-services/user-profile-stat.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -114,6 +115,7 @@ export class UserProfileDetailComponent implements OnInit, CanComponentDeactivat
   userProfiles$ = this.userProfileService.GetUserProfileList();
   public userProfileChangeHistories$ = this.userProfileChangeHistoryService.GetUserProfileChangeHistoryList();
   public userProfileLinks$ = this.userProfileLinkService.GetUserProfileLinkList();
+  public userProfilePreferredThemes$ = this.userProfilePreferredThemeService.GetUserProfilePreferredThemeList();
   public userProfileStats$ = this.userProfileStatService.GetUserProfileStatList();
 
   private destroy$ = new Subject<void>();
@@ -122,6 +124,7 @@ export class UserProfileDetailComponent implements OnInit, CanComponentDeactivat
     public userProfileService: UserProfileService,
     public userProfileChangeHistoryService: UserProfileChangeHistoryService,
     public userProfileLinkService: UserProfileLinkService,
+    public userProfilePreferredThemeService: UserProfilePreferredThemeService,
     public userProfileStatService: UserProfileStatService,
     private authService: AuthService,
     private route: ActivatedRoute,

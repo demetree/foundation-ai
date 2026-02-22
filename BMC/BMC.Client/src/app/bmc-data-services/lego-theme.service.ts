@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { LegoSetService, LegoSetData } from './lego-set.service';
+import { UserProfilePreferredThemeService, UserProfilePreferredThemeData } from './user-profile-preferred-theme.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -120,6 +121,11 @@ export class LegoThemeData {
     private _legoSetsSubject = new BehaviorSubject<LegoSetData[] | null>(null);
 
                 
+    private _userProfilePreferredThemes: UserProfilePreferredThemeData[] | null = null;
+    private _userProfilePreferredThemesPromise: Promise<UserProfilePreferredThemeData[]> | null  = null;
+    private _userProfilePreferredThemesSubject = new BehaviorSubject<UserProfilePreferredThemeData[] | null>(null);
+
+                
 
     //
     // Public observables — use with | async in templates
@@ -140,6 +146,25 @@ export class LegoThemeData {
 
   
     public LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public UserProfilePreferredThemes$ = this._userProfilePreferredThemesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userProfilePreferredThemes === null && this._userProfilePreferredThemesPromise === null) {
+            this.loadUserProfilePreferredThemes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({legoThemeId: this.id,
       active: true,
       deleted: false
     });
@@ -187,6 +212,10 @@ export class LegoThemeData {
      this._legoSets = null;
      this._legoSetsPromise = null;
      this._legoSetsSubject.next(null);
+
+     this._userProfilePreferredThemes = null;
+     this._userProfilePreferredThemesPromise = null;
+     this._userProfilePreferredThemesSubject.next(null);
 
   }
 
@@ -259,6 +288,71 @@ export class LegoThemeData {
     }
 
 
+    /**
+     *
+     * Gets the UserProfilePreferredThemes for this LegoTheme.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoTheme.UserProfilePreferredThemes.then(legoThemes => { ... })
+     *   or
+     *   await this.legoTheme.legoThemes
+     *
+    */
+    public get UserProfilePreferredThemes(): Promise<UserProfilePreferredThemeData[]> {
+        if (this._userProfilePreferredThemes !== null) {
+            return Promise.resolve(this._userProfilePreferredThemes);
+        }
+
+        if (this._userProfilePreferredThemesPromise !== null) {
+            return this._userProfilePreferredThemesPromise;
+        }
+
+        // Start the load
+        this.loadUserProfilePreferredThemes();
+
+        return this._userProfilePreferredThemesPromise!;
+    }
+
+
+
+    private loadUserProfilePreferredThemes(): void {
+
+        this._userProfilePreferredThemesPromise = lastValueFrom(
+            LegoThemeService.Instance.GetUserProfilePreferredThemesForLegoTheme(this.id)
+        )
+        .then(UserProfilePreferredThemes => {
+            this._userProfilePreferredThemes = UserProfilePreferredThemes ?? [];
+            this._userProfilePreferredThemesSubject.next(this._userProfilePreferredThemes);
+            return this._userProfilePreferredThemes;
+         })
+        .catch(err => {
+            this._userProfilePreferredThemes = [];
+            this._userProfilePreferredThemesSubject.next(this._userProfilePreferredThemes);
+            throw err;
+        })
+        .finally(() => {
+            this._userProfilePreferredThemesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserProfilePreferredTheme. Call after mutations to force refresh.
+     */
+    public ClearUserProfilePreferredThemesCache(): void {
+        this._userProfilePreferredThemes = null;
+        this._userProfilePreferredThemesPromise = null;
+        this._userProfilePreferredThemesSubject.next(this._userProfilePreferredThemes);      // Emit to observable
+    }
+
+    public get HasUserProfilePreferredThemes(): Promise<boolean> {
+        return this.UserProfilePreferredThemes.then(userProfilePreferredThemes => userProfilePreferredThemes.length > 0);
+    }
+
+
 
 
     /**
@@ -295,6 +389,7 @@ export class LegoThemeService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private legoSetService: LegoSetService,
+        private userProfilePreferredThemeService: UserProfilePreferredThemeService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -665,6 +760,16 @@ export class LegoThemeService extends SecureEndpointBase {
     }
 
 
+    public GetUserProfilePreferredThemesForLegoTheme(legoThemeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserProfilePreferredThemeData[]> {
+        return this.userProfilePreferredThemeService.GetUserProfilePreferredThemeList({
+            legoThemeId: legoThemeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full LegoThemeData instance.
@@ -708,6 +813,10 @@ export class LegoThemeService extends SecureEndpointBase {
     (revived as any)._legoSetsPromise = null;
     (revived as any)._legoSetsSubject = new BehaviorSubject<LegoSetData[] | null>(null);
 
+    (revived as any)._userProfilePreferredThemes = null;
+    (revived as any)._userProfilePreferredThemesPromise = null;
+    (revived as any)._userProfilePreferredThemesSubject = new BehaviorSubject<UserProfilePreferredThemeData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -746,6 +855,22 @@ export class LegoThemeService extends SecureEndpointBase {
       );
 
     (revived as any).LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserProfilePreferredThemes$ = (revived as any)._userProfilePreferredThemesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userProfilePreferredThemes === null && (revived as any)._userProfilePreferredThemesPromise === null) {
+                (revived as any).loadUserProfilePreferredThemes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({legoThemeId: (revived as any).id,
       active: true,
       deleted: false
     });

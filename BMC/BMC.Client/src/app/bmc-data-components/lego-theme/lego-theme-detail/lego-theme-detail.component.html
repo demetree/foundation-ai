@@ -91,6 +91,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="userProfilePreferredThemeService.userIsBMCUserProfilePreferredThemeReader()">
+                            <button ngbNavLink>User Profile Preferred Themes
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoThemeData?.UserProfilePreferredThemesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-profile-preferred-theme-table [queryParams]="{ legoThemeId: legoThemeData?.id }" [showAddButton]="true" [preSeededData]="{ legoThemeId: legoThemeData?.id }" [hiddenFields]="['legoThemeId']"></app-user-profile-preferred-theme-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

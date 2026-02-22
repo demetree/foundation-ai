@@ -51,5 +51,7 @@ public partial class UserProfile
 
     public virtual ICollection<UserProfileLink> UserProfileLinks { get; set; } = new List<UserProfileLink>();
 
+    public virtual ICollection<UserProfilePreferredTheme> UserProfilePreferredThemes { get; set; } = new List<UserProfilePreferredTheme>();
+
     public virtual ICollection<UserProfileStat> UserProfileStats { get; set; } = new List<UserProfileStat>();
 }

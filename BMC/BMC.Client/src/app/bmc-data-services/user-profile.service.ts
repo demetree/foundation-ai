@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { UserProfileChangeHistoryService, UserProfileChangeHistoryData } from './user-profile-change-history.service';
 import { UserProfileLinkService, UserProfileLinkData } from './user-profile-link.service';
+import { UserProfilePreferredThemeService, UserProfilePreferredThemeData } from './user-profile-preferred-theme.service';
 import { UserProfileStatService, UserProfileStatData } from './user-profile-stat.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -174,6 +175,11 @@ export class UserProfileData {
     private _userProfileLinksSubject = new BehaviorSubject<UserProfileLinkData[] | null>(null);
 
                 
+    private _userProfilePreferredThemes: UserProfilePreferredThemeData[] | null = null;
+    private _userProfilePreferredThemesPromise: Promise<UserProfilePreferredThemeData[]> | null  = null;
+    private _userProfilePreferredThemesSubject = new BehaviorSubject<UserProfilePreferredThemeData[] | null>(null);
+
+                
     private _userProfileStats: UserProfileStatData[] | null = null;
     private _userProfileStatsPromise: Promise<UserProfileStatData[]> | null  = null;
     private _userProfileStatsSubject = new BehaviorSubject<UserProfileStatData[] | null>(null);
@@ -227,6 +233,25 @@ export class UserProfileData {
 
   
     public UserProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public UserProfilePreferredThemes$ = this._userProfilePreferredThemesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userProfilePreferredThemes === null && this._userProfilePreferredThemesPromise === null) {
+            this.loadUserProfilePreferredThemes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({userProfileId: this.id,
       active: true,
       deleted: false
     });
@@ -297,6 +322,10 @@ export class UserProfileData {
      this._userProfileLinks = null;
      this._userProfileLinksPromise = null;
      this._userProfileLinksSubject.next(null);
+
+     this._userProfilePreferredThemes = null;
+     this._userProfilePreferredThemesPromise = null;
+     this._userProfilePreferredThemesSubject.next(null);
 
      this._userProfileStats = null;
      this._userProfileStatsPromise = null;
@@ -438,6 +467,71 @@ export class UserProfileData {
 
     public get HasUserProfileLinks(): Promise<boolean> {
         return this.UserProfileLinks.then(userProfileLinks => userProfileLinks.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the UserProfilePreferredThemes for this UserProfile.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.userProfile.UserProfilePreferredThemes.then(userProfiles => { ... })
+     *   or
+     *   await this.userProfile.userProfiles
+     *
+    */
+    public get UserProfilePreferredThemes(): Promise<UserProfilePreferredThemeData[]> {
+        if (this._userProfilePreferredThemes !== null) {
+            return Promise.resolve(this._userProfilePreferredThemes);
+        }
+
+        if (this._userProfilePreferredThemesPromise !== null) {
+            return this._userProfilePreferredThemesPromise;
+        }
+
+        // Start the load
+        this.loadUserProfilePreferredThemes();
+
+        return this._userProfilePreferredThemesPromise!;
+    }
+
+
+
+    private loadUserProfilePreferredThemes(): void {
+
+        this._userProfilePreferredThemesPromise = lastValueFrom(
+            UserProfileService.Instance.GetUserProfilePreferredThemesForUserProfile(this.id)
+        )
+        .then(UserProfilePreferredThemes => {
+            this._userProfilePreferredThemes = UserProfilePreferredThemes ?? [];
+            this._userProfilePreferredThemesSubject.next(this._userProfilePreferredThemes);
+            return this._userProfilePreferredThemes;
+         })
+        .catch(err => {
+            this._userProfilePreferredThemes = [];
+            this._userProfilePreferredThemesSubject.next(this._userProfilePreferredThemes);
+            throw err;
+        })
+        .finally(() => {
+            this._userProfilePreferredThemesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserProfilePreferredTheme. Call after mutations to force refresh.
+     */
+    public ClearUserProfilePreferredThemesCache(): void {
+        this._userProfilePreferredThemes = null;
+        this._userProfilePreferredThemesPromise = null;
+        this._userProfilePreferredThemesSubject.next(this._userProfilePreferredThemes);      // Emit to observable
+    }
+
+    public get HasUserProfilePreferredThemes(): Promise<boolean> {
+        return this.UserProfilePreferredThemes.then(userProfilePreferredThemes => userProfilePreferredThemes.length > 0);
     }
 
 
@@ -586,6 +680,7 @@ export class UserProfileService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private userProfileChangeHistoryService: UserProfileChangeHistoryService,
         private userProfileLinkService: UserProfileLinkService,
+        private userProfilePreferredThemeService: UserProfilePreferredThemeService,
         private userProfileStatService: UserProfileStatService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -1079,6 +1174,16 @@ export class UserProfileService extends SecureEndpointBase {
     }
 
 
+    public GetUserProfilePreferredThemesForUserProfile(userProfileId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserProfilePreferredThemeData[]> {
+        return this.userProfilePreferredThemeService.GetUserProfilePreferredThemeList({
+            userProfileId: userProfileId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetUserProfileStatsForUserProfile(userProfileId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserProfileStatData[]> {
         return this.userProfileStatService.GetUserProfileStatList({
             userProfileId: userProfileId,
@@ -1132,6 +1237,10 @@ export class UserProfileService extends SecureEndpointBase {
     (revived as any)._userProfileLinksPromise = null;
     (revived as any)._userProfileLinksSubject = new BehaviorSubject<UserProfileLinkData[] | null>(null);
 
+    (revived as any)._userProfilePreferredThemes = null;
+    (revived as any)._userProfilePreferredThemesPromise = null;
+    (revived as any)._userProfilePreferredThemesSubject = new BehaviorSubject<UserProfilePreferredThemeData[] | null>(null);
+
     (revived as any)._userProfileStats = null;
     (revived as any)._userProfileStatsPromise = null;
     (revived as any)._userProfileStatsSubject = new BehaviorSubject<UserProfileStatData[] | null>(null);
@@ -1174,6 +1283,22 @@ export class UserProfileService extends SecureEndpointBase {
       );
 
     (revived as any).UserProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserProfilePreferredThemes$ = (revived as any)._userProfilePreferredThemesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userProfilePreferredThemes === null && (revived as any)._userProfilePreferredThemesPromise === null) {
+                (revived as any).loadUserProfilePreferredThemes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({userProfileId: (revived as any).id,
       active: true,
       deleted: false
     });

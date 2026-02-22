@@ -46,6 +46,7 @@ GO
 -- DROP TABLE [BMC].[UserFollow]
 -- DROP TABLE [BMC].[UserProfileStat]
 -- DROP TABLE [BMC].[UserSetOwnership]
+-- DROP TABLE [BMC].[UserProfilePreferredTheme]
 -- DROP TABLE [BMC].[UserProfileLink]
 -- DROP TABLE [BMC].[UserProfileLinkType]
 -- DROP TABLE [BMC].[UserProfileChangeHistory]
@@ -125,6 +126,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[UserFollow] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserProfileStat] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserSetOwnership] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserProfilePreferredTheme] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserProfileLink] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserProfileLinkType] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserProfileChangeHistory] DISABLE
@@ -204,6 +206,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[UserFollow] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserProfileStat] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserSetOwnership] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserProfilePreferredTheme] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserProfileLink] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserProfileLinkType] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserProfileChangeHistory] REBUILD
@@ -2327,6 +2330,45 @@ GO
 
 -- Index on the UserProfileLink table's tenantGuid,deleted fields.
 CREATE INDEX [I_UserProfileLink_tenantGuid_deleted] ON [BMC].[UserProfileLink] ([tenantGuid], [deleted])
+GO
+
+
+-- Junction table linking a user profile to their preferred LEGO themes (e.g. Star Wars, Technic, City). Used to personalise the experience and display theme interests on the public profile.
+CREATE TABLE [BMC].[UserProfilePreferredTheme]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userProfileId] INT NOT NULL,		-- The profile this preference belongs to
+	[legoThemeId] INT NOT NULL,		-- The LEGO theme the user prefers
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_UserProfilePreferredTheme_UserProfile_userProfileId] FOREIGN KEY ([userProfileId]) REFERENCES [BMC].[UserProfile] ([id]),		-- Foreign key to the UserProfile table.
+	CONSTRAINT [FK_UserProfilePreferredTheme_LegoTheme_legoThemeId] FOREIGN KEY ([legoThemeId]) REFERENCES [BMC].[LegoTheme] ([id]),		-- Foreign key to the LegoTheme table.
+	CONSTRAINT [UC_UserProfilePreferredTheme_tenantGuid_userProfileId_legoThemeId] UNIQUE ( [tenantGuid], [userProfileId], [legoThemeId]) 		-- Uniqueness enforced on the UserProfilePreferredTheme table's tenantGuid and userProfileId and legoThemeId fields.
+)
+GO
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid field.
+CREATE INDEX [I_UserProfilePreferredTheme_tenantGuid] ON [BMC].[UserProfilePreferredTheme] ([tenantGuid])
+GO
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,userProfileId fields.
+CREATE INDEX [I_UserProfilePreferredTheme_tenantGuid_userProfileId] ON [BMC].[UserProfilePreferredTheme] ([tenantGuid], [userProfileId])
+GO
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,legoThemeId fields.
+CREATE INDEX [I_UserProfilePreferredTheme_tenantGuid_legoThemeId] ON [BMC].[UserProfilePreferredTheme] ([tenantGuid], [legoThemeId])
+GO
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,active fields.
+CREATE INDEX [I_UserProfilePreferredTheme_tenantGuid_active] ON [BMC].[UserProfilePreferredTheme] ([tenantGuid], [active])
+GO
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserProfilePreferredTheme_tenantGuid_deleted] ON [BMC].[UserProfilePreferredTheme] ([tenantGuid], [deleted])
 GO
 
 

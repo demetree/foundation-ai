@@ -34,6 +34,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "UserFollow"
 -- DROP TABLE "UserProfileStat"
 -- DROP TABLE "UserSetOwnership"
+-- DROP TABLE "UserProfilePreferredTheme"
 -- DROP TABLE "UserProfileLink"
 -- DROP TABLE "UserProfileLinkType"
 -- DROP TABLE "UserProfileChangeHistory"
@@ -113,6 +114,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "UserFollow" DISABLE
 -- ALTER INDEX ALL ON "UserProfileStat" DISABLE
 -- ALTER INDEX ALL ON "UserSetOwnership" DISABLE
+-- ALTER INDEX ALL ON "UserProfilePreferredTheme" DISABLE
 -- ALTER INDEX ALL ON "UserProfileLink" DISABLE
 -- ALTER INDEX ALL ON "UserProfileLinkType" DISABLE
 -- ALTER INDEX ALL ON "UserProfileChangeHistory" DISABLE
@@ -192,6 +194,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "UserFollow" REBUILD
 -- ALTER INDEX ALL ON "UserProfileStat" REBUILD
 -- ALTER INDEX ALL ON "UserSetOwnership" REBUILD
+-- ALTER INDEX ALL ON "UserProfilePreferredTheme" REBUILD
 -- ALTER INDEX ALL ON "UserProfileLink" REBUILD
 -- ALTER INDEX ALL ON "UserProfileLinkType" REBUILD
 -- ALTER INDEX ALL ON "UserProfileChangeHistory" REBUILD
@@ -2095,6 +2098,42 @@ CREATE INDEX "I_UserProfileLink_tenantGuid_active" ON "UserProfileLink" ("tenant
 
 -- Index on the UserProfileLink table's tenantGuid,deleted fields.
 CREATE INDEX "I_UserProfileLink_tenantGuid_deleted" ON "UserProfileLink" ("tenantGuid", "deleted")
+;
+
+
+-- Junction table linking a user profile to their preferred LEGO themes (e.g. Star Wars, Technic, City). Used to personalise the experience and display theme interests on the public profile.
+CREATE TABLE "UserProfilePreferredTheme"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"userProfileId" INTEGER NOT NULL,		-- The profile this preference belongs to
+	"legoThemeId" INTEGER NOT NULL,		-- The LEGO theme the user prefers
+	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("userProfileId") REFERENCES "UserProfile"("id"),		-- Foreign key to the UserProfile table.
+	FOREIGN KEY ("legoThemeId") REFERENCES "LegoTheme"("id"),		-- Foreign key to the LegoTheme table.
+	UNIQUE ( "tenantGuid", "userProfileId", "legoThemeId") 		-- Uniqueness enforced on the UserProfilePreferredTheme table's tenantGuid and userProfileId and legoThemeId fields.
+);
+-- Index on the UserProfilePreferredTheme table's tenantGuid field.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid" ON "UserProfilePreferredTheme" ("tenantGuid")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,userProfileId fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_userProfileId" ON "UserProfilePreferredTheme" ("tenantGuid", "userProfileId")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,legoThemeId fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_legoThemeId" ON "UserProfilePreferredTheme" ("tenantGuid", "legoThemeId")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,active fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_active" ON "UserProfilePreferredTheme" ("tenantGuid", "active")
+;
+
+-- Index on the UserProfilePreferredTheme table's tenantGuid,deleted fields.
+CREATE INDEX "I_UserProfilePreferredTheme_tenantGuid_deleted" ON "UserProfilePreferredTheme" ("tenantGuid", "deleted")
 ;
 
 

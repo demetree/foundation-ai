@@ -1044,6 +1044,25 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // -------------------------------------------------
+            // UserProfilePreferredTheme — User's favourite LEGO themes
+            // -------------------------------------------------
+            Database.Table userProfilePreferredThemeTable = database.AddTable("UserProfilePreferredTheme");
+            userProfilePreferredThemeTable.comment = "Junction table linking a user profile to their preferred LEGO themes (e.g. Star Wars, Technic, City). Used to personalise the experience and display theme interests on the public profile.";
+            userProfilePreferredThemeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            userProfilePreferredThemeTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            userProfilePreferredThemeTable.AddIdField();
+            userProfilePreferredThemeTable.AddMultiTenantSupport();
+
+            userProfilePreferredThemeTable.AddForeignKeyField(userProfileTable, false).AddScriptComments("The profile this preference belongs to");
+            userProfilePreferredThemeTable.AddForeignKeyField(legoThemeTable, false).AddScriptComments("The LEGO theme the user prefers");
+
+            userProfilePreferredThemeTable.AddSequenceField();
+            userProfilePreferredThemeTable.AddControlFields();
+
+            userProfilePreferredThemeTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userProfileId", "legoThemeId" }, false);
+
+
+            // -------------------------------------------------
             // UserSetOwnership — Track owned sets with status
             // -------------------------------------------------
             Database.Table userSetOwnershipTable = database.AddTable("UserSetOwnership");

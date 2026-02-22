@@ -1016,6 +1016,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 					userProfile.bannerData = null;
 					userProfile.UserProfileChangeHistories = null;
 					userProfile.UserProfileLinks = null;
+					userProfile.UserProfilePreferredThemes = null;
 					userProfile.UserProfileStats = null;
 
 
@@ -1146,6 +1147,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				cloneOfExisting.bannerData = null;
 				cloneOfExisting.UserProfileChangeHistories = null;
 				cloneOfExisting.UserProfileLinks = null;
+				cloneOfExisting.UserProfilePreferredThemes = null;
 				cloneOfExisting.UserProfileStats = null;
 
 				if (versionNumber >= userProfile.versionNumber)
