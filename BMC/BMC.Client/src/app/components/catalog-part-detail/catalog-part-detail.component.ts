@@ -1,3 +1,10 @@
+/*
+    AI-Developed — This file was significantly developed with AI assistance.
+    Original component authored by the project team.
+    Colour swatch picker feature (selectColour, applyColourToScene, loadAllColours, colour mode toggle)
+    was added with AI assistance — reviewed and adapted to project standards.
+*/
+
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, Inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -11,6 +18,7 @@ import { BrickPartService, BrickPartData } from '../../bmc-data-services/brick-p
 import { BrickPartConnectorData } from '../../bmc-data-services/brick-part-connector.service';
 import { LegoSetPartData } from '../../bmc-data-services/lego-set-part.service';
 import { BrickPartColourData } from '../../bmc-data-services/brick-part-colour.service';
+import { BrickColourService, BrickColourData } from '../../bmc-data-services/brick-colour.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { lastValueFrom } from 'rxjs';
@@ -35,6 +43,36 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     colours: BrickPartColourData[] = [];
     isLoadingConnectors = false;
     isLoadingColours = false;
+
+    //
+    // Colour picker state
+    //
+    selectedColour: BrickColourData | null = null;
+    colourMode: 'part' | 'all' = 'part';
+
+    //
+    // partColours — the merged, deduplicated list of colours for this part.
+    // Built from two sources: BrickPartColour records (direct mappings) and
+    // LegoSetPart records (colours the part appears in across all sets).
+    // This is the list shown in "Part Colours" mode.
+    //
+    partColours: BrickColourData[] = [];
+
+    allColours: BrickColourData[] = [];
+    isLoadingAllColours = false;
+    allColoursSearch = '';
+
+    //
+    // Tracks whether the full colour list has been fetched at least once
+    //
+    private allColoursLoaded = false;
+
+    //
+    // Tracks whether each of the two colour sources has finished loading,
+    // so we know when it is safe to build the merged partColours list.
+    //
+    private partColoursSourceLoaded = false;
+    private setPartsSourceLoaded = false;
 
     // Set parts panel
     setParts: LegoSetPartData[] = [];
@@ -62,6 +100,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         private http: HttpClient,
         private authService: AuthService,
         private brickPartService: BrickPartService,
+        private brickColourService: BrickColourService,
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
@@ -148,12 +187,22 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
     private async loadColours(): Promise<void> {
         if (this.part == null || typeof this.part.BrickPartColours === 'undefined') {
+            //
+            // No BrickPartColour data available — mark this source as done so the
+            // merge can still proceed once set parts finish loading.
+            //
+            this.partColoursSourceLoaded = true;
+            this.buildPartColourList();
             return;
         }
 
         this.isLoadingColours = true;
 
         try {
+            //
+            // Load with includeRelations=true so that each BrickPartColourData has its
+            // brickColour nav property populated (needed for hexRgb, name, isTransparent, etc.)
+            //
             this.colours = await this.part.BrickPartColours;
         }
         catch {
@@ -161,12 +210,24 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
         finally {
             this.isLoadingColours = false;
+
+            //
+            // Mark this source as loaded and attempt to build the merged colour list.
+            // The merge will only run once both sources are ready.
+            //
+            this.partColoursSourceLoaded = true;
+            this.buildPartColourList();
         }
     }
 
 
     private async loadSetParts(): Promise<void> {
         if (this.part == null || typeof this.part.LegoSetParts === 'undefined') {
+            //
+            // No set parts data available — mark this source as done.
+            //
+            this.setPartsSourceLoaded = true;
+            this.buildPartColourList();
             return;
         }
 
@@ -180,9 +241,261 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
         finally {
             this.isLoadingSetParts = false;
+
+            //
+            // Mark this source as loaded and attempt to build the merged colour list.
+            //
+            this.setPartsSourceLoaded = true;
+            this.buildPartColourList();
         }
     }
 
+
+    // ────────────────────────────────────────────────────────────────
+    //  Colour Picker — Part Colour List (merged from two sources)
+    // ────────────────────────────────────────────────────────────────
+
+    private buildPartColourList(): void {
+        //
+        // Wait until both data sources have finished loading before building the list.
+        // This method is called from the finally block of both loadColours() and loadSetParts(),
+        // so it will be called twice — but only runs the merge on the second call.
+        //
+        if (this.partColoursSourceLoaded === false || this.setPartsSourceLoaded === false) {
+            return;
+        }
+
+        //
+        // Use a Map keyed by brickColourId to deduplicate colours from both sources.
+        //
+        const colourMap = new Map<string | number | bigint, BrickColourData>();
+
+        //
+        // Source 1: BrickPartColour records (direct part-colour mappings)
+        //
+        for (const partColour of this.colours) {
+            if (partColour.brickColour != null) {
+                colourMap.set(partColour.brickColour.id, partColour.brickColour);
+            }
+        }
+
+        //
+        // Source 2: LegoSetPart records — each set appearance carries the colour the part
+        // was used in.  This is often a richer source than the direct BrickPartColour table.
+        //
+        for (const setPart of this.setParts) {
+            if (setPart.brickColour != null) {
+                colourMap.set(setPart.brickColour.id, setPart.brickColour);
+            }
+        }
+
+        //
+        // Sort the merged list alphabetically by name for a consistent display order.
+        //
+        this.partColours = Array.from(colourMap.values())
+            .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Colour Picker — Mode Toggle and All Colours Loading
+    // ────────────────────────────────────────────────────────────────
+
+    setColourMode(mode: 'part' | 'all'): void {
+        this.colourMode = mode;
+
+        //
+        // Fetch the full colour list the first time the user switches to 'all' mode.
+        // Subsequent switches reuse the cached list.
+        //
+        if (mode === 'all' && this.allColoursLoaded === false) {
+            this.loadAllColours();
+        }
+    }
+
+
+    private async loadAllColours(): Promise<void> {
+        this.isLoadingAllColours = true;
+
+        try {
+            //
+            // Fetch all active colours from the BrickColour table.
+            // A large page size is used because the colour table is small enough to load in one request.
+            //
+            this.allColours = await lastValueFrom(
+                this.brickColourService.GetBrickColourList({
+                    active: true,
+                    deleted: false,
+                    pageSize: 500,
+                    pageNumber: 1
+                })
+            );
+
+            this.allColoursLoaded = true;
+        }
+        catch (error) {
+            console.error('Error loading all colours:', error);
+            this.allColours = [];
+        }
+        finally {
+            this.isLoadingAllColours = false;
+        }
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Colour Picker — Selection and 3D Scene Application
+    // ────────────────────────────────────────────────────────────────
+
+    selectColour(colour: BrickColourData | null | undefined): void {
+        //
+        // Guard against null — can happen if called from a template binding before the nav property is loaded
+        //
+        if (colour == null) {
+            return;
+        }
+
+        //
+        // Toggle off if the same colour is clicked again
+        //
+        if (this.selectedColour != null && this.selectedColour.id === colour.id) {
+            this.selectedColour = null;
+            this.resetSceneColours();
+            return;
+        }
+
+        this.selectedColour = colour;
+
+        //
+        // Apply the selected colour to the 3D scene if it is ready
+        //
+        if (this.sceneReady === true && colour.hexRgb != null) {
+            this.applyColourToScene(colour.hexRgb);
+        }
+    }
+
+
+    //
+    // AI-Developed — Traverses the THREE.js scene and replaces the colour on all
+    // MeshStandardMaterial instances.  Line/edge materials are intentionally left
+    // unchanged so that part outlines remain visible.
+    //
+    private applyColourToScene(hexRgb: string): void {
+        if (this.scene == null) {
+            return;
+        }
+
+        //
+        // Normalise the hex value — handle both '05131D' and '#05131D' formats
+        //
+        const normalisedHex = hexRgb.startsWith('#') ? hexRgb : '#' + hexRgb;
+        const colour = new THREE.Color(normalisedHex);
+
+        //
+        // Walk every object in the scene and update solid mesh materials
+        //
+        this.scene.traverse(child => {
+            if (child instanceof THREE.Mesh) {
+                const material = child.material;
+
+                if (material instanceof THREE.MeshStandardMaterial) {
+                    material.color.set(colour);
+                    material.needsUpdate = true;
+                }
+            }
+        });
+    }
+
+
+    private resetSceneColours(): void {
+        //
+        // When the colour selection is cleared, reload the model to restore original colours.
+        // This is the simplest approach — re-running the LDraw loader restores the file's
+        // original colour definitions.
+        //
+        if (this.sceneReady === false || this.part == null) {
+            return;
+        }
+
+        //
+        // Remove all Mesh and Group children directly from the scene root.
+        // We collect them first to avoid mutating the scene while traversing it.
+        //
+        const objectsToRemove: THREE.Object3D[] = [];
+
+        this.scene.children.forEach(child => {
+            if (child instanceof THREE.Mesh || child instanceof THREE.Group) {
+                objectsToRemove.push(child);
+            }
+        });
+
+        for (const obj of objectsToRemove) {
+            if (obj.parent != null) {
+                obj.parent.remove(obj);
+            }
+        }
+
+        //
+        // Re-add the ground grid
+        //
+        this.addGroundPlane();
+
+        //
+        // Reload the model with original colours
+        //
+        if (this.part.geometryFilePath != null) {
+            this.loadLDrawModel();
+        }
+        else {
+            this.buildFallbackGeometry();
+        }
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Colour Picker — Template Helpers
+    // ────────────────────────────────────────────────────────────────
+
+    getSwatchHex(colour: BrickColourData | null | undefined): string {
+        if (colour == null) {
+            return 'transparent';
+        }
+
+        const hex = colour.hexRgb;
+
+        if (hex == null || hex === '') {
+            return 'transparent';
+        }
+
+        return hex.startsWith('#') ? hex : '#' + hex;
+    }
+
+
+    get filteredAllColours(): BrickColourData[] {
+        if (this.allColoursSearch.trim() === '') {
+            return this.allColours;
+        }
+
+        const query = this.allColoursSearch.toLowerCase();
+
+        return this.allColours.filter(c => {
+            return (c.name ?? '').toLowerCase().includes(query);
+        });
+    }
+
+
+    get visibleColourCount(): number {
+        if (this.colourMode === 'part') {
+            return this.partColours.length;
+        }
+
+        return this.filteredAllColours.length;
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Set Parts Panel
+    // ────────────────────────────────────────────────────────────────
 
     get filteredSetParts(): LegoSetPartData[] {
         if (!this.setPartsSearch.trim()) {
@@ -278,25 +591,23 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        // Scene
+        // Scene — no background colour set so the canvas is transparent
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x1a1a2e);
-
-        // Subtle gradient fog for depth
-        this.scene.fog = new THREE.Fog(0x1a1a2e, 400, 900);
 
         // Camera
         this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
         this.camera.position.set(100, 80, 150);
         this.camera.lookAt(0, 0, 0);
 
-        // Renderer
+        // Renderer — alpha:true enables transparency; setClearColor with alpha 0 makes the
+        // background fully transparent so the card's CSS background shows through.
         this.renderer = new THREE.WebGLRenderer({
             canvas: canvas,
             antialias: true,
             alpha: true
         });
 
+        this.renderer.setClearColor(0x000000, 0);
         this.renderer.setSize(width, height);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
@@ -448,6 +759,15 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
                         this.scene.add(group);
                         this.centreAndFrameModel(group);
+
+                        //
+                        // If a colour was already selected before the model finished loading,
+                        // apply it now so the viewer reflects the selection immediately.
+                        //
+                        if (this.selectedColour != null && this.selectedColour.hexRgb != null) {
+                            this.applyColourToScene(this.selectedColour.hexRgb);
+                        }
+
                         this.isLoadingModel = false;
                     },
 
@@ -473,13 +793,20 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
 
         //
-        // Build a simple box from the part dimensions as a fallback
+        // Build a simple box from the part dimensions as a fallback.
+        // Use the selected colour if one is active, otherwise use the default orange.
         //
         const dims = this.getPartDimensions();
         const geometry = new THREE.BoxGeometry(dims.w, dims.h, dims.d);
 
+        const baseColour = this.selectedColour != null && this.selectedColour.hexRgb != null
+            ? this.selectedColour.hexRgb.startsWith('#')
+                ? this.selectedColour.hexRgb
+                : '#' + this.selectedColour.hexRgb
+            : '#ffa726';
+
         const material = new THREE.MeshStandardMaterial({
-            color: 0xffa726,
+            color: new THREE.Color(baseColour),
             metalness: 0.2,
             roughness: 0.5,
             transparent: true,
@@ -679,7 +1006,33 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         };
     }
 
+
     getPartColour(): { top: string; front: string; side: string; stroke: string } {
+        //
+        // When a colour is selected, use it for the SVG fallback preview.
+        // Otherwise fall back to the default orange palette.
+        //
+        if (this.selectedColour != null && this.selectedColour.hexRgb != null) {
+            const hex = this.selectedColour.hexRgb.startsWith('#')
+                ? this.selectedColour.hexRgb
+                : '#' + this.selectedColour.hexRgb;
+
+            //
+            // Derive lighter and darker variants for the isometric faces by
+            // blending the selected colour with white and black respectively.
+            //
+            const colour = new THREE.Color(hex);
+            const topColour = colour.clone().lerp(new THREE.Color(0xffffff), 0.25);
+            const sideColour = colour.clone().lerp(new THREE.Color(0x000000), 0.2);
+
+            return {
+                top: '#' + topColour.getHexString(),
+                front: hex,
+                side: '#' + sideColour.getHexString(),
+                stroke: '#' + colour.clone().lerp(new THREE.Color(0x000000), 0.45).getHexString()
+            };
+        }
+
         return {
             top: '#ffcc80',
             front: '#ffa726',

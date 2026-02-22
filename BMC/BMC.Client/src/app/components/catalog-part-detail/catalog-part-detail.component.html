@@ -173,6 +173,112 @@
         <!-- Info Panels -->
         <div class="info-panels">
 
+            <!-- Colour Picker Card — placed first so it is at the top of the right column -->
+            <div class="info-card colour-picker-card" *ngIf="!isLoadingColours">
+
+                <!-- Card Header with mode toggle -->
+                <div class="info-card-header colour-picker-header">
+                    <i class="bi bi-palette"></i>
+                    Colour Preview
+                    <span class="count-badge" *ngIf="visibleColourCount > 0">{{ visibleColourCount }}</span>
+
+                    <div class="colour-mode-toggle">
+                        <button class="colour-mode-btn"
+                                [class.active]="colourMode === 'part'"
+                                (click)="setColourMode('part')"
+                                title="Show only colours this part is known to exist in">
+                            Part Colours
+                        </button>
+                        <button class="colour-mode-btn"
+                                [class.active]="colourMode === 'all'"
+                                (click)="setColourMode('all')"
+                                title="Show all available colours">
+                            All Colours
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="info-card-body colour-picker-body">
+
+                    <!-- Search box — visible in All Colours mode only -->
+                    <div class="colour-search" *ngIf="colourMode === 'all'">
+                        <i class="bi bi-search"></i>
+                        <input type="text"
+                               placeholder="Search colours…"
+                               [(ngModel)]="allColoursSearch" />
+                    </div>
+
+                    <!-- Loading spinner for All Colours fetch -->
+                    <div class="colour-loading" *ngIf="colourMode === 'all' && isLoadingAllColours">
+                        <div class="loading-spinner small"></div>
+                        Loading colours…
+                    </div>
+
+                    <!-- Part Colours mode — swatch grid (merged from BrickPartColours + LegoSetParts) -->
+                    <div class="colour-swatch-grid" *ngIf="colourMode === 'part' && partColours.length > 0">
+                        <button class="colour-swatch-dot"
+                                *ngFor="let c of partColours"
+                                [class.selected]="selectedColour != null && selectedColour.id === c.id"
+                                [class.transparent]="c.isTransparent"
+                                [class.metallic]="c.isMetallic"
+                                [style.backgroundColor]="getSwatchHex(c)"
+                                [title]="c.name || 'Unknown'"
+                                (click)="selectColour(c)">
+                        </button>
+                    </div>
+
+                    <!-- Part Colours mode — empty state (shown while loading or if truly no data) -->
+                    <div class="empty-section"
+                         *ngIf="colourMode === 'part' && partColours.length === 0 && isLoadingColours === false && isLoadingSetParts === false">
+                        <i class="bi bi-dash-circle"></i>
+                        No colour variants found for this part
+                    </div>
+
+                    <!-- All Colours mode — swatch grid from full BrickColour table -->
+                    <div class="colour-swatch-grid"
+                         *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length > 0">
+                        <button class="colour-swatch-dot"
+                                *ngFor="let c of filteredAllColours"
+                                [class.selected]="selectedColour != null && selectedColour.id === c.id"
+                                [class.transparent]="c.isTransparent"
+                                [class.metallic]="c.isMetallic"
+                                [style.backgroundColor]="getSwatchHex(c)"
+                                [title]="c.name"
+                                (click)="selectColour(c)">
+                        </button>
+                    </div>
+
+                    <!-- All Colours mode — no search results -->
+                    <div class="empty-section"
+                         *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length === 0 && allColoursSearch">
+                        <i class="bi bi-search"></i>
+                        No colours match "{{ allColoursSearch }}"
+                    </div>
+
+                    <!-- Selected colour label -->
+                    <div class="colour-selected-label" *ngIf="selectedColour != null">
+                        <span class="colour-selected-swatch"
+                              [style.backgroundColor]="getSwatchHex(selectedColour)">
+                        </span>
+                        <span class="colour-selected-name">{{ selectedColour.name }}</span>
+                        <button class="colour-clear-btn"
+                                (click)="selectColour(selectedColour)"
+                                title="Clear colour selection">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+
+                    <!-- No selection hint -->
+                    <div class="colour-hint" *ngIf="selectedColour == null && (partColours.length > 0 || allColours.length > 0)">
+                        <i class="bi bi-cursor"></i>
+                        Click a swatch to preview the part in that colour
+                    </div>
+
+                </div>
+            </div>
+
+
             <!-- Metadata Card -->
             <div class="info-card">
                 <div class="info-card-header">
@@ -266,27 +372,6 @@
                     <div class="connector-list" *ngIf="connectors.length > 0">
                         <div class="connector-item" *ngFor="let c of connectors">
                             <span class="connector-name">{{ c.name || 'Connector' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Colours Card -->
-            <div class="info-card" *ngIf="!isLoadingColours">
-                <div class="info-card-header">
-                    <i class="bi bi-palette"></i>
-                    Available Colours
-                    <span class="count-badge" *ngIf="colours.length > 0">{{ colours.length }}</span>
-                </div>
-                <div class="info-card-body">
-                    <div class="empty-section" *ngIf="colours.length === 0">
-                        <i class="bi bi-dash-circle"></i>
-                        No colour variants defined
-                    </div>
-                    <div class="colour-list" *ngIf="colours.length > 0">
-                        <div class="colour-item" *ngFor="let c of colours">
-                            <span class="colour-name">{{ c.name || 'Colour' }}</span>
                         </div>
                     </div>
                 </div>

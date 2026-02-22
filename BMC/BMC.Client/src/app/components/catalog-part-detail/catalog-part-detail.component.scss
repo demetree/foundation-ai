@@ -169,7 +169,12 @@
     position: relative;
     width: 100%;
     height: 500px;
-    background: #1a1a2e;
+
+    //
+    // Background is transparent so the Three.js canvas alpha channel shows through
+    // and the card's background colour is visible behind the 3D model.
+    //
+    background: transparent;
 
     &.has-geometry {
         cursor: grab;
@@ -194,12 +199,14 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    background: rgba(26, 26, 46, 0.85);
+    background: var(--bmc-bg-card);
+    opacity: 0.9;
     z-index: 10;
 
     span {
         font-size: 0.85rem;
         color: var(--bmc-text-muted);
+        opacity: 1;
     }
 }
 
@@ -236,7 +243,7 @@
     justify-content: center;
     height: 100%;
     gap: 16px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: transparent;
 }
 
 .fallback-svg {
@@ -714,6 +721,266 @@
     display: inline-block;
     vertical-align: middle;
     margin-right: 8px;
+}
+
+
+/* ----------------------------------------------------------------
+   Colour Picker Card
+   ---------------------------------------------------------------- */
+
+.colour-picker-card {
+    // Inherits .info-card base styles
+}
+
+.colour-picker-header {
+    //
+    // Override the default info-card-header to accommodate the mode toggle on the right
+    //
+    flex-wrap: wrap;
+    gap: 8px;
+    row-gap: 8px;
+}
+
+.colour-mode-toggle {
+    margin-left: auto;
+    display: flex;
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.colour-mode-btn {
+    padding: 3px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--bmc-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    white-space: nowrap;
+
+    &:hover {
+        color: var(--bmc-text-primary);
+        background: var(--bmc-surface-hover);
+    }
+
+    &.active {
+        color: var(--bmc-primary);
+        background: var(--bmc-surface-subtle);
+        font-weight: 600;
+    }
+
+    &:not(:last-child) {
+        border-right: 1px solid var(--bmc-border);
+    }
+}
+
+.colour-picker-body {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.colour-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--bmc-border);
+    background: var(--bmc-bg-elevated);
+    transition: var(--transition-fast);
+
+    &:focus-within {
+        border-color: var(--bmc-primary);
+        box-shadow: 0 0 0 2px rgba(108, 122, 224, 0.15);
+    }
+
+    i {
+        font-size: 0.78rem;
+        color: var(--bmc-text-muted);
+        flex-shrink: 0;
+    }
+
+    input {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.8rem;
+        color: var(--bmc-text-primary);
+        width: 100%;
+
+        &::placeholder {
+            color: var(--bmc-text-muted);
+        }
+    }
+}
+
+.colour-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--bmc-text-muted);
+    padding: 8px 0;
+}
+
+.colour-swatch-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px 2px;
+    overscroll-behavior: contain;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--bmc-border);
+        border-radius: 2px;
+    }
+}
+
+.colour-swatch-dot {
+    //
+    // Circular colour swatch button — 24px diameter
+    //
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+    outline: none;
+    position: relative;
+
+    &:hover {
+        transform: scale(1.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        z-index: 1;
+    }
+
+    &:focus-visible {
+        box-shadow: 0 0 0 3px rgba(108, 122, 224, 0.4);
+    }
+
+    //
+    // Selected state — ring in the primary colour
+    //
+    &.selected {
+        border-color: var(--bmc-primary);
+        box-shadow: 0 0 0 2px var(--bmc-bg-card), 0 0 0 4px var(--bmc-primary);
+        transform: scale(1.15);
+    }
+
+    //
+    // Transparent colours — checkerboard pattern to indicate transparency
+    //
+    &.transparent {
+        background-image:
+            linear-gradient(45deg, #888 25%, transparent 25%),
+            linear-gradient(-45deg, #888 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #888 75%),
+            linear-gradient(-45deg, transparent 75%, #888 75%);
+        background-size: 8px 8px;
+        background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+        background-color: #ccc;
+    }
+
+    //
+    // Metallic colours — subtle shimmer overlay
+    //
+    &.metallic::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, transparent 60%);
+        pointer-events: none;
+    }
+}
+
+.colour-selected-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    background: var(--bmc-surface-subtle);
+    border: 1px solid var(--bmc-border);
+    font-size: 0.8rem;
+}
+
+.colour-selected-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--bmc-border);
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.colour-selected-name {
+    color: var(--bmc-text-primary);
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.colour-clear-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--bmc-text-muted);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: var(--transition-fast);
+
+    &:hover {
+        background: var(--bmc-surface-hover);
+        color: var(--bmc-text-primary);
+    }
+
+    i {
+        font-size: 0.85rem;
+    }
+}
+
+.colour-hint {
+    font-size: 0.75rem;
+    color: var(--bmc-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-style: italic;
+
+    i {
+        font-size: 0.8rem;
+        opacity: 0.6;
+    }
 }
 
 
