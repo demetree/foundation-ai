@@ -386,6 +386,12 @@
     border: 1px solid var(--bmc-border, rgba(255, 255, 255, 0.08));
     border-radius: 12px;
     backdrop-filter: blur(12px);
+    // Ensure the dropdown (position: absolute inside) renders above the tab
+    // cards below.  backdrop-filter creates a stacking context, so we need
+    // the filter-bar itself to sit on a higher z-layer than the content.
+    position: relative;
+    z-index: 10;
+    overflow: visible;
 }
 
 .filter-controls {

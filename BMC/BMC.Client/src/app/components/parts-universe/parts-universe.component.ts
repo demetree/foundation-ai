@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -41,6 +41,20 @@ export class PartsUniverseComponent implements OnInit, OnDestroy {
     minSets = 0;
     categoryDropdownOpen = false;
     themeDropdownOpen = false;
+
+    /**
+     * Close dropdowns when clicking anywhere outside the filter bar.
+     */
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent): void {
+        const target = event.target as HTMLElement;
+        // If the click is inside a .filter-dropdown-wrapper, let the toggle handle it
+        if (target.closest('.filter-dropdown-wrapper')) {
+            return;
+        }
+        this.categoryDropdownOpen = false;
+        this.themeDropdownOpen = false;
+    }
 
     // ── Layout state ─────────────────────────────────────
     leaderboardLimit = 15;
