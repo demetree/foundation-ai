@@ -307,54 +307,88 @@
 }
 
 /* ----------------------------------------------------------------
-   Sets Table
+   Sets — Search + Virtual-scroll Table
    ---------------------------------------------------------------- */
 .sets-table-container {
     @include glass-effect-lg;
     overflow: hidden;
 }
 
-.sets-table {
-    width: 100%;
-    border-collapse: collapse;
+.sets-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bmc-border);
+}
 
-    th {
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
+.sets-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 300px;
+
+    i {
         color: var(--bmc-text-muted);
-        border-bottom: 1px solid var(--bmc-border);
-        background: var(--bmc-bg-elevated);
+        font-size: 0.78rem;
     }
 
-    td {
-        padding: 10px 16px;
-        font-size: 0.85rem;
+    input {
+        flex: 1;
+        background: transparent;
+        border: none;
         color: var(--bmc-text-primary);
-        border-bottom: 1px solid var(--bmc-border);
-        vertical-align: middle;
+        font-size: 0.82rem;
+        outline: none;
+
+        &::placeholder {
+            color: var(--bmc-text-muted);
+        }
     }
 }
 
+.sets-filter-count {
+    font-size: 0.72rem;
+    color: var(--bmc-text-muted);
+}
+
+.sets-header-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--bmc-text-muted);
+    background: var(--bmc-bg-elevated);
+    border-bottom: 1px solid var(--bmc-border);
+}
+
+.sets-viewport {
+    height: 500px;
+}
+
 .set-row {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 48px;
     cursor: pointer;
     transition: background 0.2s ease;
+    border-bottom: 1px solid var(--bmc-border);
+    font-size: 0.85rem;
+    color: var(--bmc-text-primary);
 
     &:hover {
         background: var(--bmc-bg-hover);
     }
-
-    &:last-child td {
-        border-bottom: none;
-    }
 }
 
 .set-thumb {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-sm);
     background: var(--bmc-bg-elevated);
     display: flex;
@@ -370,25 +404,36 @@
 
     i {
         color: var(--bmc-text-muted);
-        font-size: 1.2rem;
+        font-size: 1rem;
         opacity: 0.3;
     }
 }
 
 .col-image {
     width: 64px;
+    flex-shrink: 0;
 }
 
 .col-number {
     width: 100px;
+    flex-shrink: 0;
+}
+
+.col-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .col-year {
     width: 80px;
+    flex-shrink: 0;
 }
 
 .col-pieces {
     width: 80px;
+    flex-shrink: 0;
 }
 
 .mono {
@@ -476,6 +521,82 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+
+/* ----------------------------------------------------------------
+   Minifig Section
+   ---------------------------------------------------------------- */
+.minifig-section {
+    margin-top: 32px;
+}
+
+.minifig-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.minifig-card {
+    @include glass-effect;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.minifig-image {
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.06));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 8px;
+    }
+
+    .image-placeholder {
+        font-size: 2rem;
+        color: var(--bmc-text-muted);
+        opacity: 0.3;
+    }
+}
+
+.minifig-info {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.minifig-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bmc-text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+}
+
+.minifig-number {
+    font-size: 0.68rem;
+    color: var(--bmc-text-muted);
+    font-family: 'Fira Code', 'Consolas', monospace;
 }
 
 /* ----------------------------------------------------------------

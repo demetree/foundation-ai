@@ -5,6 +5,7 @@ import { Subject, forkJoin } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
 import { LegoSetService, LegoSetData } from '../../bmc-data-services/lego-set.service';
+import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
 
 interface BreadcrumbItem {
     id: bigint | number;
@@ -29,18 +30,35 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
     loading = true;
     setsLoading = true;
 
+    // Minifigs
+    minifigs: MinifigGalleryItem[] = [];
+    minifigsLoading = true;
+
     // Stats
     totalSets = 0;
     totalSubThemes = 0;
     yearRange = '';
     heroImageUrl: string | null = null;
 
+    // Search within sets table
+    setSearchQuery = '';
+
+    get filteredSets(): LegoSetData[] {
+        if (!this.setSearchQuery) return this.sets;
+        const q = this.setSearchQuery.toLowerCase();
+        return this.sets.filter(s =>
+            (s.name || '').toLowerCase().includes(q) ||
+            (s.setNumber || '').toLowerCase().includes(q)
+        );
+    }
+
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         private location: Location,
         private themeService: LegoThemeService,
-        private setService: LegoSetService
+        private setService: LegoSetService,
+        private minifigGalleryApi: MinifigGalleryApiService
     ) { }
 
     ngOnInit(): void {
@@ -86,6 +104,9 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
 
                 // Load sets for this theme
                 this.loadSets(id);
+
+                // Load minifigs for this theme
+                this.loadMinifigs(id);
             },
             error: () => {
                 this.loading = false;
@@ -102,7 +123,7 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
             active: true,
             deleted: false,
             includeRelations: true,
-            pageSize: 200,
+            pageSize: 5000,
             pageNumber: 1
         }).pipe(
             takeUntil(this.destroy$)
@@ -127,6 +148,26 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
             },
             error: () => {
                 this.setsLoading = false;
+            }
+        });
+    }
+
+    private loadMinifigs(themeId: number): void {
+        this.minifigsLoading = true;
+
+        this.minifigGalleryApi.getGalleryMinifigs().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (all) => {
+                // Filter minifigs whose themeIds include this theme
+                this.minifigs = all.filter(m =>
+                    m.themeIds && m.themeIds.includes(themeId)
+                );
+                this.minifigsLoading = false;
+            },
+            error: () => {
+                this.minifigs = [];
+                this.minifigsLoading = false;
             }
         });
     }
@@ -161,6 +202,10 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
 
     navigateToSet(id: bigint | number): void {
         this.router.navigate(['/lego/sets', Number(id)]);
+    }
+
+    navigateToMinifig(id: number): void {
+        this.router.navigate(['/lego/minifigs', id]);
     }
 
     navigateBack(): void {

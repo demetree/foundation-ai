@@ -64,6 +64,7 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     partCountMax: number | null = null;
     sortBy: 'year' | 'name' | 'partCount' = 'year';
     sortDirection: 'asc' | 'desc' = 'desc';   // newest first by default
+    viewMode: 'grid' | 'table' = 'grid';
 
     //
     // Year range for UI
@@ -82,6 +83,10 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
 
 
     ngOnInit(): void {
+        // Restore view mode preference
+        const savedView = localStorage.getItem('set-explorer-view');
+        if (savedView === 'grid' || savedView === 'table') this.viewMode = savedView;
+
         //
         // Recalculate columns on width change
         //
@@ -159,6 +164,23 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.destroy$.next();
         this.destroy$.complete();
         this.loadSub.unsubscribe();
+    }
+
+    @HostListener('document:keydown', ['$event'])
+    onKeydown(event: KeyboardEvent): void {
+        const tag = (event.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            if (event.key === 'Escape') {
+                (event.target as HTMLElement).blur();
+                this.searchTerm = '';
+                this.searchSubject.next('');
+            }
+            return;
+        }
+        if (event.key === 's' || event.key === 'S') {
+            event.preventDefault();
+            document.getElementById('set-search-input')?.focus();
+        }
     }
 
     private loadUserThemes(): void {
@@ -342,6 +364,15 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             this.sortDirection = field === 'year' ? 'desc' : 'asc';
         }
         this.applyPipeline();
+    }
+
+    setViewMode(mode: 'grid' | 'table'): void {
+        this.viewMode = mode;
+        localStorage.setItem('set-explorer-view', mode);
+    }
+
+    trackSet(index: number, set: SetExplorerItem): string {
+        return set.setNumber;
     }
 
     clearFilters(): void {

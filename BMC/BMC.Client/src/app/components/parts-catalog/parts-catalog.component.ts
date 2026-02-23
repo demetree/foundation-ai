@@ -141,6 +141,23 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         this.thumbnailService.cancelAll();
     }
 
+    @HostListener('document:keydown', ['$event'])
+    onKeydown(event: KeyboardEvent): void {
+        const tag = (event.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            if (event.key === 'Escape') {
+                (event.target as HTMLElement).blur();
+                this.searchTerm = '';
+                this.searchSubject.next('');
+            }
+            return;
+        }
+        if (event.key === 's' || event.key === 'S') {
+            event.preventDefault();
+            document.getElementById('parts-search')?.focus();
+        }
+    }
+
 
     loadData(): void {
         this.loading = true;

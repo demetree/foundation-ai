@@ -16,6 +16,16 @@
                 </p>
             </div>
             <div class="header-actions">
+                <div class="view-toggle">
+                    <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')"
+                        title="Grid view">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button class="toggle-btn" [class.active]="viewMode === 'table'" (click)="setViewMode('table')"
+                        title="Table view">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
                 <div class="total-badge">
                     <span class="badge-number">{{ filteredSets.length | number }}</span>
                     <span class="badge-label">of {{ totalCount | number }} sets</span>
@@ -104,8 +114,8 @@
     </div>
 
     <!-- Virtual-scroll card grid -->
-    <cdk-virtual-scroll-viewport *ngIf="!loading && cardRows.length > 0" [itemSize]="rowHeight" minBufferPx="800"
-        maxBufferPx="1600" class="card-viewport">
+    <cdk-virtual-scroll-viewport *ngIf="!loading && viewMode === 'grid' && cardRows.length > 0" [itemSize]="rowHeight"
+        minBufferPx="800" maxBufferPx="1600" class="card-viewport">
 
         <div class="card-row" *cdkVirtualFor="let row of cardRows; trackBy: trackRow">
             <div class="set-card" *ngFor="let set of row.items; trackBy: trackCard" (click)="navigateToSet(set)">
@@ -140,6 +150,40 @@
         </div>
 
     </cdk-virtual-scroll-viewport>
+
+    <!-- Table view — Virtual Scroll -->
+    <div class="sets-table-wrap" *ngIf="!loading && viewMode === 'table' && filteredSets.length > 0">
+
+        <!-- Fixed header row -->
+        <div class="table-header-row">
+            <span class="col-image">Image</span>
+            <span class="col-number" (click)="setSort('name')">Set # <i [class]="getSortIcon('name')"></i></span>
+            <span class="col-name" (click)="setSort('name')">Name <i [class]="getSortIcon('name')"></i></span>
+            <span class="col-year" (click)="setSort('year')">Year <i [class]="getSortIcon('year')"></i></span>
+            <span class="col-parts" (click)="setSort('partCount')">Parts <i
+                    [class]="getSortIcon('partCount')"></i></span>
+            <span class="col-theme">Theme</span>
+        </div>
+
+        <!-- Virtual-scroll viewport -->
+        <cdk-virtual-scroll-viewport [itemSize]="48" minBufferPx="400" maxBufferPx="800" class="table-viewport">
+            <div class="set-row" *cdkVirtualFor="let set of filteredSets; trackBy: trackSet"
+                (click)="navigateToSet(set)">
+                <span class="col-image">
+                    <div class="table-thumb">
+                        <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                            (error)="set.imageUrl = null">
+                        <i class="fas fa-cube" *ngIf="!set.imageUrl"></i>
+                    </div>
+                </span>
+                <span class="col-number"><span class="mono">{{ set.setNumber }}</span></span>
+                <span class="col-name">{{ set.name }}</span>
+                <span class="col-year">{{ set.year }}</span>
+                <span class="col-parts">{{ set.partCount | number }}</span>
+                <span class="col-theme">{{ set.themeName || '—' }}</span>
+            </div>
+        </cdk-virtual-scroll-viewport>
+    </div>
 
     <!-- Empty State -->
     <div class="empty-state" *ngIf="!loading && filteredSets.length === 0">

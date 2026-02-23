@@ -91,42 +91,78 @@
             <span>Loading sets…</span>
         </div>
 
-        <!-- Sets table -->
+        <!-- Search + Sets virtual-scroll table -->
         <div class="sets-table-container" *ngIf="!setsLoading && sets.length > 0">
-            <table class="sets-table">
-                <thead>
-                    <tr>
-                        <th class="col-image">Image</th>
-                        <th class="col-number">Set #</th>
-                        <th class="col-name">Name</th>
-                        <th class="col-year">Year</th>
-                        <th class="col-pieces">Pieces</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let set of sets" (click)="navigateToSet(set.id)" class="set-row">
-                        <td class="col-image">
-                            <div class="set-thumb">
-                                <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
-                                    (error)="set.imageUrl = null">
-                                <i class="fas fa-cube" *ngIf="!set.imageUrl"></i>
-                            </div>
-                        </td>
-                        <td class="col-number">
-                            <span class="mono">{{ set.setNumber }}</span>
-                        </td>
-                        <td class="col-name">{{ set.name }}</td>
-                        <td class="col-year">{{ set.year }}</td>
-                        <td class="col-pieces">{{ set.numParts || '—' }}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <!-- Search bar -->
+            <div class="sets-search-bar">
+                <div class="sets-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search sets…" [(ngModel)]="setSearchQuery">
+                </div>
+                <span class="sets-filter-count" *ngIf="setSearchQuery">
+                    {{ filteredSets.length }} of {{ sets.length }}
+                </span>
+            </div>
+
+            <!-- Header row (fixed outside viewport) -->
+            <div class="sets-header-row">
+                <span class="col-image">Image</span>
+                <span class="col-number">Set #</span>
+                <span class="col-name">Name</span>
+                <span class="col-year">Year</span>
+                <span class="col-pieces">Pieces</span>
+            </div>
+
+            <!-- Virtual-scroll viewport -->
+            <cdk-virtual-scroll-viewport [itemSize]="48" minBufferPx="400" maxBufferPx="800" class="sets-viewport">
+                <div class="set-row" *cdkVirtualFor="let set of filteredSets" (click)="navigateToSet(set.id)">
+                    <span class="col-image">
+                        <div class="set-thumb">
+                            <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                                (error)="set.imageUrl = null">
+                            <i class="fas fa-cube" *ngIf="!set.imageUrl"></i>
+                        </div>
+                    </span>
+                    <span class="col-number">
+                        <span class="mono">{{ set.setNumber }}</span>
+                    </span>
+                    <span class="col-name">{{ set.name }}</span>
+                    <span class="col-year">{{ set.year }}</span>
+                    <span class="col-pieces">{{ set.numParts || '—' }}</span>
+                </div>
+            </cdk-virtual-scroll-viewport>
         </div>
 
         <!-- Empty state -->
         <div class="empty-state" *ngIf="!setsLoading && sets.length === 0">
             <i class="fas fa-box-open"></i>
             <p>No sets directly in this theme — try the sub-themes above</p>
+        </div>
+    </div>
+
+    <!-- Minifigs Section -->
+    <div class="minifig-section" *ngIf="!minifigsLoading && minifigs.length > 0">
+        <h2 class="section-title">
+            <i class="fas fa-user-astronaut"></i>
+            Minifigs in This Theme
+            <span class="count-badge">{{ minifigs.length }}</span>
+        </h2>
+
+        <div class="minifig-grid">
+            <div class="minifig-card" *ngFor="let fig of minifigs" (click)="navigateToMinifig(fig.id)">
+                <div class="minifig-image">
+                    <img *ngIf="fig.imageUrl" [src]="fig.imageUrl" [alt]="fig.name" loading="lazy"
+                        (error)="fig.imageUrl = null">
+                    <div class="image-placeholder" *ngIf="!fig.imageUrl">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="minifig-info">
+                    <span class="minifig-name">{{ fig.name }}</span>
+                    <span class="minifig-number">{{ fig.figNumber }}</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
