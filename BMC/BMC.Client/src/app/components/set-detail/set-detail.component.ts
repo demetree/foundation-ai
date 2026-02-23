@@ -8,6 +8,8 @@ import { LegoSetPartData } from '../../bmc-data-services/lego-set-part.service';
 import { LegoSetMinifigData } from '../../bmc-data-services/lego-set-minifig.service';
 import { LegoSetSubsetData } from '../../bmc-data-services/lego-set-subset.service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
+import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+import { SetComparisonService } from '../../services/set-comparison.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -32,6 +34,12 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     thumbnails = new Map<string, string>();
     selectedColourFilter: string | null = null;
     selectedCategoryFilter: string | null = null;
+    similarSets: SetExplorerItem[] = [];
+    similarSetsLoading = false;
+
+    get isInComparison(): boolean {
+        return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
+    }
 
     get filteredParts(): LegoSetPartData[] {
         let result = this.parts;
@@ -54,6 +62,8 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         private router: Router,
         private legoSetService: LegoSetService,
         private thumbnailService: LDrawThumbnailService,
+        private explorerApi: SetExplorerApiService,
+        public comparisonService: SetComparisonService,
     ) { }
 
     ngOnInit(): void {
@@ -82,6 +92,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
                 this.set = set;
                 this.loading = false;
                 this.loadRelatedData();
+                this.loadSimilarSets();
             },
             error: () => {
                 this.loading = false;
@@ -366,6 +377,80 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     openExternal(url: string | null): void {
         if (url) window.open(url, '_blank');
+    }
+
+    openSimilarSet(set: SetExplorerItem): void {
+        this.router.navigate(['/lego/sets', set.id]);
+    }
+
+    toggleCompare(): void {
+        if (!this.set) return;
+        const item: SetExplorerItem = {
+            id: Number(this.set.id),
+            name: this.set.name,
+            setNumber: this.set.setNumber,
+            year: Number(this.set.year),
+            partCount: Number(this.set.partCount),
+            imageUrl: this.set.imageUrl ?? null,
+            themeId: this.set.legoThemeId ? Number(this.set.legoThemeId) : null,
+            themeName: this.set.legoTheme?.name ?? null
+        };
+        this.comparisonService.toggleSet(item);
+    }
+
+    goToCompare(): void {
+        this.router.navigate(['/lego/compare']);
+    }
+
+    // ── Similar Sets recommendation engine ───────────────
+    private loadSimilarSets(): void {
+        if (!this.set) return;
+        this.similarSetsLoading = true;
+        this.similarSets = [];
+
+        const currentId = Number(this.set.id);
+        const currentThemeId = Number(this.set.legoThemeId);
+        const currentYear = Number(this.set.year);
+        const currentParts = Number(this.set.partCount);
+        const logParts = Math.log10(Math.max(currentParts, 1));
+
+        this.explorerApi.getExploreSets().pipe(takeUntil(this.destroy$)).subscribe({
+            next: (allSets) => {
+                const scored = allSets
+                    .filter(s => s.id !== currentId)
+                    .map(s => {
+                        let score = 0;
+
+                        // Theme match — 40 points
+                        if (s.themeId != null && s.themeId === currentThemeId) {
+                            score += 40;
+                        }
+
+                        // Year proximity — up to 30 points
+                        const yearDiff = Math.abs(s.year - currentYear);
+                        score += Math.max(0, 30 - yearDiff * 3);
+
+                        // Part count proximity (log scale) — up to 20 points
+                        const logS = Math.log10(Math.max(s.partCount, 1));
+                        const countDiff = Math.abs(logS - logParts);
+                        score += Math.max(0, 20 - countDiff * 10);
+
+                        // Has image — 10 points
+                        if (s.imageUrl) score += 10;
+
+                        return { set: s, score };
+                    })
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 12)
+                    .map(x => x.set);
+
+                this.similarSets = scored;
+                this.similarSetsLoading = false;
+            },
+            error: () => {
+                this.similarSetsLoading = false;
+            }
+        });
     }
 
     printPartsList(): void {

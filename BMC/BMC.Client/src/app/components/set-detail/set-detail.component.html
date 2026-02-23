@@ -66,6 +66,14 @@
                     <button *ngIf="set.brickLinkUrl" class="ext-btn" (click)="openExternal(set.brickLinkUrl)">
                         <i class="fas fa-external-link-alt"></i> BrickLink
                     </button>
+                    <button class="ext-btn" [class.active]="isInComparison" (click)="toggleCompare()"
+                        [title]="isInComparison ? 'Remove from comparison' : 'Add to comparison'">
+                        <i class="fas" [class.fa-balance-scale]="!isInComparison" [class.fa-check]="isInComparison"></i>
+                        {{ isInComparison ? 'Comparing' : 'Compare' }}
+                    </button>
+                    <button class="ext-btn accent" *ngIf="comparisonService.count >= 2" (click)="goToCompare()">
+                        <i class="fas fa-columns"></i> View Comparison ({{ comparisonService.count }})
+                    </button>
                 </div>
             </div>
         </section>
@@ -276,6 +284,40 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Similar Sets -->
+        <section class="similar-sets-section" *ngIf="!loading && set">
+            <h2 class="section-heading"><i class="fas fa-th-large"></i> Similar Sets</h2>
+
+            <div *ngIf="similarSetsLoading" class="tab-loading">
+                <div class="spinner small"></div>
+            </div>
+
+            <div class="similar-grid" *ngIf="!similarSetsLoading && similarSets.length > 0">
+                <div class="similar-card" *ngFor="let s of similarSets" (click)="openSimilarSet(s)">
+                    <div class="similar-img-wrap">
+                        <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.name" loading="lazy"
+                            (error)="s.imageUrl = null" />
+                        <div *ngIf="!s.imageUrl" class="img-placeholder"><i class="fas fa-cube"></i></div>
+                        <span class="year-badge" *ngIf="s.year">{{ s.year }}</span>
+                    </div>
+                    <div class="similar-info">
+                        <span class="similar-name">{{ s.name }}</span>
+                        <span class="similar-number">{{ s.setNumber }}</span>
+                        <div class="similar-meta">
+                            <span class="parts-badge"><i class="fas fa-puzzle-piece"></i> {{ s.partCount | number
+                                }}</span>
+                            <span class="theme-badge" *ngIf="s.themeName">{{ s.themeName }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="!similarSetsLoading && similarSets.length === 0" class="tab-empty">
+                <i class="fas fa-th-large"></i>
+                <p>No similar sets found</p>
             </div>
         </section>
 

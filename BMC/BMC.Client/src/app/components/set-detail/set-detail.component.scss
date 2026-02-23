@@ -230,6 +230,18 @@
         border-color: var(--bmc-accent);
         color: #fff;
     }
+
+    &.active {
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.15);
+        border-color: var(--bmc-accent);
+        color: var(--bmc-accent);
+    }
+
+    &.accent {
+        background: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+        color: #fff;
+    }
 }
 
 // ── Visualisations ──────────────────────────────
@@ -850,6 +862,133 @@
     }
 }
 
+// ── Similar Sets Section ─────────────────────────
+.similar-sets-section {
+    margin-top: 32px;
+}
+
+.section-heading {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--bmc-text-primary);
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.similar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.similar-card {
+    @include glass.glass-effect;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+        border-color: var(--bmc-accent);
+    }
+}
+
+.similar-img-wrap {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--bmc-glass-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 8px;
+    }
+
+    .year-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        padding: 2px 8px;
+        border-radius: var(--radius-md);
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+}
+
+.similar-info {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.similar-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--bmc-text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+}
+
+.similar-number {
+    font-size: 0.72rem;
+    color: var(--bmc-text-secondary);
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+.similar-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+
+    .parts-badge {
+        font-size: 0.7rem;
+        color: var(--bmc-text-secondary);
+
+        i {
+            margin-right: 3px;
+            font-size: 0.65rem;
+        }
+    }
+
+    .theme-badge {
+        font-size: 0.65rem;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.12);
+        color: var(--bmc-accent);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
+}
+
+
 // ── Print Styles ────────────────────────────────
 @media print {
 
@@ -859,7 +998,8 @@
     .viz-section,
     .tab-header,
     .colour-filter-bar,
-    .print-btn {
+    .print-btn,
+    .similar-sets-section {
         display: none !important;
     }
 

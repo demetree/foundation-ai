@@ -1,0 +1,299 @@
+@use '../../assets/styles/glass' as glass;
+
+.comparison-page {
+    min-height: 100vh;
+    padding: 32px 40px;
+    background: var(--bmc-bg);
+    color: var(--bmc-text-primary);
+}
+
+// ── Breadcrumb ──────────────────────────────────
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    font-size: 0.85rem;
+
+    a {
+        color: var(--bmc-accent);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .sep {
+        color: var(--bmc-text-secondary);
+    }
+
+    .current {
+        color: var(--bmc-text-secondary);
+    }
+}
+
+// ── Page Header ─────────────────────────────────
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+
+    h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        i {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    }
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-clear,
+.btn-back {
+    padding: 8px 18px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--bmc-text-primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+
+    i {
+        margin-right: 6px;
+    }
+
+    &:hover {
+        background: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+        color: #fff;
+    }
+}
+
+.btn-clear:hover {
+    background: #e74c3c;
+    border-color: #e74c3c;
+}
+
+
+// ── Empty State ─────────────────────────────────
+.empty-state {
+    @include glass.glass-effect;
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    text-align: center;
+    gap: 12px;
+
+    i {
+        font-size: 3rem;
+        color: var(--bmc-text-secondary);
+        opacity: 0.3;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    p {
+        color: var(--bmc-text-secondary);
+        font-size: 0.9rem;
+        max-width: 400px;
+    }
+}
+
+.btn-primary {
+    padding: 10px 28px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--bmc-accent);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
+    }
+}
+
+
+// ── Comparison Table ─────────────────────────────
+.compare-table-wrap {
+    @include glass.glass-effect;
+    border-radius: var(--radius-xl);
+    overflow-x: auto;
+    padding: 0;
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+
+    th,
+    td {
+        padding: 14px 18px;
+        text-align: center;
+        border-bottom: 1px solid var(--bmc-glass-border);
+    }
+
+    .label-col {
+        text-align: left;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--bmc-text-secondary);
+        width: 140px;
+        min-width: 140px;
+
+        i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+    }
+
+    .set-col {
+        min-width: 160px;
+        max-width: 250px;
+    }
+
+    .value-col {
+        font-weight: 600;
+        color: var(--bmc-text-primary);
+        font-size: 0.9rem;
+
+        &.highlight {
+            color: var(--bmc-accent);
+            font-weight: 800;
+        }
+    }
+
+    tbody tr {
+        transition: background 0.15s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        &:last-child td {
+            border-bottom: none;
+        }
+    }
+}
+
+
+// ── Set Card Header (in table head) ─────────────
+.set-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding-top: 8px;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    cursor: pointer;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover {
+        background: #e74c3c;
+        border-color: #e74c3c;
+        color: #fff;
+    }
+}
+
+.set-img-wrap {
+    width: 120px;
+    height: 90px;
+    border-radius: var(--radius-md);
+    background: var(--bmc-glass-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 6px;
+    }
+}
+
+.img-placeholder {
+    font-size: 2rem;
+    color: var(--bmc-text-secondary);
+    opacity: 0.15;
+}
+
+.set-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--bmc-text-primary);
+    cursor: pointer;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: center;
+    line-height: 1.3;
+
+    &:hover {
+        color: var(--bmc-accent);
+    }
+}
+
+
+// ── Tip ─────────────────────────────────────────
+.tip {
+    margin-top: 16px;
+    color: var(--bmc-text-secondary);
+    font-size: 0.8rem;
+    text-align: center;
+
+    i {
+        margin-right: 4px;
+        color: var(--bmc-accent);
+    }
+}

@@ -1,0 +1,76 @@
+<div class="comparison-page">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a routerLink="/lego">Universe</a>
+        <span class="sep">›</span>
+        <a routerLink="/lego/sets">Set Explorer</a>
+        <span class="sep">›</span>
+        <span class="current">Compare Sets</span>
+    </nav>
+
+    <div class="page-header">
+        <h1><i class="fas fa-columns"></i> Set Comparison</h1>
+        <div class="header-actions">
+            <button class="btn-clear" (click)="clearAll()" *ngIf="sets.length > 0">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+            <button class="btn-back" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i> Back to Explorer
+            </button>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="sets.length === 0" class="empty-state">
+        <i class="fas fa-balance-scale"></i>
+        <h2>No Sets Selected</h2>
+        <p>Add sets from the Set Explorer or Set Detail pages to compare them side-by-side.</p>
+        <button class="btn-primary" (click)="goBack()">Browse Sets</button>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="compare-table-wrap" *ngIf="sets.length > 0">
+        <table class="compare-table">
+
+            <!-- Header: set images + names -->
+            <thead>
+                <tr class="img-row">
+                    <th class="label-col"></th>
+                    <th *ngFor="let s of sets" class="set-col">
+                        <div class="set-card-header">
+                            <button class="remove-btn" (click)="removeSet(s.id)" title="Remove from comparison">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="set-img-wrap" (click)="openSet(s)">
+                                <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.name" loading="lazy" />
+                                <div *ngIf="!s.imageUrl" class="img-placeholder"><i class="fas fa-cube"></i></div>
+                            </div>
+                            <span class="set-name" (click)="openSet(s)">{{ s.name }}</span>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+
+            <!-- Data rows -->
+            <tbody>
+                <tr *ngFor="let row of rows">
+                    <td class="label-col">
+                        <i [class]="row.icon"></i>
+                        <span>{{ row.label }}</span>
+                    </td>
+                    <td *ngFor="let val of row.values; let i = index" class="value-col"
+                        [class.highlight]="isMax(row, i)">
+                        {{ val }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tip -->
+    <p class="tip" *ngIf="sets.length > 0 && sets.length < comparisonService.max">
+        <i class="fas fa-info-circle"></i>
+        You can add up to {{ comparisonService.max }} sets. Currently comparing {{ sets.length }}.
+    </p>
+</div>

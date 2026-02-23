@@ -1,0 +1,57 @@
+using System.Collections.Generic;
+
+namespace BMC.LDraw.Models
+{
+    /// <summary>
+    /// BFC certification state for a parsed file.
+    /// </summary>
+    public enum BfcCertification
+    {
+        /// <summary>No BFC statement found — winding is unknown.</summary>
+        Unknown,
+        /// <summary>File is BFC certified (0 BFC CERTIFY).</summary>
+        Certified,
+        /// <summary>File explicitly declares no BFC (0 BFC NOCERTIFY).</summary>
+        NotCertified
+    }
+
+    /// <summary>
+    /// All parsed geometry and metadata from a single LDraw file.
+    /// Contains raw geometry (not yet resolved/flattened).
+    /// </summary>
+    public class LDrawGeometry
+    {
+        /// <summary>File name or model name.</summary>
+        public string Name;
+
+        /// <summary>BFC certification state.</summary>
+        public BfcCertification BfcCertification = BfcCertification.Unknown;
+
+        /// <summary>
+        /// Whether the file uses counter-clockwise winding (true = CCW, false = CW).
+        /// Only meaningful when BfcCertification == Certified.
+        /// </summary>
+        public bool WindingCCW = true;
+
+        /// <summary>Type 1 — sub-file references (parts placed in this file).</summary>
+        public List<LDrawSubfileReference> SubfileReferences = new List<LDrawSubfileReference>();
+
+        /// <summary>Type 2 — line segments.</summary>
+        public List<LDrawLine> Lines = new List<LDrawLine>();
+
+        /// <summary>Type 3 — triangles.</summary>
+        public List<LDrawTriangle> Triangles = new List<LDrawTriangle>();
+
+        /// <summary>Type 4 — quads.</summary>
+        public List<LDrawQuad> Quads = new List<LDrawQuad>();
+
+        /// <summary>Type 5 — conditional lines (optional edges).</summary>
+        public List<LDrawConditionalLine> ConditionalLines = new List<LDrawConditionalLine>();
+
+        /// <summary>
+        /// Indices of SubfileReferences that have INVERTNEXT applied.
+        /// Used by the resolver to flip winding for the referenced subfile.
+        /// </summary>
+        public HashSet<int> InvertNextIndices = new HashSet<int>();
+    }
+}
