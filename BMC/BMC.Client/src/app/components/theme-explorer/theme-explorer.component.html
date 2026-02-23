@@ -78,25 +78,57 @@
             </div>
 
             <!-- Theme cards -->
-            <div class="theme-grid" *ngIf="!loading">
-                <div class="theme-card" *ngFor="let card of filteredCards; let i = index"
-                    [style.animation-delay]="(i * 30) + 'ms'" (click)="navigateToTheme(card.theme.id)">
-                    <div class="card-icon">
-                        <i class="fas fa-puzzle-piece"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>{{ card.theme.name }}</h3>
-                        <div class="card-meta">
-                            <span class="meta-item" *ngIf="card.totalSets > 0">
-                                <i class="fas fa-box-open"></i> {{ card.totalSets }} sets
-                            </span>
-                            <span class="meta-item" *ngIf="card.subThemeCount > 0">
-                                <i class="fas fa-sitemap"></i> {{ card.subThemeCount }} sub-themes
-                            </span>
+            <div class="theme-list" *ngIf="!loading">
+                <div class="theme-tree-node" *ngFor="let card of filteredCards; let i = index"
+                    [style.animation-delay]="(i * 30) + 'ms'">
+
+                    <!-- Root theme card -->
+                    <div class="theme-card" (click)="navigateToTheme(card.theme.id)"
+                        [class.expanded]="isExpanded(+card.theme.id)">
+                        <div class="card-content">
+                            <h3>{{ card.theme.name }}</h3>
+                            <div class="card-meta">
+                                <span class="meta-item" *ngIf="card.totalSets > 0">
+                                    <i class="fas fa-box-open"></i> {{ card.totalSets }} sets
+                                </span>
+                                <span class="meta-item" *ngIf="card.subThemeCount > 0">
+                                    <i class="fas fa-sitemap"></i> {{ card.subThemeCount }} sub-themes
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-thumbnails" *ngIf="card.previewImages.length > 0">
+                            <img *ngFor="let img of card.previewImages" [src]="img.imageUrl" loading="lazy"
+                                [title]="'View set'" (click)="navigateToSet(img.id, $event)"
+                                (error)="$any($event.target).style.display='none'">
+                        </div>
+                        <button class="expand-btn" *ngIf="card.subThemeCount > 0"
+                            (click)="toggleExpand(+card.theme.id, $event)"
+                            [class.expanded]="isExpanded(+card.theme.id)">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="card-arrow" *ngIf="card.subThemeCount === 0">
+                            <i class="fas fa-chevron-right"></i>
                         </div>
                     </div>
-                    <div class="card-arrow">
-                        <i class="fas fa-chevron-right"></i>
+
+                    <!-- Sub-theme list (shown when expanded) -->
+                    <div class="sub-theme-list" *ngIf="isExpanded(+card.theme.id)">
+                        <div class="sub-theme-card" *ngFor="let child of getChildThemes(+card.theme.id)"
+                            (click)="navigateToTheme(child.id)">
+                            <div class="sub-content">
+                                <span class="sub-name">{{ child.name }}</span>
+                                <span class="sub-meta" *ngIf="getSetCount(+child.id) > 0">
+                                    <i class="fas fa-box-open"></i> {{ getSetCount(+child.id) }} sets
+                                </span>
+                            </div>
+                            <div class="sub-thumbnails" *ngIf="getThemePreviewImages(+child.id).length > 0">
+                                <img *ngFor="let img of getThemePreviewImages(+child.id)" [src]="img.imageUrl"
+                                    loading="lazy" [title]="'View set'" (click)="navigateToSet(img.id, $event)">
+                            </div>
+                            <div class="card-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

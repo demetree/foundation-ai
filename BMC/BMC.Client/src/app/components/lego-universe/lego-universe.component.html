@@ -141,7 +141,7 @@
         </div>
         <div class="discovery-grid">
             <div class="discovery-card" *ngFor="let entry of randomDiscoveryItems"
-                (click)="entry.type === 'set' ? navigateToSets() : navigateToMinifigs()">
+                (click)="navigateToDiscoveryItem(entry)">
                 <div class="discovery-type-badge" [class.set-badge]="entry.type === 'set'"
                     [class.minifig-badge]="entry.type === 'minifig'">
                     <i [class]="entry.type === 'set' ? 'fas fa-box-open' : 'fas fa-child'"></i>
@@ -178,7 +178,7 @@
         </div>
         <div class="carousel-strip">
             <div class="carousel-card" *ngFor="let set of visibleRecentSets; let i = index"
-                [style.animation-delay]="(i * 60) + 'ms'" (click)="navigateToSets()">
+                [style.animation-delay]="(i * 60) + 'ms'" (click)="router.navigate(['/lego/sets', set.id])">
                 <div class="carousel-image">
                     <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
                         (error)="set.imageUrl = null">
@@ -206,7 +206,7 @@
             </button>
         </div>
         <div class="epic-grid">
-            <div class="epic-card" *ngFor="let set of epicSets" (click)="navigateToSets()">
+            <div class="epic-card" *ngFor="let set of epicSets" (click)="router.navigate(['/lego/sets', set.id])">
                 <div class="epic-image">
                     <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
                         (error)="set.imageUrl = null">

@@ -108,9 +108,10 @@
                     <i class="fas fa-user"></i> Minifigs
                     <span class="count-badge" *ngIf="minifigs.length">{{ minifigs.length }}</span>
                 </button>
-                <button class="tab-btn" [class.active]="activeTab === 'subsets'" (click)="setTab('subsets')">
-                    <i class="fas fa-boxes"></i> Subsets
-                    <span class="count-badge" *ngIf="subsets.length">{{ subsets.length }}</span>
+                <button class="tab-btn" [class.active]="activeTab === 'related'" (click)="setTab('related')">
+                    <i class="fas fa-project-diagram"></i> Related Sets
+                    <span class="count-badge" *ngIf="subsets.length + parentSets.length">{{ subsets.length +
+                        parentSets.length }}</span>
                 </button>
             </div>
 
@@ -153,7 +154,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let p of filteredParts" [class.spare-row]="p.isSpare" (click)="openInCatalog(p)">
+                            <tr *ngFor="let p of filteredParts" [class.spare-row]="p.isSpare"
+                                (click)="openInCatalog(p)">
                                 <td class="col-thumb">
                                     <div class="part-thumb-wrap">
                                         <img *ngIf="thumbnails.get(getPartThumbnailKey(p))"
@@ -211,27 +213,62 @@
                 </div>
             </div>
 
-            <!-- Subsets Tab -->
-            <div class="tab-content" *ngIf="activeTab === 'subsets'">
-                <div *ngIf="subsetsLoading" class="tab-loading">
+            <!-- Related Sets Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'related'">
+                <div *ngIf="subsetsLoading || parentSetsLoading" class="tab-loading">
                     <div class="spinner small"></div>
                 </div>
-                <div *ngIf="!subsetsLoading && subsets.length === 0" class="tab-empty">
-                    <i class="fas fa-boxes"></i>
-                    <p>No subsets for this set</p>
+
+                <div *ngIf="!subsetsLoading && !parentSetsLoading && subsets.length === 0 && parentSets.length === 0"
+                    class="tab-empty">
+                    <i class="fas fa-project-diagram"></i>
+                    <p>No related sets found</p>
                 </div>
-                <div class="subset-grid" *ngIf="!subsetsLoading && subsets.length > 0">
-                    <div class="subset-card" *ngFor="let ss of subsets" (click)="openSubset(ss)">
-                        <div class="subset-img-wrap">
-                            <img *ngIf="ss.childLegoSet?.imageUrl" [src]="ss.childLegoSet!.imageUrl"
-                                [alt]="ss.childLegoSet!.name" />
-                            <div *ngIf="!ss.childLegoSet?.imageUrl" class="img-placeholder"><i class="fas fa-cube"></i>
+
+                <!-- Included In (parent sets) -->
+                <div *ngIf="!parentSetsLoading && parentSets.length > 0" class="related-section">
+                    <h4 class="related-section-header">
+                        <i class="fas fa-arrow-up"></i> Included In
+                        <span class="section-count">{{ parentSets.length }}</span>
+                    </h4>
+                    <div class="subset-grid">
+                        <div class="subset-card" *ngFor="let ps of parentSets" (click)="openParentSet(ps)">
+                            <div class="subset-img-wrap">
+                                <img *ngIf="ps.parentLegoSet?.imageUrl" [src]="ps.parentLegoSet!.imageUrl"
+                                    [alt]="ps.parentLegoSet!.name" />
+                                <div *ngIf="!ps.parentLegoSet?.imageUrl" class="img-placeholder"><i
+                                        class="fas fa-cube"></i>
+                                </div>
+                            </div>
+                            <div class="subset-info">
+                                <span class="subset-name">{{ ps.parentLegoSet?.name ?? 'Unknown' }}</span>
+                                <span class="subset-num">{{ ps.parentLegoSet?.setNumber }}</span>
+                                <span class="subset-qty" *ngIf="ps.quantity > 1">×{{ ps.quantity }}</span>
                             </div>
                         </div>
-                        <div class="subset-info">
-                            <span class="subset-name">{{ ss.childLegoSet?.name ?? 'Unknown' }}</span>
-                            <span class="subset-num">{{ ss.childLegoSet?.setNumber }}</span>
-                            <span class="subset-qty" *ngIf="ss.quantity > 1">×{{ ss.quantity }}</span>
+                    </div>
+                </div>
+
+                <!-- Contains (child sets) -->
+                <div *ngIf="!subsetsLoading && subsets.length > 0" class="related-section">
+                    <h4 class="related-section-header">
+                        <i class="fas fa-arrow-down"></i> Contains
+                        <span class="section-count">{{ subsets.length }}</span>
+                    </h4>
+                    <div class="subset-grid">
+                        <div class="subset-card" *ngFor="let ss of subsets" (click)="openSubset(ss)">
+                            <div class="subset-img-wrap">
+                                <img *ngIf="ss.childLegoSet?.imageUrl" [src]="ss.childLegoSet!.imageUrl"
+                                    [alt]="ss.childLegoSet!.name" />
+                                <div *ngIf="!ss.childLegoSet?.imageUrl" class="img-placeholder"><i
+                                        class="fas fa-cube"></i>
+                                </div>
+                            </div>
+                            <div class="subset-info">
+                                <span class="subset-name">{{ ss.childLegoSet?.name ?? 'Unknown' }}</span>
+                                <span class="subset-num">{{ ss.childLegoSet?.setNumber }}</span>
+                                <span class="subset-qty" *ngIf="ss.quantity > 1">×{{ ss.quantity }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -13,11 +13,17 @@ interface ThemeNode {
     value?: number;
 }
 
+interface PreviewImage {
+    id: number;
+    imageUrl: string;
+}
+
 interface ThemeCard {
     theme: LegoThemeData;
     setCount: number;
     subThemeCount: number;
     totalSets: number; // including sub-theme sets
+    previewImages: PreviewImage[];
 }
 
 @Component({
@@ -39,6 +45,10 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
     loading = true;
     sunburstReady = false;
 
+    // Hierarchy
+    childMap = new Map<number, LegoThemeData[]>();
+    expandedThemes = new Set<number>();
+
     // Stats
     totalThemes = 0;
     rootThemeCount = 0;
@@ -50,6 +60,9 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
 
     // Set counts per theme (by id)
     private setCountByTheme = new Map<number, number>();
+
+    // Theme thumbnail previews (up to 4 per theme)
+    themePreviewImages = new Map<number, PreviewImage[]>();
 
     constructor(
         private router: Router,
@@ -97,10 +110,19 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
                         .pipe(takeUntil(this.destroy$))
                         .subscribe({
                             next: (sets) => {
-                                // Build set count map
+                                // Build set count map and collect preview images
                                 for (const s of sets) {
                                     const tid = Number(s.legoThemeId);
                                     this.setCountByTheme.set(tid, (this.setCountByTheme.get(tid) || 0) + 1);
+
+                                    // Collect up to 4 images per theme
+                                    if (s.imageUrl) {
+                                        const imgs = this.themePreviewImages.get(tid) || [];
+                                        if (imgs.length < 4) {
+                                            imgs.push({ id: Number(s.id), imageUrl: s.imageUrl });
+                                            this.themePreviewImages.set(tid, imgs);
+                                        }
+                                    }
                                 }
 
                                 this.buildThemeCards();
@@ -123,8 +145,8 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     private buildThemeCards(): void {
-        // Build parent-children map
-        const childMap = new Map<number, LegoThemeData[]>();
+        // Build parent-children map (class-level for template access)
+        this.childMap = new Map<number, LegoThemeData[]>();
         const topLevel: LegoThemeData[] = [];
 
         for (const theme of this.themes) {
@@ -132,10 +154,10 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
             if (parentId === 0 || !theme.legoThemeId) {
                 topLevel.push(theme);
             } else {
-                if (!childMap.has(parentId)) {
-                    childMap.set(parentId, []);
+                if (!this.childMap.has(parentId)) {
+                    this.childMap.set(parentId, []);
                 }
-                childMap.get(parentId)!.push(theme);
+                this.childMap.get(parentId)!.push(theme);
             }
         }
 
@@ -143,13 +165,13 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
 
         // Build cards with counts
         this.topLevelCards = topLevel.map(theme => {
-            const children = childMap.get(Number(theme.id)) || [];
+            const children = this.childMap.get(Number(theme.id)) || [];
             const directSets = this.setCountByTheme.get(Number(theme.id)) || 0;
             let totalSets = directSets;
 
             // Count sub-theme sets recursively
             const countSubSets = (themeId: number): number => {
-                const subThemes = childMap.get(themeId) || [];
+                const subThemes = this.childMap.get(themeId) || [];
                 let count = 0;
                 for (const sub of subThemes) {
                     const sid = Number(sub.id);
@@ -161,11 +183,28 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
 
             totalSets += countSubSets(Number(theme.id));
 
+            // Collect preview images (direct + children, up to 4)
+            const tid = Number(theme.id);
+            const directImgs = this.themePreviewImages.get(tid) || [];
+            let allImgs: PreviewImage[] = [...directImgs];
+            if (allImgs.length < 4) {
+                const childThemes = this.childMap.get(tid) || [];
+                for (const child of childThemes) {
+                    if (allImgs.length >= 4) break;
+                    const childImgs = this.themePreviewImages.get(Number(child.id)) || [];
+                    for (const img of childImgs) {
+                        if (allImgs.length >= 4) break;
+                        allImgs.push(img);
+                    }
+                }
+            }
+
             return {
                 theme,
                 setCount: directSets,
                 subThemeCount: children.length,
-                totalSets
+                totalSets,
+                previewImages: allImgs.slice(0, 4)
             };
         });
 
@@ -180,14 +219,63 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
         }
     }
 
+    // ── Expand / Collapse ────────────────────────────
+
+    toggleExpand(themeId: number, event: Event): void {
+        event.stopPropagation();
+        if (this.expandedThemes.has(themeId)) {
+            this.expandedThemes.delete(themeId);
+        } else {
+            this.expandedThemes.add(themeId);
+        }
+    }
+
+    isExpanded(themeId: number): boolean {
+        return this.expandedThemes.has(themeId);
+    }
+
+    getChildThemes(themeId: number): LegoThemeData[] {
+        return this.childMap.get(themeId) || [];
+    }
+
+    getSetCount(themeId: number): number {
+        return this.setCountByTheme.get(themeId) || 0;
+    }
+
+    getThemePreviewImages(themeId: number): PreviewImage[] {
+        return (this.themePreviewImages.get(themeId) || []).slice(0, 3);
+    }
+
+    navigateToSet(setId: number, event: Event): void {
+        event.stopPropagation();
+        this.router.navigate(['/lego/sets', setId]);
+    }
+
     private applyFilter(): void {
         if (!this.searchTerm.trim()) {
             this.filteredCards = [...this.topLevelCards];
+            this.expandedThemes.clear();
         } else {
             const term = this.searchTerm.toLowerCase();
+
+            // Check if any sub-theme matches for a given parent
+            const hasMatchingChild = (parentId: number): boolean => {
+                const children = this.childMap.get(parentId) || [];
+                return children.some(c => c.name.toLowerCase().includes(term));
+            };
+
             this.filteredCards = this.topLevelCards.filter(c =>
-                c.theme.name.toLowerCase().includes(term)
+                c.theme.name.toLowerCase().includes(term) ||
+                hasMatchingChild(Number(c.theme.id))
             );
+
+            // Auto-expand parents whose children match
+            for (const card of this.filteredCards) {
+                const tid = Number(card.theme.id);
+                if (hasMatchingChild(tid)) {
+                    this.expandedThemes.add(tid);
+                }
+            }
         }
     }
 

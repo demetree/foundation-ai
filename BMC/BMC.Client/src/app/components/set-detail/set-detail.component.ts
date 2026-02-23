@@ -22,11 +22,13 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     parts: LegoSetPartData[] = [];
     minifigs: LegoSetMinifigData[] = [];
     subsets: LegoSetSubsetData[] = [];
+    parentSets: LegoSetSubsetData[] = [];
     loading = true;
     partsLoading = true;
     minifigsLoading = true;
     subsetsLoading = true;
-    activeTab: 'parts' | 'minifigs' | 'subsets' = 'parts';
+    parentSetsLoading = true;
+    activeTab: 'parts' | 'minifigs' | 'related' = 'parts';
     thumbnails = new Map<string, string>();
     selectedColourFilter: string | null = null;
     selectedCategoryFilter: string | null = null;
@@ -115,13 +117,22 @@ export class SetDetailComponent implements OnInit, OnDestroy {
             this.minifigsLoading = false;
         }
 
-        // Load subsets
+        // Load subsets (children of this set)
         this.subsetsLoading = true;
         try {
             this.subsets = await this.set.LegoSetSubsetParentLegoSets;
             this.subsetsLoading = false;
         } catch {
             this.subsetsLoading = false;
+        }
+
+        // Load parent sets (sets that contain this set)
+        this.parentSetsLoading = true;
+        try {
+            this.parentSets = await this.set.LegoSetSubsetChildLegoSets;
+            this.parentSetsLoading = false;
+        } catch {
+            this.parentSetsLoading = false;
         }
     }
 
@@ -347,6 +358,12 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         }
     }
 
+    openParentSet(subset: LegoSetSubsetData): void {
+        if (subset.parentLegoSet) {
+            this.router.navigate(['/lego/sets', subset.parentLegoSet.id]);
+        }
+    }
+
     openExternal(url: string | null): void {
         if (url) window.open(url, '_blank');
     }
@@ -392,7 +409,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         this.clearCategoryFilter();
     }
 
-    setTab(tab: 'parts' | 'minifigs' | 'subsets'): void {
+    setTab(tab: 'parts' | 'minifigs' | 'related'): void {
         this.activeTab = tab;
     }
 

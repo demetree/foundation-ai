@@ -732,6 +732,17 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         this.router.navigate(['/lego/sets'], { queryParams: { year } });
     }
 
+    /**
+     * Navigate to the detail page for a discovery item (set or minifig).
+     */
+    navigateToDiscoveryItem(entry: { type: 'set' | 'minifig'; item: SetExplorerItem | MinifigGalleryItem }): void {
+        if (entry.type === 'set') {
+            this.router.navigate(['/lego/sets', entry.item.id]);
+        } else {
+            this.router.navigate(['/lego/minifigs', entry.item.id]);
+        }
+    }
+
 
     // ----------------------------------------------------------------
     //  Spotlight — Random Discovery
