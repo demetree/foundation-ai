@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 
 import { LegoMinifigService, LegoMinifigData } from '../../bmc-data-services/lego-minifig.service';
 import { LegoSetMinifigData } from '../../bmc-data-services/lego-set-minifig.service';
+import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
 
 interface GraphNode extends d3.SimulationNodeDatum {
     id: string;
@@ -28,6 +29,7 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
 
     minifig: LegoMinifigData | null = null;
     appearsIn: LegoSetMinifigData[] = [];
+    themes: { id: number; name: string }[] = [];
     loading = true;
     setsLoading = true;
 
@@ -35,8 +37,9 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
+        public router: Router,
         private minifigService: LegoMinifigService,
+        private themeService: LegoThemeService,
     ) { }
 
     ngOnInit(): void {
@@ -68,6 +71,35 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
         this.setsLoading = true;
         try {
             this.appearsIn = await this.minifig.LegoSetMinifigs;
+
+            // Extract unique theme IDs from the loaded sets
+            const themeIdSet = new Set<number>();
+            for (const sm of this.appearsIn) {
+                const tid = sm.legoSet?.legoThemeId;
+                if (tid != null && Number(tid) > 0) {
+                    themeIdSet.add(Number(tid));
+                }
+            }
+
+            // Fetch theme names from the service
+            if (themeIdSet.size > 0) {
+                try {
+                    const allThemes = await this.themeService.GetLegoThemeList(
+                        { active: true, deleted: false }
+                    ).toPromise();
+                    const themeMap = new Map<number, string>();
+                    for (const t of (allThemes ?? [])) {
+                        if (themeIdSet.has(Number(t.id))) {
+                            themeMap.set(Number(t.id), t.name);
+                        }
+                    }
+                    this.themes = Array.from(themeMap, ([id, name]) => ({ id, name }))
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                } catch {
+                    this.themes = [];
+                }
+            }
+
             this.setsLoading = false;
             setTimeout(() => this.renderForceGraph(), 150);
         } catch {

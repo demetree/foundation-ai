@@ -112,6 +112,10 @@
                         <i class="fas fa-puzzle-piece"></i>
                         {{ mf.partCount | number }} parts
                     </div>
+                    <div class="sets-badge" *ngIf="mf.setCount">
+                        <i class="fas fa-box-open"></i>
+                        {{ mf.setCount }} {{ mf.setCount === 1 ? 'set' : 'sets' }}
+                    </div>
                 </div>
             </div>
         </div>

@@ -205,6 +205,40 @@ h1 {
     }
 }
 
+// ── Theme Chips ─────────────────────────────────
+.theme-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.theme-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--bmc-glass-border);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--bmc-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    i {
+        font-size: 0.6rem;
+        color: var(--bmc-accent);
+    }
+
+    &:hover {
+        border-color: var(--bmc-accent);
+        color: var(--bmc-text-primary);
+        background: rgba(var(--bmc-accent-rgb, 99, 102, 241), 0.1);
+    }
+}
+
 // ── Force Graph ─────────────────────────────────
 .graph-section {
     @include glass.glass-effect-lg;

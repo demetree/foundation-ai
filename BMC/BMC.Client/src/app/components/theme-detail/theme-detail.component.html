@@ -1,7 +1,13 @@
 <div class="theme-detail" *ngIf="!loading && theme">
 
+    <!-- Hero Banner -->
+    <div class="hero-banner" *ngIf="heroImageUrl">
+        <img [src]="heroImageUrl" alt="" loading="lazy" (error)="heroImageUrl = null">
+        <div class="hero-gradient"></div>
+    </div>
+
     <!-- Header -->
-    <div class="detail-header">
+    <div class="detail-header" [class.has-hero]="heroImageUrl">
         <div class="header-nav">
             <button class="back-btn" (click)="navigateBack()">
                 <i class="fas fa-arrow-left"></i> Back

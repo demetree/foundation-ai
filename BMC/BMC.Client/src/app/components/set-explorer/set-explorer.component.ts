@@ -60,6 +60,8 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     selectedThemeId: number | null = null;
     yearMin: number | null = null;
     yearMax: number | null = null;
+    partCountMin: number | null = null;
+    partCountMax: number | null = null;
     sortBy: 'year' | 'name' | 'partCount' = 'year';
     sortDirection: 'asc' | 'desc' = 'desc';   // newest first by default
 
@@ -109,6 +111,12 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
                 const y = Number(params['year']);
                 this.yearMin = y;
                 this.yearMax = y;
+            }
+            if (params['yearMin']) {
+                this.yearMin = Number(params['yearMin']);
+            }
+            if (params['yearMax']) {
+                this.yearMax = Number(params['yearMax']);
             }
         });
 
@@ -211,6 +219,16 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         }
 
         //
+        // Part count range
+        //
+        if (this.partCountMin !== null) {
+            result = result.filter(s => s.partCount >= this.partCountMin!);
+        }
+        if (this.partCountMax !== null) {
+            result = result.filter(s => s.partCount <= this.partCountMax!);
+        }
+
+        //
         // Sorting
         //
         result = this.applySorting(result);
@@ -306,6 +324,16 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.applyPipeline();
     }
 
+    applyPartCountFilter(): void {
+        this.applyPipeline();
+    }
+
+    clearPartCountFilter(): void {
+        this.partCountMin = null;
+        this.partCountMax = null;
+        this.applyPipeline();
+    }
+
     setSort(field: 'name' | 'year' | 'partCount'): void {
         if (this.sortBy === field) {
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -321,6 +349,8 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         this.selectedThemeId = null;
         this.yearMin = null;
         this.yearMax = null;
+        this.partCountMin = null;
+        this.partCountMax = null;
         this.sortBy = 'year';
         this.sortDirection = 'desc';
         this.applyPipeline();
@@ -328,7 +358,8 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
 
     hasActiveFilters(): boolean {
         return !!this.searchTerm || this.selectedThemeId !== null ||
-            this.yearMin !== null || this.yearMax !== null;
+            this.yearMin !== null || this.yearMax !== null ||
+            this.partCountMin !== null || this.partCountMax !== null;
     }
 
 

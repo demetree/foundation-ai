@@ -49,6 +49,17 @@
                     (change)="applyYearFilter()" id="year-max-input">
             </div>
 
+            <!-- Part Count Range -->
+            <div class="year-range">
+                <input type="number" class="year-input" placeholder="Min parts" [ngModel]="partCountMin"
+                    (ngModelChange)="partCountMin = $event" [min]="0" (change)="applyPartCountFilter()"
+                    id="parts-min-input">
+                <span class="year-dash">–</span>
+                <input type="number" class="year-input" placeholder="Max parts" [ngModel]="partCountMax"
+                    (ngModelChange)="partCountMax = $event" [min]="0" (change)="applyPartCountFilter()"
+                    id="parts-max-input">
+            </div>
+
             <button class="clear-btn" *ngIf="hasActiveFilters()" (click)="clearFilters()">
                 <i class="fas fa-times"></i> Clear
             </button>

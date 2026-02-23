@@ -44,6 +44,14 @@ interface NavCardData {
     trendBadge: string;
 }
 
+interface DecadeBucket {
+    label: string;
+    startYear: number;
+    endYear: number;
+    setCount: number;
+    themeCount: number;
+}
+
 @Component({
     selector: 'app-lego-universe',
     templateUrl: './lego-universe.component.html',
@@ -132,6 +140,11 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     userPreferredThemeIds: number[] = [];
     mySets: SetExplorerItem[] = [];
     myMinifigs: MinifigGalleryItem[] = [];
+
+    //
+    // Decade navigation
+    //
+    decades: DecadeBucket[] = [];
 
     constructor(
         public router: Router,
@@ -240,6 +253,31 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.epicSets = [...result.allSets]
                     .sort((a, b) => (b.partCount ?? 0) - (a.partCount ?? 0))
                     .slice(0, 6);
+
+                //
+                // Decade buckets — group sets by decade for browsing
+                //
+                const decadeMap = new Map<number, { count: number; themes: Set<number> }>();
+                for (const s of result.allSets) {
+                    if (!s.year || s.year < 1900) continue;
+                    const decade = Math.floor(s.year / 10) * 10;
+                    let bucket = decadeMap.get(decade);
+                    if (!bucket) {
+                        bucket = { count: 0, themes: new Set() };
+                        decadeMap.set(decade, bucket);
+                    }
+                    bucket.count++;
+                    if (s.themeId) bucket.themes.add(s.themeId);
+                }
+                this.decades = Array.from(decadeMap.entries())
+                    .map(([decade, b]) => ({
+                        label: `${decade}s`,
+                        startYear: decade,
+                        endYear: decade + 9,
+                        setCount: b.count,
+                        themeCount: b.themes.size
+                    }))
+                    .sort((a, b) => a.startYear - b.startYear);
 
                 //
                 // Minifigs

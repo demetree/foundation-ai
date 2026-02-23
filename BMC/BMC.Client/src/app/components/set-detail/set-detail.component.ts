@@ -368,6 +368,11 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         if (url) window.open(url, '_blank');
     }
 
+    printPartsList(): void {
+        this.activeTab = 'parts';
+        setTimeout(() => window.print(), 200);
+    }
+
     openInCatalog(part: LegoSetPartData): void {
         if (part.brickPartId) {
             const navigationExtras: any = {};

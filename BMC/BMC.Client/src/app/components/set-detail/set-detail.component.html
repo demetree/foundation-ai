@@ -15,7 +15,7 @@
     </div>
 
     <!-- Main content -->
-    <div *ngIf="!loading && set" class="content">
+    <div *ngIf="!loading && set" class="content" [attr.data-set-name]="set.setNumber + ' — ' + set.name">
 
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
@@ -112,6 +112,10 @@
                     <i class="fas fa-project-diagram"></i> Related Sets
                     <span class="count-badge" *ngIf="subsets.length + parentSets.length">{{ subsets.length +
                         parentSets.length }}</span>
+                </button>
+                <button class="print-btn" *ngIf="activeTab === 'parts' && parts.length > 0" (click)="printPartsList()"
+                    title="Print parts list">
+                    <i class="fas fa-print"></i>
                 </button>
             </div>
 

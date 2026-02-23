@@ -47,6 +47,12 @@
                         <span class="meta-value">{{ appearsIn.length }} sets</span>
                     </div>
                 </div>
+                <div class="theme-chips" *ngIf="themes.length > 0">
+                    <span class="theme-chip" *ngFor="let t of themes"
+                        (click)="$event.stopPropagation(); router.navigate(['/lego/themes', t.id])">
+                        <i class="fas fa-layer-group"></i> {{ t.name }}
+                    </span>
+                </div>
             </div>
         </section>
 

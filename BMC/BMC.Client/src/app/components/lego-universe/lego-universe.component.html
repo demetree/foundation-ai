@@ -226,6 +226,23 @@
         </div>
     </div>
 
+    <!-- Explore by Decade -->
+    <div class="decade-section" *ngIf="decades.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-clock"></i> Explore by Decade</h2>
+        </div>
+        <div class="decade-strip">
+            <div class="decade-card" *ngFor="let d of decades; let i = index" [style.animation-delay]="(i * 60) + 'ms'"
+                (click)="router.navigate(['/lego/sets'], { queryParams: { yearMin: d.startYear, yearMax: d.endYear } })">
+                <span class="decade-label">{{ d.label }}</span>
+                <div class="decade-stats">
+                    <span><i class="fas fa-box-open"></i> {{ d.setCount | number }}</span>
+                    <span><i class="fas fa-layer-group"></i> {{ d.themeCount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Live Navigation Cards (Phase 4) -->
     <div class="quick-nav" *ngIf="navCards.length > 0">
         <div class="nav-card" *ngFor="let card of navCards" (click)="router.navigate([card.route])">

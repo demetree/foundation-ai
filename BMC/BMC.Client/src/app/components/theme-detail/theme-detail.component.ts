@@ -33,6 +33,7 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
     totalSets = 0;
     totalSubThemes = 0;
     yearRange = '';
+    heroImageUrl: string | null = null;
 
     constructor(
         private router: Router,
@@ -119,6 +120,10 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
                 }
 
                 this.setsLoading = false;
+
+                // Use first available image as hero banner
+                const firstWithImage = sets.find(s => s.imageUrl);
+                this.heroImageUrl = firstWithImage?.imageUrl ?? null;
             },
             error: () => {
                 this.setsLoading = false;

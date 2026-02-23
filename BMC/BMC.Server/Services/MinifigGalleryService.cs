@@ -145,6 +145,15 @@ namespace Foundation.BMC.Services
                 .ToDictionaryAsync(x => x.MinifigId, x => x.MaxYear, ct)
                 .ConfigureAwait(false);
 
+            // Step 2a: Build a lookup of minifigId → count of distinct sets.
+            Dictionary<int, int> setCountLookup = await context.LegoSetMinifigs
+                .AsNoTracking()
+                .Where(lsm => lsm.active && !lsm.deleted)
+                .GroupBy(lsm => lsm.legoMinifigId)
+                .Select(g => new { MinifigId = g.Key, SetCount = g.Count() })
+                .ToDictionaryAsync(x => x.MinifigId, x => x.SetCount, ct)
+                .ConfigureAwait(false);
+
             //
             // Step 2b: Build a lookup of minifigId → distinct theme IDs.
             // Uses the same junction join but groups by theme.
@@ -175,6 +184,10 @@ namespace Foundation.BMC.Services
                 if (yearLookup.TryGetValue(mf.Id, out int year))
                 {
                     mf.Year = year;
+                }
+                if (setCountLookup.TryGetValue(mf.Id, out int setCount))
+                {
+                    mf.SetCount = setCount;
                 }
                 if (themeLookup.TryGetValue(mf.Id, out List<int> themeIds))
                 {
@@ -215,6 +228,7 @@ namespace Foundation.BMC.Services
         public int PartCount { get; set; }
         public string ImageUrl { get; set; }
         public int Year { get; set; }
+        public int SetCount { get; set; }
         public List<int> ThemeIds { get; set; } = new List<int>();
     }
 }

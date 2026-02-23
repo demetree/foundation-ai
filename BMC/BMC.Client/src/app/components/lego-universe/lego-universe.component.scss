@@ -1274,6 +1274,64 @@
 }
 
 
+
+/* ----------------------------------------------------------------
+   Decade Navigation Cards
+   ---------------------------------------------------------------- */
+.decade-section {
+    margin-bottom: 32px;
+}
+
+.decade-strip {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 4px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bmc-border) transparent;
+}
+
+.decade-card {
+    flex: 0 0 auto;
+    min-width: 130px;
+    padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.08));
+    border: 1px solid var(--bmc-border);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    animation: fadeInUp 0.35s ease-out both;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+    }
+}
+
+.decade-label {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--bmc-text-primary);
+    letter-spacing: -0.5px;
+}
+
+.decade-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: var(--bmc-text-muted);
+
+    i {
+        margin-right: 3px;
+        font-size: 0.65rem;
+    }
+}
+
+
 /* ----------------------------------------------------------------
    Responsive
    ---------------------------------------------------------------- */

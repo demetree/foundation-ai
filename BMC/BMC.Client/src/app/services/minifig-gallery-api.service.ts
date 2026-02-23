@@ -19,6 +19,7 @@ export interface MinifigGalleryItem {
     partCount: number;
     imageUrl: string | null;
     year: number;
+    setCount: number;
     themeIds: number[];
 }
 
