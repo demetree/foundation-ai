@@ -141,6 +141,17 @@
         </div>
     </div>
 
+    <!-- Set Timeline Section -->
+    <div class="section timeline-section" *ngIf="!setsLoading && sets.length > 1">
+        <div class="section-header">
+            <h2><i class="fas fa-chart-line"></i> Set Timeline</h2>
+            <span class="section-count">{{ sets.length }} sets</span>
+        </div>
+        <div class="timeline-chart-container">
+            <div #timelineChart class="timeline-chart"></div>
+        </div>
+    </div>
+
     <!-- Minifigs Section -->
     <div class="minifig-section" *ngIf="!minifigsLoading && minifigs.length > 0">
         <h2 class="section-title">

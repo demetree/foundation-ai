@@ -600,6 +600,80 @@
 }
 
 /* ----------------------------------------------------------------
+   Set Timeline — D3 Scatter Chart
+   ---------------------------------------------------------------- */
+.timeline-section {
+    margin-top: 24px;
+}
+
+.timeline-chart-container {
+    @include glass-effect-lg;
+    padding: 24px;
+    margin-top: 12px;
+}
+
+.timeline-chart {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+
+    svg {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .x-axis,
+    .y-axis {
+
+        line,
+        path {
+            stroke: var(--bmc-border);
+        }
+
+        text {
+            fill: var(--bmc-text-muted);
+            font-size: 0.72rem;
+        }
+    }
+
+    .axis-label {
+        fill: var(--bmc-text-secondary);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .dot {
+        fill: var(--bmc-primary);
+        fill-opacity: 0.65;
+        stroke: var(--bmc-primary-light);
+        stroke-width: 1.5;
+        transition: fill-opacity 0.15s, r 0.15s;
+
+        &.hovered {
+            fill-opacity: 1;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 6px var(--bmc-primary));
+        }
+    }
+}
+
+.timeline-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--bmc-bg-elevated);
+    border: 1px solid var(--bmc-border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    color: var(--bmc-text-primary);
+    line-height: 1.5;
+    box-shadow: var(--bmc-shadow-md);
+    z-index: 10;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+}
+
+/* ----------------------------------------------------------------
    Responsive
    ---------------------------------------------------------------- */
 @media (max-width: 768px) {

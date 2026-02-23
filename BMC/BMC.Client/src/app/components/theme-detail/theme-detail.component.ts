@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
+import * as d3 from 'd3';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
 import { LegoSetService, LegoSetData } from '../../bmc-data-services/lego-set.service';
 import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
@@ -42,6 +43,9 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
 
     // Search within sets table
     setSearchQuery = '';
+
+    // Timeline chart ref
+    @ViewChild('timelineChart', { static: false }) timelineChartRef!: ElementRef;
 
     get filteredSets(): LegoSetData[] {
         if (!this.setSearchQuery) return this.sets;
@@ -145,6 +149,9 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
                 // Use first available image as hero banner
                 const firstWithImage = sets.find(s => s.imageUrl);
                 this.heroImageUrl = firstWithImage?.imageUrl ?? null;
+
+                // Build the timeline chart after a tick so the DOM is ready
+                setTimeout(() => this.buildTimeline(), 0);
             },
             error: () => {
                 this.setsLoading = false;
@@ -214,5 +221,116 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
 
     navigateToThemeExplorer(): void {
         this.router.navigate(['/lego/themes']);
+    }
+
+
+    // ── D3 Set Timeline Scatter Chart ───────────────────────────
+    private buildTimeline(): void {
+        if (!this.timelineChartRef || this.sets.length < 2) return;
+
+        const el = this.timelineChartRef.nativeElement as HTMLElement;
+        d3.select(el).selectAll('*').remove();
+
+        const data = this.sets
+            .map(s => ({
+                id: Number(s.id),
+                name: s.name,
+                setNumber: s.setNumber,
+                year: Number(s.year),
+                parts: Number(s.partCount) || 0
+            }))
+            .filter(d => d.year > 0);
+
+        if (data.length < 2) return;
+
+        // Dimensions
+        const margin = { top: 20, right: 30, bottom: 44, left: 56 };
+        const width = Math.min(el.clientWidth || 800, 1000) - margin.left - margin.right;
+        const height = 320 - margin.top - margin.bottom;
+
+        const svg = d3.select(el)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xExtent = d3.extent(data, d => d.year) as [number, number];
+        const x = d3.scaleLinear()
+            .domain([xExtent[0] - 0.5, xExtent[1] + 0.5])
+            .range([0, width]);
+
+        const maxParts = d3.max(data, d => d.parts) || 100;
+        const y = d3.scaleLinear()
+            .domain([0, maxParts * 1.1])
+            .range([height, 0]);
+
+        const r = d3.scaleSqrt()
+            .domain([0, maxParts])
+            .range([4, 18]);
+
+        // Axes
+        const yearTicks = xExtent[1] - xExtent[0];
+        svg.append('g')
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x)
+                .ticks(Math.min(yearTicks, 12))
+                .tickFormat(d => String(d))
+            );
+
+        svg.append('g')
+            .attr('class', 'y-axis')
+            .call(d3.axisLeft(y).ticks(6));
+
+        // Axis labels
+        svg.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', width / 2)
+            .attr('y', height + 38)
+            .attr('text-anchor', 'middle')
+            .text('Year');
+
+        svg.append('text')
+            .attr('class', 'axis-label')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -height / 2)
+            .attr('y', -44)
+            .attr('text-anchor', 'middle')
+            .text('Part Count');
+
+        // Tooltip div
+        const tooltip = d3.select(el)
+            .append('div')
+            .attr('class', 'timeline-tooltip')
+            .style('opacity', 0);
+
+        // Dots
+        const router = this.router;
+        svg.selectAll('.dot')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'dot')
+            .attr('cx', d => x(d.year))
+            .attr('cy', d => y(d.parts))
+            .attr('r', d => r(d.parts))
+            .style('cursor', 'pointer')
+            .on('mouseover', function (event: MouseEvent, d: any) {
+                tooltip
+                    .style('opacity', 1)
+                    .html(`<strong>${d.name}</strong><br/>${d.setNumber} · ${d.year}<br/>${d.parts.toLocaleString()} pieces`)
+                    .style('left', (event.offsetX + 12) + 'px')
+                    .style('top', (event.offsetY - 28) + 'px');
+                d3.select(this).classed('hovered', true);
+            })
+            .on('mouseout', function () {
+                tooltip.style('opacity', 0);
+                d3.select(this).classed('hovered', false);
+            })
+            .on('click', (_event: MouseEvent, d: any) => {
+                router.navigate(['/lego/sets', d.id]);
+            });
     }
 }
