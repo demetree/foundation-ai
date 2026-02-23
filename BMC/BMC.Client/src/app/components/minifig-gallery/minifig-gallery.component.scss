@@ -166,6 +166,84 @@
 
 
 /* ----------------------------------------------------------------
+   Theme dropdown
+   ---------------------------------------------------------------- */
+.theme-select {
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    color: var(--bmc-text-primary);
+    font-size: 0.85rem;
+    min-width: 180px;
+    cursor: pointer;
+
+    &:focus {
+        outline: none;
+        border-color: var(--bmc-accent);
+    }
+
+    option {
+        background: var(--bmc-bg-card, #1a1a2e);
+        color: var(--bmc-text-primary);
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Quick Theme Filters (from user profile)
+   ---------------------------------------------------------------- */
+.quick-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.quick-themes-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--bmc-text-secondary);
+    margin-right: 4px;
+    white-space: nowrap;
+
+    i {
+        margin-right: 3px;
+        background: linear-gradient(135deg, #f5af19, #f12711);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.quick-theme-pill {
+    padding: 5px 14px;
+    border-radius: var(--radius-xl, 20px);
+    border: 1px solid var(--bmc-glass-border);
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+        border-color: var(--bmc-accent);
+        color: var(--bmc-accent);
+    }
+
+    &.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+}
+
+
+/* ----------------------------------------------------------------
    Sort bar
    ---------------------------------------------------------------- */
 .sort-bar {

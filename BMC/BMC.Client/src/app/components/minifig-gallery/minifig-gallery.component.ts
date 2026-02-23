@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
+import { Subject, Subscription, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
+import { AuthService } from '../../services/auth.service';
 
 
 /**
@@ -49,13 +51,22 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
     // Filters
     //
     searchTerm = '';
+    selectedThemeId: number | null = null;
     sortBy: 'year' | 'name' | 'partCount' | 'figNumber' = 'year';
     sortDirection: 'asc' | 'desc' = 'desc';   // newest first by default
+
+    //
+    // Themes extracted from data + user preferences
+    //
+    themes: { id: number; name: string }[] = [];
+    userPreferredThemes: { id: number, name: string }[] = [];
 
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private http: HttpClient,
+        private authService: AuthService,
         private minifigGalleryApi: MinifigGalleryApiService
     ) { }
 
@@ -86,6 +97,12 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
             next: (minifigs) => {
                 this.allMinifigs = minifigs;
                 this.totalCount = minifigs.length;
+
+                //
+                // Extract unique themes from minifig → set theme data
+                //
+                this.extractThemes(minifigs);
+
                 this.applyPipeline();
                 this.loading = false;
             },
@@ -94,6 +111,8 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
                 this.loading = false;
             }
         });
+
+        this.loadUserThemes();
     }
 
 
@@ -101,6 +120,63 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
         this.destroy$.next();
         this.destroy$.complete();
         this.loadSub.unsubscribe();
+    }
+
+
+    private extractThemes(minifigs: MinifigGalleryItem[]): void {
+        const allThemeIds = new Set<number>();
+        for (const mf of minifigs) {
+            if (mf.themeIds) {
+                for (const tid of mf.themeIds) {
+                    allThemeIds.add(tid);
+                }
+            }
+        }
+        this._allThemeIds = allThemeIds;
+        this.tryBuildThemesList();
+    }
+
+    private _allThemeIds = new Set<number>();
+    private _allThemesMap = new Map<number, string>();
+    private _preferredThemeIds = new Set<number>();
+
+    private loadUserThemes(): void {
+        const headers = this.authService.GetAuthenticationHeaders();
+        forkJoin({
+            profile: this.http.get<any>('/api/profile/mine', { headers }),
+            themes: this.http.get<any[]>('/api/LegoThemes', { headers, params: { pageSize: '500' } })
+        }).subscribe({
+            next: ({ profile, themes }) => {
+                this._allThemesMap = new Map<number, string>(themes.map(t => [t.id, t.name]));
+                this._preferredThemeIds = new Set<number>(
+                    (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId)
+                );
+                this.tryBuildThemesList();
+            },
+            error: () => { /* Non-critical */ }
+        });
+    }
+
+    /**
+     * Called after both data streams arrive.
+     * Whichever finishes last triggers the actual build.
+     */
+    private tryBuildThemesList(): void {
+        if (this._allThemeIds.size === 0 || this._allThemesMap.size === 0) {
+            return; // One of the two hasn't arrived yet
+        }
+
+        // Build the full theme dropdown from IDs present in minifig data
+        this.themes = [...this._allThemeIds]
+            .map(id => ({ id, name: this._allThemesMap.get(id) || '' }))
+            .filter(t => t.name)
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        // Build user preferred themes
+        this.userPreferredThemes = [...this._preferredThemeIds]
+            .map(id => ({ id, name: this._allThemesMap.get(id) || '' }))
+            .filter(t => t.name)
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
 
@@ -120,6 +196,13 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
                 (mf.name || '').toLowerCase().includes(lower) ||
                 (mf.figNumber || '').toLowerCase().includes(lower)
             );
+        }
+
+        //
+        // Theme filter
+        //
+        if (this.selectedThemeId !== null) {
+            result = result.filter(mf => mf.themeIds?.includes(this.selectedThemeId!));
         }
 
         //
@@ -215,15 +298,21 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
         this.applyPipeline();
     }
 
+    selectTheme(themeId: number | null): void {
+        this.selectedThemeId = this.selectedThemeId === themeId ? null : themeId;
+        this.applyPipeline();
+    }
+
     clearFilters(): void {
         this.searchTerm = '';
+        this.selectedThemeId = null;
         this.sortBy = 'year';
         this.sortDirection = 'desc';
         this.applyPipeline();
     }
 
     hasActiveFilters(): boolean {
-        return !!this.searchTerm;
+        return !!this.searchTerm || this.selectedThemeId !== null;
     }
 
 

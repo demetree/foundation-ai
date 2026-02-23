@@ -19,6 +19,7 @@ export interface MinifigGalleryItem {
     partCount: number;
     imageUrl: string | null;
     year: number;
+    themeIds: number[];
 }
 
 
@@ -52,7 +53,7 @@ export class MinifigGalleryApiService extends SecureEndpointBase {
      */
     getGalleryMinifigs(): Observable<MinifigGalleryItem[]> {
         return this.cacheService.getOrFetch<MinifigGalleryItem[]>(
-            'minifig-gallery',
+            'minifig-gallery-v2',
             {},
             () => this.fetchFromServer(),
             1440   // 24 hours in minutes

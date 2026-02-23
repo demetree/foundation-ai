@@ -138,7 +138,7 @@ namespace Foundation.BMC.Services
                     context.LegoSets.AsNoTracking().Where(ls => ls.active && !ls.deleted),
                     lsm => lsm.legoSetId,
                     ls => ls.id,
-                    (lsm, ls) => new { lsm.legoMinifigId, ls.year }
+                    (lsm, ls) => new { lsm.legoMinifigId, ls.year, ls.legoThemeId }
                 )
                 .GroupBy(x => x.legoMinifigId)
                 .Select(g => new { MinifigId = g.Key, MaxYear = g.Max(x => x.year) })
@@ -146,13 +146,39 @@ namespace Foundation.BMC.Services
                 .ConfigureAwait(false);
 
             //
-            // Step 3: Merge the year into each DTO and sort.
+            // Step 2b: Build a lookup of minifigId → distinct theme IDs.
+            // Uses the same junction join but groups by theme.
+            //
+            Dictionary<int, List<int>> themeLookup = (await context.LegoSetMinifigs
+                .AsNoTracking()
+                .Where(lsm => lsm.active && !lsm.deleted)
+                .Join(
+                    context.LegoSets.AsNoTracking().Where(ls => ls.active && !ls.deleted && ls.legoThemeId != null),
+                    lsm => lsm.legoSetId,
+                    ls => ls.id,
+                    (lsm, ls) => new { lsm.legoMinifigId, ls.legoThemeId }
+                )
+                .Distinct()
+                .ToListAsync(ct)
+                .ConfigureAwait(false))
+                .GroupBy(x => x.legoMinifigId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.legoThemeId!.Value).Distinct().ToList()
+                );
+
+            //
+            // Step 3: Merge the year and theme IDs into each DTO and sort.
             //
             foreach (var mf in minifigs)
             {
                 if (yearLookup.TryGetValue(mf.Id, out int year))
                 {
                     mf.Year = year;
+                }
+                if (themeLookup.TryGetValue(mf.Id, out List<int> themeIds))
+                {
+                    mf.ThemeIds = themeIds;
                 }
             }
 
@@ -189,5 +215,6 @@ namespace Foundation.BMC.Services
         public int PartCount { get; set; }
         public string ImageUrl { get; set; }
         public int Year { get; set; }
+        public List<int> ThemeIds { get; set; } = new List<int>();
     }
 }
