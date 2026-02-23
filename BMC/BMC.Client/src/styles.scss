@@ -384,3 +384,13 @@ body {
     border-radius: var(--radius-md);
     box-shadow: var(--bmc-shadow-md);
 }
+
+
+/* ----------------------------------------------------------------
+   Wide Tooltip Override (for ngbTooltip with tooltipClass)
+   ---------------------------------------------------------------- */
+.tooltip-wide .tooltip-inner {
+    max-width: 360px;
+    text-align: left;
+    line-height: 1.45;
+}
