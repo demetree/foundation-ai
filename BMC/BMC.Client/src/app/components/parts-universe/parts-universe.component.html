@@ -3,12 +3,17 @@
     <!-- Header -->
     <div class="page-header">
         <div class="header-top">
-            <button class="back-btn" (click)="navigateBack()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <div class="header-titles">
-                <h1>Parts Universe</h1>
-                <p class="subtitle">Explore every brick in the Lego universe — ranked, visualized, and connected</p>
+            <div class="header-title">
+                <div class="breadcrumb">
+                    <a (click)="navigateBack()" class="breadcrumb-link">
+                        <i class="fas fa-globe"></i> Universe
+                    </a>
+                    <i class="fas fa-chevron-right breadcrumb-sep"></i>
+                    <span class="breadcrumb-current">Parts Universe</span>
+                </div>
+                <h1><i class="fas fa-atom"></i> Parts Universe</h1>
+                <p class="header-subtitle">Explore every brick in the Lego universe — ranked, visualized, and connected
+                </p>
             </div>
         </div>
     </div>

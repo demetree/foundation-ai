@@ -22,46 +22,63 @@
 
 .header-top {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-.back-btn {
-    background: var(--bmc-bg-elevated, rgba(255, 255, 255, 0.06));
-    border: 1px solid var(--bmc-border, rgba(255, 255, 255, 0.08));
-    color: var(--bmc-text-muted, #aaa);
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+.breadcrumb {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+
+.breadcrumb-link {
+    color: var(--bmc-primary, #667eea);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
 
     &:hover {
-        background: var(--bmc-accent, #667eea);
-        color: #fff;
-        border-color: var(--bmc-accent, #667eea);
+        color: var(--bmc-primary-light, #8b9cf7);
+    }
+
+    i {
+        margin-right: 4px;
     }
 }
 
-.header-titles {
+.breadcrumb-sep {
+    color: var(--bmc-text-muted, #888);
+    font-size: 0.6rem;
+}
+
+.breadcrumb-current {
+    color: var(--bmc-text-secondary, #aaa);
+}
+
+.header-title {
     h1 {
         font-size: 1.75rem;
         font-weight: 700;
         color: var(--bmc-text-primary, #fff);
         margin: 0;
-        background: linear-gradient(135deg, #667eea, #f5576c, #4ecdc4);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+
+        i {
+            background: linear-gradient(135deg, #667eea, #f5576c, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 8px;
+        }
     }
 
-    .subtitle {
-        font-size: 0.85rem;
+    .header-subtitle {
         color: var(--bmc-text-muted, #888);
+        font-size: 0.85rem;
         margin: 4px 0 0;
     }
 }
