@@ -2,10 +2,26 @@
 
     <!-- Hero Header -->
     <div class="universe-header">
+
+        <!-- Floating brick particles -->
+        <div class="floating-bricks">
+            <i class="fas fa-cube brick brick-1"></i>
+            <i class="fas fa-cube brick brick-2"></i>
+            <i class="fas fa-puzzle-piece brick brick-3"></i>
+            <i class="fas fa-cube brick brick-4"></i>
+            <i class="fas fa-puzzle-piece brick brick-5"></i>
+            <i class="fas fa-cube brick brick-6"></i>
+            <i class="fas fa-puzzle-piece brick brick-7"></i>
+            <i class="fas fa-cube brick brick-8"></i>
+        </div>
+
         <div class="header-content">
-            <h1><i class="fas fa-globe"></i> Universe</h1>
-            <p class="header-subtitle">Explore the world of Lego — themes, sets, minifigs, and the connections between
-                them</p>
+            <h1 class="hero-title">
+                <span class="title-accent">The LEGO</span> Universe
+            </h1>
+            <p class="tagline-rotator" [class.visible]="taglineVisible">
+                {{ taglines[activeTaglineIndex] }}
+            </p>
         </div>
 
         <!-- Animated Stats -->
@@ -28,11 +44,17 @@
                 <div class="stat-label">Themes</div>
                 <div class="stat-glow"></div>
             </div>
+            <div class="stat-card parts-card" (click)="navigateToPartsUniverse()">
+                <div class="stat-icon"><i class="fas fa-puzzle-piece"></i></div>
+                <div class="stat-value">{{ displayParts | number }}</div>
+                <div class="stat-label">Unique Parts</div>
+                <div class="stat-glow"></div>
+            </div>
         </div>
 
         <!-- Loading state for stats -->
         <div class="hero-stats" *ngIf="loading">
-            <div class="stat-card skeleton" *ngFor="let i of [1,2,3]">
+            <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4]">
                 <div class="skeleton-icon"></div>
                 <div class="skeleton-text wide"></div>
                 <div class="skeleton-text short"></div>
@@ -40,7 +62,231 @@
         </div>
     </div>
 
-    <!-- Visualizations Row -->
+    <!-- Universal Search Bar -->
+    <div class="universe-search">
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search across sets, minifigs, and themes..."
+                [(ngModel)]="searchTerm" (input)="onSearchInput()" (blur)="closeSearch()" autocomplete="off" />
+            <button class="search-clear" *ngIf="searchTerm.length > 0" (mousedown)="searchTerm = ''; closeSearch()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div class="search-dropdown" *ngIf="searchDropdownVisible">
+            <!-- Sets Results -->
+            <div class="search-category" *ngIf="searchResults.sets.length > 0">
+                <div class="search-category-header">
+                    <i class="fas fa-box-open"></i> Sets
+                </div>
+                <div class="search-result-item" *ngFor="let set of searchResults.sets"
+                    (mousedown)="navigateFromSearch('sets')">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" class="search-thumb" alt="" />
+                    <div class="search-result-info">
+                        <span class="search-result-name">{{ set.name }}</span>
+                        <span class="search-result-meta">{{ set.setNumber }} · {{ set.year }}</span>
+                    </div>
+                </div>
+                <div class="search-see-all" (mousedown)="navigateFromSearch('sets')">
+                    See all set results →
+                </div>
+            </div>
+
+            <!-- Minifig Results -->
+            <div class="search-category" *ngIf="searchResults.minifigs.length > 0">
+                <div class="search-category-header">
+                    <i class="fas fa-child"></i> Minifigs
+                </div>
+                <div class="search-result-item" *ngFor="let fig of searchResults.minifigs"
+                    (mousedown)="navigateFromSearch('minifigs')">
+                    <img *ngIf="fig.imageUrl" [src]="fig.imageUrl" class="search-thumb" alt="" />
+                    <div class="search-result-info">
+                        <span class="search-result-name">{{ fig.name }}</span>
+                        <span class="search-result-meta">{{ fig.figNumber }}</span>
+                    </div>
+                </div>
+                <div class="search-see-all" (mousedown)="navigateFromSearch('minifigs')">
+                    See all minifig results →
+                </div>
+            </div>
+
+            <!-- Theme Results -->
+            <div class="search-category" *ngIf="searchResults.themes.length > 0">
+                <div class="search-category-header">
+                    <i class="fas fa-layer-group"></i> Themes
+                </div>
+                <div class="search-result-item" *ngFor="let theme of searchResults.themes"
+                    (mousedown)="navigateFromSearch('themes')">
+                    <div class="search-result-info">
+                        <span class="search-result-name">{{ theme.name }}</span>
+                    </div>
+                </div>
+                <div class="search-see-all" (mousedown)="navigateFromSearch('themes')">
+                    See all theme results →
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════ Spotlight Sections ═══════════════════════════ -->
+
+    <!-- Random Discovery -->
+    <div class="spotlight-section" *ngIf="randomDiscoveryItems.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-dice"></i> Random Discovery</h2>
+            <button class="shuffle-btn" (click)="shuffleDiscovery()" title="Surprise me again!">
+                <i class="fas fa-sync-alt"></i> Shuffle
+            </button>
+        </div>
+        <div class="discovery-grid">
+            <div class="discovery-card" *ngFor="let entry of randomDiscoveryItems"
+                (click)="entry.type === 'set' ? navigateToSets() : navigateToMinifigs()">
+                <div class="discovery-type-badge" [class.set-badge]="entry.type === 'set'"
+                    [class.minifig-badge]="entry.type === 'minifig'">
+                    <i [class]="entry.type === 'set' ? 'fas fa-box-open' : 'fas fa-child'"></i>
+                </div>
+                <div class="discovery-image">
+                    <img *ngIf="entry.item.imageUrl" [src]="entry.item.imageUrl" [alt]="entry.item.name"
+                        loading="lazy" />
+                    <div class="image-placeholder" *ngIf="!entry.item.imageUrl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                </div>
+                <div class="discovery-info">
+                    <span class="discovery-name">{{ entry.item.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Additions -->
+    <div class="spotlight-section" *ngIf="recentSets.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-sparkles"></i> Latest Additions</h2>
+            <div class="carousel-controls">
+                <button class="carousel-arrow" (click)="scrollCarousel('prev')" [disabled]="!canScrollPrev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="carousel-arrow" (click)="scrollCarousel('next')" [disabled]="!canScrollNext">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="browse-all-btn" (click)="navigateToSets()">
+                    Browse All <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="carousel-strip">
+            <div class="carousel-card" *ngFor="let set of visibleRecentSets; let i = index"
+                [style.animation-delay]="(i * 60) + 'ms'" (click)="navigateToSets()">
+                <div class="carousel-image">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                        (error)="set.imageUrl = null">
+                    <div class="image-placeholder" *ngIf="!set.imageUrl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                </div>
+                <div class="carousel-info">
+                    <span class="carousel-name">{{ set.name }}</span>
+                    <span class="carousel-meta">
+                        <span class="set-number">{{ set.setNumber }}</span>
+                        <span class="set-year" *ngIf="set.year">· {{ set.year }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Most Epic Sets -->
+    <div class="spotlight-section" *ngIf="epicSets.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-trophy"></i> Most Epic Sets</h2>
+            <button class="browse-all-btn" (click)="navigateToSets()">
+                Browse All <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        <div class="epic-grid">
+            <div class="epic-card" *ngFor="let set of epicSets" (click)="navigateToSets()">
+                <div class="epic-image">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                        (error)="set.imageUrl = null">
+                    <div class="image-placeholder" *ngIf="!set.imageUrl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                </div>
+                <div class="epic-info">
+                    <span class="epic-name">{{ set.name }}</span>
+                    <span class="epic-meta">
+                        <span class="epic-parts"><i class="fas fa-puzzle-piece"></i> {{ set.partCount | number }}
+                            parts</span>
+                        <span *ngIf="set.year">· {{ set.year }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Navigation Cards (Phase 4) -->
+    <div class="quick-nav" *ngIf="navCards.length > 0">
+        <div class="nav-card" *ngFor="let card of navCards" (click)="router.navigate([card.route])">
+            <div class="nav-card-preview" *ngIf="card.previewImageUrl">
+                <img [src]="card.previewImageUrl" alt="" loading="lazy" />
+            </div>
+            <div class="nav-icon" [ngClass]="card.gradient"><i [class]="card.icon"></i></div>
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.description }}</p>
+            <div class="nav-card-footer">
+                <span class="nav-stat-line">{{ card.statLine }}</span>
+                <span class="nav-trend-badge">{{ card.trendBadge }}</span>
+            </div>
+            <span class="nav-cta">Explore <i class="fas fa-chevron-right"></i></span>
+        </div>
+    </div>
+
+    <!-- Fun Fact (Phase 7) -->
+    <div class="fun-fact-bar" *ngIf="didYouKnow">
+        <i class="fas fa-lightbulb fun-fact-icon"></i>
+        <span class="fun-fact-text"><strong>Did you know?</strong> {{ didYouKnow }}</span>
+    </div>
+
+    <!-- My Universe (Phase 6) -->
+    <div class="my-universe-section" *ngIf="mySets.length > 0 || myMinifigs.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-heart"></i> My Universe</h2>
+            <span class="my-universe-subtitle">Based on your preferred themes</span>
+        </div>
+
+        <!-- Preferred Theme Sets -->
+        <div class="my-grid" *ngIf="mySets.length > 0">
+            <div class="my-card" *ngFor="let set of mySets" (click)="navigateToSets()">
+                <div class="my-card-image">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy" />
+                    <div class="image-placeholder" *ngIf="!set.imageUrl"><i class="fas fa-cube"></i></div>
+                </div>
+                <div class="my-card-info">
+                    <span class="my-card-name">{{ set.name }}</span>
+                    <span class="my-card-meta">{{ set.setNumber }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferred Theme Minifigs -->
+        <div class="my-grid" *ngIf="myMinifigs.length > 0" style="margin-top: 16px;">
+            <div class="my-card" *ngFor="let fig of myMinifigs" (click)="navigateToMinifigs()">
+                <div class="my-card-image">
+                    <img *ngIf="fig.imageUrl" [src]="fig.imageUrl" [alt]="fig.name" loading="lazy" />
+                    <div class="image-placeholder" *ngIf="!fig.imageUrl"><i class="fas fa-child"></i></div>
+                </div>
+                <div class="my-card-info">
+                    <span class="my-card-name">{{ fig.name }}</span>
+                    <span class="my-card-meta">{{ fig.figNumber }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════ Deep Dive Visualizations ═══════════════════════════ -->
+
     <div class="viz-grid">
 
         <!-- Theme Sunburst -->
@@ -73,63 +319,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Recent Sets Carousel -->
-    <div class="recent-section" *ngIf="recentSets.length > 0">
-        <div class="section-header">
-            <h2><i class="fas fa-star"></i> Featured Sets</h2>
-            <button class="browse-all-btn" (click)="navigateToSets()">
-                Browse All <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-        <div class="carousel-strip">
-            <div class="carousel-card" *ngFor="let set of recentSets; let i = index"
-                [style.animation-delay]="(i * 60) + 'ms'" (click)="navigateToSets()">
-                <div class="carousel-image">
-                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
-                        (error)="set.imageUrl = null">
-                    <div class="image-placeholder" *ngIf="!set.imageUrl">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                </div>
-                <div class="carousel-info">
-                    <span class="carousel-name">{{ set.name }}</span>
-                    <span class="carousel-meta">
-                        <span class="set-number">{{ set.setNumber }}</span>
-                        <span class="set-year" *ngIf="set.year">· {{ set.year }}</span>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Navigation -->
-    <div class="quick-nav">
-        <div class="nav-card" (click)="navigateToSets()">
-            <div class="nav-icon sets-gradient"><i class="fas fa-box-open"></i></div>
-            <h3>Set Explorer</h3>
-            <p>Browse and search through all LEGO sets with visual filters</p>
-            <span class="nav-cta">Explore Sets <i class="fas fa-chevron-right"></i></span>
-        </div>
-        <div class="nav-card" (click)="navigateToMinifigs()">
-            <div class="nav-icon minifigs-gradient"><i class="fas fa-child"></i></div>
-            <h3>Minifig Gallery</h3>
-            <p>Discover minifigs and see which sets they appear in</p>
-            <span class="nav-cta">Browse Minifigs <i class="fas fa-chevron-right"></i></span>
-        </div>
-        <div class="nav-card" (click)="navigateToThemes()">
-            <div class="nav-icon themes-gradient"><i class="fas fa-layer-group"></i></div>
-            <h3>Theme Explorer</h3>
-            <p>Explore LEGO themes, sub-themes, and their hierarchies</p>
-            <span class="nav-cta">Explore Themes <i class="fas fa-chevron-right"></i></span>
-        </div>
-        <div class="nav-card" (click)="navigateToPartsUniverse()">
-            <div class="nav-icon parts-gradient"><i class="fas fa-atom"></i></div>
-            <h3>Parts Universe</h3>
-            <p>Rank, visualize, and explore every brick across all sets</p>
-            <span class="nav-cta">Explore Parts <i class="fas fa-chevron-right"></i></span>
         </div>
     </div>
 

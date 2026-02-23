@@ -1,10 +1,13 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
 import { LegoMinifigService } from '../../bmc-data-services/lego-minifig.service';
 import { LegoThemeService } from '../../bmc-data-services/lego-theme.service';
+import { UserProfilePreferredThemeService } from '../../bmc-data-services/user-profile-preferred-theme.service';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
+import { PartsUniverseApiService } from '../../services/parts-universe.service';
 import { IndexedDBCacheService } from '../../services/indexeddb-cache.service';
 import * as d3 from 'd3';
 
@@ -30,6 +33,17 @@ interface CachedTheme {
     legoThemeId: number;
 }
 
+interface NavCardData {
+    title: string;
+    description: string;
+    icon: string;
+    gradient: string;
+    route: string;
+    previewImageUrl: string | null;
+    statLine: string;
+    trendBadge: string;
+}
+
 @Component({
     selector: 'app-lego-universe',
     templateUrl: './lego-universe.component.html',
@@ -41,6 +55,19 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('timelineContainer', { static: false }) timelineContainer!: ElementRef;
 
     private destroy$ = new Subject<void>();
+    private taglineInterval: ReturnType<typeof setInterval> | null = null;
+
+    //
+    // Hero — rotating taglines
+    //
+    taglines: string[] = [
+        'Discover thousands of sets',
+        'Explore every minifig ever made',
+        'Dive into hundreds of themes',
+        'Rank every brick in the universe'
+    ];
+    activeTaglineIndex = 0;
+    taglineVisible = true;
 
     //
     // Stats — animated counters
@@ -48,9 +75,11 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     totalSets = 0;
     totalMinifigs = 0;
     totalThemes = 0;
+    totalParts = 0;
     displaySets = 0;
     displayMinifigs = 0;
     displayThemes = 0;
+    displayParts = 0;
 
     //
     // Data
@@ -66,16 +95,58 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     //
     recentSets: SetExplorerItem[] = [];
 
+    //
+    // Spotlight sections
+    //
+    randomDiscoveryItems: { type: 'set' | 'minifig'; item: SetExplorerItem | MinifigGalleryItem }[] = [];
+    epicSets: SetExplorerItem[] = [];
+    carouselOffset = 0;
+    private readonly CAROUSEL_PAGE_SIZE = 4;
+
+    //
+    // Search — cross-domain search across sets, minifigs, and themes
+    //
+    searchTerm = '';
+    searchDropdownVisible = false;
+    private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+    searchResults: {
+        sets: SetExplorerItem[];
+        minifigs: MinifigGalleryItem[];
+        themes: CachedTheme[];
+    } = { sets: [], minifigs: [], themes: [] };
+    private allMinifigs: MinifigGalleryItem[] = [];
+
+    //
+    // Live nav cards
+    //
+    navCards: NavCardData[] = [];
+
+    //
+    // Fun fact
+    //
+    didYouKnow = '';
+
+    //
+    // My Universe — personalized section from user's preferred themes
+    //
+    userPreferredThemeIds: number[] = [];
+    mySets: SetExplorerItem[] = [];
+    myMinifigs: MinifigGalleryItem[] = [];
+
     constructor(
-        private router: Router,
+        public router: Router,
         private minifigService: LegoMinifigService,
         private themeService: LegoThemeService,
         private setExplorerApi: SetExplorerApiService,
-        private cacheService: IndexedDBCacheService
+        private minifigGalleryApi: MinifigGalleryApiService,
+        private partsUniverseApi: PartsUniverseApiService,
+        private cacheService: IndexedDBCacheService,
+        private userPrefThemeService: UserProfilePreferredThemeService
     ) { }
 
     ngOnInit(): void {
         this.loadData();
+        this.startTaglineRotation();
     }
 
     ngAfterViewInit(): void {
@@ -87,6 +158,32 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+
+        if (this.taglineInterval !== null) {
+            clearInterval(this.taglineInterval);
+        }
+
+        if (this.searchDebounceTimer !== null) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+    }
+
+
+    //
+    // Tagline rotation — cycles the hero subtitle every 4 seconds with a fade transition
+    //
+    private startTaglineRotation(): void {
+        this.taglineInterval = setInterval(() => {
+            //
+            // Fade out, swap text, fade in
+            //
+            this.taglineVisible = false;
+
+            setTimeout(() => {
+                this.activeTaglineIndex = (this.activeTaglineIndex + 1) % this.taglines.length;
+                this.taglineVisible = true;
+            }, 400);
+        }, 4000);
     }
 
     loadData(): void {
@@ -100,6 +197,7 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         //
         forkJoin({
             allSets: this.setExplorerApi.getExploreSets(),
+            allMinifigs: this.minifigGalleryApi.getGalleryMinifigs(),
             minifigCount: this.cacheService.getOrFetch<number>(
                 'lego-minifig-count',
                 {},
@@ -119,6 +217,9 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                     })))
                 ),
                 1440
+            ),
+            partsStats: this.partsUniverseApi.getPayload().pipe(
+                map(payload => payload.stats)
             )
         }).pipe(
             takeUntil(this.destroy$)
@@ -134,15 +235,43 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.recentSets = sorted.slice(0, 12);
 
                 //
+                // Epic sets — top 6 by part count
+                //
+                this.epicSets = [...result.allSets]
+                    .sort((a, b) => (b.partCount ?? 0) - (a.partCount ?? 0))
+                    .slice(0, 6);
+
+                //
                 // Minifigs
                 //
+                this.allMinifigs = result.allMinifigs;
                 this.totalMinifigs = result.minifigCount;
+
+                //
+                // Build random discovery items once minifigs are loaded
+                //
+                this.shuffleDiscovery();
 
                 //
                 // Themes
                 //
                 this.themes = result.themes;
                 this.totalThemes = result.themes.length;
+
+                //
+                // Parts
+                //
+                this.totalParts = result.partsStats.totalUniqueParts;
+
+                //
+                // Update taglines with real numbers now that data has loaded
+                //
+                this.taglines = [
+                    `Discover ${this.totalSets.toLocaleString()} sets`,
+                    `Explore ${this.totalMinifigs.toLocaleString()} minifigs`,
+                    `Dive into ${this.totalThemes.toLocaleString()} themes`,
+                    `Rank ${this.totalParts.toLocaleString()} unique parts`
+                ];
 
                 this.loading = false;
 
@@ -152,6 +281,22 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.animateCounter('displaySets', this.totalSets, 1500);
                 this.animateCounter('displayMinifigs', this.totalMinifigs, 1800);
                 this.animateCounter('displayThemes', this.totalThemes, 1200);
+                this.animateCounter('displayParts', this.totalParts, 1600);
+
+                //
+                // Build nav cards with live data
+                //
+                this.buildNavCards();
+
+                //
+                // Generate a fun fact
+                //
+                this.generateFunFact();
+
+                //
+                // Load user preferred themes for My Universe section
+                //
+                this.loadUserPreferredThemes();
 
                 //
                 // Render D3 visualizations after a tick (so ViewChild elements exist)
@@ -170,7 +315,7 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     //
     // Animated number counter
     //
-    private animateCounter(prop: 'displaySets' | 'displayMinifigs' | 'displayThemes', target: number, duration: number): void {
+    private animateCounter(prop: 'displaySets' | 'displayMinifigs' | 'displayThemes' | 'displayParts', target: number, duration: number): void {
         const start = 0;
         const startTime = performance.now();
 
@@ -585,5 +730,281 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
 
     navigateToSetsByYear(year: number): void {
         this.router.navigate(['/lego/sets'], { queryParams: { year } });
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Spotlight — Random Discovery
+    // ----------------------------------------------------------------
+
+    shuffleDiscovery(): void {
+        const items: { type: 'set' | 'minifig'; item: SetExplorerItem | MinifigGalleryItem }[] = [];
+
+        //
+        // Pick 3 random sets (from items with images when possible)
+        //
+        const setsWithImages = this.sets.filter(s => s.imageUrl !== null && s.imageUrl !== '');
+        const setPool = setsWithImages.length >= 3 ? setsWithImages : this.sets;
+        for (let i = 0; i < 3 && setPool.length > 0; i++) {
+            const idx = Math.floor(Math.random() * setPool.length);
+            items.push({ type: 'set', item: setPool[idx] });
+        }
+
+        //
+        // Pick 3 random minifigs (from items with images when possible)
+        //
+        const figsWithImages = this.allMinifigs.filter(m => m.imageUrl !== null && m.imageUrl !== '');
+        const figPool = figsWithImages.length >= 3 ? figsWithImages : this.allMinifigs;
+        for (let i = 0; i < 3 && figPool.length > 0; i++) {
+            const idx = Math.floor(Math.random() * figPool.length);
+            items.push({ type: 'minifig', item: figPool[idx] });
+        }
+
+        this.randomDiscoveryItems = items;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Spotlight — Carousel Navigation
+    // ----------------------------------------------------------------
+
+    scrollCarousel(direction: 'prev' | 'next'): void {
+        if (direction === 'prev') {
+            this.carouselOffset = Math.max(0, this.carouselOffset - this.CAROUSEL_PAGE_SIZE);
+        } else {
+            const maxOffset = Math.max(0, this.recentSets.length - this.CAROUSEL_PAGE_SIZE);
+            this.carouselOffset = Math.min(maxOffset, this.carouselOffset + this.CAROUSEL_PAGE_SIZE);
+        }
+    }
+
+    get visibleRecentSets(): SetExplorerItem[] {
+        return this.recentSets.slice(this.carouselOffset, this.carouselOffset + this.CAROUSEL_PAGE_SIZE);
+    }
+
+    get canScrollPrev(): boolean {
+        return this.carouselOffset > 0;
+    }
+
+    get canScrollNext(): boolean {
+        return this.carouselOffset + this.CAROUSEL_PAGE_SIZE < this.recentSets.length;
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Universal Search
+    // ----------------------------------------------------------------
+
+    onSearchInput(): void {
+        //
+        // Debounce to avoid filtering on every keystroke
+        //
+        if (this.searchDebounceTimer !== null) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+
+        if (this.searchTerm.trim().length === 0) {
+            this.closeSearch();
+            return;
+        }
+
+        this.searchDebounceTimer = setTimeout(() => {
+            this.performSearch();
+        }, 300);
+    }
+
+    private performSearch(): void {
+        const term = this.searchTerm.trim().toLowerCase();
+
+        if (term.length < 2) {
+            this.searchDropdownVisible = false;
+            return;
+        }
+
+        //
+        // Search sets by name or set number
+        //
+        this.searchResults.sets = this.sets
+            .filter(s => s.name.toLowerCase().includes(term) || s.setNumber.toLowerCase().includes(term))
+            .slice(0, 5);
+
+        //
+        // Search minifigs by name or fig number
+        //
+        this.searchResults.minifigs = this.allMinifigs
+            .filter(m => m.name.toLowerCase().includes(term) || m.figNumber.toLowerCase().includes(term))
+            .slice(0, 5);
+
+        //
+        // Search themes by name
+        //
+        this.searchResults.themes = this.themes
+            .filter(t => t.name.toLowerCase().includes(term))
+            .slice(0, 5);
+
+        this.searchDropdownVisible =
+            this.searchResults.sets.length > 0 ||
+            this.searchResults.minifigs.length > 0 ||
+            this.searchResults.themes.length > 0;
+    }
+
+    closeSearch(): void {
+        this.searchDropdownVisible = false;
+        this.searchResults = { sets: [], minifigs: [], themes: [] };
+    }
+
+    /**
+     * Navigate to a sub-component with the current search term pre-applied.
+     */
+    navigateFromSearch(type: 'sets' | 'minifigs' | 'themes'): void {
+        const search = this.searchTerm.trim();
+
+        switch (type) {
+            case 'sets':
+                this.router.navigate(['/lego/sets'], { queryParams: { search } });
+                break;
+            case 'minifigs':
+                this.router.navigate(['/lego/minifigs'], { queryParams: { search } });
+                break;
+            case 'themes':
+                this.router.navigate(['/lego/themes'], { queryParams: { search } });
+                break;
+        }
+
+        this.closeSearch();
+    }
+
+    @HostListener('document:keydown.escape')
+    onEscapeKey(): void {
+        this.closeSearch();
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Phase 4 — Live Nav Cards
+    // ----------------------------------------------------------------
+
+    private buildNavCards(): void {
+        //
+        // Determine year range for the trend badge
+        //
+        const years = this.sets.map(s => s.year).filter(y => y > 0);
+        const minYear = years.length > 0 ? Math.min(...years) : 1950;
+        const maxYear = years.length > 0 ? Math.max(...years) : 2024;
+
+        this.navCards = [
+            {
+                title: 'Set Explorer',
+                description: 'Browse and search through all LEGO sets with visual filters',
+                icon: 'fas fa-box-open',
+                gradient: 'sets-gradient',
+                route: '/lego/sets',
+                previewImageUrl: null,
+                statLine: `${this.totalSets.toLocaleString()} sets loaded`,
+                trendBadge: `${minYear}–${maxYear}`
+            },
+            {
+                title: 'Minifig Gallery',
+                description: 'Discover minifigs and see which sets they appear in',
+                icon: 'fas fa-child',
+                gradient: 'minifigs-gradient',
+                route: '/lego/minifigs',
+                previewImageUrl: null,
+                statLine: `${this.totalMinifigs.toLocaleString()} figs catalogued`,
+                trendBadge: 'All time'
+            },
+            {
+                title: 'Theme Explorer',
+                description: 'Explore LEGO themes, sub-themes, and their hierarchies',
+                icon: 'fas fa-layer-group',
+                gradient: 'themes-gradient',
+                route: '/lego/themes',
+                previewImageUrl: null,
+                statLine: `${this.totalThemes.toLocaleString()} themes mapped`,
+                trendBadge: 'Hierarchy'
+            },
+            {
+                title: 'Parts Universe',
+                description: 'Rank, visualize, and explore every brick across all sets',
+                icon: 'fas fa-atom',
+                gradient: 'parts-gradient',
+                route: '/lego/parts-universe',
+                previewImageUrl: null,
+                statLine: `${this.totalParts.toLocaleString()} unique elements`,
+                trendBadge: 'Rankings'
+            }
+        ];
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Phase 7 — Fun Fact
+    // ----------------------------------------------------------------
+
+    private generateFunFact(): void {
+        const facts: string[] = [];
+
+        if (this.totalSets > 0 && this.totalParts > 0) {
+            const avgParts = Math.round(this.totalParts / this.totalSets);
+            facts.push(`On average, each LEGO set uses about ${avgParts} unique part types.`);
+        }
+
+        if (this.totalMinifigs > 0) {
+            facts.push(`There are ${this.totalMinifigs.toLocaleString()} minifigs in the database — that's a tiny army!`);
+        }
+
+        if (this.epicSets.length > 0) {
+            const biggest = this.epicSets[0];
+            facts.push(`The most epic set is "${biggest.name}" with ${(biggest.partCount ?? 0).toLocaleString()} parts!`);
+        }
+
+        if (this.totalThemes > 0) {
+            facts.push(`LEGO has created ${this.totalThemes.toLocaleString()} different themes over the years.`);
+        }
+
+        const years = this.sets.map(s => s.year).filter(y => y > 0);
+        if (years.length > 0) {
+            const span = Math.max(...years) - Math.min(...years);
+            facts.push(`The sets in this database span ${span} years of LEGO history.`);
+        }
+
+        if (facts.length > 0) {
+            this.didYouKnow = facts[Math.floor(Math.random() * facts.length)];
+        }
+    }
+
+
+    // ----------------------------------------------------------------
+    //  Phase 6 — My Universe (personalized)
+    // ----------------------------------------------------------------
+
+    private loadUserPreferredThemes(): void {
+        this.userPrefThemeService.GetUserProfilePreferredThemeList().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (prefs) => {
+                if (!prefs || prefs.length === 0) {
+                    return;
+                }
+
+                this.userPreferredThemeIds = prefs.map(p => Number(p.legoThemeId));
+
+                //
+                // Filter sets that belong to user's preferred themes
+                //
+                this.mySets = this.sets
+                    .filter(s => this.userPreferredThemeIds.includes(s.themeId))
+                    .slice(0, 6);
+
+                //
+                // Filter minifigs whose themeIds overlap with preferred themes
+                //
+                this.myMinifigs = this.allMinifigs
+                    .filter(m => m.themeIds?.some(tid => this.userPreferredThemeIds.includes(tid)))
+                    .slice(0, 6);
+            },
+            error: () => {
+                // Silently fail — personalization is optional
+            }
+        });
     }
 }
