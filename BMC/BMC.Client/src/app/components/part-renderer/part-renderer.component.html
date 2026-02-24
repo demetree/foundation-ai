@@ -162,7 +162,8 @@
 
                         <ng-container *ngIf="!uploadedFile">
                             <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                            <div class="upload-text">Drop a <strong>.dat</strong>, <strong>.ldr</strong>, or
+                            <div class="upload-text">
+                                Drop a <strong>.dat</strong>, <strong>.ldr</strong>, or
                                 <strong>.mpd</strong> file here
                             </div>
                             <div class="upload-hint">or click to browse · max 5 MB</div>
@@ -181,8 +182,25 @@
                                 </button>
                             </div>
                         </ng-container>
+
+                        <!-- Build Steps Banner (inside file panel) -->
+                        <div class="step-banner mt-4" *ngIf="stepCount > 1 && activeTab === 'upload'"
+                            (click)="$event.stopPropagation()">
+                            <div class="step-banner-left">
+                                <i class="fas fa-layer-group"></i>
+                                <span class="step-banner-text">
+                                    <strong>{{ stepCount }} build steps</strong> detected
+                                </span>
+                            </div>
+                            <label class="step-toggle">
+                                <input type="checkbox" [checked]="stepMode" (change)="stepMode = !stepMode" />
+                                <span class="step-toggle-label">{{ stepMode ? 'On' : 'Off' }}</span>
+                            </label>
+                        </div>
+
                     </div>
                 </div>
+
 
                 <!-- Colour Picker (all colours mode for uploads) -->
                 <div class="panel-section" *ngIf="uploadedFile">
@@ -360,7 +378,7 @@
                     </div>
 
                     <!-- Build Steps -->
-                    <div class="adv-group" *ngIf="stepCount > 1 && activeTab === 'search'">
+                    <div class="adv-group" *ngIf="stepCount > 1">
                         <label class="adv-checkbox">
                             <input type="checkbox" [checked]="stepMode" (change)="stepMode = !stepMode" />
                             Build Steps
@@ -385,13 +403,28 @@
                 </div>
             </div>
 
+            <!-- Build Steps Banner (search tab - shown after part info) -->
+            <div class="step-banner" *ngIf="stepCount > 1 && activeTab === 'search'">
+                <div class="step-banner-left">
+                    <i class="fas fa-layer-group"></i>
+                    <span class="step-banner-text">
+                        <strong>{{ stepCount }} build steps</strong> detected
+                    </span>
+                </div>
+                <label class="step-toggle">
+                    <input type="checkbox" [checked]="stepMode" (change)="stepMode = !stepMode" />
+                    <span class="step-toggle-label">{{ stepMode ? 'On' : 'Off' }}</span>
+                </label>
+            </div>
+
             <!-- Render Button (shared) -->
             <div class="panel-section render-actions"
                 *ngIf="(activeTab === 'search' && selectedPart) || (activeTab === 'upload' && uploadedFile)">
                 <button class="render-btn" [disabled]="rendering"
                     (click)="activeTab === 'upload' ? renderUploadedFile() : render()">
                     <i class="fas" [ngClass]="rendering ? 'fa-spinner fa-spin' : 'fa-camera'"></i>
-                    {{ rendering ? 'Rendering...' : (activeTab === 'upload' ? 'Render File' : 'Render Part') }}
+                    {{ rendering ? 'Rendering...' : (stepMode && stepCount > 1 ? ('Render Step ' + (currentStep + 1)) :
+                    (activeTab === 'upload' ? 'Render File' : 'Render Part')) }}
                 </button>
             </div>
         </div>
@@ -428,6 +461,21 @@
             <!-- Rendered Image -->
             <div class="preview-image" *ngIf="renderedImageUrl && !rendering">
                 <img [src]="renderedImageUrl" alt="Rendered part" class="rendered-img" />
+
+                <!-- Step Navigation (shown below image when step mode is active) -->
+                <div class="preview-step-bar" *ngIf="stepMode && stepCount > 1">
+                    <button class="step-btn" [disabled]="currentStep === 0 || rendering" (click)="prevStep()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <input type="range" class="preview-step-slider" min="0" [max]="stepCount - 1" step="1"
+                        [value]="currentStep" (input)="currentStep = +$any($event.target).value; renderStep()" />
+                    <span class="step-indicator">Step {{ currentStep + 1 }} / {{ stepCount }}</span>
+                    <button class="step-btn" [disabled]="currentStep >= stepCount - 1 || rendering"
+                        (click)="nextStep()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
                 <div class="preview-toolbar">
                     <div class="render-stats">
                         <span class="stat"><i class="fas fa-clock"></i> {{ renderTimeMs }}ms</span>

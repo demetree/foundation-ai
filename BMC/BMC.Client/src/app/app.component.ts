@@ -72,11 +72,12 @@ export class AppComponent implements OnInit {
             }
         });
 
-        // Toggle body background on login route
+        // Toggle body background and sidebar visibility on login route
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 if (event.urlAfterRedirects === '/login') {
                     document.body.className = 'pre-login-background no-select';
+                    this.isUserLoggedIn = false;
                 } else {
                     document.body.className = 'post-login-background no-select';
                 }

@@ -2229,6 +2229,196 @@ namespace Foundation.Security
             return output;
         }
 
+        /// <summary>
+        /// 
+        /// Returns a list of SecurityUser objects that have been directly assigned a specific named role
+        /// that carries the CUSTOM privilege.  Password fields are nulled out for safety.
+        ///
+        /// When securityTenantId is provided, the results are filtered to only include users that are
+        /// linked to that tenant via the SecurityTenantUser table.  When null, all users system-wide
+        /// with the specified custom role are returned.
+        ///
+        /// Note: This does not consider group-based role membership (same caveat as
+        /// GetListDataForUsersWithModulePermission).  Only directly-assigned roles are evaluated.
+        ///
+        /// AI Developed - Feb 2026
+        /// 
+        /// </summary>
+        /// <param name="db">An existing SecurityContext to query against.</param>
+        /// <param name="roleName">The name of the custom security role to search for.</param>
+        /// <param name="securityTenantId">Optional tenant ID to restrict results to users linked to that tenant.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>A list of SecurityUser objects with the password field nulled out.</returns>
+        public static async Task<List<SecurityUser>> GetUsersWithCustomRoleAsync(SecurityContext db,
+                                                                                 string roleName,
+                                                                                 int? securityTenantId = null,
+                                                                                 CancellationToken cancellationToken = default)
+        {
+            List<SecurityUser> output = null;
+
+            //
+            // Build the base query that joins user-role assignments to security roles,
+            // filtering for the specified role name with the CUSTOM privilege level.
+            //
+            // When a securityTenantId is provided, an additional join to SecurityTenantUsers
+            // restricts the results to users that belong to that tenant.
+            //
+            if (securityTenantId.HasValue == true)
+            {
+                //
+                // Tenant-scoped query: only return users linked to the specified tenant
+                //
+                output = await (from ur in db.SecurityUserSecurityRoles
+                                join u in db.SecurityUsers on ur.securityUserId equals u.id
+                                join sr in db.SecurityRoles on ur.securityRoleId equals sr.id
+                                join stu in db.SecurityTenantUsers on u.id equals stu.securityUserId
+                                where ur.deleted == false &&
+                                      ur.active == true &&
+                                      u.deleted == false &&
+                                      u.active == true &&
+                                      sr.deleted == false &&
+                                      sr.active == true &&
+                                      sr.name == roleName &&
+                                      sr.privilegeId == (int)SecurityLogic.Privileges.CUSTOM &&
+                                      stu.securityTenantId == securityTenantId.Value &&
+                                      stu.deleted == false &&
+                                      stu.active == true
+                                select u)
+                                .Distinct()
+                                .OrderBy(u => u.lastName)
+                                .ThenBy(u => u.firstName)
+                                .AsNoTracking()
+                                .ToListAsync(cancellationToken)
+                                .ConfigureAwait(false);
+            }
+            else
+            {
+                //
+                // System-wide query: return all users with the specified custom role regardless of tenant
+                //
+                output = await (from ur in db.SecurityUserSecurityRoles
+                                join u in db.SecurityUsers on ur.securityUserId equals u.id
+                                join sr in db.SecurityRoles on ur.securityRoleId equals sr.id
+                                where ur.deleted == false &&
+                                      ur.active == true &&
+                                      u.deleted == false &&
+                                      u.active == true &&
+                                      sr.deleted == false &&
+                                      sr.active == true &&
+                                      sr.name == roleName &&
+                                      sr.privilegeId == (int)SecurityLogic.Privileges.CUSTOM
+                                select u)
+                                .Distinct()
+                                .OrderBy(u => u.lastName)
+                                .ThenBy(u => u.firstName)
+                                .AsNoTracking()
+                                .ToListAsync(cancellationToken)
+                                .ConfigureAwait(false);
+            }
+
+            if (output == null)
+            {
+                output = new List<SecurityUser>();
+            }
+
+            //
+            // Null out the password field on each user for safety before returning
+            //
+            for (int i = 0; i < output.Count; i++)
+            {
+                output[i].password = null;
+            }
+
+            return output;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Synchronous version of GetUsersWithCustomRoleAsync.
+        /// See the async version for full documentation.
+        ///
+        /// AI Developed - Feb 2026
+        /// 
+        /// </summary>
+        public static List<SecurityUser> GetUsersWithCustomRole(SecurityContext db,
+                                                                 string roleName,
+                                                                 int? securityTenantId = null)
+        {
+            List<SecurityUser> output = null;
+
+            //
+            // Build the base query that joins user-role assignments to security roles,
+            // filtering for the specified role name with the CUSTOM privilege level.
+            //
+            if (securityTenantId.HasValue == true)
+            {
+                //
+                // Tenant-scoped query: only return users linked to the specified tenant
+                //
+                output = (from ur in db.SecurityUserSecurityRoles
+                          join u in db.SecurityUsers on ur.securityUserId equals u.id
+                          join sr in db.SecurityRoles on ur.securityRoleId equals sr.id
+                          join stu in db.SecurityTenantUsers on u.id equals stu.securityUserId
+                          where ur.deleted == false &&
+                                ur.active == true &&
+                                u.deleted == false &&
+                                u.active == true &&
+                                sr.deleted == false &&
+                                sr.active == true &&
+                                sr.name == roleName &&
+                                sr.privilegeId == (int)SecurityLogic.Privileges.CUSTOM &&
+                                stu.securityTenantId == securityTenantId.Value &&
+                                stu.deleted == false &&
+                                stu.active == true
+                          select u)
+                          .Distinct()
+                          .OrderBy(u => u.lastName)
+                          .ThenBy(u => u.firstName)
+                          .AsNoTracking()
+                          .ToList();
+            }
+            else
+            {
+                //
+                // System-wide query: return all users with the specified custom role regardless of tenant
+                //
+                output = (from ur in db.SecurityUserSecurityRoles
+                          join u in db.SecurityUsers on ur.securityUserId equals u.id
+                          join sr in db.SecurityRoles on ur.securityRoleId equals sr.id
+                          where ur.deleted == false &&
+                                ur.active == true &&
+                                u.deleted == false &&
+                                u.active == true &&
+                                sr.deleted == false &&
+                                sr.active == true &&
+                                sr.name == roleName &&
+                                sr.privilegeId == (int)SecurityLogic.Privileges.CUSTOM
+                          select u)
+                          .Distinct()
+                          .OrderBy(u => u.lastName)
+                          .ThenBy(u => u.firstName)
+                          .AsNoTracking()
+                          .ToList();
+            }
+
+            if (output == null)
+            {
+                output = new List<SecurityUser>();
+            }
+
+            //
+            // Null out the password field on each user for safety before returning
+            //
+            for (int i = 0; i < output.Count; i++)
+            {
+                output[i].password = null;
+            }
+
+            return output;
+        }
+
+
         public static void ClearSecurityCaches()
         {
             MemoryCacheManager mcm = new MemoryCacheManager();

@@ -759,6 +759,70 @@
     }
 }
 
+.step-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    margin: 0 12px 4px;
+    border-radius: var(--radius-sm);
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.step-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2563eb;
+    font-size: 0.78rem;
+
+    i {
+        font-size: 0.9rem;
+    }
+}
+
+.step-banner-text {
+    color: var(--bmc-text-secondary);
+
+    strong {
+        color: var(--bmc-text-primary);
+    }
+}
+
+.step-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+    font-weight: 500;
+
+    input[type="checkbox"] {
+        accent-color: #2563eb;
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+    }
+}
+
+.preview-step-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--bmc-border);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.preview-step-slider {
+    flex: 1;
+    accent-color: var(--bmc-primary);
+    height: 4px;
+    cursor: pointer;
+}
+
 .step-badge {
     font-size: 0.62rem;
     background: rgba(var(--bmc-primary-rgb, 212, 175, 55), 0.15);

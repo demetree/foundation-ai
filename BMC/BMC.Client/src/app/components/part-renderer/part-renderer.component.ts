@@ -490,36 +490,50 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     }
 
     renderStep(): void {
-        if (!this.selectedPart || this.rendering) return;
+        if ((!this.selectedPart && !this.uploadedFile) || this.rendering) return;
 
         this.rendering = true;
         this.renderError = '';
         this.revokeBlob();
 
-        const headers = this.authService.GetAuthenticationHeaders();
-        const partNumber = this.selectedPart.name;
         const effectiveAzimuth = this.flipView ? this.selectedAzimuth + 180 : this.selectedAzimuth;
-
-        const url = `/api/part-renderer/render-step?partNumber=${encodeURIComponent(partNumber)}&stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}`;
-
         const startTime = performance.now();
 
-        this.http.get(url, { headers, responseType: 'blob' })
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (blob) => {
-                    this.renderTimeMs = Math.round(performance.now() - startTime);
-                    this.renderedBlobUrl = URL.createObjectURL(blob);
-                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
-                    this.renderedFormat = 'png';
-                    this.rendering = false;
-                },
-                error: (err) => {
-                    this.renderTimeMs = 0;
-                    this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Step render failed. Please try again.';
-                    this.rendering = false;
-                }
+        const onNext = (blob: Blob) => {
+            this.renderTimeMs = Math.round(performance.now() - startTime);
+            this.renderedBlobUrl = URL.createObjectURL(blob);
+            this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+            this.renderedFormat = 'png';
+            this.rendering = false;
+        };
+        const onError = (err: any) => {
+            this.renderTimeMs = 0;
+            this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Step render failed. Please try again.';
+            this.rendering = false;
+        };
+
+        if (this.uploadedFile) {
+            // Upload step render uses FormData POST
+            const headers = new HttpHeaders({
+                Authorization: `Bearer ${this.authService.accessToken}`
             });
+            const formData = new FormData();
+            formData.append('file', this.uploadedFile, this.uploadedFile.name);
+            const url = `/api/part-renderer/render-step-upload?stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}`;
+
+            this.http.post(url, formData, { headers, responseType: 'blob' })
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({ next: onNext, error: onError });
+        } else {
+            // Search part step render uses GET
+            const headers = this.authService.GetAuthenticationHeaders();
+            const partNumber = this.selectedPart!.name;
+            const url = `/api/part-renderer/render-step?partNumber=${encodeURIComponent(partNumber)}&stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}`;
+
+            this.http.get(url, { headers, responseType: 'blob' })
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({ next: onNext, error: onError });
+        }
     }
 
     prevStep(): void {
@@ -637,15 +651,50 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         this.uploadedFile = file;
         this.uploadedFileName = file.name;
         this.renderError = '';
+        this.stepMode = false;
+        this.stepCount = 0;
+        this.currentStep = 0;
+        this.loadStepCountUpload(file);
     }
 
     removeUploadedFile(): void {
         this.uploadedFile = null;
         this.uploadedFileName = '';
+        this.stepMode = false;
+        this.stepCount = 0;
+        this.currentStep = 0;
+    }
+
+    private loadStepCountUpload(file: File): void {
+        this.loadingSteps = true;
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.authService.accessToken}`
+        });
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+
+        this.http.post<{ stepCount: number }>('/api/part-renderer/step-count-upload', formData, { headers })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (res) => {
+                    this.stepCount = res.stepCount;
+                    this.loadingSteps = false;
+                },
+                error: () => {
+                    this.stepCount = 0;
+                    this.loadingSteps = false;
+                }
+            });
     }
 
     renderUploadedFile(): void {
         if (!this.uploadedFile || this.rendering) return;
+
+        // Step mode routes to renderStep which handles uploads
+        if (this.stepMode && this.stepCount > 0) {
+            this.renderStep();
+            return;
+        }
 
         this.rendering = true;
         this.renderError = '';

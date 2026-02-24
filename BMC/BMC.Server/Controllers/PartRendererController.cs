@@ -531,6 +531,134 @@ namespace Foundation.BMC.Controllers.WebAPI
         // ════════════════════════════════════════════════════════════════
         //  Upload + Render Endpoint
         // ════════════════════════════════════════════════════════════════
+        //  Upload Build Step Endpoints
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// POST /api/part-renderer/step-count-upload
+        ///
+        /// Returns the number of STEP directives in an uploaded LDraw file.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/step-count-upload")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> StepCountUpload(
+            Microsoft.AspNetCore.Http.IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            string[] lines;
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                string content = await reader.ReadToEndAsync();
+                lines = content.Split('\n');
+            }
+
+            try
+            {
+                int count = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.GetStepCount(lines, file.FileName);
+                }, cancellationToken);
+
+                return Ok(new { stepCount = count });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting step count for uploaded file {FileName}", file.FileName);
+                return StatusCode(500, "Error getting step count.");
+            }
+        }
+
+
+        /// <summary>
+        /// POST /api/part-renderer/render-step-upload
+        ///
+        /// Renders a single build step from an uploaded LDraw file as PNG.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/render-step-upload")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> RenderStepUpload(
+            Microsoft.AspNetCore.Http.IFormFile file,
+            int stepIndex = 0,
+            int colourCode = 4,
+            int width = 512,
+            int height = 512,
+            float elevation = 30f,
+            float azimuth = -45f,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            string antiAlias = "none",
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            width = Math.Clamp(width, 64, 3840);
+            height = Math.Clamp(height, 64, 3840);
+            stepIndex = Math.Max(0, stepIndex);
+
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
+
+            if (aaMode == AntiAliasMode.SSAA4x && (width > 2560 || height > 2560))
+                aaMode = AntiAliasMode.SSAA2x;
+
+            string[] lines;
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                string content = await reader.ReadToEndAsync();
+                lines = content.Split('\n');
+            }
+
+            string fileName = file.FileName;
+
+            try
+            {
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(60));
+
+                byte[] png = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.RenderStep(lines, fileName, stepIndex, width, height, colourCode,
+                        elevation, azimuth, renderEdges, smoothShading, aaMode);
+                }, renderCts.Token);
+
+                return File(png, "image/png");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rendering step {Step} for uploaded file {FileName}", stepIndex, file.FileName);
+                return StatusCode(500, "Error rendering step.");
+            }
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
 
         /// <summary>
         /// POST /api/part-renderer/render-upload

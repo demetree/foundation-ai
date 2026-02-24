@@ -413,6 +413,74 @@ namespace BMC.LDraw.Render
 
 
         /// <summary>
+        /// Get the number of build steps from file content (for uploaded files).
+        /// </summary>
+        public int GetStepCount(string[] lines, string fileName)
+        {
+            EnsureColours();
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            return resolver.GetStepCountFromContent(lines, fileName);
+        }
+
+
+        /// <summary>
+        /// Render a single build step from file content (for uploaded files).
+        /// </summary>
+        public byte[] RenderStep(string[] lines,
+                                  string fileName,
+                                  int stepIndex,
+                                  int width = 512,
+                                  int height = 512,
+                                  int colourCode = -1,
+                                  float elevation = 30f,
+                                  float azimuth = -45f,
+                                  bool renderEdges = true,
+                                  bool smoothShading = true,
+                                  AntiAliasMode antiAliasMode = AntiAliasMode.None)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveContentUpToStep(lines, fileName, stepIndex, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            int ssaaFactor = 1;
+            if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
+            else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
+
+            int renderW = width * ssaaFactor;
+            int renderH = height * ssaaFactor;
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(mesh, camera);
+
+            if (ssaaFactor > 1)
+            {
+                pixels = PostProcess.Downsample(pixels, renderW, renderH, width, height);
+            }
+
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
+        /// <summary>
         /// Render an exploded view of an LDraw file.
         /// Parts are pushed radially outward from the model centroid.
         /// </summary>

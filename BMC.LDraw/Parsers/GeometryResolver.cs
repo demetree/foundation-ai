@@ -355,6 +355,51 @@ namespace BMC.LDraw.Parsers
             return mesh;
         }
 
+
+        /// <summary>
+        /// Resolve content (lines) up to (and including) a specific build step.
+        /// Content-based equivalent of ResolveFileUpToStep for uploaded files.
+        /// </summary>
+        public LDrawMesh ResolveContentUpToStep(string[] lines, string fileName, int stepIndex, int parentColourCode = -1)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0) return new LDrawMesh();
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            LDrawGeometry root = geos[0];
+
+            if (root.StepBreaks.Count == 0 || stepIndex >= root.StepBreaks.Count)
+            {
+                return Resolve(root, parentColourCode);
+            }
+
+            int maxSubRef = root.StepBreaks[stepIndex];
+
+            LDrawMesh mesh = new LDrawMesh();
+            int colour = parentColourCode >= 0 ? parentColourCode : 16;
+
+            float[] identity = new float[]
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            };
+
+            ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
+            ResolveSubfilesUpTo(root, identity, colour, 0, false, mesh, maxSubRef, 0);
+
+            return mesh;
+        }
+
         private void ResolveRecursive(LDrawGeometry geo, float[] parentMatrix,
             int parentColour, int parentEdgeColour, bool invertWinding,
             LDrawMesh mesh, int depth)
