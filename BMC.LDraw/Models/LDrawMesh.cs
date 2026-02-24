@@ -4,20 +4,47 @@ namespace BMC.LDraw.Models
 {
     /// <summary>
     /// A single resolved triangle in world space, ready for rendering.
+    ///
+    /// Contains both a flat face normal (NX, NY, NZ) and optional per-vertex normals
+    /// (NX1..NZ3) for smooth Gouraud shading.  When HasPerVertexNormals is false,
+    /// the renderer uses the flat normal for the entire face.
+    ///
+    /// AI-generated — per-vertex normals added Feb 2026 (Phase 1.2).
     /// </summary>
     public struct MeshTriangle
     {
+        //
         // Vertex positions (world-space)
+        //
         public float X1, Y1, Z1;
         public float X2, Y2, Z2;
         public float X3, Y3, Z3;
 
-        // Flat normal (computed from cross product)
+        //
+        // Flat normal (computed from cross product of triangle edges)
+        //
         public float NX, NY, NZ;
 
+        //
+        // Per-vertex normals for smooth (Gouraud) shading.
+        // Only meaningful when HasPerVertexNormals is true.
+        //
+        public float NX1, NY1, NZ1;
+        public float NX2, NY2, NZ2;
+        public float NX3, NY3, NZ3;
+
+        /// <summary>
+        /// When true, the renderer should use per-vertex normals (NX1..NZ3) for
+        /// lighting interpolation instead of the flat normal (NX, NY, NZ).
+        /// </summary>
+        public bool HasPerVertexNormals;
+
+        //
         // Face colour (RGBA, 0–255)
+        //
         public byte R, G, B, A;
     }
+
 
     /// <summary>
     /// A resolved line segment in world space, for edge rendering.

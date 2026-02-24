@@ -399,6 +399,13 @@ namespace BMC.LDraw.Parsers
                 t.NX = 0; t.NY = 1; t.NZ = 0; // degenerate — default up
             }
 
+            // Per-vertex normals default to zero — they are populated later
+            // by NormalSmoother if smooth shading is enabled.
+            t.NX1 = 0; t.NY1 = 0; t.NZ1 = 0;
+            t.NX2 = 0; t.NY2 = 0; t.NZ2 = 0;
+            t.NX3 = 0; t.NY3 = 0; t.NZ3 = 0;
+            t.HasPerVertexNormals = false;
+
             return t;
         }
     }

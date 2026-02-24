@@ -4,26 +4,66 @@ using BMC.LDraw.Models;
 namespace BMC.LDraw.Render
 {
     /// <summary>
-    /// CPU-based triangle rasterizer. Renders an LDrawMesh to an RGBA pixel buffer
-    /// using scanline triangle filling with Z-buffer depth testing and flat shading.
+    /// CPU-based triangle rasterizer.  Renders an LDrawMesh to an RGBA pixel buffer
+    /// using scanline triangle filling with Z-buffer depth testing, flat or smooth
+    /// (Gouraud) shading, configurable multi-light Blinn-Phong lighting, and optional
+    /// edge / outline rendering.
+    ///
+    /// AI-generated — Phase 1.1 edges, Phase 1.2 smooth shading, Phase 1.3 enhanced
+    /// lighting added Feb 2026.
     /// </summary>
     public class SoftwareRenderer
     {
         private readonly int _width;
         private readonly int _height;
 
+        //
         // Framebuffer
+        //
         private byte[] _colourBuffer;
         private float[] _depthBuffer;
 
-        // Directional light (normalized direction pointing TOWARD the light)
-        private float _lightX = 0.3f, _lightY = -0.7f, _lightZ = 0.6f;
-
-        // Ambient light intensity (0–1)
-        private float _ambient = 0.35f;
-
+        //
         // Background colour (transparent by default)
+        //
         private byte _bgR = 0, _bgG = 0, _bgB = 0, _bgA = 0;
+
+        //
+        // Camera eye position (needed for specular highlights).  Set during each Render call.
+        //
+        private float _eyeX, _eyeY, _eyeZ;
+
+        //
+        // Edge rendering options
+        //
+
+        /// <summary>
+        /// When true, edge lines from the mesh are drawn on top of the rasterized triangles
+        /// using Bresenham's line algorithm with a small Z-bias to prevent Z-fighting.
+        /// Default is true for the classic LEGO instruction-manual look.
+        /// </summary>
+        public bool RenderEdges { get; set; } = true;
+
+        /// <summary>
+        /// When true, triangles with per-vertex normals use Gouraud shading (per-pixel
+        /// normal interpolation) instead of flat shading.
+        /// Default is true.
+        /// </summary>
+        public bool SmoothShading { get; set; } = true;
+
+        /// <summary>
+        /// The lighting configuration.  Defaults to LightingModel.Default() which
+        /// matches the original single-light rendering behaviour.
+        /// </summary>
+        public LightingModel Lighting { get; set; } = LightingModel.Default();
+
+        //
+        // Z-bias applied to edge line depth values so they render slightly in front of
+        // the surface they sit on.  This prevents Z-fighting between co-planar triangles
+        // and the edge lines that trace their outlines.
+        //
+        private const float EDGE_DEPTH_BIAS = -0.0005f;
+
 
         public SoftwareRenderer(int width, int height)
         {
@@ -31,11 +71,8 @@ namespace BMC.LDraw.Render
             _height = height;
             _colourBuffer = new byte[width * height * 4];
             _depthBuffer = new float[width * height];
-
-            // Normalize light direction
-            float len = (float)Math.Sqrt(_lightX * _lightX + _lightY * _lightY + _lightZ * _lightZ);
-            _lightX /= len; _lightY /= len; _lightZ /= len;
         }
+
 
         /// <summary>Set the background colour (default is transparent black).</summary>
         public void SetBackground(byte r, byte g, byte b, byte a)
@@ -43,16 +80,24 @@ namespace BMC.LDraw.Render
             _bgR = r; _bgG = g; _bgB = b; _bgA = a;
         }
 
+
         /// <summary>
-        /// Render a mesh using the given camera. Returns the RGBA pixel buffer.
+        /// Render a mesh using the given camera.  Returns the RGBA pixel buffer.
+        ///
+        /// Rendering order:
+        ///   1. All triangles are rasterized with Z-buffer depth testing.
+        ///   2. If RenderEdges is true, edge lines are drawn on top with a small depth bias.
         /// </summary>
         public byte[] Render(LDrawMesh mesh, Camera camera)
         {
+            //
             // Clear buffers
+            //
             for (int i = 0; i < _depthBuffer.Length; i++)
             {
                 _depthBuffer[i] = float.MaxValue;
             }
+
             for (int i = 0; i < _colourBuffer.Length; i += 4)
             {
                 _colourBuffer[i] = _bgR;
@@ -61,20 +106,45 @@ namespace BMC.LDraw.Render
                 _colourBuffer[i + 3] = _bgA;
             }
 
+            //
+            // Build the combined view-projection matrix
+            //
             float aspect = (float)_width / _height;
             float[] viewMatrix = camera.GetViewMatrix();
             float[] projMatrix = camera.GetProjectionMatrix(aspect);
             float[] vpMatrix = MultiplyMatrices(projMatrix, viewMatrix);
 
-            // Render all triangles
+            //
+            // Capture the camera eye position for specular highlight computation
+            //
+            _eyeX = camera.EyeX;
+            _eyeY = camera.EyeY;
+            _eyeZ = camera.EyeZ;
+
+            //
+            // Pass 1 — Render all triangles
+            //
             for (int i = 0; i < mesh.Triangles.Count; i++)
             {
                 MeshTriangle tri = mesh.Triangles[i];
                 RasterizeTriangle(ref tri, vpMatrix);
             }
 
+            //
+            // Pass 2 — Render edge lines on top of the filled triangles
+            //
+            if (RenderEdges == true && mesh.EdgeLines.Count > 0)
+            {
+                for (int i = 0; i < mesh.EdgeLines.Count; i++)
+                {
+                    MeshLine edge = mesh.EdgeLines[i];
+                    RasterizeEdgeLine(ref edge, vpMatrix);
+                }
+            }
+
             return _colourBuffer;
         }
+
 
         /// <summary>Width of the render target.</summary>
         public int Width => _width;
@@ -82,9 +152,14 @@ namespace BMC.LDraw.Render
         /// <summary>Height of the render target.</summary>
         public int Height => _height;
 
+
+        // ── Triangle rasterization ──
+
         private void RasterizeTriangle(ref MeshTriangle tri, float[] vpMatrix)
         {
+            //
             // Project vertices to clip space
+            //
             float cx1, cy1, cz1, cw1;
             float cx2, cy2, cz2, cw2;
             float cx3, cy3, cz3, cw3;
@@ -93,15 +168,24 @@ namespace BMC.LDraw.Render
             ProjectPoint(tri.X2, tri.Y2, tri.Z2, vpMatrix, out cx2, out cy2, out cz2, out cw2);
             ProjectPoint(tri.X3, tri.Y3, tri.Z3, vpMatrix, out cx3, out cy3, out cz3, out cw3);
 
+            //
             // Simple near-plane clipping: skip if any vertex is behind the camera
-            if (cw1 <= 0.001f || cw2 <= 0.001f || cw3 <= 0.001f) return;
+            //
+            if (cw1 <= 0.001f || cw2 <= 0.001f || cw3 <= 0.001f)
+            {
+                return;
+            }
 
+            //
             // Perspective divide → NDC (-1 to 1)
+            //
             float nx1 = cx1 / cw1, ny1 = cy1 / cw1, nz1 = cz1 / cw1;
             float nx2 = cx2 / cw2, ny2 = cy2 / cw2, nz2 = cz2 / cw2;
             float nx3 = cx3 / cw3, ny3 = cy3 / cw3, nz3 = cz3 / cw3;
 
+            //
             // NDC → screen coordinates
+            //
             float sx1 = (nx1 + 1f) * 0.5f * _width;
             float sy1 = (1f - ny1) * 0.5f * _height; // flip Y (screen Y is top-down)
             float sx2 = (nx2 + 1f) * 0.5f * _width;
@@ -109,41 +193,85 @@ namespace BMC.LDraw.Render
             float sx3 = (nx3 + 1f) * 0.5f * _width;
             float sy3 = (1f - ny3) * 0.5f * _height;
 
+            //
             // Back-face culling (screen-space winding order)
+            //
             float cross2d = (sx2 - sx1) * (sy3 - sy1) - (sy2 - sy1) * (sx3 - sx1);
-            if (cross2d >= 0) return; // CW in screen space = back face
+            if (cross2d >= 0)
+            {
+                return; // CW in screen space = back face
+            }
 
-            // Compute flat shading intensity
-            float ndotl = tri.NX * _lightX + tri.NY * _lightY + tri.NZ * _lightZ;
-            if (ndotl < 0) ndotl = 0;
-            float intensity = Math.Min(1f, _ambient + (1f - _ambient) * ndotl);
+            //
+            // Choose shading mode
+            //
+            if (SmoothShading == true && tri.HasPerVertexNormals == true)
+            {
+                //
+                // Gouraud shading — pass per-vertex normals through to FillTriangle
+                // for per-pixel lighting interpolation
+                //
+                FillTriangleSmooth(
+                    sx1, sy1, nz1, sx2, sy2, nz2, sx3, sy3, nz3,
+                    tri.NX1, tri.NY1, tri.NZ1,
+                    tri.NX2, tri.NY2, tri.NZ2,
+                    tri.NX3, tri.NY3, tri.NZ3,
+                    tri.X1, tri.Y1, tri.Z1,
+                    tri.X2, tri.Y2, tri.Z2,
+                    tri.X3, tri.Y3, tri.Z3,
+                    tri.R, tri.G, tri.B, tri.A);
+            }
+            else
+            {
+                //
+                // Flat shading — compute lighting once per triangle using centroid
+                //
+                float centroidX = (tri.X1 + tri.X2 + tri.X3) / 3f;
+                float centroidY = (tri.Y1 + tri.Y2 + tri.Y3) / 3f;
+                float centroidZ = (tri.Z1 + tri.Z2 + tri.Z3) / 3f;
 
-            byte sr = (byte)(tri.R * intensity);
-            byte sg = (byte)(tri.G * intensity);
-            byte sb = (byte)(tri.B * intensity);
-            byte sa = tri.A;
+                ComputeLighting(tri.NX, tri.NY, tri.NZ,
+                                centroidX, centroidY, centroidZ,
+                                tri.R, tri.G, tri.B,
+                                out byte sr, out byte sg, out byte sb);
 
-            // Rasterize with bounding box + barycentric coordinates
-            FillTriangle(sx1, sy1, nz1, sx2, sy2, nz2, sx3, sy3, nz3, sr, sg, sb, sa);
+                FillTriangleFlat(sx1, sy1, nz1, sx2, sy2, nz2, sx3, sy3, nz3, sr, sg, sb, tri.A);
+            }
         }
 
-        private void FillTriangle(
+
+        /// <summary>
+        /// Flat-shaded triangle rasterization.  Colour has already been computed
+        /// once per triangle using the flat face normal.
+        /// </summary>
+        private void FillTriangleFlat(
             float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3,
             byte r, byte g, byte b, byte a)
         {
+            //
             // Bounding box (clamped to screen)
+            //
             int minX = Math.Max(0, (int)Math.Floor(Math.Min(x1, Math.Min(x2, x3))));
             int maxX = Math.Min(_width - 1, (int)Math.Ceiling(Math.Max(x1, Math.Max(x2, x3))));
             int minY = Math.Max(0, (int)Math.Floor(Math.Min(y1, Math.Min(y2, y3))));
             int maxY = Math.Min(_height - 1, (int)Math.Ceiling(Math.Max(y1, Math.Max(y2, y3))));
 
-            if (minX > maxX || minY > maxY) return;
+            if (minX > maxX || minY > maxY)
+            {
+                return;
+            }
 
+            //
             // Precompute edge function denominators
+            //
             float denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
-            if (Math.Abs(denom) < 1e-8f) return; // degenerate triangle
+            if (Math.Abs(denom) < 1e-8f)
+            {
+                return; // degenerate triangle
+            }
+
             float invDenom = 1f / denom;
 
             for (int py = minY; py <= maxY; py++)
@@ -153,15 +281,24 @@ namespace BMC.LDraw.Render
                     float pxf = px + 0.5f;
                     float pyf = py + 0.5f;
 
+                    //
                     // Barycentric coordinates
+                    //
                     float w1 = ((y2 - y3) * (pxf - x3) + (x3 - x2) * (pyf - y3)) * invDenom;
                     float w2 = ((y3 - y1) * (pxf - x3) + (x1 - x3) * (pyf - y3)) * invDenom;
                     float w3 = 1f - w1 - w2;
 
+                    //
                     // Inside test (with small epsilon for edge coverage)
-                    if (w1 < -0.001f || w2 < -0.001f || w3 < -0.001f) continue;
+                    //
+                    if (w1 < -0.001f || w2 < -0.001f || w3 < -0.001f)
+                    {
+                        continue;
+                    }
 
+                    //
                     // Interpolate depth
+                    //
                     float depth = w1 * z1 + w2 * z2 + w3 * z3;
 
                     int pixelIdx = py * _width + px;
@@ -178,10 +315,411 @@ namespace BMC.LDraw.Render
             }
         }
 
+
+        /// <summary>
+        /// Gouraud-shaded triangle rasterization.  Per-vertex normals are interpolated
+        /// across the triangle using barycentric coordinates, and lighting is computed
+        /// per-pixel for smooth shading across curved surfaces.
+        /// </summary>
+        private void FillTriangleSmooth(
+            float x1, float y1, float z1,
+            float x2, float y2, float z2,
+            float x3, float y3, float z3,
+            float vnx1, float vny1, float vnz1,
+            float vnx2, float vny2, float vnz2,
+            float vnx3, float vny3, float vnz3,
+            float wx1, float wy1, float wz1,
+            float wx2, float wy2, float wz2,
+            float wx3, float wy3, float wz3,
+            byte baseR, byte baseG, byte baseB, byte baseA)
+        {
+            //
+            // Bounding box (clamped to screen)
+            //
+            int minX = Math.Max(0, (int)Math.Floor(Math.Min(x1, Math.Min(x2, x3))));
+            int maxX = Math.Min(_width - 1, (int)Math.Ceiling(Math.Max(x1, Math.Max(x2, x3))));
+            int minY = Math.Max(0, (int)Math.Floor(Math.Min(y1, Math.Min(y2, y3))));
+            int maxY = Math.Min(_height - 1, (int)Math.Ceiling(Math.Max(y1, Math.Max(y2, y3))));
+
+            if (minX > maxX || minY > maxY)
+            {
+                return;
+            }
+
+            //
+            // Precompute edge function denominators
+            //
+            float denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+            if (Math.Abs(denom) < 1e-8f)
+            {
+                return; // degenerate triangle
+            }
+
+            float invDenom = 1f / denom;
+
+            for (int py = minY; py <= maxY; py++)
+            {
+                for (int px = minX; px <= maxX; px++)
+                {
+                    float pxf = px + 0.5f;
+                    float pyf = py + 0.5f;
+
+                    //
+                    // Barycentric coordinates
+                    //
+                    float w1 = ((y2 - y3) * (pxf - x3) + (x3 - x2) * (pyf - y3)) * invDenom;
+                    float w2 = ((y3 - y1) * (pxf - x3) + (x1 - x3) * (pyf - y3)) * invDenom;
+                    float w3 = 1f - w1 - w2;
+
+                    //
+                    // Inside test
+                    //
+                    if (w1 < -0.001f || w2 < -0.001f || w3 < -0.001f)
+                    {
+                        continue;
+                    }
+
+                    //
+                    // Interpolate depth
+                    //
+                    float depth = w1 * z1 + w2 * z2 + w3 * z3;
+
+                    int pixelIdx = py * _width + px;
+                    if (depth < _depthBuffer[pixelIdx])
+                    {
+                        //
+                        // Interpolate the normal across the triangle using barycentric coords
+                        //
+                        float inx = w1 * vnx1 + w2 * vnx2 + w3 * vnx3;
+                        float iny = w1 * vny1 + w2 * vny2 + w3 * vny3;
+                        float inz = w1 * vnz1 + w2 * vnz2 + w3 * vnz3;
+
+                        //
+                        // Normalize the interpolated normal
+                        //
+                        float nlen = (float)Math.Sqrt(inx * inx + iny * iny + inz * inz);
+                        if (nlen > 1e-8f)
+                        {
+                            inx /= nlen;
+                            iny /= nlen;
+                            inz /= nlen;
+                        }
+
+                        //
+                        // Interpolate world-space position for specular computation
+                        //
+                        float wpx = w1 * wx1 + w2 * wx2 + w3 * wx3;
+                        float wpy = w1 * wy1 + w2 * wy2 + w3 * wy3;
+                        float wpz = w1 * wz1 + w2 * wz2 + w3 * wz3;
+
+                        //
+                        // Compute lighting using the interpolated normal and world position
+                        //
+                        ComputeLighting(inx, iny, inz, wpx, wpy, wpz,
+                                        baseR, baseG, baseB,
+                                        out byte finalR, out byte finalG, out byte finalB);
+
+                        _depthBuffer[pixelIdx] = depth;
+                        int bufIdx = pixelIdx * 4;
+                        _colourBuffer[bufIdx] = finalR;
+                        _colourBuffer[bufIdx + 1] = finalG;
+                        _colourBuffer[bufIdx + 2] = finalB;
+                        _colourBuffer[bufIdx + 3] = baseA;
+                    }
+                }
+            }
+        }
+
+
+        // ── Multi-light Blinn-Phong lighting ──
+
+        /// <summary>
+        /// Compute the final lit colour at a surface point using the active LightingModel.
+        ///
+        /// For each light source:
+        ///   - Diffuse:  max(0, N·L)  × light colour × light intensity
+        ///   - Specular: pow(max(0, N·H), shininess)  × specular intensity  (Blinn-Phong)
+        ///
+        /// The results are accumulated across all lights, combined with the ambient term,
+        /// multiplied with the base surface colour, and clamped to [0, 255].
+        /// </summary>
+        private void ComputeLighting(float nx, float ny, float nz,
+                                     float worldX, float worldY, float worldZ,
+                                     byte baseR, byte baseG, byte baseB,
+                                     out byte outR, out byte outG, out byte outB)
+        {
+            LightingModel lighting = Lighting;
+
+            //
+            // Start with ambient contribution
+            //
+            float totalR = lighting.AmbientR * lighting.AmbientIntensity;
+            float totalG = lighting.AmbientG * lighting.AmbientIntensity;
+            float totalB = lighting.AmbientB * lighting.AmbientIntensity;
+
+            //
+            // View direction (from surface point toward the camera eye)
+            //
+            float viewDirX = _eyeX - worldX;
+            float viewDirY = _eyeY - worldY;
+            float viewDirZ = _eyeZ - worldZ;
+            float vlen = (float)Math.Sqrt(viewDirX * viewDirX + viewDirY * viewDirY + viewDirZ * viewDirZ);
+
+            if (vlen > 1e-8f)
+            {
+                viewDirX /= vlen;
+                viewDirY /= vlen;
+                viewDirZ /= vlen;
+            }
+
+            //
+            // Accumulate contributions from each light source
+            //
+            for (int i = 0; i < lighting.Lights.Count; i++)
+            {
+                Light light = lighting.Lights[i];
+
+                float lx = light.DirectionX;
+                float ly = light.DirectionY;
+                float lz = light.DirectionZ;
+
+                //
+                // For point lights, compute the direction from the surface to the light position
+                //
+                if (light.Type == LightType.Point)
+                {
+                    lx = light.DirectionX - worldX;
+                    ly = light.DirectionY - worldY;
+                    lz = light.DirectionZ - worldZ;
+                    float plen = (float)Math.Sqrt(lx * lx + ly * ly + lz * lz);
+
+                    if (plen > 1e-8f)
+                    {
+                        lx /= plen;
+                        ly /= plen;
+                        lz /= plen;
+                    }
+                }
+
+                //
+                // Diffuse (Lambertian)
+                //
+                float ndotl = nx * lx + ny * ly + nz * lz;
+
+                if (ndotl < 0f)
+                {
+                    ndotl = 0f;
+                }
+
+                float diffR = ndotl * light.ColourR * light.Intensity;
+                float diffG = ndotl * light.ColourG * light.Intensity;
+                float diffB = ndotl * light.ColourB * light.Intensity;
+
+                totalR += diffR;
+                totalG += diffG;
+                totalB += diffB;
+
+                //
+                // Specular (Blinn-Phong) — only if specular intensity is non-zero
+                //
+                if (lighting.SpecularIntensity > 0f && ndotl > 0f)
+                {
+                    //
+                    // Half-vector between light direction and view direction
+                    //
+                    float hx = lx + viewDirX;
+                    float hy = ly + viewDirY;
+                    float hz = lz + viewDirZ;
+                    float hlen = (float)Math.Sqrt(hx * hx + hy * hy + hz * hz);
+
+                    if (hlen > 1e-8f)
+                    {
+                        hx /= hlen;
+                        hy /= hlen;
+                        hz /= hlen;
+                    }
+
+                    float ndoth = nx * hx + ny * hy + nz * hz;
+
+                    if (ndoth > 0f)
+                    {
+                        float specFactor = (float)Math.Pow(ndoth, lighting.SpecularPower);
+                        float specContrib = specFactor * lighting.SpecularIntensity * light.Intensity;
+
+                        totalR += specContrib * light.ColourR;
+                        totalG += specContrib * light.ColourG;
+                        totalB += specContrib * light.ColourB;
+                    }
+                }
+            }
+
+            //
+            // Multiply with surface colour and clamp to [0, 255]
+            //
+            int ir = (int)(baseR * totalR);
+            int ig = (int)(baseG * totalG);
+            int ib = (int)(baseB * totalB);
+
+            outR = (byte)(ir > 255 ? 255 : (ir < 0 ? 0 : ir));
+            outG = (byte)(ig > 255 ? 255 : (ig < 0 ? 0 : ig));
+            outB = (byte)(ib > 255 ? 255 : (ib < 0 ? 0 : ib));
+        }
+
+
+
+        /// <summary>
+        /// Rasterize a single edge line segment using Bresenham's line algorithm.
+        /// The line is drawn with a small Z-bias so it sits just in front of the
+        /// underlying triangle surface, preventing Z-fighting on co-planar geometry.
+        /// </summary>
+        private void RasterizeEdgeLine(ref MeshLine edge, float[] vpMatrix)
+        {
+            //
+            // Project both endpoints to clip space
+            //
+            float cx1, cy1, cz1, cw1;
+            float cx2, cy2, cz2, cw2;
+
+            ProjectPoint(edge.X1, edge.Y1, edge.Z1, vpMatrix, out cx1, out cy1, out cz1, out cw1);
+            ProjectPoint(edge.X2, edge.Y2, edge.Z2, vpMatrix, out cx2, out cy2, out cz2, out cw2);
+
+            //
+            // Skip if either endpoint is behind the near plane
+            //
+            if (cw1 <= 0.001f || cw2 <= 0.001f)
+            {
+                return;
+            }
+
+            //
+            // Perspective divide → NDC
+            //
+            float nz1 = cz1 / cw1;
+            float nz2 = cz2 / cw2;
+
+            //
+            // NDC → screen coordinates
+            //
+            float sx1 = (cx1 / cw1 + 1f) * 0.5f * _width;
+            float sy1 = (1f - cy1 / cw1) * 0.5f * _height;
+            float sx2 = (cx2 / cw2 + 1f) * 0.5f * _width;
+            float sy2 = (1f - cy2 / cw2) * 0.5f * _height;
+
+            //
+            // Draw the line using Bresenham's algorithm with depth-tested pixel writes
+            //
+            DrawLine(sx1, sy1, nz1, sx2, sy2, nz2, edge.R, edge.G, edge.B, edge.A);
+        }
+
+
+        /// <summary>
+        /// Bresenham-style line drawing with per-pixel depth interpolation.
+        /// Each pixel is only drawn if it passes the Z-buffer test (with bias applied).
+        /// </summary>
+        private void DrawLine(
+            float fx1, float fy1, float z1,
+            float fx2, float fy2, float z2,
+            byte r, byte g, byte b, byte a)
+        {
+            //
+            // Convert float screen coords to integer pixel positions
+            //
+            int x1 = (int)Math.Round(fx1);
+            int y1 = (int)Math.Round(fy1);
+            int x2 = (int)Math.Round(fx2);
+            int y2 = (int)Math.Round(fy2);
+
+            int dx = Math.Abs(x2 - x1);
+            int dy = Math.Abs(y2 - y1);
+            int stepX = (x1 < x2) ? 1 : -1;
+            int stepY = (y1 < y2) ? 1 : -1;
+
+            //
+            // Total number of steps for depth interpolation
+            //
+            int totalSteps = Math.Max(dx, dy);
+            if (totalSteps == 0)
+            {
+                //
+                // Degenerate line (single pixel)
+                //
+                WriteEdgePixel(x1, y1, z1 + EDGE_DEPTH_BIAS, r, g, b, a);
+                return;
+            }
+
+            float invTotalSteps = 1f / totalSteps;
+
+            //
+            // Bresenham's line algorithm
+            //
+            int error = dx - dy;
+            int currentX = x1;
+            int currentY = y1;
+
+            for (int step = 0; step <= totalSteps; step++)
+            {
+                //
+                // Interpolate depth along the line
+                //
+                float t = step * invTotalSteps;
+                float depth = z1 + (z2 - z1) * t + EDGE_DEPTH_BIAS;
+
+                WriteEdgePixel(currentX, currentY, depth, r, g, b, a);
+
+                //
+                // Advance to the next pixel along the line
+                //
+                int error2 = 2 * error;
+
+                if (error2 > -dy)
+                {
+                    error -= dy;
+                    currentX += stepX;
+                }
+
+                if (error2 < dx)
+                {
+                    error += dx;
+                    currentY += stepY;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Write a single edge pixel if it is within screen bounds and passes the Z-buffer test.
+        /// </summary>
+        private void WriteEdgePixel(int px, int py, float depth, byte r, byte g, byte b, byte a)
+        {
+            //
+            // Bounds check
+            //
+            if (px < 0 || px >= _width || py < 0 || py >= _height)
+            {
+                return;
+            }
+
+            int pixelIdx = py * _width + px;
+
+            //
+            // Z-buffer test — edge pixels use <= so they draw on top of co-planar surfaces
+            //
+            if (depth <= _depthBuffer[pixelIdx])
+            {
+                _depthBuffer[pixelIdx] = depth;
+                int bufIdx = pixelIdx * 4;
+                _colourBuffer[bufIdx] = r;
+                _colourBuffer[bufIdx + 1] = g;
+                _colourBuffer[bufIdx + 2] = b;
+                _colourBuffer[bufIdx + 3] = a;
+            }
+        }
+
+
         // ── Projection helpers ──
 
         private static void ProjectPoint(float x, float y, float z, float[] m,
-            out float ox, out float oy, out float oz, out float ow)
+                                         out float ox, out float oy, out float oz, out float ow)
         {
             ox = m[0] * x + m[1] * y + m[2] * z + m[3];
             oy = m[4] * x + m[5] * y + m[6] * z + m[7];
@@ -189,22 +727,28 @@ namespace BMC.LDraw.Render
             ow = m[12] * x + m[13] * y + m[14] * z + m[15];
         }
 
+
         private static float[] MultiplyMatrices(float[] a, float[] b)
         {
             float[] r = new float[16];
+
             for (int row = 0; row < 4; row++)
             {
                 for (int col = 0; col < 4; col++)
                 {
                     float sum = 0;
+
                     for (int k = 0; k < 4; k++)
                     {
                         sum += a[row * 4 + k] * b[k * 4 + col];
                     }
+
                     r[row * 4 + col] = sum;
                 }
             }
+
             return r;
         }
     }
 }
+
