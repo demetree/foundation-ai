@@ -68,7 +68,7 @@ namespace BMC.LDraw.Render
                                            gradientTopHex: gradientTopHex,
                                            gradientBottomHex: gradientBottomHex);
 
-            PngExporter.SaveToPng(pixels, width, height, outputPath);
+            ImageExporter.SaveToPng(pixels, width, height, outputPath);
         }
 
 
@@ -101,7 +101,42 @@ namespace BMC.LDraw.Render
                                            gradientTopHex: gradientTopHex,
                                            gradientBottomHex: gradientBottomHex);
 
-            return PngExporter.ToPngBytes(pixels, width, height);
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
+        /// <summary>
+        /// Render an LDraw file to WebP bytes (in-memory).
+        /// </summary>
+        /// <param name="quality">WebP quality (1–100).  Higher = better quality, larger file.</param>
+        public byte[] RenderToWebP(string inputPath,
+                                   int width = 512,
+                                   int height = 512,
+                                   int colourCode = -1,
+                                   float elevation = 30f,
+                                   float azimuth = -45f,
+                                   bool renderEdges = true,
+                                   bool smoothShading = true,
+                                   AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                   string backgroundHex = null,
+                                   string gradientTopHex = null,
+                                   string gradientBottomHex = null,
+                                   int quality = 90)
+        {
+            byte[] pixels = RenderToPixels(inputPath: inputPath,
+                                           width: width,
+                                           height: height,
+                                           colourCode: colourCode,
+                                           elevation: elevation,
+                                           azimuth: azimuth,
+                                           renderEdges: renderEdges,
+                                           smoothShading: smoothShading,
+                                           antiAliasMode: antiAliasMode,
+                                           backgroundHex: backgroundHex,
+                                           gradientTopHex: gradientTopHex,
+                                           gradientBottomHex: gradientBottomHex);
+
+            return ImageExporter.ToWebPBytes(pixels, width, height, quality);
         }
 
 
@@ -199,6 +234,82 @@ namespace BMC.LDraw.Render
             }
 
             return pixels;
+        }
+
+
+        /// <summary>
+        /// Render an animated turntable GIF of an LDraw file.
+        /// </summary>
+        /// <param name="frameCount">Number of frames in the loop (e.g. 36 for 10° per frame).</param>
+        /// <param name="frameDelayMs">Delay between frames in milliseconds (default 80ms ≈ 12.5 fps).</param>
+        public byte[] RenderTurntableGif(string inputPath,
+                                          int width = 256,
+                                          int height = 256,
+                                          int colourCode = -1,
+                                          int frameCount = 36,
+                                          float elevation = 30f,
+                                          int frameDelayMs = 80,
+                                          bool renderEdges = true,
+                                          bool smoothShading = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFile(inputPath, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            if (smoothShading == true)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            return TurntableRenderer.RenderToGif(
+                mesh: mesh,
+                width: width,
+                height: height,
+                frameCount: frameCount,
+                elevation: elevation,
+                frameDelayMs: frameDelayMs,
+                renderEdges: renderEdges,
+                smoothShading: smoothShading);
+        }
+
+
+        /// <summary>
+        /// Render an LDraw file to an SVG vector document.
+        /// </summary>
+        public string RenderToSvg(string inputPath,
+                                   int width = 512,
+                                   int height = 512,
+                                   int colourCode = -1,
+                                   float elevation = 30f,
+                                   float azimuth = -45f,
+                                   bool renderEdges = true,
+                                   bool smoothShading = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFile(inputPath, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return string.Format("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{0}\" height=\"{1}\"></svg>",
+                                     width, height);
+            }
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            return SvgExporter.RenderToSvg(mesh, camera, width, height, renderEdges);
         }
 
 
