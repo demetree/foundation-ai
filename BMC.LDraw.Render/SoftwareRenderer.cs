@@ -29,9 +29,22 @@ namespace BMC.LDraw.Render
         private byte _bgR = 0, _bgG = 0, _bgB = 0, _bgA = 0;
 
         //
+        // Gradient background (when _hasGradient is true, overrides solid bg)
+        //
+        private bool _hasGradient = false;
+        private byte _gradTopR, _gradTopG, _gradTopB;
+        private byte _gradBotR, _gradBotG, _gradBotB;
+
+        //
         // Camera eye position (needed for specular highlights).  Set during each Render call.
         //
         private float _eyeX, _eyeY, _eyeZ;
+
+        //
+        // Alpha blending state — set to true during the transparent pass.
+        // When true, pixel writes use src-alpha blending and skip Z-buffer writes.
+        //
+        private bool _isTransparentPass = false;
 
         //
         // Edge rendering options
@@ -74,10 +87,168 @@ namespace BMC.LDraw.Render
         }
 
 
+        /// <summary>
+        /// Clear the colour and depth buffers to their default state.
+        /// </summary>
+        private void ClearBuffers()
+        {
+            for (int i = 0; i < _depthBuffer.Length; i++)
+            {
+                _depthBuffer[i] = float.MaxValue;
+            }
+
+            if (_hasGradient)
+            {
+                //
+                // Gradient fill: interpolate per-scanline from top to bottom colour
+                //
+                for (int y = 0; y < _height; y++)
+                {
+                    float t = (float)y / Math.Max(_height - 1, 1);
+                    byte r = (byte)(_gradTopR + (_gradBotR - _gradTopR) * t);
+                    byte g = (byte)(_gradTopG + (_gradBotG - _gradTopG) * t);
+                    byte b = (byte)(_gradTopB + (_gradBotB - _gradTopB) * t);
+
+                    int rowStart = y * _width * 4;
+                    for (int x = 0; x < _width; x++)
+                    {
+                        int idx = rowStart + x * 4;
+                        _colourBuffer[idx]     = r;
+                        _colourBuffer[idx + 1] = g;
+                        _colourBuffer[idx + 2] = b;
+                        _colourBuffer[idx + 3] = 255;
+                    }
+                }
+            }
+            else
+            {
+                //
+                // Solid fill
+                //
+                for (int i = 0; i < _colourBuffer.Length; i += 4)
+                {
+                    _colourBuffer[i]     = _bgR;
+                    _colourBuffer[i + 1] = _bgG;
+                    _colourBuffer[i + 2] = _bgB;
+                    _colourBuffer[i + 3] = _bgA;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Sort a list of transparent triangles back-to-front by their centroid depth
+        /// in clip space.  Farthest triangles render first (painter's algorithm).
+        /// </summary>
+        private void SortBackToFront(System.Collections.Generic.List<MeshTriangle> triangles, float[] vpMatrix)
+        {
+            //
+            // Compute centroid depth for each triangle for sorting
+            //
+            float[] depths = new float[triangles.Count];
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                MeshTriangle t = triangles[i];
+                float cx = (t.X1 + t.X2 + t.X3) / 3f;
+                float cy = (t.Y1 + t.Y2 + t.Y3) / 3f;
+                float cz = (t.Z1 + t.Z2 + t.Z3) / 3f;
+
+                //
+                // Transform centroid to clip space to get a comparable depth
+                //
+                float clipZ = vpMatrix[8] * cx + vpMatrix[9] * cy + vpMatrix[10] * cz + vpMatrix[11];
+                float clipW = vpMatrix[12] * cx + vpMatrix[13] * cy + vpMatrix[14] * cz + vpMatrix[15];
+
+                depths[i] = (clipW > 0.001f) ? clipZ / clipW : float.MaxValue;
+            }
+
+            //
+            // Simple insertion sort (fast for small N, stable, in-place)
+            //
+            for (int i = 1; i < triangles.Count; i++)
+            {
+                float keyDepth = depths[i];
+                MeshTriangle keyTri = triangles[i];
+                int j = i - 1;
+
+                while (j >= 0 && depths[j] < keyDepth) // farthest first (largest depth first)
+                {
+                    depths[j + 1] = depths[j];
+                    triangles[j + 1] = triangles[j];
+                    j--;
+                }
+
+                depths[j + 1] = keyDepth;
+                triangles[j + 1] = keyTri;
+            }
+        }
+
+
+        /// <summary>
+        /// Write a pixel to the framebuffer, respecting the current pass mode.
+        /// During opaque pass: standard Z-buffer overwrite.
+        /// During transparent pass: alpha blend with existing pixel, no Z-buffer write.
+        /// </summary>
+        private void WritePixel(int pixelIdx, float depth, byte r, byte g, byte b, byte a)
+        {
+            if (_isTransparentPass == true)
+            {
+                //
+                // Transparent pass: read Z-buffer for occlusion but don't write.
+                // Alpha-blend with existing framebuffer contents.
+                //
+                if (depth < _depthBuffer[pixelIdx])
+                {
+                    int bufIdx = pixelIdx * 4;
+                    float srcA = a / 255f;
+                    float invSrcA = 1f - srcA;
+
+                    _colourBuffer[bufIdx]     = (byte)(r * srcA + _colourBuffer[bufIdx]     * invSrcA);
+                    _colourBuffer[bufIdx + 1] = (byte)(g * srcA + _colourBuffer[bufIdx + 1] * invSrcA);
+                    _colourBuffer[bufIdx + 2] = (byte)(b * srcA + _colourBuffer[bufIdx + 2] * invSrcA);
+
+                    //
+                    // Output alpha: src + dst * (1 - src)
+                    //
+                    float dstA = _colourBuffer[bufIdx + 3] / 255f;
+                    float outA = srcA + dstA * invSrcA;
+                    _colourBuffer[bufIdx + 3] = (byte)(outA * 255f);
+                }
+            }
+            else
+            {
+                //
+                // Opaque pass: standard Z-buffer overwrite
+                //
+                if (depth < _depthBuffer[pixelIdx])
+                {
+                    _depthBuffer[pixelIdx] = depth;
+                    int bufIdx = pixelIdx * 4;
+                    _colourBuffer[bufIdx]     = r;
+                    _colourBuffer[bufIdx + 1] = g;
+                    _colourBuffer[bufIdx + 2] = b;
+                    _colourBuffer[bufIdx + 3] = a;
+                }
+            }
+        }
         /// <summary>Set the background colour (default is transparent black).</summary>
         public void SetBackground(byte r, byte g, byte b, byte a)
         {
             _bgR = r; _bgG = g; _bgB = b; _bgA = a;
+            _hasGradient = false;
+        }
+
+
+        /// <summary>
+        /// Set a vertical gradient background.  The top colour linearly blends to
+        /// the bottom colour across scanlines.  Alpha is set to 255.
+        /// </summary>
+        public void SetGradientBackground(byte topR, byte topG, byte topB,
+                                           byte bottomR, byte bottomG, byte bottomB)
+        {
+            _hasGradient = true;
+            _gradTopR = topR; _gradTopG = topG; _gradTopB = topB;
+            _gradBotR = bottomR; _gradBotG = bottomG; _gradBotB = bottomB;
         }
 
 
@@ -85,26 +256,16 @@ namespace BMC.LDraw.Render
         /// Render a mesh using the given camera.  Returns the RGBA pixel buffer.
         ///
         /// Rendering order:
-        ///   1. All triangles are rasterized with Z-buffer depth testing.
-        ///   2. If RenderEdges is true, edge lines are drawn on top with a small depth bias.
+        ///   1. All opaque triangles (A==255) are rasterized with Z-buffer depth testing.
+        ///   2. Transparent triangles (A&lt;255) are sorted back-to-front and drawn with alpha blending.
+        ///   3. If RenderEdges is true, edge lines are drawn on top with a small depth bias.
         /// </summary>
         public byte[] Render(LDrawMesh mesh, Camera camera)
         {
             //
             // Clear buffers
             //
-            for (int i = 0; i < _depthBuffer.Length; i++)
-            {
-                _depthBuffer[i] = float.MaxValue;
-            }
-
-            for (int i = 0; i < _colourBuffer.Length; i += 4)
-            {
-                _colourBuffer[i] = _bgR;
-                _colourBuffer[i + 1] = _bgG;
-                _colourBuffer[i + 2] = _bgB;
-                _colourBuffer[i + 3] = _bgA;
-            }
+            ClearBuffers();
 
             //
             // Build the combined view-projection matrix
@@ -122,16 +283,39 @@ namespace BMC.LDraw.Render
             _eyeZ = camera.EyeZ;
 
             //
-            // Pass 1 — Render all triangles
+            // Split triangles into opaque and transparent groups
             //
-            for (int i = 0; i < mesh.Triangles.Count; i++)
+            mesh.SplitByTransparency(out System.Collections.Generic.List<MeshTriangle> opaqueTriangles,
+                                     out System.Collections.Generic.List<MeshTriangle> transparentTriangles);
+
+            //
+            // Pass 1 — Render all opaque triangles with Z-buffer
+            //
+            _isTransparentPass = false;
+            for (int i = 0; i < opaqueTriangles.Count; i++)
             {
-                MeshTriangle tri = mesh.Triangles[i];
+                MeshTriangle tri = opaqueTriangles[i];
                 RasterizeTriangle(ref tri, vpMatrix);
             }
 
             //
-            // Pass 2 — Render edge lines on top of the filled triangles
+            // Pass 2 — Render transparent triangles, sorted back-to-front (painter's algorithm)
+            //
+            if (transparentTriangles.Count > 0)
+            {
+                SortBackToFront(transparentTriangles, vpMatrix);
+
+                _isTransparentPass = true;
+                for (int i = 0; i < transparentTriangles.Count; i++)
+                {
+                    MeshTriangle tri = transparentTriangles[i];
+                    RasterizeTriangle(ref tri, vpMatrix);
+                }
+                _isTransparentPass = false;
+            }
+
+            //
+            // Pass 3 — Render edge lines on top of the filled triangles
             //
             if (RenderEdges == true && mesh.EdgeLines.Count > 0)
             {
@@ -302,15 +486,7 @@ namespace BMC.LDraw.Render
                     float depth = w1 * z1 + w2 * z2 + w3 * z3;
 
                     int pixelIdx = py * _width + px;
-                    if (depth < _depthBuffer[pixelIdx])
-                    {
-                        _depthBuffer[pixelIdx] = depth;
-                        int bufIdx = pixelIdx * 4;
-                        _colourBuffer[bufIdx] = r;
-                        _colourBuffer[bufIdx + 1] = g;
-                        _colourBuffer[bufIdx + 2] = b;
-                        _colourBuffer[bufIdx + 3] = a;
-                    }
+                    WritePixel(pixelIdx, depth, r, g, b, a);
                 }
             }
         }
@@ -419,12 +595,7 @@ namespace BMC.LDraw.Render
                                         baseR, baseG, baseB,
                                         out byte finalR, out byte finalG, out byte finalB);
 
-                        _depthBuffer[pixelIdx] = depth;
-                        int bufIdx = pixelIdx * 4;
-                        _colourBuffer[bufIdx] = finalR;
-                        _colourBuffer[bufIdx + 1] = finalG;
-                        _colourBuffer[bufIdx + 2] = finalB;
-                        _colourBuffer[bufIdx + 3] = baseA;
+                        WritePixel(pixelIdx, depth, finalR, finalG, finalB, baseA);
                     }
                 }
             }

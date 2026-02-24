@@ -37,6 +37,10 @@ namespace BMC.LDraw.Render
         /// <param name="colourCode">Override colour code. Use -1 for default (colour 4 = red).</param>
         /// <param name="renderEdges">When true, edge lines are drawn on top of the rasterized triangles for the classic LEGO instruction look.</param>
         /// <param name="smoothShading">When true, per-vertex normals are computed for Gouraud smooth shading on curved surfaces.</param>
+        /// <param name="antiAliasMode">Anti-aliasing mode.  SSAA2x/4x render at higher resolution and downsample for smoother edges.</param>
+        /// <param name="backgroundHex">Solid background colour as hex string (e.g. "#FFFFFF").  Null = transparent.</param>
+        /// <param name="gradientTopHex">Top colour for gradient background (e.g. "#1A1A2E").  Both top and bottom must be set.</param>
+        /// <param name="gradientBottomHex">Bottom colour for gradient background (e.g. "#16213E").  Both top and bottom must be set.</param>
         public void RenderToFile(string inputPath,
                                  string outputPath,
                                  int width = 512,
@@ -45,7 +49,11 @@ namespace BMC.LDraw.Render
                                  float elevation = 30f,
                                  float azimuth = -45f,
                                  bool renderEdges = true,
-                                 bool smoothShading = true)
+                                 bool smoothShading = true,
+                                 AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                 string backgroundHex = null,
+                                 string gradientTopHex = null,
+                                 string gradientBottomHex = null)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -54,7 +62,11 @@ namespace BMC.LDraw.Render
                                            elevation: elevation,
                                            azimuth: azimuth,
                                            renderEdges: renderEdges,
-                                           smoothShading: smoothShading);
+                                           smoothShading: smoothShading,
+                                           antiAliasMode: antiAliasMode,
+                                           backgroundHex: backgroundHex,
+                                           gradientTopHex: gradientTopHex,
+                                           gradientBottomHex: gradientBottomHex);
 
             PngExporter.SaveToPng(pixels, width, height, outputPath);
         }
@@ -70,7 +82,11 @@ namespace BMC.LDraw.Render
                                   float elevation = 30f,
                                   float azimuth = -45f,
                                   bool renderEdges = true,
-                                  bool smoothShading = true)
+                                  bool smoothShading = true,
+                                  AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                  string backgroundHex = null,
+                                  string gradientTopHex = null,
+                                  string gradientBottomHex = null)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -79,7 +95,11 @@ namespace BMC.LDraw.Render
                                            elevation: elevation,
                                            azimuth: azimuth,
                                            renderEdges: renderEdges,
-                                           smoothShading: smoothShading);
+                                           smoothShading: smoothShading,
+                                           antiAliasMode: antiAliasMode,
+                                           backgroundHex: backgroundHex,
+                                           gradientTopHex: gradientTopHex,
+                                           gradientBottomHex: gradientBottomHex);
 
             return PngExporter.ToPngBytes(pixels, width, height);
         }
@@ -95,7 +115,11 @@ namespace BMC.LDraw.Render
                                      float elevation = 30f,
                                      float azimuth = -45f,
                                      bool renderEdges = true,
-                                     bool smoothShading = true)
+                                     bool smoothShading = true,
+                                     AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                     string backgroundHex = null,
+                                     string gradientTopHex = null,
+                                     string gradientBottomHex = null)
         {
             EnsureColours();
 
@@ -133,13 +157,65 @@ namespace BMC.LDraw.Render
             camera.AutoFrame(mesh, elevation, azimuth);
 
             //
+            // Determine render resolution (SSAA renders at a higher internal resolution)
+            //
+            int ssaaFactor = 1;
+            if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
+            else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
+
+            int renderW = width * ssaaFactor;
+            int renderH = height * ssaaFactor;
+
+            //
             // Render
             //
-            SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
             renderer.RenderEdges = renderEdges;
             renderer.SmoothShading = smoothShading;
 
-            return renderer.Render(mesh, camera);
+            //
+            // Configure background
+            //
+            if (gradientTopHex != null && gradientBottomHex != null)
+            {
+                ParseHex(gradientTopHex, out byte tr, out byte tg, out byte tb);
+                ParseHex(gradientBottomHex, out byte br, out byte bg, out byte bb);
+                renderer.SetGradientBackground(tr, tg, tb, br, bg, bb);
+            }
+            else if (backgroundHex != null)
+            {
+                ParseHex(backgroundHex, out byte bgr, out byte bgg, out byte bgb);
+                renderer.SetBackground(bgr, bgg, bgb, 255);
+            }
+
+            byte[] pixels = renderer.Render(mesh, camera);
+
+            //
+            // Downsample if SSAA is enabled
+            //
+            if (ssaaFactor > 1)
+            {
+                pixels = PostProcess.Downsample(pixels, renderW, renderH, width, height);
+            }
+
+            return pixels;
+        }
+
+
+        /// <summary>
+        /// Parse a hex colour string like "#DFC176" into RGB bytes.
+        /// </summary>
+        private static void ParseHex(string hex, out byte r, out byte g, out byte b)
+        {
+            r = 0; g = 0; b = 0;
+            if (hex == null || hex.Length < 7 || hex[0] != '#') return;
+
+            byte.TryParse(hex.Substring(1, 2), System.Globalization.NumberStyles.HexNumber,
+                          System.Globalization.CultureInfo.InvariantCulture, out r);
+            byte.TryParse(hex.Substring(3, 2), System.Globalization.NumberStyles.HexNumber,
+                          System.Globalization.CultureInfo.InvariantCulture, out g);
+            byte.TryParse(hex.Substring(5, 2), System.Globalization.NumberStyles.HexNumber,
+                          System.Globalization.CultureInfo.InvariantCulture, out b);
         }
 
 

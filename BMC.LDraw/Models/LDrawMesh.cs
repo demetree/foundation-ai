@@ -120,5 +120,26 @@ namespace BMC.LDraw.Models
             if (dz > max) max = dz;
             return max;
         }
+        /// <summary>
+        /// Split triangles into opaque and transparent groups for two-pass rendering.
+        /// Opaque triangles have A == 255; transparent triangles have A &lt; 255.
+        /// </summary>
+        public void SplitByTransparency(out List<MeshTriangle> opaque, out List<MeshTriangle> transparent)
+        {
+            opaque = new List<MeshTriangle>();
+            transparent = new List<MeshTriangle>();
+
+            for (int i = 0; i < Triangles.Count; i++)
+            {
+                if (Triangles[i].A == 255)
+                {
+                    opaque.Add(Triangles[i]);
+                }
+                else
+                {
+                    transparent.Add(Triangles[i]);
+                }
+            }
+        }
     }
 }
