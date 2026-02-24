@@ -4,19 +4,20 @@
 
     <!-- Login Card -->
     <div class="card text-bg-dark shadow border-0 rounded-3 overflow-hidden" *ngIf="!showForgotPassword">
-      <div class="card-header d-flex align-items-center justify-content-between bg-dark border-bottom border-secondary px-4 py-3">
+      <div
+        class="card-header d-flex align-items-center justify-content-between bg-dark border-bottom border-secondary px-4 py-3">
         <h5 class="mb-0"><i class="fa fa-lock me-2"></i> Login</h5>
-        <button *ngIf="isModal" type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()" tabindex="-1"></button>
+        <button *ngIf="isModal" type="button" class="btn-close btn-close-white" aria-label="Close"
+          (click)="closeModal()" tabindex="-1"></button>
       </div>
       <div class="card-body p-4">
-        <form *ngIf="formResetToggle" class="login" name="loginForm" #f="ngForm" novalidate
-              (ngSubmit)="onSubmit(f)">
+        <form *ngIf="formResetToggle" class="login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="onSubmit(f)">
           <div class="mb-3">
             <label for="login-username" class="form-label fw-medium">Username</label>
-            <input type="text" id="login-username" name="username" placeholder="Enter your username" autocomplete="username"
-                   class="form-control border-secondary"
-                   [ngClass]="{'is-valid': f.submitted && username.valid, 'is-invalid' : f.submitted && !username.valid}"
-                   [(ngModel)]="userLogin.userName" #username="ngModel" #usernameInput="ngModel" required autofocus />
+            <input type="text" id="login-username" name="username" placeholder="Enter your username"
+              autocomplete="username" class="form-control border-secondary"
+              [ngClass]="{'is-valid': f.submitted && username.valid, 'is-invalid' : f.submitted && !username.valid}"
+              [(ngModel)]="userLogin.userName" #username="ngModel" #usernameInput="ngModel" required autofocus />
             <div class="invalid-feedback" *ngIf="f.submitted && !username.valid">
               Username is required
             </div>
@@ -27,23 +28,14 @@
 
             <!-- Password Input with Eye Toggle -->
             <div class="input-group">
-              <input [type]="showPassword ? 'text' : 'password'"
-                     id="login-password"
-                     name="password"
-                     placeholder="Enter your password"
-                     autocomplete="current-password"
-                     class="form-control border-secondary"
-                     [ngClass]="{'is-valid': f.submitted && password.valid, 'is-invalid' : f.submitted && !password.valid}"
-                     [(ngModel)]="userLogin.password"
-                     #password="ngModel"
-                     required />
+              <input [type]="showPassword ? 'text' : 'password'" id="login-password" name="password"
+                placeholder="Enter your password" autocomplete="current-password" class="form-control border-secondary"
+                [ngClass]="{'is-valid': f.submitted && password.valid, 'is-invalid' : f.submitted && !password.valid}"
+                [(ngModel)]="userLogin.password" #password="ngModel" required />
 
               <!-- Eye Icon Button -->
-              <button type="button"
-                      class="btn btn-outline-secondary btn-light"
-                      (click)="togglePasswordVisibility()">
-                <i class="fa"
-                   [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'">
+              <button type="button" class="btn btn-outline-secondary btn-light" (click)="togglePasswordVisibility()">
+                <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'">
                 </i>
               </button>
             </div>
@@ -55,13 +47,21 @@
           </div>
 
           <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input border-dark text-dark" id="login-rememberme" name="rememberMe" [(ngModel)]="userLogin.rememberMe">
+            <input type="checkbox" class="form-check-input border-dark text-dark" id="login-rememberme"
+              name="rememberMe" [(ngModel)]="userLogin.rememberMe">
             <label class="form-check-label" for="login-rememberme">Remember Me</label>
           </div>
-          
+          <div class="alert alert-warning py-2 px-3 d-flex align-items-start gap-2" style="font-size: 0.82rem;"
+            *ngIf="userLogin.rememberMe">
+            <i class="fas fa-shield-alt mt-1"></i>
+            <span>Your session will persist across browser restarts. Avoid this on shared or public computers.</span>
+          </div>
+
           <div class="d-grid gap-2 mb-3">
-            <button *ngIf="!isExternalLogin" type="submit" class="btn btn-secondary rounded-2 py-2 fw-medium" [disabled]="isLoading">
-              <i *ngIf="isLoading" class="fa-solid fa-circle-notch fa-spin me-2"></i> {{isLoading ? 'Logging In...' : 'Login'}}
+            <button *ngIf="!isExternalLogin" type="submit" class="btn btn-secondary rounded-2 py-2 fw-medium"
+              [disabled]="isLoading">
+              <i *ngIf="isLoading" class="fa-solid fa-circle-notch fa-spin me-2"></i> {{isLoading ? 'Logging In...' :
+              'Login'}}
             </button>
           </div>
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -83,32 +83,34 @@
 
     <!-- Forgot Password Card -->
     <div class="card text-bg-dark shadow border-0 rounded-3 overflow-hidden" *ngIf="showForgotPassword">
-      <div class="card-header d-flex align-items-center justify-content-between bg-dark border-bottom border-secondary px-4 py-3">
+      <div
+        class="card-header d-flex align-items-center justify-content-between bg-dark border-bottom border-secondary px-4 py-3">
         <h5 class="mb-0"><i class="fa fa-key me-2"></i> Recover Password</h5>
-        <button *ngIf="isModal" type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()" tabindex="-1"></button>
+        <button *ngIf="isModal" type="button" class="btn-close btn-close-white" aria-label="Close"
+          (click)="closeModal()" tabindex="-1"></button>
       </div>
       <div class="card-body p-4">
-        <form name="forgotPasswordForm" #fp="ngForm" novalidate (ngSubmit)="fp.form.valid ? recoverPassword() : showErrorAlert('Email Required', 'Please enter a valid email')">
+        <form name="forgotPasswordForm" #fp="ngForm" novalidate
+          (ngSubmit)="fp.form.valid ? recoverPassword() : showErrorAlert('Email Required', 'Please enter a valid email')">
           <div class="mb-3">
             <label for="forgot-email" class="form-label fw-medium">Email</label>
-            <input type="email" id="forgot-email" name="email" placeholder="Enter Your Email Address" autocomplete="email"
-                   class="form-control bg-dark text-light border-secondary"
-                   [ngClass]="{'is-valid': fp.submitted && email.valid, 'is-invalid' : fp.submitted && !email.valid}"
-                   [(ngModel)]="userEmail" #email="ngModel" required email />
+            <input type="email" id="forgot-email" name="email" placeholder="Enter Your Email Address"
+              autocomplete="email" class="form-control bg-dark text-light border-secondary"
+              [ngClass]="{'is-valid': fp.submitted && email.valid, 'is-invalid' : fp.submitted && !email.valid}"
+              [(ngModel)]="userEmail" #email="ngModel" required email />
 
             <div class="invalid-feedback" *ngIf="fp.submitted && !email.valid">
               Email is required
             </div>
           </div>
           <div class="d-flex justify-content-between align-items-center gap-3">
-            <button type="button" class="btn btn-outline-secondary rounded-2 py-2 fw-medium" (click)="showForgotPassword = false; focusUsernameAfterCancel()">
+            <button type="button" class="btn btn-outline-secondary rounded-2 py-2 fw-medium"
+              (click)="showForgotPassword = false; focusUsernameAfterCancel()">
               Cancel
             </button>
 
-            <button type="submit"
-                    class="btn btn-secondary rounded-2 py-2 fw-medium"
-                    [disabled]="isLoading || fp?.form!.invalid"
-                    [class.btn-disabled]="isLoading || fp?.form!.invalid">
+            <button type="submit" class="btn btn-secondary rounded-2 py-2 fw-medium"
+              [disabled]="isLoading || fp?.form!.invalid" [class.btn-disabled]="isLoading || fp?.form!.invalid">
               <i *ngIf="isLoading" class="fa-solid fa-circle-notch fa-spin me-2"></i> Reset Password
             </button>
 

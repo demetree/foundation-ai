@@ -96,15 +96,15 @@ export class AuthService {
     }
   }
 
-  
+
   refreshLogin() {
     return this.oidcHelperService.refreshLogin().pipe(map(resp => this.processLoginResponse(resp, this.rememberMe)),
-        catchError(() => {
-          // Handle token refresh failure (e.g., redirect to login)
-          this.reLogin();
-          return throwError('Session expired, please log in again.');
-        })
-      );
+      catchError(() => {
+        this.logout();
+        this.reLogin();
+        return throwError('Session expired, please log in again.');
+      })
+    );
   }
 
 
@@ -248,7 +248,7 @@ export class AuthService {
       return;
     }
 
-    const millisecondsBeforeTokenRefresh = this.accessTokenExpiryDate.getTime() - Date.now() -  60000; // Refresh 1 minutes before expiration
+    const millisecondsBeforeTokenRefresh = this.accessTokenExpiryDate.getTime() - Date.now() - 60000; // Refresh 1 minutes before expiration
     console.log("Access token refresh in " + millisecondsBeforeTokenRefresh + " milliseconds");
     this.tokenRefreshTimer = setTimeout(() => {
       this.refreshLogin().subscribe(
