@@ -115,76 +115,76 @@
         </button>
     </div>
 
-    <!-- Colour Detail Panel -->
-    <div class="detail-panel" *ngIf="selectedColour" (click)="$event.stopPropagation()">
-        <div class="detail-header">
-            <div class="detail-swatch-large" [style.background-color]="getSwatchBg(selectedColour)"
-                [style.border-color]="getSwatchBorder(selectedColour)"
-                [style.box-shadow]="getSwatchGlow(selectedColour)">
-            </div>
-            <div class="detail-title">
-                <h2>{{ selectedColour.name }}</h2>
-                <span class="detail-ldraw">LDraw Code {{ selectedColour.ldrawColourCode }}</span>
-            </div>
-            <button class="detail-close" (click)="selectedColour = null">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
+</div>
 
-        <div class="detail-grid">
-            <div class="detail-item">
-                <span class="detail-label">RGB Hex</span>
-                <div class="detail-value colour-value">
-                    <span class="hex-dot" [style.background-color]="getSwatchBg(selectedColour)"></span>
-                    #{{ getHexDisplay(selectedColour.hexRgb) }}
-                </div>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Edge Colour</span>
-                <div class="detail-value colour-value">
-                    <span class="hex-dot" [style.background-color]="getSwatchBorder(selectedColour)"></span>
-                    #{{ getHexDisplay(selectedColour.hexEdgeColour) }}
-                </div>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Alpha</span>
-                <div class="detail-value">
-                    {{ getAlphaPercent(selectedColour) }}%
-                    <div class="alpha-bar">
-                        <div class="alpha-fill" [style.width.%]="getAlphaPercent(selectedColour)"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Finish</span>
-                <span class="detail-value">{{ getFinishName(selectedColour) }}</span>
-            </div>
-            <div class="detail-item" *ngIf="selectedColour.luminance">
-                <span class="detail-label">Luminance</span>
-                <span class="detail-value">{{ selectedColour.luminance }}</span>
-            </div>
-            <div class="detail-item" *ngIf="selectedColour.legoColourId">
-                <span class="detail-label">LEGO Colour ID</span>
-                <span class="detail-value">{{ selectedColour.legoColourId }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Properties</span>
-                <div class="detail-value property-tags">
-                    <span class="prop-tag" [class.active]="selectedColour.isTransparent">
-                        <i class="fas fa-eye me-1"></i>Transparent
-                    </span>
-                    <span class="prop-tag" [class.active]="selectedColour.isMetallic">
-                        <i class="fas fa-gem me-1"></i>Metallic
-                    </span>
-                </div>
-            </div>
+<!-- Colour Detail Panel (outside .colour-library to avoid transform breaking position:fixed) -->
+<div class="detail-panel" *ngIf="selectedColour" (click)="$event.stopPropagation()">
+    <div class="detail-header">
+        <div class="detail-swatch-large" [style.background-color]="getSwatchBg(selectedColour)"
+            [style.border-color]="getSwatchBorder(selectedColour)" [style.box-shadow]="getSwatchGlow(selectedColour)">
         </div>
-
-        <button class="detail-edit-btn" (click)="navigateToDetail(selectedColour)">
-            <i class="fas fa-edit me-2"></i>Open Full Detail
-        </button>
-        <button class="detail-parts-btn" (click)="viewPartsInColour(selectedColour)">
-            <i class="fas fa-puzzle-piece me-2"></i>View Parts in this Colour
+        <div class="detail-title">
+            <h2>{{ selectedColour.name }}</h2>
+            <span class="detail-ldraw">LDraw Code {{ selectedColour.ldrawColourCode }}</span>
+        </div>
+        <button class="detail-close" (click)="selectedColour = null">
+            <i class="fas fa-times"></i>
         </button>
     </div>
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <span class="detail-label">RGB Hex</span>
+            <div class="detail-value colour-value">
+                <span class="hex-dot" [style.background-color]="getSwatchBg(selectedColour)"></span>
+                #{{ getHexDisplay(selectedColour.hexRgb) }}
+            </div>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Edge Colour</span>
+            <div class="detail-value colour-value">
+                <span class="hex-dot" [style.background-color]="getSwatchBorder(selectedColour)"></span>
+                #{{ getHexDisplay(selectedColour.hexEdgeColour) }}
+            </div>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Alpha</span>
+            <div class="detail-value">
+                {{ getAlphaPercent(selectedColour) }}%
+                <div class="alpha-bar">
+                    <div class="alpha-fill" [style.width.%]="getAlphaPercent(selectedColour)"></div>
+                </div>
+            </div>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Finish</span>
+            <span class="detail-value">{{ getFinishName(selectedColour) }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedColour.luminance">
+            <span class="detail-label">Luminance</span>
+            <span class="detail-value">{{ selectedColour.luminance }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedColour.legoColourId">
+            <span class="detail-label">LEGO Colour ID</span>
+            <span class="detail-value">{{ selectedColour.legoColourId }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Properties</span>
+            <div class="detail-value property-tags">
+                <span class="prop-tag" [class.active]="selectedColour.isTransparent">
+                    <i class="fas fa-eye me-1"></i>Transparent
+                </span>
+                <span class="prop-tag" [class.active]="selectedColour.isMetallic">
+                    <i class="fas fa-gem me-1"></i>Metallic
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <button class="detail-edit-btn" (click)="navigateToDetail(selectedColour)">
+        <i class="fas fa-edit me-2"></i>Open Full Detail
+    </button>
+    <button class="detail-parts-btn" (click)="viewPartsInColour(selectedColour)">
+        <i class="fas fa-puzzle-piece me-2"></i>View Parts in this Colour
+    </button>
 </div>

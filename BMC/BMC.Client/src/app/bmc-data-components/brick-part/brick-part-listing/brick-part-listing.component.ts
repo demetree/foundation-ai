@@ -40,7 +40,7 @@ export class BrickPartListingComponent implements OnInit, AfterViewInit, CanComp
 
   public filterText: string | null = null;
 
-  public totalBrickPartCount$ : Observable<number> | null = null;
+  public totalBrickPartCount$: Observable<number> | null = null;
   public filteredBrickPartCount$: Observable<number> | null = null;
   public loadingTotalCount = false;
   public loadingFilteredCount = false;
@@ -48,9 +48,9 @@ export class BrickPartListingComponent implements OnInit, AfterViewInit, CanComp
   private debounceTimeout: any;
 
   constructor(private brickPartService: BrickPartService,
-              private alertService: AlertService,
-              private navigationService: NavigationService,
-              private breakpointObserver: BreakpointObserver) { }
+    private alertService: AlertService,
+    private navigationService: NavigationService,
+    private breakpointObserver: BreakpointObserver) { }
 
   ngOnInit(): void {
 
@@ -74,7 +74,7 @@ export class BrickPartListingComponent implements OnInit, AfterViewInit, CanComp
         this.loadCounts();
       },
       error: (err: any) => {
-         this.alertService.showMessage("Error during Brick Part changed notification", JSON.stringify(err), MessageSeverity.error);
+        this.alertService.showMessage("Error during Brick Part changed notification", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
@@ -144,7 +144,7 @@ export class BrickPartListingComponent implements OnInit, AfterViewInit, CanComp
 
   public goBack(): void {
     this.navigationService.goBack();
-   }
+  }
 
 
   public canGoBack(): boolean {
@@ -165,6 +165,7 @@ export class BrickPartListingComponent implements OnInit, AfterViewInit, CanComp
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.brickPartTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.brickPartTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce
