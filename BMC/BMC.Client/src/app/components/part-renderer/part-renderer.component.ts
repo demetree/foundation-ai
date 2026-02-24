@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
@@ -25,7 +26,15 @@ interface PartColour {
 @Component({
     selector: 'app-part-renderer',
     templateUrl: './part-renderer.component.html',
-    styleUrl: './part-renderer.component.scss'
+    styleUrl: './part-renderer.component.scss',
+    animations: [
+        trigger('fadeIn', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'scale(0.97)' }),
+                animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+            ])
+        ])
+    ]
 })
 export class PartRendererComponent implements OnInit, OnDestroy {
 
@@ -546,6 +555,14 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     nextStep(): void {
         if (this.currentStep < this.stepCount - 1) {
             this.currentStep++;
+            this.renderStep();
+        }
+    }
+
+    jumpToStep(oneBasedStep: number): void {
+        const step = Math.max(0, Math.min(this.stepCount - 1, oneBasedStep - 1));
+        if (step !== this.currentStep) {
+            this.currentStep = step;
             this.renderStep();
         }
     }

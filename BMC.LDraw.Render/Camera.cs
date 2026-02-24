@@ -171,11 +171,11 @@ namespace BMC.LDraw.Render
             float fullExtent = fullMesh.GetMaxExtent();
             if (fullExtent < 1f) fullExtent = 100f;
 
-            // Use the step's own extent with generous padding (2.5x) so parts
-            // are well-framed.  Apply a floor of 10% of the full model so that
-            // very small sub-assemblies don't zoom in to sub-stud level.
+            // Use the step's own extent with moderate padding (1.3x) so parts
+            // fill most of the frame.  Apply a floor of 10% of the full model
+            // so that very small sub-assemblies don't zoom in to sub-stud level.
             float minExtent = fullExtent * 0.10f;
-            float extent = Math.Max(stepExtent * 2.5f, minExtent);
+            float extent = Math.Max(stepExtent * 1.3f, minExtent);
             // Cap at full model extent so we never zoom out further than the full render
             extent = Math.Min(extent, fullExtent);
             if (extent < 1f) extent = 100f;
@@ -184,7 +184,7 @@ namespace BMC.LDraw.Render
             TargetY = cy;
             TargetZ = cz;
 
-            float distance = extent * 1.6f;
+            float distance = extent * 1.4f;
             float elevAngle = elevationDeg * (float)Math.PI / 180f;
             float azimAngle = azimuthDeg * (float)Math.PI / 180f;
 
