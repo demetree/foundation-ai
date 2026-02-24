@@ -129,6 +129,14 @@ namespace BMC.LDraw.Render
         /// <param name="azimuthDeg">Camera azimuth angle in degrees (0 = front, -90 = right side).</param>
         public void AutoFrame(Models.LDrawMesh mesh, float elevationDeg, float azimuthDeg)
         {
+            AutoFrame(mesh, elevationDeg, azimuthDeg, 1.8f);
+        }
+
+        /// <summary>
+        /// Automatically position the camera with a custom distance multiplier.
+        /// </summary>
+        public void AutoFrame(Models.LDrawMesh mesh, float elevationDeg, float azimuthDeg, float distanceMultiplier)
+        {
             mesh.GetCenter(out float cx, out float cy, out float cz);
             float extent = mesh.GetMaxExtent();
             if (extent < 1f) extent = 100f;
@@ -137,19 +145,55 @@ namespace BMC.LDraw.Render
             TargetY = cy;
             TargetZ = cz;
 
-            float distance = extent * 1.8f;
+            float distance = extent * distanceMultiplier;
             float elevAngle = elevationDeg * (float)Math.PI / 180f;
             float azimAngle = azimuthDeg * (float)Math.PI / 180f;
 
             EyeX = cx + distance * (float)Math.Cos(elevAngle) * (float)Math.Sin(azimAngle);
-            EyeY = cy - distance * (float)Math.Sin(elevAngle); // LDraw Y is down, so camera goes up (negative Y)
+            EyeY = cy - distance * (float)Math.Sin(elevAngle);
             EyeZ = cz + distance * (float)Math.Cos(elevAngle) * (float)Math.Cos(azimAngle);
 
-            // Adjust clipping planes
             NearPlane = distance * 0.01f;
             FarPlane = distance * 10f;
+            OrthoWidth = extent * 1.5f;
+        }
 
-            // For orthographic, set the width to cover the model
+        /// <summary>
+        /// Frame the camera for build step rendering.
+        /// Centers on the step mesh and uses its natural extent with a generous
+        /// padding buffer.  A floor prevents extreme zoom-in on tiny sub-assemblies.
+        /// </summary>
+        public void AutoFrameStep(Models.LDrawMesh stepMesh, Models.LDrawMesh fullMesh,
+            float elevationDeg, float azimuthDeg)
+        {
+            stepMesh.GetCenter(out float cx, out float cy, out float cz);
+            float stepExtent = stepMesh.GetMaxExtent();
+            float fullExtent = fullMesh.GetMaxExtent();
+            if (fullExtent < 1f) fullExtent = 100f;
+
+            // Use the step's own extent with generous padding (2.5x) so parts
+            // are well-framed.  Apply a floor of 10% of the full model so that
+            // very small sub-assemblies don't zoom in to sub-stud level.
+            float minExtent = fullExtent * 0.10f;
+            float extent = Math.Max(stepExtent * 2.5f, minExtent);
+            // Cap at full model extent so we never zoom out further than the full render
+            extent = Math.Min(extent, fullExtent);
+            if (extent < 1f) extent = 100f;
+
+            TargetX = cx;
+            TargetY = cy;
+            TargetZ = cz;
+
+            float distance = extent * 1.6f;
+            float elevAngle = elevationDeg * (float)Math.PI / 180f;
+            float azimAngle = azimuthDeg * (float)Math.PI / 180f;
+
+            EyeX = cx + distance * (float)Math.Cos(elevAngle) * (float)Math.Sin(azimAngle);
+            EyeY = cy - distance * (float)Math.Sin(elevAngle);
+            EyeZ = cz + distance * (float)Math.Cos(elevAngle) * (float)Math.Cos(azimAngle);
+
+            NearPlane = distance * 0.01f;
+            FarPlane = distance * 10f;
             OrthoWidth = extent * 1.5f;
         }
 

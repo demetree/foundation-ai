@@ -352,6 +352,7 @@ namespace BMC.LDraw.Parsers
             //
             ResolveSubfilesUpTo(root, identity, colour, 0, false, mesh, maxSubRef, 0);
 
+            mesh.ComputeBounds();
             return mesh;
         }
 
@@ -397,6 +398,7 @@ namespace BMC.LDraw.Parsers
             ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
             ResolveSubfilesUpTo(root, identity, colour, 0, false, mesh, maxSubRef, 0);
 
+            mesh.ComputeBounds();
             return mesh;
         }
 

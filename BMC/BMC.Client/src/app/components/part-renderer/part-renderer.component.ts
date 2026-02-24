@@ -687,6 +687,29 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             });
     }
 
+    debugSteps(): void {
+        if (!this.uploadedFile) { return; }
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.authService.accessToken}`
+        });
+        const formData = new FormData();
+        formData.append('file', this.uploadedFile, this.uploadedFile.name);
+
+        console.log('[DebugSteps] Uploading file for step diagnostics...');
+        this.http.post<any>('/api/part-renderer/debug-steps-upload', formData, { headers })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (data) => {
+                    console.log('[DebugSteps] Step diagnostics:');
+                    console.table(data);
+                    console.log(JSON.stringify(data, null, 2));
+                },
+                error: (err) => {
+                    console.error('[DebugSteps] Error:', err);
+                }
+            });
+    }
+
     renderUploadedFile(): void {
         if (!this.uploadedFile || this.rendering) return;
 

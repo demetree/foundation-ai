@@ -343,8 +343,13 @@ namespace BMC.LDraw.Render
 
             int effectiveColour = colourCode >= 0 ? colourCode : 4;
 
-            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
-            LDrawMesh mesh = resolver.ResolveFileUpToStep(inputPath, stepIndex, effectiveColour);
+            // Resolve the FULL model for consistent camera framing across all steps
+            GeometryResolver fullResolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh fullMesh = fullResolver.ResolveFile(inputPath, effectiveColour);
+
+            // Resolve the step mesh for actual rendering
+            GeometryResolver stepResolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = stepResolver.ResolveFileUpToStep(inputPath, stepIndex, effectiveColour);
 
             if (mesh.Triangles.Count == 0)
             {
@@ -356,9 +361,6 @@ namespace BMC.LDraw.Render
                 NormalSmoother.Smooth(mesh);
             }
 
-            //
-            // Render
-            //
             int ssaaFactor = 1;
             if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
             else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
@@ -366,8 +368,9 @@ namespace BMC.LDraw.Render
             int renderW = width * ssaaFactor;
             int renderH = height * ssaaFactor;
 
+            // Frame camera using hybrid step framing (step center, clamped zoom)
             Camera camera = new Camera();
-            camera.AutoFrame(mesh, elevation, azimuth);
+            camera.AutoFrameStep(mesh, fullMesh, elevation, azimuth);
 
             SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
             renderer.RenderEdges = renderEdges;
@@ -422,6 +425,42 @@ namespace BMC.LDraw.Render
             return resolver.GetStepCountFromContent(lines, fileName);
         }
 
+        /// <summary>
+        /// Debug method: returns step resolution diagnostics for the first N steps.
+        /// </summary>
+        public List<Dictionary<string, object>> DebugSteps(string[] lines, string fileName, int maxSteps = 25)
+        {
+            EnsureColours();
+
+            var geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0) return new List<Dictionary<string, object>>();
+
+            var root = geos[0];
+            var results = new List<Dictionary<string, object>>();
+            int count = Math.Min(root.StepBreaks.Count, maxSteps);
+
+            for (int i = 0; i < count; i++)
+            {
+                var resolver = new GeometryResolver(_libraryPath, _colours);
+                var mesh = resolver.ResolveContentUpToStep(lines, fileName, i, 4);
+                mesh.GetCenter(out float cx, out float cy, out float cz);
+
+                results.Add(new Dictionary<string, object>
+                {
+                    ["step"] = i,
+                    ["maxSubRef"] = root.StepBreaks[i],
+                    ["triangleCount"] = mesh.Triangles.Count,
+                    ["edgeLineCount"] = mesh.EdgeLines.Count,
+                    ["extent"] = mesh.GetMaxExtent(),
+                    ["centerX"] = cx,
+                    ["centerY"] = cy,
+                    ["centerZ"] = cz
+                });
+            }
+
+            return results;
+        }
+
 
         /// <summary>
         /// Render a single build step from file content (for uploaded files).
@@ -442,8 +481,13 @@ namespace BMC.LDraw.Render
 
             int effectiveColour = colourCode >= 0 ? colourCode : 4;
 
-            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
-            LDrawMesh mesh = resolver.ResolveContentUpToStep(lines, fileName, stepIndex, effectiveColour);
+            // Resolve the FULL model for consistent camera framing across all steps
+            GeometryResolver fullResolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh fullMesh = fullResolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+
+            // Resolve the step mesh for actual rendering
+            GeometryResolver stepResolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = stepResolver.ResolveContentUpToStep(lines, fileName, stepIndex, effectiveColour);
 
             if (mesh.Triangles.Count == 0)
             {
@@ -462,8 +506,9 @@ namespace BMC.LDraw.Render
             int renderW = width * ssaaFactor;
             int renderH = height * ssaaFactor;
 
+            // Frame camera using hybrid step framing (step center, clamped zoom)
             Camera camera = new Camera();
-            camera.AutoFrame(mesh, elevation, azimuth);
+            camera.AutoFrameStep(mesh, fullMesh, elevation, azimuth);
 
             SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
             renderer.RenderEdges = renderEdges;

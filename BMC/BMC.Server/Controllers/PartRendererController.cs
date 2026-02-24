@@ -531,6 +531,40 @@ namespace Foundation.BMC.Controllers.WebAPI
         // ════════════════════════════════════════════════════════════════
         //  Upload + Render Endpoint
         // ════════════════════════════════════════════════════════════════
+        //  Step Debug Endpoint (temporary diagnostic)
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// POST /api/part-renderer/debug-steps-upload
+        /// Returns diagnostic information about step resolution for an uploaded file.
+        /// </summary>
+        [HttpPost]
+        [Route("api/part-renderer/debug-steps-upload")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> DebugStepsUpload(
+            Microsoft.AspNetCore.Http.IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            string[] lines;
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                string content = await reader.ReadToEndAsync();
+                lines = content.Split('\n');
+            }
+
+            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+            EnsureRenderService(dataPath);
+
+            var diagnostics = await Task.Run(() => _renderService.DebugSteps(lines, file.FileName));
+
+            return Ok(diagnostics);
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
         //  Upload Build Step Endpoints
         // ════════════════════════════════════════════════════════════════
 
