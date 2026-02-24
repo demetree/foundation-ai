@@ -48,7 +48,8 @@
                         <span class="meta-label">Parts</span>
                         <span class="meta-value">{{ set.partCount | number }}</span>
                     </div>
-                    <div class="meta-item" *ngIf="set.legoTheme">
+                    <div class="meta-item meta-link" *ngIf="set.legoTheme"
+                        [routerLink]="['/lego/themes', set.legoTheme.id]">
                         <i class="fas fa-tag"></i>
                         <span class="meta-label">Theme</span>
                         <span class="meta-value">{{ set.legoTheme.name }}</span>

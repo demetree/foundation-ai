@@ -315,3 +315,44 @@ td .color-swatch,
   background-color: rgba(255, 193, 7, 0.15);
   color: #ffc107;
 }
+
+/* Pagination bar */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--bmc-border);
+  background: var(--bmc-panel-bg);
+}
+
+.pagination-btn {
+  background: none;
+  border: 1px solid var(--bmc-border);
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  color: var(--bmc-text-primary);
+  font-size: 0.85rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--bmc-bg-hover);
+  border-color: var(--bmc-primary);
+  color: var(--bmc-primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--bmc-text-secondary, var(--bmc-text-muted));
+  font-weight: 500;
+  padding: 0 0.5rem;
+  white-space: nowrap;
+}

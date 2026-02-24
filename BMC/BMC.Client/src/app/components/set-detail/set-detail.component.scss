@@ -203,6 +203,20 @@
         font-size: 1.15rem;
         font-weight: 700;
     }
+
+    &.meta-link {
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: var(--bmc-accent);
+            background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.06);
+
+            .meta-value {
+                color: var(--bmc-accent);
+            }
+        }
+    }
 }
 
 .external-links {
