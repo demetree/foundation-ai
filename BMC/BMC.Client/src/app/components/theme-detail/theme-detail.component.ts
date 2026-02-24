@@ -106,6 +106,7 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
             next: (result) => {
                 this.theme = result.theme;
                 this.allThemes = result.allThemes;
+                document.title = `${result.theme.name} — Theme Detail`;
 
                 // Find sub-themes
                 this.subThemes = this.allThemes.filter(t =>

@@ -60,6 +60,7 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
             next: (mf) => {
                 this.minifig = mf;
                 this.loading = false;
+                document.title = `${mf.name} — Minifig Detail`;
                 this.loadSets();
             },
             error: () => { this.loading = false; }

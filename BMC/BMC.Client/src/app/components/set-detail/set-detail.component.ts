@@ -103,6 +103,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
             next: (set) => {
                 this.set = set;
                 this.loading = false;
+                document.title = `${set.name} (${set.setNumber}) — Set Detail`;
                 this.loadRelatedData();
                 this.loadSimilarSets();
             },

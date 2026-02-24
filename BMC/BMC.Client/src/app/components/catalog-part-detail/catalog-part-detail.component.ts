@@ -159,6 +159,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             const part = await lastValueFrom(this.brickPartService.GetBrickPart(id, true));
 
             this.part = part;
+            document.title = `${part.name} — Part Detail`;
 
             // Load related data
             this.loadConnectors();

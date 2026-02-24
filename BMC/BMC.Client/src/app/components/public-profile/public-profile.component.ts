@@ -79,6 +79,7 @@ export class PublicProfileComponent implements OnInit {
                 this.profile = data;
                 this.buildStats(data);
                 this.isLoading = false;
+                document.title = `${data.displayName} — Public Profile`;
 
                 if (data.hasBanner && data.bannerUrl) {
                     this.bannerSafeStyle = this.sanitizer.bypassSecurityTrustStyle(`url(${data.bannerUrl})`);
