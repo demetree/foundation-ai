@@ -5,6 +5,7 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
 import { AuthService } from '../../services/auth.service';
+import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
 
 
 /**
@@ -72,14 +73,25 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
     availableYearMin = 1950;
     availableYearMax = 2026;
 
+    // Ownership badge sets
+    ownedIds = new Set<number>();
+    wantedIds = new Set<number>();
+
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         private http: HttpClient,
         private authService: AuthService,
-        private setExplorerApi: SetExplorerApiService
-    ) { }
+        private setExplorerApi: SetExplorerApiService,
+        public ownershipCache: SetOwnershipCacheService
+    ) {
+        this.ownershipCache.ensureLoaded();
+        this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$))
+            .subscribe(ids => this.ownedIds = ids);
+        this.ownershipCache.wantedIds$.pipe(takeUntil(this.destroy$))
+            .subscribe(ids => this.wantedIds = ids);
+    }
 
 
     ngOnInit(): void {

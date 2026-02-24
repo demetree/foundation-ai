@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
 import { LegoSetService, LegoSetData } from '../../bmc-data-services/lego-set.service';
 import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
+import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
 
 interface BreadcrumbItem {
     id: bigint | number;
@@ -41,6 +42,10 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
     yearRange = '';
     heroImageUrl: string | null = null;
 
+    // Collection — theme completion
+    ownedInTheme = 0;
+    themeCompletion = 0;
+
     // Search within sets table
     setSearchQuery = '';
 
@@ -62,8 +67,14 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
         private location: Location,
         private themeService: LegoThemeService,
         private setService: LegoSetService,
-        private minifigGalleryApi: MinifigGalleryApiService
-    ) { }
+        private minifigGalleryApi: MinifigGalleryApiService,
+        private ownershipCache: SetOwnershipCacheService
+    ) {
+        this.ownershipCache.ensureLoaded();
+        this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
+            this.recalcCompletion(ids);
+        });
+    }
 
     ngOnInit(): void {
         this.route.params.pipe(
@@ -152,6 +163,9 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
 
                 // Build the timeline chart after a tick so the DOM is ready
                 setTimeout(() => this.buildTimeline(), 0);
+
+                // Recalculate theme completion % with current ownership data
+                this.recalcCompletion(this.ownershipCache.getOwnedIds());
             },
             error: () => {
                 this.setsLoading = false;
@@ -223,6 +237,12 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
         this.router.navigate(['/lego/themes']);
     }
 
+    private recalcCompletion(ownedIds: Set<number>): void {
+        if (this.sets.length === 0) return;
+        this.ownedInTheme = this.sets.filter(s => ownedIds.has(Number(s.id))).length;
+        this.themeCompletion = Math.round((this.ownedInTheme / this.sets.length) * 100);
+    }
+
 
     // ── D3 Set Timeline Scatter Chart ───────────────────────────
     private buildTimeline(): void {
@@ -248,10 +268,20 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
         const width = Math.min(el.clientWidth || 800, 1000) - margin.left - margin.right;
         const height = 320 - margin.top - margin.bottom;
 
-        const svg = d3.select(el)
+        const svgRoot = d3.select(el)
             .append('svg')
             .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom)
+            .attr('height', height + margin.top + margin.bottom);
+
+        // Glow filter for hovered dots
+        const defs = svgRoot.append('defs');
+        const glowFilter = defs.append('filter').attr('id', 'dot-glow');
+        glowFilter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
+        const feMerge = glowFilter.append('feMerge');
+        feMerge.append('feMergeNode').attr('in', 'blur');
+        feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+        const svg = svgRoot
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -269,6 +299,17 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
         const r = d3.scaleSqrt()
             .domain([0, maxParts])
             .range([4, 18]);
+
+        // Color scale — cool-to-warm gradient based on part count
+        const color = d3.scaleSequential()
+            .domain([0, maxParts])
+            .interpolator(d3.interpolateRgbBasis([
+                '#4facfe',   // light blue  (small sets)
+                '#00f2fe',   // cyan
+                '#43e97b',   // green
+                '#f9d423',   // amber
+                '#ff6b6b',   // coral-red   (large sets)
+            ]));
 
         // Axes
         const yearTicks = xExtent[1] - xExtent[0];
@@ -306,16 +347,21 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
             .attr('class', 'timeline-tooltip')
             .style('opacity', 0);
 
+        // Sort so smaller dots render on top (visible when overlapping)
+        const sorted = [...data].sort((a, b) => b.parts - a.parts);
+
         // Dots
         const router = this.router;
         svg.selectAll('.dot')
-            .data(data)
+            .data(sorted)
             .enter()
             .append('circle')
             .attr('class', 'dot')
             .attr('cx', d => x(d.year))
             .attr('cy', d => y(d.parts))
             .attr('r', d => r(d.parts))
+            .attr('fill', d => color(d.parts) as string)
+            .attr('stroke', d => d3.color(color(d.parts) as string)!.darker(0.5).toString())
             .style('cursor', 'pointer')
             .on('mouseover', function (event: MouseEvent, d: any) {
                 tooltip

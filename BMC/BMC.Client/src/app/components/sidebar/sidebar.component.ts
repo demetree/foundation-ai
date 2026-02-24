@@ -22,6 +22,7 @@ export class SidebarComponent {
         { icon: 'fas fa-globe', label: 'Universe', route: '/lego' },
         { icon: 'fas fa-user-circle', label: 'My Profile', route: '/profile' },
         { icon: 'fas fa-cubes', label: 'Parts Catalog', route: '/parts' },
+        { icon: 'fas fa-camera', label: 'Part Renderer', route: '/part-renderer' },
         { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' },
         { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
         { icon: 'fas fa-palette', label: 'Colours', route: '/colours' },

@@ -242,6 +242,30 @@
         border-color: var(--bmc-accent);
         color: #fff;
     }
+
+    &.own:hover {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+
+    &.own.active {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+
+    &.want:hover {
+        background: rgba(236, 72, 153, 0.2);
+        border-color: #ec4899;
+        color: #ec4899;
+    }
+
+    &.want.active {
+        background: rgba(236, 72, 153, 0.15);
+        border-color: #ec4899;
+        color: #ec4899;
+    }
 }
 
 // ── Visualisations ──────────────────────────────

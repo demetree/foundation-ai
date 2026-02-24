@@ -20,6 +20,7 @@ import { ThemeExplorerComponent } from './components/theme-explorer/theme-explor
 import { PartsUniverseComponent } from './components/parts-universe/parts-universe.component';
 import { ThemeDetailComponent } from './components/theme-detail/theme-detail.component';
 import { SetComparisonComponent } from './components/set-comparison/set-comparison.component';
+import { PartRendererComponent } from './components/part-renderer/part-renderer.component';
 
 
 import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
@@ -219,6 +220,7 @@ const routes: Routes = [
     { path: 'lego/themes/:id', component: ThemeDetailComponent, canActivate: [AuthGuard], title: 'Theme Detail' },
     { path: 'lego/parts-universe', component: PartsUniverseComponent, canActivate: [AuthGuard], title: 'Parts Universe' },
     { path: 'lego/compare', component: SetComparisonComponent, canActivate: [AuthGuard], title: 'Compare Sets' },
+    { path: 'part-renderer', component: PartRendererComponent, canActivate: [AuthGuard], title: 'Part Renderer' },
 
 
     //

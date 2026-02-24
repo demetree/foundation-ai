@@ -113,9 +113,21 @@ namespace BMC.LDraw.Render
 
         /// <summary>
         /// Automatically position the camera to frame a mesh's bounding box.
-        /// Uses an isometric-like viewing angle (common for LEGO part renders).
+        /// Uses the default isometric-like viewing angle (30° elevation, -45° azimuth).
         /// </summary>
         public void AutoFrame(Models.LDrawMesh mesh)
+        {
+            AutoFrame(mesh, 30f, -45f);
+        }
+
+        /// <summary>
+        /// Automatically position the camera to frame a mesh's bounding box
+        /// using the specified elevation and azimuth angles.
+        /// </summary>
+        /// <param name="mesh">The mesh to frame.</param>
+        /// <param name="elevationDeg">Camera elevation angle in degrees (0 = eye level, 90 = top-down).</param>
+        /// <param name="azimuthDeg">Camera azimuth angle in degrees (0 = front, -90 = right side).</param>
+        public void AutoFrame(Models.LDrawMesh mesh, float elevationDeg, float azimuthDeg)
         {
             mesh.GetCenter(out float cx, out float cy, out float cz);
             float extent = mesh.GetMaxExtent();
@@ -125,10 +137,9 @@ namespace BMC.LDraw.Render
             TargetY = cy;
             TargetZ = cz;
 
-            // Position camera at an isometric-like angle (30° elevation, 45° azimuth)
             float distance = extent * 1.8f;
-            float elevAngle = 30f * (float)Math.PI / 180f;
-            float azimAngle = -45f * (float)Math.PI / 180f;
+            float elevAngle = elevationDeg * (float)Math.PI / 180f;
+            float azimAngle = azimuthDeg * (float)Math.PI / 180f;
 
             EyeX = cx + distance * (float)Math.Cos(elevAngle) * (float)Math.Sin(azimAngle);
             EyeY = cy - distance * (float)Math.Sin(elevAngle); // LDraw Y is down, so camera goes up (negative Y)

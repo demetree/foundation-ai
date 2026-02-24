@@ -10,6 +10,7 @@ import { LegoSetSubsetData } from '../../bmc-data-services/lego-set-subset.servi
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
 import { SetComparisonService } from '../../services/set-comparison.service';
+import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -41,6 +42,14 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
     }
 
+    get isOwned(): boolean {
+        return this.set ? this.ownershipCache.isOwned(Number(this.set.id)) : false;
+    }
+
+    get isWanted(): boolean {
+        return this.set ? this.ownershipCache.isWanted(Number(this.set.id)) : false;
+    }
+
     get filteredParts(): LegoSetPartData[] {
         let result = this.parts;
         if (this.selectedColourFilter) {
@@ -64,7 +73,10 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         private thumbnailService: LDrawThumbnailService,
         private explorerApi: SetExplorerApiService,
         public comparisonService: SetComparisonService,
-    ) { }
+        public ownershipCache: SetOwnershipCacheService,
+    ) {
+        this.ownershipCache.ensureLoaded();
+    }
 
     ngOnInit(): void {
         this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -400,6 +412,16 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     goToCompare(): void {
         this.router.navigate(['/lego/compare']);
+    }
+
+    async toggleOwn(): Promise<void> {
+        if (!this.set) return;
+        await this.ownershipCache.toggleOwnership(Number(this.set.id), 'owned');
+    }
+
+    async toggleWant(): Promise<void> {
+        if (!this.set) return;
+        await this.ownershipCache.toggleOwnership(Number(this.set.id), 'wanted');
     }
 
     // ── Similar Sets recommendation engine ───────────────

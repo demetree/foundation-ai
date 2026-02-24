@@ -476,6 +476,7 @@ import { ThemeExplorerComponent } from './components/theme-explorer/theme-explor
 import { ThemeDetailComponent } from './components/theme-detail/theme-detail.component';
 import { PartsUniverseComponent } from './components/parts-universe/parts-universe.component';
 import { SetComparisonComponent } from './components/set-comparison/set-comparison.component';
+import { PartRendererComponent } from './components/part-renderer/part-renderer.component';
 import { CollectionService } from './services/collection.service';
 
 
@@ -518,6 +519,7 @@ import { CollectionService } from './services/collection.service';
         ThemeDetailComponent,
         PartsUniverseComponent,
         SetComparisonComponent,
+        PartRendererComponent,
 
 
         //

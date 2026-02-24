@@ -263,6 +263,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(PartsUniverseController));
                 controllers.Add(typeof(SetExplorerController));
                 controllers.Add(typeof(MinifigGalleryController));
+                controllers.Add(typeof(PartRendererController));
 
                 //
                 // Start of code generated controller list for BMC module

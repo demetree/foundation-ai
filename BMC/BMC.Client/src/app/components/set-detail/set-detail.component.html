@@ -77,6 +77,18 @@
                     <button class="ext-btn accent" *ngIf="comparisonService.count >= 2" (click)="goToCompare()">
                         <i class="fas fa-columns"></i> View Comparison ({{ comparisonService.count }})
                     </button>
+                    <button class="ext-btn own" [class.active]="isOwned" (click)="toggleOwn()"
+                        [ngbTooltip]="isOwned ? 'Remove from your collection' : 'Mark this set as owned'"
+                        placement="bottom">
+                        <i class="fas" [class.fa-check-circle]="isOwned" [class.fa-box-open]="!isOwned"></i>
+                        {{ isOwned ? 'Owned' : 'Own' }}
+                    </button>
+                    <button class="ext-btn want" [class.active]="isWanted" (click)="toggleWant()"
+                        [ngbTooltip]="isWanted ? 'Remove from your wishlist' : 'Add this set to your wishlist'"
+                        placement="bottom">
+                        <i class="fas" [class.fa-heart]="isWanted" [class.fa-heart-broken]="!isWanted"></i>
+                        {{ isWanted ? 'Wanted' : 'Want' }}
+                    </button>
                 </div>
             </div>
         </section>

@@ -9,6 +9,7 @@ import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explo
 import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
 import { PartsUniverseApiService } from '../../services/parts-universe.service';
 import { IndexedDBCacheService } from '../../services/indexeddb-cache.service';
+import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
 import * as d3 from 'd3';
 
 interface ThemeNode {
@@ -58,6 +59,9 @@ interface DecadeBucket {
     styleUrl: './lego-universe.component.scss'
 })
 export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
+
+    /** Static flag — counters animate only on first visit per session */
+    private static hasAnimated = false;
 
     @ViewChild('sunburstContainer', { static: false }) sunburstContainer!: ElementRef;
     @ViewChild('timelineContainer', { static: false }) timelineContainer!: ElementRef;
@@ -146,6 +150,13 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     //
     decades: DecadeBucket[] = [];
 
+    //
+    // Collection stats
+    //
+    ownedCount = 0;
+    wantedCount = 0;
+    collectionPct = 0;
+
     constructor(
         public router: Router,
         private minifigService: LegoMinifigService,
@@ -154,8 +165,18 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         private minifigGalleryApi: MinifigGalleryApiService,
         private partsUniverseApi: PartsUniverseApiService,
         private cacheService: IndexedDBCacheService,
-        private userPrefThemeService: UserProfilePreferredThemeService
-    ) { }
+        private userPrefThemeService: UserProfilePreferredThemeService,
+        private ownershipCache: SetOwnershipCacheService
+    ) {
+        this.ownershipCache.ensureLoaded();
+        this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
+            this.ownedCount = ids.size;
+            this.collectionPct = this.totalSets > 0 ? Math.round((ids.size / this.totalSets) * 100) : 0;
+        });
+        this.ownershipCache.wantedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
+            this.wantedCount = ids.size;
+        });
+    }
 
     ngOnInit(): void {
         this.loadData();
@@ -316,10 +337,19 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                 //
                 // Animate counters
                 //
-                this.animateCounter('displaySets', this.totalSets, 1500);
-                this.animateCounter('displayMinifigs', this.totalMinifigs, 1800);
-                this.animateCounter('displayThemes', this.totalThemes, 1200);
-                this.animateCounter('displayParts', this.totalParts, 1600);
+                if (LegoUniverseComponent.hasAnimated) {
+                    // Skip animation — show final values immediately
+                    this.displaySets = this.totalSets;
+                    this.displayMinifigs = this.totalMinifigs;
+                    this.displayThemes = this.totalThemes;
+                    this.displayParts = this.totalParts;
+                } else {
+                    this.animateCounter('displaySets', this.totalSets, 1500);
+                    this.animateCounter('displayMinifigs', this.totalMinifigs, 1800);
+                    this.animateCounter('displayThemes', this.totalThemes, 1200);
+                    this.animateCounter('displayParts', this.totalParts, 1600);
+                    LegoUniverseComponent.hasAnimated = true;
+                }
 
                 //
                 // Build nav cards with live data

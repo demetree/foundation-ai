@@ -1,57 +1,52 @@
 <div class="theme-detail" *ngIf="!loading && theme">
 
-    <!-- Hero Banner -->
-    <div class="hero-banner" *ngIf="heroImageUrl">
-        <img [src]="heroImageUrl" alt="" loading="lazy" (error)="heroImageUrl = null">
-        <div class="hero-gradient"></div>
-    </div>
+    <!-- Breadcrumb (standard pattern — matches Set Detail / Minifig Detail) -->
+    <nav class="breadcrumb">
+        <a routerLink="/lego">Universe</a>
+        <span class="sep">›</span>
+        <a routerLink="/lego/themes">Themes</a>
+        <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+            <span class="sep">›</span>
+            <a *ngIf="!last" [routerLink]="['/lego/themes', crumb.id]">{{ crumb.name }}</a>
+            <span *ngIf="last" class="current">{{ crumb.name }}</span>
+        </ng-container>
+    </nav>
 
-    <!-- Header -->
-    <div class="detail-header" [class.has-hero]="heroImageUrl">
-        <div class="header-nav">
-            <button class="back-btn" (click)="navigateBack()">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <button class="nav-btn" (click)="navigateToThemeExplorer()">
-                <i class="fas fa-layer-group"></i> All Themes
-            </button>
+    <!-- Hero header — image background with overlaid content -->
+    <div class="hero-header" [class.has-image]="heroImageUrl">
+        <div class="hero-bg" *ngIf="heroImageUrl">
+            <img [src]="heroImageUrl" alt="" loading="lazy" (error)="heroImageUrl = null">
+            <div class="hero-gradient"></div>
         </div>
+        <div class="hero-content">
+            <h1>
+                <i class="fas fa-puzzle-piece"></i>
+                {{ theme.name }}
+            </h1>
+            <p class="header-description" *ngIf="theme.description">{{ theme.description }}</p>
 
-        <!-- Breadcrumbs -->
-        <div class="breadcrumbs" *ngIf="breadcrumbs.length > 1">
-            <span class="crumb root" (click)="navigateToThemeExplorer()">
-                <i class="fas fa-layer-group"></i> Themes
-            </span>
-            <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
-                <i class="fas fa-chevron-right separator"></i>
-                <span class="crumb" [class.active]="last" (click)="!last && navigateToTheme(crumb.id)">
-                    {{ crumb.name }}
-                </span>
-            </ng-container>
-        </div>
-
-        <h1>
-            <i class="fas fa-puzzle-piece"></i>
-            {{ theme.name }}
-        </h1>
-        <p class="header-description" *ngIf="theme.description">{{ theme.description }}</p>
-
-        <!-- Stats pills -->
-        <div class="stats-row">
-            <div class="stat-pill" *ngIf="totalSets > 0">
-                <i class="fas fa-box-open"></i>
-                <span class="stat-number">{{ totalSets }}</span>
-                <span class="stat-label">Sets</span>
-            </div>
-            <div class="stat-pill" *ngIf="totalSubThemes > 0">
-                <i class="fas fa-sitemap"></i>
-                <span class="stat-number">{{ totalSubThemes }}</span>
-                <span class="stat-label">Sub-themes</span>
-            </div>
-            <div class="stat-pill" *ngIf="yearRange">
-                <i class="fas fa-calendar-alt"></i>
-                <span class="stat-number">{{ yearRange }}</span>
-                <span class="stat-label">Year range</span>
+            <!-- Stats pills -->
+            <div class="stats-row">
+                <div class="stat-pill" *ngIf="totalSets > 0">
+                    <i class="fas fa-box-open"></i>
+                    <span class="stat-number">{{ totalSets }}</span>
+                    <span class="stat-label">Sets</span>
+                </div>
+                <div class="stat-pill" *ngIf="totalSubThemes > 0">
+                    <i class="fas fa-sitemap"></i>
+                    <span class="stat-number">{{ totalSubThemes }}</span>
+                    <span class="stat-label">Sub-themes</span>
+                </div>
+                <div class="stat-pill" *ngIf="yearRange">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="stat-number">{{ yearRange }}</span>
+                    <span class="stat-label">Year range</span>
+                </div>
+                <div class="stat-pill completion-pill" *ngIf="ownedInTheme > 0">
+                    <i class="fas fa-trophy"></i>
+                    <span class="stat-number">{{ themeCompletion }}%</span>
+                    <span class="stat-label">Owned ({{ ownedInTheme }}/{{ totalSets }})</span>
+                </div>
             </div>
         </div>
     </div>
@@ -153,12 +148,11 @@
     </div>
 
     <!-- Minifigs Section -->
-    <div class="minifig-section" *ngIf="!minifigsLoading && minifigs.length > 0">
-        <h2 class="section-title">
-            <i class="fas fa-user-astronaut"></i>
-            Minifigs in This Theme
-            <span class="count-badge">{{ minifigs.length }}</span>
-        </h2>
+    <div class="section" *ngIf="!minifigsLoading && minifigs.length > 0">
+        <div class="section-header">
+            <h2><i class="fas fa-user-astronaut"></i> Minifigs in This Theme</h2>
+            <span class="section-count">{{ minifigs.length }}</span>
+        </div>
 
         <div class="minifig-grid">
             <div class="minifig-card" *ngFor="let fig of minifigs" (click)="navigateToMinifig(fig.id)">

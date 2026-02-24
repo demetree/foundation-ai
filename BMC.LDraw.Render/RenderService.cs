@@ -31,25 +31,25 @@ namespace BMC.LDraw.Render
         /// <param name="width">Image width in pixels.</param>
         /// <param name="height">Image height in pixels.</param>
         /// <param name="colourCode">Override colour code. Use -1 for default (colour 4 = red).</param>
-        public void RenderToFile(string inputPath, string outputPath, int width = 512, int height = 512, int colourCode = -1)
+        public void RenderToFile(string inputPath, string outputPath, int width = 512, int height = 512, int colourCode = -1, float elevation = 30f, float azimuth = -45f)
         {
-            byte[] pixels = RenderToPixels(inputPath, width, height, colourCode);
+            byte[] pixels = RenderToPixels(inputPath, width, height, colourCode, elevation, azimuth);
             PngExporter.SaveToPng(pixels, width, height, outputPath);
         }
 
         /// <summary>
         /// Render an LDraw file to PNG bytes (in-memory).
         /// </summary>
-        public byte[] RenderToPng(string inputPath, int width = 512, int height = 512, int colourCode = -1)
+        public byte[] RenderToPng(string inputPath, int width = 512, int height = 512, int colourCode = -1, float elevation = 30f, float azimuth = -45f)
         {
-            byte[] pixels = RenderToPixels(inputPath, width, height, colourCode);
+            byte[] pixels = RenderToPixels(inputPath, width, height, colourCode, elevation, azimuth);
             return PngExporter.ToPngBytes(pixels, width, height);
         }
 
         /// <summary>
         /// Render an LDraw file to raw RGBA pixels.
         /// </summary>
-        public byte[] RenderToPixels(string inputPath, int width = 512, int height = 512, int colourCode = -1)
+        public byte[] RenderToPixels(string inputPath, int width = 512, int height = 512, int colourCode = -1, float elevation = 30f, float azimuth = -45f)
         {
             EnsureColours();
 
@@ -66,9 +66,9 @@ namespace BMC.LDraw.Render
                 return new byte[width * height * 4];
             }
 
-            // Set up camera
+            // Set up camera with user-specified viewing angle
             Camera camera = new Camera();
-            camera.AutoFrame(mesh);
+            camera.AutoFrame(mesh, elevation, azimuth);
 
             // Render
             SoftwareRenderer renderer = new SoftwareRenderer(width, height);

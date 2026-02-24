@@ -62,6 +62,25 @@
         </div>
     </div>
 
+    <!-- Your Collection Stats -->
+    <div class="collection-strip" *ngIf="!loading && (ownedCount > 0 || wantedCount > 0)">
+        <div class="collection-stat owned">
+            <i class="fas fa-check-circle"></i>
+            <span class="cs-value">{{ ownedCount | number }}</span>
+            <span class="cs-label">Owned</span>
+        </div>
+        <div class="collection-stat wanted">
+            <i class="fas fa-heart"></i>
+            <span class="cs-value">{{ wantedCount | number }}</span>
+            <span class="cs-label">Wanted</span>
+        </div>
+        <div class="collection-stat pct" *ngIf="ownedCount > 0">
+            <i class="fas fa-trophy"></i>
+            <span class="cs-value">{{ collectionPct }}%</span>
+            <span class="cs-label">of all sets</span>
+        </div>
+    </div>
+
     <!-- Universal Search Bar -->
     <div class="universe-search">
         <div class="search-input-wrapper">

@@ -270,6 +270,69 @@
 
 
 /* ----------------------------------------------------------------
+   Your Collection Stats Strip
+   ---------------------------------------------------------------- */
+.collection-strip {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s ease-out 0.2s both;
+}
+
+.collection-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    background: var(--bmc-glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--bmc-glass-border);
+
+    i {
+        font-size: 0.9rem;
+    }
+
+    .cs-value {
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .cs-label {
+        font-size: 0.72rem;
+        color: var(--bmc-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    &.owned {
+
+        i,
+        .cs-value {
+            color: #22c55e;
+        }
+    }
+
+    &.wanted {
+
+        i,
+        .cs-value {
+            color: #ec4899;
+        }
+    }
+
+    &.pct {
+
+        i,
+        .cs-value {
+            color: #f59e0b;
+        }
+    }
+}
+
+/* ----------------------------------------------------------------
    Universal Search Bar
    ---------------------------------------------------------------- */
 .universe-search {
