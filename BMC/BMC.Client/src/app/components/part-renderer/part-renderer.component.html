@@ -8,7 +8,7 @@
         <div class="header-title">
             <h1><i class="fas fa-camera"></i> Part Renderer</h1>
             <p class="header-subtitle">
-                Search for a part, choose a colour, and render a high-quality PNG image
+                Search for a part, choose a colour, and render in PNG, WebP, SVG, or animated GIF
             </p>
         </div>
     </div>
@@ -20,90 +20,191 @@
         <!-- ── Left: Config Panel ── -->
         <div class="config-panel">
 
-            <!-- Search -->
-            <div class="panel-section">
-                <div class="section-title"><i class="fas fa-search"></i> Find a Part</div>
-                <div class="search-container">
-                    <div class="search-wrapper">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search by name, number, or keyword..."
-                            [value]="searchTerm" (input)="onSearchInput($event)" (focus)="onSearchFocus()"
-                            (blur)="onSearchBlur()" id="renderer-search" />
-                        <i *ngIf="searching" class="fas fa-spinner fa-spin search-spinner"></i>
-                    </div>
+            <!-- Tab Bar -->
+            <div class="tab-bar">
+                <button class="tab-btn" [class.active]="activeTab === 'search'" (click)="activeTab = 'search'">
+                    <i class="fas fa-search"></i> Search Parts
+                </button>
+                <button class="tab-btn" [class.active]="activeTab === 'upload'" (click)="activeTab = 'upload'">
+                    <i class="fas fa-upload"></i> Upload File
+                </button>
+            </div>
 
-                    <!-- Dropdown Results -->
-                    <div class="search-dropdown" *ngIf="showDropdown">
-                        <div class="dropdown-item" *ngFor="let result of searchResults"
-                            (mousedown)="selectPart(result)">
-                            <span class="item-number">{{ result.name }}</span>
-                            <span class="item-title">{{ result.ldrawTitle }}</span>
-                            <span class="item-category">{{ result.ldrawCategory }}</span>
+            <!-- ── Search Tab Content ── -->
+            <ng-container *ngIf="activeTab === 'search'">
+
+                <!-- Search -->
+                <div class="panel-section">
+                    <div class="section-title"><i class="fas fa-search"></i> Find a Part</div>
+                    <div class="search-container">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" placeholder="Search by name, number, or keyword..."
+                                [value]="searchTerm" (input)="onSearchInput($event)" (focus)="onSearchFocus()"
+                                (blur)="onSearchBlur()" id="renderer-search" />
+                            <i *ngIf="searching" class="fas fa-spinner fa-spin search-spinner"></i>
+                        </div>
+
+                        <!-- Dropdown Results -->
+                        <div class="search-dropdown" *ngIf="showDropdown">
+                            <div class="dropdown-item" *ngFor="let result of searchResults"
+                                (mousedown)="selectPart(result)">
+                                <span class="item-number">{{ result.name }}</span>
+                                <span class="item-title">{{ result.ldrawTitle }}</span>
+                                <span class="item-category">{{ result.ldrawCategory }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Selected Part Info -->
-            <div class="panel-section" *ngIf="selectedPart">
-                <div class="section-title"><i class="fas fa-cube"></i> Selected Part</div>
-                <div class="part-info-card">
-                    <div class="info-name">{{ selectedPart.ldrawTitle || selectedPart.name }}</div>
-                    <div class="info-meta">
-                        <span class="info-number"><i class="fas fa-hashtag"></i> {{ selectedPart.name }}</span>
-                        <span class="info-category"><i class="fas fa-tag"></i> {{ selectedPart.ldrawCategory }}</span>
-                    </div>
-                    <button class="clear-selection-btn" (click)="clearSelection()">
-                        <i class="fas fa-times"></i> Clear
-                    </button>
-                </div>
-            </div>
-
-            <!-- Colour Picker -->
-            <div class="panel-section" *ngIf="selectedPart">
-                <div class="section-title">
-                    <i class="fas fa-palette"></i> Colour
-                    <span class="colour-count" *ngIf="filteredColours.length > 0">({{ filteredColours.length }})</span>
-                </div>
-
-                <!-- Colour Mode Toggle -->
-                <div class="colour-mode-toggle">
-                    <button class="mode-btn" [class.active]="colourMode === 'part'" (click)="setColourMode('part')">
-                        <i class="fas fa-cube"></i> Part Colours
-                    </button>
-                    <button class="mode-btn" [class.active]="colourMode === 'all'" (click)="setColourMode('all')">
-                        <i class="fas fa-globe"></i> All Colours
-                    </button>
-                </div>
-
-                <!-- Colour Search (shown for both modes when there are enough colours) -->
-                <div class="colour-search-wrapper"
-                    *ngIf="(colourMode === 'part' && colours.length > 12) || colourMode === 'all'">
-                    <i class="fas fa-search colour-search-icon"></i>
-                    <input type="text" class="colour-search-input" placeholder="Filter colours..."
-                        [value]="colourSearchTerm" (input)="colourSearchTerm = $any($event.target).value" />
-                </div>
-
-                <!-- Part Colours Grid -->
-                <ng-container *ngIf="colourMode === 'part'">
-                    <div class="colours-grid" *ngIf="!loadingColours && filteredColours.length > 0">
-                        <button *ngFor="let colour of filteredColours" class="colour-swatch"
-                            [class.active]="isSelectedColour(colour)" [class.transparent-swatch]="colour.isTransparent"
-                            [style.background-color]="getSwatchBg(colour)"
-                            [title]="colour.name + ' (' + colour.ldrawColourCode + ')'" (click)="selectColour(colour)">
-                            <i *ngIf="isSelectedColour(colour)" class="fas fa-check swatch-check"></i>
+                <!-- Selected Part Info -->
+                <div class="panel-section" *ngIf="selectedPart">
+                    <div class="section-title"><i class="fas fa-cube"></i> Selected Part</div>
+                    <div class="part-info-card">
+                        <div class="info-name">{{ selectedPart.ldrawTitle || selectedPart.name }}</div>
+                        <div class="info-meta">
+                            <span class="info-number"><i class="fas fa-hashtag"></i> {{ selectedPart.name }}</span>
+                            <span class="info-category"><i class="fas fa-tag"></i> {{ selectedPart.ldrawCategory
+                                }}</span>
+                        </div>
+                        <button class="clear-selection-btn" (click)="clearSelection()">
+                            <i class="fas fa-times"></i> Clear
                         </button>
                     </div>
-                    <div class="colour-loading" *ngIf="loadingColours">
-                        <i class="fas fa-spinner fa-spin"></i> Loading colours...
-                    </div>
-                    <div class="no-colours" *ngIf="!loadingColours && colours.length === 0">
-                        No part-specific colours found — try <strong>All Colours</strong> mode.
-                    </div>
-                </ng-container>
+                </div>
 
-                <!-- All Colours Grid -->
-                <ng-container *ngIf="colourMode === 'all'">
+                <!-- Colour Picker -->
+                <div class="panel-section" *ngIf="selectedPart">
+                    <div class="section-title">
+                        <i class="fas fa-palette"></i> Colour
+                        <span class="colour-count" *ngIf="filteredColours.length > 0">({{ filteredColours.length
+                            }})</span>
+                    </div>
+
+                    <!-- Colour Mode Toggle -->
+                    <div class="colour-mode-toggle">
+                        <button class="mode-btn" [class.active]="colourMode === 'part'" (click)="setColourMode('part')">
+                            <i class="fas fa-cube"></i> Part Colours
+                        </button>
+                        <button class="mode-btn" [class.active]="colourMode === 'all'" (click)="setColourMode('all')">
+                            <i class="fas fa-globe"></i> All Colours
+                        </button>
+                    </div>
+
+                    <!-- Colour Search (shown for both modes when there are enough colours) -->
+                    <div class="colour-search-wrapper"
+                        *ngIf="(colourMode === 'part' && colours.length > 12) || colourMode === 'all'">
+                        <i class="fas fa-search colour-search-icon"></i>
+                        <input type="text" class="colour-search-input" placeholder="Filter colours..."
+                            [value]="colourSearchTerm" (input)="colourSearchTerm = $any($event.target).value" />
+                    </div>
+
+                    <!-- Part Colours Grid -->
+                    <ng-container *ngIf="colourMode === 'part'">
+                        <div class="colours-grid" *ngIf="!loadingColours && filteredColours.length > 0">
+                            <button *ngFor="let colour of filteredColours" class="colour-swatch"
+                                [class.active]="isSelectedColour(colour)"
+                                [class.transparent-swatch]="colour.isTransparent"
+                                [style.background-color]="getSwatchBg(colour)"
+                                [title]="colour.name + ' (' + colour.ldrawColourCode + ')'"
+                                (click)="selectColour(colour)">
+                                <i *ngIf="isSelectedColour(colour)" class="fas fa-check swatch-check"></i>
+                            </button>
+                        </div>
+                        <div class="colour-loading" *ngIf="loadingColours">
+                            <i class="fas fa-spinner fa-spin"></i> Loading colours...
+                        </div>
+                        <div class="no-colours" *ngIf="!loadingColours && colours.length === 0">
+                            No part-specific colours found — try <strong>All Colours</strong> mode.
+                        </div>
+                    </ng-container>
+
+                    <!-- All Colours Grid -->
+                    <ng-container *ngIf="colourMode === 'all'">
+                        <div class="colours-grid" *ngIf="!loadingAllColours && filteredColours.length > 0">
+                            <button *ngFor="let colour of filteredColours" class="colour-swatch"
+                                [class.active]="isSelectedColour(colour)"
+                                [class.transparent-swatch]="colour.isTransparent"
+                                [style.background-color]="getSwatchBg(colour)"
+                                [title]="colour.name + ' (' + colour.ldrawColourCode + ')'"
+                                (click)="selectColour(colour)">
+                                <i *ngIf="isSelectedColour(colour)" class="fas fa-check swatch-check"></i>
+                            </button>
+                        </div>
+                        <div class="colour-loading" *ngIf="loadingAllColours">
+                            <i class="fas fa-spinner fa-spin"></i> Loading all colours...
+                        </div>
+                        <div class="no-colours"
+                            *ngIf="!loadingAllColours && allColoursLoaded && filteredColours.length === 0 && colourSearchTerm">
+                            No colours match "{{ colourSearchTerm }}"
+                        </div>
+                    </ng-container>
+
+                    <!-- Selected Colour Label -->
+                    <div class="selected-colour-label" *ngIf="selectedColourHex">
+                        <span class="swatch-mini" [style.background-color]="selectedColourHex"></span>
+                        {{ getSelectedColourName() }} · Code {{ selectedColourCode }}
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- ── Upload Tab Content ── -->
+            <ng-container *ngIf="activeTab === 'upload'">
+
+                <!-- Drop Zone -->
+                <div class="panel-section">
+                    <div class="section-title"><i class="fas fa-file-upload"></i> LDraw File</div>
+                    <div class="upload-drop-zone" [class.drag-over]="isDragOver" [class.has-file]="uploadedFile"
+                        (drop)="onFileDrop($event)" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+                        (click)="fileInput.click()">
+                        <input #fileInput type="file" accept=".dat,.ldr,.mpd" hidden
+                            (change)="onFileSelected($event)" />
+
+                        <ng-container *ngIf="!uploadedFile">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <div class="upload-text">Drop a <strong>.dat</strong>, <strong>.ldr</strong>, or
+                                <strong>.mpd</strong> file here</div>
+                            <div class="upload-hint">or click to browse · max 5 MB</div>
+                        </ng-container>
+
+                        <ng-container *ngIf="uploadedFile">
+                            <div class="upload-file-info">
+                                <i class="fas fa-file-code upload-file-icon"></i>
+                                <div class="upload-file-details">
+                                    <div class="upload-file-name">{{ uploadedFileName }}</div>
+                                    <div class="upload-file-size">{{ (uploadedFile.size / 1024).toFixed(1) }} KB</div>
+                                </div>
+                                <button class="upload-remove-btn"
+                                    (click)="removeUploadedFile(); $event.stopPropagation()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <!-- Colour Picker (all colours mode for uploads) -->
+                <div class="panel-section" *ngIf="uploadedFile">
+                    <div class="section-title">
+                        <i class="fas fa-palette"></i> Colour
+                        <span class="colour-count" *ngIf="filteredColours.length > 0">({{ filteredColours.length
+                            }})</span>
+                    </div>
+
+                    <!-- Force all-colours mode for uploads -->
+                    <ng-container *ngIf="!allColoursLoaded">
+                        <button class="mode-btn active" (click)="setColourMode('all')"
+                            style="width: 100%; margin-bottom: 8px;">
+                            <i class="fas fa-globe"></i> Load All Colours
+                        </button>
+                    </ng-container>
+
+                    <div class="colour-search-wrapper" *ngIf="allColoursLoaded">
+                        <i class="fas fa-search colour-search-icon"></i>
+                        <input type="text" class="colour-search-input" placeholder="Search colours..."
+                            [value]="colourSearchTerm" (input)="colourSearchTerm = $any($event.target).value" />
+                    </div>
+
                     <div class="colours-grid" *ngIf="!loadingAllColours && filteredColours.length > 0">
                         <button *ngFor="let colour of filteredColours" class="colour-swatch"
                             [class.active]="isSelectedColour(colour)" [class.transparent-swatch]="colour.isTransparent"
@@ -113,23 +214,19 @@
                         </button>
                     </div>
                     <div class="colour-loading" *ngIf="loadingAllColours">
-                        <i class="fas fa-spinner fa-spin"></i> Loading all colours...
+                        <i class="fas fa-spinner fa-spin"></i> Loading colours...
                     </div>
-                    <div class="no-colours"
-                        *ngIf="!loadingAllColours && allColoursLoaded && filteredColours.length === 0 && colourSearchTerm">
-                        No colours match "{{ colourSearchTerm }}"
-                    </div>
-                </ng-container>
 
-                <!-- Selected Colour Label -->
-                <div class="selected-colour-label" *ngIf="selectedColourHex">
-                    <span class="swatch-mini" [style.background-color]="selectedColourHex"></span>
-                    {{ getSelectedColourName() }} · Code {{ selectedColourCode }}
+                    <div class="selected-colour-label" *ngIf="selectedColourHex">
+                        <span class="swatch-mini" [style.background-color]="selectedColourHex"></span>
+                        {{ getSelectedColourName() }} · Code {{ selectedColourCode }}
+                    </div>
                 </div>
-            </div>
 
-            <!-- Size -->
-            <div class="panel-section" *ngIf="selectedPart">
+            </ng-container>
+
+            <!-- Size (shared) -->
+            <div class="panel-section" *ngIf="selectedPart || uploadedFile">
                 <div class="section-title"><i class="fas fa-expand-arrows-alt"></i> Size</div>
                 <div class="size-presets">
                     <button *ngFor="let p of sizePresets" class="size-btn" [class.active]="isSelectedSize(p)"
@@ -140,8 +237,8 @@
                 <div class="size-info">{{ renderWidth }} × {{ renderHeight }} px</div>
             </div>
 
-            <!-- View Angle -->
-            <div class="panel-section" *ngIf="selectedPart">
+            <!-- View Angle (shared) -->
+            <div class="panel-section" *ngIf="selectedPart || uploadedFile">
                 <div class="section-title"><i class="fas fa-video"></i> View Angle</div>
                 <div class="angle-presets">
                     <button *ngFor="let a of anglePresets" class="angle-btn" [class.active]="isSelectedAngle(a)"
@@ -157,11 +254,103 @@
                 </label>
             </div>
 
-            <!-- Render Button -->
-            <div class="panel-section render-actions" *ngIf="selectedPart">
-                <button class="render-btn" [disabled]="rendering" (click)="render()">
+            <!-- Advanced Settings (shared, collapsible) -->
+            <div class="panel-section" *ngIf="selectedPart || uploadedFile">
+                <div class="section-title advanced-toggle" (click)="showAdvanced = !showAdvanced">
+                    <i class="fas fa-sliders-h"></i> Advanced Settings
+                    <i class="fas toggle-chevron" [ngClass]="showAdvanced ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+
+                <div class="advanced-body" *ngIf="showAdvanced">
+
+                    <!-- Output Format -->
+                    <div class="adv-group">
+                        <label class="adv-label">Output Format</label>
+                        <div class="format-btns">
+                            <button class="fmt-btn" [class.active]="outputFormat === 'png'"
+                                (click)="outputFormat = 'png'">PNG</button>
+                            <button class="fmt-btn" [class.active]="outputFormat === 'webp'"
+                                (click)="outputFormat = 'webp'">WebP</button>
+                            <button class="fmt-btn" [class.active]="outputFormat === 'svg'"
+                                (click)="outputFormat = 'svg'">SVG</button>
+                            <button class="fmt-btn" [class.active]="outputFormat === 'gif'"
+                                (click)="outputFormat = 'gif'">GIF
+                                <span class="fmt-tag">360°</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rendering Options -->
+                    <div class="adv-group">
+                        <label class="adv-label">Rendering</label>
+                        <label class="adv-checkbox">
+                            <input type="checkbox" [checked]="renderEdges" (change)="renderEdges = !renderEdges" />
+                            Edge lines
+                        </label>
+                        <label class="adv-checkbox">
+                            <input type="checkbox" [checked]="smoothShading"
+                                (change)="smoothShading = !smoothShading" />
+                            Smooth shading
+                        </label>
+                    </div>
+
+                    <!-- Anti-Aliasing -->
+                    <div class="adv-group">
+                        <label class="adv-label">Anti-Aliasing</label>
+                        <div class="format-btns">
+                            <button class="fmt-btn" [class.active]="antiAliasMode === 'none'"
+                                (click)="antiAliasMode = 'none'">Off</button>
+                            <button class="fmt-btn" [class.active]="antiAliasMode === '2x'"
+                                (click)="antiAliasMode = '2x'">2× SSAA</button>
+                            <button class="fmt-btn" [class.active]="antiAliasMode === '4x'"
+                                (click)="antiAliasMode = '4x'">4× SSAA</button>
+                        </div>
+                    </div>
+
+                    <!-- Background -->
+                    <div class="adv-group">
+                        <label class="adv-label">Background</label>
+                        <div class="hex-row">
+                            <input type="text" class="hex-input" placeholder="#hex (blank = transparent)"
+                                [value]="backgroundHex" (input)="backgroundHex = $any($event.target).value" />
+                            <input type="color" class="hex-color-pick" [value]="backgroundHex || '#333333'"
+                                (input)="backgroundHex = $any($event.target).value" />
+                        </div>
+                    </div>
+
+                    <!-- Gradient -->
+                    <div class="adv-group">
+                        <label class="adv-label">Gradient (overrides background)</label>
+                        <div class="hex-row">
+                            <input type="text" class="hex-input" placeholder="Top #hex" [value]="gradientTopHex"
+                                (input)="gradientTopHex = $any($event.target).value" />
+                            <input type="text" class="hex-input" placeholder="Bottom #hex" [value]="gradientBottomHex"
+                                (input)="gradientBottomHex = $any($event.target).value" />
+                        </div>
+                    </div>
+
+                    <!-- Exploded View -->
+                    <div class="adv-group">
+                        <label class="adv-checkbox">
+                            <input type="checkbox" [checked]="explodedView" (change)="explodedView = !explodedView" />
+                            Exploded View
+                        </label>
+                        <div class="explode-slider" *ngIf="explodedView">
+                            <input type="range" min="0.1" max="3.0" step="0.1" [value]="explosionFactor"
+                                (input)="explosionFactor = +$any($event.target).value" />
+                            <span class="slider-value">{{ explosionFactor.toFixed(1) }}×</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Render Button (shared) -->
+            <div class="panel-section render-actions"
+                *ngIf="(activeTab === 'search' && selectedPart) || (activeTab === 'upload' && uploadedFile)">
+                <button class="render-btn" [disabled]="rendering"
+                    (click)="activeTab === 'upload' ? renderUploadedFile() : render()">
                     <i class="fas" [ngClass]="rendering ? 'fa-spinner fa-spin' : 'fa-camera'"></i>
-                    {{ rendering ? 'Rendering...' : 'Render Part' }}
+                    {{ rendering ? 'Rendering...' : (activeTab === 'upload' ? 'Render File' : 'Render Part') }}
                 </button>
             </div>
         </div>
@@ -204,7 +393,7 @@
                         <span class="stat"><i class="fas fa-expand"></i> {{ renderWidth }}×{{ renderHeight }}</span>
                     </div>
                     <button class="download-btn" (click)="download()">
-                        <i class="fas fa-download"></i> Download PNG
+                        <i class="fas fa-download"></i> Download {{ renderedFormat.toUpperCase() }}
                     </button>
                 </div>
             </div>

@@ -48,8 +48,6 @@ namespace BMC.LDraw.Render
             //
             using (Image<Rgba32> gif = new Image<Rgba32>(width, height))
             {
-                gif.Frames.RemoveFrame(0); // Remove the default empty frame
-
                 for (int i = 0; i < frameCount; i++)
                 {
                     //
@@ -91,8 +89,13 @@ namespace BMC.LDraw.Render
                         //
                         GifFrameMetadata frameMeta = addedFrame.Metadata.GetGifMetadata();
                         frameMeta.FrameDelay = frameDelayMs / 10;
+                        frameMeta.DisposalMethod = GifDisposalMethod.RestoreToBackground;
                     }
                 }
+
+                // Remove the default empty frame that was created with new Image<>(w,h).
+                // Must be done after the loop so it's no longer the only frame.
+                gif.Frames.RemoveFrame(0);
 
                 //
                 // Configure GIF metadata for looping

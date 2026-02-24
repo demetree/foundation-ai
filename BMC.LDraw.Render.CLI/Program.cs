@@ -418,16 +418,52 @@ namespace BMC.LDraw.Render.CLI
         {
             if (string.IsNullOrWhiteSpace(argument))
             {
-                Console.WriteLine("  Usage: render <partNumber> [colourCode]  (e.g. 'render 3001' or 'render 3001 4')");
+                Console.WriteLine("  Usage: render <partNumber> [colourCode] [options]");
+                Console.WriteLine("  Options: --format png|webp|svg|gif  --edges  --no-edges  --smooth  --no-smooth");
+                Console.WriteLine("           --aa 2x|4x  --bg #hex  --explode <factor>");
                 return;
             }
 
             string[] renderArgs = argument.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             string partNum = renderArgs[0];
             int colourCode = -1;
-            if (renderArgs.Length > 1)
+            string format = "png";
+            bool renderEdges = true;
+            bool smoothShading = true;
+            string aaStr = "none";
+            string bgHex = null;
+            float explodeFactor = 0f;
+
+            // Parse positional colour code and flags
+            int flagStart = 1;
+            if (renderArgs.Length > 1 && int.TryParse(renderArgs[1], out int parsedColour))
             {
-                int.TryParse(renderArgs[1], out colourCode);
+                colourCode = parsedColour;
+                flagStart = 2;
+            }
+
+            for (int f = flagStart; f < renderArgs.Length; f++)
+            {
+                string flag = renderArgs[f].ToLowerInvariant();
+                switch (flag)
+                {
+                    case "--format":
+                        if (f + 1 < renderArgs.Length) { format = renderArgs[++f].ToLowerInvariant(); }
+                        break;
+                    case "--edges": renderEdges = true; break;
+                    case "--no-edges": renderEdges = false; break;
+                    case "--smooth": smoothShading = true; break;
+                    case "--no-smooth": smoothShading = false; break;
+                    case "--aa":
+                        if (f + 1 < renderArgs.Length) { aaStr = renderArgs[++f].ToLowerInvariant(); }
+                        break;
+                    case "--bg":
+                        if (f + 1 < renderArgs.Length) { bgHex = renderArgs[++f]; }
+                        break;
+                    case "--explode":
+                        if (f + 1 < renderArgs.Length) { float.TryParse(renderArgs[++f], out explodeFactor); }
+                        break;
+                }
             }
 
             // Look up part in DB
@@ -458,19 +494,48 @@ namespace BMC.LDraw.Render.CLI
                 return;
             }
 
-            // Build output filename
+            // Determine extension and output
+            string ext = format == "webp" ? ".webp" : format == "svg" ? ".svg" : format == "gif" ? ".gif" : ".png";
             string colourSuffix = colourCode >= 0 ? $"_c{colourCode}" : "";
-            string outputFile = Path.Combine(outputDir, $"{part.name}{colourSuffix}.png");
+            string outputFile = Path.Combine(outputDir, $"{part.name}{colourSuffix}{ext}");
 
             Console.WriteLine($"  Rendering {part.ldrawTitle ?? part.name}...");
             Console.WriteLine($"  File:   {datPath}");
             Console.WriteLine($"  Output: {outputFile}");
-            Console.WriteLine($"  Size:   {width}x{height}");
+            Console.WriteLine($"  Size:   {width}x{height}  Format: {format.ToUpper()}");
+
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (aaStr == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (aaStr == "4x") aaMode = AntiAliasMode.SSAA4x;
 
             Stopwatch sw = Stopwatch.StartNew();
-
             RenderService service = new RenderService(libraryPath);
-            service.RenderToFile(datPath, outputFile, width, height, colourCode);
+
+            if (format == "gif")
+            {
+                byte[] gif = service.RenderTurntableGif(datPath, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading);
+                File.WriteAllBytes(outputFile, gif);
+            }
+            else if (format == "svg")
+            {
+                string svg = service.RenderToSvg(datPath, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading);
+                File.WriteAllText(outputFile, svg);
+            }
+            else if (explodeFactor > 0f)
+            {
+                byte[] png = service.RenderExplodedView(datPath, explodeFactor, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode);
+                File.WriteAllBytes(outputFile, png);
+            }
+            else if (format == "webp")
+            {
+                byte[] webp = service.RenderToWebP(datPath, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode, backgroundHex: bgHex);
+                File.WriteAllBytes(outputFile, webp);
+            }
+            else
+            {
+                byte[] png = service.RenderToPng(datPath, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode, backgroundHex: bgHex);
+                File.WriteAllBytes(outputFile, png);
+            }
 
             sw.Stop();
 
@@ -513,20 +578,29 @@ namespace BMC.LDraw.Render.CLI
             Console.WriteLine("  list <category>          Show parts in a category");
             Console.WriteLine("  info <partNumber>        Show detailed info for a part");
             Console.WriteLine("  colours <partNumber>     Show available colours for a part");
-            Console.WriteLine("  render <part> [colour]   Render a part to PNG");
+            Console.WriteLine("  render <part> [colour]   Render a part (see options below)");
             Console.WriteLine("  library <path>           Set the LDraw library path");
             Console.WriteLine("  output <path>            Set the PNG output directory");
             Console.WriteLine("  size <WxH>               Set render dimensions (e.g. 'size 800x600')");
             Console.WriteLine("  help                     Show this help");
             Console.WriteLine("  quit                     Exit");
             Console.WriteLine();
+            WriteColour("  Render Options:", ConsoleColor.White);
+            Console.WriteLine();
+            Console.WriteLine("  --format png|webp|svg|gif   Output format (default: png)");
+            Console.WriteLine("  --edges / --no-edges        Edge rendering (default: on)");
+            Console.WriteLine("  --smooth / --no-smooth      Smooth shading (default: on)");
+            Console.WriteLine("  --aa 2x|4x                  Anti-aliasing (SSAA)");
+            Console.WriteLine("  --bg #hex                    Background colour");
+            Console.WriteLine("  --explode <factor>           Exploded view (e.g. 1.0)");
+            Console.WriteLine();
             WriteColour("  Examples:", ConsoleColor.White);
             Console.WriteLine();
-            Console.WriteLine("  search brick 2x4         Find parts matching 'brick 2x4'");
-            Console.WriteLine("  info 3001                Show details for part 3001");
-            Console.WriteLine("  colours 3001             Show colours for part 3001");
-            Console.WriteLine("  render 3001              Render part 3001 in default colour");
-            Console.WriteLine("  render 3001 4            Render part 3001 in red (colour 4)");
+            Console.WriteLine("  render 3001                   Render part 3001 in default colour");
+            Console.WriteLine("  render 3001 4 --format webp   Render as WebP");
+            Console.WriteLine("  render 3001 4 --format gif    Render turntable GIF");
+            Console.WriteLine("  render 3001 4 --explode 1.5   Render exploded view");
+            Console.WriteLine("  render 3001 4 --aa 4x --bg #334455");
         }
 
         static void PrintBanner()
@@ -550,6 +624,12 @@ namespace BMC.LDraw.Render.CLI
             int height = 512;
             string libraryPath = null;
             int colourCode = -1;
+            string format = null;
+            bool renderEdges = true;
+            bool smoothShading = true;
+            string aaStr = "none";
+            string bgHex = null;
+            float explodeFactor = 0f;
 
             for (int i = 2; i < args.Length; i++)
             {
@@ -576,6 +656,26 @@ namespace BMC.LDraw.Render.CLI
                         if (i + 1 < args.Length && int.TryParse(args[i + 1], out int c))
                         { colourCode = c; i++; }
                         break;
+                    case "--format":
+                        if (i + 1 < args.Length)
+                        { format = args[i + 1].ToLowerInvariant(); i++; }
+                        break;
+                    case "--edges": renderEdges = true; break;
+                    case "--no-edges": renderEdges = false; break;
+                    case "--smooth": smoothShading = true; break;
+                    case "--no-smooth": smoothShading = false; break;
+                    case "--aa":
+                        if (i + 1 < args.Length)
+                        { aaStr = args[i + 1].ToLowerInvariant(); i++; }
+                        break;
+                    case "--bg":
+                        if (i + 1 < args.Length)
+                        { bgHex = args[i + 1]; i++; }
+                        break;
+                    case "--explode":
+                        if (i + 1 < args.Length)
+                        { float.TryParse(args[i + 1], out explodeFactor); i++; }
+                        break;
                 }
             }
 
@@ -592,20 +692,61 @@ namespace BMC.LDraw.Render.CLI
                 return 1;
             }
 
+            // Auto-detect format from output extension if not specified
+            if (format == null)
+            {
+                string ext = Path.GetExtension(outputFile).ToLowerInvariant();
+                if (ext == ".webp") format = "webp";
+                else if (ext == ".svg") format = "svg";
+                else if (ext == ".gif") format = "gif";
+                else format = "png";
+            }
+
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (aaStr == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (aaStr == "4x") aaMode = AntiAliasMode.SSAA4x;
+
             Console.WriteLine($"Input:    {inputFile}");
             Console.WriteLine($"Output:   {outputFile}");
             Console.WriteLine($"Size:     {width}x{height}");
+            Console.WriteLine($"Format:   {format.ToUpper()}");
             Console.WriteLine($"Library:  {libraryPath}");
 
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 RenderService service = new RenderService(libraryPath);
-                service.RenderToFile(inputFile, outputFile, width, height, colourCode);
+
+                if (format == "gif")
+                {
+                    byte[] gif = service.RenderTurntableGif(inputFile, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading);
+                    File.WriteAllBytes(outputFile, gif);
+                }
+                else if (format == "svg")
+                {
+                    string svg = service.RenderToSvg(inputFile, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading);
+                    File.WriteAllText(outputFile, svg);
+                }
+                else if (explodeFactor > 0f)
+                {
+                    byte[] png = service.RenderExplodedView(inputFile, explodeFactor, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode);
+                    File.WriteAllBytes(outputFile, png);
+                }
+                else if (format == "webp")
+                {
+                    byte[] webp = service.RenderToWebP(inputFile, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode, backgroundHex: bgHex);
+                    File.WriteAllBytes(outputFile, webp);
+                }
+                else
+                {
+                    byte[] png = service.RenderToPng(inputFile, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode, backgroundHex: bgHex);
+                    File.WriteAllBytes(outputFile, png);
+                }
+
                 sw.Stop();
 
                 FileInfo fi = new FileInfo(outputFile);
-                Console.WriteLine($"Done in {sw.ElapsedMilliseconds}ms — {fi.Length / 1024}KB PNG");
+                Console.WriteLine($"Done in {sw.ElapsedMilliseconds}ms — {fi.Length / 1024}KB {format.ToUpper()}");
                 return 0;
             }
             catch (Exception ex)

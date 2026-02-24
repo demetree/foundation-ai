@@ -57,13 +57,9 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// <summary>
         /// GET /api/part-renderer/render
         ///
-        /// Renders a part to a PNG image and returns it as an image/png response.
-        /// The image is cached in memory for 10 minutes keyed by part+colour+size.
+        /// Renders a part and returns it in the requested format (PNG, WebP, or SVG).
+        /// The image is cached in memory for 10 minutes keyed by all parameters.
         /// </summary>
-        /// <param name="partNumber">Part name or LDraw part ID (e.g. "3001")</param>
-        /// <param name="colourCode">LDraw colour code (default: 4 = red)</param>
-        /// <param name="width">Image width in pixels (max 1024)</param>
-        /// <param name="height">Image height in pixels (max 1024)</param>
         [HttpGet]
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/part-renderer/render")]
@@ -74,6 +70,14 @@ namespace Foundation.BMC.Controllers.WebAPI
             int height = 512,
             float elevation = 30f,
             float azimuth = -45f,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            string antiAlias = "none",
+            string format = "png",
+            int quality = 90,
+            string backgroundHex = null,
+            string gradientTopHex = null,
+            string gradientBottomHex = null,
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -86,64 +90,75 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return BadRequest("partNumber is required.");
             }
 
-            // Clamp dimensions and angles
+            // Normalise & clamp
             width = Math.Clamp(width, 64, 1024);
             height = Math.Clamp(height, 64, 1024);
             elevation = Math.Clamp(elevation, -90f, 90f);
             azimuth = Math.Clamp(azimuth, -360f, 360f);
+            quality = Math.Clamp(quality, 1, 100);
+            format = (format ?? "png").ToLowerInvariant();
+            antiAlias = (antiAlias ?? "none").ToLowerInvariant();
+
+            // Parse anti-alias mode
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
 
             // Check cache
-            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}";
-            if (_cache.TryGetValue(cacheKey, out byte[] cachedPng))
+            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}";
+            if (_cache.TryGetValue(cacheKey, out byte[] cachedBytes))
             {
-                return File(cachedPng, "image/png");
+                string cachedType = format == "webp" ? "image/webp" : format == "svg" ? "image/svg+xml" : "image/png";
+                return File(cachedBytes, cachedType);
             }
 
-            // Look up the part in the database
-            var part = await _db.BrickParts
-                .Where(p => p.active && !p.deleted &&
-                    (p.name == partNumber || p.ldrawPartId == partNumber || p.ldrawPartId == partNumber + ".dat"))
-                .Select(p => new { p.ldrawPartId })
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (part == null)
-            {
-                return NotFound($"Part '{partNumber}' not found.");
-            }
-
-            // Resolve the .dat file
-            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
-            if (string.IsNullOrEmpty(dataPath))
-            {
-                _logger.LogError("LDraw:DataPath is not configured.");
-                return StatusCode(500, "LDraw data path is not configured.");
-            }
-
-            string ldrawId = part.ldrawPartId;
-            if (!ldrawId.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
-            {
-                ldrawId += ".dat";
-            }
-
-            string datPath = FindPartFile(dataPath, ldrawId);
-            if (datPath == null)
-            {
-                return NotFound($"LDraw file not found for part '{partNumber}' ({ldrawId}).");
-            }
+            // Resolve part file
+            string datPath = await ResolvePartFile(partNumber, cancellationToken);
+            if (datPath == null) return NotFound($"Part '{partNumber}' not found.");
 
             try
             {
-                // Render on a background thread to avoid blocking the request thread
-                byte[] pngBytes = await Task.Run(() =>
+                byte[] result;
+                string contentType;
+
+                if (format == "svg")
                 {
-                    EnsureRenderService(dataPath);
-                    return _renderService.RenderToPng(datPath, width, height, colourCode, elevation, azimuth);
-                }, cancellationToken);
+                    string svg = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToSvg(datPath, width, height, colourCode, elevation, azimuth, renderEdges, smoothShading);
+                    }, cancellationToken);
 
-                // Cache for 10 minutes
-                _cache.Set(cacheKey, pngBytes, TimeSpan.FromMinutes(10));
+                    result = System.Text.Encoding.UTF8.GetBytes(svg);
+                    contentType = "image/svg+xml";
+                }
+                else if (format == "webp")
+                {
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToWebP(datPath, width, height, colourCode, elevation, azimuth,
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
+                    }, cancellationToken);
+                    contentType = "image/webp";
+                }
+                else
+                {
+                    // PNG (default)
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToPng(datPath, width, height, colourCode, elevation, azimuth,
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
+                    }, cancellationToken);
+                    contentType = "image/png";
+                }
 
-                return File(pngBytes, "image/png");
+                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+                return File(result, contentType);
             }
             catch (OperationCanceledException)
             {
@@ -153,6 +168,287 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error rendering part {PartNumber} with colour {ColourCode}", partNumber, colourCode);
                 return StatusCode(500, "Error rendering part.");
+            }
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Turntable GIF Endpoint
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/part-renderer/turntable
+        ///
+        /// Renders a 360° turntable animation as an animated GIF.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/turntable")]
+        public async Task<IActionResult> Turntable(
+            string partNumber,
+            int colourCode = 4,
+            int width = 256,
+            int height = 256,
+            int frameCount = 36,
+            float elevation = 30f,
+            int frameDelayMs = 80,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            width = Math.Clamp(width, 64, 512);
+            height = Math.Clamp(height, 64, 512);
+            frameCount = Math.Clamp(frameCount, 4, 72);
+            frameDelayMs = Math.Clamp(frameDelayMs, 20, 500);
+
+            string cacheKey = $"part-turntable:{partNumber}:{colourCode}:{width}x{height}:{frameCount}:{elevation}:{frameDelayMs}:{renderEdges}:{smoothShading}";
+            if (_cache.TryGetValue(cacheKey, out byte[] cached))
+            {
+                return File(cached, "image/gif");
+            }
+
+            string datPath = await ResolvePartFile(partNumber, cancellationToken);
+            if (datPath == null) return NotFound($"Part '{partNumber}' not found.");
+
+            try
+            {
+                byte[] gif = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.RenderTurntableGif(datPath, width, height, colourCode, frameCount,
+                        elevation, frameDelayMs, renderEdges, smoothShading);
+                }, cancellationToken);
+
+                _cache.Set(cacheKey, gif, TimeSpan.FromMinutes(10));
+                return File(gif, "image/gif");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rendering turntable for {PartNumber}", partNumber);
+                return StatusCode(500, "Error rendering turntable.");
+            }
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Exploded View Endpoint
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/part-renderer/exploded
+        ///
+        /// Renders an exploded view with parts pushed radially outward.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/exploded")]
+        public async Task<IActionResult> Exploded(
+            string partNumber,
+            int colourCode = 4,
+            int width = 512,
+            int height = 512,
+            float elevation = 30f,
+            float azimuth = -45f,
+            float explosionFactor = 1.0f,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            width = Math.Clamp(width, 64, 1024);
+            height = Math.Clamp(height, 64, 1024);
+            explosionFactor = Math.Clamp(explosionFactor, 0.1f, 5.0f);
+
+            string cacheKey = $"part-exploded:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{explosionFactor}:{renderEdges}:{smoothShading}";
+            if (_cache.TryGetValue(cacheKey, out byte[] cached))
+            {
+                return File(cached, "image/png");
+            }
+
+            string datPath = await ResolvePartFile(partNumber, cancellationToken);
+            if (datPath == null) return NotFound($"Part '{partNumber}' not found.");
+
+            try
+            {
+                byte[] png = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.RenderExplodedView(datPath, explosionFactor, width, height, colourCode,
+                        elevation, azimuth, renderEdges, smoothShading);
+                }, cancellationToken);
+
+                _cache.Set(cacheKey, png, TimeSpan.FromMinutes(10));
+                return File(png, "image/png");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rendering exploded view for {PartNumber}", partNumber);
+                return StatusCode(500, "Error rendering exploded view.");
+            }
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Upload + Render Endpoint
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// POST /api/part-renderer/render-upload
+        ///
+        /// Accepts an uploaded .dat, .ldr, or .mpd file and renders it
+        /// with the same options as the standard render endpoint.
+        /// No caching — uploads are transient.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/render-upload")]
+        [RequestSizeLimit(5 * 1024 * 1024)] // 5 MB max
+        public async Task<IActionResult> RenderUpload(
+            Microsoft.AspNetCore.Http.IFormFile file,
+            int colourCode = 4,
+            int width = 512,
+            int height = 512,
+            float elevation = 30f,
+            float azimuth = -45f,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            string antiAlias = "none",
+            string format = "png",
+            int quality = 90,
+            string backgroundHex = null,
+            string gradientTopHex = null,
+            string gradientBottomHex = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            // Validate file
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file provided.");
+            }
+
+            string ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+            if (ext != ".dat" && ext != ".ldr" && ext != ".mpd")
+            {
+                return BadRequest("Unsupported file type. Accepted formats: .dat, .ldr, .mpd");
+            }
+
+            // Normalise & clamp
+            width = Math.Clamp(width, 64, 1024);
+            height = Math.Clamp(height, 64, 1024);
+            elevation = Math.Clamp(elevation, -90f, 90f);
+            azimuth = Math.Clamp(azimuth, -360f, 360f);
+            quality = Math.Clamp(quality, 1, 100);
+            format = (format ?? "png").ToLowerInvariant();
+            antiAlias = (antiAlias ?? "none").ToLowerInvariant();
+
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
+
+            // Save to temp
+            string tempDir = Path.Combine(Path.GetTempPath(), "bmc-ldraw-uploads");
+            Directory.CreateDirectory(tempDir);
+            string tempFile = Path.Combine(tempDir, $"{Guid.NewGuid()}{ext}");
+
+            try
+            {
+                using (var stream = new FileStream(tempFile, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream, cancellationToken);
+                }
+
+                byte[] result;
+                string contentType;
+
+                if (format == "svg")
+                {
+                    string svg = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToSvg(tempFile, width, height, colourCode, elevation, azimuth, renderEdges, smoothShading);
+                    }, cancellationToken);
+
+                    result = System.Text.Encoding.UTF8.GetBytes(svg);
+                    contentType = "image/svg+xml";
+                }
+                else if (format == "webp")
+                {
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToWebP(tempFile, width, height, colourCode, elevation, azimuth,
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
+                    }, cancellationToken);
+                    contentType = "image/webp";
+                }
+                else if (format == "gif")
+                {
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderTurntableGif(tempFile, width, height, colourCode, 36,
+                            elevation, 80, renderEdges, smoothShading);
+                    }, cancellationToken);
+                    contentType = "image/gif";
+                }
+                else
+                {
+                    // PNG (default)
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToPng(tempFile, width, height, colourCode, elevation, azimuth,
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
+                    }, cancellationToken);
+                    contentType = "image/png";
+                }
+
+                return File(result, contentType);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rendering uploaded file {FileName}", file.FileName);
+                return StatusCode(500, "Error rendering uploaded file.");
+            }
+            finally
+            {
+                // Always clean up temp file
+                if (System.IO.File.Exists(tempFile))
+                {
+                    try { System.IO.File.Delete(tempFile); } catch { /* best-effort cleanup */ }
+                }
             }
         }
 
@@ -353,6 +649,32 @@ namespace Foundation.BMC.Controllers.WebAPI
         // ════════════════════════════════════════════════════════════════
         //  Private Helpers
         // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Look up a part in the database and resolve the .dat file path.
+        /// Returns null if not found.
+        /// </summary>
+        private async Task<string> ResolvePartFile(string partNumber, CancellationToken cancellationToken)
+        {
+            var part = await _db.BrickParts
+                .Where(p => p.active && !p.deleted &&
+                    (p.name == partNumber || p.ldrawPartId == partNumber || p.ldrawPartId == partNumber + ".dat"))
+                .Select(p => new { p.ldrawPartId })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (part == null) return null;
+
+            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+            if (string.IsNullOrEmpty(dataPath)) return null;
+
+            string ldrawId = part.ldrawPartId;
+            if (!ldrawId.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
+            {
+                ldrawId += ".dat";
+            }
+
+            return FindPartFile(dataPath, ldrawId);
+        }
 
         private void EnsureRenderService(string dataPath)
         {

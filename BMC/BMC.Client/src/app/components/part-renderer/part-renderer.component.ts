@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
@@ -59,12 +59,34 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     selectedAzimuth = -45;
     flipView = false;
 
+    // Advanced rendering options
+    showAdvanced = false;
+    renderEdges = true;
+    smoothShading = true;
+    antiAliasMode: 'none' | '2x' | '4x' = 'none';
+    outputFormat: 'png' | 'webp' | 'svg' | 'gif' = 'png';
+    backgroundHex = '';
+    gradientTopHex = '';
+    gradientBottomHex = '';
+    explodedView = false;
+    explosionFactor = 1.0;
+
     // Render state
     renderedImageUrl: SafeUrl | null = null;
     private renderedBlobUrl: string | null = null;
+    renderedFormat = 'png';  // tracks actual format of last render
     rendering = false;
     renderError = '';
     renderTimeMs = 0;
+
+    // Tab mode
+    activeTab: 'search' | 'upload' = 'search';
+
+    // Upload state
+    uploadedFile: File | null = null;
+    uploadedFileName = '';
+    isDragOver = false;
+    readonly acceptedExtensions = ['.dat', '.ldr', '.mpd'];
 
     // Size presets
     sizePresets = [
@@ -284,6 +306,12 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     render(): void {
         if (!this.selectedPart || this.rendering) return;
 
+        // Turntable GIF uses a separate endpoint
+        if (this.outputFormat === 'gif') {
+            this.renderTurntable();
+            return;
+        }
+
         this.rendering = true;
         this.renderError = '';
         this.revokeBlob();
@@ -291,7 +319,23 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         const headers = this.authService.GetAuthenticationHeaders();
         const partNumber = this.selectedPart.name;
         const effectiveAzimuth = this.flipView ? this.selectedAzimuth + 180 : this.selectedAzimuth;
-        const url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}`;
+
+        let url: string;
+
+        if (this.explodedView) {
+            // Exploded view endpoint
+            url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}`;
+        } else {
+            // Standard render endpoint with all options
+            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.antiAliasMode}&format=${this.outputFormat}`;
+
+            if (this.backgroundHex) {
+                url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
+            }
+            if (this.gradientTopHex && this.gradientBottomHex) {
+                url += `&gradientTopHex=${encodeURIComponent(this.gradientTopHex)}&gradientBottomHex=${encodeURIComponent(this.gradientBottomHex)}`;
+            }
+        }
 
         const startTime = performance.now();
 
@@ -302,11 +346,43 @@ export class PartRendererComponent implements OnInit, OnDestroy {
                     this.renderTimeMs = Math.round(performance.now() - startTime);
                     this.renderedBlobUrl = URL.createObjectURL(blob);
                     this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = this.explodedView ? 'png' : this.outputFormat;
                     this.rendering = false;
                 },
                 error: (err) => {
                     this.renderTimeMs = 0;
                     this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Render failed. Please try again.';
+                    this.rendering = false;
+                }
+            });
+    }
+
+    renderTurntable(): void {
+        if (!this.selectedPart || this.rendering) return;
+
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeBlob();
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        const partNumber = this.selectedPart.name;
+        const url = `/api/part-renderer/turntable?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}`;
+
+        const startTime = performance.now();
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = 'gif';
+                    this.rendering = false;
+                },
+                error: (err) => {
+                    this.renderTimeMs = 0;
+                    this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Turntable render failed. Please try again.';
                     this.rendering = false;
                 }
             });
@@ -318,12 +394,109 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     download(): void {
         if (!this.renderedBlobUrl || !this.selectedPart) return;
 
+        const ext = this.renderedFormat === 'gif' ? 'gif' : this.renderedFormat === 'webp' ? 'webp' : this.renderedFormat === 'svg' ? 'svg' : 'png';
         const a = document.createElement('a');
         a.href = this.renderedBlobUrl;
-        a.download = `${this.selectedPart.name}_c${this.selectedColourCode}_${this.renderWidth}x${this.renderHeight}.png`;
+        a.download = `${this.selectedPart.name}_c${this.selectedColourCode}_${this.renderWidth}x${this.renderHeight}.${ext}`;
         a.click();
     }
 
+
+    // ── Upload + Render ──
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            this.setUploadedFile(input.files[0]);
+        }
+    }
+
+    onFileDrop(event: DragEvent): void {
+        event.preventDefault();
+        this.isDragOver = false;
+        if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+            this.setUploadedFile(event.dataTransfer.files[0]);
+        }
+    }
+
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        this.isDragOver = true;
+    }
+
+    onDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        this.isDragOver = false;
+    }
+
+    private setUploadedFile(file: File): void {
+        const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+        if (!this.acceptedExtensions.includes(ext)) {
+            this.renderError = `Unsupported file type. Accepted: ${this.acceptedExtensions.join(', ')}`;
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            this.renderError = 'File exceeds the 5 MB size limit.';
+            return;
+        }
+        this.uploadedFile = file;
+        this.uploadedFileName = file.name;
+        this.renderError = '';
+    }
+
+    removeUploadedFile(): void {
+        this.uploadedFile = null;
+        this.uploadedFileName = '';
+    }
+
+    renderUploadedFile(): void {
+        if (!this.uploadedFile || this.rendering) return;
+
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeBlob();
+
+        // Must NOT set Content-Type — the browser auto-sets it to
+        // multipart/form-data with the correct boundary for FormData.
+        // GetAuthenticationHeaders() forces Content-Type: application/json which
+        // prevents ASP.NET Core's IFormFile binder from reading the form body.
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.authService.accessToken}`
+        });
+        const effectiveAzimuth = this.flipView ? this.selectedAzimuth + 180 : this.selectedAzimuth;
+
+        const formData = new FormData();
+        formData.append('file', this.uploadedFile, this.uploadedFile.name);
+
+        // Build query string with render params
+        let url = `/api/part-renderer/render-upload?colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.antiAliasMode}&format=${this.outputFormat}`;
+
+        if (this.backgroundHex) {
+            url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
+        }
+        if (this.gradientTopHex && this.gradientBottomHex) {
+            url += `&gradientTopHex=${encodeURIComponent(this.gradientTopHex)}&gradientBottomHex=${encodeURIComponent(this.gradientBottomHex)}`;
+        }
+
+        const startTime = performance.now();
+
+        this.http.post(url, formData, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = this.outputFormat;
+                    this.rendering = false;
+                },
+                error: (err) => {
+                    this.renderTimeMs = 0;
+                    this.renderError = err.status === 400 ? (err.error?.text || 'Invalid file.') : 'Upload render failed. Please try again.';
+                    this.rendering = false;
+                }
+            });
+    }
 
     // ── Helpers ──
 
