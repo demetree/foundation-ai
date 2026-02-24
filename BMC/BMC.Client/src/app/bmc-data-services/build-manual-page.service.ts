@@ -136,11 +136,17 @@ export class BuildManualPageData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildManualStepsCount$ = BuildManualStepService.Instance.GetBuildManualStepsRowCount({buildManualPageId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildManualStepsCount$: Observable<bigint | number> | null = null;
+    public get BuildManualStepsCount$(): Observable<bigint | number> {
+        if (this._buildManualStepsCount$ === null) {
+            this._buildManualStepsCount$ = BuildManualStepService.Instance.GetBuildManualStepsRowCount({buildManualPageId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildManualStepsCount$;
+    }
 
 
 
@@ -185,6 +191,7 @@ export class BuildManualPageData {
      this._buildManualSteps = null;
      this._buildManualStepsPromise = null;
      this._buildManualStepsSubject.next(null);
+     this._buildManualStepsCount$ = null;
 
   }
 
@@ -722,11 +729,7 @@ export class BuildManualPageService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildManualStepsCount$ = BuildManualStepService.Instance.GetBuildManualStepsRowCount({buildManualPageId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildManualStepsCount$ = null;
 
 
 

@@ -165,6 +165,7 @@ export class UserCollectionPartListingComponent implements OnInit, AfterViewInit
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userCollectionPartTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userCollectionPartTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

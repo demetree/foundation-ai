@@ -165,6 +165,7 @@ export class PublishedMocListingComponent implements OnInit, AfterViewInit, CanC
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.publishedMocTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.publishedMocTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

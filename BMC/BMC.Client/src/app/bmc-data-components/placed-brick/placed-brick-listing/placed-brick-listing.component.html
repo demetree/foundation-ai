@@ -82,6 +82,7 @@
   <app-placed-brick-table
     *ngIf="userIsBMCPlacedBrickReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPlacedBrickCount$ | async) ?? 0">
   </app-placed-brick-table>
 </div>

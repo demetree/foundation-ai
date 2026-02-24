@@ -140,11 +140,17 @@ export class ColourFinishData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BrickColoursCount$ = BrickColourService.Instance.GetBrickColoursRowCount({colourFinishId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _brickColoursCount$: Observable<bigint | number> | null = null;
+    public get BrickColoursCount$(): Observable<bigint | number> {
+        if (this._brickColoursCount$ === null) {
+            this._brickColoursCount$ = BrickColourService.Instance.GetBrickColoursRowCount({colourFinishId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickColoursCount$;
+    }
 
 
 
@@ -189,6 +195,7 @@ export class ColourFinishData {
      this._brickColours = null;
      this._brickColoursPromise = null;
      this._brickColoursSubject.next(null);
+     this._brickColoursCount$ = null;
 
   }
 
@@ -728,11 +735,7 @@ export class ColourFinishService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BrickColoursCount$ = BrickColourService.Instance.GetBrickColoursRowCount({colourFinishId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._brickColoursCount$ = null;
 
 
 

@@ -187,11 +187,17 @@ export class BrickColourData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BrickPartColoursCount$ = BrickPartColourService.Instance.GetBrickPartColoursRowCount({brickColourId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _brickPartColoursCount$: Observable<bigint | number> | null = null;
+    public get BrickPartColoursCount$(): Observable<bigint | number> {
+        if (this._brickPartColoursCount$ === null) {
+            this._brickPartColoursCount$ = BrickPartColourService.Instance.GetBrickPartColoursRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickPartColoursCount$;
+    }
 
 
 
@@ -206,11 +212,17 @@ export class BrickColourData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({brickColourId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _placedBricksCount$: Observable<bigint | number> | null = null;
+    public get PlacedBricksCount$(): Observable<bigint | number> {
+        if (this._placedBricksCount$ === null) {
+            this._placedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._placedBricksCount$;
+    }
 
 
 
@@ -225,11 +237,17 @@ export class BrickColourData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickColourId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetPartsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetPartsCount$(): Observable<bigint | number> {
+        if (this._legoSetPartsCount$ === null) {
+            this._legoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetPartsCount$;
+    }
 
 
 
@@ -244,11 +262,17 @@ export class BrickColourData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BrickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickColourId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _brickElementsCount$: Observable<bigint | number> | null = null;
+    public get BrickElementsCount$(): Observable<bigint | number> {
+        if (this._brickElementsCount$ === null) {
+            this._brickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickElementsCount$;
+    }
 
 
 
@@ -263,11 +287,17 @@ export class BrickColourData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({brickColourId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userCollectionPartsCount$: Observable<bigint | number> | null = null;
+    public get UserCollectionPartsCount$(): Observable<bigint | number> {
+        if (this._userCollectionPartsCount$ === null) {
+            this._userCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userCollectionPartsCount$;
+    }
 
 
 
@@ -282,11 +312,17 @@ export class BrickColourData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({brickColourId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userWishlistItemsCount$: Observable<bigint | number> | null = null;
+    public get UserWishlistItemsCount$(): Observable<bigint | number> {
+        if (this._userWishlistItemsCount$ === null) {
+            this._userWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userWishlistItemsCount$;
+    }
 
 
 
@@ -331,26 +367,32 @@ export class BrickColourData {
      this._brickPartColours = null;
      this._brickPartColoursPromise = null;
      this._brickPartColoursSubject.next(null);
+     this._brickPartColoursCount$ = null;
 
      this._placedBricks = null;
      this._placedBricksPromise = null;
      this._placedBricksSubject.next(null);
+     this._placedBricksCount$ = null;
 
      this._legoSetParts = null;
      this._legoSetPartsPromise = null;
      this._legoSetPartsSubject.next(null);
+     this._legoSetPartsCount$ = null;
 
      this._brickElements = null;
      this._brickElementsPromise = null;
      this._brickElementsSubject.next(null);
+     this._brickElementsCount$ = null;
 
      this._userCollectionParts = null;
      this._userCollectionPartsPromise = null;
      this._userCollectionPartsSubject.next(null);
+     this._userCollectionPartsCount$ = null;
 
      this._userWishlistItems = null;
      this._userWishlistItemsPromise = null;
      this._userWishlistItemsSubject.next(null);
+     this._userWishlistItemsCount$ = null;
 
   }
 
@@ -1295,11 +1337,7 @@ export class BrickColourService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BrickPartColoursCount$ = BrickPartColourService.Instance.GetBrickPartColoursRowCount({brickColourId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._brickPartColoursCount$ = null;
 
 
     (revived as any).PlacedBricks$ = (revived as any)._placedBricksSubject.asObservable().pipe(
@@ -1311,11 +1349,7 @@ export class BrickColourService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({brickColourId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._placedBricksCount$ = null;
 
 
     (revived as any).LegoSetParts$ = (revived as any)._legoSetPartsSubject.asObservable().pipe(
@@ -1327,11 +1361,7 @@ export class BrickColourService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickColourId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetPartsCount$ = null;
 
 
     (revived as any).BrickElements$ = (revived as any)._brickElementsSubject.asObservable().pipe(
@@ -1343,11 +1373,7 @@ export class BrickColourService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BrickElementsCount$ = BrickElementService.Instance.GetBrickElementsRowCount({brickColourId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._brickElementsCount$ = null;
 
 
     (revived as any).UserCollectionParts$ = (revived as any)._userCollectionPartsSubject.asObservable().pipe(
@@ -1359,11 +1385,7 @@ export class BrickColourService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({brickColourId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userCollectionPartsCount$ = null;
 
 
     (revived as any).UserWishlistItems$ = (revived as any)._userWishlistItemsSubject.asObservable().pipe(
@@ -1375,11 +1397,7 @@ export class BrickColourService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({brickColourId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userWishlistItemsCount$ = null;
 
 
 

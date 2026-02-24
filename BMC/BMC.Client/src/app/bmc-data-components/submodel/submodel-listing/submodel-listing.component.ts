@@ -165,6 +165,7 @@ export class SubmodelListingComponent implements OnInit, AfterViewInit, CanCompo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.submodelTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.submodelTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

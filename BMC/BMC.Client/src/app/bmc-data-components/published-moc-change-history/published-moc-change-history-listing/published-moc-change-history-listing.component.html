@@ -82,6 +82,7 @@
   <app-published-moc-change-history-table
     *ngIf="userIsBMCPublishedMocChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPublishedMocChangeHistoryCount$ | async) ?? 0">
   </app-published-moc-change-history-table>
 </div>

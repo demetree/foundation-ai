@@ -165,6 +165,7 @@ export class ColourFinishListingComponent implements OnInit, AfterViewInit, CanC
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.colourFinishTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.colourFinishTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

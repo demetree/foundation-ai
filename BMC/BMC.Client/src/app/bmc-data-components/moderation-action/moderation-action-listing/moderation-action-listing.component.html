@@ -82,6 +82,7 @@
   <app-moderation-action-table
     *ngIf="userIsBMCModerationActionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredModerationActionCount$ | async) ?? 0">
   </app-moderation-action-table>
 </div>

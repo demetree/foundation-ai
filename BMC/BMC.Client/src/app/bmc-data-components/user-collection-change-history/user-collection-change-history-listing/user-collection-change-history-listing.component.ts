@@ -165,6 +165,7 @@ export class UserCollectionChangeHistoryListingComponent implements OnInit, Afte
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userCollectionChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userCollectionChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -165,6 +165,7 @@ export class BrickColourListingComponent implements OnInit, AfterViewInit, CanCo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.brickColourTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.brickColourTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

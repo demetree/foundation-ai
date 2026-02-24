@@ -165,6 +165,7 @@ export class BuildManualStepListingComponent implements OnInit, AfterViewInit, C
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.buildManualStepTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.buildManualStepTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

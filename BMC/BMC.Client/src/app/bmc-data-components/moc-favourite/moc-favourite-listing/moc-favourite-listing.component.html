@@ -82,6 +82,7 @@
   <app-moc-favourite-table
     *ngIf="userIsBMCMocFavouriteReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredMocFavouriteCount$ | async) ?? 0">
   </app-moc-favourite-table>
 </div>

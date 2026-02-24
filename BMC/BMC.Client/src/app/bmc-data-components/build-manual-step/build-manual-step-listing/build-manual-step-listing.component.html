@@ -82,6 +82,7 @@
   <app-build-manual-step-table
     *ngIf="userIsBMCBuildManualStepReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildManualStepCount$ | async) ?? 0">
   </app-build-manual-step-table>
 </div>

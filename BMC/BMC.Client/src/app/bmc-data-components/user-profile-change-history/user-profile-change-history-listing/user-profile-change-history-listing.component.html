@@ -82,6 +82,7 @@
   <app-user-profile-change-history-table
     *ngIf="userIsBMCUserProfileChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserProfileChangeHistoryCount$ | async) ?? 0">
   </app-user-profile-change-history-table>
 </div>

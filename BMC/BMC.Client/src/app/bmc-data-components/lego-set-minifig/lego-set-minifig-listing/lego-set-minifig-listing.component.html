@@ -82,6 +82,7 @@
   <app-lego-set-minifig-table
     *ngIf="userIsBMCLegoSetMinifigReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredLegoSetMinifigCount$ | async) ?? 0">
   </app-lego-set-minifig-table>
 </div>

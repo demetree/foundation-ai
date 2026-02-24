@@ -82,6 +82,7 @@
   <app-activity-event-table
     *ngIf="userIsBMCActivityEventReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredActivityEventCount$ | async) ?? 0">
   </app-activity-event-table>
 </div>

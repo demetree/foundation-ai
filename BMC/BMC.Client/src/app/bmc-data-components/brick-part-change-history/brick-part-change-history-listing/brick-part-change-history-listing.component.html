@@ -82,6 +82,7 @@
   <app-brick-part-change-history-table
     *ngIf="userIsBMCBrickPartChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickPartChangeHistoryCount$ | async) ?? 0">
   </app-brick-part-change-history-table>
 </div>

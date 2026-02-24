@@ -165,6 +165,7 @@ export class SharedInstructionChangeHistoryListingComponent implements OnInit, A
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.sharedInstructionChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.sharedInstructionChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

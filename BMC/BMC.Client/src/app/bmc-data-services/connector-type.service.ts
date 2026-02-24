@@ -140,11 +140,17 @@ export class ConnectorTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BrickPartConnectorsCount$ = BrickPartConnectorService.Instance.GetBrickPartConnectorsRowCount({connectorTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _brickPartConnectorsCount$: Observable<bigint | number> | null = null;
+    public get BrickPartConnectorsCount$(): Observable<bigint | number> {
+        if (this._brickPartConnectorsCount$ === null) {
+            this._brickPartConnectorsCount$ = BrickPartConnectorService.Instance.GetBrickPartConnectorsRowCount({connectorTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickPartConnectorsCount$;
+    }
 
 
 
@@ -189,6 +195,7 @@ export class ConnectorTypeData {
      this._brickPartConnectors = null;
      this._brickPartConnectorsPromise = null;
      this._brickPartConnectorsSubject.next(null);
+     this._brickPartConnectorsCount$ = null;
 
   }
 
@@ -728,11 +735,7 @@ export class ConnectorTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BrickPartConnectorsCount$ = BrickPartConnectorService.Instance.GetBrickPartConnectorsRowCount({connectorTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._brickPartConnectorsCount$ = null;
 
 
 

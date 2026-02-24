@@ -165,6 +165,7 @@ export class UserBadgeListingComponent implements OnInit, AfterViewInit, CanComp
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userBadgeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userBadgeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

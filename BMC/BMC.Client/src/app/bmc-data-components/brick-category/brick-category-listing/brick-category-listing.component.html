@@ -82,6 +82,7 @@
   <app-brick-category-table
     *ngIf="userIsBMCBrickCategoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickCategoryCount$ | async) ?? 0">
   </app-brick-category-table>
 </div>

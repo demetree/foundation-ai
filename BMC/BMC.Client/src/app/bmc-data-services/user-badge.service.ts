@@ -146,11 +146,17 @@ export class UserBadgeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserBadgeAssignmentsCount$ = UserBadgeAssignmentService.Instance.GetUserBadgeAssignmentsRowCount({userBadgeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userBadgeAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get UserBadgeAssignmentsCount$(): Observable<bigint | number> {
+        if (this._userBadgeAssignmentsCount$ === null) {
+            this._userBadgeAssignmentsCount$ = UserBadgeAssignmentService.Instance.GetUserBadgeAssignmentsRowCount({userBadgeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userBadgeAssignmentsCount$;
+    }
 
 
 
@@ -195,6 +201,7 @@ export class UserBadgeData {
      this._userBadgeAssignments = null;
      this._userBadgeAssignmentsPromise = null;
      this._userBadgeAssignmentsSubject.next(null);
+     this._userBadgeAssignmentsCount$ = null;
 
   }
 
@@ -736,11 +743,7 @@ export class UserBadgeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserBadgeAssignmentsCount$ = UserBadgeAssignmentService.Instance.GetUserBadgeAssignmentsRowCount({userBadgeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userBadgeAssignmentsCount$ = null;
 
 
 

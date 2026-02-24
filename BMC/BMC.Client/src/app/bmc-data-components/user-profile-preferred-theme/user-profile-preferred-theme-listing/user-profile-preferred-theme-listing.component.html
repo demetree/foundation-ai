@@ -82,6 +82,7 @@
   <app-user-profile-preferred-theme-table
     *ngIf="userIsBMCUserProfilePreferredThemeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserProfilePreferredThemeCount$ | async) ?? 0">
   </app-user-profile-preferred-theme-table>
 </div>

@@ -128,11 +128,17 @@ export class ProjectTagData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectTagId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectTagAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get ProjectTagAssignmentsCount$(): Observable<bigint | number> {
+        if (this._projectTagAssignmentsCount$ === null) {
+            this._projectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectTagId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectTagAssignmentsCount$;
+    }
 
 
 
@@ -177,6 +183,7 @@ export class ProjectTagData {
      this._projectTagAssignments = null;
      this._projectTagAssignmentsPromise = null;
      this._projectTagAssignmentsSubject.next(null);
+     this._projectTagAssignmentsCount$ = null;
 
   }
 
@@ -712,11 +719,7 @@ export class ProjectTagService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectTagId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectTagAssignmentsCount$ = null;
 
 
 

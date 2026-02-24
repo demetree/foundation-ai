@@ -165,6 +165,7 @@ export class UserWishlistItemListingComponent implements OnInit, AfterViewInit, 
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userWishlistItemTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userWishlistItemTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

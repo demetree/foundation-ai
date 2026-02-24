@@ -165,6 +165,7 @@ export class ProjectChangeHistoryListingComponent implements OnInit, AfterViewIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.projectChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.projectChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

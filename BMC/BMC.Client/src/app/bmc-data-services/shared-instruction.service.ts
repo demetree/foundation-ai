@@ -188,11 +188,17 @@ export class SharedInstructionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SharedInstructionChangeHistoriesCount$ = SharedInstructionChangeHistoryService.Instance.GetSharedInstructionChangeHistoriesRowCount({sharedInstructionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _sharedInstructionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SharedInstructionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._sharedInstructionChangeHistoriesCount$ === null) {
+            this._sharedInstructionChangeHistoriesCount$ = SharedInstructionChangeHistoryService.Instance.GetSharedInstructionChangeHistoriesRowCount({sharedInstructionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._sharedInstructionChangeHistoriesCount$;
+    }
 
 
 
@@ -237,6 +243,7 @@ export class SharedInstructionData {
      this._sharedInstructionChangeHistories = null;
      this._sharedInstructionChangeHistoriesPromise = null;
      this._sharedInstructionChangeHistoriesSubject.next(null);
+     this._sharedInstructionChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -929,11 +936,7 @@ export class SharedInstructionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SharedInstructionChangeHistoriesCount$ = SharedInstructionChangeHistoryService.Instance.GetSharedInstructionChangeHistoriesRowCount({sharedInstructionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._sharedInstructionChangeHistoriesCount$ = null;
 
 
 

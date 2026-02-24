@@ -165,6 +165,7 @@ export class ProjectCameraPresetListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.projectCameraPresetTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.projectCameraPresetTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

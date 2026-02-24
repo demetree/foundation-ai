@@ -82,6 +82,7 @@
   <app-project-render-table
     *ngIf="userIsBMCProjectRenderReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredProjectRenderCount$ | async) ?? 0">
   </app-project-render-table>
 </div>

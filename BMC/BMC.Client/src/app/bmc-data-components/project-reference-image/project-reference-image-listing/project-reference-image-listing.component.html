@@ -82,6 +82,7 @@
   <app-project-reference-image-table
     *ngIf="userIsBMCProjectReferenceImageReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredProjectReferenceImageCount$ | async) ?? 0">
   </app-project-reference-image-table>
 </div>

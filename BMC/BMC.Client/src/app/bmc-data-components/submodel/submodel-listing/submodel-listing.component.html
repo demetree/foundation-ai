@@ -82,6 +82,7 @@
   <app-submodel-table
     *ngIf="userIsBMCSubmodelReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSubmodelCount$ | async) ?? 0">
   </app-submodel-table>
 </div>

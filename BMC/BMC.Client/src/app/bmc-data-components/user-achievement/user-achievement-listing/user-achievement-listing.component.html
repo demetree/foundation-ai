@@ -82,6 +82,7 @@
   <app-user-achievement-table
     *ngIf="userIsBMCUserAchievementReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserAchievementCount$ | async) ?? 0">
   </app-user-achievement-table>
 </div>

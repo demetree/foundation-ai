@@ -175,11 +175,17 @@ export class LegoSetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({legoSetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetPartsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetPartsCount$(): Observable<bigint | number> {
+        if (this._legoSetPartsCount$ === null) {
+            this._legoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetPartsCount$;
+    }
 
 
 
@@ -194,11 +200,17 @@ export class LegoSetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetMinifigsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetMinifigsCount$(): Observable<bigint | number> {
+        if (this._legoSetMinifigsCount$ === null) {
+            this._legoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetMinifigsCount$;
+    }
 
 
 
@@ -213,11 +225,17 @@ export class LegoSetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({parentLegoSetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetSubsetParentLegoSetsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetSubsetParentLegoSetsCount$(): Observable<bigint | number> {
+        if (this._legoSetSubsetParentLegoSetsCount$ === null) {
+            this._legoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({parentLegoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetSubsetParentLegoSetsCount$;
+    }
 
 
     public LegoSetSubsetChildLegoSets$ = this._legoSetSubsetChildLegoSetsSubject.asObservable().pipe(
@@ -231,11 +249,17 @@ export class LegoSetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({childLegoSetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetSubsetChildLegoSetsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetSubsetChildLegoSetsCount$(): Observable<bigint | number> {
+        if (this._legoSetSubsetChildLegoSetsCount$ === null) {
+            this._legoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({childLegoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetSubsetChildLegoSetsCount$;
+    }
 
 
     public UserCollectionSetImports$ = this._userCollectionSetImportsSubject.asObservable().pipe(
@@ -249,11 +273,17 @@ export class LegoSetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({legoSetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userCollectionSetImportsCount$: Observable<bigint | number> | null = null;
+    public get UserCollectionSetImportsCount$(): Observable<bigint | number> {
+        if (this._userCollectionSetImportsCount$ === null) {
+            this._userCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userCollectionSetImportsCount$;
+    }
 
 
 
@@ -268,11 +298,17 @@ export class LegoSetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userSetOwnershipsCount$: Observable<bigint | number> | null = null;
+    public get UserSetOwnershipsCount$(): Observable<bigint | number> {
+        if (this._userSetOwnershipsCount$ === null) {
+            this._userSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userSetOwnershipsCount$;
+    }
 
 
 
@@ -317,26 +353,32 @@ export class LegoSetData {
      this._legoSetParts = null;
      this._legoSetPartsPromise = null;
      this._legoSetPartsSubject.next(null);
+     this._legoSetPartsCount$ = null;
 
      this._legoSetMinifigs = null;
      this._legoSetMinifigsPromise = null;
      this._legoSetMinifigsSubject.next(null);
+     this._legoSetMinifigsCount$ = null;
 
      this._legoSetSubsetParentLegoSets = null;
      this._legoSetSubsetParentLegoSetsPromise = null;
      this._legoSetSubsetParentLegoSetsSubject.next(null);
+     this._legoSetSubsetParentLegoSetsCount$ = null;
 
      this._legoSetSubsetChildLegoSets = null;
      this._legoSetSubsetChildLegoSetsPromise = null;
      this._legoSetSubsetChildLegoSetsSubject.next(null);
+     this._legoSetSubsetChildLegoSetsCount$ = null;
 
      this._userCollectionSetImports = null;
      this._userCollectionSetImportsPromise = null;
      this._userCollectionSetImportsSubject.next(null);
+     this._userCollectionSetImportsCount$ = null;
 
      this._userSetOwnerships = null;
      this._userSetOwnershipsPromise = null;
      this._userSetOwnershipsSubject.next(null);
+     this._userSetOwnershipsCount$ = null;
 
   }
 
@@ -1277,11 +1319,7 @@ export class LegoSetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({legoSetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetPartsCount$ = null;
 
 
     (revived as any).LegoSetMinifigs$ = (revived as any)._legoSetMinifigsSubject.asObservable().pipe(
@@ -1293,11 +1331,7 @@ export class LegoSetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoSetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetMinifigsCount$ = null;
 
 
     (revived as any).LegoSetSubsetParentLegoSets$ = (revived as any)._legoSetSubsetParentLegoSetsSubject.asObservable().pipe(
@@ -1309,11 +1343,7 @@ export class LegoSetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetSubsetParentLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({parentLegoSetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetSubsetParentLegoSetsCount$ = null;
 
 
     (revived as any).LegoSetSubsetChildLegoSets$ = (revived as any)._legoSetSubsetChildLegoSetsSubject.asObservable().pipe(
@@ -1325,11 +1355,7 @@ export class LegoSetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetSubsetChildLegoSetsCount$ = LegoSetSubsetService.Instance.GetLegoSetSubsetsRowCount({childLegoSetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetSubsetChildLegoSetsCount$ = null;
 
 
     (revived as any).UserCollectionSetImports$ = (revived as any)._userCollectionSetImportsSubject.asObservable().pipe(
@@ -1341,11 +1367,7 @@ export class LegoSetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({legoSetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userCollectionSetImportsCount$ = null;
 
 
     (revived as any).UserSetOwnerships$ = (revived as any)._userSetOwnershipsSubject.asObservable().pipe(
@@ -1357,11 +1379,7 @@ export class LegoSetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserSetOwnershipsCount$ = UserSetOwnershipService.Instance.GetUserSetOwnershipsRowCount({legoSetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userSetOwnershipsCount$ = null;
 
 
 

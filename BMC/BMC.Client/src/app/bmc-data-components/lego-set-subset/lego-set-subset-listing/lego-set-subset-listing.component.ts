@@ -165,6 +165,7 @@ export class LegoSetSubsetListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.legoSetSubsetTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.legoSetSubsetTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

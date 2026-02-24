@@ -82,6 +82,7 @@
   <app-brick-element-table
     *ngIf="userIsBMCBrickElementReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickElementCount$ | async) ?? 0">
   </app-brick-element-table>
 </div>

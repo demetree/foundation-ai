@@ -82,6 +82,7 @@
   <app-render-preset-table
     *ngIf="userIsBMCRenderPresetReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRenderPresetCount$ | async) ?? 0">
   </app-render-preset-table>
 </div>

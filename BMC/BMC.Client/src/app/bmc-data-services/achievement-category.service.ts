@@ -134,11 +134,17 @@ export class AchievementCategoryData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AchievementsCount$ = AchievementService.Instance.GetAchievementsRowCount({achievementCategoryId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _achievementsCount$: Observable<bigint | number> | null = null;
+    public get AchievementsCount$(): Observable<bigint | number> {
+        if (this._achievementsCount$ === null) {
+            this._achievementsCount$ = AchievementService.Instance.GetAchievementsRowCount({achievementCategoryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._achievementsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class AchievementCategoryData {
      this._achievements = null;
      this._achievementsPromise = null;
      this._achievementsSubject.next(null);
+     this._achievementsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class AchievementCategoryService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AchievementsCount$ = AchievementService.Instance.GetAchievementsRowCount({achievementCategoryId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._achievementsCount$ = null;
 
 
 

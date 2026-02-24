@@ -82,6 +82,7 @@
   <app-user-profile-table
     *ngIf="userIsBMCUserProfileReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserProfileCount$ | async) ?? 0">
   </app-user-profile-table>
 </div>

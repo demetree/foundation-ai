@@ -82,6 +82,7 @@
   <app-submodel-change-history-table
     *ngIf="userIsBMCSubmodelChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSubmodelChangeHistoryCount$ | async) ?? 0">
   </app-submodel-change-history-table>
 </div>

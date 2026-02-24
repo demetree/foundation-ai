@@ -82,6 +82,7 @@
   <app-build-step-annotation-type-table
     *ngIf="userIsBMCBuildStepAnnotationTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildStepAnnotationTypeCount$ | async) ?? 0">
   </app-build-step-annotation-type-table>
 </div>

@@ -193,11 +193,17 @@ export class BuildChallengeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildChallengeChangeHistoriesCount$ = BuildChallengeChangeHistoryService.Instance.GetBuildChallengeChangeHistoriesRowCount({buildChallengeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildChallengeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BuildChallengeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._buildChallengeChangeHistoriesCount$ === null) {
+            this._buildChallengeChangeHistoriesCount$ = BuildChallengeChangeHistoryService.Instance.GetBuildChallengeChangeHistoriesRowCount({buildChallengeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildChallengeChangeHistoriesCount$;
+    }
 
 
 
@@ -212,11 +218,17 @@ export class BuildChallengeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildChallengeEntriesCount$ = BuildChallengeEntryService.Instance.GetBuildChallengeEntriesRowCount({buildChallengeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildChallengeEntriesCount$: Observable<bigint | number> | null = null;
+    public get BuildChallengeEntriesCount$(): Observable<bigint | number> {
+        if (this._buildChallengeEntriesCount$ === null) {
+            this._buildChallengeEntriesCount$ = BuildChallengeEntryService.Instance.GetBuildChallengeEntriesRowCount({buildChallengeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildChallengeEntriesCount$;
+    }
 
 
 
@@ -261,10 +273,12 @@ export class BuildChallengeData {
      this._buildChallengeChangeHistories = null;
      this._buildChallengeChangeHistoriesPromise = null;
      this._buildChallengeChangeHistoriesSubject.next(null);
+     this._buildChallengeChangeHistoriesCount$ = null;
 
      this._buildChallengeEntries = null;
      this._buildChallengeEntriesPromise = null;
      this._buildChallengeEntriesSubject.next(null);
+     this._buildChallengeEntriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1038,11 +1052,7 @@ export class BuildChallengeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildChallengeChangeHistoriesCount$ = BuildChallengeChangeHistoryService.Instance.GetBuildChallengeChangeHistoriesRowCount({buildChallengeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildChallengeChangeHistoriesCount$ = null;
 
 
     (revived as any).BuildChallengeEntries$ = (revived as any)._buildChallengeEntriesSubject.asObservable().pipe(
@@ -1054,11 +1064,7 @@ export class BuildChallengeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildChallengeEntriesCount$ = BuildChallengeEntryService.Instance.GetBuildChallengeEntriesRowCount({buildChallengeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildChallengeEntriesCount$ = null;
 
 
 

@@ -82,6 +82,7 @@
   <app-user-badge-assignment-table
     *ngIf="userIsBMCUserBadgeAssignmentReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserBadgeAssignmentCount$ | async) ?? 0">
   </app-user-badge-assignment-table>
 </div>

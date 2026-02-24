@@ -165,6 +165,7 @@ export class BuildChallengeChangeHistoryListingComponent implements OnInit, Afte
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.buildChallengeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.buildChallengeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

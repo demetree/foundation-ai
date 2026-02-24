@@ -165,6 +165,7 @@ export class ApiKeyListingComponent implements OnInit, AfterViewInit, CanCompone
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.apiKeyTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.apiKeyTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

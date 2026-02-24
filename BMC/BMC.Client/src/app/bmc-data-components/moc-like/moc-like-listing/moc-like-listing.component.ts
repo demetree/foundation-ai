@@ -165,6 +165,7 @@ export class MocLikeListingComponent implements OnInit, AfterViewInit, CanCompon
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.mocLikeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.mocLikeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

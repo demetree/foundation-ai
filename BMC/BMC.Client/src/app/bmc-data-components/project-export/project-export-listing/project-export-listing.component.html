@@ -82,6 +82,7 @@
   <app-project-export-table
     *ngIf="userIsBMCProjectExportReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredProjectExportCount$ | async) ?? 0">
   </app-project-export-table>
 </div>

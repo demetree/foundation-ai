@@ -82,6 +82,7 @@
   <app-user-set-ownership-table
     *ngIf="userIsBMCUserSetOwnershipReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserSetOwnershipCount$ | async) ?? 0">
   </app-user-set-ownership-table>
 </div>

@@ -165,6 +165,7 @@ export class PlacedBrickChangeHistoryListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.placedBrickChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.placedBrickChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

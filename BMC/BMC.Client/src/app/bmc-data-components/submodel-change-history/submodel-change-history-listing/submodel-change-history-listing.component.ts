@@ -165,6 +165,7 @@ export class SubmodelChangeHistoryListingComponent implements OnInit, AfterViewI
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.submodelChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.submodelChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

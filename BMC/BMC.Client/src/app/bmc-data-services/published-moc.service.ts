@@ -234,11 +234,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PublishedMocChangeHistoriesCount$ = PublishedMocChangeHistoryService.Instance.GetPublishedMocChangeHistoriesRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _publishedMocChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get PublishedMocChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._publishedMocChangeHistoriesCount$ === null) {
+            this._publishedMocChangeHistoriesCount$ = PublishedMocChangeHistoryService.Instance.GetPublishedMocChangeHistoriesRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._publishedMocChangeHistoriesCount$;
+    }
 
 
 
@@ -253,11 +259,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PublishedMocImagesCount$ = PublishedMocImageService.Instance.GetPublishedMocImagesRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _publishedMocImagesCount$: Observable<bigint | number> | null = null;
+    public get PublishedMocImagesCount$(): Observable<bigint | number> {
+        if (this._publishedMocImagesCount$ === null) {
+            this._publishedMocImagesCount$ = PublishedMocImageService.Instance.GetPublishedMocImagesRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._publishedMocImagesCount$;
+    }
 
 
 
@@ -272,11 +284,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public MocLikesCount$ = MocLikeService.Instance.GetMocLikesRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _mocLikesCount$: Observable<bigint | number> | null = null;
+    public get MocLikesCount$(): Observable<bigint | number> {
+        if (this._mocLikesCount$ === null) {
+            this._mocLikesCount$ = MocLikeService.Instance.GetMocLikesRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocLikesCount$;
+    }
 
 
 
@@ -291,11 +309,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public MocCommentsCount$ = MocCommentService.Instance.GetMocCommentsRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _mocCommentsCount$: Observable<bigint | number> | null = null;
+    public get MocCommentsCount$(): Observable<bigint | number> {
+        if (this._mocCommentsCount$ === null) {
+            this._mocCommentsCount$ = MocCommentService.Instance.GetMocCommentsRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocCommentsCount$;
+    }
 
 
 
@@ -310,11 +334,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public MocFavouritesCount$ = MocFavouriteService.Instance.GetMocFavouritesRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _mocFavouritesCount$: Observable<bigint | number> | null = null;
+    public get MocFavouritesCount$(): Observable<bigint | number> {
+        if (this._mocFavouritesCount$ === null) {
+            this._mocFavouritesCount$ = MocFavouriteService.Instance.GetMocFavouritesRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocFavouritesCount$;
+    }
 
 
 
@@ -329,11 +359,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _sharedInstructionsCount$: Observable<bigint | number> | null = null;
+    public get SharedInstructionsCount$(): Observable<bigint | number> {
+        if (this._sharedInstructionsCount$ === null) {
+            this._sharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._sharedInstructionsCount$;
+    }
 
 
 
@@ -348,11 +384,17 @@ export class PublishedMocData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildChallengeEntriesCount$ = BuildChallengeEntryService.Instance.GetBuildChallengeEntriesRowCount({publishedMocId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildChallengeEntriesCount$: Observable<bigint | number> | null = null;
+    public get BuildChallengeEntriesCount$(): Observable<bigint | number> {
+        if (this._buildChallengeEntriesCount$ === null) {
+            this._buildChallengeEntriesCount$ = BuildChallengeEntryService.Instance.GetBuildChallengeEntriesRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildChallengeEntriesCount$;
+    }
 
 
 
@@ -397,30 +439,37 @@ export class PublishedMocData {
      this._publishedMocChangeHistories = null;
      this._publishedMocChangeHistoriesPromise = null;
      this._publishedMocChangeHistoriesSubject.next(null);
+     this._publishedMocChangeHistoriesCount$ = null;
 
      this._publishedMocImages = null;
      this._publishedMocImagesPromise = null;
      this._publishedMocImagesSubject.next(null);
+     this._publishedMocImagesCount$ = null;
 
      this._mocLikes = null;
      this._mocLikesPromise = null;
      this._mocLikesSubject.next(null);
+     this._mocLikesCount$ = null;
 
      this._mocComments = null;
      this._mocCommentsPromise = null;
      this._mocCommentsSubject.next(null);
+     this._mocCommentsCount$ = null;
 
      this._mocFavourites = null;
      this._mocFavouritesPromise = null;
      this._mocFavouritesSubject.next(null);
+     this._mocFavouritesCount$ = null;
 
      this._sharedInstructions = null;
      this._sharedInstructionsPromise = null;
      this._sharedInstructionsSubject.next(null);
+     this._sharedInstructionsCount$ = null;
 
      this._buildChallengeEntries = null;
      this._buildChallengeEntriesPromise = null;
      this._buildChallengeEntriesSubject.next(null);
+     this._buildChallengeEntriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1597,11 +1646,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PublishedMocChangeHistoriesCount$ = PublishedMocChangeHistoryService.Instance.GetPublishedMocChangeHistoriesRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._publishedMocChangeHistoriesCount$ = null;
 
 
     (revived as any).PublishedMocImages$ = (revived as any)._publishedMocImagesSubject.asObservable().pipe(
@@ -1613,11 +1658,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PublishedMocImagesCount$ = PublishedMocImageService.Instance.GetPublishedMocImagesRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._publishedMocImagesCount$ = null;
 
 
     (revived as any).MocLikes$ = (revived as any)._mocLikesSubject.asObservable().pipe(
@@ -1629,11 +1670,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).MocLikesCount$ = MocLikeService.Instance.GetMocLikesRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._mocLikesCount$ = null;
 
 
     (revived as any).MocComments$ = (revived as any)._mocCommentsSubject.asObservable().pipe(
@@ -1645,11 +1682,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).MocCommentsCount$ = MocCommentService.Instance.GetMocCommentsRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._mocCommentsCount$ = null;
 
 
     (revived as any).MocFavourites$ = (revived as any)._mocFavouritesSubject.asObservable().pipe(
@@ -1661,11 +1694,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).MocFavouritesCount$ = MocFavouriteService.Instance.GetMocFavouritesRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._mocFavouritesCount$ = null;
 
 
     (revived as any).SharedInstructions$ = (revived as any)._sharedInstructionsSubject.asObservable().pipe(
@@ -1677,11 +1706,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._sharedInstructionsCount$ = null;
 
 
     (revived as any).BuildChallengeEntries$ = (revived as any)._buildChallengeEntriesSubject.asObservable().pipe(
@@ -1693,11 +1718,7 @@ export class PublishedMocService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildChallengeEntriesCount$ = BuildChallengeEntryService.Instance.GetBuildChallengeEntriesRowCount({publishedMocId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildChallengeEntriesCount$ = null;
 
 
 

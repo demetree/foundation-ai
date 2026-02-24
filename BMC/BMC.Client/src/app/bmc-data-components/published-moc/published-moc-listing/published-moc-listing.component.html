@@ -82,6 +82,7 @@
   <app-published-moc-table
     *ngIf="userIsBMCPublishedMocReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPublishedMocCount$ | async) ?? 0">
   </app-published-moc-table>
 </div>

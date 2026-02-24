@@ -212,11 +212,17 @@ export class UserProfileData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserProfileChangeHistoriesCount$ = UserProfileChangeHistoryService.Instance.GetUserProfileChangeHistoriesRowCount({userProfileId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userProfileChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get UserProfileChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._userProfileChangeHistoriesCount$ === null) {
+            this._userProfileChangeHistoriesCount$ = UserProfileChangeHistoryService.Instance.GetUserProfileChangeHistoriesRowCount({userProfileId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userProfileChangeHistoriesCount$;
+    }
 
 
 
@@ -231,11 +237,17 @@ export class UserProfileData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userProfileLinksCount$: Observable<bigint | number> | null = null;
+    public get UserProfileLinksCount$(): Observable<bigint | number> {
+        if (this._userProfileLinksCount$ === null) {
+            this._userProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userProfileLinksCount$;
+    }
 
 
 
@@ -250,11 +262,17 @@ export class UserProfileData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({userProfileId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userProfilePreferredThemesCount$: Observable<bigint | number> | null = null;
+    public get UserProfilePreferredThemesCount$(): Observable<bigint | number> {
+        if (this._userProfilePreferredThemesCount$ === null) {
+            this._userProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({userProfileId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userProfilePreferredThemesCount$;
+    }
 
 
 
@@ -269,11 +287,17 @@ export class UserProfileData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserProfileStatsCount$ = UserProfileStatService.Instance.GetUserProfileStatsRowCount({userProfileId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userProfileStatsCount$: Observable<bigint | number> | null = null;
+    public get UserProfileStatsCount$(): Observable<bigint | number> {
+        if (this._userProfileStatsCount$ === null) {
+            this._userProfileStatsCount$ = UserProfileStatService.Instance.GetUserProfileStatsRowCount({userProfileId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userProfileStatsCount$;
+    }
 
 
 
@@ -318,18 +342,22 @@ export class UserProfileData {
      this._userProfileChangeHistories = null;
      this._userProfileChangeHistoriesPromise = null;
      this._userProfileChangeHistoriesSubject.next(null);
+     this._userProfileChangeHistoriesCount$ = null;
 
      this._userProfileLinks = null;
      this._userProfileLinksPromise = null;
      this._userProfileLinksSubject.next(null);
+     this._userProfileLinksCount$ = null;
 
      this._userProfilePreferredThemes = null;
      this._userProfilePreferredThemesPromise = null;
      this._userProfilePreferredThemesSubject.next(null);
+     this._userProfilePreferredThemesCount$ = null;
 
      this._userProfileStats = null;
      this._userProfileStatsPromise = null;
      this._userProfileStatsSubject.next(null);
+     this._userProfileStatsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1266,11 +1294,7 @@ export class UserProfileService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserProfileChangeHistoriesCount$ = UserProfileChangeHistoryService.Instance.GetUserProfileChangeHistoriesRowCount({userProfileId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userProfileChangeHistoriesCount$ = null;
 
 
     (revived as any).UserProfileLinks$ = (revived as any)._userProfileLinksSubject.asObservable().pipe(
@@ -1282,11 +1306,7 @@ export class UserProfileService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userProfileLinksCount$ = null;
 
 
     (revived as any).UserProfilePreferredThemes$ = (revived as any)._userProfilePreferredThemesSubject.asObservable().pipe(
@@ -1298,11 +1318,7 @@ export class UserProfileService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({userProfileId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userProfilePreferredThemesCount$ = null;
 
 
     (revived as any).UserProfileStats$ = (revived as any)._userProfileStatsSubject.asObservable().pipe(
@@ -1314,11 +1330,7 @@ export class UserProfileService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserProfileStatsCount$ = UserProfileStatService.Instance.GetUserProfileStatsRowCount({userProfileId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userProfileStatsCount$ = null;
 
 
 

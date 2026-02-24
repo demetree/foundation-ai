@@ -82,6 +82,7 @@
   <app-brick-colour-table
     *ngIf="userIsBMCBrickColourReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickColourCount$ | async) ?? 0">
   </app-brick-colour-table>
 </div>

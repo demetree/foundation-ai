@@ -82,6 +82,7 @@
   <app-shared-instruction-table
     *ngIf="userIsBMCSharedInstructionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSharedInstructionCount$ | async) ?? 0">
   </app-shared-instruction-table>
 </div>

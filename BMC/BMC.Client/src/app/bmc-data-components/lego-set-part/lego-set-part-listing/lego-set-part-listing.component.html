@@ -82,6 +82,7 @@
   <app-lego-set-part-table
     *ngIf="userIsBMCLegoSetPartReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredLegoSetPartCount$ | async) ?? 0">
   </app-lego-set-part-table>
 </div>

@@ -82,6 +82,7 @@
   <app-brick-part-relationship-table
     *ngIf="userIsBMCBrickPartRelationshipReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickPartRelationshipCount$ | async) ?? 0">
   </app-brick-part-relationship-table>
 </div>

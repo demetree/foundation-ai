@@ -82,6 +82,7 @@
   <app-pending-registration-table
     *ngIf="userIsBMCPendingRegistrationReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPendingRegistrationCount$ | async) ?? 0">
   </app-pending-registration-table>
 </div>

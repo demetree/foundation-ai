@@ -82,6 +82,7 @@
   <app-lego-set-table
     *ngIf="userIsBMCLegoSetReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredLegoSetCount$ | async) ?? 0">
   </app-lego-set-table>
 </div>

@@ -82,6 +82,7 @@
   <app-build-manual-page-table
     *ngIf="userIsBMCBuildManualPageReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildManualPageCount$ | async) ?? 0">
   </app-build-manual-page-table>
 </div>

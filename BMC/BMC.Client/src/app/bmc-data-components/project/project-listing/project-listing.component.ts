@@ -165,6 +165,7 @@ export class ProjectListingComponent implements OnInit, AfterViewInit, CanCompon
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.projectTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.projectTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

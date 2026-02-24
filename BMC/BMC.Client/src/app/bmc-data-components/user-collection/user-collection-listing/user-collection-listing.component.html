@@ -82,6 +82,7 @@
   <app-user-collection-table
     *ngIf="userIsBMCUserCollectionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserCollectionCount$ | async) ?? 0">
   </app-user-collection-table>
 </div>

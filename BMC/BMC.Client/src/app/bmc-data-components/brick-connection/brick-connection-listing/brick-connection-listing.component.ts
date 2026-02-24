@@ -165,6 +165,7 @@ export class BrickConnectionListingComponent implements OnInit, AfterViewInit, C
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.brickConnectionTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.brickConnectionTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

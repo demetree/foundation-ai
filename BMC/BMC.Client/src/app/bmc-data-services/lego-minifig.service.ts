@@ -134,11 +134,17 @@ export class LegoMinifigData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoMinifigId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetMinifigsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetMinifigsCount$(): Observable<bigint | number> {
+        if (this._legoSetMinifigsCount$ === null) {
+            this._legoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoMinifigId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetMinifigsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class LegoMinifigData {
      this._legoSetMinifigs = null;
      this._legoSetMinifigsPromise = null;
      this._legoSetMinifigsSubject.next(null);
+     this._legoSetMinifigsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class LegoMinifigService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetMinifigsCount$ = LegoSetMinifigService.Instance.GetLegoSetMinifigsRowCount({legoMinifigId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetMinifigsCount$ = null;
 
 
 

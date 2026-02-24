@@ -82,6 +82,7 @@
   <app-achievement-category-table
     *ngIf="userIsBMCAchievementCategoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAchievementCategoryCount$ | async) ?? 0">
   </app-achievement-category-table>
 </div>

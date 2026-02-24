@@ -82,6 +82,7 @@
   <app-user-follow-table
     *ngIf="userIsBMCUserFollowReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserFollowCount$ | async) ?? 0">
   </app-user-follow-table>
 </div>

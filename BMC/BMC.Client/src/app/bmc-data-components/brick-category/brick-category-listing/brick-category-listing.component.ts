@@ -165,6 +165,7 @@ export class BrickCategoryListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.brickCategoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.brickCategoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

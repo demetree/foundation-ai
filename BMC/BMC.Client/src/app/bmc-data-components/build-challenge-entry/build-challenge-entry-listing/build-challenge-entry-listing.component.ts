@@ -165,6 +165,7 @@ export class BuildChallengeEntryListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.buildChallengeEntryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.buildChallengeEntryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

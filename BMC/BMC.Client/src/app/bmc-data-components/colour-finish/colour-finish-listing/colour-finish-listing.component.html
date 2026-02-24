@@ -82,6 +82,7 @@
   <app-colour-finish-table
     *ngIf="userIsBMCColourFinishReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredColourFinishCount$ | async) ?? 0">
   </app-colour-finish-table>
 </div>

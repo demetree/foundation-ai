@@ -157,11 +157,17 @@ export class AchievementData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserAchievementsCount$ = UserAchievementService.Instance.GetUserAchievementsRowCount({achievementId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userAchievementsCount$: Observable<bigint | number> | null = null;
+    public get UserAchievementsCount$(): Observable<bigint | number> {
+        if (this._userAchievementsCount$ === null) {
+            this._userAchievementsCount$ = UserAchievementService.Instance.GetUserAchievementsRowCount({achievementId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userAchievementsCount$;
+    }
 
 
 
@@ -206,6 +212,7 @@ export class AchievementData {
      this._userAchievements = null;
      this._userAchievementsPromise = null;
      this._userAchievementsSubject.next(null);
+     this._userAchievementsCount$ = null;
 
   }
 
@@ -750,11 +757,7 @@ export class AchievementService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserAchievementsCount$ = UserAchievementService.Instance.GetUserAchievementsRowCount({achievementId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userAchievementsCount$ = null;
 
 
 

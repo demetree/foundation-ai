@@ -165,6 +165,7 @@ export class UserSetOwnershipListingComponent implements OnInit, AfterViewInit, 
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userSetOwnershipTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userSetOwnershipTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

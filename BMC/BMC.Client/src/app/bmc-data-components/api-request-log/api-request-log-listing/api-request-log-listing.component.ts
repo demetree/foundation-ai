@@ -165,6 +165,7 @@ export class ApiRequestLogListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.apiRequestLogTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.apiRequestLogTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -216,7 +216,8 @@ namespace Foundation.CodeGeneration
                 {
                     sb.AppendLine($"    [filterText]=\"filterText\"");
                 }
-                sb.AppendLine($"    [isSmallScreen]=\"isSmallScreen\">");
+                sb.AppendLine($"    [isSmallScreen]=\"isSmallScreen\"");
+                sb.AppendLine($"    [totalRowCount]=\"(filtered{entityName}Count$ | async) ?? 0\">");
                 sb.AppendLine($"  </app-{angularName}-table>");
             }
             else
@@ -228,7 +229,8 @@ namespace Foundation.CodeGeneration
 
                     sb.AppendLine($"    [filterText]=\"filterText\"");
                 }
-                sb.AppendLine($"    [isSmallScreen]=\"isSmallScreen\">");
+                sb.AppendLine($"    [isSmallScreen]=\"isSmallScreen\"");
+                sb.AppendLine($"    [totalRowCount]=\"(filtered{entityName}Count$ | async) ?? 0\">");
                 sb.AppendLine($"  </app-{angularName}-table>");
             }
 
@@ -651,6 +653,7 @@ namespace Foundation.CodeGeneration
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {{
+      this.{camelCaseName}TableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.{camelCaseName}TableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }}, 500);           // 500 millisecond debounce
@@ -1559,6 +1562,43 @@ namespace Foundation.CodeGeneration
             sb.AppendLine("End of commented block for alternate definition option  -->");
 
             sb.AppendLine($"      </cdk-virtual-scroll-viewport>");
+
+            // Pagination controls
+            sb.AppendLine($@"
+      <!-- Pagination Controls -->
+      <div class=""pagination-bar"" *ngIf=""totalPages > 1"">
+        <button class=""pagination-btn""
+                (click)=""goToPage(1)""
+                [disabled]=""currentPage === 1""
+                ngbTooltip=""First Page"">
+          <i class=""fa-solid fa-angles-left""></i>
+        </button>
+        <button class=""pagination-btn""
+                (click)=""previousPage()""
+                [disabled]=""currentPage === 1""
+                ngbTooltip=""Previous Page"">
+          <i class=""fa-solid fa-chevron-left""></i>
+        </button>
+
+        <span class=""pagination-info"">
+          Page {{{{ currentPage }}}} of {{{{ totalPages }}}}
+        </span>
+
+        <button class=""pagination-btn""
+                (click)=""nextPage()""
+                [disabled]=""currentPage === totalPages""
+                ngbTooltip=""Next Page"">
+          <i class=""fa-solid fa-chevron-right""></i>
+        </button>
+        <button class=""pagination-btn""
+                (click)=""goToPage(totalPages)""
+                [disabled]=""currentPage === totalPages""
+                ngbTooltip=""Last Page"">
+          <i class=""fa-solid fa-angles-right""></i>
+        </button>
+      </div>
+");
+
             sb.AppendLine($"   </div>");
             sb.AppendLine($"</div>");
 
@@ -1953,6 +1993,43 @@ td .color-swatch,
   background-color: rgba(255, 193, 7, 0.15);
   color: #ffc107;
 }}
+
+/* Pagination */
+.pagination-bar {{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--{applicationThemePrefix}-panel-bg);
+  border-top: 1px solid var(--{applicationThemePrefix}-border);
+}}
+
+.pagination-btn {{
+  border: none;
+  background: transparent;
+  color: var(--{applicationThemePrefix}-text-primary);
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}}
+
+.pagination-btn:hover:not(:disabled) {{
+  background-color: var(--{applicationThemePrefix}-bg-hover);
+}}
+
+.pagination-btn:disabled {{
+  opacity: 0.4;
+  cursor: default;
+}}
+
+.pagination-info {{
+  font-size: 0.85rem;
+  color: var(--{applicationThemePrefix}-text-secondary, var(--{applicationThemePrefix}-text-primary));
+  padding: 0 0.5rem;
+}}
 ";
 
                 return hostBlock + themed + glassBlock;
@@ -2060,6 +2137,11 @@ td .color-swatch,
             sb.AppendLine($"  // Sorting properties");
             sb.AppendLine($"  public sortColumn: string | null = null;");
             sb.AppendLine($"  public sortDirection: 'asc' | 'desc' = 'asc';");
+            sb.AppendLine();
+            sb.AppendLine($"  // Pagination");
+            sb.AppendLine($"  @Input() totalRowCount: number = 0;");
+            sb.AppendLine($"  public currentPage: number = 1;");
+            sb.AppendLine($"  public pageSize: number = 50;");
             sb.AppendLine();
 
             sb.AppendLine("");
@@ -2355,12 +2437,18 @@ td .color-swatch,
                 sb.AppendLine($"    //");
                 sb.AppendLine($"    const {camelCaseName}QueryParams = {{");
                 sb.AppendLine($"        ...this.queryParams,");
-                sb.AppendLine($"        anyStringContains: this.filterText || undefined");
+                sb.AppendLine($"        anyStringContains: this.filterText || undefined,");
+                sb.AppendLine($"        pageSize: this.pageSize,");
+                sb.AppendLine($"        pageNumber: this.currentPage");
                 sb.AppendLine($"    }};");
             }
             else
             {
-                sb.AppendLine($"    const {camelCaseName}QueryParams = this.queryParams;");
+                sb.AppendLine($"    const {camelCaseName}QueryParams = {{");
+                sb.AppendLine($"        ...this.queryParams,");
+                sb.AppendLine($"        pageSize: this.pageSize,");
+                sb.AppendLine($"        pageNumber: this.currentPage");
+                sb.AppendLine($"    }};");
             }
 
             sb.AppendLine();
@@ -2685,6 +2773,42 @@ td .color-swatch,
   // First ""prominent"" column for mobile view
   get prominentColumn(): TableColumn | null {{
     return this.columns.find(col => col.mobile === 'prominent') || null;
+  }}
+
+
+  //
+  // Pagination
+  //
+  public get totalPages(): number {{
+    if (this.totalRowCount <= 0 || this.pageSize <= 0) {{
+      return 1;
+    }}
+    return Math.ceil(this.totalRowCount / this.pageSize);
+  }}
+
+  public nextPage(): void {{
+    if (this.currentPage < this.totalPages) {{
+      this.currentPage++;
+      this.loadData();
+    }}
+  }}
+
+  public previousPage(): void {{
+    if (this.currentPage > 1) {{
+      this.currentPage--;
+      this.loadData();
+    }}
+  }}
+
+  public goToPage(page: number): void {{
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {{
+      this.currentPage = page;
+      this.loadData();
+    }}
+  }}
+
+  public resetToFirstPage(): void {{
+    this.currentPage = 1;
   }}
 ");
 

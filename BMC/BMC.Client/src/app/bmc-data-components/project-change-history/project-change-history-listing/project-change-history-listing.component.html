@@ -82,6 +82,7 @@
   <app-project-change-history-table
     *ngIf="userIsBMCProjectChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredProjectChangeHistoryCount$ | async) ?? 0">
   </app-project-change-history-table>
 </div>

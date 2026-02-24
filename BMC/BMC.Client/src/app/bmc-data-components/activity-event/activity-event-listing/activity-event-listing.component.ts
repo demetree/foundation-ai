@@ -165,6 +165,7 @@ export class ActivityEventListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.activityEventTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.activityEventTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

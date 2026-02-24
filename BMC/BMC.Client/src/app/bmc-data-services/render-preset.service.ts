@@ -149,11 +149,17 @@ export class RenderPresetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({renderPresetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectRendersCount$: Observable<bigint | number> | null = null;
+    public get ProjectRendersCount$(): Observable<bigint | number> {
+        if (this._projectRendersCount$ === null) {
+            this._projectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({renderPresetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectRendersCount$;
+    }
 
 
 
@@ -198,6 +204,7 @@ export class RenderPresetData {
      this._projectRenders = null;
      this._projectRendersPromise = null;
      this._projectRendersSubject.next(null);
+     this._projectRendersCount$ = null;
 
   }
 
@@ -740,11 +747,7 @@ export class RenderPresetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({renderPresetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectRendersCount$ = null;
 
 
 

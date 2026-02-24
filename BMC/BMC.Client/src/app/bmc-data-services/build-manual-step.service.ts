@@ -163,11 +163,17 @@ export class BuildManualStepData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({buildManualStepId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildStepPartsCount$: Observable<bigint | number> | null = null;
+    public get BuildStepPartsCount$(): Observable<bigint | number> {
+        if (this._buildStepPartsCount$ === null) {
+            this._buildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({buildManualStepId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepPartsCount$;
+    }
 
 
 
@@ -182,11 +188,17 @@ export class BuildManualStepData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({buildManualStepId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildStepAnnotationsCount$: Observable<bigint | number> | null = null;
+    public get BuildStepAnnotationsCount$(): Observable<bigint | number> {
+        if (this._buildStepAnnotationsCount$ === null) {
+            this._buildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({buildManualStepId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepAnnotationsCount$;
+    }
 
 
 
@@ -231,10 +243,12 @@ export class BuildManualStepData {
      this._buildStepParts = null;
      this._buildStepPartsPromise = null;
      this._buildStepPartsSubject.next(null);
+     this._buildStepPartsCount$ = null;
 
      this._buildStepAnnotations = null;
      this._buildStepAnnotationsPromise = null;
      this._buildStepAnnotationsSubject.next(null);
+     this._buildStepAnnotationsCount$ = null;
 
   }
 
@@ -859,11 +873,7 @@ export class BuildManualStepService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({buildManualStepId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildStepPartsCount$ = null;
 
 
     (revived as any).BuildStepAnnotations$ = (revived as any)._buildStepAnnotationsSubject.asObservable().pipe(
@@ -875,11 +885,7 @@ export class BuildManualStepService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({buildManualStepId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildStepAnnotationsCount$ = null;
 
 
 

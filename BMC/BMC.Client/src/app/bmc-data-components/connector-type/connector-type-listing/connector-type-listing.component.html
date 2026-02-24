@@ -82,6 +82,7 @@
   <app-connector-type-table
     *ngIf="userIsBMCConnectorTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredConnectorTypeCount$ | async) ?? 0">
   </app-connector-type-table>
 </div>

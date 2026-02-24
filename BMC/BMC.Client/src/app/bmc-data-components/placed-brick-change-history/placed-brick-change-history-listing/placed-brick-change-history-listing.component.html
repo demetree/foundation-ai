@@ -82,6 +82,7 @@
   <app-placed-brick-change-history-table
     *ngIf="userIsBMCPlacedBrickChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPlacedBrickChangeHistoryCount$ | async) ?? 0">
   </app-placed-brick-change-history-table>
 </div>

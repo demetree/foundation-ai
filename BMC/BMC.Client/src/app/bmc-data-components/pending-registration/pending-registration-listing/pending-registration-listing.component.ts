@@ -165,6 +165,7 @@ export class PendingRegistrationListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.pendingRegistrationTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.pendingRegistrationTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

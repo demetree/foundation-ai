@@ -165,6 +165,7 @@ export class UserProfileChangeHistoryListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userProfileChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userProfileChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

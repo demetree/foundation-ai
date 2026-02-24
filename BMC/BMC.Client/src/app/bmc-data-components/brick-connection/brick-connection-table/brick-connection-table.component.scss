@@ -315,3 +315,40 @@ td .color-swatch,
   background-color: rgba(255, 193, 7, 0.15);
   color: #ffc107;
 }
+
+/* Pagination */
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bmc-panel-bg);
+  border-top: 1px solid var(--bmc-border);
+}
+
+.pagination-btn {
+  border: none;
+  background: transparent;
+  color: var(--bmc-text-primary);
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--bmc-bg-hover);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--bmc-text-secondary, var(--bmc-text-primary));
+  padding: 0 0.5rem;
+}

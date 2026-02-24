@@ -82,6 +82,7 @@
   <app-user-wishlist-item-table
     *ngIf="userIsBMCUserWishlistItemReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserWishlistItemCount$ | async) ?? 0">
   </app-user-wishlist-item-table>
 </div>

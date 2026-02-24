@@ -165,6 +165,7 @@ export class MocCommentListingComponent implements OnInit, AfterViewInit, CanCom
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.mocCommentTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.mocCommentTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

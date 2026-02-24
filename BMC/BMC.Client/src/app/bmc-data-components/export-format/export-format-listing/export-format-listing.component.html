@@ -82,6 +82,7 @@
   <app-export-format-table
     *ngIf="userIsBMCExportFormatReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredExportFormatCount$ | async) ?? 0">
   </app-export-format-table>
 </div>

@@ -165,6 +165,7 @@ export class UserAchievementListingComponent implements OnInit, AfterViewInit, C
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userAchievementTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userAchievementTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

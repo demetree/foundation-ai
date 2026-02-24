@@ -82,6 +82,7 @@
   <app-lego-set-subset-table
     *ngIf="userIsBMCLegoSetSubsetReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredLegoSetSubsetCount$ | async) ?? 0">
   </app-lego-set-subset-table>
 </div>

@@ -82,6 +82,7 @@
   <app-lego-theme-table
     *ngIf="userIsBMCLegoThemeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredLegoThemeCount$ | async) ?? 0">
   </app-lego-theme-table>
 </div>

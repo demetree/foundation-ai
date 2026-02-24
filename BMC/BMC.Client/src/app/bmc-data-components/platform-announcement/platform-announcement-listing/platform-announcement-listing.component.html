@@ -82,6 +82,7 @@
   <app-platform-announcement-table
     *ngIf="userIsBMCPlatformAnnouncementReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPlatformAnnouncementCount$ | async) ?? 0">
   </app-platform-announcement-table>
 </div>

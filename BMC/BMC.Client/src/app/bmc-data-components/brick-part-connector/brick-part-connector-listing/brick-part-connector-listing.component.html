@@ -82,6 +82,7 @@
   <app-brick-part-connector-table
     *ngIf="userIsBMCBrickPartConnectorReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickPartConnectorCount$ | async) ?? 0">
   </app-brick-part-connector-table>
 </div>

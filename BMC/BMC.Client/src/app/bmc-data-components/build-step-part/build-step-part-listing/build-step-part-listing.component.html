@@ -82,6 +82,7 @@
   <app-build-step-part-table
     *ngIf="userIsBMCBuildStepPartReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildStepPartCount$ | async) ?? 0">
   </app-build-step-part-table>
 </div>

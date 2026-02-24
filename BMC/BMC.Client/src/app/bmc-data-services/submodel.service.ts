@@ -178,11 +178,17 @@ export class SubmodelData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SubmodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({submodelId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _submodelChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SubmodelChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._submodelChangeHistoriesCount$ === null) {
+            this._submodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({submodelId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._submodelChangeHistoriesCount$;
+    }
 
 
 
@@ -197,11 +203,17 @@ export class SubmodelData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({submodelId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _submodelPlacedBricksCount$: Observable<bigint | number> | null = null;
+    public get SubmodelPlacedBricksCount$(): Observable<bigint | number> {
+        if (this._submodelPlacedBricksCount$ === null) {
+            this._submodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({submodelId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._submodelPlacedBricksCount$;
+    }
 
 
 
@@ -246,10 +258,12 @@ export class SubmodelData {
      this._submodelChangeHistories = null;
      this._submodelChangeHistoriesPromise = null;
      this._submodelChangeHistoriesSubject.next(null);
+     this._submodelChangeHistoriesCount$ = null;
 
      this._submodelPlacedBricks = null;
      this._submodelPlacedBricksPromise = null;
      this._submodelPlacedBricksSubject.next(null);
+     this._submodelPlacedBricksCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1017,11 +1031,7 @@ export class SubmodelService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SubmodelChangeHistoriesCount$ = SubmodelChangeHistoryService.Instance.GetSubmodelChangeHistoriesRowCount({submodelId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._submodelChangeHistoriesCount$ = null;
 
 
     (revived as any).SubmodelPlacedBricks$ = (revived as any)._submodelPlacedBricksSubject.asObservable().pipe(
@@ -1033,11 +1043,7 @@ export class SubmodelService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({submodelId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._submodelPlacedBricksCount$ = null;
 
 
 

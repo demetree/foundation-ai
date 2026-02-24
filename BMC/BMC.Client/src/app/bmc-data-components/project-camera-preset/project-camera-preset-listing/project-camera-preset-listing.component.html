@@ -82,6 +82,7 @@
   <app-project-camera-preset-table
     *ngIf="userIsBMCProjectCameraPresetReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredProjectCameraPresetCount$ | async) ?? 0">
   </app-project-camera-preset-table>
 </div>

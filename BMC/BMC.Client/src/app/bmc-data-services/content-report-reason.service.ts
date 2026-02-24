@@ -131,11 +131,17 @@ export class ContentReportReasonData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContentReportsCount$ = ContentReportService.Instance.GetContentReportsRowCount({contentReportReasonId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contentReportsCount$: Observable<bigint | number> | null = null;
+    public get ContentReportsCount$(): Observable<bigint | number> {
+        if (this._contentReportsCount$ === null) {
+            this._contentReportsCount$ = ContentReportService.Instance.GetContentReportsRowCount({contentReportReasonId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contentReportsCount$;
+    }
 
 
 
@@ -180,6 +186,7 @@ export class ContentReportReasonData {
      this._contentReports = null;
      this._contentReportsPromise = null;
      this._contentReportsSubject.next(null);
+     this._contentReportsCount$ = null;
 
   }
 
@@ -716,11 +723,7 @@ export class ContentReportReasonService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContentReportsCount$ = ContentReportService.Instance.GetContentReportsRowCount({contentReportReasonId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contentReportsCount$ = null;
 
 
 

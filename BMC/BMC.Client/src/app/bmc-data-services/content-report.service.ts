@@ -154,11 +154,17 @@ export class ContentReportData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ModerationActionsCount$ = ModerationActionService.Instance.GetModerationActionsRowCount({contentReportId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _moderationActionsCount$: Observable<bigint | number> | null = null;
+    public get ModerationActionsCount$(): Observable<bigint | number> {
+        if (this._moderationActionsCount$ === null) {
+            this._moderationActionsCount$ = ModerationActionService.Instance.GetModerationActionsRowCount({contentReportId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._moderationActionsCount$;
+    }
 
 
 
@@ -203,6 +209,7 @@ export class ContentReportData {
      this._moderationActions = null;
      this._moderationActionsPromise = null;
      this._moderationActionsSubject.next(null);
+     this._moderationActionsCount$ = null;
 
   }
 
@@ -746,11 +753,7 @@ export class ContentReportService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ModerationActionsCount$ = ModerationActionService.Instance.GetModerationActionsRowCount({contentReportId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._moderationActionsCount$ = null;
 
 
 

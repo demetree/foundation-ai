@@ -82,6 +82,7 @@
   <app-published-moc-image-table
     *ngIf="userIsBMCPublishedMocImageReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPublishedMocImageCount$ | async) ?? 0">
   </app-published-moc-image-table>
 </div>

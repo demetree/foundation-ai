@@ -181,11 +181,17 @@ export class UserCollectionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserCollectionChangeHistoriesCount$ = UserCollectionChangeHistoryService.Instance.GetUserCollectionChangeHistoriesRowCount({userCollectionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userCollectionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get UserCollectionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._userCollectionChangeHistoriesCount$ === null) {
+            this._userCollectionChangeHistoriesCount$ = UserCollectionChangeHistoryService.Instance.GetUserCollectionChangeHistoriesRowCount({userCollectionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userCollectionChangeHistoriesCount$;
+    }
 
 
 
@@ -200,11 +206,17 @@ export class UserCollectionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({userCollectionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userCollectionPartsCount$: Observable<bigint | number> | null = null;
+    public get UserCollectionPartsCount$(): Observable<bigint | number> {
+        if (this._userCollectionPartsCount$ === null) {
+            this._userCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({userCollectionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userCollectionPartsCount$;
+    }
 
 
 
@@ -219,11 +231,17 @@ export class UserCollectionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({userCollectionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userWishlistItemsCount$: Observable<bigint | number> | null = null;
+    public get UserWishlistItemsCount$(): Observable<bigint | number> {
+        if (this._userWishlistItemsCount$ === null) {
+            this._userWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({userCollectionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userWishlistItemsCount$;
+    }
 
 
 
@@ -238,11 +256,17 @@ export class UserCollectionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({userCollectionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userCollectionSetImportsCount$: Observable<bigint | number> | null = null;
+    public get UserCollectionSetImportsCount$(): Observable<bigint | number> {
+        if (this._userCollectionSetImportsCount$ === null) {
+            this._userCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({userCollectionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userCollectionSetImportsCount$;
+    }
 
 
 
@@ -287,18 +311,22 @@ export class UserCollectionData {
      this._userCollectionChangeHistories = null;
      this._userCollectionChangeHistoriesPromise = null;
      this._userCollectionChangeHistoriesSubject.next(null);
+     this._userCollectionChangeHistoriesCount$ = null;
 
      this._userCollectionParts = null;
      this._userCollectionPartsPromise = null;
      this._userCollectionPartsSubject.next(null);
+     this._userCollectionPartsCount$ = null;
 
      this._userWishlistItems = null;
      this._userWishlistItemsPromise = null;
      this._userWishlistItemsSubject.next(null);
+     this._userWishlistItemsCount$ = null;
 
      this._userCollectionSetImports = null;
      this._userCollectionSetImportsPromise = null;
      this._userCollectionSetImportsSubject.next(null);
+     this._userCollectionSetImportsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1224,11 +1252,7 @@ export class UserCollectionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserCollectionChangeHistoriesCount$ = UserCollectionChangeHistoryService.Instance.GetUserCollectionChangeHistoriesRowCount({userCollectionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userCollectionChangeHistoriesCount$ = null;
 
 
     (revived as any).UserCollectionParts$ = (revived as any)._userCollectionPartsSubject.asObservable().pipe(
@@ -1240,11 +1264,7 @@ export class UserCollectionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({userCollectionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userCollectionPartsCount$ = null;
 
 
     (revived as any).UserWishlistItems$ = (revived as any)._userWishlistItemsSubject.asObservable().pipe(
@@ -1256,11 +1276,7 @@ export class UserCollectionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({userCollectionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userWishlistItemsCount$ = null;
 
 
     (revived as any).UserCollectionSetImports$ = (revived as any)._userCollectionSetImportsSubject.asObservable().pipe(
@@ -1272,11 +1288,7 @@ export class UserCollectionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserCollectionSetImportsCount$ = UserCollectionSetImportService.Instance.GetUserCollectionSetImportsRowCount({userCollectionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userCollectionSetImportsCount$ = null;
 
 
 

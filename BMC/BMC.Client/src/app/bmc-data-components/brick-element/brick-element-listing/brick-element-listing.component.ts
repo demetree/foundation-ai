@@ -165,6 +165,7 @@ export class BrickElementListingComponent implements OnInit, AfterViewInit, CanC
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.brickElementTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.brickElementTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

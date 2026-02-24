@@ -82,6 +82,7 @@
   <app-submodel-placed-brick-table
     *ngIf="userIsBMCSubmodelPlacedBrickReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSubmodelPlacedBrickCount$ | async) ?? 0">
   </app-submodel-placed-brick-table>
 </div>

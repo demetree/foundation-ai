@@ -165,6 +165,7 @@ export class ProjectTagAssignmentListingComponent implements OnInit, AfterViewIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.projectTagAssignmentTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.projectTagAssignmentTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

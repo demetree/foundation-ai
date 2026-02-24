@@ -131,11 +131,17 @@ export class BuildStepAnnotationTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({buildStepAnnotationTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildStepAnnotationsCount$: Observable<bigint | number> | null = null;
+    public get BuildStepAnnotationsCount$(): Observable<bigint | number> {
+        if (this._buildStepAnnotationsCount$ === null) {
+            this._buildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({buildStepAnnotationTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepAnnotationsCount$;
+    }
 
 
 
@@ -180,6 +186,7 @@ export class BuildStepAnnotationTypeData {
      this._buildStepAnnotations = null;
      this._buildStepAnnotationsPromise = null;
      this._buildStepAnnotationsSubject.next(null);
+     this._buildStepAnnotationsCount$ = null;
 
   }
 
@@ -716,11 +723,7 @@ export class BuildStepAnnotationTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({buildStepAnnotationTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildStepAnnotationsCount$ = null;
 
 
 

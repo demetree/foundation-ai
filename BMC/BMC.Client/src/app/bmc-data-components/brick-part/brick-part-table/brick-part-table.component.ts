@@ -37,7 +37,7 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
   @Input() BrickParts: BrickPartData[] | null = null; // Optional prefiltered data
   @Input() isSmallScreen: boolean = false;
   @Input() filterText: string | null = null; // Optional filter text 
-  @Input() queryParams: Partial<BrickPartQueryParameters> = {} // Optional query parameters
+  @Input() queryParams: Partial<BrickPartQueryParameters> = { } // Optional query parameters
 
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
@@ -81,9 +81,9 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
 
 
   constructor(private brickPartService: BrickPartService,
-    private authService: AuthService,
-    private alertService: AlertService,
-    private confirmationService: ConfirmationService) { }
+              private authService: AuthService,
+              private alertService: AlertService,
+              private confirmationService: ConfirmationService) { }
 
   ngOnInit(): void {
 
@@ -94,13 +94,13 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
 
     if (!this.BrickParts) {
 
-      this.isManagingData = true; // Component is managing data loading
-      this.loadData(); // Load data on initialization
+        this.isManagingData = true; // Component is managing data loading
+        this.loadData(); // Load data on initialization
 
     } else {
 
-      this.applyFiltersAndSort();
-      this.isLoadingSubject.next(false);
+        this.applyFiltersAndSort();
+        this.isLoadingSubject.next(false);
 
     }
   }
@@ -111,15 +111,15 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
     // Subscribe to the brickPartChanged observable on the add/edit component so that when a BrickPart changes we can reload the list, if component is available and not disabled..
     //
     if (this.addEditBrickPartComponent && !this.disableDefaultEdit) {
-      this.addEditBrickPartComponent.brickPartChanged.subscribe({
+        this.addEditBrickPartComponent.brickPartChanged.subscribe({
         next: (result: BrickPartData[] | null) => {
-          this.loadData();
+            this.loadData();
         },
         error: (err: any) => {
-          this.alertService.showMessage("Error during Brick Part changed notification", JSON.stringify(err), MessageSeverity.error);
+             this.alertService.showMessage("Error during Brick Part changed notification", JSON.stringify(err), MessageSeverity.error);
         }
-      });
-    }
+        });
+     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -135,29 +135,33 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
     //
     // Reset the whole page - note that this only makes sense when this component is managing the loading of data.  Don't use the filterText input property when you are providing your own data via the data input.
     //
-    if (changes['filterText'] && this.isManagingData == true) {
-      clearTimeout(this.debounceTimeout);
-      this.debounceTimeout = setTimeout(() => {
+    if (changes['filterText'] && this.isManagingData == true)
+    {
+       clearTimeout(this.debounceTimeout);
+       this.debounceTimeout = setTimeout(() => {
 
-        if (this.isManagingData) {
-          this.loadData();
-        }
-        else {
-          this.applyFiltersAndSort();
-        }
+         if (this.isManagingData)
+         {
+             this.loadData();
+         }
+         else
+         {
+             this.applyFiltersAndSort();
+         }
 
-      }, 200); // 200ms debounce delay
+       }, 200); // 200ms debounce delay
     }
 
-    if (changes['queryParams']) {
-      this.loadData()
+    if (changes['queryParams'])
+    {
+        this.loadData()
     }
   }
 
 
-  /**
-    * Construct the default column array based on user entitlements.
-    */
+ /**
+   * Construct the default column array based on user entitlements.
+   */
   private buildDefaultColumns(): void {
 
     //
@@ -171,22 +175,22 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
-      { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickpart', 'id'] },
-      { key: 'ldrawPartId', label: 'Ldraw Part Id', width: undefined },
-      { key: 'ldrawTitle', label: 'Ldraw Title', width: undefined },
-      { key: 'ldrawCategory', label: 'Ldraw Category', width: undefined },
-      { key: 'partType.name', label: 'Part Type', width: undefined, template: 'link', linkPath: ['/parttype', 'partTypeId'] },
-      { key: 'keywords', label: 'Keywords', width: undefined },
-      { key: 'author', label: 'Author', width: undefined },
-      { key: 'brickCategory.name', label: 'Brick Category', width: undefined, template: 'link', linkPath: ['/brickcategory', 'brickCategoryId'] },
-      { key: 'rebrickablePartNum', label: 'Rebrickable Part Num', width: undefined },
-      { key: 'widthLdu', label: 'Width Ldu', width: undefined },
-      { key: 'heightLdu', label: 'Height Ldu', width: undefined },
-      { key: 'depthLdu', label: 'Depth Ldu', width: undefined },
-      { key: 'massGrams', label: 'Mass Grams', width: undefined },
-      { key: 'geometryFilePath', label: 'Geometry File Path', width: undefined },
-      { key: 'toothCount', label: 'Tooth Count', width: undefined },
-      { key: 'gearRatio', label: 'Gear Ratio', width: undefined },
+    { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickpart', 'id']  },
+    { key: 'ldrawPartId', label: 'Ldraw Part Id', width: undefined },
+    { key: 'ldrawTitle', label: 'Ldraw Title', width: undefined },
+    { key: 'ldrawCategory', label: 'Ldraw Category', width: undefined },
+    { key: 'partType.name', label: 'Part Type', width: undefined, template: 'link', linkPath: ['/parttype', 'partTypeId'] },
+    { key: 'keywords', label: 'Keywords', width: undefined },
+    { key: 'author', label: 'Author', width: undefined },
+    { key: 'brickCategory.name', label: 'Brick Category', width: undefined, template: 'link', linkPath: ['/brickcategory', 'brickCategoryId'] },
+    { key: 'rebrickablePartNum', label: 'Rebrickable Part Num', width: undefined },
+    { key: 'widthLdu', label: 'Width Ldu', width: undefined },
+    { key: 'heightLdu', label: 'Height Ldu', width: undefined },
+    { key: 'depthLdu', label: 'Depth Ldu', width: undefined },
+    { key: 'massGrams', label: 'Mass Grams', width: undefined },
+    { key: 'geometryFilePath', label: 'Geometry File Path', width: undefined },
+    { key: 'toothCount', label: 'Tooth Count', width: undefined },
+    { key: 'gearRatio', label: 'Gear Ratio', width: undefined },
 
     ];
 
@@ -195,31 +199,31 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
     // Note that CSS stylng shows deleted rows with a strike through, and inactive as italicized, both with transparency so they stand out, regardless of if there are active/deleted columns
     //
     const isWriter = this.brickPartService.userIsBMCBrickPartWriter();
-    const isAdmin = this.authService.isBMCAdministrator;
+    const isAdmin = this.authService.isBMCAdministrator; 
 
     if (isAdmin) {
-      defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
-      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
-      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
-      defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
-
+    
     // Assign the built array as the active columns
     this.columns = defaultColumns;
   }
 
 
-  public sortBy(column: string): void {
+  public sortBy(column: string) : void {
 
     if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
     }
 
     this.applyFiltersAndSort();
@@ -241,10 +245,10 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
     // Server side filtering using the any string contains parameter
     //
     const brickPartQueryParams = {
-      ...this.queryParams,
-      anyStringContains: this.filterText || undefined,
-      pageSize: this.pageSize,
-      pageNumber: this.currentPage
+        ...this.queryParams,
+        anyStringContains: this.filterText || undefined,
+        pageSize: this.pageSize,
+        pageNumber: this.currentPage
     };
 
     //
@@ -286,7 +290,7 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
         //
         this.setErrorState();
 
-        this.alertService.showMessage("Error getting Brick Part data", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error getting Brick Part data", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
@@ -309,7 +313,7 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
   }
 
 
-  private applyFiltersAndSort(): void {
+   private applyFiltersAndSort(): void {
 
     if (!this.BrickParts) {
       this.filteredBrickParts = null;
@@ -334,31 +338,31 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
 
         // Define fields to filter on, including nested properties
         const filterFields = [
-          'name',
-          'ldrawPartId',
-          'ldrawTitle',
-          'ldrawCategory',
-          'partType.name',
-          'keywords',
-          'author',
-          'brickCategory.name',
-          'rebrickablePartNum',
-          'widthLdu',
-          'heightLdu',
-          'depthLdu',
-          'massGrams',
-          'geometryFilePath',
-          'toothCount',
-          'gearRatio',
+                      'name',
+                      'ldrawPartId',
+                      'ldrawTitle',
+                      'ldrawCategory',
+                      'partType.name',
+                      'keywords',
+                      'author',
+                      'brickCategory.name',
+                      'rebrickablePartNum',
+                      'widthLdu',
+                      'heightLdu',
+                      'depthLdu',
+                      'massGrams',
+                      'geometryFilePath',
+                      'toothCount',
+                      'gearRatio',
         ];
 
         result = result.filter((brickPart) =>
 
-          filterFields.some((field) => {
-            const value = getNestedValue(brickPart, field);
+        filterFields.some((field) => {
+        const value = getNestedValue(brickPart, field);
             return value && value.toString().toLowerCase().includes(searchText);
           })
-        );
+          );
       }
     }
 
@@ -375,7 +379,7 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
 
         const aStr = aValue ? aValue.toString() : '';
         const bStr = bValue ? bValue.toString() : '';
-        const comparison = aStr.localeCompare(bStr, undefined, { sensitivity: 'base' });
+        const comparison = aStr.localeCompare(bStr, undefined, {sensitivity: 'base' });
         return this.sortDirection === 'asc' ? comparison : -comparison;
       });
     }
@@ -385,42 +389,49 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
 
 
   public handleEdit(brickPart: BrickPartData): void {
-    if (this.disableDefaultEdit) {
-      this.edit.emit(brickPart); // Let parent handle edit
+    if (this.disableDefaultEdit)
+    {
+        this.edit.emit(brickPart); // Let parent handle edit
     }
-    else if (this.addEditBrickPartComponent) {
-      this.addEditBrickPartComponent.openModal(brickPart); // Default edit behavior
+    else if (this.addEditBrickPartComponent)
+    {
+        this.addEditBrickPartComponent.openModal(brickPart); // Default edit behavior
     }
-    else {
-      this.alertService.showMessage(
-        'Edit functionality unavailable',
-        'Add/Edit component not initialized',
-        MessageSeverity.warn
-      );
+    else
+    {
+        this.alertService.showMessage(
+          'Edit functionality unavailable',
+          'Add/Edit component not initialized',
+          MessageSeverity.warn
+        );
     }
-  }
+}
 
 
   public handleAdd(): void {
-    if (this.addEditBrickPartComponent) {
-      this.addEditBrickPartComponent.openModal(); // Open in add mode (no data)
+    if (this.addEditBrickPartComponent)
+    {
+        this.addEditBrickPartComponent.openModal(); // Open in add mode (no data)
     }
-  }
+}
 
 
   public handleDelete(brickPart: BrickPartData): void {
-    if (this.disableDefaultDelete) {
-      this.delete.emit(brickPart); // Let parent handle delete
+    if (this.disableDefaultDelete)
+    {
+        this.delete.emit(brickPart); // Let parent handle delete
     }
-    else {
-      this.confirmationService
-        .confirm('Delete BrickPart', 'Are you sure you want to delete this Brick Part?')
-        .then((result) => {
-          if (result) {
-            this.deleteBrickPart(brickPart);
-          }
-        })
-        .catch(() => { });
+    else
+    {
+        this.confirmationService
+          .confirm('Delete BrickPart', 'Are you sure you want to delete this Brick Part?')
+          .then((result) => {
+              if (result)
+              {
+                  this.deleteBrickPart(brickPart);
+              }
+          })
+          .catch(() => { });
     }
   }
 
@@ -428,45 +439,48 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
   private deleteBrickPart(brickPartData: BrickPartData): void {
     this.brickPartService.DeleteBrickPart(brickPartData.id).subscribe({
       next: () => {
-        this.brickPartService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+       this.brickPartService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after deletion
       },
       error: (err) => {
-        this.alertService.showMessage("Error deleting Brick Part", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error deleting Brick Part", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
 
 
   public handleUndelete(brickPart: BrickPartData): void {
-    if (this.disableDefaultUndelete) {
-      this.undelete.emit(brickPart); // Let parent handle undelete
+    if (this.disableDefaultUndelete)
+    {
+        this.undelete.emit(brickPart); // Let parent handle undelete
     }
-    else {
-      this.confirmationService
-        .confirm('Undelete BrickPart', 'Are you sure you want to undelete this Brick Part?')
-        .then((result) => {
-          if (result) {
-            this.undeleteBrickPart(brickPart);
-          }
-        })
-        .catch(() => { });
+    else
+    {
+        this.confirmationService
+          .confirm('Undelete BrickPart', 'Are you sure you want to undelete this Brick Part?')
+          .then((result) => {
+              if (result)
+              {
+                  this.undeleteBrickPart(brickPart);
+              }
+          })
+          .catch(() => { });
     }
-  }
+}
 
 
   private undeleteBrickPart(brickPartData: BrickPartData): void {
 
-    var brickPartToSubmit = this.brickPartService.ConvertToBrickPartSubmitData(brickPartData); // Convert BrickPart data to post object for undeleting
-    brickPartToSubmit.deleted = false;
+      var brickPartToSubmit = this.brickPartService.ConvertToBrickPartSubmitData(brickPartData); // Convert BrickPart data to post object for undeleting
+      brickPartToSubmit.deleted = false;
 
-    this.brickPartService.PutBrickPart(brickPartToSubmit.id, brickPartToSubmit).subscribe({
+      this.brickPartService.PutBrickPart(brickPartToSubmit.id, brickPartToSubmit).subscribe({
       next: () => {
-        this.brickPartService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+       this.brickPartService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after un-deletion
       },
       error: (err) => {
-        this.alertService.showMessage("Error undeleting Brick Part", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error undeleting Brick Part", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }

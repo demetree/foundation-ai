@@ -82,6 +82,7 @@
   <app-build-challenge-table
     *ngIf="userIsBMCBuildChallengeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildChallengeCount$ | async) ?? 0">
   </app-build-challenge-table>
 </div>

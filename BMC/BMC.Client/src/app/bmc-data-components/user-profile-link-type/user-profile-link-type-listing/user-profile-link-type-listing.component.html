@@ -82,6 +82,7 @@
   <app-user-profile-link-type-table
     *ngIf="userIsBMCUserProfileLinkTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserProfileLinkTypeCount$ | async) ?? 0">
   </app-user-profile-link-type-table>
 </div>

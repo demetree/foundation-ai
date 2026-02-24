@@ -82,6 +82,7 @@
   <app-api-key-table
     *ngIf="userIsBMCApiKeyReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredApiKeyCount$ | async) ?? 0">
   </app-api-key-table>
 </div>

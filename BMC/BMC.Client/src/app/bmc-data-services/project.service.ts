@@ -232,11 +232,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectChangeHistoriesCount$ = ProjectChangeHistoryService.Instance.GetProjectChangeHistoriesRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ProjectChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._projectChangeHistoriesCount$ === null) {
+            this._projectChangeHistoriesCount$ = ProjectChangeHistoryService.Instance.GetProjectChangeHistoriesRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectChangeHistoriesCount$;
+    }
 
 
 
@@ -251,11 +257,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _placedBricksCount$: Observable<bigint | number> | null = null;
+    public get PlacedBricksCount$(): Observable<bigint | number> {
+        if (this._placedBricksCount$ === null) {
+            this._placedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._placedBricksCount$;
+    }
 
 
 
@@ -270,11 +282,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BrickConnectionsCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _brickConnectionsCount$: Observable<bigint | number> | null = null;
+    public get BrickConnectionsCount$(): Observable<bigint | number> {
+        if (this._brickConnectionsCount$ === null) {
+            this._brickConnectionsCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickConnectionsCount$;
+    }
 
 
 
@@ -289,11 +307,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _submodelsCount$: Observable<bigint | number> | null = null;
+    public get SubmodelsCount$(): Observable<bigint | number> {
+        if (this._submodelsCount$ === null) {
+            this._submodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._submodelsCount$;
+    }
 
 
 
@@ -308,11 +332,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectTagAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get ProjectTagAssignmentsCount$(): Observable<bigint | number> {
+        if (this._projectTagAssignmentsCount$ === null) {
+            this._projectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectTagAssignmentsCount$;
+    }
 
 
 
@@ -327,11 +357,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectCameraPresetsCount$ = ProjectCameraPresetService.Instance.GetProjectCameraPresetsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectCameraPresetsCount$: Observable<bigint | number> | null = null;
+    public get ProjectCameraPresetsCount$(): Observable<bigint | number> {
+        if (this._projectCameraPresetsCount$ === null) {
+            this._projectCameraPresetsCount$ = ProjectCameraPresetService.Instance.GetProjectCameraPresetsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectCameraPresetsCount$;
+    }
 
 
 
@@ -346,11 +382,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectReferenceImagesCount$ = ProjectReferenceImageService.Instance.GetProjectReferenceImagesRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectReferenceImagesCount$: Observable<bigint | number> | null = null;
+    public get ProjectReferenceImagesCount$(): Observable<bigint | number> {
+        if (this._projectReferenceImagesCount$ === null) {
+            this._projectReferenceImagesCount$ = ProjectReferenceImageService.Instance.GetProjectReferenceImagesRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectReferenceImagesCount$;
+    }
 
 
 
@@ -365,11 +407,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildManualsCount$ = BuildManualService.Instance.GetBuildManualsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildManualsCount$: Observable<bigint | number> | null = null;
+    public get BuildManualsCount$(): Observable<bigint | number> {
+        if (this._buildManualsCount$ === null) {
+            this._buildManualsCount$ = BuildManualService.Instance.GetBuildManualsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildManualsCount$;
+    }
 
 
 
@@ -384,11 +432,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectRendersCount$: Observable<bigint | number> | null = null;
+    public get ProjectRendersCount$(): Observable<bigint | number> {
+        if (this._projectRendersCount$ === null) {
+            this._projectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectRendersCount$;
+    }
 
 
 
@@ -403,11 +457,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectExportsCount$: Observable<bigint | number> | null = null;
+    public get ProjectExportsCount$(): Observable<bigint | number> {
+        if (this._projectExportsCount$ === null) {
+            this._projectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectExportsCount$;
+    }
 
 
 
@@ -422,11 +482,17 @@ export class ProjectData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PublishedMocsCount$ = PublishedMocService.Instance.GetPublishedMocsRowCount({projectId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _publishedMocsCount$: Observable<bigint | number> | null = null;
+    public get PublishedMocsCount$(): Observable<bigint | number> {
+        if (this._publishedMocsCount$ === null) {
+            this._publishedMocsCount$ = PublishedMocService.Instance.GetPublishedMocsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._publishedMocsCount$;
+    }
 
 
 
@@ -471,46 +537,57 @@ export class ProjectData {
      this._projectChangeHistories = null;
      this._projectChangeHistoriesPromise = null;
      this._projectChangeHistoriesSubject.next(null);
+     this._projectChangeHistoriesCount$ = null;
 
      this._placedBricks = null;
      this._placedBricksPromise = null;
      this._placedBricksSubject.next(null);
+     this._placedBricksCount$ = null;
 
      this._brickConnections = null;
      this._brickConnectionsPromise = null;
      this._brickConnectionsSubject.next(null);
+     this._brickConnectionsCount$ = null;
 
      this._submodels = null;
      this._submodelsPromise = null;
      this._submodelsSubject.next(null);
+     this._submodelsCount$ = null;
 
      this._projectTagAssignments = null;
      this._projectTagAssignmentsPromise = null;
      this._projectTagAssignmentsSubject.next(null);
+     this._projectTagAssignmentsCount$ = null;
 
      this._projectCameraPresets = null;
      this._projectCameraPresetsPromise = null;
      this._projectCameraPresetsSubject.next(null);
+     this._projectCameraPresetsCount$ = null;
 
      this._projectReferenceImages = null;
      this._projectReferenceImagesPromise = null;
      this._projectReferenceImagesSubject.next(null);
+     this._projectReferenceImagesCount$ = null;
 
      this._buildManuals = null;
      this._buildManualsPromise = null;
      this._buildManualsSubject.next(null);
+     this._buildManualsCount$ = null;
 
      this._projectRenders = null;
      this._projectRendersPromise = null;
      this._projectRendersSubject.next(null);
+     this._projectRendersCount$ = null;
 
      this._projectExports = null;
      this._projectExportsPromise = null;
      this._projectExportsSubject.next(null);
+     this._projectExportsCount$ = null;
 
      this._publishedMocs = null;
      this._publishedMocsPromise = null;
      this._publishedMocsSubject.next(null);
+     this._publishedMocsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1999,11 +2076,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectChangeHistoriesCount$ = ProjectChangeHistoryService.Instance.GetProjectChangeHistoriesRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectChangeHistoriesCount$ = null;
 
 
     (revived as any).PlacedBricks$ = (revived as any)._placedBricksSubject.asObservable().pipe(
@@ -2015,11 +2088,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._placedBricksCount$ = null;
 
 
     (revived as any).BrickConnections$ = (revived as any)._brickConnectionsSubject.asObservable().pipe(
@@ -2031,11 +2100,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BrickConnectionsCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._brickConnectionsCount$ = null;
 
 
     (revived as any).Submodels$ = (revived as any)._submodelsSubject.asObservable().pipe(
@@ -2047,11 +2112,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._submodelsCount$ = null;
 
 
     (revived as any).ProjectTagAssignments$ = (revived as any)._projectTagAssignmentsSubject.asObservable().pipe(
@@ -2063,11 +2124,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectTagAssignmentsCount$ = null;
 
 
     (revived as any).ProjectCameraPresets$ = (revived as any)._projectCameraPresetsSubject.asObservable().pipe(
@@ -2079,11 +2136,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectCameraPresetsCount$ = ProjectCameraPresetService.Instance.GetProjectCameraPresetsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectCameraPresetsCount$ = null;
 
 
     (revived as any).ProjectReferenceImages$ = (revived as any)._projectReferenceImagesSubject.asObservable().pipe(
@@ -2095,11 +2148,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectReferenceImagesCount$ = ProjectReferenceImageService.Instance.GetProjectReferenceImagesRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectReferenceImagesCount$ = null;
 
 
     (revived as any).BuildManuals$ = (revived as any)._buildManualsSubject.asObservable().pipe(
@@ -2111,11 +2160,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildManualsCount$ = BuildManualService.Instance.GetBuildManualsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildManualsCount$ = null;
 
 
     (revived as any).ProjectRenders$ = (revived as any)._projectRendersSubject.asObservable().pipe(
@@ -2127,11 +2172,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectRendersCount$ = null;
 
 
     (revived as any).ProjectExports$ = (revived as any)._projectExportsSubject.asObservable().pipe(
@@ -2143,11 +2184,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectExportsCount$ = null;
 
 
     (revived as any).PublishedMocs$ = (revived as any)._publishedMocsSubject.asObservable().pipe(
@@ -2159,11 +2196,7 @@ export class ProjectService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PublishedMocsCount$ = PublishedMocService.Instance.GetPublishedMocsRowCount({projectId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._publishedMocsCount$ = null;
 
 
 

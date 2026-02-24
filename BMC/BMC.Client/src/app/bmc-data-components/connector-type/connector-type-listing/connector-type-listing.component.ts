@@ -165,6 +165,7 @@ export class ConnectorTypeListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.connectorTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.connectorTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

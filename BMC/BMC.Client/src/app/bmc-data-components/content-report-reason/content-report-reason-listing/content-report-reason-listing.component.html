@@ -82,6 +82,7 @@
   <app-content-report-reason-table
     *ngIf="userIsBMCContentReportReasonReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredContentReportReasonCount$ | async) ?? 0">
   </app-content-report-reason-table>
 </div>

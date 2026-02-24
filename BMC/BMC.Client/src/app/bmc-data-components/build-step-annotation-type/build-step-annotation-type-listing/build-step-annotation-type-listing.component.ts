@@ -165,6 +165,7 @@ export class BuildStepAnnotationTypeListingComponent implements OnInit, AfterVie
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.buildStepAnnotationTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.buildStepAnnotationTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -137,11 +137,17 @@ export class ActivityEventTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ActivityEventsCount$ = ActivityEventService.Instance.GetActivityEventsRowCount({activityEventTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _activityEventsCount$: Observable<bigint | number> | null = null;
+    public get ActivityEventsCount$(): Observable<bigint | number> {
+        if (this._activityEventsCount$ === null) {
+            this._activityEventsCount$ = ActivityEventService.Instance.GetActivityEventsRowCount({activityEventTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._activityEventsCount$;
+    }
 
 
 
@@ -186,6 +192,7 @@ export class ActivityEventTypeData {
      this._activityEvents = null;
      this._activityEventsPromise = null;
      this._activityEventsSubject.next(null);
+     this._activityEventsCount$ = null;
 
   }
 
@@ -724,11 +731,7 @@ export class ActivityEventTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ActivityEventsCount$ = ActivityEventService.Instance.GetActivityEventsRowCount({activityEventTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._activityEventsCount$ = null;
 
 
 

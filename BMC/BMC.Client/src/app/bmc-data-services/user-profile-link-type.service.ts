@@ -134,11 +134,17 @@ export class UserProfileLinkTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileLinkTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userProfileLinksCount$: Observable<bigint | number> | null = null;
+    public get UserProfileLinksCount$(): Observable<bigint | number> {
+        if (this._userProfileLinksCount$ === null) {
+            this._userProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileLinkTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userProfileLinksCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class UserProfileLinkTypeData {
      this._userProfileLinks = null;
      this._userProfileLinksPromise = null;
      this._userProfileLinksSubject.next(null);
+     this._userProfileLinksCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class UserProfileLinkTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserProfileLinksCount$ = UserProfileLinkService.Instance.GetUserProfileLinksRowCount({userProfileLinkTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userProfileLinksCount$ = null;
 
 
 

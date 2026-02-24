@@ -82,6 +82,7 @@
   <app-api-request-log-table
     *ngIf="userIsBMCApiRequestLogReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredApiRequestLogCount$ | async) ?? 0">
   </app-api-request-log-table>
 </div>

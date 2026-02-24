@@ -82,6 +82,7 @@
   <app-part-type-table
     *ngIf="userIsBMCPartTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPartTypeCount$ | async) ?? 0">
   </app-part-type-table>
 </div>

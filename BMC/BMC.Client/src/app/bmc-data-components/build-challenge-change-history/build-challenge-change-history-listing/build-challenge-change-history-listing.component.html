@@ -82,6 +82,7 @@
   <app-build-challenge-change-history-table
     *ngIf="userIsBMCBuildChallengeChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildChallengeChangeHistoryCount$ | async) ?? 0">
   </app-build-challenge-change-history-table>
 </div>

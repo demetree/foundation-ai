@@ -82,6 +82,7 @@
   <app-build-manual-change-history-table
     *ngIf="userIsBMCBuildManualChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBuildManualChangeHistoryCount$ | async) ?? 0">
   </app-build-manual-change-history-table>
 </div>

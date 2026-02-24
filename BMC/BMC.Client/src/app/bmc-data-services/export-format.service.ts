@@ -134,11 +134,17 @@ export class ExportFormatData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({exportFormatId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _projectExportsCount$: Observable<bigint | number> | null = null;
+    public get ProjectExportsCount$(): Observable<bigint | number> {
+        if (this._projectExportsCount$ === null) {
+            this._projectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({exportFormatId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._projectExportsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class ExportFormatData {
      this._projectExports = null;
      this._projectExportsPromise = null;
      this._projectExportsSubject.next(null);
+     this._projectExportsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class ExportFormatService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({exportFormatId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._projectExportsCount$ = null;
 
 
 

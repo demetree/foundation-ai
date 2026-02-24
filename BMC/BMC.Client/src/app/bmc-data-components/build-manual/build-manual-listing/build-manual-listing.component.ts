@@ -165,6 +165,7 @@ export class BuildManualListingComponent implements OnInit, AfterViewInit, CanCo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.buildManualTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.buildManualTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

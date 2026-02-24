@@ -165,6 +165,7 @@ export class UserProfileLinkTypeListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.userProfileLinkTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.userProfileLinkTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

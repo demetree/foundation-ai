@@ -82,6 +82,7 @@
   <app-project-tag-assignment-table
     *ngIf="userIsBMCProjectTagAssignmentReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredProjectTagAssignmentCount$ | async) ?? 0">
   </app-project-tag-assignment-table>
 </div>

@@ -82,6 +82,7 @@
   <app-brick-connection-table
     *ngIf="userIsBMCBrickConnectionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBrickConnectionCount$ | async) ?? 0">
   </app-brick-connection-table>
 </div>

@@ -82,6 +82,7 @@
   <app-moc-like-table
     *ngIf="userIsBMCMocLikeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredMocLikeCount$ | async) ?? 0">
   </app-moc-like-table>
 </div>

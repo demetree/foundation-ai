@@ -165,6 +165,7 @@ export class BrickPartColourListingComponent implements OnInit, AfterViewInit, C
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.brickPartColourTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.brickPartColourTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -82,6 +82,7 @@
   <app-moc-comment-table
     *ngIf="userIsBMCMocCommentReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredMocCommentCount$ | async) ?? 0">
   </app-moc-comment-table>
 </div>

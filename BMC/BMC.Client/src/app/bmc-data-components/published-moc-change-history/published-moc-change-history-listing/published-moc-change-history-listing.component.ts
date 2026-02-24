@@ -165,6 +165,7 @@ export class PublishedMocChangeHistoryListingComponent implements OnInit, AfterV
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.publishedMocChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.publishedMocChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

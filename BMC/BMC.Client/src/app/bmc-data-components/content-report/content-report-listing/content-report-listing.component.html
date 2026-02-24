@@ -82,6 +82,7 @@
   <app-content-report-table
     *ngIf="userIsBMCContentReportReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredContentReportCount$ | async) ?? 0">
   </app-content-report-table>
 </div>

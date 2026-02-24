@@ -134,11 +134,17 @@ export class PartTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BrickPartsCount$ = BrickPartService.Instance.GetBrickPartsRowCount({partTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _brickPartsCount$: Observable<bigint | number> | null = null;
+    public get BrickPartsCount$(): Observable<bigint | number> {
+        if (this._brickPartsCount$ === null) {
+            this._brickPartsCount$ = BrickPartService.Instance.GetBrickPartsRowCount({partTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickPartsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class PartTypeData {
      this._brickParts = null;
      this._brickPartsPromise = null;
      this._brickPartsSubject.next(null);
+     this._brickPartsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class PartTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BrickPartsCount$ = BrickPartService.Instance.GetBrickPartsRowCount({partTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._brickPartsCount$ = null;
 
 
 

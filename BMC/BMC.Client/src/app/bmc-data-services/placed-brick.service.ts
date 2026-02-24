@@ -214,11 +214,17 @@ export class PlacedBrickData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PlacedBrickChangeHistoriesCount$ = PlacedBrickChangeHistoryService.Instance.GetPlacedBrickChangeHistoriesRowCount({placedBrickId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _placedBrickChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get PlacedBrickChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._placedBrickChangeHistoriesCount$ === null) {
+            this._placedBrickChangeHistoriesCount$ = PlacedBrickChangeHistoryService.Instance.GetPlacedBrickChangeHistoriesRowCount({placedBrickId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._placedBrickChangeHistoriesCount$;
+    }
 
 
 
@@ -233,11 +239,17 @@ export class PlacedBrickData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({placedBrickId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _submodelPlacedBricksCount$: Observable<bigint | number> | null = null;
+    public get SubmodelPlacedBricksCount$(): Observable<bigint | number> {
+        if (this._submodelPlacedBricksCount$ === null) {
+            this._submodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({placedBrickId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._submodelPlacedBricksCount$;
+    }
 
 
 
@@ -252,11 +264,17 @@ export class PlacedBrickData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({placedBrickId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildStepPartsCount$: Observable<bigint | number> | null = null;
+    public get BuildStepPartsCount$(): Observable<bigint | number> {
+        if (this._buildStepPartsCount$ === null) {
+            this._buildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({placedBrickId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepPartsCount$;
+    }
 
 
 
@@ -271,11 +289,17 @@ export class PlacedBrickData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({placedBrickId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildStepAnnotationsCount$: Observable<bigint | number> | null = null;
+    public get BuildStepAnnotationsCount$(): Observable<bigint | number> {
+        if (this._buildStepAnnotationsCount$ === null) {
+            this._buildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({placedBrickId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepAnnotationsCount$;
+    }
 
 
 
@@ -320,18 +344,22 @@ export class PlacedBrickData {
      this._placedBrickChangeHistories = null;
      this._placedBrickChangeHistoriesPromise = null;
      this._placedBrickChangeHistoriesSubject.next(null);
+     this._placedBrickChangeHistoriesCount$ = null;
 
      this._submodelPlacedBricks = null;
      this._submodelPlacedBricksPromise = null;
      this._submodelPlacedBricksSubject.next(null);
+     this._submodelPlacedBricksCount$ = null;
 
      this._buildStepParts = null;
      this._buildStepPartsPromise = null;
      this._buildStepPartsSubject.next(null);
+     this._buildStepPartsCount$ = null;
 
      this._buildStepAnnotations = null;
      this._buildStepAnnotationsPromise = null;
      this._buildStepAnnotationsSubject.next(null);
+     this._buildStepAnnotationsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1266,11 +1294,7 @@ export class PlacedBrickService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PlacedBrickChangeHistoriesCount$ = PlacedBrickChangeHistoryService.Instance.GetPlacedBrickChangeHistoriesRowCount({placedBrickId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._placedBrickChangeHistoriesCount$ = null;
 
 
     (revived as any).SubmodelPlacedBricks$ = (revived as any)._submodelPlacedBricksSubject.asObservable().pipe(
@@ -1282,11 +1306,7 @@ export class PlacedBrickService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({placedBrickId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._submodelPlacedBricksCount$ = null;
 
 
     (revived as any).BuildStepParts$ = (revived as any)._buildStepPartsSubject.asObservable().pipe(
@@ -1298,11 +1318,7 @@ export class PlacedBrickService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({placedBrickId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildStepPartsCount$ = null;
 
 
     (revived as any).BuildStepAnnotations$ = (revived as any)._buildStepAnnotationsSubject.asObservable().pipe(
@@ -1314,11 +1330,7 @@ export class PlacedBrickService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({placedBrickId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildStepAnnotationsCount$ = null;
 
 
 

@@ -186,11 +186,17 @@ export class BuildManualData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildManualChangeHistoriesCount$ = BuildManualChangeHistoryService.Instance.GetBuildManualChangeHistoriesRowCount({buildManualId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildManualChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BuildManualChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._buildManualChangeHistoriesCount$ === null) {
+            this._buildManualChangeHistoriesCount$ = BuildManualChangeHistoryService.Instance.GetBuildManualChangeHistoriesRowCount({buildManualId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildManualChangeHistoriesCount$;
+    }
 
 
 
@@ -205,11 +211,17 @@ export class BuildManualData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BuildManualPagesCount$ = BuildManualPageService.Instance.GetBuildManualPagesRowCount({buildManualId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _buildManualPagesCount$: Observable<bigint | number> | null = null;
+    public get BuildManualPagesCount$(): Observable<bigint | number> {
+        if (this._buildManualPagesCount$ === null) {
+            this._buildManualPagesCount$ = BuildManualPageService.Instance.GetBuildManualPagesRowCount({buildManualId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildManualPagesCount$;
+    }
 
 
 
@@ -224,11 +236,17 @@ export class BuildManualData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({buildManualId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _sharedInstructionsCount$: Observable<bigint | number> | null = null;
+    public get SharedInstructionsCount$(): Observable<bigint | number> {
+        if (this._sharedInstructionsCount$ === null) {
+            this._sharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({buildManualId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._sharedInstructionsCount$;
+    }
 
 
 
@@ -273,14 +291,17 @@ export class BuildManualData {
      this._buildManualChangeHistories = null;
      this._buildManualChangeHistoriesPromise = null;
      this._buildManualChangeHistoriesSubject.next(null);
+     this._buildManualChangeHistoriesCount$ = null;
 
      this._buildManualPages = null;
      this._buildManualPagesPromise = null;
      this._buildManualPagesSubject.next(null);
+     this._buildManualPagesCount$ = null;
 
      this._sharedInstructions = null;
      this._sharedInstructionsPromise = null;
      this._sharedInstructionsSubject.next(null);
+     this._sharedInstructionsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1129,11 +1150,7 @@ export class BuildManualService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildManualChangeHistoriesCount$ = BuildManualChangeHistoryService.Instance.GetBuildManualChangeHistoriesRowCount({buildManualId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildManualChangeHistoriesCount$ = null;
 
 
     (revived as any).BuildManualPages$ = (revived as any)._buildManualPagesSubject.asObservable().pipe(
@@ -1145,11 +1162,7 @@ export class BuildManualService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BuildManualPagesCount$ = BuildManualPageService.Instance.GetBuildManualPagesRowCount({buildManualId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._buildManualPagesCount$ = null;
 
 
     (revived as any).SharedInstructions$ = (revived as any)._sharedInstructionsSubject.asObservable().pipe(
@@ -1161,11 +1174,7 @@ export class BuildManualService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SharedInstructionsCount$ = SharedInstructionService.Instance.GetSharedInstructionsRowCount({buildManualId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._sharedInstructionsCount$ = null;
 
 
 

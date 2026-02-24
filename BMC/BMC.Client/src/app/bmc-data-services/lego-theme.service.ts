@@ -144,11 +144,17 @@ export class LegoThemeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _legoSetsCount$: Observable<bigint | number> | null = null;
+    public get LegoSetsCount$(): Observable<bigint | number> {
+        if (this._legoSetsCount$ === null) {
+            this._legoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._legoSetsCount$;
+    }
 
 
 
@@ -163,11 +169,17 @@ export class LegoThemeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({legoThemeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userProfilePreferredThemesCount$: Observable<bigint | number> | null = null;
+    public get UserProfilePreferredThemesCount$(): Observable<bigint | number> {
+        if (this._userProfilePreferredThemesCount$ === null) {
+            this._userProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({legoThemeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userProfilePreferredThemesCount$;
+    }
 
 
 
@@ -212,10 +224,12 @@ export class LegoThemeData {
      this._legoSets = null;
      this._legoSetsPromise = null;
      this._legoSetsSubject.next(null);
+     this._legoSetsCount$ = null;
 
      this._userProfilePreferredThemes = null;
      this._userProfilePreferredThemesPromise = null;
      this._userProfilePreferredThemesSubject.next(null);
+     this._userProfilePreferredThemesCount$ = null;
 
   }
 
@@ -834,11 +848,7 @@ export class LegoThemeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LegoSetsCount$ = LegoSetService.Instance.GetLegoSetsRowCount({legoThemeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._legoSetsCount$ = null;
 
 
     (revived as any).UserProfilePreferredThemes$ = (revived as any)._userProfilePreferredThemesSubject.asObservable().pipe(
@@ -850,11 +860,7 @@ export class LegoThemeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserProfilePreferredThemesCount$ = UserProfilePreferredThemeService.Instance.GetUserProfilePreferredThemesRowCount({legoThemeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userProfilePreferredThemesCount$ = null;
 
 
 

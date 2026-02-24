@@ -761,11 +761,7 @@ export interface VersionInformation<T> {
         shareReplay(1)
       );
 
-    (revived as any).{countObservableName}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: (revived as any).id,
-      active: true,
-      deleted: false
-    }});
-
+    (revived as any)._{CamelCase(countObservableName, false)}Count$ = null;
 
 ");
             }
@@ -2021,11 +2017,17 @@ export interface VersionInformation<T> {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public {pluralSourcePascalCase}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: this.id,
-      active: true,
-      deleted: false
-    }});
+
+    private _{Pluralize(CamelCase(sourceFieldNameWithoutId, false))}Count$: Observable<bigint | number> | null = null;
+    public get {pluralSourcePascalCase}Count$(): Observable<bigint | number> {{
+        if (this._{Pluralize(CamelCase(sourceFieldNameWithoutId, false))}Count$ === null) {{
+            this._{Pluralize(CamelCase(sourceFieldNameWithoutId, false))}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: this.id,
+              active: true,
+              deleted: false
+            }});
+        }}
+        return this._{Pluralize(CamelCase(sourceFieldNameWithoutId, false))}Count$;
+    }}
 
 
 ");
@@ -2052,11 +2054,17 @@ export interface VersionInformation<T> {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public {CamelCaseToPascalCase(nameToUse)}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: this.id,
-      active: true,
-      deleted: false
-    }});
+
+    private _{nameToUse}Count$: Observable<bigint | number> | null = null;
+    public get {CamelCaseToPascalCase(nameToUse)}Count$(): Observable<bigint | number> {{
+        if (this._{nameToUse}Count$ === null) {{
+            this._{nameToUse}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: this.id,
+              active: true,
+              deleted: false
+            }});
+        }}
+        return this._{nameToUse}Count$;
+    }}
 
 ");
                 }
@@ -2140,6 +2148,7 @@ export interface VersionInformation<T> {
                     sb.AppendLine($"     this._{pluralCamelCaseTableName} = null;");
                     sb.AppendLine($"     this._{pluralCamelCaseTableName}Promise = null;");
                     sb.AppendLine($"     this._{pluralCamelCaseTableName}Subject.next(null);");
+                    sb.AppendLine($"     this._{pluralCamelCaseTableName}Count$ = null;");
                 }
                 else
                 {
@@ -2153,6 +2162,7 @@ export interface VersionInformation<T> {
                     sb.AppendLine($"     this._{nameToUse} = null;");
                     sb.AppendLine($"     this._{nameToUse}Promise = null;");
                     sb.AppendLine($"     this._{nameToUse}Subject.next(null);");
+                    sb.AppendLine($"     this._{nameToUse}Count$ = null;");
 
                 }
 
