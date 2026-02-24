@@ -392,12 +392,16 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     // ── Download ──
 
     download(): void {
-        if (!this.renderedBlobUrl || !this.selectedPart) return;
+        if (!this.renderedBlobUrl) return;
+        if (!this.selectedPart && !this.uploadedFile) return;
 
         const ext = this.renderedFormat === 'gif' ? 'gif' : this.renderedFormat === 'webp' ? 'webp' : this.renderedFormat === 'svg' ? 'svg' : 'png';
+        const baseName = this.selectedPart
+            ? `${this.selectedPart.name}_c${this.selectedColourCode}_${this.renderWidth}x${this.renderHeight}`
+            : `${this.uploadedFileName.replace(/\.[^.]+$/, '')}_c${this.selectedColourCode}_${this.renderWidth}x${this.renderHeight}`;
         const a = document.createElement('a');
         a.href = this.renderedBlobUrl;
-        a.download = `${this.selectedPart.name}_c${this.selectedColourCode}_${this.renderWidth}x${this.renderHeight}.${ext}`;
+        a.download = `${baseName}.${ext}`;
         a.click();
     }
 

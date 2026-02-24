@@ -482,6 +482,283 @@ namespace BMC.LDraw.Render
         }
 
 
+        // ════════════════════════════════════════════════════════════════
+        //  Content-Based Overloads (accept string[] lines — no file I/O)
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Render LDraw content (lines) to raw RGBA pixels — no temp file needed.
+        /// </summary>
+        public byte[] RenderToPixels(string[] lines, string fileName,
+                                     int width = 512,
+                                     int height = 512,
+                                     int colourCode = -1,
+                                     float elevation = 30f,
+                                     float azimuth = -45f,
+                                     bool renderEdges = true,
+                                     bool smoothShading = true,
+                                     AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                     string backgroundHex = null,
+                                     string gradientTopHex = null,
+                                     string gradientBottomHex = null)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFromContent(lines, fileName, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return new byte[width * height * 4];
+            }
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            int ssaaFactor = 1;
+            if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
+            else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
+
+            int renderW = width * ssaaFactor;
+            int renderH = height * ssaaFactor;
+
+            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            if (gradientTopHex != null && gradientBottomHex != null)
+            {
+                ParseHex(gradientTopHex, out byte tr, out byte tg, out byte tb);
+                ParseHex(gradientBottomHex, out byte br, out byte bg, out byte bb);
+                renderer.SetGradientBackground(tr, tg, tb, br, bg, bb);
+            }
+            else if (backgroundHex != null)
+            {
+                ParseHex(backgroundHex, out byte bgr, out byte bgg, out byte bgb);
+                renderer.SetBackground(bgr, bgg, bgb, 255);
+            }
+
+            byte[] pixels = renderer.Render(mesh, camera);
+
+            if (ssaaFactor > 1)
+            {
+                pixels = PostProcess.Downsample(pixels, renderW, renderH, width, height);
+            }
+
+            return pixels;
+        }
+
+
+        /// <summary>
+        /// Render LDraw content to PNG bytes — no temp file needed.
+        /// </summary>
+        public byte[] RenderToPng(string[] lines, string fileName,
+                                  int width = 512,
+                                  int height = 512,
+                                  int colourCode = -1,
+                                  float elevation = 30f,
+                                  float azimuth = -45f,
+                                  bool renderEdges = true,
+                                  bool smoothShading = true,
+                                  AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                  string backgroundHex = null,
+                                  string gradientTopHex = null,
+                                  string gradientBottomHex = null)
+        {
+            byte[] pixels = RenderToPixels(lines: lines,
+                                           fileName: fileName,
+                                           width: width,
+                                           height: height,
+                                           colourCode: colourCode,
+                                           elevation: elevation,
+                                           azimuth: azimuth,
+                                           renderEdges: renderEdges,
+                                           smoothShading: smoothShading,
+                                           antiAliasMode: antiAliasMode,
+                                           backgroundHex: backgroundHex,
+                                           gradientTopHex: gradientTopHex,
+                                           gradientBottomHex: gradientBottomHex);
+
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
+        /// <summary>
+        /// Render LDraw content to WebP bytes — no temp file needed.
+        /// </summary>
+        public byte[] RenderToWebP(string[] lines, string fileName,
+                                   int width = 512,
+                                   int height = 512,
+                                   int colourCode = -1,
+                                   float elevation = 30f,
+                                   float azimuth = -45f,
+                                   bool renderEdges = true,
+                                   bool smoothShading = true,
+                                   AntiAliasMode antiAliasMode = AntiAliasMode.None,
+                                   string backgroundHex = null,
+                                   string gradientTopHex = null,
+                                   string gradientBottomHex = null,
+                                   int quality = 90)
+        {
+            byte[] pixels = RenderToPixels(lines: lines,
+                                           fileName: fileName,
+                                           width: width,
+                                           height: height,
+                                           colourCode: colourCode,
+                                           elevation: elevation,
+                                           azimuth: azimuth,
+                                           renderEdges: renderEdges,
+                                           smoothShading: smoothShading,
+                                           antiAliasMode: antiAliasMode,
+                                           backgroundHex: backgroundHex,
+                                           gradientTopHex: gradientTopHex,
+                                           gradientBottomHex: gradientBottomHex);
+
+            return ImageExporter.ToWebPBytes(pixels, width, height, quality);
+        }
+
+
+        /// <summary>
+        /// Render LDraw content to SVG — no temp file needed.
+        /// </summary>
+        public string RenderToSvg(string[] lines, string fileName,
+                                   int width = 512,
+                                   int height = 512,
+                                   int colourCode = -1,
+                                   float elevation = 30f,
+                                   float azimuth = -45f,
+                                   bool renderEdges = true,
+                                   bool smoothShading = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFromContent(lines, fileName, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return string.Format("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{0}\" height=\"{1}\"></svg>",
+                                     width, height);
+            }
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            return SvgExporter.RenderToSvg(mesh, camera, width, height, renderEdges);
+        }
+
+
+        /// <summary>
+        /// Render LDraw content as animated turntable GIF — no temp file needed.
+        /// </summary>
+        public byte[] RenderTurntableGif(string[] lines, string fileName,
+                                          int width = 256,
+                                          int height = 256,
+                                          int colourCode = -1,
+                                          int frameCount = 36,
+                                          float elevation = 30f,
+                                          int frameDelayMs = 80,
+                                          bool renderEdges = true,
+                                          bool smoothShading = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFromContent(lines, fileName, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            return TurntableRenderer.RenderToGif(
+                mesh: mesh,
+                width: width,
+                height: height,
+                frameCount: frameCount,
+                elevation: elevation,
+                frameDelayMs: frameDelayMs,
+                renderEdges: renderEdges,
+                smoothShading: smoothShading);
+        }
+
+
+        /// <summary>
+        /// Render an exploded view of LDraw content — no temp file needed.
+        /// </summary>
+        public byte[] RenderExplodedView(string[] lines, string fileName,
+                                          float explosionFactor = 1.0f,
+                                          int width = 512,
+                                          int height = 512,
+                                          int colourCode = -1,
+                                          float elevation = 30f,
+                                          float azimuth = -45f,
+                                          bool renderEdges = true,
+                                          bool smoothShading = true,
+                                          AntiAliasMode antiAliasMode = AntiAliasMode.None)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFromContentWithPartCounts(
+                lines, fileName, effectiveColour,
+                out List<int> partTriCounts, out List<int> partEdgeCounts);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            mesh = ExplodedViewBuilder.Explode(mesh, partTriCounts, partEdgeCounts, explosionFactor);
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            int ssaaFactor = 1;
+            if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
+            else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
+
+            int renderW = width * ssaaFactor;
+            int renderH = height * ssaaFactor;
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(mesh, camera);
+
+            if (ssaaFactor > 1)
+            {
+                pixels = PostProcess.Downsample(pixels, renderW, renderH, width, height);
+            }
+
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
         /// <summary>
         /// Parse a hex colour string like "#DFC176" into RGB bytes.
         /// </summary>

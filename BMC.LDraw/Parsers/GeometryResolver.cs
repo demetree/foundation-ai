@@ -176,6 +176,127 @@ namespace BMC.LDraw.Parsers
         }
 
 
+        // ────────────────────────────────────────────────────────
+        // Content-based methods (no file I/O — accept string[] lines)
+        // ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Resolve file content (lines) directly into a mesh, without touching disk.
+        /// </summary>
+        /// <param name="lines">The raw lines of the LDraw file.</param>
+        /// <param name="fileName">Original file name (used as cache key / default name).</param>
+        /// <param name="parentColourCode">Initial colour code. Use -1 for no override.</param>
+        public LDrawMesh ResolveFromContent(string[] lines, string fileName, int parentColourCode = -1)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0) return new LDrawMesh();
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            return Resolve(geos[0], parentColourCode);
+        }
+
+
+        /// <summary>
+        /// Resolve file content and track per-part triangle/edge counts (for exploded view).
+        /// </summary>
+        public LDrawMesh ResolveFromContentWithPartCounts(string[] lines, string fileName,
+            int parentColourCode,
+            out List<int> partTriangleCounts, out List<int> partEdgeCounts)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseLines(lines, fileName);
+            partTriangleCounts = new List<int>();
+            partEdgeCounts = new List<int>();
+
+            if (geos.Count == 0) return new LDrawMesh();
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            LDrawGeometry root = geos[0];
+            LDrawMesh mesh = new LDrawMesh();
+            int colour = parentColourCode >= 0 ? parentColourCode : 16;
+
+            float[] identity = new float[]
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            };
+
+            ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
+
+            for (int i = 0; i < root.SubfileReferences.Count; i++)
+            {
+                int triBefore = mesh.Triangles.Count;
+                int edgeBefore = mesh.EdgeLines.Count;
+
+                LDrawSubfileReference subRef = root.SubfileReferences[i];
+                LDrawGeometry subGeo = LoadFile(subRef.FileName);
+                if (subGeo == null)
+                {
+                    partTriangleCounts.Add(0);
+                    partEdgeCounts.Add(0);
+                    continue;
+                }
+
+                float[] subMatrix = BuildMatrix(subRef);
+                float[] worldMatrix = MultiplyMatrices(identity, subMatrix);
+                int subColour = ResolveColour(subRef.ColourCode, colour);
+
+                int subEdgeColour = 0;
+                if (subRef.ColourCode != 16 && subRef.ColourCode != 24)
+                {
+                    subEdgeColour = subRef.ColourCode;
+                }
+
+                bool subInvert = false;
+                if (root.InvertNextIndices.Contains(i))
+                {
+                    subInvert = !subInvert;
+                }
+                if (Determinant3x3(subRef.Matrix) < 0)
+                {
+                    subInvert = !subInvert;
+                }
+
+                ResolveRecursive(subGeo, worldMatrix, subColour, subEdgeColour, subInvert, mesh, 1);
+
+                partTriangleCounts.Add(mesh.Triangles.Count - triBefore);
+                partEdgeCounts.Add(mesh.EdgeLines.Count - edgeBefore);
+            }
+
+            return mesh;
+        }
+
+
+        /// <summary>
+        /// Get the number of build steps from file content (lines).
+        /// Returns 0 if the content has no STEP meta-commands.
+        /// </summary>
+        public int GetStepCountFromContent(string[] lines, string fileName)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0) return 0;
+            return geos[0].StepBreaks.Count;
+        }
+
+
+
         /// <summary>
         /// Resolve a file up to (and including) a specific build step.
         /// Step indices are 0-based.  Step 0 = just the first group of parts,

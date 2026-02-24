@@ -369,18 +369,18 @@ namespace Foundation.BMC.Controllers.WebAPI
             if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
             else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
 
-            // Save to temp
-            string tempDir = Path.Combine(Path.GetTempPath(), "bmc-ldraw-uploads");
-            Directory.CreateDirectory(tempDir);
-            string tempFile = Path.Combine(tempDir, $"{Guid.NewGuid()}{ext}");
+            // Read uploaded file into lines (in-memory, no temp file)
+            string[] lines;
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                string content = await reader.ReadToEndAsync();
+                lines = content.Split('\n');
+            }
+
+            string fileName = file.FileName;
 
             try
             {
-                using (var stream = new FileStream(tempFile, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream, cancellationToken);
-                }
-
                 byte[] result;
                 string contentType;
 
@@ -390,7 +390,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     {
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
-                        return _renderService.RenderToSvg(tempFile, width, height, colourCode, elevation, azimuth, renderEdges, smoothShading);
+                        return _renderService.RenderToSvg(lines, fileName, width, height, colourCode, elevation, azimuth, renderEdges, smoothShading);
                     }, cancellationToken);
 
                     result = System.Text.Encoding.UTF8.GetBytes(svg);
@@ -402,7 +402,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     {
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
-                        return _renderService.RenderToWebP(tempFile, width, height, colourCode, elevation, azimuth,
+                        return _renderService.RenderToWebP(lines, fileName, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
                     }, cancellationToken);
                     contentType = "image/webp";
@@ -413,7 +413,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     {
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
-                        return _renderService.RenderTurntableGif(tempFile, width, height, colourCode, 36,
+                        return _renderService.RenderTurntableGif(lines, fileName, width, height, colourCode, 36,
                             elevation, 80, renderEdges, smoothShading);
                     }, cancellationToken);
                     contentType = "image/gif";
@@ -425,7 +425,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     {
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
-                        return _renderService.RenderToPng(tempFile, width, height, colourCode, elevation, azimuth,
+                        return _renderService.RenderToPng(lines, fileName, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
                     }, cancellationToken);
                     contentType = "image/png";
@@ -441,14 +441,6 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error rendering uploaded file {FileName}", file.FileName);
                 return StatusCode(500, "Error rendering uploaded file.");
-            }
-            finally
-            {
-                // Always clean up temp file
-                if (System.IO.File.Exists(tempFile))
-                {
-                    try { System.IO.File.Delete(tempFile); } catch { /* best-effort cleanup */ }
-                }
             }
         }
 
