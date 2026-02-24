@@ -91,8 +91,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             // Normalise & clamp
-            width = Math.Clamp(width, 64, 1024);
-            height = Math.Clamp(height, 64, 1024);
+            width = Math.Clamp(width, 64, 3840);
+            height = Math.Clamp(height, 64, 3840);
             elevation = Math.Clamp(elevation, -90f, 90f);
             azimuth = Math.Clamp(azimuth, -360f, 360f);
             quality = Math.Clamp(quality, 1, 100);
@@ -357,8 +357,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             // Normalise & clamp
-            width = Math.Clamp(width, 64, 1024);
-            height = Math.Clamp(height, 64, 1024);
+            width = Math.Clamp(width, 64, 3840);
+            height = Math.Clamp(height, 64, 3840);
             elevation = Math.Clamp(elevation, -90f, 90f);
             azimuth = Math.Clamp(azimuth, -360f, 360f);
             quality = Math.Clamp(quality, 1, 100);

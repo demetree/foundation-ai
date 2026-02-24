@@ -413,8 +413,50 @@
 
 
 /* ── Size Presets ── */
+
+.size-category-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    border: 1px solid var(--bmc-border);
+}
+
+.size-cat-btn {
+    flex: 1;
+    padding: 5px 0;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--bmc-text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    white-space: nowrap;
+
+    i {
+        margin-right: 3px;
+        font-size: 0.65rem;
+    }
+
+    &:hover {
+        color: var(--bmc-text-primary);
+    }
+
+    &.active {
+        background: var(--bmc-primary);
+        color: #000;
+        font-weight: 600;
+    }
+}
+
 .size-presets {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 8px;
 }

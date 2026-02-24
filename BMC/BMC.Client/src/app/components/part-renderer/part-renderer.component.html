@@ -163,7 +163,8 @@
                         <ng-container *ngIf="!uploadedFile">
                             <i class="fas fa-cloud-upload-alt upload-icon"></i>
                             <div class="upload-text">Drop a <strong>.dat</strong>, <strong>.ldr</strong>, or
-                                <strong>.mpd</strong> file here</div>
+                                <strong>.mpd</strong> file here
+                            </div>
                             <div class="upload-hint">or click to browse · max 5 MB</div>
                         </ng-container>
 
@@ -228,9 +229,15 @@
             <!-- Size (shared) -->
             <div class="panel-section" *ngIf="selectedPart || uploadedFile">
                 <div class="section-title"><i class="fas fa-expand-arrows-alt"></i> Size</div>
+                <div class="size-category-tabs">
+                    <button *ngFor="let cat of sizeCategories" class="size-cat-btn"
+                        [class.active]="sizeCategory === cat.key" (click)="sizeCategory = cat.key">
+                        <i class="fas" [ngClass]="cat.icon"></i> {{ cat.label }}
+                    </button>
+                </div>
                 <div class="size-presets">
-                    <button *ngFor="let p of sizePresets" class="size-btn" [class.active]="isSelectedSize(p)"
-                        (click)="selectSize(p)">
+                    <button *ngFor="let p of activeSizePresets" class="size-btn" [class.active]="isSelectedSize(p)"
+                        (click)="selectSize(p)" [title]="p.w + ' × ' + p.h">
                         {{ p.label }}
                     </button>
                 </div>

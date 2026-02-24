@@ -88,13 +88,36 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     isDragOver = false;
     readonly acceptedExtensions = ['.dat', '.ldr', '.mpd'];
 
-    // Size presets
-    sizePresets = [
-        { label: '256', w: 256, h: 256 },
-        { label: '512', w: 512, h: 512 },
-        { label: '768', w: 768, h: 768 },
-        { label: '1024', w: 1024, h: 1024 },
+    // Size presets — categorised
+    sizeCategory: 'standard' | 'desktop' | 'mobile' = 'standard';
+
+    sizeCategories = [
+        { key: 'standard' as const, label: 'Standard', icon: 'fa-th-large' },
+        { key: 'desktop' as const, label: 'Desktop', icon: 'fa-desktop' },
+        { key: 'mobile' as const, label: 'Mobile', icon: 'fa-mobile-alt' },
     ];
+
+    sizePresets: { label: string; w: number; h: number; category: string }[] = [
+        // Standard (square)
+        { label: '256²', w: 256, h: 256, category: 'standard' },
+        { label: '512²', w: 512, h: 512, category: 'standard' },
+        { label: '768²', w: 768, h: 768, category: 'standard' },
+        { label: '1024²', w: 1024, h: 1024, category: 'standard' },
+        // Desktop wallpaper
+        { label: 'HD', w: 1920, h: 1080, category: 'desktop' },
+        { label: '2K', w: 2560, h: 1440, category: 'desktop' },
+        { label: '4K', w: 3840, h: 2160, category: 'desktop' },
+        { label: 'Ultrawide', w: 3440, h: 1440, category: 'desktop' },
+        // Mobile / tablet
+        { label: 'Phone', w: 1080, h: 1920, category: 'mobile' },
+        { label: 'Phone+', w: 1284, h: 2778, category: 'mobile' },
+        { label: 'Tablet', w: 2048, h: 2732, category: 'mobile' },
+        { label: 'Square', w: 1080, h: 1080, category: 'mobile' },
+    ];
+
+    get activeSizePresets() {
+        return this.sizePresets.filter(p => p.category === this.sizeCategory);
+    }
 
     // View angle presets
     anglePresets = [
