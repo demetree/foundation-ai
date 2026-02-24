@@ -46,6 +46,18 @@
                         <span class="meta-label">Appears In</span>
                         <span class="meta-value">{{ appearsIn.length }} sets</span>
                     </div>
+                    <div class="meta-item rarity-badge" *ngIf="appearsIn.length > 0"
+                        [class.exclusive]="appearsIn.length === 1"
+                        [class.rare]="appearsIn.length >= 2 && appearsIn.length <= 3"
+                        [class.uncommon]="appearsIn.length >= 4 && appearsIn.length <= 5">
+                        <i class="fas" [class.fa-gem]="appearsIn.length <= 3"
+                            [class.fa-star]="appearsIn.length >= 4 && appearsIn.length <= 5"></i>
+                        <span class="meta-label">Rarity</span>
+                        <span class="meta-value" *ngIf="appearsIn.length === 1">Exclusive</span>
+                        <span class="meta-value" *ngIf="appearsIn.length >= 2 && appearsIn.length <= 3">Rare</span>
+                        <span class="meta-value" *ngIf="appearsIn.length >= 4 && appearsIn.length <= 5">Uncommon</span>
+                        <span class="meta-value" *ngIf="appearsIn.length > 5">Common</span>
+                    </div>
                 </div>
                 <div class="theme-chips" *ngIf="themes.length > 0">
                     <span class="theme-chip" *ngFor="let t of themes"

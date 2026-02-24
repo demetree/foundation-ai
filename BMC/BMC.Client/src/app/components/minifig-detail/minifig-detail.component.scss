@@ -205,6 +205,48 @@ h1 {
     }
 }
 
+// ── Rarity Badge ────────────────────────────────
+.rarity-badge {
+    &.exclusive {
+        border-color: rgba(255, 215, 0, 0.35);
+        background: rgba(255, 215, 0, 0.06);
+
+        i {
+            color: #ffd700;
+        }
+
+        .meta-value {
+            color: #ffd700;
+        }
+    }
+
+    &.rare {
+        border-color: rgba(168, 85, 247, 0.35);
+        background: rgba(168, 85, 247, 0.06);
+
+        i {
+            color: #a855f7;
+        }
+
+        .meta-value {
+            color: #a855f7;
+        }
+    }
+
+    &.uncommon {
+        border-color: rgba(20, 184, 166, 0.35);
+        background: rgba(20, 184, 166, 0.06);
+
+        i {
+            color: #14b8a6;
+        }
+
+        .meta-value {
+            color: #14b8a6;
+        }
+    }
+}
+
 // ── Theme Chips ─────────────────────────────────
 .theme-chips {
     display: flex;

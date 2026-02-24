@@ -88,6 +88,28 @@ export class SetComparisonComponent implements OnInit, OnDestroy {
                 label: 'Theme',
                 icon: 'fas fa-layer-group',
                 values: this.sets.map(s => s.themeName ?? '—')
+            },
+            {
+                label: 'Parts / Year Ratio',
+                icon: 'fas fa-chart-line',
+                values: this.sets.map(s => {
+                    const age = new Date().getFullYear() - s.year + 1;
+                    return (s.partCount / Math.max(age, 1)).toFixed(0);
+                }),
+                highlight: 'max'
+            },
+            {
+                label: 'Set Age',
+                icon: 'fas fa-hourglass-half',
+                values: this.sets.map(s => {
+                    const age = new Date().getFullYear() - s.year;
+                    return age === 0 ? 'Current year' : `${age} year${age !== 1 ? 's' : ''}`;
+                })
+            },
+            {
+                label: 'Has Image',
+                icon: 'fas fa-image',
+                values: this.sets.map(s => s.imageUrl ? '✓' : '✗')
             }
         ];
     }

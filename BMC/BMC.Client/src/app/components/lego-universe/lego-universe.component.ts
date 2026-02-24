@@ -957,6 +957,46 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         this.closeSearch();
     }
 
+    @HostListener('document:keydown', ['$event'])
+    onKeydown(event: KeyboardEvent): void {
+        const tag = (event.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (event.key === '/') {
+            event.preventDefault();
+            document.getElementById('universe-search-input')?.focus();
+        }
+    }
+
+    // Back-to-top
+    showBackToTop = false;
+
+    @HostListener('window:scroll')
+    onWindowScroll(): void {
+        this.showBackToTop = window.scrollY > 400;
+    }
+
+    scrollToTop(): void {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * Navigate directly to a specific item's detail page from search results.
+     */
+    navigateToSearchResult(type: 'set' | 'minifig' | 'theme', id: number | bigint): void {
+        switch (type) {
+            case 'set':
+                this.router.navigate(['/lego/sets', Number(id)]);
+                break;
+            case 'minifig':
+                this.router.navigate(['/lego/minifigs', Number(id)]);
+                break;
+            case 'theme':
+                this.router.navigate(['/lego/themes', Number(id)]);
+                break;
+        }
+        this.closeSearch();
+    }
+
 
     // ----------------------------------------------------------------
     //  Phase 4 — Live Nav Cards

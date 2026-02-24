@@ -1,10 +1,5 @@
 <aside class="bmc-sidebar" [class.collapsed]="isCollapsed">
 
-    <!-- Toggle Button -->
-    <button class="sidebar-toggle" (click)="toggle()" [title]="isCollapsed ? 'Expand' : 'Collapse'">
-        <i class="fas" [class.fa-chevron-left]="!isCollapsed" [class.fa-chevron-right]="isCollapsed"></i>
-    </button>
-
     <!-- Navigation -->
     <nav class="sidebar-nav">
         <a *ngFor="let item of navItems; let i = index" class="nav-item" [routerLink]="item.route"
@@ -20,11 +15,9 @@
         </a>
     </nav>
 
-    <!-- Bottom Section -->
-    <div class="sidebar-footer" *ngIf="!isCollapsed">
-        <div class="version-info">
-            <span class="version-label">BMC</span>
-            <span class="version-number">v1.0.0</span>
-        </div>
-    </div>
+    <!-- Toggle Button -->
+    <button class="sidebar-toggle" (click)="toggle()" [title]="isCollapsed ? 'Expand' : 'Collapse'">
+        <i class="fas" [class.fa-chevron-left]="!isCollapsed" [class.fa-chevron-right]="isCollapsed"></i>
+    </button>
+
 </aside>

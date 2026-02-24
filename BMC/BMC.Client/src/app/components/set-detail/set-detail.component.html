@@ -66,6 +66,9 @@
                     <button *ngIf="set.brickLinkUrl" class="ext-btn" (click)="openExternal(set.brickLinkUrl)">
                         <i class="fas fa-external-link-alt"></i> BrickLink
                     </button>
+                    <button class="ext-btn" (click)="openInstructions()">
+                        <i class="fas fa-book-open"></i> Instructions
+                    </button>
                     <button class="ext-btn" [class.active]="isInComparison" (click)="toggleCompare()"
                         [ngbTooltip]="isInComparison
                             ? 'Click to remove this set from your comparison list.'

@@ -16,6 +16,35 @@
 }
 
 /* ----------------------------------------------------------------
+   Breadcrumb
+   ---------------------------------------------------------------- */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+
+    a {
+        color: var(--bmc-accent, var(--bmc-primary));
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .sep {
+        color: var(--bmc-text-secondary);
+        opacity: 0.5;
+    }
+
+    .current {
+        color: var(--bmc-text-secondary);
+    }
+}
+
+/* ----------------------------------------------------------------
    Header
    ---------------------------------------------------------------- */
 .lib-header {
@@ -580,6 +609,25 @@
         background: var(--bmc-primary-dark);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px var(--bmc-accent-glow);
+    }
+}
+
+.detail-parts-btn {
+    padding: 10px 24px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--bmc-primary);
+    background: transparent;
+    color: var(--bmc-primary);
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    margin-left: 8px;
+
+    &:hover {
+        background: var(--bmc-primary);
+        color: #000;
+        transform: translateY(-1px);
     }
 }
 

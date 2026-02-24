@@ -42,6 +42,11 @@
                     <span class="stat-number">{{ yearRange }}</span>
                     <span class="stat-label">Year range</span>
                 </div>
+                <div class="stat-pill" *ngIf="totalParts > 0">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <span class="stat-number">{{ totalParts | number }}</span>
+                    <span class="stat-label">Total parts</span>
+                </div>
                 <div class="stat-pill completion-pill" *ngIf="ownedInTheme > 0">
                     <i class="fas fa-trophy"></i>
                     <span class="stat-number">{{ themeCompletion }}%</span>

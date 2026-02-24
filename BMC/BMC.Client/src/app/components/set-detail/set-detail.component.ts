@@ -391,6 +391,15 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         if (url) window.open(url, '_blank');
     }
 
+    openInstructions(): void {
+        if (!this.set) return;
+        // Strip variant suffix (e.g. '42131-1' → '42131') for cleaner LEGO search
+        const baseNumber = (this.set.setNumber ?? '').replace(/-\d+$/, '');
+        if (baseNumber) {
+            window.open(`https://www.lego.com/en-us/service/buildinginstructions/${baseNumber}`, '_blank');
+        }
+    }
+
     openSimilarSet(set: SetExplorerItem): void {
         this.router.navigate(['/lego/sets', set.id]);
     }

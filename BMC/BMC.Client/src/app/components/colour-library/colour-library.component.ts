@@ -147,6 +147,10 @@ export class ColourLibraryComponent implements OnInit, OnDestroy {
         this.router.navigate(['/brickcolours', colour.id]);
     }
 
+    viewPartsInColour(colour: BrickColourData): void {
+        this.router.navigate(['/lego/parts'], { queryParams: { colourId: colour.id } });
+    }
+
     /** Normalize a hex value — the DB may store with or without '#' prefix */
     private normalizeHex(hex: string | null | undefined): string | null {
         if (!hex) return null;

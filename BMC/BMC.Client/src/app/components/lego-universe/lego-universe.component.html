@@ -85,8 +85,9 @@
     <div class="universe-search">
         <div class="search-input-wrapper">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search across sets, minifigs, and themes..."
-                [(ngModel)]="searchTerm" (input)="onSearchInput()" (blur)="closeSearch()" autocomplete="off" />
+            <input type="text" class="search-input" id="universe-search-input"
+                placeholder="Search across sets, minifigs, and themes..." [(ngModel)]="searchTerm"
+                (input)="onSearchInput()" (blur)="closeSearch()" autocomplete="off" />
             <button class="search-clear" *ngIf="searchTerm.length > 0" (mousedown)="searchTerm = ''; closeSearch()">
                 <i class="fas fa-times"></i>
             </button>
@@ -100,7 +101,7 @@
                     <i class="fas fa-box-open"></i> Sets
                 </div>
                 <div class="search-result-item" *ngFor="let set of searchResults.sets"
-                    (mousedown)="navigateFromSearch('sets')">
+                    (mousedown)="navigateToSearchResult('set', set.id)">
                     <img *ngIf="set.imageUrl" [src]="set.imageUrl" class="search-thumb" alt="" />
                     <div class="search-result-info">
                         <span class="search-result-name">{{ set.name }}</span>
@@ -118,7 +119,7 @@
                     <i class="fas fa-child"></i> Minifigs
                 </div>
                 <div class="search-result-item" *ngFor="let fig of searchResults.minifigs"
-                    (mousedown)="navigateFromSearch('minifigs')">
+                    (mousedown)="navigateToSearchResult('minifig', fig.id)">
                     <img *ngIf="fig.imageUrl" [src]="fig.imageUrl" class="search-thumb" alt="" />
                     <div class="search-result-info">
                         <span class="search-result-name">{{ fig.name }}</span>
@@ -136,7 +137,7 @@
                     <i class="fas fa-layer-group"></i> Themes
                 </div>
                 <div class="search-result-item" *ngFor="let theme of searchResults.themes"
-                    (mousedown)="navigateFromSearch('themes')">
+                    (mousedown)="navigateToSearchResult('theme', theme.id)">
                     <div class="search-result-info">
                         <span class="search-result-name">{{ theme.name }}</span>
                     </div>
@@ -359,3 +360,8 @@
     </div>
 
 </div>
+
+<!-- Back to Top -->
+<button class="back-to-top" *ngIf="showBackToTop" (click)="scrollToTop()" title="Back to top">
+    <i class="fas fa-chevron-up"></i>
+</button>

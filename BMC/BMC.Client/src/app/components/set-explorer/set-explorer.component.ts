@@ -189,7 +189,7 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             }
             return;
         }
-        if (event.key === 's' || event.key === 'S') {
+        if (event.key === 's' || event.key === 'S' || event.key === '/') {
             event.preventDefault();
             document.getElementById('set-search-input')?.focus();
         }

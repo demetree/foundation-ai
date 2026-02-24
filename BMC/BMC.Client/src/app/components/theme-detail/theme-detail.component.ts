@@ -40,6 +40,7 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
     totalSets = 0;
     totalSubThemes = 0;
     yearRange = '';
+    totalParts = 0;
     heroImageUrl: string | null = null;
 
     // Collection — theme completion
@@ -154,6 +155,9 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
                     const maxYear = Math.max(...years);
                     this.yearRange = minYear === maxYear ? `${minYear}` : `${minYear}–${maxYear}`;
                 }
+
+                // Calculate total parts across all sets
+                this.totalParts = sets.reduce((sum, s) => sum + (Number(s.partCount) || 0), 0);
 
                 this.setsLoading = false;
 
