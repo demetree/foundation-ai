@@ -12,6 +12,7 @@ export class LoginComponent {
 
     userName = '';
     password = '';
+    rememberMe = false;
     isLoading = false;
     loginStatusMessage = '';
     isModal = false;
@@ -33,7 +34,7 @@ export class LoginComponent {
         this.isLoading = true;
         this.loginStatusMessage = 'Signing in...';
 
-        this.authService.loginWithPassword(this.userName, this.password)
+        this.authService.loginWithPassword(this.userName, this.password, this.rememberMe)
             .subscribe({
                 next: () => {
                     this.isLoading = false;

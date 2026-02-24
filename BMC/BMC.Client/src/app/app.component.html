@@ -7,16 +7,17 @@
 
 <!-- Desktop Layout -->
 <div *ngIf="!isMobile && isAppLoaded" class="app-layout">
-    <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+    <app-header [isUserLoggedIn]="isUserLoggedIn && !isOnLoginPage" (invokeLogout)="logout()"></app-header>
     <app-matrix-rain></app-matrix-rain>
 
     <div class="app-body">
-        <app-sidebar *ngIf="isUserLoggedIn" [isCollapsed]="isSidebarCollapsed"
+        <app-sidebar *ngIf="isUserLoggedIn && !isOnLoginPage" [isCollapsed]="isSidebarCollapsed"
             (toggleCollapse)="onSidebarToggle($event)">
         </app-sidebar>
 
-        <main class="app-main" [class.sidebar-expanded]="isUserLoggedIn && !isSidebarCollapsed"
-            [class.sidebar-collapsed]="isUserLoggedIn && isSidebarCollapsed" [class.no-sidebar]="!isUserLoggedIn">
+        <main class="app-main" [class.sidebar-expanded]="isUserLoggedIn && !isOnLoginPage && !isSidebarCollapsed"
+            [class.sidebar-collapsed]="isUserLoggedIn && !isOnLoginPage && isSidebarCollapsed"
+            [class.no-sidebar]="!isUserLoggedIn || isOnLoginPage">
             <router-outlet></router-outlet>
         </main>
     </div>
@@ -24,7 +25,7 @@
 
 <!-- Mobile Layout -->
 <div *ngIf="isMobile && isAppLoaded" class="app-layout">
-    <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+    <app-header [isUserLoggedIn]="isUserLoggedIn && !isOnLoginPage" (invokeLogout)="logout()"></app-header>
     <main class="app-main-mobile">
         <router-outlet></router-outlet>
     </main>

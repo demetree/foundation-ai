@@ -101,6 +101,7 @@ export class AuthService {
         return this.oidcHelperService.refreshLogin().pipe(
             map(resp => this.processLoginResponse(resp, this.rememberMe)),
             catchError(() => {
+                this.logout();
                 this.reLogin();
                 return throwError('Session expired, please log in again.');
             })
@@ -175,19 +176,6 @@ export class AuthService {
 
         const millisecondsBeforeTokenRefresh = this.accessTokenExpiryDate.getTime() - Date.now() - 60000;
         console.log('Access token refresh in ' + millisecondsBeforeTokenRefresh + ' milliseconds');
-
-        //
-        // If the token is already expired (negative or zero interval) or the expiry
-        // date could not be parsed (NaN from JSON-deserialized date strings), log out
-        // cleanly instead of attempting a refresh that will fail and produce a broken
-        // UI state where the login card overlays the dashboard with the sidebar visible.
-        //
-        if (isNaN(millisecondsBeforeTokenRefresh) || millisecondsBeforeTokenRefresh <= 0) {
-            console.warn('Access token is already expired. Logging out.');
-            this.logout();
-            this.redirectLogoutUser();
-            return;
-        }
 
         this.tokenRefreshTimer = setTimeout(() => {
             this.refreshLogin().subscribe(

@@ -59,6 +59,19 @@
                 </div>
             </div>
 
+            <label class="remember-me" for="login-remember">
+                <input type="checkbox" id="login-remember" [(ngModel)]="rememberMe" name="rememberMe"
+                    [disabled]="isLoading">
+                <span class="checkmark"></span>
+                <span class="remember-label">Remember me</span>
+            </label>
+
+            <div class="remember-warning" *ngIf="rememberMe">
+                <i class="fas fa-shield-alt warning-icon"></i>
+                <span>Your session will persist across browser restarts. Avoid this on shared or public
+                    computers.</span>
+            </div>
+
             <button type="submit" class="btn-bmc login-btn" [disabled]="isLoading">
                 <span *ngIf="!isLoading">
                     <i class="fas fa-sign-in-alt me-2"></i>Sign In

@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
 
     isAppLoaded = false;
     isUserLoggedIn = false;
+    isOnLoginPage = false;
     appTitle = 'BMC';
     isMobile = false;
     isSidebarCollapsed = false;
@@ -72,12 +73,13 @@ export class AppComponent implements OnInit {
             }
         });
 
-        // Toggle body background and sidebar visibility on login route
+        // Toggle body background and track login page state for layout visibility
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
-                if (event.urlAfterRedirects === '/login') {
+                this.isOnLoginPage = (event.urlAfterRedirects === '/login');
+
+                if (this.isOnLoginPage) {
                     document.body.className = 'pre-login-background no-select';
-                    this.isUserLoggedIn = false;
                 } else {
                     document.body.className = 'post-login-background no-select';
                 }
