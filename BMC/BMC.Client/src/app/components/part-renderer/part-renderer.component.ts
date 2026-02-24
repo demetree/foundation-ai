@@ -65,11 +65,32 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     smoothShading = true;
     antiAliasMode: 'none' | '2x' | '4x' = 'none';
     outputFormat: 'png' | 'webp' | 'svg' | 'gif' = 'png';
+    webpQuality = 90;
     backgroundHex = '';
     gradientTopHex = '';
     gradientBottomHex = '';
     explodedView = false;
     explosionFactor = 1.0;
+
+    // Build steps
+    stepCount = 0;
+    currentStep = 0;
+    stepMode = false;
+    loadingSteps = false;
+
+    /** Auto-downgrades 4× SSAA to 2× for resolutions above 2K to prevent memory bombs */
+    get effectiveAntiAlias(): string {
+        if (this.antiAliasMode === '4x' && (this.renderWidth > 2560 || this.renderHeight > 2560)) {
+            return '2x';
+        }
+        return this.antiAliasMode;
+    }
+
+    /** Display string for current resolution */
+    get sizeDisplayLabel(): string {
+        if (this.outputFormat === 'svg') return 'Vector (scalable)';
+        return `${this.renderWidth} × ${this.renderHeight} px`;
+    }
 
     // Render state
     renderedImageUrl: SafeUrl | null = null;
@@ -128,6 +149,29 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         { label: '3/4 High', icon: 'fa-mountain-sun', elevation: 45, azimuth: -45 },
         { label: '3/4 Low', icon: 'fa-road', elevation: 15, azimuth: -45 },
     ];
+
+    // Background gradient presets
+    bgPresets = [
+        { label: 'None', icon: 'fa-ban', top: '', bottom: '', bg: '' },
+        { label: 'Dark', icon: 'fa-moon', top: '#1a1a2e', bottom: '#16213e', bg: '' },
+        { label: 'Sunset', icon: 'fa-sun', top: '#ff6b6b', bottom: '#ffd93d', bg: '' },
+        { label: 'Ocean', icon: 'fa-water', top: '#0f3460', bottom: '#1a508b', bg: '' },
+        { label: 'Forest', icon: 'fa-tree', top: '#1b4332', bottom: '#2d6a4f', bg: '' },
+        { label: 'Midnight', icon: 'fa-star', top: '#0d0d2b', bottom: '#1a1a40', bg: '' },
+        { label: 'Blush', icon: 'fa-heart', top: '#ee9ca7', bottom: '#ffdde1', bg: '' },
+        { label: 'Slate', icon: 'fa-cloud', top: '#2c3e50', bottom: '#4ca1af', bg: '' },
+        { label: 'Studio', icon: 'fa-lightbulb', top: '#e8e8e8', bottom: '#f5f5f5', bg: '' },
+    ];
+
+    applyBgPreset(preset: { top: string; bottom: string; bg: string }): void {
+        this.gradientTopHex = preset.top;
+        this.gradientBottomHex = preset.bottom;
+        this.backgroundHex = preset.bg;
+    }
+
+    isActiveBgPreset(preset: { top: string; bottom: string }): boolean {
+        return this.gradientTopHex === preset.top && this.gradientBottomHex === preset.bottom;
+    }
 
     constructor(
         private http: HttpClient,
@@ -202,7 +246,11 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         this.renderError = '';
         this.colourMode = 'part';
         this.colourSearchTerm = '';
+        this.stepMode = false;
+        this.stepCount = 0;
+        this.currentStep = 0;
         this.loadColours(part.name);
+        this.loadStepCount(part.name);
     }
 
     clearSelection(): void {
@@ -215,6 +263,9 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         this.renderedImageUrl = null;
         this.revokeBlob();
         this.renderError = '';
+        this.stepMode = false;
+        this.stepCount = 0;
+        this.currentStep = 0;
     }
 
 
@@ -329,6 +380,12 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     render(): void {
         if (!this.selectedPart || this.rendering) return;
 
+        // Step mode uses a separate endpoint
+        if (this.stepMode && this.stepCount > 0) {
+            this.renderStep();
+            return;
+        }
+
         // Turntable GIF uses a separate endpoint
         if (this.outputFormat === 'gif') {
             this.renderTurntable();
@@ -350,7 +407,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}`;
         } else {
             // Standard render endpoint with all options
-            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.antiAliasMode}&format=${this.outputFormat}`;
+            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}`;
 
             if (this.backgroundHex) {
                 url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
@@ -412,6 +469,73 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     }
 
 
+    // ── Build Steps ──
+
+    private loadStepCount(partNumber: string): void {
+        this.loadingSteps = true;
+        const headers = this.authService.GetAuthenticationHeaders();
+
+        this.http.get<{ stepCount: number }>(`/api/part-renderer/step-count?partNumber=${encodeURIComponent(partNumber)}`, { headers })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (res) => {
+                    this.stepCount = res.stepCount;
+                    this.loadingSteps = false;
+                },
+                error: () => {
+                    this.stepCount = 0;
+                    this.loadingSteps = false;
+                }
+            });
+    }
+
+    renderStep(): void {
+        if (!this.selectedPart || this.rendering) return;
+
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeBlob();
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        const partNumber = this.selectedPart.name;
+        const effectiveAzimuth = this.flipView ? this.selectedAzimuth + 180 : this.selectedAzimuth;
+
+        const url = `/api/part-renderer/render-step?partNumber=${encodeURIComponent(partNumber)}&stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}`;
+
+        const startTime = performance.now();
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = 'png';
+                    this.rendering = false;
+                },
+                error: (err) => {
+                    this.renderTimeMs = 0;
+                    this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Step render failed. Please try again.';
+                    this.rendering = false;
+                }
+            });
+    }
+
+    prevStep(): void {
+        if (this.currentStep > 0) {
+            this.currentStep--;
+            this.renderStep();
+        }
+    }
+
+    nextStep(): void {
+        if (this.currentStep < this.stepCount - 1) {
+            this.currentStep++;
+            this.renderStep();
+        }
+    }
+
     // ── Download ──
 
     download(): void {
@@ -426,6 +550,50 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         a.href = this.renderedBlobUrl;
         a.download = `${baseName}.${ext}`;
         a.click();
+    }
+
+    batchExporting = false;
+
+    batchExport(): void {
+        if (!this.selectedPart || this.batchExporting) return;
+
+        this.batchExporting = true;
+        const headers = this.authService.GetAuthenticationHeaders()
+            .set('Content-Type', 'application/json');
+
+        const effectiveAzimuth = this.flipView ? this.selectedAzimuth + 180 : this.selectedAzimuth;
+
+        const body = {
+            partNumber: this.selectedPart.name,
+            colourCode: this.selectedColourCode,
+            elevation: this.selectedElevation,
+            azimuth: effectiveAzimuth,
+            renderEdges: this.renderEdges,
+            smoothShading: this.smoothShading,
+            antiAlias: this.effectiveAntiAlias,
+            backgroundHex: this.backgroundHex,
+            gradientTopHex: this.gradientTopHex,
+            gradientBottomHex: this.gradientBottomHex,
+            sizes: this.activeSizePresets.map(p => ({ width: p.w, height: p.h }))
+        };
+
+        this.http.post('/api/part-renderer/batch-render', body, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${this.selectedPart!.name}_renders.zip`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.batchExporting = false;
+                },
+                error: () => {
+                    this.batchExporting = false;
+                    this.renderError = 'Batch export failed. Please try again.';
+                }
+            });
     }
 
 
@@ -496,7 +664,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         formData.append('file', this.uploadedFile, this.uploadedFile.name);
 
         // Build query string with render params
-        let url = `/api/part-renderer/render-upload?colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.antiAliasMode}&format=${this.outputFormat}`;
+        let url = `/api/part-renderer/render-upload?colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}`;
 
         if (this.backgroundHex) {
             url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;

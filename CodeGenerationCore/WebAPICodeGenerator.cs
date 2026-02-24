@@ -513,6 +513,24 @@ namespace Foundation.CodeGeneration
 
                     sb.Append("\t\t\tDateTime? " + prop.Name + " = null");
                 }
+                else if (propertyType == typeof(DateOnly))
+                {
+                    if (processingFirstProperty == false)
+                    {
+                        sb.AppendLine(",");
+                    }
+
+                    sb.Append("\t\t\tDateOnly? " + prop.Name + " = null");
+                }
+                else if (propertyType == typeof(TimeOnly))
+                {
+                    if (processingFirstProperty == false)
+                    {
+                        sb.AppendLine(",");
+                    }
+
+                    sb.Append("\t\t\tTimeOnly? " + prop.Name + " = null");
+                }
                 else if (propertyType == typeof(float))
                 {
                     if (processingFirstProperty == false)
@@ -1336,6 +1354,24 @@ namespace Foundation.CodeGeneration
                     }
 
                     sb.Append("\t\t\tDateTime? " + prop.Name + " = null");
+                }
+                else if (propertyType == typeof(DateOnly))
+                {
+                    if (processingFirstProperty == false)
+                    {
+                        sb.AppendLine(",");
+                    }
+
+                    sb.Append("\t\t\tDateOnly? " + prop.Name + " = null");
+                }
+                else if (propertyType == typeof(TimeOnly))
+                {
+                    if (processingFirstProperty == false)
+                    {
+                        sb.AppendLine(",");
+                    }
+
+                    sb.Append("\t\t\tTimeOnly? " + prop.Name + " = null");
                 }
                 else if (propertyType == typeof(float))
                 {
@@ -4501,6 +4537,24 @@ namespace Foundation.CodeGeneration
 
                     sb.Append("\t\t\tDateTime? " + prop.Name + " = null");
                 }
+                else if (propertyType == typeof(DateOnly))
+                {
+                    if (processingFirstProperty == false)
+                    {
+                        sb.AppendLine(",");
+                    }
+
+                    sb.Append("\t\t\tDateOnly? " + prop.Name + " = null");
+                }
+                else if (propertyType == typeof(TimeOnly))
+                {
+                    if (processingFirstProperty == false)
+                    {
+                        sb.AppendLine(",");
+                    }
+
+                    sb.Append("\t\t\tTimeOnly? " + prop.Name + " = null");
+                }
                 else if (propertyType == typeof(float))
                 {
                     if (processingFirstProperty == false)
@@ -6359,7 +6413,7 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("        [HttpGet]");
                     sb.AppendLine("        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
                     sb.AppendLine("        [Route(\"api/" + singularForRouting + "/Data/{id:int}\")]");
-                    sb.AppendLine("        public async Task<IActionResult> PNGDownloadAsync(int id, int? width = null, int? height = null)");
+                    sb.AppendLine("        public async Task<IActionResult> PNGDownloadAsync(int id, int? width = null, int? height = null, CancellationToken cancellationToken = default)");
                     sb.AppendLine("        {");
                     sb.AppendLine();
 

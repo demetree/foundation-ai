@@ -692,6 +692,147 @@
     }
 }
 
+.bg-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.bg-preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bmc-border);
+    background: transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    min-width: 44px;
+
+    &:hover {
+        border-color: var(--bmc-primary);
+    }
+
+    &.active {
+        border-color: var(--bmc-primary);
+        box-shadow: 0 0 0 1px var(--bmc-primary);
+    }
+}
+
+.bg-swatch {
+    width: 28px;
+    height: 20px;
+    border-radius: 3px;
+    display: block;
+}
+
+.bg-preset-label {
+    font-size: 0.55rem;
+    color: var(--bmc-text-muted);
+    font-weight: 500;
+    line-height: 1;
+}
+
+.quality-slider {
+    margin-top: 8px;
+}
+
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    input[type="range"] {
+        flex: 1;
+        accent-color: var(--bmc-primary);
+        height: 4px;
+    }
+
+    .slider-value {
+        font-size: 0.75rem;
+        font-family: 'Fira Code', 'Consolas', monospace;
+        color: var(--bmc-text-secondary);
+        min-width: 28px;
+        text-align: right;
+    }
+}
+
+.step-badge {
+    font-size: 0.62rem;
+    background: rgba(var(--bmc-primary-rgb, 212, 175, 55), 0.15);
+    color: var(--bmc-primary);
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+.step-controls {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.step-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.step-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--bmc-border);
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+
+    &:hover:not(:disabled) {
+        border-color: var(--bmc-primary);
+        color: var(--bmc-primary);
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+}
+
+.step-indicator {
+    font-size: 0.78rem;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    color: var(--bmc-text-primary);
+    min-width: 50px;
+    text-align: center;
+}
+
+.step-slider {
+    width: 100%;
+    accent-color: var(--bmc-primary);
+    height: 4px;
+}
+
+.ssaa-warning {
+    margin-top: 4px;
+    font-size: 0.68rem;
+    color: #ffa726;
+
+    i {
+        margin-right: 3px;
+        font-size: 0.6rem;
+    }
+}
+
 .explode-slider {
     display: flex;
     align-items: center;

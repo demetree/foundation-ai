@@ -104,6 +104,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
             else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
 
+            // Safety: clamp SSAA to 2× for large resolutions to prevent memory exhaustion
+            if (aaMode == AntiAliasMode.SSAA4x && (width > 2560 || height > 2560))
+                aaMode = AntiAliasMode.SSAA2x;
+
             // Check cache
             string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}";
             if (_cache.TryGetValue(cacheKey, out byte[] cachedBytes))
@@ -118,6 +122,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             try
             {
+                // 60-second render timeout
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(60));
+                var renderToken = renderCts.Token;
+
                 byte[] result;
                 string contentType;
 
@@ -128,7 +137,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToSvg(datPath, width, height, colourCode, elevation, azimuth, renderEdges, smoothShading);
-                    }, cancellationToken);
+                    }, renderToken);
 
                     result = System.Text.Encoding.UTF8.GetBytes(svg);
                     contentType = "image/svg+xml";
@@ -141,7 +150,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToWebP(datPath, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
-                    }, cancellationToken);
+                    }, renderToken);
                     contentType = "image/webp";
                 }
                 else
@@ -153,7 +162,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToPng(datPath, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
-                    }, cancellationToken);
+                    }, renderToken);
                     contentType = "image/png";
                 }
 
@@ -217,13 +226,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             try
             {
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(60));
+
                 byte[] gif = await Task.Run(() =>
                 {
                     string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                     EnsureRenderService(dataPath);
                     return _renderService.RenderTurntableGif(datPath, width, height, colourCode, frameCount,
                         elevation, frameDelayMs, renderEdges, smoothShading);
-                }, cancellationToken);
+                }, renderCts.Token);
 
                 _cache.Set(cacheKey, gif, TimeSpan.FromMinutes(10));
                 return File(gif, "image/gif");
@@ -269,8 +281,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            width = Math.Clamp(width, 64, 1024);
-            height = Math.Clamp(height, 64, 1024);
+            width = Math.Clamp(width, 64, 3840);
+            height = Math.Clamp(height, 64, 3840);
             explosionFactor = Math.Clamp(explosionFactor, 0.1f, 5.0f);
 
             string cacheKey = $"part-exploded:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{explosionFactor}:{renderEdges}:{smoothShading}";
@@ -284,13 +296,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             try
             {
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(60));
+
                 byte[] png = await Task.Run(() =>
                 {
                     string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                     EnsureRenderService(dataPath);
                     return _renderService.RenderExplodedView(datPath, explosionFactor, width, height, colourCode,
                         elevation, azimuth, renderEdges, smoothShading);
-                }, cancellationToken);
+                }, renderCts.Token);
 
                 _cache.Set(cacheKey, png, TimeSpan.FromMinutes(10));
                 return File(png, "image/png");
@@ -303,6 +318,212 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error rendering exploded view for {PartNumber}", partNumber);
                 return StatusCode(500, "Error rendering exploded view.");
+            }
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Build Step Endpoints
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/part-renderer/step-count
+        ///
+        /// Returns the number of STEP directives in an LDraw part or model.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/step-count")]
+        public async Task<IActionResult> StepCount(
+            string partNumber,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            string cacheKey = $"part-stepcount:{partNumber}";
+            if (_cache.TryGetValue(cacheKey, out int cachedCount))
+            {
+                return Ok(new { stepCount = cachedCount });
+            }
+
+            string datPath = await ResolvePartFile(partNumber, cancellationToken);
+            if (datPath == null) return NotFound($"Part '{partNumber}' not found.");
+
+            try
+            {
+                int count = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.GetStepCount(datPath);
+                }, cancellationToken);
+
+                _cache.Set(cacheKey, count, TimeSpan.FromMinutes(30));
+                return Ok(new { stepCount = count });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting step count for {PartNumber}", partNumber);
+                return StatusCode(500, "Error getting step count.");
+            }
+        }
+
+        /// <summary>
+        /// GET /api/part-renderer/render-step
+        ///
+        /// Renders a single build step (cumulative) as a PNG.
+        /// Step indices are 0-based.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/render-step")]
+        public async Task<IActionResult> RenderStep(
+            string partNumber,
+            int stepIndex = 0,
+            int colourCode = 4,
+            int width = 512,
+            int height = 512,
+            float elevation = 30f,
+            float azimuth = -45f,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            string antiAlias = "none",
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            width = Math.Clamp(width, 64, 3840);
+            height = Math.Clamp(height, 64, 3840);
+            stepIndex = Math.Max(0, stepIndex);
+
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
+
+            if (aaMode == AntiAliasMode.SSAA4x && (width > 2560 || height > 2560))
+                aaMode = AntiAliasMode.SSAA2x;
+
+            string cacheKey = $"part-step:{partNumber}:{stepIndex}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}";
+            if (_cache.TryGetValue(cacheKey, out byte[] cached))
+            {
+                return File(cached, "image/png");
+            }
+
+            string datPath = await ResolvePartFile(partNumber, cancellationToken);
+            if (datPath == null) return NotFound($"Part '{partNumber}' not found.");
+
+            try
+            {
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(60));
+
+                byte[] png = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.RenderStep(datPath, stepIndex, width, height, colourCode,
+                        elevation, azimuth, renderEdges, smoothShading, aaMode);
+                }, renderCts.Token);
+
+                _cache.Set(cacheKey, png, TimeSpan.FromMinutes(10));
+                return File(png, "image/png");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rendering step {Step} for {PartNumber}", stepIndex, partNumber);
+                return StatusCode(500, "Error rendering step.");
+            }
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Batch Render Endpoint
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// POST /api/part-renderer/batch-render
+        ///
+        /// Renders a part at multiple sizes and returns a ZIP archive of PNGs.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/batch-render")]
+        public async Task<IActionResult> BatchRender(
+            [FromBody] BatchRenderRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (request?.Sizes == null || request.Sizes.Count == 0 || request.Sizes.Count > 20)
+                return BadRequest("Provide between 1 and 20 sizes.");
+
+            string datPath = await ResolvePartFile(request.PartNumber, cancellationToken);
+            if (datPath == null) return NotFound($"Part '{request.PartNumber}' not found.");
+
+            // Parse options
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (request.AntiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (request.AntiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
+
+            try
+            {
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(120));  // 2 minutes for batch
+
+                using var zipStream = new System.IO.MemoryStream();
+                using (var zip = new System.IO.Compression.ZipArchive(zipStream, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    foreach (var size in request.Sizes)
+                    {
+                        int w = Math.Clamp(size.Width, 64, 3840);
+                        int h = Math.Clamp(size.Height, 64, 3840);
+
+                        // Clamp SSAA for large sizes
+                        AntiAliasMode sizeAA = aaMode;
+                        if (sizeAA == AntiAliasMode.SSAA4x && (w > 2560 || h > 2560))
+                            sizeAA = AntiAliasMode.SSAA2x;
+
+                        byte[] png = await Task.Run(() =>
+                        {
+                            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                            EnsureRenderService(dataPath);
+                            return _renderService.RenderToPng(datPath, w, h, request.ColourCode,
+                                request.Elevation, request.Azimuth, request.RenderEdges, request.SmoothShading,
+                                sizeAA, request.BackgroundHex, request.GradientTopHex, request.GradientBottomHex);
+                        }, renderCts.Token);
+
+                        string entryName = $"{request.PartNumber}_{w}x{h}.png";
+                        var entry = zip.CreateEntry(entryName, System.IO.Compression.CompressionLevel.Fastest);
+                        using var entryStream = entry.Open();
+                        await entryStream.WriteAsync(png, 0, png.Length, renderCts.Token);
+                    }
+                }
+
+                zipStream.Position = 0;
+                var zipBytes = zipStream.ToArray();
+                return File(zipBytes, "application/zip", $"{request.PartNumber}_renders.zip");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Batch render cancelled or timed out.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error batch rendering {PartNumber}", request.PartNumber);
+                return StatusCode(500, "Error during batch render.");
             }
         }
 
@@ -321,7 +542,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpPost]
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/part-renderer/render-upload")]
-        [RequestSizeLimit(5 * 1024 * 1024)] // 5 MB max
+        [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB max
         public async Task<IActionResult> RenderUpload(
             Microsoft.AspNetCore.Http.IFormFile file,
             int colourCode = 4,
@@ -369,6 +590,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
             else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
 
+            // Safety: clamp SSAA to 2× for large resolutions
+            if (aaMode == AntiAliasMode.SSAA4x && (width > 2560 || height > 2560))
+                aaMode = AntiAliasMode.SSAA2x;
+
             // Read uploaded file into lines (in-memory, no temp file)
             string[] lines;
             using (var reader = new StreamReader(file.OpenReadStream()))
@@ -381,6 +606,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             try
             {
+                // 60-second render timeout
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(60));
+                var renderToken = renderCts.Token;
+
                 byte[] result;
                 string contentType;
 
@@ -391,7 +621,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToSvg(lines, fileName, width, height, colourCode, elevation, azimuth, renderEdges, smoothShading);
-                    }, cancellationToken);
+                    }, renderToken);
 
                     result = System.Text.Encoding.UTF8.GetBytes(svg);
                     contentType = "image/svg+xml";
@@ -404,7 +634,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToWebP(lines, fileName, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
-                    }, cancellationToken);
+                    }, renderToken);
                     contentType = "image/webp";
                 }
                 else if (format == "gif")
@@ -415,7 +645,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderTurntableGif(lines, fileName, width, height, colourCode, 36,
                             elevation, 80, renderEdges, smoothShading);
-                    }, cancellationToken);
+                    }, renderToken);
                     contentType = "image/gif";
                 }
                 else
@@ -427,7 +657,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToPng(lines, fileName, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
-                    }, cancellationToken);
+                    }, renderToken);
                     contentType = "image/png";
                 }
 
@@ -698,5 +928,27 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             return null;
         }
+    }
+
+
+    public class BatchRenderRequest
+    {
+        public string PartNumber { get; set; }
+        public int ColourCode { get; set; } = 4;
+        public float Elevation { get; set; } = 30f;
+        public float Azimuth { get; set; } = -45f;
+        public bool RenderEdges { get; set; } = true;
+        public bool SmoothShading { get; set; } = true;
+        public string AntiAlias { get; set; } = "none";
+        public string BackgroundHex { get; set; } = "";
+        public string GradientTopHex { get; set; } = "";
+        public string GradientBottomHex { get; set; } = "";
+        public List<BatchRenderSize> Sizes { get; set; }
+    }
+
+    public class BatchRenderSize
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 }

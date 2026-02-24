@@ -241,7 +241,7 @@
                         {{ p.label }}
                     </button>
                 </div>
-                <div class="size-info">{{ renderWidth }} × {{ renderHeight }} px</div>
+                <div class="size-info">{{ sizeDisplayLabel }}</div>
             </div>
 
             <!-- View Angle (shared) -->
@@ -285,6 +285,14 @@
                                 <span class="fmt-tag">360°</span>
                             </button>
                         </div>
+                        <div class="quality-slider" *ngIf="outputFormat === 'webp'">
+                            <label class="adv-label">WebP Quality</label>
+                            <div class="slider-row">
+                                <input type="range" min="1" max="100" step="1" [value]="webpQuality"
+                                    (input)="webpQuality = +$any($event.target).value" />
+                                <span class="slider-value">{{ webpQuality }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Rendering Options -->
@@ -312,23 +320,25 @@
                             <button class="fmt-btn" [class.active]="antiAliasMode === '4x'"
                                 (click)="antiAliasMode = '4x'">4× SSAA</button>
                         </div>
+                        <div class="ssaa-warning"
+                            *ngIf="antiAliasMode === '4x' && (renderWidth > 2560 || renderHeight > 2560)">
+                            <i class="fas fa-exclamation-triangle"></i> Auto-downgraded to 2× at this resolution
+                        </div>
                     </div>
 
                     <!-- Background -->
                     <div class="adv-group">
                         <label class="adv-label">Background</label>
-                        <div class="hex-row">
-                            <input type="text" class="hex-input" placeholder="#hex (blank = transparent)"
-                                [value]="backgroundHex" (input)="backgroundHex = $any($event.target).value" />
-                            <input type="color" class="hex-color-pick" [value]="backgroundHex || '#333333'"
-                                (input)="backgroundHex = $any($event.target).value" />
+                        <div class="bg-presets">
+                            <button *ngFor="let p of bgPresets" class="bg-preset-btn"
+                                [class.active]="isActiveBgPreset(p)" [title]="p.label" (click)="applyBgPreset(p)">
+                                <span class="bg-swatch"
+                                    [style.background]="p.top ? 'linear-gradient(180deg, ' + p.top + ', ' + p.bottom + ')' : 'repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 8px 8px'">
+                                </span>
+                                <span class="bg-preset-label">{{ p.label }}</span>
+                            </button>
                         </div>
-                    </div>
-
-                    <!-- Gradient -->
-                    <div class="adv-group">
-                        <label class="adv-label">Gradient (overrides background)</label>
-                        <div class="hex-row">
+                        <div class="hex-row" style="margin-top: 6px;">
                             <input type="text" class="hex-input" placeholder="Top #hex" [value]="gradientTopHex"
                                 (input)="gradientTopHex = $any($event.target).value" />
                             <input type="text" class="hex-input" placeholder="Bottom #hex" [value]="gradientBottomHex"
@@ -346,6 +356,30 @@
                             <input type="range" min="0.1" max="3.0" step="0.1" [value]="explosionFactor"
                                 (input)="explosionFactor = +$any($event.target).value" />
                             <span class="slider-value">{{ explosionFactor.toFixed(1) }}×</span>
+                        </div>
+                    </div>
+
+                    <!-- Build Steps -->
+                    <div class="adv-group" *ngIf="stepCount > 1 && activeTab === 'search'">
+                        <label class="adv-checkbox">
+                            <input type="checkbox" [checked]="stepMode" (change)="stepMode = !stepMode" />
+                            Build Steps
+                            <span class="step-badge">{{ stepCount }} steps</span>
+                        </label>
+                        <div class="step-controls" *ngIf="stepMode">
+                            <div class="step-nav">
+                                <button class="step-btn" [disabled]="currentStep === 0 || rendering"
+                                    (click)="prevStep()">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="step-indicator">{{ currentStep + 1 }} / {{ stepCount }}</span>
+                                <button class="step-btn" [disabled]="currentStep >= stepCount - 1 || rendering"
+                                    (click)="nextStep()">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <input type="range" class="step-slider" min="0" [max]="stepCount - 1" step="1"
+                                [value]="currentStep" (input)="currentStep = +$any($event.target).value" />
                         </div>
                     </div>
                 </div>
@@ -401,6 +435,11 @@
                     </div>
                     <button class="download-btn" (click)="download()">
                         <i class="fas fa-download"></i> Download {{ renderedFormat.toUpperCase() }}
+                    </button>
+                    <button class="download-btn batch-btn" *ngIf="selectedPart" [disabled]="batchExporting"
+                        (click)="batchExport()">
+                        <i class="fas" [ngClass]="batchExporting ? 'fa-spinner fa-spin' : 'fa-file-archive'"></i>
+                        {{ batchExporting ? 'Exporting...' : 'Export All Sizes' }}
                     </button>
                 </div>
             </div>
