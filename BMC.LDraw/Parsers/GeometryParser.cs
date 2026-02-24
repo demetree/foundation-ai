@@ -132,6 +132,11 @@ namespace BMC.LDraw.Parsers
                     {
                         // bare "0 BFC" — ignore
                     }
+                    // STEP meta-command — marks a build step boundary
+                    else if (content == "STEP")
+                    {
+                        geo.StepBreaks.Add(geo.SubfileReferences.Count);
+                    }
                     // Extract name from first description line
                     else if (geo.Name == null && content.Length > 0
                         && !content.StartsWith("!") && !content.StartsWith("//")
@@ -202,6 +207,15 @@ namespace BMC.LDraw.Parsers
                         invertNext = false;
                         break;
                 }
+            }
+
+            //
+            // Add an implicit final step if there are subfile refs after the last STEP
+            //
+            int lastBreak = geo.StepBreaks.Count > 0 ? geo.StepBreaks[geo.StepBreaks.Count - 1] : 0;
+            if (geo.SubfileReferences.Count > lastBreak)
+            {
+                geo.StepBreaks.Add(geo.SubfileReferences.Count);
             }
 
             return geo;

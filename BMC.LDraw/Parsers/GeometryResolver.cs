@@ -81,6 +81,159 @@ namespace BMC.LDraw.Parsers
             return Resolve(geos[0], parentColourCode);
         }
 
+
+        /// <summary>
+        /// Resolve a file and track how many triangles/edges each top-level subfile reference produces.
+        /// Used by ExplodedViewBuilder to identify part boundaries in the mesh.
+        /// </summary>
+        public LDrawMesh ResolveFileWithPartCounts(string filePath, int parentColourCode,
+            out List<int> partTriangleCounts, out List<int> partEdgeCounts)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseFile(filePath);
+            partTriangleCounts = new List<int>();
+            partEdgeCounts = new List<int>();
+
+            if (geos.Count == 0) return new LDrawMesh();
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            LDrawGeometry root = geos[0];
+            LDrawMesh mesh = new LDrawMesh();
+            int colour = parentColourCode >= 0 ? parentColourCode : 16;
+
+            float[] identity = new float[]
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            };
+
+            // Resolve direct geometry first (root-level tris/quads/lines; these are not "parts")
+            ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
+
+            // Resolve each top-level subfile reference and track counts
+            for (int i = 0; i < root.SubfileReferences.Count; i++)
+            {
+                int triBefore = mesh.Triangles.Count;
+                int edgeBefore = mesh.EdgeLines.Count;
+
+                LDrawSubfileReference subRef = root.SubfileReferences[i];
+                LDrawGeometry subGeo = LoadFile(subRef.FileName);
+                if (subGeo == null)
+                {
+                    partTriangleCounts.Add(0);
+                    partEdgeCounts.Add(0);
+                    continue;
+                }
+
+                float[] subMatrix = BuildMatrix(subRef);
+                float[] worldMatrix = MultiplyMatrices(identity, subMatrix);
+                int subColour = ResolveColour(subRef.ColourCode, colour);
+
+                int subEdgeColour = 0;
+                if (subRef.ColourCode != 16 && subRef.ColourCode != 24)
+                {
+                    subEdgeColour = subRef.ColourCode;
+                }
+
+                bool subInvert = false;
+                if (root.InvertNextIndices.Contains(i))
+                {
+                    subInvert = !subInvert;
+                }
+                if (Determinant3x3(subRef.Matrix) < 0)
+                {
+                    subInvert = !subInvert;
+                }
+
+                ResolveRecursive(subGeo, worldMatrix, subColour, subEdgeColour, subInvert, mesh, 1);
+
+                partTriangleCounts.Add(mesh.Triangles.Count - triBefore);
+                partEdgeCounts.Add(mesh.EdgeLines.Count - edgeBefore);
+            }
+
+            return mesh;
+        }
+
+
+        /// <summary>
+        /// Get the number of build steps in a file.
+        /// Returns 0 if the file has no STEP meta-commands (or 1 implicit step).
+        /// </summary>
+        public int GetStepCount(string filePath)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseFile(filePath);
+            if (geos.Count == 0) return 0;
+            return geos[0].StepBreaks.Count;
+        }
+
+
+        /// <summary>
+        /// Resolve a file up to (and including) a specific build step.
+        /// Step indices are 0-based.  Step 0 = just the first group of parts,
+        /// Step N-1 = the complete model.
+        /// </summary>
+        public LDrawMesh ResolveFileUpToStep(string filePath, int stepIndex, int parentColourCode = -1)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseFile(filePath);
+            if (geos.Count == 0) return new LDrawMesh();
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            LDrawGeometry root = geos[0];
+
+            //
+            // If no steps or step is beyond range, resolve the whole file
+            //
+            if (root.StepBreaks.Count == 0 || stepIndex >= root.StepBreaks.Count)
+            {
+                return Resolve(root, parentColourCode);
+            }
+
+            //
+            // Limit subfile refs to those up to the step boundary
+            //
+            int maxSubRef = root.StepBreaks[stepIndex];
+
+            LDrawMesh mesh = new LDrawMesh();
+            int colour = parentColourCode >= 0 ? parentColourCode : 16;
+
+            float[] identity = new float[]
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            };
+
+            //
+            // Resolve direct geometry (triangles, quads, lines) from the root
+            //
+            ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
+
+            //
+            // Resolve only the subfile references up to the step boundary
+            //
+            ResolveSubfilesUpTo(root, identity, colour, 0, false, mesh, maxSubRef, 0);
+
+            return mesh;
+        }
+
         private void ResolveRecursive(LDrawGeometry geo, float[] parentMatrix,
             int parentColour, int parentEdgeColour, bool invertWinding,
             LDrawMesh mesh, int depth)
@@ -195,6 +348,129 @@ namespace BMC.LDraw.Parsers
                     subInvert = !subInvert;
                 }
 
+                ResolveRecursive(subGeo, worldMatrix, subColour, subEdgeColour, subInvert, mesh, depth + 1);
+            }
+        }
+
+
+        /// <summary>
+        /// Resolve only the direct geometry (triangles, quads, lines) from a geometry node,
+        /// without recursing into subfile references.
+        /// </summary>
+        private void ResolveDirectGeometry(LDrawGeometry geo, float[] parentMatrix,
+            int parentColour, int parentEdgeColour, bool invertWinding, LDrawMesh mesh)
+        {
+            // Triangles
+            for (int i = 0; i < geo.Triangles.Count; i++)
+            {
+                LDrawTriangle tri = geo.Triangles[i];
+                int col = ResolveColour(tri.ColourCode, parentColour);
+
+                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+                TransformPoint(tri.X1, tri.Y1, tri.Z1, parentMatrix, out x1, out y1, out z1);
+                TransformPoint(tri.X2, tri.Y2, tri.Z2, parentMatrix, out x2, out y2, out z2);
+                TransformPoint(tri.X3, tri.Y3, tri.Z3, parentMatrix, out x3, out y3, out z3);
+
+                ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+
+                MeshTriangle mt;
+                if (invertWinding)
+                {
+                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a);
+                }
+                else
+                {
+                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a);
+                }
+                mesh.Triangles.Add(mt);
+            }
+
+            // Quads → 2 triangles each
+            for (int i = 0; i < geo.Quads.Count; i++)
+            {
+                LDrawQuad q = geo.Quads[i];
+                int col = ResolveColour(q.ColourCode, parentColour);
+
+                float x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
+                TransformPoint(q.X1, q.Y1, q.Z1, parentMatrix, out x1, out y1, out z1);
+                TransformPoint(q.X2, q.Y2, q.Z2, parentMatrix, out x2, out y2, out z2);
+                TransformPoint(q.X3, q.Y3, q.Z3, parentMatrix, out x3, out y3, out z3);
+                TransformPoint(q.X4, q.Y4, q.Z4, parentMatrix, out x4, out y4, out z4);
+
+                ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+
+                if (invertWinding)
+                {
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a));
+                }
+                else
+                {
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a));
+                }
+            }
+
+            // Edge lines
+            for (int i = 0; i < geo.Lines.Count; i++)
+            {
+                LDrawLine ln = geo.Lines[i];
+                int col = ln.ColourCode == 24 ? parentEdgeColour : ResolveColour(ln.ColourCode, parentColour);
+
+                float x1, y1, z1, x2, y2, z2;
+                TransformPoint(ln.X1, ln.Y1, ln.Z1, parentMatrix, out x1, out y1, out z1);
+                TransformPoint(ln.X2, ln.Y2, ln.Z2, parentMatrix, out x2, out y2, out z2);
+
+                ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+
+                MeshLine ml;
+                ml.X1 = x1; ml.Y1 = y1; ml.Z1 = z1;
+                ml.X2 = x2; ml.Y2 = y2; ml.Z2 = z2;
+                ml.R = r; ml.G = g; ml.B = b; ml.A = a;
+                mesh.EdgeLines.Add(ml);
+            }
+        }
+
+
+        /// <summary>
+        /// Resolve subfile references up to (but not including) the given index.
+        /// Each subfile reference is fully recursed into (no step limiting inside children).
+        /// </summary>
+        private void ResolveSubfilesUpTo(LDrawGeometry geo, float[] parentMatrix,
+            int parentColour, int parentEdgeColour, bool invertWinding,
+            LDrawMesh mesh, int maxSubRefIndex, int depth)
+        {
+            if (depth > 100) return;
+
+            int limit = Math.Min(maxSubRefIndex, geo.SubfileReferences.Count);
+
+            for (int i = 0; i < limit; i++)
+            {
+                LDrawSubfileReference subRef = geo.SubfileReferences[i];
+                LDrawGeometry subGeo = LoadFile(subRef.FileName);
+                if (subGeo == null) continue;
+
+                float[] subMatrix = BuildMatrix(subRef);
+                float[] worldMatrix = MultiplyMatrices(parentMatrix, subMatrix);
+                int subColour = ResolveColour(subRef.ColourCode, parentColour);
+
+                int subEdgeColour = parentEdgeColour;
+                if (subRef.ColourCode != 16 && subRef.ColourCode != 24)
+                {
+                    subEdgeColour = subRef.ColourCode;
+                }
+
+                bool subInvert = invertWinding;
+                if (geo.InvertNextIndices.Contains(i))
+                {
+                    subInvert = !subInvert;
+                }
+                if (Determinant3x3(subRef.Matrix) < 0)
+                {
+                    subInvert = !subInvert;
+                }
+
+                // Full recursive resolve for each included subfile
                 ResolveRecursive(subGeo, worldMatrix, subColour, subEdgeColour, subInvert, mesh, depth + 1);
             }
         }

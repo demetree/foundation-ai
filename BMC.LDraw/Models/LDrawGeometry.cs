@@ -53,5 +53,14 @@ namespace BMC.LDraw.Models
         /// Used by the resolver to flip winding for the referenced subfile.
         /// </summary>
         public HashSet<int> InvertNextIndices = new HashSet<int>();
+
+        /// <summary>
+        /// Step boundaries from "0 STEP" meta-commands.
+        /// Each entry is the SubfileReferences count at the point the STEP was parsed.
+        /// For example, [3, 7, 10] means:
+        ///   Step 0 = subfile refs 0..2,  Step 1 = refs 3..6,  Step 2 = refs 7..9.
+        /// Cumulative: to render up to step N, resolve refs 0..StepBreaks[N]-1.
+        /// </summary>
+        public List<int> StepBreaks = new List<int>();
     }
 }

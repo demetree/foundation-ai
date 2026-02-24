@@ -314,6 +314,175 @@ namespace BMC.LDraw.Render
 
 
         /// <summary>
+        /// Get the number of build steps in an LDraw file.
+        /// </summary>
+        public int GetStepCount(string inputPath)
+        {
+            EnsureColours();
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            return resolver.GetStepCount(inputPath);
+        }
+
+
+        /// <summary>
+        /// Render a single build step of an LDraw file (cumulative — shows all parts up to this step).
+        /// Step indices are 0-based.
+        /// </summary>
+        public byte[] RenderStep(string inputPath,
+                                  int stepIndex,
+                                  int width = 512,
+                                  int height = 512,
+                                  int colourCode = -1,
+                                  float elevation = 30f,
+                                  float azimuth = -45f,
+                                  bool renderEdges = true,
+                                  bool smoothShading = true,
+                                  AntiAliasMode antiAliasMode = AntiAliasMode.None)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFileUpToStep(inputPath, stepIndex, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            //
+            // Render
+            //
+            int ssaaFactor = 1;
+            if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
+            else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
+
+            int renderW = width * ssaaFactor;
+            int renderH = height * ssaaFactor;
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(mesh, camera);
+
+            if (ssaaFactor > 1)
+            {
+                pixels = PostProcess.Downsample(pixels, renderW, renderH, width, height);
+            }
+
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
+        /// <summary>
+        /// Render all build steps as a list of PNG byte arrays.
+        /// Each image is cumulative — step 0 shows the first group, step N shows the complete model.
+        /// </summary>
+        public List<byte[]> RenderAllSteps(string inputPath,
+                                            int width = 512,
+                                            int height = 512,
+                                            int colourCode = -1,
+                                            float elevation = 30f,
+                                            float azimuth = -45f,
+                                            bool renderEdges = true,
+                                            bool smoothShading = true)
+        {
+            int stepCount = GetStepCount(inputPath);
+            List<byte[]> results = new List<byte[]>(stepCount);
+
+            for (int i = 0; i < stepCount; i++)
+            {
+                byte[] stepPng = RenderStep(inputPath, i, width, height,
+                                            colourCode, elevation, azimuth,
+                                            renderEdges, smoothShading);
+                results.Add(stepPng);
+            }
+
+            return results;
+        }
+
+
+        /// <summary>
+        /// Render an exploded view of an LDraw file.
+        /// Parts are pushed radially outward from the model centroid.
+        /// </summary>
+        /// <param name="explosionFactor">
+        /// How much to spread parts.  0 = normal, 1.0 = moderate, 2.0 = wide.
+        /// </param>
+        public byte[] RenderExplodedView(string inputPath,
+                                          float explosionFactor = 1.0f,
+                                          int width = 512,
+                                          int height = 512,
+                                          int colourCode = -1,
+                                          float elevation = 30f,
+                                          float azimuth = -45f,
+                                          bool renderEdges = true,
+                                          bool smoothShading = true,
+                                          AntiAliasMode antiAliasMode = AntiAliasMode.None)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFileWithPartCounts(
+                inputPath, effectiveColour,
+                out List<int> partTriCounts, out List<int> partEdgeCounts);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            //
+            // Apply explosion
+            //
+            mesh = ExplodedViewBuilder.Explode(mesh, partTriCounts, partEdgeCounts, explosionFactor);
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(mesh);
+            }
+
+            //
+            // Render
+            //
+            int ssaaFactor = 1;
+            if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
+            else if (antiAliasMode == AntiAliasMode.SSAA4x) ssaaFactor = 4;
+
+            int renderW = width * ssaaFactor;
+            int renderH = height * ssaaFactor;
+
+            Camera camera = new Camera();
+            camera.AutoFrame(mesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(mesh, camera);
+
+            if (ssaaFactor > 1)
+            {
+                pixels = PostProcess.Downsample(pixels, renderW, renderH, width, height);
+            }
+
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
+        /// <summary>
         /// Parse a hex colour string like "#DFC176" into RGB bytes.
         /// </summary>
         private static void ParseHex(string hex, out byte r, out byte g, out byte b)
