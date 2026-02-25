@@ -88,21 +88,34 @@ namespace BMC.LDraw.Render
         }
 
 
+        // ── Submodel callout state ──
+        private string _currentSubmodelName;
+        private int _totalSubmodelSteps;
+        private int _submodelStepsOnPage;
+        private const int MaxSubStepsPerPage = 2;
+
         /// <summary>
-        /// Begin a submodel callout section — a bordered inset area in the HTML.
-        /// Closes any open multi-step page first.
+        /// Begin a submodel callout section.
+        /// Sub-steps will be batched into pages of MaxSubStepsPerPage.
         /// </summary>
         public void BeginSubmodelCallout(string submodelName, int totalSubmodelSteps)
         {
             CloseCurrentPage();
+            _currentSubmodelName = submodelName;
+            _totalSubmodelSteps = totalSubmodelSteps;
+            _submodelStepsOnPage = 0;
+            OpenSubmodelPage();
+        }
 
+        private void OpenSubmodelPage()
+        {
             _sb.AppendLine("<div class=\"page step-page\">");
             _sb.AppendLine("<div class=\"submodel-callout\">");
             _sb.AppendFormat("<div class=\"submodel-callout-header\">{0}</div>\n",
                 System.Net.WebUtility.HtmlEncode(
-                    System.IO.Path.GetFileNameWithoutExtension(submodelName)));
+                    System.IO.Path.GetFileNameWithoutExtension(_currentSubmodelName)));
             _sb.AppendFormat("<div class=\"submodel-callout-meta\">{0} step{1}</div>\n",
-                totalSubmodelSteps, totalSubmodelSteps == 1 ? "" : "s");
+                _totalSubmodelSteps, _totalSubmodelSteps == 1 ? "" : "s");
         }
 
 
@@ -133,12 +146,17 @@ namespace BMC.LDraw.Render
         {
             _sb.AppendLine("</div>"); // close .submodel-callout
             _sb.AppendLine("</div>"); // close .page
+            _currentSubmodelName = null;
+            _submodelStepsOnPage = 0;
         }
 
 
         /// <summary>
-        /// Add a Bill of Materials page at the end of the manual.
+        /// Add paginated Bill of Materials pages.
+        /// Items are chunked into pages of BomItemsPerPage.
         /// </summary>
+        private const int BomItemsPerPage = 15;
+
         public void AddBillOfMaterials(List<StepPartInfo> allUniqueParts,
             Dictionary<string, byte[]> partImages)
         {
@@ -146,71 +164,93 @@ namespace BMC.LDraw.Render
 
             CloseCurrentPage();
 
-            _sb.AppendLine("<div class=\"page bom-page\">");
-            _sb.AppendLine("<div class=\"bom-header\">");
-            _sb.AppendLine("<h2 class=\"bom-title\">Bill of Materials</h2>");
-            _sb.AppendFormat("<div class=\"bom-meta\">{0} unique parts · {1} total pieces</div>\n",
-                allUniqueParts.Count,
-                allUniqueParts.Sum(p => p.Quantity));
-            _sb.AppendLine("</div>");
+            int totalUnique = allUniqueParts.Count;
+            int totalPieces = allUniqueParts.Sum(p => p.Quantity);
+            int pageCount = (int)Math.Ceiling((double)totalUnique / BomItemsPerPage);
 
-            _sb.AppendLine("<div class=\"bom-grid\">");
-            foreach (var part in allUniqueParts)
+            for (int pg = 0; pg < pageCount; pg++)
             {
-                _sb.AppendLine("<div class=\"bom-item\">");
+                _sb.AppendLine("<div class=\"page bom-page\">");
+                _sb.AppendLine("<div class=\"bom-header\">");
 
-                // Thumbnail
-                string imgKey = PartImageCache.MakeKey(part.FileName, part.ColourCode);
-                byte[] thumbPng = null;
-                if (partImages != null)
-                    partImages.TryGetValue(imgKey, out thumbPng);
-
-                if (thumbPng != null && thumbPng.Length > 0)
+                if (pageCount > 1)
                 {
-                    string b64 = Convert.ToBase64String(thumbPng);
-                    _sb.AppendFormat("<img class=\"bom-thumb\" src=\"data:image/png;base64,{0}\" alt=\"{1}\" />\n",
-                        b64, System.Net.WebUtility.HtmlEncode(part.FileName));
+                    _sb.AppendFormat("<h2 class=\"bom-title\">Bill of Materials ({0}/{1})</h2>\n",
+                        pg + 1, pageCount);
                 }
                 else
                 {
-                    _sb.AppendLine("<div class=\"bom-thumb bom-thumb-placeholder\"></div>");
+                    _sb.AppendLine("<h2 class=\"bom-title\">Bill of Materials</h2>");
                 }
 
-                // Quantity badge
-                _sb.AppendFormat("<div class=\"bom-qty\">{0}×</div>\n", part.Quantity);
-
-                // Part info
-                _sb.AppendLine("<div class=\"bom-info\">");
-                string displayName = !string.IsNullOrEmpty(part.PartDescription)
-                    ? part.PartDescription
-                    : System.IO.Path.GetFileNameWithoutExtension(part.FileName);
-                _sb.AppendFormat("<div class=\"bom-part-name\">{0}</div>\n",
-                    System.Net.WebUtility.HtmlEncode(displayName));
-
-                // Colour swatch + name
-                _sb.AppendLine("<div class=\"bom-colour-row\">");
-                if (!string.IsNullOrEmpty(part.ColourHex))
-                {
-                    _sb.AppendFormat("<span class=\"colour-swatch\" style=\"background:{0}\"></span>\n",
-                        part.ColourHex);
-                }
-                string colourLabel = !string.IsNullOrEmpty(part.ColourName)
-                    ? part.ColourName
-                    : "Colour " + part.ColourCode;
-                _sb.AppendFormat("<span class=\"bom-colour-name\">{0}</span>\n",
-                    System.Net.WebUtility.HtmlEncode(colourLabel));
+                _sb.AppendFormat("<div class=\"bom-meta\">{0} unique parts · {1} total pieces</div>\n",
+                    totalUnique, totalPieces);
                 _sb.AppendLine("</div>");
 
-                // Part ID
-                _sb.AppendFormat("<div class=\"bom-part-id\">{0}</div>\n",
-                    System.Net.WebUtility.HtmlEncode(
-                        System.IO.Path.GetFileNameWithoutExtension(part.FileName)));
+                _sb.AppendLine("<div class=\"bom-grid\">");
 
-                _sb.AppendLine("</div>"); // bom-info
-                _sb.AppendLine("</div>"); // bom-item
+                int start = pg * BomItemsPerPage;
+                int end = Math.Min(start + BomItemsPerPage, totalUnique);
+
+                for (int idx = start; idx < end; idx++)
+                {
+                    var part = allUniqueParts[idx];
+                    _sb.AppendLine("<div class=\"bom-item\">");
+
+                    // Thumbnail
+                    string imgKey = PartImageCache.MakeKey(part.FileName, part.ColourCode);
+                    byte[] thumbPng = null;
+                    if (partImages != null)
+                        partImages.TryGetValue(imgKey, out thumbPng);
+
+                    if (thumbPng != null && thumbPng.Length > 0)
+                    {
+                        string b64 = Convert.ToBase64String(thumbPng);
+                        _sb.AppendFormat("<img class=\"bom-thumb\" src=\"data:image/png;base64,{0}\" alt=\"{1}\" />\n",
+                            b64, System.Net.WebUtility.HtmlEncode(part.FileName));
+                    }
+                    else
+                    {
+                        _sb.AppendLine("<div class=\"bom-thumb bom-thumb-placeholder\"></div>");
+                    }
+
+                    // Quantity badge
+                    _sb.AppendFormat("<div class=\"bom-qty\">{0}×</div>\n", part.Quantity);
+
+                    // Part info
+                    _sb.AppendLine("<div class=\"bom-info\">");
+                    string displayName = !string.IsNullOrEmpty(part.PartDescription)
+                        ? part.PartDescription
+                        : System.IO.Path.GetFileNameWithoutExtension(part.FileName);
+                    _sb.AppendFormat("<div class=\"bom-part-name\">{0}</div>\n",
+                        System.Net.WebUtility.HtmlEncode(displayName));
+
+                    // Colour swatch + name
+                    _sb.AppendLine("<div class=\"bom-colour-row\">");
+                    if (!string.IsNullOrEmpty(part.ColourHex))
+                    {
+                        _sb.AppendFormat("<span class=\"colour-swatch\" style=\"background:{0}\"></span>\n",
+                            part.ColourHex);
+                    }
+                    string colourLabel = !string.IsNullOrEmpty(part.ColourName)
+                        ? part.ColourName
+                        : "Colour " + part.ColourCode;
+                    _sb.AppendFormat("<span class=\"bom-colour-name\">{0}</span>\n",
+                        System.Net.WebUtility.HtmlEncode(colourLabel));
+                    _sb.AppendLine("</div>");
+
+                    // Part ID
+                    _sb.AppendFormat("<div class=\"bom-part-id\">{0}</div>\n",
+                        System.Net.WebUtility.HtmlEncode(
+                            System.IO.Path.GetFileNameWithoutExtension(part.FileName)));
+
+                    _sb.AppendLine("</div>"); // bom-info
+                    _sb.AppendLine("</div>"); // bom-item
+                }
+
+                _sb.AppendLine("</div>"); // bom-grid
+                _sb.AppendLine("</div>"); // bom-page
             }
-            _sb.AppendLine("</div>"); // bom-grid
-            _sb.AppendLine("</div>"); // bom-page
         }
 
 
@@ -326,23 +366,70 @@ namespace BMC.LDraw.Render
 
         /// <summary>
         /// Add a submodel step inside a callout section.
+        /// Pages are split when MaxSubStepsPerPage is reached.
         /// </summary>
         private void AddSubmodelStep(ManualBuildStep step, byte[] stepImage,
             Dictionary<string, byte[]> partImages)
         {
-            _sb.AppendLine("<div class=\"submodel-step\">");
-            _sb.AppendFormat("<div class=\"submodel-step-num\">Step {0}</div>\n",
-                step.GlobalStepIndex);
+            // Start a new callout page if we've hit the limit
+            if (_submodelStepsOnPage >= MaxSubStepsPerPage)
+            {
+                _sb.AppendLine("</div>"); // close .submodel-callout
+                _sb.AppendLine("</div>"); // close .page
+                OpenSubmodelPage();
+                _submodelStepsOnPage = 0;
+            }
+
+            _sb.AppendFormat("<div class=\"submodel-step\">");
+            _sb.AppendFormat("<div class=\"submodel-step-num\">Sub-step {0}</div>\n",
+                step.LocalStepIndex + 1);
 
             if (stepImage != null && stepImage.Length > 0)
             {
                 string b64 = Convert.ToBase64String(stepImage);
-                _sb.AppendFormat("<div class=\"submodel-step-image\"><img src=\"data:image/png;base64,{0}\" alt=\"Step {1}\" /></div>\n",
-                    b64, step.GlobalStepIndex);
+                _sb.AppendFormat("<div class=\"submodel-step-image\"><img src=\"data:image/png;base64,{0}\" alt=\"Sub-step {1}\" /></div>\n",
+                    b64, step.LocalStepIndex + 1);
             }
 
-            AddPartsCallout(step.NewParts, partImages);
+            // Compact inline parts list for submodel steps (saves vertical space)
+            if (step.NewParts != null && step.NewParts.Count > 0)
+            {
+                _sb.AppendLine("<div class=\"submodel-parts-inline\">");
+                for (int p = 0; p < step.NewParts.Count; p++)
+                {
+                    var part = step.NewParts[p];
+                    string displayName = !string.IsNullOrEmpty(part.PartDescription)
+                        ? part.PartDescription
+                        : System.IO.Path.GetFileNameWithoutExtension(part.FileName);
+
+                    _sb.Append("<span class=\"sub-part-chip\">");
+
+                    // Small PLI thumbnail
+                    string imgKey = PartImageCache.MakeKey(part.FileName, part.ColourCode);
+                    byte[] thumbPng = null;
+                    if (partImages != null)
+                        partImages.TryGetValue(imgKey, out thumbPng);
+                    if (thumbPng != null && thumbPng.Length > 0)
+                    {
+                        string b64 = Convert.ToBase64String(thumbPng);
+                        _sb.AppendFormat("<img class=\"sub-part-thumb\" src=\"data:image/png;base64,{0}\" alt=\"\" />",
+                            b64);
+                    }
+                    else if (!string.IsNullOrEmpty(part.ColourHex))
+                    {
+                        _sb.AppendFormat("<span class=\"colour-swatch\" style=\"background:{0}\"></span>",
+                            part.ColourHex);
+                    }
+
+                    _sb.AppendFormat("<span class=\"sub-part-qty\">{0}×</span> ", part.Quantity);
+                    _sb.AppendFormat("{0}</span>\n",
+                        System.Net.WebUtility.HtmlEncode(displayName));
+                }
+                _sb.AppendLine("</div>");
+            }
+
             _sb.AppendLine("</div>");
+            _submodelStepsOnPage++;
         }
 
         /// <summary>
@@ -618,8 +705,39 @@ body {
 }
 .submodel-step-image img {
     max-width: 100%;
-    max-height: 300px;
+    max-height: 200px;
     border-radius: 4px;
+}
+
+/* Compact inline parts list for submodel steps */
+.submodel-parts-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    padding: 6px 10px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    font-size: 0.78em;
+    color: #475569;
+    line-height: 1.6;
+}
+.sub-part-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+}
+.sub-part-qty {
+    font-weight: 700;
+    color: #e53e3e;
+}
+.sub-part-thumb {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 3px;
+    background: #ffffff;
+    flex-shrink: 0;
 }
 
 /* ═══ Parts Callout (PLI) ═══ */
@@ -783,7 +901,8 @@ body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    .submodel-callout { break-inside: avoid; }
+    .submodel-step { break-inside: avoid; }
+    .parts-callout { break-inside: avoid; }
     .bom-item { break-inside: avoid; }
     .step-cell { break-inside: avoid; }
 }

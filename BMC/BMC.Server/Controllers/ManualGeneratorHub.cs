@@ -166,7 +166,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                 // ── Phase 5.5: Pre-compute auto-rotation for root steps ──
                 // Analyse where new parts are added relative to model centre
-                // and derive an optimal camera azimuth per step.
+                // and derive optimal camera azimuth + elevation per step.
                 for (int i = 0; i < totalSteps; i++)
                 {
                     var step = plan.Steps[i];
@@ -176,6 +176,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                     step.AutoAzimuth = RenderService.ComputeAutoAzimuth(
                         rootMesh, rootTriBounds, step.LocalStepIndex, azimuth, 0.6f);
+                    step.AutoElevation = RenderService.ComputeAutoElevation(
+                        rootMesh, rootTriBounds, step.LocalStepIndex, elevation, 0.6f);
                 }
 
 
@@ -243,8 +245,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     else if (!step.IsSubmodelStep
                              && step.LocalStepIndex < rootTriBounds.Length)
                     {
-                        float stepElevation = elevation;
-                        // Use auto-computed azimuth if available, otherwise default
+                        // Use auto-computed angles if available, otherwise defaults
+                        float stepElevation = step.AutoElevation ?? elevation;
                         float stepAzimuth = step.AutoAzimuth ?? azimuth;
                         ApplyRotStep(step.RotStep, ref stepElevation, ref stepAzimuth,
                             elevation, stepAzimuth);

@@ -63,6 +63,12 @@ namespace BMC.LDraw.Render
         /// Set by the hub after mesh analysis; ignored when RotStep is present.
         /// </summary>
         public float? AutoAzimuth;
+
+        /// <summary>
+        /// Computed optimal elevation to face newly-added parts (null = use default).
+        /// Adjusts vertical angle when parts are on the top/bottom of the model.
+        /// </summary>
+        public float? AutoElevation;
     }
 
 

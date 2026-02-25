@@ -1373,22 +1373,25 @@ namespace BMC.LDraw.Render
                 renderEdgeLines.Add(preSmoothedFullMesh.EdgeLines[e]);
             }
 
-            // Dim old steps — keep A=255 so they stay in the fast parallel opaque path
+            // Dim old steps — push strongly toward light grey so new parts pop.
+            // Keep A=255 so they stay in the fast parallel opaque path.
+            // Using high grey + high blend factor makes old geometry nearly ghosted,
+            // providing maximum contrast even for white-on-white new parts.
             for (int t = 0; t < prevTriEnd; t++)
             {
                 MeshTriangle tri = renderTris[t];
-                byte grey = 180;
-                tri.R = (byte)((tri.R * 0.4f) + (grey * 0.6f));
-                tri.G = (byte)((tri.G * 0.4f) + (grey * 0.6f));
-                tri.B = (byte)((tri.B * 0.4f) + (grey * 0.6f));
-                tri.A = 255; // Keep opaque! A<255 routes through sequential transparent pass
+                byte grey = 210;                // Light grey target
+                tri.R = (byte)((tri.R * 0.2f) + (grey * 0.8f));
+                tri.G = (byte)((tri.G * 0.2f) + (grey * 0.8f));
+                tri.B = (byte)((tri.B * 0.2f) + (grey * 0.8f));
+                tri.A = 255;
                 renderTris[t] = tri;
             }
 
             for (int e = 0; e < prevEdgeEnd; e++)
             {
                 MeshLine line = renderEdgeLines[e];
-                line.R = 200; line.G = 200; line.B = 200; line.A = 80;
+                line.R = 220; line.G = 220; line.B = 220; line.A = 50;
                 renderEdgeLines[e] = line;
             }
 
@@ -1630,6 +1633,56 @@ namespace BMC.LDraw.Render
 
             float blendedAzimuth = defaultAzimuth + blendFactor * delta;
             return blendedAzimuth;
+        }
+
+
+        /// <summary>
+        /// Compute the optimal camera elevation to face newly-added parts.
+        ///
+        /// When new parts are significantly above or below the model centre (Y axis),
+        /// the elevation is adjusted to tilt the camera toward them.
+        /// In LDraw, Y points down — higher Y = lower physical position (bottom of model).
+        /// </summary>
+        /// <param name="mesh">Pre-smoothed full mesh.</param>
+        /// <param name="stepTriangleBounds">Cumulative triangle counts per step.</param>
+        /// <param name="stepIndex">Current step index.</param>
+        /// <param name="defaultElevation">User's configured default elevation (degrees).</param>
+        /// <param name="blendFactor">0.0 = always default, 1.0 = fully tilt. Recommended: 0.6.</param>
+        /// <returns>Blended elevation in degrees, or null if no significant Y offset.</returns>
+        public static float? ComputeAutoElevation(
+            LDrawMesh mesh, int[] stepTriangleBounds, int stepIndex,
+            float defaultElevation, float blendFactor = 0.6f)
+        {
+            if (!ComputeNewPartsCentroid(mesh, stepTriangleBounds, stepIndex,
+                out float ncx, out float ncy, out float ncz))
+                return null;
+
+            mesh.GetCenter(out float mcx, out float mcy, out float mcz);
+
+            // Y offset: positive dy means new parts are BELOW model centre (LDraw Y-down)
+            float dy = ncy - mcy;
+            float modelExtent = mesh.GetMaxExtent();
+
+            // Only adjust if the vertical offset is significant (>5% of model extent)
+            if (System.Math.Abs(dy) < modelExtent * 0.05f)
+                return null;
+
+            // Compute how much to tilt:
+            // Parts below centre (dy > 0) → reduce elevation (look from lower angle)
+            // Parts above centre (dy < 0) → increase elevation (look from higher angle)
+            // Scale: at dy = half-extent, tilt toward 0° or 60° respectively
+            float halfExtent = modelExtent * 0.5f;
+            float normalizedOffset = dy / halfExtent; // -1 to +1 range roughly
+            normalizedOffset = System.Math.Clamp(normalizedOffset, -1f, 1f);
+
+            // Target elevation: 0° (eye-level) for bottom parts, 60° for top parts
+            float optimalElevation = defaultElevation - normalizedOffset * 25f;
+            // Clamp to reasonable range (5° to 75°)
+            optimalElevation = System.Math.Clamp(optimalElevation, 5f, 75f);
+
+            float delta = optimalElevation - defaultElevation;
+            float blendedElevation = defaultElevation + blendFactor * delta;
+            return blendedElevation;
         }
     }
 }
