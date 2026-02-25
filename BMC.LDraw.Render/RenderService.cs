@@ -957,6 +957,216 @@ namespace BMC.LDraw.Render
 
 
         /// <summary>
+        /// Recursively analyse all steps across root model and submodels.
+        /// Returns a flattened ManualBuildPlan in render order — submodel steps
+        /// appear inline before the root step that references them.
+        /// 
+        /// This is a metadata-only pass; no geometry resolution is performed.
+        /// </summary>
+        public ManualBuildPlan AnalyseStepsRecursive(string[] lines, string fileName)
+        {
+            EnsureColours();
+
+            var geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0)
+                return new ManualBuildPlan { ModelName = System.IO.Path.GetFileNameWithoutExtension(fileName) };
+
+            // Build a lookup of all parsed geometries by name
+            var geoLookup = new Dictionary<string, LDrawGeometry>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null && !geoLookup.ContainsKey(geos[i].Name))
+                {
+                    geoLookup[geos[i].Name] = geos[i];
+                }
+            }
+
+            var root = geos[0];
+            var plan = new ManualBuildPlan
+            {
+                ModelName = System.IO.Path.GetFileNameWithoutExtension(fileName)
+            };
+
+            // Track which submodels have steps (for pre-resolution)
+            var submodelsWithSteps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Track already-expanded submodels to avoid duplicating callouts
+            var expandedSubmodels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            int globalStep = 1;
+
+            ExpandStepsRecursive(
+                root, root.Name ?? fileName,
+                null, // parent model name
+                0,    // depth
+                geoLookup, submodelsWithSteps, expandedSubmodels,
+                plan.Steps, ref globalStep);
+
+            plan.SubmodelsWithSteps = new List<string>(submodelsWithSteps);
+            return plan;
+        }
+
+
+        /// <summary>
+        /// Recursively expand steps from a geometry, inserting submodel callout steps
+        /// before the root step that first references each submodel.
+        /// </summary>
+        private void ExpandStepsRecursive(
+            LDrawGeometry geo,
+            string modelName,
+            string parentModelName,
+            int depth,
+            Dictionary<string, LDrawGeometry> geoLookup,
+            HashSet<string> submodelsWithSteps,
+            HashSet<string> expandedSubmodels,
+            List<ManualBuildStep> steps,
+            ref int globalStep)
+        {
+            int stepCount = geo.StepBreaks.Count;
+            if (stepCount == 0) return;
+
+            bool isSubmodel = depth > 0;
+            int cumulativeParts = 0;
+
+            for (int i = 0; i < stepCount; i++)
+            {
+                int prevMax = i > 0 ? geo.StepBreaks[i - 1] : 0;
+                int curMax = geo.StepBreaks[i];
+
+                // Before emitting this step, check if any subfile refs in this step
+                // point to submodels with their own build steps.
+                // If so, expand them first (callout).
+                for (int j = prevMax; j < curMax && j < geo.SubfileReferences.Count; j++)
+                {
+                    var subRef = geo.SubfileReferences[j];
+                    if (geoLookup.TryGetValue(subRef.FileName, out LDrawGeometry subGeo)
+                        && subGeo.StepBreaks.Count > 1  // only expand multi-step submodels
+                        && !expandedSubmodels.Contains(subRef.FileName))
+                    {
+                        expandedSubmodels.Add(subRef.FileName);
+                        submodelsWithSteps.Add(subRef.FileName);
+
+                        ExpandStepsRecursive(
+                            subGeo, subRef.FileName,
+                            modelName,
+                            depth + 1,
+                            geoLookup, submodelsWithSteps, expandedSubmodels,
+                            steps, ref globalStep);
+                    }
+                }
+
+                // Now emit this step
+                var partGroups = new Dictionary<string, StepPartInfo>();
+                for (int j = prevMax; j < curMax && j < geo.SubfileReferences.Count; j++)
+                {
+                    var subRef = geo.SubfileReferences[j];
+                    string key = subRef.FileName + "|" + subRef.ColourCode;
+
+                    if (partGroups.TryGetValue(key, out StepPartInfo existing))
+                    {
+                        existing.Quantity++;
+                    }
+                    else
+                    {
+                        partGroups[key] = new StepPartInfo
+                        {
+                            FileName = subRef.FileName,
+                            ColourCode = subRef.ColourCode,
+                            Quantity = 1
+                        };
+                    }
+                }
+
+                cumulativeParts += (curMax - prevMax);
+
+                // Get ROTSTEP data if available
+                RotStepData rotStep = null;
+                if (i < geo.StepRotations.Count && geo.StepRotations[i] != null)
+                {
+                    var src = geo.StepRotations[i];
+                    rotStep = new RotStepData
+                    {
+                        X = src.X, Y = src.Y, Z = src.Z, Type = src.Type
+                    };
+                }
+
+                steps.Add(new ManualBuildStep
+                {
+                    GlobalStepIndex = globalStep++,
+                    LocalStepIndex = i,
+                    ModelName = modelName,
+                    IsSubmodelStep = isSubmodel,
+                    ParentModelName = parentModelName,
+                    SubmodelDepth = depth,
+                    NewParts = new List<StepPartInfo>(partGroups.Values),
+                    CumulativePartCount = cumulativeParts,
+                    RotStep = rotStep
+                });
+            }
+        }
+
+
+        /// <summary>
+        /// Resolve a single submodel's mesh with per-step triangle/edge boundaries.
+        /// Used for rendering submodel steps with the pre-smoothed mesh approach.
+        /// 
+        /// Parses and caches all MPD sections so submodel part references resolve correctly.
+        /// </summary>
+        public (LDrawMesh mesh, int[] triBounds, int[] edgeBounds)
+            ResolveSubmodelWithStepBoundaries(
+                string[] lines, string fileName, string submodelName,
+                int effectiveColour = 4)
+        {
+            EnsureColours();
+
+            var geos = GeometryParser.ParseLines(lines, fileName);
+
+            // Find the target submodel geometry
+            LDrawGeometry targetGeo = null;
+            for (int i = 0; i < geos.Count; i++)
+            {
+                if (string.Equals(geos[i].Name, submodelName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    targetGeo = geos[i];
+                    break;
+                }
+            }
+
+            if (targetGeo == null || targetGeo.StepBreaks.Count == 0)
+            {
+                return (new LDrawMesh(), System.Array.Empty<int>(), System.Array.Empty<int>());
+            }
+
+            // Build a resolver with all MPD sections cached
+            GeometryResolver subResolver = new GeometryResolver(_libraryPath, _colours);
+            subResolver.PrepareContentForIncrementalResolve(lines, fileName);
+
+            // Build the mesh step by step
+            LDrawMesh mesh = new LDrawMesh();
+            int totalSteps = targetGeo.StepBreaks.Count;
+            int[] triBounds = new int[totalSteps];
+            int[] edgeBounds = new int[totalSteps];
+
+            int prevSubRefEnd = 0;
+            for (int step = 0; step < totalSteps; step++)
+            {
+                int subRefEnd = targetGeo.StepBreaks[step];
+
+                subResolver.ResolveContentStepRange(
+                    targetGeo, prevSubRefEnd, subRefEnd,
+                    effectiveColour, mesh,
+                    includeDirectGeometry: step == 0);
+
+                triBounds[step] = mesh.Triangles.Count;
+                edgeBounds[step] = mesh.EdgeLines.Count;
+                prevSubRefEnd = subRefEnd;
+            }
+
+            mesh.ComputeBounds();
+            return (mesh, triBounds, edgeBounds);
+        }
+
+        /// <summary>
         /// Pre-resolve the full model mesh (all steps) for camera framing purposes.
         /// Also returns the shared GeometryResolver and parsed root geometry for
         /// use with incremental step rendering.

@@ -108,6 +108,7 @@ namespace BMC.LDraw.Parsers
         {
             LDrawGeometry geo = new LDrawGeometry();
             bool invertNext = false;
+            LDrawRotStep currentRotStep = null;  // Active ROTSTEP state
 
             for (int i = startLine; i < endLine && i < lines.Length; i++)
             {
@@ -136,6 +137,39 @@ namespace BMC.LDraw.Parsers
                     else if (content == "STEP")
                     {
                         geo.StepBreaks.Add(geo.SubfileReferences.Count);
+                        geo.StepRotations.Add(currentRotStep);
+                    }
+                    // ROTSTEP meta-command — camera rotation override per step
+                    else if (content.StartsWith("ROTSTEP"))
+                    {
+                        string rotContent = content.Substring(7).Trim();
+                        if (rotContent == "END" || string.IsNullOrEmpty(rotContent))
+                        {
+                            currentRotStep = null;
+                        }
+                        else
+                        {
+                            // Parse: ROTSTEP x y z ABS|REL|ADD
+                            string[] rotTokens = rotContent.Split(
+                                new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                            if (rotTokens.Length >= 3
+                                && TryParseFloat(rotTokens[0], out float rx)
+                                && TryParseFloat(rotTokens[1], out float ry)
+                                && TryParseFloat(rotTokens[2], out float rz))
+                            {
+                                string rotType = rotTokens.Length >= 4
+                                    ? rotTokens[3].ToUpperInvariant()
+                                    : "REL";
+                                currentRotStep = new LDrawRotStep
+                                {
+                                    X = rx, Y = ry, Z = rz, Type = rotType
+                                };
+
+                                // ROTSTEP implicitly ends the previous step (like STEP)
+                                geo.StepBreaks.Add(geo.SubfileReferences.Count);
+                                geo.StepRotations.Add(currentRotStep);
+                            }
+                        }
                     }
                     // Extract name from first description line
                     else if (geo.Name == null && content.Length > 0
@@ -216,6 +250,7 @@ namespace BMC.LDraw.Parsers
             if (geo.SubfileReferences.Count > lastBreak)
             {
                 geo.StepBreaks.Add(geo.SubfileReferences.Count);
+                geo.StepRotations.Add(null);  // No ROTSTEP for implicit final step
             }
 
             return geo;

@@ -46,8 +46,11 @@ namespace BMC.LDraw.Render
     /// </summary>
     public class ManualGenerationResult
     {
-        /// <summary>The complete self-contained HTML document.</summary>
+        /// <summary>The complete self-contained HTML document (null for PDF output).</summary>
         public string Html;
+
+        /// <summary>Raw document bytes (used for PDF output; null for HTML).</summary>
+        public byte[] DocumentBytes;
 
         /// <summary>Total number of build steps.</summary>
         public int TotalSteps;

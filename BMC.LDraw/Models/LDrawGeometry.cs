@@ -62,5 +62,31 @@ namespace BMC.LDraw.Models
         /// Cumulative: to render up to step N, resolve refs 0..StepBreaks[N]-1.
         /// </summary>
         public List<int> StepBreaks = new List<int>();
+
+        /// <summary>
+        /// Per-step camera rotation overrides from "0 ROTSTEP" meta-commands.
+        /// Index corresponds to StepBreaks — StepRotations[i] applies to step i.
+        /// A null entry means no rotation override for that step.
+        /// </summary>
+        public List<LDrawRotStep> StepRotations = new List<LDrawRotStep>();
+    }
+
+
+    /// <summary>
+    /// Camera rotation override parsed from a "0 ROTSTEP x y z TYPE" meta-command.
+    /// </summary>
+    public class LDrawRotStep
+    {
+        /// <summary>Rotation around X axis in degrees.</summary>
+        public float X;
+
+        /// <summary>Rotation around Y axis in degrees.</summary>
+        public float Y;
+
+        /// <summary>Rotation around Z axis in degrees.</summary>
+        public float Z;
+
+        /// <summary>Rotation type: "ABS" (absolute), "REL" (relative), or "ADD".</summary>
+        public string Type;
     }
 }

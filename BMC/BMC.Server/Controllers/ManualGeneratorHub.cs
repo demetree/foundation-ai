@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using BMC.LDraw.Render;
+using BMC.LDraw.Models;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -68,9 +68,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                 string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                 var renderService = new RenderService(dataPath);
 
-                // Fast metadata-only analysis (no geometry resolution)
-                var analysis = renderService.AnalyseSteps(lines, fileName);
-                int totalSteps = analysis.Count;
+                // ── Phase 1: Recursive step analysis (submodel-aware) ──
+                var plan = renderService.AnalyseStepsRecursive(lines, fileName);
+                int totalSteps = plan.TotalSteps;
 
                 if (totalSteps == 0)
                 {
@@ -82,67 +82,181 @@ namespace Foundation.BMC.Controllers.WebAPI
                 float elevation = Math.Clamp(options.Elevation, -90f, 90f);
                 float azimuth = Math.Clamp(options.Azimuth, -360f, 360f);
 
-                // Collect rendered step images
-                var stepImages = new List<string>(totalSteps);
 
-                // ── Resolve the full model ONCE with per-step triangle boundaries ──
-                // This also caches all part files, so no repeated file I/O.
-                int[] stepTriBounds = null;
-                int[] stepEdgeBounds = null;
-                global::BMC.LDraw.Models.LDrawMesh fullMesh = null;
+                // ── Phase 2: Pre-resolve and pre-smooth meshes ──
+                // Root model mesh (with per-step boundaries)
+                int[] rootTriBounds = null;
+                int[] rootEdgeBounds = null;
+                LDrawMesh rootMesh = null;
+
+                // Per-submodel meshes (with per-step boundaries)
+                var submodelMeshes = new Dictionary<string, (LDrawMesh mesh, int[] triBounds, int[] edgeBounds)>(
+                    StringComparer.OrdinalIgnoreCase);
 
                 await Task.Run(() =>
                 {
-                    fullMesh = renderService.ResolveFullModelWithStepBoundaries(
-                        lines, fileName, out stepTriBounds, out stepEdgeBounds);
+                    // Resolve root model
+                    rootMesh = renderService.ResolveFullModelWithStepBoundaries(
+                        lines, fileName, out rootTriBounds, out rootEdgeBounds);
 
-                    // Smooth the full mesh ONCE (all normals computed here)
                     if (options.SmoothShading)
                     {
-                        global::BMC.LDraw.Render.NormalSmoother.Smooth(fullMesh);
+                        NormalSmoother.Smooth(rootMesh);
+                    }
+
+                    // Resolve each submodel that has its own steps
+                    foreach (string subName in plan.SubmodelsWithSteps)
+                    {
+                        var (mesh, triBounds, edgeBounds) =
+                            renderService.ResolveSubmodelWithStepBoundaries(
+                                lines, fileName, subName);
+
+                        if (mesh.Triangles.Count > 0)
+                        {
+                            if (options.SmoothShading)
+                            {
+                                NormalSmoother.Smooth(mesh);
+                            }
+                            submodelMeshes[subName] = (mesh, triBounds, edgeBounds);
+                        }
                     }
                 }, Context.ConnectionAborted);
+
+
+                // ── Phase 3: Render each step and build document ──
+                IManualDocumentBuilder builder = new HtmlManualBuilder();
+                builder.BeginDocument(
+                    System.IO.Path.GetFileNameWithoutExtension(fileName),
+                    plan, options);
+
+                // Render the final model image for the cover
+                Context.ConnectionAborted.ThrowIfCancellationRequested();
+                byte[] coverImage = null;
+                if (rootMesh.Triangles.Count > 0)
+                {
+                    var lastRootStep = plan.Steps.LastOrDefault(s => !s.IsSubmodelStep);
+                    int coverStepIdx = lastRootStep != null ? lastRootStep.LocalStepIndex : rootTriBounds.Length - 1;
+                    if (coverStepIdx < rootTriBounds.Length)
+                    {
+                        var coverResult = await Task.Run(() =>
+                            renderService.RenderStepFromPreSmoothedMesh(
+                                rootMesh, coverStepIdx, rootTriBounds, rootEdgeBounds,
+                                imageSize, imageSize, elevation, azimuth,
+                                options.RenderEdges, options.SmoothShading),
+                            Context.ConnectionAborted);
+                        coverImage = coverResult.PngBytes;
+                    }
+                }
+                builder.AddCoverPage(coverImage);
+
+                // Track callout state
+                string currentCalloutModel = null;
 
                 for (int i = 0; i < totalSteps; i++)
                 {
                     Context.ConnectionAborted.ThrowIfCancellationRequested();
 
-                    // Render step from pre-smoothed mesh — NO per-step resolution or smoothing
-                    var result = await Task.Run(() =>
-                        renderService.RenderStepFromPreSmoothedMesh(
-                            fullMesh, i, stepTriBounds, stepEdgeBounds,
-                            imageSize, imageSize, elevation, azimuth,
-                            options.RenderEdges, options.SmoothShading),
-                        Context.ConnectionAborted);
+                    var step = plan.Steps[i];
 
-                    string base64 = Convert.ToBase64String(result.PngBytes);
-                    stepImages.Add(base64);
+                    // Handle callout transitions
+                    if (step.IsSubmodelStep && currentCalloutModel != step.ModelName)
+                    {
+                        // Close previous callout if switching submodels
+                        if (currentCalloutModel != null)
+                        {
+                            builder.EndSubmodelCallout();
+                        }
 
-                    // Stream progress to client in real time
+                        // Count steps in this submodel
+                        int subStepCount = plan.Steps.Count(s => s.ModelName == step.ModelName);
+                        builder.BeginSubmodelCallout(step.ModelName, subStepCount);
+                        currentCalloutModel = step.ModelName;
+                    }
+                    else if (!step.IsSubmodelStep && currentCalloutModel != null)
+                    {
+                        builder.EndSubmodelCallout();
+                        currentCalloutModel = null;
+                    }
+
+                    // Render the step image
+                    byte[] stepImageBytes = null;
+
+                    if (step.IsSubmodelStep
+                        && submodelMeshes.TryGetValue(step.ModelName,
+                            out var subData))
+                    {
+                        // Render from submodel's pre-smoothed mesh
+                        float stepElevation = elevation;
+                        float stepAzimuth = azimuth;
+                        ApplyRotStep(step.RotStep, ref stepElevation, ref stepAzimuth,
+                            elevation, azimuth);
+
+                        var result = await Task.Run(() =>
+                            renderService.RenderStepFromPreSmoothedMesh(
+                                subData.mesh, step.LocalStepIndex,
+                                subData.triBounds, subData.edgeBounds,
+                                imageSize, imageSize,
+                                stepElevation, stepAzimuth,
+                                options.RenderEdges, options.SmoothShading),
+                            Context.ConnectionAborted);
+                        stepImageBytes = result.PngBytes;
+                    }
+                    else if (!step.IsSubmodelStep
+                             && step.LocalStepIndex < rootTriBounds.Length)
+                    {
+                        // Render from root model's pre-smoothed mesh
+                        float stepElevation = elevation;
+                        float stepAzimuth = azimuth;
+                        ApplyRotStep(step.RotStep, ref stepElevation, ref stepAzimuth,
+                            elevation, azimuth);
+
+                        var result = await Task.Run(() =>
+                            renderService.RenderStepFromPreSmoothedMesh(
+                                rootMesh, step.LocalStepIndex,
+                                rootTriBounds, rootEdgeBounds,
+                                imageSize, imageSize,
+                                stepElevation, stepAzimuth,
+                                options.RenderEdges, options.SmoothShading),
+                            Context.ConnectionAborted);
+                        stepImageBytes = result.PngBytes;
+                    }
+
+                    builder.AddStep(step, stepImageBytes);
+
+                    // Stream progress to client
+                    string previewB64 = stepImageBytes != null
+                        ? Convert.ToBase64String(stepImageBytes) : null;
+
                     await Clients.Caller.SendAsync("StepProgress", new
                     {
                         step = i + 1,
                         total = totalSteps,
-                        previewBase64 = base64
+                        previewBase64 = previewB64
                     }, Context.ConnectionAborted);
                 }
 
+                // Close any remaining callout
+                if (currentCalloutModel != null)
+                {
+                    builder.EndSubmodelCallout();
+                }
 
-                // Assemble the HTML manual
-                string html = AssembleHtml(fileName, analysis, stepImages, options);
+                // Finalize document
+                var finalResult = builder.Build();
 
                 sw.Stop();
 
                 await Clients.Caller.SendAsync("GenerationComplete", new
                 {
-                    html = html,
-                    totalSteps = totalSteps,
-                    totalParts = analysis.LastOrDefault()?.CumulativePartCount ?? 0,
+                    html = finalResult.Html,
+                    totalSteps = finalResult.TotalSteps,
+                    totalParts = finalResult.TotalParts,
                     renderTimeMs = (int)sw.ElapsedMilliseconds
                 }, Context.ConnectionAborted);
 
-                _logger.LogInformation("Manual generation complete for {FileName}: {Steps} steps in {Ms}ms",
-                    fileName, totalSteps, sw.ElapsedMilliseconds);
+                _logger.LogInformation(
+                    "Manual generation complete for {FileName}: {Steps} steps ({SubmodelCount} submodels) in {Ms}ms",
+                    fileName, totalSteps, plan.SubmodelsWithSteps.Count, sw.ElapsedMilliseconds);
             }
             catch (OperationCanceledException)
             {
@@ -158,253 +272,31 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
         /// <summary>
-        /// Assemble a self-contained HTML document with embedded step images.
-        /// Uses CSS @page rules for print-ready paper formatting.
+        /// Apply a ROTSTEP camera rotation override.
         /// </summary>
-        private static string AssembleHtml(string fileName,
-                                            List<ManualStepAnalysis> analysis,
-                                            List<string> stepImages,
-                                            ManualOptions options)
+        private static void ApplyRotStep(RotStepData rotStep,
+            ref float elevation, ref float azimuth,
+            float defaultElevation, float defaultAzimuth)
         {
-            string modelName = System.IO.Path.GetFileNameWithoutExtension(fileName);
-            string pageSize = (options.PageSize ?? "a4").ToLowerInvariant() == "letter" ? "letter" : "A4";
+            if (rotStep == null) return;
 
-            var sb = new StringBuilder();
-            sb.AppendLine("<!DOCTYPE html>");
-            sb.AppendLine("<html lang=\"en\">");
-            sb.AppendLine("<head>");
-            sb.AppendLine("<meta charset=\"UTF-8\">");
-            sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
-            sb.AppendFormat("<title>{0} — Build Manual</title>\n", System.Net.WebUtility.HtmlEncode(modelName));
-            sb.AppendLine("<style>");
-            sb.AppendLine(GetManualCss(pageSize));
-            sb.AppendLine("</style>");
-            sb.AppendLine("</head>");
-            sb.AppendLine("<body>");
-
-            // Cover page
-            sb.AppendLine("<div class=\"page cover-page\">");
-            sb.AppendLine("<div class=\"cover-content\">");
-            sb.AppendFormat("<h1 class=\"cover-title\">{0}</h1>\n", System.Net.WebUtility.HtmlEncode(modelName));
-            sb.AppendFormat("<div class=\"cover-meta\">Build Manual · {0} Steps · {1} Parts</div>\n",
-                analysis.Count, analysis.LastOrDefault()?.CumulativePartCount ?? 0);
-            if (stepImages.Count > 0)
+            switch (rotStep.Type)
             {
-                // Show the final completed model on the cover
-                sb.AppendFormat("<img class=\"cover-image\" src=\"data:image/png;base64,{0}\" alt=\"Completed model\" />\n",
-                    stepImages[stepImages.Count - 1]);
+                case "ABS":
+                    elevation = rotStep.X;
+                    azimuth = rotStep.Y;
+                    break;
+
+                case "REL":
+                    elevation = defaultElevation + rotStep.X;
+                    azimuth = defaultAzimuth + rotStep.Y;
+                    break;
+
+                case "ADD":
+                    elevation += rotStep.X;
+                    azimuth += rotStep.Y;
+                    break;
             }
-            sb.AppendLine("</div>");
-            sb.AppendLine("</div>");
-
-            // Step pages
-            for (int i = 0; i < analysis.Count; i++)
-            {
-                var step = analysis[i];
-                sb.AppendLine("<div class=\"page step-page\">");
-
-                // Header
-                sb.AppendFormat("<div class=\"step-header\"><span class=\"step-number\">Step {0}</span>",
-                    step.StepIndex + 1);
-                sb.AppendFormat("<span class=\"step-of\">of {0}</span></div>\n", analysis.Count);
-
-                // Main build image
-                if (i < stepImages.Count)
-                {
-                    sb.AppendFormat("<div class=\"step-image\"><img src=\"data:image/png;base64,{0}\" alt=\"Step {1}\" /></div>\n",
-                        stepImages[i], step.StepIndex + 1);
-                }
-
-                // New parts callout
-                if (step.NewParts.Count > 0)
-                {
-                    sb.AppendLine("<div class=\"parts-callout\">");
-                    sb.AppendLine("<div class=\"parts-callout-title\">New Parts</div>");
-                    sb.AppendLine("<div class=\"parts-list\">");
-                    foreach (var part in step.NewParts)
-                    {
-                        sb.AppendFormat("<div class=\"part-item\"><span class=\"part-qty\">{0}×</span>",
-                            part.Quantity);
-                        sb.AppendFormat("<span class=\"part-name\">{0}</span>",
-                            System.Net.WebUtility.HtmlEncode(part.FileName));
-                        sb.AppendFormat("<span class=\"part-colour\">Colour {0}</span></div>\n",
-                            part.ColourCode);
-                    }
-                    sb.AppendLine("</div>");
-                    sb.AppendLine("</div>");
-                }
-
-                // Footer
-                sb.AppendFormat("<div class=\"step-footer\">{0} · Step {1}/{2}</div>\n",
-                    System.Net.WebUtility.HtmlEncode(modelName), step.StepIndex + 1, analysis.Count);
-
-                sb.AppendLine("</div>");
-            }
-
-            sb.AppendLine("</body>");
-            sb.AppendLine("</html>");
-
-            return sb.ToString();
-        }
-
-
-        /// <summary>
-        /// CSS for the self-contained HTML manual.
-        /// Includes @page rules for print-friendly paper formatting.
-        /// </summary>
-        private static string GetManualCss(string pageSize)
-        {
-            return @"
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-@page {
-    size: " + pageSize + @";
-    margin: 12mm;
-}
-
-body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: #f0f2f5;
-    color: #1a1a2e;
-}
-
-.page {
-    width: 100%;
-    max-width: 210mm;
-    margin: 20px auto;
-    background: #ffffff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    border-radius: 8px;
-    padding: 24px;
-    page-break-after: always;
-    min-height: 280mm;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Cover Page */
-.cover-page {
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-.cover-content { max-width: 80%; }
-.cover-title {
-    font-size: 2.4em;
-    font-weight: 700;
-    color: #16213e;
-    margin-bottom: 12px;
-    letter-spacing: -0.02em;
-}
-.cover-meta {
-    font-size: 1.1em;
-    color: #64748b;
-    margin-bottom: 32px;
-}
-.cover-image {
-    max-width: 100%;
-    max-height: 400px;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-}
-
-/* Step Pages */
-.step-header {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #e2e8f0;
-}
-.step-number {
-    font-size: 1.6em;
-    font-weight: 700;
-    color: #e53e3e;
-}
-.step-of {
-    font-size: 1em;
-    color: #94a3b8;
-}
-
-.step-image {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 12px 0;
-}
-.step-image img {
-    max-width: 100%;
-    max-height: 500px;
-    border-radius: 6px;
-}
-
-/* Parts Callout */
-.parts-callout {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-top: auto;
-}
-.parts-callout-title {
-    font-weight: 600;
-    font-size: 0.85em;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    margin-bottom: 8px;
-}
-.parts-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.part-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.85em;
-}
-.part-qty {
-    font-weight: 700;
-    color: #e53e3e;
-}
-.part-name {
-    font-weight: 500;
-    color: #1a1a2e;
-}
-.part-colour {
-    color: #94a3b8;
-    font-size: 0.85em;
-}
-
-.step-footer {
-    margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid #e2e8f0;
-    font-size: 0.75em;
-    color: #94a3b8;
-    text-align: center;
-}
-
-/* Print optimizations */
-@media print {
-    body { background: none; }
-    .page {
-        box-shadow: none;
-        border-radius: 0;
-        margin: 0;
-        max-width: none;
-        min-height: auto;
-    }
-}
-";
         }
     }
 }
