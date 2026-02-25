@@ -102,7 +102,6 @@ namespace Foundation.IndexedDB.Dexter
     {
         private readonly IDBDatabase _indexedDB;
         private readonly uint _version;
-        private readonly Dictionary<string, (string keyPath, bool autoIncrement, List<string> indexes)> _storesToCreate = new();
 
         internal DexterVersionBuilder(IDBDatabase indexedDB, uint version)
         {
@@ -120,9 +119,17 @@ namespace Foundation.IndexedDB.Dexter
         /// 
         /// field names starting with __ indicate that it is key field that is NOT auto incrementing
         /// field names starting with ++ indicate that it is key field that is auto incrementing
-        /// field names starting with & indicate that it is unique index field
+        /// field names starting with &amp; indicate that it is unique index field
         /// non prefixed strings become regular indexed fields
         /// 
+        /// WARNING: Unlike Dexie.js, the first field is NOT automatically the primary key.
+        /// You MUST use the __ or ++ prefix to designate a primary key. If no prefix is
+        /// used, all fields become regular indexes and the store will have no keyPath,
+        /// causing PutAsync/AddAsync to throw "Key required".
+        /// 
+        /// Examples:
+        ///   "++id, name, &amp;email"    → auto-increment PK "id", regular index "name", unique index "email"
+        ///   "__jobId, phase"        → string PK "jobId", regular index "phase"
         /// 
         /// </summary>
         /// <param name="schemaDefinition">A dictionary where keys are store names and values are schema strings (e.g., "++id, name, &email").</param>

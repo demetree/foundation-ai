@@ -11,7 +11,7 @@ namespace Foundation.IndexedDB
     /// This class models a cursor for iterating over records in an object store or index.
     /// 
     /// </summary>
-    public class IDBCursor<T> : IDisposable
+    public class IDBCursor<T> : IDisposable, IAsyncDisposable
     {
         private readonly IAsyncEnumerator<EnumeratorEntry> _enumerator;
 
@@ -25,8 +25,8 @@ namespace Foundation.IndexedDB
         {
             public string Key { get; set; }
             public string Value { get; set; }
-
         }
+
 
         internal IDBCursor(IAsyncEnumerator<EnumeratorEntry> enumerator, IDBObjectStore store, string direction = "next")
         {
@@ -35,8 +35,10 @@ namespace Foundation.IndexedDB
             _direction = direction;
         }
 
+
         public object Key => _currentKey;
         public T Value => _currentValue;
+
 
         public async Task<bool> ContinueAsync()
         {
@@ -61,8 +63,36 @@ namespace Foundation.IndexedDB
             }
         }
 
+
         // TODO: Advance, Update, Delete (in transaction)
 
+
+        /// <summary>
+        /// 
+        /// Asynchronous disposal. Preferred over Dispose() in async contexts
+        /// to avoid blocking the thread while waiting on the semaphore and enumerator.
+        /// 
+        /// </summary>
+        public async ValueTask DisposeAsync()
+        {
+            SemaphoreSlim semaphore = _store.DB.Semaphore;
+            await semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                await _enumerator.DisposeAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Synchronous disposal fallback. Prefer DisposeAsync() via 'await using' in async code.
+        /// 
+        /// </summary>
         public void Dispose()
         {
             SemaphoreSlim semaphore = _store.DB.Semaphore;

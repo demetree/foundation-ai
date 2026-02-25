@@ -196,15 +196,13 @@ namespace Foundation.IndexedDB
                     }
                 }
 
+                //
+                // Add LIMIT clause if count is specified.
+                //
                 if (count.HasValue)
                 {
                     sql += $" LIMIT {{{parameters.Count}}}";
-                }
-
-                // Now add count if present
-                if (count.HasValue)
-                {
-                    parameters.Add(count.HasValue);
+                    parameters.Add(count.Value);
                 }
 
                 //
@@ -390,11 +388,13 @@ namespace Foundation.IndexedDB
             }
         }
 
-        // Helper to build SQL for key range
+        /// <summary>
+        /// Helper to build SQL WHERE clause fragments for key range queries.
+        /// </summary>
         private (string Sql, List<object> Parameters) BuildKeyRangeSql(IDBKeyRange range, string path)
         {
-            var conditions = new List<string>();
-            var parameters = new List<object>();
+            List<string> conditions = new List<string>();
+            List<object> parameters = new List<object>();
             int paramIndex = 1; // Start after StoreName
 
             if (range.Lower != null)
@@ -415,7 +415,7 @@ namespace Foundation.IndexedDB
                 parameters.Add(range.Upper);
             }
 
-            var sql = string.Join(" AND ", conditions);
+            string sql = string.Join(" AND ", conditions);
 
             return (sql, parameters);
         }

@@ -123,7 +123,7 @@ namespace Foundation.IndexedDB
         public void Dispose()
         {
             if (_mode == TransactionMode.ReadWrite && 
-                !_writeModeTransactionFinalized && 
+                _writeModeTransactionFinalized == false && 
                 _sqliteTransaction != null)
             {
                 // Auto-rollback if not finalized

@@ -1,137 +1,334 @@
 # Foundation.IndexedDB
 
-This is a .Net Core (.Net 10) class library that provides objects similar to the JavaSript IndexedDB API.
+A .NET 10 class library that provides an **IndexedDB-like API** over SQLite using Entity Framework Core.  It lets you define object stores (tables), perform CRUD operations, and query via indexes and key ranges — all with a familiar API for developers accustomed to browser IndexedDB or [Dexie.js](https://dexie.org/).
 
-# Core Idea:
-The program provides an abstraction layer over a SQLite database, making it behave like a client-side IndexedDB in a .NET environment. This means you can define "object stores" (tables), add/get/put/delete "objects" (records), and query them using "indexes" and "key ranges," all with a familiar API for developers accustomed to IndexedDB or Dexie.js.
-Key Classes and Their Roles:
+---
 
-## IDBFactory:
+## Architecture Overview
 
-This is the entry point for creating or opening databases.
-It manages the creation of the underlying SQLite file (.sqlite).
-The OpenAsync method handles database versioning and calls an upgradeNeededHandler when the database schema needs to be updated (similar to onupgradeneeded in IndexedDB).
-Provides a DeleteDatabase method to remove a database.
+The library is arranged in two abstraction layers, with shared infrastructure underneath.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                       Consumer Code                          │
+├──────────────────────────────────────────────────────────────┤
+│  Dexter Layer (high-level, Dexie.js-style fluent API)        │
+│  ┌──────────────┐ ┌──────────────┐ ┌────────────────────┐   │
+│  │DexterDatabase│ │ DexterTable  │ │DexterWhereClause   │   │
+│  │              │ │  <T, TKey>   │ │ <T, TKey, TProp>   │   │
+│  └──────┬───────┘ └──────┬───────┘ └─────────┬──────────┘   │
+│         │                │                   │               │
+│  ┌──────┴──────┐  ┌──────┴──────────────────┐│               │
+│  │DexterVersion│  │  DexterCollection       ││               │
+│  │  Builder    │  │   <T, TKey>             │┘               │
+│  └─────────────┘  └─────────────────────────┘               │
+├──────────────────────────────────────────────────────────────┤
+│  Core IDB* Layer (mirrors browser IndexedDB API)             │
+│  ┌──────────┐ ┌──────────────┐ ┌─────────┐ ┌────────────┐  │
+│  │IDBFactory│ │IDBObjectStore│ │IDBIndex │ │IDBCursor<T>│  │
+│  └────┬─────┘ └──────┬───────┘ └────┬────┘ └────────────┘  │
+│       │              │              │                        │
+│  ┌────┴─────┐ ┌──────┴──────┐ ┌────┴──────┐                │
+│  │IDBDatabase│ │IDBTransaction│ │IDBKeyRange│                │
+│  └────┬──────┘ └─────────────┘ └───────────┘                │
+├───────┼──────────────────────────────────────────────────────┤
+│  Infrastructure                                              │
+│  ┌────┴──────┐ ┌───────────┐ ┌──────────────────────────┐   │
+│  │ IDBContext │ │ IDBCommon │ │ SqliteWALModeInterceptor │   │
+│  │ (EF Core) │ │ (JSON,    │ │ (PRAGMA optimizations)   │   │
+│  │           │ │ Exceptions)│ │                          │   │
+│  └───────────┘ └───────────┘ └──────────────────────────┘   │
+├──────────────────────────────────────────────────────────────┤
+│  SQLite (.sqlite file)                                       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Data Model
+
+All records are stored as JSON in a single `Data` table. A separate `Metadata` table holds schema configuration and version info.
+
+### Data Table
+
+| Column      | Type     | Purpose                                         |
+|-------------|----------|--------------------------------------------------|
+| `id`        | `long`   | Auto-increment primary key (internal)            |
+| `storeName` | `string` | Logical object store this record belongs to      |
+| `keyJson`   | `string` | Serialized primary key (JSON)                    |
+| `valueJson` | `string` | Serialized record value (JSON)                   |
+
+A unique composite index on `(storeName, keyJson)` enforces key uniqueness within a store.
+
+### Metadata Table
+
+| Column  | Type     | Purpose                                      |
+|---------|----------|----------------------------------------------|
+| `Key`   | `string` | Metadata identifier (e.g. `version`, `store_users`) |
+| `Value` | `string` | JSON-serialized configuration                |
+
+Secondary indexes are implemented as **SQLite expression indexes** using `json_extract`:
+
+```sql
+CREATE INDEX idx_users_email
+    ON Data (json_extract(ValueJson, '$.email'))
+    WHERE StoreName = 'users'
+```
+
+---
+
+## Core Classes
+
+### IDBFactory
+
+Entry point for creating or opening databases.
+
+- `OpenAsync(name, version, upgradeNeededHandler)` — creates the SQLite file, configures EF Core with WAL mode, handles version upgrades
+- `DeleteDatabase(name)` — clears the connection pool and deletes the `.sqlite`, `-wal`, and `-shm` files
+
+### IDBDatabase
+
+Represents a single database instance.
+
+- Holds the `IDBContext` (EF Core DbContext) and a `SemaphoreSlim` for thread-safe access
+- Manages `ObjectStoreConfig` metadata for each store (KeyPath, AutoIncrement, Indexes)
+- Creates/deletes object stores at schema-upgrade time
+- Provides `Transaction()` to start read-only or read-write transactions
+- `ExecuteWithLockAsync()` — centralised semaphore-protected database access
+
+### IDBObjectStore
+
+Represents an object store (logical table) within the database.
+
+- **CRUD**: `AddAsync`, `PutAsync`, `GetAsync`, `DeleteAsync`, `ClearAsync`
+- **Bulk**: `AddListAsync`, `PutListAsync` — uses `EFCore.BulkExtensions` for throughput
+- **Cursors**: `OpenCursor<T>()` for streaming iteration
+- **Indexes**: `CreateIndexAsync`, `DeleteIndexAsync` — creates SQLite expression indexes
+- **Keys**: Supports auto-increment, explicit keys, and keyPath extraction via reflection
+
+### IDBIndex
+
+Represents a secondary index for efficient querying on JSON properties.
+
+- `GetAsync<T>(query)` — retrieves first match
+- `GetAllAsync<T>(query, count?)` — retrieves all matches with optional limit
+- `OpenCursor<T>()` — streaming iteration over indexed values
+- Internally constructs SQL with `json_extract` for filtering
+
+### IDBCursor\<T\>
+
+Iterates over records from an object store or index query.
+
+- `ContinueAsync()` — advances to the next record, deserializes key and value
+- Implements both `IDisposable` and `IAsyncDisposable` for proper cleanup
+
+### IDBKeyRange
+
+Defines ranges for queries, used by both `IDBIndex` and `IDBObjectStore`.
+
+- `Only(value)` — exact match
+- `LowerBound(value, open?)` — greater than (or equal)
+- `UpperBound(value, open?)` — less than (or equal)
+- `Bound(lower, upper, lowerOpen?, upperOpen?)` — between
+
+### IDBTransaction
+
+Manages database transactions.
+
+- **Modes**: `ReadOnly` (no EF Core transaction) and `ReadWrite` (wraps `IDbContextTransaction`)
+- **Lifecycle**: Requires explicit `Commit()` or `Abort()` in read-write mode; auto-rollbacks on `Dispose()` if not finalized
+- **Constraint**: Only one active read-write transaction is allowed at a time
+
+---
+
+## Dexter Layer (Dexie.js-Style API)
+
+Higher-level, strongly-typed wrappers built on the core IDB* classes.
+
+### DexterDatabase
+
+Abstract base class for defining database schemas. Inherit from this to create your typed database:
+
+```csharp
+public class MyDatabase : DexterDatabase
+{
+    public DexterTable<User, int> Users { get; private set; }
+
+    public MyDatabase(IDBDatabase indexedDB) : base(indexedDB)
+    {
+        Users = Table<User, int>("users");
+    }
+
+    public async Task SetupSchema()
+    {
+        await Version(1).DefineStores(new Dictionary<string, string>
+        {
+            { "users", "++id, name, &email" }
+        });
+    }
+}
+```
+
+### Schema Definition DSL
+
+The `DefineStores` method accepts a schema string per store:
+
+| Prefix | Meaning                        | Example     |
+|--------|--------------------------------|-------------|
+| `++`   | Auto-increment primary key     | `++id`      |
+| `__`   | Non-auto-increment primary key | `__jobId`   |
+| `&`    | Unique index                   | `&email`    |
+| *(none)* | Regular (non-unique) index   | `name`      |
+
+> **Note:** Unlike Dexie.js, the first field is NOT automatically the primary key.  You must use `++` or `__` to designate one.
+
+### DexterTable\<T, TKey\>
+
+Strongly-typed wrapper around `IDBObjectStore`:
+
+- `AddAsync(entity)` / `PutAsync(entity)` — typed insert/upsert
+- `AddListAsync(list)` / `PutListAsync(list)` — bulk operations
+- `GetAsync(key)` / `DeleteAsync(key)` / `ClearAsync()`
+- `ToListAsync()` — retrieves all records via cursor
+- `Where(x => x.Property)` — starts a fluent query chain
+- `CountAsync(range?)` — record count
+
+### DexterWhereClause\<T, TKey, TProperty\>
+
+Fluent filtering on indexed properties:
+
+- `.Equals(value)` — exact match
+- `.Above(value)` / `.AboveOrEqual(value)` — lower bound queries
+- `.Below(value)` / `.BelowOrEqual(value)` — upper bound queries
+- `.Between(lower, upper, includeLower?, includeUpper?)` — range queries
+- `.StartsWith(prefix)` — string prefix matching via key range
+
+### DexterCollection\<T, TKey\>
+
+Query result set with further operations:
+
+- `.First()` — first matching record
+- `.ToArray()` — all matching records as a list
+- `.Limit(count)` — cap result count
+- `.Count()` — number of matches
+
+---
+
+## Concurrency Model
+
+EF Core's `DbContext` is not thread-safe.  This library protects it with a single `SemaphoreSlim(1, 1)` held by `IDBDatabase`:
+
+```
+Thread A ──► semaphore.WaitAsync() ──► DbContext operation ──► semaphore.Release()
+Thread B ──► semaphore.WaitAsync() ──► (waits) ──────────────► DbContext operation ──► semaphore.Release()
+```
+
+All database-touching methods (`Add`, `Put`, `Get`, `Delete`, cursor iteration, index queries, meta updates) acquire the semaphore before accessing the context.  The centralised `ExecuteWithLockAsync()` helper standardises this pattern.
+
+---
+
+## SQLite Optimization
+
+The `SqliteWALModeInterceptor` applies performance-tuned PRAGMAs on every connection open:
+
+| PRAGMA                        | Value            | Purpose                                   |
+|-------------------------------|------------------|-------------------------------------------|
+| `journal_mode`                | `WAL`            | Write-ahead logging for concurrent reads  |
+| `auto_vacuum`                 | `NONE`           | Skip auto-vacuum (manual only)            |
+| `wal_autocheckpoint`          | `2000`           | Passive checkpoint at ~8 MB               |
+| `journal_size_limit`          | `104857600`      | Cap WAL at 100 MB                         |
+| `synchronous`                 | `NORMAL`         | Balance of safety and performance         |
+| `temp_store`                  | `MEMORY`         | Temp tables in memory                     |
+
+---
+
+## Dependencies
+
+| Package                                   | Purpose                           |
+|-------------------------------------------|-----------------------------------|
+| `EFCore.BulkExtensions`                   | High-throughput bulk insert/update |
+| `Microsoft.EntityFrameworkCore.Sqlite`     | SQLite provider for EF Core       |
+| `Microsoft.EntityFrameworkCore.Relational` | Relational EF Core abstractions   |
+| `Microsoft.EntityFrameworkCore.Proxies`    | Lazy loading proxy support        |
+| `Foundation` (project reference)          | Compactica core library           |
+
+---
+
+## File Structure
+
+```
+Foundation.IndexedDB/
+├── IDBFactory.cs           — Database creation, versioning, upgrade handling
+├── IDBDatabase.cs          — Database instance, store management, transactions
+├── IDBObjectStore.cs       — Object store CRUD, bulk ops, cursor, indexes
+├── IDBIndex.cs             — Secondary index queries via json_extract
+├── IDBCursor.cs            — Record iteration with semaphore protection
+├── IDBTransaction.cs       — Transaction lifecycle (commit/abort/auto-rollback)
+├── IDBKeyRange.cs          — Query range definitions
+├── IDBRequest.cs           — Request/response model with events
+├── IDBContext.cs           — EF Core DbContext (Data + Metadata tables)
+├── IDBCommon.cs            — Shared JSON options, custom exceptions
+├── Dexter/
+│   ├── DexterDatabase.cs   — Abstract base + DexterVersionBuilder (schema DSL)
+│   ├── DexterTable.cs      — Strongly-typed table wrapper
+│   ├── DexterWhereClause.cs— Fluent where clause builder
+│   └── DexterCollection.cs — Query result operations (First, ToArray, Limit)
+├── Services/
+│   └── IDBacheService.cs   — Concept: caching service built on IndexedDB
+├── Utility/
+│   └── SqliteWALInterceptor.cs — WAL mode + PRAGMA configuration
+└── README.md
+```
+
+---
+
+## Usage Example
+
+```csharp
+//
+// 1. Create the factory and open a database
+//
+IDBFactory factory = new IDBFactory("./data");
+
+IDBOpenDBRequest request = await factory.OpenAsync("MyApp", version: 1,
+    upgradeNeededHandler: async (db, oldVer, newVer) =>
+    {
+        IDBObjectStore store = await db.CreateObjectStoreAsync("users",
+            new ObjectStoreOptions { KeyPath = "id", AutoIncrement = true });
+
+        await store.CreateIndexAsync("email", "email",
+            new IDBObjectStore.IndexOptions { Unique = true });
+    });
+
+IDBDatabase db = request.Result;
 
 
-## IDBDatabase:
+//
+// 2. Add a record
+//
+IDBObjectStore users = new IDBObjectStore(db, "users");
+object key = await users.AddAsync(new { name = "Alice", email = "alice@example.com" });
 
-Represents a single database.
-Holds a reference to the Entity Framework DbContext (IDBContext).
-Manages ObjectStoreConfig for each object store, which defines its KeyPath, AutoIncrement status, and Indexes.
-Allows access to IDBObjectStore instances for specific store names.
-Provides Transaction management (read-only or read-write).
-Handles database metadata (like version and nextKey_ for auto-increment).
 
-## IDBObjectStore:
-Represents a table (object store) within the database.
-Provides methods for basic CRUD operations: Add, Put (upsert), Get, Delete, Clear.
-Manages the primary key generation (AutoIncrement) and extraction from objects (KeyPath).
-Allows creation and deletion of secondary Indexes.
-Provides OpenCursor for iterating over records.
-Count method to get the number of records.
+//
+// 3. Query by index
+//
+IDBIndex emailIndex = users.Index("email");
+User alice = await emailIndex.GetAsync<User>("alice@example.com");
 
-## IDBIndex:
-Represents a secondary index defined on an object store.
-Allows efficient querying (Get, GetAll, OpenCursor) based on the indexed property.
-It uses json_extract SQLite function to query nested properties within the JSON ValueJson column.
 
-## IDBCursor<T>:
-Enables iteration over a set of records, similar to IndexedDB cursors.
-Provides ContinueAsync to move to the next record.
-Exposes Key and Value of the current record.
+//
+// 4. Using the Dexter layer
+//
+MyDatabase myDb = new MyDatabase(db);
+await myDb.Users.Where(u => u.Email).Equals("alice@example.com").First();
+```
 
-## IDBKeyRange:
-A helper class for defining ranges for queries (e.g., Only, LowerBound, UpperBound, Bound).
-Used by IDBIndex and IDBObjectStore to filter records efficiently.
+---
 
-## IDBTransaction:
-Encapsulates a database transaction.
-Supports ReadOnly and ReadWrite modes.
-In ReadWrite mode, it wraps an EF Core IDbContextTransaction and requires explicit Commit or Abort. If not explicitly handled, it will rollback on Dispose.
-Ensures that only one read-write transaction can be active at a time for simplicity.
+## Potential Areas for Improvement
 
-## DexterDatabase (and related Dexter* classes):
-These are higher-level, more "Dexie-like" wrappers built on top of the IDB* core classes.
-
-### DexterDatabase: 
-An abstract base class for defining your specific database schema. You'd inherit from this to create your database with strongly-typed tables.
-### DexterVersionBuilder: 
-Used within DexterDatabase to define object stores and their indexes during schema upgrades. It parses a schema string (e.g., "++id, name, &email") to configure KeyPath, AutoIncrement, and Unique indexes.
-### DexterTable<T, TKey>: 
-Provides a strongly-typed API for interacting with an object store, similar to a db.table('users') in Dexie.
-##DexterWhereClause<T, TKey, TProperty>: 
-Implements the where clause for filtering queries, offering methods like Equals, Above, Below, Between, StartsWith. This is where the IDBIndex is utilized.
-### DexterCollection<T, TKey>: 
-Represents the result of a query, allowing further operations like First, ToArray, Limit, and Count.
-
-## IDBContext (Entity Framework Core DbContext):
-The actual EF Core context that interacts with SQLite.
-Defines two DbSets: Data (to store the actual records as JSON) and Metadata (for internal database information like version and object store configurations).
-Data table has id (PK), storeName, keyJson (serialized key), and valueJson (serialized record).
-Metadata table stores key-value pairs for configurations.
-
-## IDBCommon:
-Holds shared JsonSerializerOptions (camelCase, ignore nulls, etc.) and custom exception types.
-How it Works (Simplified Flow):
-
-### Initialization: 
-You'd create an instance of IDBFactory and call OpenAsync to get an IDBDatabase instance. 
-
-During OpenAsync, the upgradeNeededHandler is invoked if the database version changes, allowing you to define your object stores and indexes using DexterVersionBuilder.
-
-#### Schema Definition: 
-In your DexterDatabase subclass, you'd call Version(yourVersion).DefineStores(...) to set up your tables and their indexes. 
-
-This creates the necessary metadata in the Metadata table and sets up SQLite indexes on the Data table using json_extract.
-
-#### Data Operations:
-
-You get a DexterTable<T, TKey> from your DexterDatabase subclass.
-
-When you Add or Put an object, it's serialized to JSON and stored in the valueJson column of the Data table. The primary key is either provided, auto-incremented, or extracted from the object itself and stored in keyJson.
-
-When you Get or query using Where, the system constructs SQL queries that use json_extract to query against the indexed properties within the valueJson column or keyJson directly.
-
-IDBKeyRange objects are translated into SQL WHERE clauses (e.g., WHERE json_extract(...) > value).
-
-IDBCursor provides a way to stream results rather than loading everything into memory at once.
-
-# Key Technologies Used:
--  C# and .NET: 
-The primary programming language and framework.
--  SQLite: 
-The embedded relational database used for persistence.
--  Entity Framework Core: 
-An ORM that simplifies interaction with the SQLite database.
-- System.Text.Json: 
-For serializing and deserializing C# objects to/from JSON, which is how the actual data is stored in SQLite.
-
-# Advantages of this Approach:
-
-- Familiar API: Provides a strongly-typed, fluent API that mimics client-side IndexedDB and Dexie.js, making it potentially easier for web developers to adopt in C# applications.
-
-- Strongly-Typed Data: Unlike raw IndexedDB, you work with C# objects directly.
-
-- Persistence: Leverages SQLite for robust and persistent storage.
-
-- Querying Capabilities: Utilizes SQLite's json_extract and indexing capabilities for efficient querying on JSON data.
-
-- Transactions: Proper transaction management ensures data integrity.
-
-# Potential Considerations/Improvements:
-
-- Performance: While json_extract with indexes helps, heavy querying on deeply nested JSON might still have performance implications compared to a fully normalized relational schema.
-
-- Complex Indexing: The current DefineStores parsing for indexes is relatively simple. Real-world Dexie allows compound indexes ([firstName+lastName]) and multi-entry indexes (*tags).
- 
-- Query Expressiveness: The DexterWhereClause is a good start but could be expanded with more Dexie-like query operators (anyOf, notEqual, or, and).
-
-- Concurrency: The single read-write transaction constraint simplifies things but might need more sophisticated handling for highly concurrent scenarios.
-
-- Schema Migration: While upgradeNeededHandler is there, the actual logic for migrating data when a KeyPath or index definition changes is left to the implementer.
-
-- Error Handling: The exception hierarchy is good, but ensuring all possible IndexedDB-specific error codes are mapped or handled consistently could be useful.
-
-# Summary
-In summary, this is a well-structured and ambitious project that provides a modern, convenient way to interact with a persistent local data store in C# applications, borrowing heavily from the successful patterns of client-side IndexedDB frameworks.
+- **Complex Indexing** — compound indexes (`[firstName+lastName]`) and multi-entry indexes (`*tags`) are not yet supported
+- **Query Expressiveness** — additional Dexie-like operators (`anyOf`, `notEqual`, `noneOf`, `or`) could be added to `DexterWhereClause`
+- **Schema Migration** — the `upgradeNeededHandler` is present, but data migration logic when KeyPath or index definitions change is left to the implementer
+- **Error Handling** — custom exceptions exist but not all IndexedDB-specific error codes are mapped

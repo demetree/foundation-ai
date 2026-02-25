@@ -226,7 +226,7 @@ namespace Foundation.IndexedDB
 
                         string keyJson = JsonSerializer.Serialize(usedKey, IDBCommon.JsonOptions);
 
-                        string valueJson = JsonSerializer.Serialize(valueList, IDBCommon.JsonOptions);
+                        string valueJson = JsonSerializer.Serialize(value, IDBCommon.JsonOptions);
 
 
                         //
@@ -479,7 +479,7 @@ namespace Foundation.IndexedDB
         }
 
         // Delete Index
-        public void DeleteIndexAsync(string name)
+        public async Task DeleteIndexAsync(string name)
         {
             IndexConfig config = _config.Indexes.FirstOrDefault(i => i.Name == name);
 
@@ -490,17 +490,12 @@ namespace Foundation.IndexedDB
 
             _config.Indexes.Remove(config);
 
-            _db.UpdateMetaAsync($"store_{Name}", JsonSerializer.Serialize(_config, IDBCommon.JsonOptions)).Wait();
+            await _db.UpdateMetaAsync($"store_{Name}", JsonSerializer.Serialize(_config, IDBCommon.JsonOptions)).ConfigureAwait(false);
 
-            _db.Semaphore.Wait();
-            try
+            await _db.ExecuteWithLockAsync(async () =>
             {
-                _db._context.Database.ExecuteSqlRawAsync($"DROP INDEX IF EXISTS idx_{Name}_{name}").Wait();
-            }
-            finally
-            {
-                _db.Semaphore.Release();
-            }
+                await _db._context.Database.ExecuteSqlRawAsync($"DROP INDEX IF EXISTS idx_{Name}_{name}").ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
 
@@ -605,18 +600,18 @@ namespace Foundation.IndexedDB
                 throw new InvalidOperationException("Key range bounds must be strings or numbers.");
             }
 
-            var conditions = new List<string>();
-            var parameters = new List<object>();
+            List<string> conditions = new List<string>();
+            List<object> parameters = new List<object>();
             int paramIndex = 0;
 
-            // Determine the key expression (KeyJson for object store
-            string keyExpression = isAnon ? "keyJson" : "d.keyJson"; // For DataEntry, use d.KeyJson
+            // Determine the key expression (KeyJson for object store)
+            string keyExpression = isAnon ? "keyJson" : "d.keyJson";
 
 
             // Apply lower bound
             if (range.Lower != null)
             {
-                var lowerJson = JsonSerializer.Serialize(range.Lower, IDBCommon.JsonOptions);
+                string lowerJson = JsonSerializer.Serialize(range.Lower, IDBCommon.JsonOptions);
                 conditions.Add($"{keyExpression} {(range.LowerOpen ? ">" : ">=")} {{{paramIndex}}}");
                 parameters.Add(lowerJson);
                 paramIndex++;
@@ -625,17 +620,19 @@ namespace Foundation.IndexedDB
             // Apply upper bound
             if (range.Upper != null)
             {
-                var upperJson = JsonSerializer.Serialize(range.Upper, IDBCommon.JsonOptions);
+                string upperJson = JsonSerializer.Serialize(range.Upper, IDBCommon.JsonOptions);
                 conditions.Add($"{keyExpression} {(range.UpperOpen ? "<" : "<=")} {{{paramIndex}}}");
                 parameters.Add(upperJson);
                 paramIndex++;
             }
 
             if (conditions.Count == 0)
+            {
                 return q;
+            }
 
             // Combine conditions into a single WHERE clause
-            var whereClause = string.Join(" AND ", conditions);
+            string whereClause = string.Join(" AND ", conditions);
 
             // Use raw SQL to append the WHERE clause
             // Note: EF Core's FromSqlRaw doesn't directly support appending WHERE to an existing IQueryable,

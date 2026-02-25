@@ -22,18 +22,18 @@ namespace Foundation.IndexedDB
         {
             modelBuilder.Entity<Data>(entry =>
             {
-                entry.HasKey(e => e.id).HasName("PK_Data_id"); ;
+                entry.HasKey(e => e.id).HasName("PK_Data_id");
                 entry.HasIndex(e => new { e.storeName, e.keyJson }).IsUnique();
                 entry.ToTable("Data");
 
             });
 
-            modelBuilder.Entity<Metadata>(entry => {
-
+            modelBuilder.Entity<Metadata>(entry =>
+            {
                 entry.HasKey(e => e.Key).HasName("PK_Metadata_key");
 
                 entry.ToTable("Metadata");
-            }); ;
+            });
         }
     }
 
