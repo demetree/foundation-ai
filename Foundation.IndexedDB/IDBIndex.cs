@@ -62,11 +62,17 @@ namespace Foundation.IndexedDB
 
                 string safePath = _config.GetSafePath();
 
-                string valueJson = await _store.DB._context.Database.SqlQueryRaw<string>($"SELECT ValueJson AS Value FROM Data WHERE StoreName = {{0}} AND json_extract(ValueJson, '$.{safePath}') = {{1}} LIMIT 1",
-                                                                                      _store.Name, 
-                                                                                      queryText)
-                                                                     .FirstOrDefaultAsync()
-                                                                     .ConfigureAwait(false);
+                //
+                // Acquire the concurrency semaphore to protect the DbContext from concurrent access.
+                //
+                string valueJson = await _store.DB.ExecuteWithLockAsync(async () =>
+                {
+                    return await _store.DB._context.Database.SqlQueryRaw<string>($"SELECT ValueJson AS Value FROM Data WHERE StoreName = {{0}} AND json_extract(ValueJson, '$.{safePath}') = {{1}} LIMIT 1",
+                                                                                          _store.Name, 
+                                                                                          queryText)
+                                                                         .FirstOrDefaultAsync()
+                                                                         .ConfigureAwait(false);
+                }).ConfigureAwait(false);
 
                 return valueJson == null ? null : JsonSerializer.Deserialize<object>(valueJson, IDBCommon.JsonOptions);
             }
@@ -109,12 +115,18 @@ namespace Foundation.IndexedDB
 
                 string safePath = _config.GetSafePath();
 
-                string valueJson = await _store.DB._context.Database.SqlQueryRaw<string>(
-                                                                     $"SELECT ValueJson AS Value FROM Data WHERE StoreName = {{0}} AND json_extract(ValueJson, '$.{safePath}') = {{1}} LIMIT 1",
-                                                                    _store.Name, 
-                                                                    queryText)
-                                                                    .FirstOrDefaultAsync()
-                                                                    .ConfigureAwait(false);
+                //
+                // Acquire the concurrency semaphore to protect the DbContext from concurrent access.
+                //
+                string valueJson = await _store.DB.ExecuteWithLockAsync(async () =>
+                {
+                    return await _store.DB._context.Database.SqlQueryRaw<string>(
+                                                                         $"SELECT ValueJson AS Value FROM Data WHERE StoreName = {{0}} AND json_extract(ValueJson, '$.{safePath}') = {{1}} LIMIT 1",
+                                                                        _store.Name, 
+                                                                        queryText)
+                                                                        .FirstOrDefaultAsync()
+                                                                        .ConfigureAwait(false);
+                }).ConfigureAwait(false);
 
                 if (valueJson == null)
                 {
@@ -195,10 +207,16 @@ namespace Foundation.IndexedDB
                     parameters.Add(count.HasValue);
                 }
 
-                List<string> valueJsons = await _store.DB._context.Database
-                    .SqlQueryRaw<string>(sql, parameters.ToArray())
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                //
+                // Acquire the concurrency semaphore to protect the DbContext from concurrent access.
+                //
+                List<string> valueJsons = await _store.DB.ExecuteWithLockAsync(async () =>
+                {
+                    return await _store.DB._context.Database
+                        .SqlQueryRaw<string>(sql, parameters.ToArray())
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+                }).ConfigureAwait(false);
 
 
                 return valueJsons.Select(v => JsonSerializer.Deserialize<object>(v, IDBCommon.JsonOptions)).ToList();
@@ -269,10 +287,17 @@ namespace Foundation.IndexedDB
                     parameters.Add(count.Value);
                 }
 
-                List<string> valueJsons = await _store.DB._context.Database
-                                                                  .SqlQueryRaw<string>(sql, parameters.ToArray())
-                                                                  .ToListAsync()
-                                                                  .ConfigureAwait(false);
+                //
+                // Acquire the concurrency semaphore to protect the DbContext from concurrent access.
+                //
+                List<string> valueJsons = await _store.DB.ExecuteWithLockAsync(async () =>
+                {
+                    return await _store.DB._context.Database
+                                                      .SqlQueryRaw<string>(sql, parameters.ToArray())
+                                                      .ToListAsync()
+                                                      .ConfigureAwait(false);
+                }).ConfigureAwait(false);
+
                 var results = new List<T>();
                 foreach (var valueJson in valueJsons)
                 {
@@ -343,10 +368,21 @@ namespace Foundation.IndexedDB
                     _ => throw new InvalidOperationException($"Invalid cursor direction: {direction}.")
                 };
 
-                var queryable = _store.DB._context.Database.SqlQueryRaw<IDBCursor<T>.EnumeratorEntry>(sql, parameters.ToArray());
-                                                           
+                //
+                // Acquire the concurrency semaphore to protect the DbContext during query construction.
+                // Actual query execution happens lazily in IDBCursor.ContinueAsync which acquires its own lock.
+                //
+                _store.DB.Semaphore.Wait();
+                try
+                {
+                    var queryable = _store.DB._context.Database.SqlQueryRaw<IDBCursor<T>.EnumeratorEntry>(sql, parameters.ToArray());
 
-                return new IDBCursor<T>(queryable.AsAsyncEnumerable().GetAsyncEnumerator(), _store, direction);
+                    return new IDBCursor<T>(queryable.AsAsyncEnumerable().GetAsyncEnumerator(), _store, direction);
+                }
+                finally
+                {
+                    _store.DB.Semaphore.Release();
+                }
             }
             catch (Exception ex)
             {

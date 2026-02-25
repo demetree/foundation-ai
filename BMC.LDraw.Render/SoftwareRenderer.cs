@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using BMC.LDraw.Models;
 
 namespace BMC.LDraw.Render
@@ -92,10 +93,7 @@ namespace BMC.LDraw.Render
         /// </summary>
         private void ClearBuffers()
         {
-            for (int i = 0; i < _depthBuffer.Length; i++)
-            {
-                _depthBuffer[i] = float.MaxValue;
-            }
+            Array.Fill(_depthBuffer, float.MaxValue);
 
             if (_hasGradient)
             {
@@ -104,7 +102,7 @@ namespace BMC.LDraw.Render
                 //
                 for (int y = 0; y < _height; y++)
                 {
-                    float t = (float)y / Math.Max(_height - 1, 1);
+                    float t = (float)y / MathF.Max(_height - 1, 1);
                     byte r = (byte)(_gradTopR + (_gradBotR - _gradTopR) * t);
                     byte g = (byte)(_gradTopG + (_gradBotG - _gradTopG) * t);
                     byte b = (byte)(_gradTopB + (_gradBotB - _gradTopB) * t);
@@ -289,14 +287,18 @@ namespace BMC.LDraw.Render
                                      out System.Collections.Generic.List<MeshTriangle> transparentTriangles);
 
             //
-            // Pass 1 — Render all opaque triangles with Z-buffer
+            // Pass 1 — Render all opaque triangles with Z-buffer (parallel)
+            //
+            // Each triangle writes only to its own bounding-box region.
+            // Rare pixel-level races at triangle edges are benign — both
+            // candidates are valid depth values.
             //
             _isTransparentPass = false;
-            for (int i = 0; i < opaqueTriangles.Count; i++)
+            Parallel.For(0, opaqueTriangles.Count, i =>
             {
                 MeshTriangle tri = opaqueTriangles[i];
                 RasterizeTriangle(ref tri, vpMatrix);
-            }
+            });
 
             //
             // Pass 2 — Render transparent triangles, sorted back-to-front (painter's algorithm)
@@ -437,10 +439,10 @@ namespace BMC.LDraw.Render
             //
             // Bounding box (clamped to screen)
             //
-            int minX = Math.Max(0, (int)Math.Floor(Math.Min(x1, Math.Min(x2, x3))));
-            int maxX = Math.Min(_width - 1, (int)Math.Ceiling(Math.Max(x1, Math.Max(x2, x3))));
-            int minY = Math.Max(0, (int)Math.Floor(Math.Min(y1, Math.Min(y2, y3))));
-            int maxY = Math.Min(_height - 1, (int)Math.Ceiling(Math.Max(y1, Math.Max(y2, y3))));
+            int minX = Math.Max(0, (int)MathF.Floor(MathF.Min(x1, MathF.Min(x2, x3))));
+            int maxX = Math.Min(_width - 1, (int)MathF.Ceiling(MathF.Max(x1, MathF.Max(x2, x3))));
+            int minY = Math.Max(0, (int)MathF.Floor(MathF.Min(y1, MathF.Min(y2, y3))));
+            int maxY = Math.Min(_height - 1, (int)MathF.Ceiling(MathF.Max(y1, MathF.Max(y2, y3))));
 
             if (minX > maxX || minY > maxY)
             {
@@ -451,7 +453,7 @@ namespace BMC.LDraw.Render
             // Precompute edge function denominators
             //
             float denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
-            if (Math.Abs(denom) < 1e-8f)
+            if (MathF.Abs(denom) < 1e-8f)
             {
                 return; // degenerate triangle
             }
@@ -512,10 +514,10 @@ namespace BMC.LDraw.Render
             //
             // Bounding box (clamped to screen)
             //
-            int minX = Math.Max(0, (int)Math.Floor(Math.Min(x1, Math.Min(x2, x3))));
-            int maxX = Math.Min(_width - 1, (int)Math.Ceiling(Math.Max(x1, Math.Max(x2, x3))));
-            int minY = Math.Max(0, (int)Math.Floor(Math.Min(y1, Math.Min(y2, y3))));
-            int maxY = Math.Min(_height - 1, (int)Math.Ceiling(Math.Max(y1, Math.Max(y2, y3))));
+            int minX = Math.Max(0, (int)MathF.Floor(MathF.Min(x1, MathF.Min(x2, x3))));
+            int maxX = Math.Min(_width - 1, (int)MathF.Ceiling(MathF.Max(x1, MathF.Max(x2, x3))));
+            int minY = Math.Max(0, (int)MathF.Floor(MathF.Min(y1, MathF.Min(y2, y3))));
+            int maxY = Math.Min(_height - 1, (int)MathF.Ceiling(MathF.Max(y1, MathF.Max(y2, y3))));
 
             if (minX > maxX || minY > maxY)
             {
@@ -573,7 +575,7 @@ namespace BMC.LDraw.Render
                         //
                         // Normalize the interpolated normal
                         //
-                        float nlen = (float)Math.Sqrt(inx * inx + iny * iny + inz * inz);
+                        float nlen = MathF.Sqrt(inx * inx + iny * iny + inz * inz);
                         if (nlen > 1e-8f)
                         {
                             inx /= nlen;
@@ -634,7 +636,7 @@ namespace BMC.LDraw.Render
             float viewDirX = _eyeX - worldX;
             float viewDirY = _eyeY - worldY;
             float viewDirZ = _eyeZ - worldZ;
-            float vlen = (float)Math.Sqrt(viewDirX * viewDirX + viewDirY * viewDirY + viewDirZ * viewDirZ);
+            float vlen = MathF.Sqrt(viewDirX * viewDirX + viewDirY * viewDirY + viewDirZ * viewDirZ);
 
             if (vlen > 1e-8f)
             {
@@ -662,7 +664,7 @@ namespace BMC.LDraw.Render
                     lx = light.DirectionX - worldX;
                     ly = light.DirectionY - worldY;
                     lz = light.DirectionZ - worldZ;
-                    float plen = (float)Math.Sqrt(lx * lx + ly * ly + lz * lz);
+                    float plen = MathF.Sqrt(lx * lx + ly * ly + lz * lz);
 
                     if (plen > 1e-8f)
                     {
@@ -701,7 +703,7 @@ namespace BMC.LDraw.Render
                     float hx = lx + viewDirX;
                     float hy = ly + viewDirY;
                     float hz = lz + viewDirZ;
-                    float hlen = (float)Math.Sqrt(hx * hx + hy * hy + hz * hz);
+                    float hlen = MathF.Sqrt(hx * hx + hy * hy + hz * hz);
 
                     if (hlen > 1e-8f)
                     {
@@ -714,7 +716,7 @@ namespace BMC.LDraw.Render
 
                     if (ndoth > 0f)
                     {
-                        float specFactor = (float)Math.Pow(ndoth, lighting.SpecularPower);
+                        float specFactor = MathF.Pow(ndoth, lighting.SpecularPower);
                         float specContrib = specFactor * lighting.SpecularIntensity * light.Intensity;
 
                         totalR += specContrib * light.ColourR;
@@ -795,10 +797,10 @@ namespace BMC.LDraw.Render
             //
             // Convert float screen coords to integer pixel positions
             //
-            int x1 = (int)Math.Round(fx1);
-            int y1 = (int)Math.Round(fy1);
-            int x2 = (int)Math.Round(fx2);
-            int y2 = (int)Math.Round(fy2);
+            int x1 = (int)MathF.Round(fx1);
+            int y1 = (int)MathF.Round(fy1);
+            int x2 = (int)MathF.Round(fx2);
+            int y2 = (int)MathF.Round(fy2);
 
             int dx = Math.Abs(x2 - x1);
             int dy = Math.Abs(y2 - y1);

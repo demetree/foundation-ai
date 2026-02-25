@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BMC.LDraw.Models;
 
 namespace BMC.LDraw.Render
@@ -48,23 +49,39 @@ namespace BMC.LDraw.Render
         /// <param name="creaseAngleDegrees">Angle threshold (in degrees) above which edges are treated as hard/creased.</param>
         public static void Smooth(LDrawMesh mesh, float creaseAngleDegrees)
         {
+            Smooth(mesh, creaseAngleDegrees, null);
+        }
+
+
+        /// <summary>
+        /// Compute per-vertex smooth normals, optionally reusing a pre-built spatial map.
+        ///
+        /// When spatialMap is null, a new one is built from the mesh.
+        /// When non-null, the caller is responsible for keeping it in sync with the mesh
+        /// (e.g., by appending new vertices to it incrementally between steps).
+        /// </summary>
+        public static void Smooth(LDrawMesh mesh, float creaseAngleDegrees,
+            Dictionary<long, List<VertexReference>> spatialMap)
+        {
             if (mesh.Triangles.Count == 0)
             {
                 return;
             }
 
-            float creaseAngleRadians = creaseAngleDegrees * (float)Math.PI / 180f;
-            float creaseAngleCosine = (float)Math.Cos(creaseAngleRadians);
+            float creaseAngleRadians = creaseAngleDegrees * MathF.PI / 180f;
+            float creaseAngleCosine = MathF.Cos(creaseAngleRadians);
 
             //
-            // Step 1 — Build a spatial index of all triangle vertices.
-            // Each unique position maps to a list of (triangleIndex, vertexIndex) pairs.
+            // Step 1 — Build a spatial index (or reuse the provided one)
             //
-            Dictionary<long, List<VertexReference>> spatialMap = BuildSpatialMap(mesh);
+            if (spatialMap == null)
+            {
+                spatialMap = BuildSpatialMap(mesh);
+            }
 
             //
-            // Step 2 — For each triangle vertex, average the face normals of all triangles sharing
-            //           that vertex position, respecting the crease angle.
+            // Step 2 — Copy triangles to an array for parallel write access.
+            //           Each thread writes ONLY to its own index — no contention.
             //
             List<MeshTriangle> triangleList = mesh.Triangles;
             MeshTriangle[] smoothedTriangleArray = new MeshTriangle[triangleList.Count];
@@ -75,15 +92,15 @@ namespace BMC.LDraw.Render
             }
 
             //
-            // Process each triangle and compute smooth normals per-vertex
+            // Step 3 — Parallel per-triangle normal computation.
+            //           Each iteration reads shared data (spatialMap, triangleArray)
+            //           but writes only to smoothedTriangleArray[triangleIndex].
             //
-            for (int triangleIndex = 0; triangleIndex < smoothedTriangleArray.Length; triangleIndex++)
+            Parallel.For(0, smoothedTriangleArray.Length, triangleIndex =>
             {
                 MeshTriangle currentTriangle = smoothedTriangleArray[triangleIndex];
 
-                //
                 // Vertex 1
-                //
                 ComputeSmoothedNormal(triangleIndex: triangleIndex,
                                       vertexIndex: 0,
                                       vertexX: currentTriangle.X1,
@@ -99,9 +116,7 @@ namespace BMC.LDraw.Render
                                       outNY: out float ny1,
                                       outNZ: out float nz1);
 
-                //
                 // Vertex 2
-                //
                 ComputeSmoothedNormal(triangleIndex: triangleIndex,
                                       vertexIndex: 1,
                                       vertexX: currentTriangle.X2,
@@ -117,9 +132,7 @@ namespace BMC.LDraw.Render
                                       outNY: out float ny2,
                                       outNZ: out float nz2);
 
-                //
                 // Vertex 3
-                //
                 ComputeSmoothedNormal(triangleIndex: triangleIndex,
                                       vertexIndex: 2,
                                       vertexX: currentTriangle.X3,
@@ -135,9 +148,7 @@ namespace BMC.LDraw.Render
                                       outNY: out float ny3,
                                       outNZ: out float nz3);
 
-                //
                 // Apply the smoothed normals
-                //
                 smoothedTriangleArray[triangleIndex].NX1 = nx1;
                 smoothedTriangleArray[triangleIndex].NY1 = ny1;
                 smoothedTriangleArray[triangleIndex].NZ1 = nz1;
@@ -148,10 +159,10 @@ namespace BMC.LDraw.Render
                 smoothedTriangleArray[triangleIndex].NY3 = ny3;
                 smoothedTriangleArray[triangleIndex].NZ3 = nz3;
                 smoothedTriangleArray[triangleIndex].HasPerVertexNormals = true;
-            }
+            });
 
             //
-            // Step 3 — Replace the mesh triangle list with the smoothed results
+            // Step 4 — Replace the mesh triangle list with the smoothed results
             //
             mesh.Triangles.Clear();
             mesh.Triangles.AddRange(smoothedTriangleArray);
@@ -163,7 +174,7 @@ namespace BMC.LDraw.Render
         /// The key is a quantized hash of the position; the value is every
         /// triangle+vertex at that position.
         /// </summary>
-        private static Dictionary<long, List<VertexReference>> BuildSpatialMap(LDrawMesh mesh)
+        public static Dictionary<long, List<VertexReference>> BuildSpatialMap(LDrawMesh mesh)
         {
             Dictionary<long, List<VertexReference>> spatialMap = new Dictionary<long, List<VertexReference>>();
 
@@ -183,7 +194,7 @@ namespace BMC.LDraw.Render
         /// <summary>
         /// Add a single vertex reference to the spatial map.
         /// </summary>
-        private static void AddToSpatialMap(Dictionary<long, List<VertexReference>> spatialMap,
+        public static void AddToSpatialMap(Dictionary<long, List<VertexReference>> spatialMap,
                                             float x, float y, float z,
                                             int triangleIndex, int vertexIndex)
         {
@@ -209,9 +220,9 @@ namespace BMC.LDraw.Render
             // Scale and round to the nearest grid cell
             //
             float invEpsilon = 1f / POSITION_EPSILON;
-            int qx = (int)Math.Round(x * invEpsilon);
-            int qy = (int)Math.Round(y * invEpsilon);
-            int qz = (int)Math.Round(z * invEpsilon);
+            int qx = (int)MathF.Round(x * invEpsilon);
+            int qy = (int)MathF.Round(y * invEpsilon);
+            int qz = (int)MathF.Round(z * invEpsilon);
 
             //
             // Combine into a single 64-bit key (21 bits per axis is plenty for LDraw-scale models)
@@ -307,7 +318,7 @@ namespace BMC.LDraw.Render
             //
             // Normalize the accumulated result
             //
-            float length = (float)Math.Sqrt(sumNX * sumNX + sumNY * sumNY + sumNZ * sumNZ);
+            float length = MathF.Sqrt(sumNX * sumNX + sumNY * sumNY + sumNZ * sumNZ);
 
             if (length > 1e-8f)
             {
@@ -358,7 +369,7 @@ namespace BMC.LDraw.Render
         /// <summary>
         /// References a specific vertex within a specific triangle.
         /// </summary>
-        private struct VertexReference
+        public struct VertexReference
         {
             public int TriangleIndex;
             public int VertexIndex;

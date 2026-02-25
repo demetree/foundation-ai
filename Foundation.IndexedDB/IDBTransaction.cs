@@ -47,7 +47,18 @@ namespace Foundation.IndexedDB
             // Begin a database transaction if in ReadWrite mode.  Readonly mode does not need an actual SQLite transaction.
             if (mode == TransactionMode.ReadWrite)
             {
-                _sqliteTransaction = db._context.Database.BeginTransaction();
+                //
+                // Acquire the concurrency semaphore to protect the DbContext from concurrent access.
+                //
+                db.Semaphore.Wait();
+                try
+                {
+                    _sqliteTransaction = db._context.Database.BeginTransaction();
+                }
+                finally
+                {
+                    db.Semaphore.Release();
+                }
             }
             else
             {

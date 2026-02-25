@@ -507,52 +507,76 @@ namespace Foundation.IndexedDB
         // Open Cursor (value cursor)
         public IDBCursor<T> OpenCursor<T>(IDBKeyRange range = null, string direction = "next")
         {
-            IQueryable<IDBCursor<T>.EnumeratorEntry> q = _db._context.Data.Where(d => d.storeName == Name)
-                                                             .Select(d => new IDBCursor<T>.EnumeratorEntry { Key = d.keyJson, Value = d.valueJson });
-
-
-            if (range != null)
+            //
+            // Acquire the concurrency semaphore to protect the DbContext during query construction.
+            // Actual query execution happens lazily in IDBCursor.ContinueAsync which acquires its own lock.
+            //
+            _db.Semaphore.Wait();
+            try
             {
-                q = ApplyKeyRange(q, range, true); // Apply to anonymous type
-            }
+                IQueryable<IDBCursor<T>.EnumeratorEntry> q = _db._context.Data.Where(d => d.storeName == Name)
+                                                                 .Select(d => new IDBCursor<T>.EnumeratorEntry { Key = d.keyJson, Value = d.valueJson });
 
-            // Order for direction (simplified; assumes key is comparable)
-            q = direction switch
-            {
-                "next" or "nextunique" => q.OrderBy(d => d.Key),
-                "prev" or "prevunique" => q.OrderByDescending(d => d.Key),
-                _ => throw new InvalidOperationException("Invalid direction.")
-            };
+
+                if (range != null)
+                {
+                    q = ApplyKeyRange(q, range, true); // Apply to anonymous type
+                }
+
+                // Order for direction (simplified; assumes key is comparable)
+                q = direction switch
+                {
+                    "next" or "nextunique" => q.OrderBy(d => d.Key),
+                    "prev" or "prevunique" => q.OrderByDescending(d => d.Key),
+                    _ => throw new InvalidOperationException("Invalid direction.")
+                };
 
             
-            return new IDBCursor<T>(q.AsAsyncEnumerable().GetAsyncEnumerator(), this, direction);
+                return new IDBCursor<T>(q.AsAsyncEnumerable().GetAsyncEnumerator(), this, direction);
+            }
+            finally
+            {
+                _db.Semaphore.Release();
+            }
         }
 
 
         // Open Key Cursor (keys only)
         public IDBCursor<T> OpenKeyCursor<T>(IDBKeyRange range = null, string direction = "next")
         {
-            //var q = _db._context.Data.Where(d => d.storeName == Name)
-            //                         .Select(d => new { d.keyJson, valueJson = (string)null }); // No value
-
-            IQueryable<IDBCursor<T>.EnumeratorEntry> q = _db._context.Data.Where(d => d.storeName == Name)
-                                                     .Select(d => new IDBCursor<T>.EnumeratorEntry { Key = d.keyJson, Value = null }); // No value
-
-            if (range != null)
+            //
+            // Acquire the concurrency semaphore to protect the DbContext during query construction.
+            // Actual query execution happens lazily in IDBCursor.ContinueAsync which acquires its own lock.
+            //
+            _db.Semaphore.Wait();
+            try
             {
-                q = ApplyKeyRange(q, range, true);
+                //var q = _db._context.Data.Where(d => d.storeName == Name)
+                //                         .Select(d => new { d.keyJson, valueJson = (string)null }); // No value
+
+                IQueryable<IDBCursor<T>.EnumeratorEntry> q = _db._context.Data.Where(d => d.storeName == Name)
+                                                         .Select(d => new IDBCursor<T>.EnumeratorEntry { Key = d.keyJson, Value = null }); // No value
+
+                if (range != null)
+                {
+                    q = ApplyKeyRange(q, range, true);
+                }
+
+                q = direction switch
+                {
+                    "next" or "nextunique" => q.OrderBy(d => d.Key),
+                    "prev" or "prevunique" => q.OrderByDescending(d => d.Key),
+                    _ => throw new InvalidOperationException("Invalid direction.")
+                };
+
+                //return new IDBCursor(q.ToAsyncEnumerable().Select(d => (d.KeyJson, d.ValueJson)), this, direction);
+
+                return new IDBCursor<T>(q.AsAsyncEnumerable().GetAsyncEnumerator(), this, direction);
             }
-
-            q = direction switch
+            finally
             {
-                "next" or "nextunique" => q.OrderBy(d => d.Key),
-                "prev" or "prevunique" => q.OrderByDescending(d => d.Key),
-                _ => throw new InvalidOperationException("Invalid direction.")
-            };
-
-            //return new IDBCursor(q.ToAsyncEnumerable().Select(d => (d.KeyJson, d.ValueJson)), this, direction);
-
-            return new IDBCursor<T>(q.AsAsyncEnumerable().GetAsyncEnumerator(), this, direction);
+                _db.Semaphore.Release();
+            }
         }
 
 
