@@ -35,7 +35,7 @@
         <div class="upload-error" *ngIf="uploadError">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
             </svg>
             {{ uploadError }}
         </div>
@@ -148,6 +148,12 @@
     <section class="progress-section" *ngIf="isGenerating">
         <h2>Generating Manual…</h2>
 
+        <!-- Reconnecting warning -->
+        <div class="reconnecting-banner" *ngIf="isReconnecting">
+            <span class="spinner"></span>
+            Reconnecting to server…
+        </div>
+
         <div class="progress-container">
             <div class="progress-bar">
                 <div class="progress-fill" [style.width.%]="progressPercent"></div>
@@ -159,6 +165,10 @@
 
         <div class="preview-window" *ngIf="currentPreview">
             <img [src]="currentPreview" alt="Step Preview" />
+        </div>
+
+        <div class="cancel-container">
+            <button class="btn btn-ghost" (click)="cancelGeneration()">Cancel Generation</button>
         </div>
     </section>
 
@@ -210,6 +220,7 @@
                 <span class="page-indicator">Page {{ currentPage + 1 }} of {{ pages.length }}</span>
                 <button class="nav-btn" (click)="nextPage()" [disabled]="currentPage === pages.length - 1">›</button>
             </div>
+            <div class="keyboard-hint">Use ← → arrow keys to navigate</div>
 
             <div class="page-frame" [innerHTML]="pages[currentPage]"></div>
         </div>

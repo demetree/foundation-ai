@@ -418,6 +418,25 @@ $radius-sm: 8px;
     }
 }
 
+.reconnecting-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(#dd6b20, 0.12);
+    border: 1px solid rgba(#dd6b20, 0.3);
+    border-radius: $radius-sm;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    color: #fbd38d;
+}
+
+.cancel-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
 
 // ─── Generation Error ────────────────────────────────────────────────
 .generation-error {
@@ -509,6 +528,13 @@ $radius-sm: 8px;
     color: $text-muted;
     min-width: 120px;
     text-align: center;
+}
+
+.keyboard-hint {
+    text-align: center;
+    font-size: 0.75rem;
+    color: $text-dim;
+    margin-bottom: 12px;
 }
 
 .page-frame {

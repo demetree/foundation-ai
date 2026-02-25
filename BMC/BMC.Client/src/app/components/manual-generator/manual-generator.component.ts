@@ -1,6 +1,21 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+//
+// Manual Generator Component
+//
+// Upload an LDraw model file (.mpd, .ldr, .dat) to generate a printable build manual.
+// The workflow is:
+//   1. User uploads a file via drag-and-drop or file picker
+//   2. Optionally analyse the file to preview step/part counts
+//   3. Configure rendering options (page size, image size, camera angles, etc.)
+//   4. Generate the manual — the server streams step renders via SignalR
+//   5. Preview the result page-by-page, download as HTML, or print directly
+//
+// AI-assisted development — reviewed and adapted to project conventions.
+//
+
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ManualGeneratorSignalrService, StepProgressEvent, GenerationCompleteEvent, ManualOptionsDto } from '../../services/manual-generator-signalr.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -25,6 +40,9 @@ interface AnalyseResponse {
     styleUrls: ['./manual-generator.component.scss']
 })
 export class ManualGeneratorComponent implements OnInit, OnDestroy {
+
+    // ─── Constants ───────────────────────────────────────────────────────
+    private readonly MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;  // 20 MB
 
     // ─── Upload State ────────────────────────────────────────────────────
     isDragOver = false;
@@ -52,27 +70,33 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     currentPreview: string | null = null;
     generationError: string | null = null;
 
+    // ─── Connection State ────────────────────────────────────────────────
+    isReconnecting = false;
+
     // ─── Result ──────────────────────────────────────────────────────────
     generatedHtml: string | null = null;
     resultStats: { totalSteps: number; totalParts: number; renderTimeMs: number } | null = null;
 
     // ─── Pagination ──────────────────────────────────────────────────────
     currentPage = 0;
-    pages: string[] = [];
+    pages: SafeHtml[] = [];
 
     private subs: Subscription[] = [];
 
     constructor(
         private http: HttpClient,
         private signalr: ManualGeneratorSignalrService,
-        private authService: AuthService
+        private authService: AuthService,
+        private sanitizer: DomSanitizer
     ) { }
 
 
     ngOnInit(): void {
         document.title = 'Manual Generator';
 
+        //
         // Subscribe to SignalR events
+        //
         this.subs.push(
             this.signalr.onStepProgress$.subscribe((e: StepProgressEvent) => {
                 this.generationProgress = e.step;
@@ -94,6 +118,15 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
                 this.isGenerating = false;
                 this.generationError = msg;
                 this.signalr.disconnect();
+            }),
+
+            //
+            // Track SignalR connection state for reconnection feedback
+            //
+            this.signalr.onConnectionChange$.subscribe((connected: boolean) => {
+                if (this.isGenerating == true) {
+                    this.isReconnecting = (connected == false);
+                }
             })
         );
     }
@@ -132,19 +165,36 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         }
     }
 
+    //
+    // Handle the native file input change event
+    //
     onFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
-        if (input.files && input.files.length > 0) {
+        if (input.files != null && input.files.length > 0) {
             this.selectFile(input.files[0]);
         }
     }
 
+
+    //
+    // Validate file extension and reset state for a newly selected file
+    //
     private selectFile(file: File): void {
         const ext = file.name.toLowerCase().split('.').pop();
         if (ext !== 'mpd' && ext !== 'ldr' && ext !== 'dat') {
             this.uploadError = 'Unsupported file type. Please upload .mpd, .ldr, or .dat files.';
             return;
         }
+
+        //
+        // Enforce maximum file size to prevent excessive server memory consumption
+        //
+        if (file.size > this.MAX_FILE_SIZE_BYTES) {
+            const maxMb = Math.round(this.MAX_FILE_SIZE_BYTES / (1024 * 1024));
+            this.uploadError = `File is too large. Maximum size is ${maxMb} MB.`;
+            return;
+        }
+
         this.selectedFile = file;
         this.uploadError = null;
         this.analysis = null;
@@ -158,8 +208,13 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     //  Analyse
     // ═══════════════════════════════════════════════════════════════════
 
+    //
+    // Upload the selected file for step analysis (parts counts, cumulative totals)
+    //
     analyseFile(): void {
-        if (!this.selectedFile) return;
+        if (this.selectedFile == null) {
+            return;
+        }
 
         this.isAnalysing = true;
         this.uploadError = null;
@@ -189,8 +244,14 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     //  Generate Manual
     // ═══════════════════════════════════════════════════════════════════
 
+    //
+    // Upload the file, connect SignalR, and start manual generation.
+    // Progress streams back via onStepProgress$ subscription.
+    //
     async generateManual(): Promise<void> {
-        if (!this.selectedFile) return;
+        if (this.selectedFile == null) {
+            return;
+        }
 
         this.isGenerating = true;
         this.generationProgress = 0;
@@ -210,11 +271,11 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         });
 
         try {
-            const response = await this.http
-                .post<{ generationId: string }>('/api/manual-generator/generate-upload', formData, { headers })
-                .toPromise();
+            const response = await firstValueFrom(
+                this.http.post<{ generationId: string }>('/api/manual-generator/generate-upload', formData, { headers })
+            );
 
-            if (!response?.generationId) {
+            if (response?.generationId == null) {
                 this.generationError = 'Server did not return a generation ID.';
                 this.isGenerating = false;
                 return;
@@ -231,34 +292,79 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     }
 
 
+    //
+    // Cancel the current generation by disconnecting SignalR.
+    // The server detects the disconnection via Context.ConnectionAborted and stops rendering.
+    //
+    cancelGeneration(): void {
+        this.isGenerating = false;
+        this.isReconnecting = false;
+        this.generationError = 'Generation cancelled.';
+        this.signalr.disconnect();
+    }
+
+
     // ═══════════════════════════════════════════════════════════════════
     //  Preview & Download
     // ═══════════════════════════════════════════════════════════════════
 
+    //
+    // Parse the generated HTML into individual page chunks for the preview carousel.
+    // Each page's HTML is trusted via DomSanitizer because it contains embedded base64
+    // images that Angular's default sanitizer would strip.
+    //
     private splitPages(html: string): void {
-        // Split by page dividers in the HTML
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const pageElements = doc.querySelectorAll('.page');
 
         this.pages = [];
         pageElements.forEach(page => {
-            this.pages.push(page.outerHTML);
+            this.pages.push(this.sanitizer.bypassSecurityTrustHtml(page.outerHTML));
         });
 
         this.currentPage = 0;
     }
 
     prevPage(): void {
-        if (this.currentPage > 0) this.currentPage--;
+        if (this.currentPage > 0) {
+            this.currentPage--;
+        }
     }
+
 
     nextPage(): void {
-        if (this.currentPage < this.pages.length - 1) this.currentPage++;
+        if (this.currentPage < this.pages.length - 1) {
+            this.currentPage++;
+        }
     }
 
+
+    //
+    // Allow arrow key navigation through pages when the result preview is visible
+    //
+    @HostListener('document:keydown', ['$event'])
+    onKeyDown(event: KeyboardEvent): void {
+        if (this.pages.length === 0) {
+            return;
+        }
+
+        if (event.key === 'ArrowLeft') {
+            this.prevPage();
+        }
+
+        if (event.key === 'ArrowRight') {
+            this.nextPage();
+        }
+    }
+
+    //
+    // Download the generated manual as a self-contained HTML file
+    //
     downloadHtml(): void {
-        if (!this.generatedHtml) return;
+        if (this.generatedHtml == null) {
+            return;
+        }
 
         const blob = new Blob([this.generatedHtml], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
@@ -269,8 +375,13 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         URL.revokeObjectURL(url);
     }
 
+    //
+    // Open the manual in a new window and trigger the browser print dialog
+    //
     printManual(): void {
-        if (!this.generatedHtml) return;
+        if (this.generatedHtml == null) {
+            return;
+        }
 
         const printWindow = window.open('', '_blank');
         if (printWindow) {
@@ -287,6 +398,9 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         return Math.round((this.generationProgress / this.generationTotal) * 100);
     }
 
+    //
+    // Reset all state to allow generating a new manual
+    //
     reset(): void {
         this.selectedFile = null;
         this.analysis = null;

@@ -20,10 +20,10 @@ namespace Foundation.BMC.Controllers.WebAPI
     public class ManualGeneratorController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        private const long MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;  // 20 MB
 
         private readonly IConfiguration _configuration;
         private readonly ILogger<ManualGeneratorController> _logger;
-        private RenderService _renderService;
 
         /// <summary>
         /// In-memory store for uploaded files awaiting SignalR-driven generation.
@@ -75,7 +75,14 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return BadRequest("Unsupported file type. Accepted formats: .dat, .ldr, .mpd");
             }
 
+            if (file.Length > MAX_FILE_SIZE_BYTES)
+            {
+                return BadRequest($"File is too large. Maximum size is {MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.");
+            }
+
+            //
             // Read uploaded file into lines (in-memory, no temp file)
+            //
             string[] lines;
             using (var reader = new StreamReader(file.OpenReadStream()))
             {
@@ -86,10 +93,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             try
             {
+                //
+                // Create a RenderService for the analysis.
+                // Note: controllers are transient (new instance per request),
+                // so there is no benefit to caching this at the instance level.
+                //
                 string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
-                EnsureRenderService(dataPath);
+                RenderService renderService = new RenderService(dataPath);
 
-                var analysis = await Task.Run(() => _renderService.AnalyseSteps(lines, fileName), cancellationToken);
+                var analysis = await Task.Run(() => renderService.AnalyseSteps(lines, fileName), cancellationToken);
 
                 return Ok(new
                 {
@@ -150,7 +162,14 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return BadRequest("Unsupported file type. Accepted formats: .dat, .ldr, .mpd");
             }
 
+            if (file.Length > MAX_FILE_SIZE_BYTES)
+            {
+                return BadRequest($"File is too large. Maximum size is {MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.");
+            }
+
+            //
             // Read uploaded file into lines
+            //
             string[] lines;
             using (var reader = new StreamReader(file.OpenReadStream()))
             {
@@ -158,9 +177,11 @@ namespace Foundation.BMC.Controllers.WebAPI
                 lines = content.Split('\n');
             }
 
+            //
             // Evict expired entries (older than 10 minutes)
-            var cutoff = DateTime.UtcNow.AddMinutes(-10);
-            foreach (var key in PendingFiles.Keys.ToList())
+            //
+            DateTime cutoff = DateTime.UtcNow.AddMinutes(-10);
+            foreach (string key in PendingFiles.Keys.ToList())
             {
                 if (PendingFiles.TryGetValue(key, out var entry) && entry.UploadTime < cutoff)
                 {
@@ -172,15 +193,6 @@ namespace Foundation.BMC.Controllers.WebAPI
             PendingFiles[generationId] = (lines, file.FileName, DateTime.UtcNow);
 
             return Ok(new { generationId = generationId });
-        }
-
-
-        private void EnsureRenderService(string dataPath)
-        {
-            if (_renderService == null)
-            {
-                _renderService = new RenderService(dataPath);
-            }
         }
     }
 }
