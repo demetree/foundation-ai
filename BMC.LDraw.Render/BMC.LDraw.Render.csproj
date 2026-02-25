@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="3.*" />
+    <PackageReference Include="PdfSharpCore" Version="1.3.*" />
   </ItemGroup>
 
 </Project>

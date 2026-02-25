@@ -16,6 +16,9 @@ namespace BMC.LDraw.Render
         private readonly string _libraryPath;
         private List<LDrawColour> _colours;
 
+        /// <summary>Root path of the LDraw library (for part file lookups).</summary>
+        public string LibraryPath => _libraryPath;
+
 
         /// <summary>
         /// Create the render service with the path to the LDraw library.
@@ -1537,6 +1540,96 @@ namespace BMC.LDraw.Render
             {
                 _colours = new List<LDrawColour>();
             }
+        }
+
+        /// <summary>
+        /// Public wrapper: ensure the colour table is loaded.
+        /// Call before parallel rendering to avoid thread-safety issues with lazy init.
+        /// </summary>
+        public void EnsureColoursPublic() => EnsureColours();
+
+
+        /// <summary>
+        /// Compute the centroid of newly-added triangles for a given step.
+        /// Returns false if the step has no new triangles.
+        /// </summary>
+        public static bool ComputeNewPartsCentroid(
+            LDrawMesh mesh, int[] stepTriangleBounds, int stepIndex,
+            out float cx, out float cy, out float cz)
+        {
+            cx = cy = cz = 0f;
+            int prevEnd = stepIndex > 0 ? stepTriangleBounds[stepIndex - 1] : 0;
+            int curEnd = stepTriangleBounds[stepIndex];
+            int newTriCount = curEnd - prevEnd;
+
+            if (newTriCount <= 0) return false;
+
+            double sx = 0, sy = 0, sz = 0;
+            for (int t = prevEnd; t < curEnd; t++)
+            {
+                var tri = mesh.Triangles[t];
+                // Average triangle centre (mean of 3 vertices)
+                sx += (tri.X1 + tri.X2 + tri.X3);
+                sy += (tri.Y1 + tri.Y2 + tri.Y3);
+                sz += (tri.Z1 + tri.Z2 + tri.Z3);
+            }
+
+            double invCount = 1.0 / (newTriCount * 3); // 3 vertices per triangle
+            cx = (float)(sx * invCount);
+            cy = (float)(sy * invCount);
+            cz = (float)(sz * invCount);
+            return true;
+        }
+
+
+        /// <summary>
+        /// Compute the optimal camera azimuth to face newly-added parts.
+        ///
+        /// Projects the vector from model centre → new-parts centroid onto the XZ plane
+        /// and returns the angle in degrees that would point the camera at those parts.
+        ///
+        /// The result is blended with the default azimuth to prevent jarring jumps:
+        ///   finalAzimuth = defaultAzimuth + blendFactor × shortestAngleDelta
+        /// </summary>
+        /// <param name="mesh">Pre-smoothed full mesh (for model centre).</param>
+        /// <param name="stepTriangleBounds">Cumulative triangle counts per step.</param>
+        /// <param name="stepIndex">Current step index.</param>
+        /// <param name="defaultAzimuth">User's configured default azimuth (degrees).</param>
+        /// <param name="blendFactor">0.0 = always default, 1.0 = always face new parts. Recommended: 0.6.</param>
+        /// <returns>Blended azimuth in degrees, or null if unable to compute.</returns>
+        public static float? ComputeAutoAzimuth(
+            LDrawMesh mesh, int[] stepTriangleBounds, int stepIndex,
+            float defaultAzimuth, float blendFactor = 0.6f)
+        {
+            if (!ComputeNewPartsCentroid(mesh, stepTriangleBounds, stepIndex,
+                out float ncx, out float ncy, out float ncz))
+                return null;
+
+            mesh.GetCenter(out float mcx, out float mcy, out float mcz);
+
+            // Offset vector from model centre to new-parts centroid (XZ plane)
+            float dx = ncx - mcx;
+            float dz = ncz - mcz;
+
+            // If the offset is negligible (parts are at the centre), keep default
+            float dist = (float)System.Math.Sqrt(dx * dx + dz * dz);
+            float modelExtent = mesh.GetMaxExtent();
+            if (dist < modelExtent * 0.02f)
+                return null; // Parts too central to determine a direction
+
+            // atan2 gives the angle from +Z axis toward +X axis
+            // The camera looks FROM this direction, so the optimal azimuth
+            // places the camera on the same side as the new parts
+            float optimalAzimuthRad = (float)System.Math.Atan2(dx, dz);
+            float optimalAzimuthDeg = optimalAzimuthRad * 180f / (float)System.Math.PI;
+
+            // Compute shortest angular delta (handles wrapping around ±180°)
+            float delta = optimalAzimuthDeg - defaultAzimuth;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+
+            float blendedAzimuth = defaultAzimuth + blendFactor * delta;
+            return blendedAzimuth;
         }
     }
 }

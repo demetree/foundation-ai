@@ -57,6 +57,12 @@ namespace BMC.LDraw.Render
 
         /// <summary>Camera rotation override from ROTSTEP (null = use defaults).</summary>
         public RotStepData RotStep;
+
+        /// <summary>
+        /// Computed optimal azimuth to face newly-added parts (null = use default).
+        /// Set by the hub after mesh analysis; ignored when RotStep is present.
+        /// </summary>
+        public float? AutoAzimuth;
     }
 
 

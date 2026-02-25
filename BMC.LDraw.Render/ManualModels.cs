@@ -38,6 +38,15 @@ namespace BMC.LDraw.Render
 
         /// <summary>How many of this exact part + colour were added in the step.</summary>
         public int Quantity;
+
+        /// <summary>Human-readable part name (e.g. "Brick 2 x 4"). Null if not resolved.</summary>
+        public string PartDescription;
+
+        /// <summary>Human-readable colour name (e.g. "Red"). Null if not resolved.</summary>
+        public string ColourName;
+
+        /// <summary>Hex RGB value for colour swatch (e.g. "#C91A09"). Null if not resolved.</summary>
+        public string ColourHex;
     }
 
 
@@ -85,7 +94,11 @@ namespace BMC.LDraw.Render
 
         /// <summary>Whether to use smooth shading.</summary>
         public bool SmoothShading { get; set; } = true;
+
+        /// <summary>Output format: "html" (default) or "pdf".</summary>
+        public string OutputFormat { get; set; } = "html";
     }
+
 
 
     /// <summary>

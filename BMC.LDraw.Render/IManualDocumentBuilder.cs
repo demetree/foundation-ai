@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace BMC.LDraw.Render
 {
     /// <summary>
@@ -35,12 +37,27 @@ namespace BMC.LDraw.Render
         /// </summary>
         /// <param name="step">Step metadata.</param>
         /// <param name="stepImage">Rendered PNG image bytes for this step.</param>
-        void AddStep(ManualBuildStep step, byte[] stepImage);
+        /// <param name="partImages">
+        /// PLI thumbnail cache: key is "fileName|colourCode", value is PNG bytes.
+        /// May be null if PLI rendering is disabled.
+        /// </param>
+        void AddStep(ManualBuildStep step, byte[] stepImage,
+            Dictionary<string, byte[]> partImages);
 
         /// <summary>
         /// End the current submodel callout section.
         /// </summary>
         void EndSubmodelCallout();
+
+        /// <summary>
+        /// Add a Bill of Materials page summarising all unique parts.
+        /// </summary>
+        /// <param name="allUniqueParts">
+        /// Aggregated list of unique part × colour entries with total quantities.
+        /// </param>
+        /// <param name="partImages">PLI thumbnail cache (same as AddStep).</param>
+        void AddBillOfMaterials(List<StepPartInfo> allUniqueParts,
+            Dictionary<string, byte[]> partImages);
 
         /// <summary>
         /// Finalize and return the assembled document.
