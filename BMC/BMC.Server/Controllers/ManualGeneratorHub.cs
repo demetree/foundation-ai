@@ -85,46 +85,35 @@ namespace Foundation.BMC.Controllers.WebAPI
                 // Collect rendered step images
                 var stepImages = new List<string>(totalSteps);
 
-                // ── Pre-resolve the full model ONCE for camera framing ──
-                // Also gets the shared resolver (with cached part files) and
-                // parsed root geometry (with step break indices) for incremental rendering.
-                global::BMC.LDraw.Parsers.GeometryResolver sharedResolver = null;
-                global::BMC.LDraw.Models.LDrawGeometry rootGeometry = null;
+                // ── Resolve the full model ONCE with per-step triangle boundaries ──
+                // This also caches all part files, so no repeated file I/O.
+                int[] stepTriBounds = null;
+                int[] stepEdgeBounds = null;
                 global::BMC.LDraw.Models.LDrawMesh fullMesh = null;
 
                 await Task.Run(() =>
                 {
-                    fullMesh = renderService.ResolveFullModel(lines, fileName,
-                        out sharedResolver, out rootGeometry);
+                    fullMesh = renderService.ResolveFullModelWithStepBoundaries(
+                        lines, fileName, out stepTriBounds, out stepEdgeBounds);
+
+                    // Smooth the full mesh ONCE (all normals computed here)
+                    if (options.SmoothShading)
+                    {
+                        global::BMC.LDraw.Render.NormalSmoother.Smooth(fullMesh);
+                    }
                 }, Context.ConnectionAborted);
-
-
-                // Accumulating mesh — grows incrementally step-by-step
-                var accumulatingMesh = new global::BMC.LDraw.Models.LDrawMesh();
-
-                // Track prev-step tri/edge counts for highlighting
-                int prevTriCount = 0;
-                int prevEdgeCount = 0;
 
                 for (int i = 0; i < totalSteps; i++)
                 {
                     Context.ConnectionAborted.ThrowIfCancellationRequested();
 
-                    int capturedPrevTriCount = prevTriCount;
-                    int capturedPrevEdgeCount = prevEdgeCount;
-
-                    // Render one step incrementally — resolves ONLY the new parts
+                    // Render step from pre-smoothed mesh — NO per-step resolution or smoothing
                     var result = await Task.Run(() =>
-                        renderService.RenderStepHighlightedIncremental(
-                            sharedResolver, rootGeometry, accumulatingMesh, i,
+                        renderService.RenderStepFromPreSmoothedMesh(
+                            fullMesh, i, stepTriBounds, stepEdgeBounds,
                             imageSize, imageSize, elevation, azimuth,
-                            options.RenderEdges, options.SmoothShading,
-                            fullMesh, capturedPrevTriCount, capturedPrevEdgeCount),
+                            options.RenderEdges, options.SmoothShading),
                         Context.ConnectionAborted);
-
-                    // Cache this step's counts for the next iteration
-                    prevTriCount = result.TriangleCount;
-                    prevEdgeCount = result.EdgeCount;
 
                     string base64 = Convert.ToBase64String(result.PngBytes);
                     stepImages.Add(base64);

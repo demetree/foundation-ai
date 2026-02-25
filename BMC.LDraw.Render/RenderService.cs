@@ -987,6 +987,26 @@ namespace BMC.LDraw.Render
 
 
         /// <summary>
+        /// Resolve the full model with per-step triangle/edge boundaries.
+        /// Returns a mesh suitable for pre-smoothing and per-step slicing.
+        ///
+        /// stepTriangleBounds[i] = cumulative triangle count AFTER step i.
+        /// stepEdgeBounds[i]     = cumulative edge count AFTER step i.
+        /// </summary>
+        public LDrawMesh ResolveFullModelWithStepBoundaries(
+            string[] lines, string fileName,
+            out int[] stepTriangleBounds, out int[] stepEdgeBounds,
+            int effectiveColour = 4)
+        {
+            EnsureColours();
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            return resolver.ResolveContentAllWithStepBoundaries(
+                lines, fileName, effectiveColour,
+                out stepTriangleBounds, out stepEdgeBounds);
+        }
+
+
+        /// <summary>
         /// Incremental overload: render a step by resolving ONLY the delta subfile
         /// references (from the previous step boundary to the current one) and
         /// appending to an accumulating mesh.
@@ -1050,7 +1070,7 @@ namespace BMC.LDraw.Render
                 tri.R = (byte)((tri.R * 0.4f) + (grey * 0.6f));
                 tri.G = (byte)((tri.G * 0.4f) + (grey * 0.6f));
                 tri.B = (byte)((tri.B * 0.4f) + (grey * 0.6f));
-                tri.A = 100;
+                tri.A = 255; // Keep opaque! A<255 routes through sequential transparent pass
                 renderTris[t] = tri;
             }
 
@@ -1091,6 +1111,99 @@ namespace BMC.LDraw.Render
             };
         }
 
+
+        /// <summary>
+        /// Render a step using a pre-resolved, pre-smoothed full mesh.
+        ///
+        /// Per-step cost is O(totalTrisUpToStep) for the copy + dim,
+        /// but crucially does NO geometry resolution and NO normal smoothing.
+        /// The heavy O(T²) work (resolve + smooth) is done once up front.
+        ///
+        /// stepTriangleBounds/stepEdgeBounds: cumulative counts from
+        /// GeometryResolver.ResolveContentAllWithStepBoundaries.
+        /// </summary>
+        public StepRenderResult RenderStepFromPreSmoothedMesh(
+            LDrawMesh preSmoothedFullMesh,
+            int stepIndex,
+            int[] stepTriangleBounds,
+            int[] stepEdgeBounds,
+            int width, int height,
+            float elevation, float azimuth,
+            bool renderEdges, bool smoothShading)
+        {
+            // Determine tri/edge range for this step
+            int triEnd = stepTriangleBounds[stepIndex];
+            int edgeEnd = stepEdgeBounds[stepIndex];
+            int prevTriEnd = stepIndex > 0 ? stepTriangleBounds[stepIndex - 1] : 0;
+            int prevEdgeEnd = stepIndex > 0 ? stepEdgeBounds[stepIndex - 1] : 0;
+
+            if (triEnd == 0)
+            {
+                return new StepRenderResult
+                {
+                    PngBytes = System.Array.Empty<byte>(),
+                    TriangleCount = 0,
+                    EdgeCount = 0
+                };
+            }
+
+            // Build render mesh by copying pre-smoothed tris up to this step
+            var renderTris = new List<MeshTriangle>(triEnd);
+            for (int t = 0; t < triEnd; t++)
+            {
+                renderTris.Add(preSmoothedFullMesh.Triangles[t]);
+            }
+
+            var renderEdgeLines = new List<MeshLine>(edgeEnd);
+            for (int e = 0; e < edgeEnd; e++)
+            {
+                renderEdgeLines.Add(preSmoothedFullMesh.EdgeLines[e]);
+            }
+
+            // Dim old steps — keep A=255 so they stay in the fast parallel opaque path
+            for (int t = 0; t < prevTriEnd; t++)
+            {
+                MeshTriangle tri = renderTris[t];
+                byte grey = 180;
+                tri.R = (byte)((tri.R * 0.4f) + (grey * 0.6f));
+                tri.G = (byte)((tri.G * 0.4f) + (grey * 0.6f));
+                tri.B = (byte)((tri.B * 0.4f) + (grey * 0.6f));
+                tri.A = 255; // Keep opaque! A<255 routes through sequential transparent pass
+                renderTris[t] = tri;
+            }
+
+            for (int e = 0; e < prevEdgeEnd; e++)
+            {
+                MeshLine line = renderEdgeLines[e];
+                line.R = 200; line.G = 200; line.B = 200; line.A = 80;
+                renderEdgeLines[e] = line;
+            }
+
+            // Build the render-only mesh (normals already present from pre-smoothing)
+            var renderMesh = new LDrawMesh();
+            renderMesh.Triangles = renderTris;
+            renderMesh.EdgeLines = renderEdgeLines;
+            renderMesh.ComputeBounds(); // bounds from THIS step's tris, not the full model
+
+            // No NormalSmoother.Smooth() call — normals are already computed!
+
+            Camera camera = new Camera();
+            camera.AutoFrameStep(renderMesh, preSmoothedFullMesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(renderMesh, camera);
+            byte[] png = ImageExporter.ToPngBytes(pixels, width, height);
+
+            return new StepRenderResult
+            {
+                PngBytes = png,
+                TriangleCount = triEnd,
+                EdgeCount = edgeEnd
+            };
+        }
 
 
         /// <summary>

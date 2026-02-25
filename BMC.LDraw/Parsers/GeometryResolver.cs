@@ -402,10 +402,110 @@ namespace BMC.LDraw.Parsers
             return mesh;
         }
 
+        /// <summary>
+        /// Resolve the full model (all steps) and return per-step cumulative
+        /// triangle/edge counts so the caller can slice the mesh by step.
+        ///
+        /// stepTriangleBounds[i] = cumulative triangle count AFTER step i
+        /// stepEdgeBounds[i]     = cumulative edge count AFTER step i
+        ///
+        /// Example: to get step 3's triangles, slice
+        ///   fullMesh.Triangles[stepTriangleBounds[2]..stepTriangleBounds[3]]
+        /// (step 0 starts at 0, i.e. stepTriangleBounds[-1] is implicitly 0).
+        /// </summary>
+        public LDrawMesh ResolveContentAllWithStepBoundaries(
+            string[] lines, string fileName, int parentColourCode,
+            out int[] stepTriangleBounds, out int[] stepEdgeBounds)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseLines(lines, fileName);
+            stepTriangleBounds = System.Array.Empty<int>();
+            stepEdgeBounds = System.Array.Empty<int>();
 
-        // ────────────────────────────────────────────────────────
-        // Incremental (delta) resolution — for efficient step-by-step rendering
-        // ────────────────────────────────────────────────────────
+            if (geos.Count == 0) return new LDrawMesh();
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            LDrawGeometry root = geos[0];
+            LDrawMesh mesh = new LDrawMesh();
+            int colour = parentColourCode >= 0 ? parentColourCode : 16;
+
+            float[] identity = new float[]
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            };
+
+            // Resolve direct geometry
+            ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
+
+            int totalSteps = root.StepBreaks.Count;
+            if (totalSteps == 0)
+            {
+                // No steps — resolve everything as one block
+                ResolveSubfilesUpTo(root, identity, colour, 0, false, mesh,
+                    root.SubfileReferences.Count, 0);
+                mesh.ComputeBounds();
+                stepTriangleBounds = new int[] { mesh.Triangles.Count };
+                stepEdgeBounds = new int[] { mesh.EdgeLines.Count };
+                return mesh;
+            }
+
+            stepTriangleBounds = new int[totalSteps];
+            stepEdgeBounds = new int[totalSteps];
+
+            int prevSubRefEnd = 0;
+            for (int step = 0; step < totalSteps; step++)
+            {
+                int subRefEnd = root.StepBreaks[step];
+
+                // Resolve subfile refs in [prevSubRefEnd, subRefEnd)
+                for (int i = prevSubRefEnd; i < subRefEnd && i < root.SubfileReferences.Count; i++)
+                {
+                    LDrawSubfileReference subRef = root.SubfileReferences[i];
+                    LDrawGeometry subGeo = LoadFile(subRef.FileName);
+                    if (subGeo == null) continue;
+
+                    float[] subMatrix = BuildMatrix(subRef);
+                    float[] worldMatrix = MultiplyMatrices(identity, subMatrix);
+                    int subColour = ResolveColour(subRef.ColourCode, colour);
+
+                    int subEdgeColour = 0;
+                    if (subRef.ColourCode != 16 && subRef.ColourCode != 24)
+                    {
+                        subEdgeColour = subRef.ColourCode;
+                    }
+
+                    bool subInvert = false;
+                    if (root.InvertNextIndices.Contains(i))
+                    {
+                        subInvert = !subInvert;
+                    }
+                    if (Determinant3x3(subRef.Matrix) < 0)
+                    {
+                        subInvert = !subInvert;
+                    }
+
+                    ResolveRecursive(subGeo, worldMatrix, subColour, subEdgeColour, subInvert, mesh, 1);
+                }
+
+                stepTriangleBounds[step] = mesh.Triangles.Count;
+                stepEdgeBounds[step] = mesh.EdgeLines.Count;
+                prevSubRefEnd = subRefEnd;
+            }
+
+            mesh.ComputeBounds();
+            return mesh;
+        }
+
 
         /// <summary>
         /// Parse and cache the content once, returning the root geometry.
