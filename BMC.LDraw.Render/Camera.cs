@@ -172,9 +172,10 @@ namespace BMC.LDraw.Render
             if (fullExtent < 1f) fullExtent = 100f;
 
             // Use the step's own extent with moderate padding (1.3x) so parts
-            // fill most of the frame.  Apply a floor of 10% of the full model
-            // so that very small sub-assemblies don't zoom in to sub-stud level.
-            float minExtent = fullExtent * 0.10f;
+            // fill most of the frame.  Apply a floor of 30% of the full model
+            // so tiny parts (stickers, pins) don't cause extreme zoom-in that
+            // clips through surrounding geometry.
+            float minExtent = fullExtent * 0.30f;
             float extent = Math.Max(stepExtent * 1.3f, minExtent);
             // Cap at full model extent so we never zoom out further than the full render
             extent = Math.Min(extent, fullExtent);

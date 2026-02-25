@@ -87,6 +87,34 @@ namespace BMC.LDraw.Render
             _sb.AppendLine("</div>");
         }
 
+        /// <summary>
+        /// Add a completion page showing the finished model as a full-page beauty shot.
+        /// Always added after the last step.
+        /// </summary>
+        public void AddCompletionPage(byte[] completedModelImage)
+        {
+            CloseCurrentPage();
+            _sb.AppendLine("<div class=\"page completion-page\">");
+            _sb.AppendLine("<div class=\"completion-content\">");
+            _sb.AppendFormat("<h1 class=\"completion-title\">{0}</h1>\n",
+                System.Net.WebUtility.HtmlEncode(_modelName));
+            _sb.AppendLine("<div class=\"completion-subtitle\">Build Complete!</div>");
+
+            if (completedModelImage != null && completedModelImage.Length > 0)
+            {
+                string b64 = Convert.ToBase64String(completedModelImage);
+                _sb.AppendFormat("<img class=\"completion-image\" src=\"data:image/png;base64,{0}\" alt=\"Completed model\" />\n", b64);
+            }
+
+            int totalParts = _plan.Steps.Count > 0
+                ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount
+                : 0;
+            _sb.AppendFormat("<div class=\"completion-meta\">{0} Steps · {1} Parts</div>\n",
+                _plan.TotalSteps, totalParts);
+            _sb.AppendLine("</div>");
+            _sb.AppendLine("</div>");
+        }
+
 
         // ── Submodel callout state ──
         private string _currentSubmodelName;
@@ -590,6 +618,61 @@ body {
     letter-spacing: 0.05em;
 }
 
+/* ═══ Completion Page ═══ */
+.completion-page {
+    background: linear-gradient(135deg, #0f766e 0%, #065f46 40%, #064e3b 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+.completion-page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+}
+.completion-content {
+    max-width: 90%;
+    position: relative;
+    z-index: 1;
+}
+.completion-title {
+    font-size: 2.2em;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+.completion-subtitle {
+    font-size: 1.4em;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 24px;
+}
+.completion-image {
+    max-width: 100%;
+    max-height: 520px;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+}
+.completion-meta {
+    font-size: 1em;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em;
+}
+
 /* ═══ Step Pages ═══ */
 .step-header, .step-cell-header {
     display: flex;
@@ -630,7 +713,7 @@ body {
 }
 .step-image img {
     max-width: 100%;
-    max-height: 500px;
+    max-height: 650px;
     border-radius: 6px;
 }
 

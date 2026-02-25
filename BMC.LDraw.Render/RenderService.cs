@@ -1395,16 +1395,35 @@ namespace BMC.LDraw.Render
                 renderEdgeLines[e] = line;
             }
 
+            // Highlight new-step edges with solid dark outlines.
+            // This makes new parts pop regardless of their surface colour,
+            // similar to bold outlines in official LEGO instructions.
+            for (int e = prevEdgeEnd; e < edgeEnd; e++)
+            {
+                MeshLine line = renderEdgeLines[e];
+                line.R = 50; line.G = 50; line.B = 50; line.A = 255;
+                renderEdgeLines[e] = line;
+            }
+
             // Build the render-only mesh (normals already present from pre-smoothing)
             var renderMesh = new LDrawMesh();
             renderMesh.Triangles = renderTris;
             renderMesh.EdgeLines = renderEdgeLines;
-            renderMesh.ComputeBounds(); // bounds from THIS step's tris, not the full model
+            renderMesh.ComputeBounds();
 
-            // No NormalSmoother.Smooth() call — normals are already computed!
+            // Build a focused mesh from ONLY the new-step triangles for tighter camera framing.
+            // This prevents the camera from zooming out to fit the entire accumulated model.
+            var stepOnlyTris = new List<MeshTriangle>(triEnd - prevTriEnd);
+            for (int t = prevTriEnd; t < triEnd; t++)
+            {
+                stepOnlyTris.Add(renderTris[t]);
+            }
+            var stepOnlyMesh = new LDrawMesh();
+            stepOnlyMesh.Triangles = stepOnlyTris;
+            stepOnlyMesh.ComputeBounds();
 
             Camera camera = new Camera();
-            camera.AutoFrameStep(renderMesh, preSmoothedFullMesh, elevation, azimuth);
+            camera.AutoFrameStep(stepOnlyMesh, preSmoothedFullMesh, elevation, azimuth);
 
             SoftwareRenderer renderer = new SoftwareRenderer(width, height);
             renderer.RenderEdges = renderEdges;

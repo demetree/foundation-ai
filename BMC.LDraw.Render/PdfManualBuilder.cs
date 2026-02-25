@@ -320,6 +320,69 @@ namespace BMC.LDraw.Render
             gfx.Dispose();
         }
 
+        public void AddCompletionPage(byte[] completedModelImage)
+        {
+            // Re-use cover page rendering logic with a different colour scheme
+            var page = AddPage();
+            var gfx = XGraphics.FromPdfPage(page);
+
+            // Forest green gradient background
+            var topColour = XColor.FromArgb(255, 10, 47, 31);
+            var bottomColour = XColor.FromArgb(255, 15, 76, 58);
+            var bgBrush = new XLinearGradientBrush(
+                new XPoint(0, 0), new XPoint(0, page.Height),
+                topColour, bottomColour);
+            gfx.DrawRectangle(bgBrush, 0, 0, page.Width, page.Height);
+
+            double y = 60;
+
+            // Title
+            var titleFont = new XFont("Arial", 28, XFontStyle.Bold);
+            gfx.DrawString(_modelName ?? "Model",
+                titleFont, XBrushes.White,
+                new XRect(0, y, page.Width, 40),
+                XStringFormats.TopCenter);
+            y += 45;
+
+            // Subtitle
+            var subtitleFont = new XFont("Arial", 16, XFontStyle.Regular);
+            gfx.DrawString("Build Complete!",
+                subtitleFont, new XSolidBrush(XColor.FromArgb(180, 255, 255, 255)),
+                new XRect(0, y, page.Width, 30),
+                XStringFormats.TopCenter);
+            y += 50;
+
+            // Model image
+            if (completedModelImage != null && completedModelImage.Length > 0)
+            {
+                using (var ms = new MemoryStream(completedModelImage))
+                {
+                    var img = XImage.FromStream(() => new MemoryStream(completedModelImage));
+                    double maxW = page.Width - 80;
+                    double maxH = page.Height - y - 80;
+                    double scale = Math.Min(maxW / img.PixelWidth, maxH / img.PixelHeight);
+                    double drawW = img.PixelWidth * scale;
+                    double drawH = img.PixelHeight * scale;
+                    double x = (page.Width - drawW) / 2;
+                    gfx.DrawImage(img, x, y, drawW, drawH);
+                    y += drawH + 20;
+                }
+            }
+
+            // Stats
+            int totalParts = _plan != null && _plan.Steps.Count > 0
+                ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount
+                : 0;
+            var metaFont = new XFont("Arial", 11, XFontStyle.Regular);
+            string metaText = $"{_plan?.TotalSteps ?? 0} Steps · {totalParts} Parts";
+            gfx.DrawString(metaText,
+                metaFont, new XSolidBrush(XColor.FromArgb(128, 255, 255, 255)),
+                new XRect(0, y, page.Width, 20),
+                XStringFormats.TopCenter);
+
+            gfx.Dispose();
+        }
+
 
         public ManualGenerationResult Build()
         {

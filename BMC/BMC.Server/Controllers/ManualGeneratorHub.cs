@@ -86,7 +86,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                     return;
                 }
 
-                int imageSize = Math.Clamp(options.ImageSize, 256, 1024);
+                // Floor at 800 — the UI option can increase quality but never below this.
+                int imageWidth = Math.Max(800, Math.Clamp(options.ImageSize, 256, 1200));
+                int imageHeight = (int)(imageWidth * 0.75f); // 4:3 landscape
                 float elevation = Math.Clamp(options.Elevation, -90f, 90f);
                 float azimuth = Math.Clamp(options.Azimuth, -360f, 360f);
 
@@ -138,8 +140,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     renderService.RenderToPng(
                         lines: lines,
                         fileName: fileName,
-                        width: Math.Max(imageSize, 768),       // Higher res for cover
-                        height: Math.Max(imageSize, 768),
+                        width: Math.Max(imageWidth, 768),       // Higher res for cover
+                        height: Math.Max(imageHeight, 768),
                         elevation: elevation,
                         azimuth: azimuth,
                         renderEdges: true,
@@ -204,6 +206,17 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                     var step = plan.Steps[i];
 
+                    // Skip the last root step if it adds zero new parts
+                    // (common in LDraw files — just an empty STEP marker).
+                    if (i == totalSteps - 1
+                        && !step.IsSubmodelStep
+                        && step.LocalStepIndex > 0
+                        && step.LocalStepIndex < rootTriBounds.Length
+                        && rootTriBounds[step.LocalStepIndex] == rootTriBounds[step.LocalStepIndex - 1])
+                    {
+                        continue;
+                    }
+
                     // Handle callout transitions
                     if (step.IsSubmodelStep && currentCalloutModel != step.ModelName)
                     {
@@ -236,7 +249,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                             renderService.RenderStepFromPreSmoothedMesh(
                                 subData.mesh, step.LocalStepIndex,
                                 subData.triBounds, subData.edgeBounds,
-                                imageSize, imageSize,
+                                imageWidth, imageHeight,
                                 stepElevation, stepAzimuth,
                                 options.RenderEdges, options.SmoothShading),
                             Context.ConnectionAborted);
@@ -255,7 +268,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                             renderService.RenderStepFromPreSmoothedMesh(
                                 rootMesh, step.LocalStepIndex,
                                 rootTriBounds, rootEdgeBounds,
-                                imageSize, imageSize,
+                                imageWidth, imageHeight,
                                 stepElevation, stepAzimuth,
                                 options.RenderEdges, options.SmoothShading),
                             Context.ConnectionAborted);
@@ -282,7 +295,27 @@ namespace Foundation.BMC.Controllers.WebAPI
                     builder.EndSubmodelCallout();
                 }
 
-                // ── Phase 7: Bill of Materials ──
+                // ── Phase 7a: Completion page ──
+                // Render a beauty shot of the finished model from a different angle
+                Context.ConnectionAborted.ThrowIfCancellationRequested();
+                byte[] completionImage = await Task.Run(() =>
+                    renderService.RenderToPng(
+                        lines: lines,
+                        fileName: fileName,
+                        width: Math.Max(imageWidth, 768),
+                        height: Math.Max(imageHeight, 768),
+                        elevation: elevation + 5f,
+                        azimuth: azimuth + 30f,     // Slightly rotated from cover
+                        renderEdges: true,
+                        smoothShading: true,
+                        antiAliasMode: AntiAliasMode.SSAA4x,
+                        gradientTopHex: "#0A2F1F",    // Deep forest green
+                        gradientBottomHex: "#0F4C3A"),
+                    Context.ConnectionAborted);
+
+                builder.AddCompletionPage(completionImage);
+
+                // ── Phase 7b: Bill of Materials ──
                 var bomParts = AggregateBom(plan);
                 builder.AddBillOfMaterials(bomParts, partImages);
 

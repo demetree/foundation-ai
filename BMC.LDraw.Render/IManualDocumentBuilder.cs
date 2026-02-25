@@ -60,6 +60,12 @@ namespace BMC.LDraw.Render
             Dictionary<string, byte[]> partImages);
 
         /// <summary>
+        /// Add a completion page showing the finished model as a full-page beauty shot.
+        /// </summary>
+        /// <param name="completedModelImage">PNG bytes of the completed model.</param>
+        void AddCompletionPage(byte[] completedModelImage);
+
+        /// <summary>
         /// Finalize and return the assembled document.
         /// </summary>
         ManualGenerationResult Build();
