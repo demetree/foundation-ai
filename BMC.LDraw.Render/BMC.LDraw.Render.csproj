@@ -11,8 +11,6 @@
     <ProjectReference Include="..\BMC.LDraw\BMC.LDraw.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="PdfSharpCore" Version="1.3.*" />
-  </ItemGroup>
+
 
 </Project>
