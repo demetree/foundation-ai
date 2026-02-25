@@ -14,7 +14,7 @@
 
 
     <!-- ─── Upload Zone ─────────────────────────────────────────────── -->
-    <section class="upload-section" *ngIf="!generatedHtml">
+    <section class="upload-section" *ngIf="!generatedHtml && !generatedPdf">
         <div class="upload-dropzone" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
 
@@ -43,7 +43,7 @@
 
 
     <!-- ─── Options & Actions ───────────────────────────────────────── -->
-    <section class="options-section" *ngIf="selectedFile && !isGenerating && !generatedHtml">
+    <section class="options-section" *ngIf="selectedFile && !isGenerating && !generatedHtml && !generatedPdf">
 
         <div class="options-grid">
             <div class="option-group">
@@ -55,12 +55,11 @@
             </div>
 
             <div class="option-group">
-                <label for="imageSize">Image Size</label>
+                <label for="imageSize">Image Quality</label>
                 <select id="imageSize" [(ngModel)]="options.imageSize">
-                    <option [ngValue]="256">256px (Fast)</option>
-                    <option [ngValue]="512">512px (Standard)</option>
-                    <option [ngValue]="768">768px (High Quality)</option>
-                    <option [ngValue]="1024">1024px (Maximum)</option>
+                    <option [ngValue]="800">800px (Standard)</option>
+                    <option [ngValue]="1024">1024px (High Quality)</option>
+                    <option [ngValue]="1200">1200px (Maximum)</option>
                 </select>
             </div>
 
@@ -89,6 +88,14 @@
                     Smooth Shading
                 </label>
             </div>
+
+            <div class="option-group">
+                <label for="outputFormat">Output Format</label>
+                <select id="outputFormat" [(ngModel)]="options.outputFormat">
+                    <option value="html">HTML (Preview & Print)</option>
+                    <option value="pdf">PDF (Download)</option>
+                </select>
+            </div>
         </div>
 
         <div class="action-buttons">
@@ -105,7 +112,7 @@
 
 
     <!-- ─── Analysis Results ────────────────────────────────────────── -->
-    <section class="analysis-section" *ngIf="analysis && !isGenerating && !generatedHtml">
+    <section class="analysis-section" *ngIf="analysis && !isGenerating && !generatedHtml && !generatedPdf">
         <h2>Step Analysis</h2>
         <div class="analysis-summary">
             <div class="stat-card">
@@ -113,8 +120,16 @@
                 <div class="stat-label">Steps</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{{ analysis.totalParts }}</div>
+                <div class="stat-value">{{ analysis.totalParts | number }}</div>
                 <div class="stat-label">Total Parts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ analysis.uniquePartCount | number }}</div>
+                <div class="stat-label">Unique Parts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ (analysis.totalTriangleCount / 1000).toFixed(0) }}k</div>
+                <div class="stat-label">Triangles</div>
             </div>
         </div>
 
@@ -124,7 +139,7 @@
                     <tr>
                         <th>Step</th>
                         <th>New Parts</th>
-                        <th>Cumulative</th>
+                        <th class="text-right">Cumulative</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -132,7 +147,8 @@
                         <td class="step-num">{{ step.stepIndex + 1 }}</td>
                         <td>
                             <span class="part-badge" *ngFor="let p of step.newParts">
-                                {{ p.quantity }}× {{ p.fileName }}
+                                <span class="colour-dot" *ngIf="p.colourHex" [style.background]="p.colourHex"></span>
+                                {{ p.quantity }}× {{ p.partDescription || p.fileName }}
                             </span>
                             <span *ngIf="step.newParts.length === 0" class="no-parts">—</span>
                         </td>
@@ -180,7 +196,7 @@
 
 
     <!-- ─── Results / Preview ───────────────────────────────────────── -->
-    <section class="result-section" *ngIf="generatedHtml">
+    <section class="result-section" *ngIf="generatedHtml || generatedPdf">
         <div class="result-header">
             <h2>Build Manual Ready</h2>
 
@@ -193,27 +209,41 @@
             </div>
 
             <div class="result-actions">
-                <button class="btn btn-primary" (click)="downloadHtml()">
+                <!-- HTML actions -->
+                <ng-container *ngIf="generatedHtml">
+                    <button class="btn btn-primary" (click)="downloadHtml()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download HTML
+                    </button>
+                    <button class="btn btn-secondary" (click)="printManual()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9" />
+                            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                            <rect x="6" y="14" width="12" height="8" />
+                        </svg>
+                        Print
+                    </button>
+                </ng-container>
+
+                <!-- PDF actions -->
+                <button class="btn btn-primary" *ngIf="generatedPdf" (click)="downloadPdf()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
-                    Download HTML
+                    Download PDF
                 </button>
-                <button class="btn btn-secondary" (click)="printManual()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 6 2 18 2 18 9" />
-                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
-                        <rect x="6" y="14" width="12" height="8" />
-                    </svg>
-                    Print / Save PDF
-                </button>
+
                 <button class="btn btn-ghost" (click)="reset()">New Manual</button>
             </div>
         </div>
 
-        <!-- Page Preview -->
+        <!-- HTML Page Preview -->
         <div class="page-preview" *ngIf="pages.length > 0">
             <div class="page-nav">
                 <button class="nav-btn" (click)="prevPage()" [disabled]="currentPage === 0">‹</button>
@@ -223,6 +253,15 @@
             <div class="keyboard-hint">Use ← → arrow keys to navigate</div>
 
             <div class="page-frame" [innerHTML]="pages[currentPage]"></div>
+        </div>
+
+        <!-- PDF Ready Message -->
+        <div class="pdf-ready-message" *ngIf="generatedPdf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            <p>Your PDF manual is ready for download.</p>
         </div>
     </section>
 

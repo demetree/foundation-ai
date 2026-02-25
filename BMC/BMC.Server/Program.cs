@@ -203,7 +203,15 @@ namespace Foundation.BMC
                 //
                 // Add SignalR for streaming AI chat
                 //
-                builder.Services.AddSignalR();
+                builder.Services.AddSignalR(options =>
+                {
+                    // Manual generator sends large base64 payloads (PDF can be 10+ MB)
+                    options.MaximumReceiveMessageSize = 50 * 1024 * 1024;  // 50 MB
+
+                    // Manual generation can take several minutes for large models
+                    options.ClientTimeoutInterval = TimeSpan.FromMinutes(10);
+                    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                });
 
 
                 // Configure Kestrel server options

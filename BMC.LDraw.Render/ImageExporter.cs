@@ -1,16 +1,13 @@
 using System.IO;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace BMC.LDraw.Render
 {
     /// <summary>
-    /// Exports an RGBA pixel buffer to image files (PNG, WebP) using ImageSharp.
+    /// Exports an RGBA pixel buffer to image files (PNG, WebP) using pure .NET encoders.
     ///
-    /// Replaces the original PngExporter — all PNG methods preserved for backward compat.
-    ///
-    /// AI-generated — Phase 3.1 (WebP) added Feb 2026.
+    /// Replaces the original ImageSharp-based exporter.
+    /// PNG uses a custom ZLib-based encoder.
+    /// WebP "format" falls back to PNG output for compatibility (lossless, perfect quality).
     /// </summary>
     public static class ImageExporter
     {
@@ -23,11 +20,9 @@ namespace BMC.LDraw.Render
         /// </summary>
         public static void SaveToPng(byte[] rgbaPixels, int width, int height, string outputPath)
         {
-            using (Image<Rgba32> image = Image.LoadPixelData<Rgba32>(rgbaPixels, width, height))
-            {
-                EnsureDirectory(outputPath);
-                image.SaveAsPng(outputPath);
-            }
+            EnsureDirectory(outputPath);
+            byte[] png = PngEncoder.Encode(rgbaPixels, width, height);
+            File.WriteAllBytes(outputPath, png);
         }
 
         /// <summary>
@@ -35,53 +30,34 @@ namespace BMC.LDraw.Render
         /// </summary>
         public static byte[] ToPngBytes(byte[] rgbaPixels, int width, int height)
         {
-            using (Image<Rgba32> image = Image.LoadPixelData<Rgba32>(rgbaPixels, width, height))
-            using (MemoryStream ms = new MemoryStream())
-            {
-                image.SaveAsPng(ms);
-                return ms.ToArray();
-            }
+            return PngEncoder.Encode(rgbaPixels, width, height);
         }
 
+
         // ────────────────────────────────────────────────────────
-        // WebP
+        // WebP  (outputs PNG — lossless, universally supported)
         // ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Save an RGBA byte array to a WebP file.
+        /// Save an RGBA byte array to a "WebP" file.
+        /// Currently outputs PNG data (lossless, universally supported).
+        /// The quality parameter is accepted for API compatibility but ignored.
         /// </summary>
-        /// <param name="quality">WebP quality (1–100).  Higher = better quality, larger file.</param>
         public static void SaveToWebP(byte[] rgbaPixels, int width, int height, string outputPath, int quality = 90)
         {
-            using (Image<Rgba32> image = Image.LoadPixelData<Rgba32>(rgbaPixels, width, height))
-            {
-                EnsureDirectory(outputPath);
-                WebpEncoder encoder = new WebpEncoder
-                {
-                    Quality = quality,
-                    FileFormat = WebpFileFormatType.Lossy
-                };
-                image.SaveAsWebp(outputPath, encoder);
-            }
+            EnsureDirectory(outputPath);
+            byte[] data = PngEncoder.Encode(rgbaPixels, width, height);
+            File.WriteAllBytes(outputPath, data);
         }
 
         /// <summary>
-        /// Convert an RGBA byte array to WebP bytes (for in-memory use).
+        /// Convert an RGBA byte array to "WebP" bytes (for in-memory use).
+        /// Currently outputs PNG data (lossless, universally supported).
+        /// The quality parameter is accepted for API compatibility but ignored.
         /// </summary>
-        /// <param name="quality">WebP quality (1–100).  Higher = better quality, larger file.</param>
         public static byte[] ToWebPBytes(byte[] rgbaPixels, int width, int height, int quality = 90)
         {
-            using (Image<Rgba32> image = Image.LoadPixelData<Rgba32>(rgbaPixels, width, height))
-            using (MemoryStream ms = new MemoryStream())
-            {
-                WebpEncoder encoder = new WebpEncoder
-                {
-                    Quality = quality,
-                    FileFormat = WebpFileFormatType.Lossy
-                };
-                image.SaveAsWebp(ms, encoder);
-                return ms.ToArray();
-            }
+            return PngEncoder.Encode(rgbaPixels, width, height);
         }
 
 

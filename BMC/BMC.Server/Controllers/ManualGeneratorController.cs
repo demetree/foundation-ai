@@ -114,12 +114,21 @@ namespace Foundation.BMC.Controllers.WebAPI
                         {
                             fileName = p.FileName,
                             colourCode = p.ColourCode,
-                            quantity = p.Quantity
+                            quantity = p.Quantity,
+                            partDescription = p.PartDescription,
+                            colourName = p.ColourName,
+                            colourHex = p.ColourHex
                         }),
                         cumulativePartCount = s.CumulativePartCount,
                         cumulativeTriangleCount = s.CumulativeTriangleCount
                     }),
-                    totalParts = analysis.LastOrDefault()?.CumulativePartCount ?? 0
+                    totalParts = analysis.LastOrDefault()?.CumulativePartCount ?? 0,
+                    totalTriangleCount = analysis.LastOrDefault()?.CumulativeTriangleCount ?? 0,
+                    uniquePartCount = analysis
+                        .SelectMany(s => s.NewParts)
+                        .Select(p => $"{p.FileName}|{p.ColourCode}")
+                        .Distinct()
+                        .Count()
                 });
             }
             catch (Exception ex)

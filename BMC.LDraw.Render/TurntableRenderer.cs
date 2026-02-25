@@ -1,19 +1,15 @@
-using System;
-using System.IO;
 using BMC.LDraw.Models;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Gif;
-using SixLabors.ImageSharp.PixelFormats;
+using System.IO;
 
 namespace BMC.LDraw.Render
 {
     /// <summary>
-    /// Renders an LDraw mesh as a 360° turntable animation assembled into an animated GIF.
+    /// Renders a turntable animation of an LDraw model as an animated GIF.
     ///
-    /// Each frame is rendered at an evenly-spaced azimuth angle using SoftwareRenderer,
-    /// then composed into a looping GIF via ImageSharp's GifEncoder.
+    /// Rotates the camera 360° around the model, rendering each frame with
+    /// the software renderer, then encodes all frames into a looping GIF.
     ///
-    /// AI-generated — Phase 3.2, Feb 2026.
+    /// Uses the built-in GifEncoder (no external dependencies).
     /// </summary>
     public static class TurntableRenderer
     {
@@ -44,78 +40,46 @@ namespace BMC.LDraw.Render
             if (frameCount < 1) frameCount = 1;
 
             //
-            // Create the output GIF image with the first frame
+            // Create the GIF encoder
             //
-            using (Image<Rgba32> gif = new Image<Rgba32>(width, height))
+            GifEncoder gif = new GifEncoder(width, height, frameDelayMs);
+
+            for (int i = 0; i < frameCount; i++)
             {
-                for (int i = 0; i < frameCount; i++)
+                //
+                // Compute azimuth: evenly distribute across 360°
+                //
+                float azimuth = -180f + (360f * i / frameCount);
+
+                //
+                // Set up camera for this frame
+                //
+                Camera camera = new Camera();
+                camera.AutoFrame(mesh, elevation, azimuth);
+
+                //
+                // Render the frame
+                //
+                SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+                renderer.RenderEdges = renderEdges;
+                renderer.SmoothShading = smoothShading;
+                if (lighting != null)
                 {
-                    //
-                    // Compute azimuth: evenly distribute across 360°
-                    //
-                    float azimuth = -180f + (360f * i / frameCount);
-
-                    //
-                    // Set up camera for this frame
-                    //
-                    Camera camera = new Camera();
-                    camera.AutoFrame(mesh, elevation, azimuth);
-
-                    //
-                    // Render the frame
-                    //
-                    SoftwareRenderer renderer = new SoftwareRenderer(width, height);
-                    renderer.RenderEdges = renderEdges;
-                    renderer.SmoothShading = smoothShading;
-                    if (lighting != null)
-                    {
-                        renderer.Lighting = lighting;
-                    }
-
-                    byte[] pixels = renderer.Render(mesh, camera);
-
-                    //
-                    // Create an ImageSharp frame from the pixel data
-                    //
-                    using (Image<Rgba32> frame = Image.LoadPixelData<Rgba32>(pixels, width, height))
-                    {
-                        //
-                        // Add frame to the GIF
-                        //
-                        ImageFrame<Rgba32> addedFrame = gif.Frames.AddFrame(frame.Frames.RootFrame);
-
-                        //
-                        // Set frame delay (in hundredths of a second, GIF spec)
-                        //
-                        GifFrameMetadata frameMeta = addedFrame.Metadata.GetGifMetadata();
-                        frameMeta.FrameDelay = frameDelayMs / 10;
-                        frameMeta.DisposalMethod = GifDisposalMethod.RestoreToBackground;
-                    }
+                    renderer.Lighting = lighting;
                 }
 
-                // Remove the default empty frame that was created with new Image<>(w,h).
-                // Must be done after the loop so it's no longer the only frame.
-                gif.Frames.RemoveFrame(0);
+                byte[] pixels = renderer.Render(mesh, camera);
 
                 //
-                // Configure GIF metadata for looping
+                // Add frame to the GIF
                 //
-                GifMetadata gifMeta = gif.Metadata.GetGifMetadata();
-                gifMeta.RepeatCount = 0; // 0 = loop forever
-
-                //
-                // Encode to byte array
-                //
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    GifEncoder encoder = new GifEncoder
-                    {
-                        ColorTableMode = GifColorTableMode.Local
-                    };
-                    gif.SaveAsGif(ms, encoder);
-                    return ms.ToArray();
-                }
+                gif.AddFrame(pixels);
             }
+
+            //
+            // Encode to byte array
+            //
+            return gif.Encode();
         }
     }
 }

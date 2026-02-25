@@ -24,7 +24,9 @@ export interface StepProgressEvent {
 }
 
 export interface GenerationCompleteEvent {
-    html: string;
+    format: string;       // "html" or "pdf"
+    html: string | null;
+    pdfBase64: string | null;
     totalSteps: number;
     totalParts: number;
     renderTimeMs: number;
@@ -37,6 +39,7 @@ export interface ManualOptionsDto {
     azimuth?: number;
     renderEdges?: boolean;
     smoothShading?: boolean;
+    outputFormat?: string;   // "html" or "pdf"
 }
 
 @Injectable({
@@ -74,6 +77,10 @@ export class ManualGeneratorSignalrService implements OnDestroy {
             .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
             .configureLogging(signalR.LogLevel.Warning)
             .build();
+
+        // Manual generation can take several minutes for large models
+        this.connection.serverTimeoutInMilliseconds = 10 * 60 * 1000;  // 10 minutes
+        this.connection.keepAliveIntervalInMilliseconds = 15 * 1000;   // 15 seconds
 
         // Wire up server → client events
         this.connection.on('StepProgress', (event: StepProgressEvent) => {

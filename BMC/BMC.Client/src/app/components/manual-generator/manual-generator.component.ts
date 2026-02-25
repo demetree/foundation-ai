@@ -21,7 +21,14 @@ import { AuthService } from '../../services/auth.service';
 
 interface StepAnalysis {
     stepIndex: number;
-    newParts: { fileName: string; colourCode: number; quantity: number }[];
+    newParts: {
+        fileName: string;
+        colourCode: number;
+        quantity: number;
+        partDescription: string | null;
+        colourName: string | null;
+        colourHex: string | null;
+    }[];
     cumulativePartCount: number;
     cumulativeTriangleCount: number;
 }
@@ -31,6 +38,8 @@ interface AnalyseResponse {
     stepCount: number;
     steps: StepAnalysis[];
     totalParts: number;
+    totalTriangleCount: number;
+    uniquePartCount: number;
 }
 
 
@@ -56,11 +65,12 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     // ─── Options ─────────────────────────────────────────────────────────
     options: ManualOptionsDto = {
         pageSize: 'a4',
-        imageSize: 512,
+        imageSize: 800,
         elevation: 30,
         azimuth: -45,
         renderEdges: true,
-        smoothShading: true
+        smoothShading: true,
+        outputFormat: 'html'
     };
 
     // ─── Generation State ────────────────────────────────────────────────
@@ -75,6 +85,7 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
 
     // ─── Result ──────────────────────────────────────────────────────────
     generatedHtml: string | null = null;
+    generatedPdf: string | null = null;   // base64-encoded PDF bytes
     resultStats: { totalSteps: number; totalParts: number; renderTimeMs: number } | null = null;
 
     // ─── Pagination ──────────────────────────────────────────────────────
@@ -105,13 +116,17 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
             }),
             this.signalr.onComplete$.subscribe((e: GenerationCompleteEvent) => {
                 this.isGenerating = false;
-                this.generatedHtml = e.html;
                 this.resultStats = {
                     totalSteps: e.totalSteps,
                     totalParts: e.totalParts,
                     renderTimeMs: e.renderTimeMs
                 };
-                this.splitPages(e.html);
+                if (e.format === 'pdf' && e.pdfBase64) {
+                    this.generatedPdf = e.pdfBase64;
+                } else {
+                    this.generatedHtml = e.html;
+                    this.splitPages(e.html!);
+                }
                 this.signalr.disconnect();
             }),
             this.signalr.onError$.subscribe((msg: string) => {
@@ -259,6 +274,7 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         this.currentPreview = null;
         this.generationError = null;
         this.generatedHtml = null;
+        this.generatedPdf = null;
         this.resultStats = null;
         this.pages = [];
 
@@ -376,6 +392,29 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     }
 
     //
+    // Download the generated manual as a PDF file
+    //
+    downloadPdf(): void {
+        if (this.generatedPdf == null) {
+            return;
+        }
+
+        const byteChars = atob(this.generatedPdf);
+        const byteArray = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) {
+            byteArray[i] = byteChars.charCodeAt(i);
+        }
+
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = (this.selectedFile?.name.replace(/\.[^.]+$/, '') || 'manual') + '_build-manual.pdf';
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    //
     // Open the manual in a new window and trigger the browser print dialog
     //
     printManual(): void {
@@ -405,6 +444,7 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         this.selectedFile = null;
         this.analysis = null;
         this.generatedHtml = null;
+        this.generatedPdf = null;
         this.resultStats = null;
         this.pages = [];
         this.currentPreview = null;
