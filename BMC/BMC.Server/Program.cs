@@ -264,6 +264,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(SetExplorerController));
                 controllers.Add(typeof(MinifigGalleryController));
                 controllers.Add(typeof(PartRendererController));
+                controllers.Add(typeof(ManualGeneratorController));
 
                 //
                 // Start of code generated controller list for BMC module
@@ -555,6 +556,7 @@ namespace Foundation.BMC
                 app.MapControllers();
 
                 app.MapHub<AiChatHub>("/AiChatSignal");
+                app.MapHub<ManualGeneratorHub>("/ManualGeneratorSignal");
 
                 app.MapFallbackToFile("/index.html");
 

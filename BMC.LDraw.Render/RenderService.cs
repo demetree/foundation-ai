@@ -889,6 +889,311 @@ namespace BMC.LDraw.Render
         }
 
 
+        // ════════════════════════════════════════════════════════════════
+        //  Manual Generation — Step Diff Analysis & Highlighted Rendering
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Analyse an uploaded LDraw file and return per-step metadata:
+        /// which parts are new at each step and cumulative counts.
+        /// This is a FAST metadata-only pass — no geometry resolution is performed.
+        /// </summary>
+        public List<ManualStepAnalysis> AnalyseSteps(string[] lines, string fileName)
+        {
+            EnsureColours();
+
+            var geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0) return new List<ManualStepAnalysis>();
+
+            var root = geos[0];
+            int stepCount = root.StepBreaks.Count;
+            if (stepCount == 0) return new List<ManualStepAnalysis>();
+
+            var results = new List<ManualStepAnalysis>(stepCount);
+            int cumulativeParts = 0;
+
+            for (int i = 0; i < stepCount; i++)
+            {
+                int prevMax = i > 0 ? root.StepBreaks[i - 1] : 0;
+                int curMax = root.StepBreaks[i];
+
+                // Identify new subfile references in this step
+                var partGroups = new Dictionary<string, StepPartInfo>();
+                for (int j = prevMax; j < curMax && j < root.SubfileReferences.Count; j++)
+                {
+                    var subRef = root.SubfileReferences[j];
+                    string key = subRef.FileName + "|" + subRef.ColourCode;
+
+                    if (partGroups.TryGetValue(key, out StepPartInfo existing))
+                    {
+                        existing.Quantity++;
+                    }
+                    else
+                    {
+                        partGroups[key] = new StepPartInfo
+                        {
+                            FileName = subRef.FileName,
+                            ColourCode = subRef.ColourCode,
+                            Quantity = 1
+                        };
+                    }
+                }
+
+                cumulativeParts += (curMax - prevMax);
+
+                var analysis = new ManualStepAnalysis
+                {
+                    StepIndex = i,
+                    NewParts = new List<StepPartInfo>(partGroups.Values),
+                    CumulativePartCount = cumulativeParts,
+                    CumulativeTriangleCount = 0 // populated during render phase if needed
+                };
+
+                results.Add(analysis);
+            }
+
+            return results;
+        }
+
+
+        /// <summary>
+        /// Pre-resolve the full model mesh (all steps) for camera framing purposes.
+        /// Also returns the shared GeometryResolver and parsed root geometry for
+        /// use with incremental step rendering.
+        /// </summary>
+        public LDrawMesh ResolveFullModel(string[] lines, string fileName,
+            out GeometryResolver sharedResolver, out LDrawGeometry rootGeometry,
+            int effectiveColour = 4)
+        {
+            EnsureColours();
+            sharedResolver = new GeometryResolver(_libraryPath, _colours);
+            rootGeometry = sharedResolver.PrepareContentForIncrementalResolve(lines, fileName);
+
+            if (rootGeometry == null) return new LDrawMesh();
+
+            // Resolve the full model using the traditional path (for camera framing)
+            return sharedResolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+        }
+
+        /// <summary>
+        /// Simple overload for callers that don't need incremental resolution.
+        /// </summary>
+        public LDrawMesh ResolveFullModel(string[] lines, string fileName, int effectiveColour = 4)
+        {
+            EnsureColours();
+            GeometryResolver fullResolver = new GeometryResolver(_libraryPath, _colours);
+            return fullResolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+        }
+
+
+        /// <summary>
+        /// Incremental overload: render a step by resolving ONLY the delta subfile
+        /// references (from the previous step boundary to the current one) and
+        /// appending to an accumulating mesh.
+        ///
+        /// The caller must maintain:
+        /// - sharedResolver: a single GeometryResolver reused across all steps (preserves file cache)
+        /// - rootGeometry: the parsed root from PrepareContentForIncrementalResolve
+        /// - accumulatingMesh: the mesh that grows incrementally step-by-step
+        /// - prevTriCount/prevEdgeCount: counts BEFORE this step's delta was added
+        ///
+        /// Returns a StepRenderResult with the rendered PNG and the mesh counts
+        /// AFTER this step (for the caller to cache as prevTriCount/prevEdgeCount
+        /// for the next step).
+        /// </summary>
+        public StepRenderResult RenderStepHighlightedIncremental(
+            GeometryResolver sharedResolver,
+            LDrawGeometry rootGeometry,
+            LDrawMesh accumulatingMesh,
+            int stepIndex,
+            int width, int height,
+            float elevation, float azimuth,
+            bool renderEdges, bool smoothShading,
+            LDrawMesh precomputedFullMesh,
+            int prevTriCount, int prevEdgeCount)
+        {
+            int effectiveColour = 4;
+
+            // Determine the subfile reference range for this step
+            int fromSubRef = stepIndex > 0 ? rootGeometry.StepBreaks[stepIndex - 1] : 0;
+            int toSubRef = rootGeometry.StepBreaks[stepIndex];
+
+            // Resolve ONLY the new delta subfile references, appending to the accumulating mesh
+            sharedResolver.ResolveContentStepRange(
+                rootGeometry, fromSubRef, toSubRef, effectiveColour, accumulatingMesh,
+                includeDirectGeometry: stepIndex == 0);
+
+            if (accumulatingMesh.Triangles.Count == 0)
+            {
+                return new StepRenderResult
+                {
+                    PngBytes = System.Array.Empty<byte>(),
+                    TriangleCount = 0,
+                    EdgeCount = 0
+                };
+            }
+
+            // Capture counts AFTER delta resolution (for caller to cache)
+            int currentTriCount = accumulatingMesh.Triangles.Count;
+            int currentEdgeCount = accumulatingMesh.EdgeLines.Count;
+
+            // Create a render copy — we need to dim old triangles without
+            // mutating the accumulating mesh (which is reused next step)
+            var renderTris = new List<MeshTriangle>(accumulatingMesh.Triangles);
+            var renderEdgeLines = new List<MeshLine>(accumulatingMesh.EdgeLines);
+
+            // Dim old triangles to ~40% opacity
+            for (int t = 0; t < prevTriCount && t < renderTris.Count; t++)
+            {
+                MeshTriangle tri = renderTris[t];
+                byte grey = 180;
+                tri.R = (byte)((tri.R * 0.4f) + (grey * 0.6f));
+                tri.G = (byte)((tri.G * 0.4f) + (grey * 0.6f));
+                tri.B = (byte)((tri.B * 0.4f) + (grey * 0.6f));
+                tri.A = 100;
+                renderTris[t] = tri;
+            }
+
+            for (int e = 0; e < prevEdgeCount && e < renderEdgeLines.Count; e++)
+            {
+                MeshLine line = renderEdgeLines[e];
+                line.R = 200; line.G = 200; line.B = 200; line.A = 80;
+                renderEdgeLines[e] = line;
+            }
+
+            // Build a render-only mesh with the dimmed copies
+            var renderMesh = new LDrawMesh();
+            renderMesh.Triangles = renderTris;
+            renderMesh.EdgeLines = renderEdgeLines;
+            renderMesh.MinX = accumulatingMesh.MinX; renderMesh.MinY = accumulatingMesh.MinY; renderMesh.MinZ = accumulatingMesh.MinZ;
+            renderMesh.MaxX = accumulatingMesh.MaxX; renderMesh.MaxY = accumulatingMesh.MaxY; renderMesh.MaxZ = accumulatingMesh.MaxZ;
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(renderMesh);
+            }
+
+            Camera camera = new Camera();
+            camera.AutoFrameStep(renderMesh, precomputedFullMesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(renderMesh, camera);
+            byte[] png = ImageExporter.ToPngBytes(pixels, width, height);
+
+            return new StepRenderResult
+            {
+                PngBytes = png,
+                TriangleCount = currentTriCount,
+                EdgeCount = currentEdgeCount
+            };
+        }
+
+
+
+        /// <summary>
+        /// Render a single build step with new parts highlighted.
+        /// For rendering multiple steps, prefer RenderAllStepsHighlighted() which
+        /// is significantly faster due to caching.
+        /// </summary>
+        public byte[] RenderStepHighlighted(string[] lines,
+                                             string fileName,
+                                             int stepIndex,
+                                             int width = 512,
+                                             int height = 512,
+                                             float elevation = 30f,
+                                             float azimuth = -45f,
+                                             bool renderEdges = true,
+                                             bool smoothShading = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = 4; // default red
+
+            // Resolve the FULL model for camera framing
+            GeometryResolver fullResolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh fullMesh = fullResolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+
+            // Resolve the current step mesh (cumulative)
+            GeometryResolver stepResolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh stepMesh = stepResolver.ResolveContentUpToStep(lines, fileName, stepIndex, effectiveColour);
+
+            if (stepMesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            // Determine which triangles are "old" (from previous step)
+            int oldTriCount = 0;
+            int oldEdgeCount = 0;
+            if (stepIndex > 0)
+            {
+                GeometryResolver prevResolver = new GeometryResolver(_libraryPath, _colours);
+                LDrawMesh prevMesh = prevResolver.ResolveContentUpToStep(lines, fileName, stepIndex - 1, effectiveColour);
+                oldTriCount = prevMesh.Triangles.Count;
+                oldEdgeCount = prevMesh.EdgeLines.Count;
+            }
+
+            // Dim the old triangles to ~40% opacity (grey tint)
+            for (int t = 0; t < oldTriCount && t < stepMesh.Triangles.Count; t++)
+            {
+                MeshTriangle tri = stepMesh.Triangles[t];
+
+                // Blend toward grey: mix 40% of original, 60% towards a muted grey
+                byte grey = 180;
+                tri.R = (byte)((tri.R * 0.4f) + (grey * 0.6f));
+                tri.G = (byte)((tri.G * 0.4f) + (grey * 0.6f));
+                tri.B = (byte)((tri.B * 0.4f) + (grey * 0.6f));
+                tri.A = 100; // semi-transparent
+
+                stepMesh.Triangles[t] = tri;
+            }
+
+            // Dim old edge lines similarly
+            for (int e = 0; e < oldEdgeCount && e < stepMesh.EdgeLines.Count; e++)
+            {
+                MeshLine line = stepMesh.EdgeLines[e];
+                line.R = 200; line.G = 200; line.B = 200; line.A = 80;
+                stepMesh.EdgeLines[e] = line;
+            }
+
+            if (smoothShading)
+            {
+                NormalSmoother.Smooth(stepMesh);
+            }
+
+            // Frame camera with focus on the new parts area
+            Camera camera = new Camera();
+            camera.AutoFrameStep(stepMesh, fullMesh, elevation, azimuth);
+
+            SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+            renderer.RenderEdges = renderEdges;
+            renderer.SmoothShading = smoothShading;
+
+            byte[] pixels = renderer.Render(stepMesh, camera);
+
+            return ImageExporter.ToPngBytes(pixels, width, height);
+        }
+
+
+        /// <summary>
+        /// Helper: expand bounding box with a triangle's vertices.
+        /// </summary>
+        private static void ExpandBounds(ref float minX, ref float minY, ref float minZ,
+                                          ref float maxX, ref float maxY, ref float maxZ,
+                                          MeshTriangle tri)
+        {
+            if (tri.X1 < minX) minX = tri.X1; if (tri.Y1 < minY) minY = tri.Y1; if (tri.Z1 < minZ) minZ = tri.Z1;
+            if (tri.X1 > maxX) maxX = tri.X1; if (tri.Y1 > maxY) maxY = tri.Y1; if (tri.Z1 > maxZ) maxZ = tri.Z1;
+            if (tri.X2 < minX) minX = tri.X2; if (tri.Y2 < minY) minY = tri.Y2; if (tri.Z2 < minZ) minZ = tri.Z2;
+            if (tri.X2 > maxX) maxX = tri.X2; if (tri.Y2 > maxY) maxY = tri.Y2; if (tri.Z2 > maxZ) maxZ = tri.Z2;
+            if (tri.X3 < minX) minX = tri.X3; if (tri.Y3 < minY) minY = tri.Y3; if (tri.Z3 < minZ) minZ = tri.Z3;
+            if (tri.X3 > maxX) maxX = tri.X3; if (tri.Y3 > maxY) maxY = tri.Y3; if (tri.Z3 > maxZ) maxZ = tri.Z3;
+        }
+
+
         /// <summary>
         /// Load and cache the LDraw colour table.
         /// </summary>

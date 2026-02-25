@@ -1,0 +1,218 @@
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  Manual Generator Component                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<div class="manual-generator-page">
+
+    <!-- ─── Hero Header ─────────────────────────────────────────────── -->
+    <header class="hero">
+        <div class="hero-text">
+            <h1>Manual Generator</h1>
+            <p>Upload an LDraw model (.mpd / .ldr) to generate a printable build manual with step highlighting.</p>
+        </div>
+    </header>
+
+
+    <!-- ─── Upload Zone ─────────────────────────────────────────────── -->
+    <section class="upload-section" *ngIf="!generatedHtml">
+        <div class="upload-dropzone" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
+
+            <input #fileInput type="file" accept=".mpd,.ldr,.dat" (change)="onFileSelected($event)" hidden />
+
+            <div class="dropzone-content">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span *ngIf="!selectedFile">Drop an LDraw file here or click to browse</span>
+                <span *ngIf="selectedFile" class="selected-file">{{ selectedFile.name }} ({{ (selectedFile.size /
+                    1024).toFixed(1) }} KB)</span>
+            </div>
+        </div>
+
+        <div class="upload-error" *ngIf="uploadError">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+            </svg>
+            {{ uploadError }}
+        </div>
+    </section>
+
+
+    <!-- ─── Options & Actions ───────────────────────────────────────── -->
+    <section class="options-section" *ngIf="selectedFile && !isGenerating && !generatedHtml">
+
+        <div class="options-grid">
+            <div class="option-group">
+                <label for="pageSize">Page Size</label>
+                <select id="pageSize" [(ngModel)]="options.pageSize">
+                    <option value="a4">A4</option>
+                    <option value="letter">Letter</option>
+                </select>
+            </div>
+
+            <div class="option-group">
+                <label for="imageSize">Image Size</label>
+                <select id="imageSize" [(ngModel)]="options.imageSize">
+                    <option [ngValue]="256">256px (Fast)</option>
+                    <option [ngValue]="512">512px (Standard)</option>
+                    <option [ngValue]="768">768px (High Quality)</option>
+                    <option [ngValue]="1024">1024px (Maximum)</option>
+                </select>
+            </div>
+
+            <div class="option-group">
+                <label for="elevation">Camera Elevation</label>
+                <input id="elevation" type="range" min="-90" max="90" step="5" [(ngModel)]="options.elevation" />
+                <span class="range-value">{{ options.elevation }}°</span>
+            </div>
+
+            <div class="option-group">
+                <label for="azimuth">Camera Azimuth</label>
+                <input id="azimuth" type="range" min="-180" max="180" step="5" [(ngModel)]="options.azimuth" />
+                <span class="range-value">{{ options.azimuth }}°</span>
+            </div>
+
+            <div class="option-group checkbox-group">
+                <label>
+                    <input type="checkbox" [(ngModel)]="options.renderEdges" />
+                    Render Edges
+                </label>
+            </div>
+
+            <div class="option-group checkbox-group">
+                <label>
+                    <input type="checkbox" [(ngModel)]="options.smoothShading" />
+                    Smooth Shading
+                </label>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" (click)="analyseFile()" [disabled]="isAnalysing">
+                <span *ngIf="isAnalysing" class="spinner"></span>
+                {{ isAnalysing ? 'Analysing...' : 'Analyse Steps' }}
+            </button>
+
+            <button class="btn btn-primary" (click)="generateManual()">
+                Generate Manual
+            </button>
+        </div>
+    </section>
+
+
+    <!-- ─── Analysis Results ────────────────────────────────────────── -->
+    <section class="analysis-section" *ngIf="analysis && !isGenerating && !generatedHtml">
+        <h2>Step Analysis</h2>
+        <div class="analysis-summary">
+            <div class="stat-card">
+                <div class="stat-value">{{ analysis.stepCount }}</div>
+                <div class="stat-label">Steps</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ analysis.totalParts }}</div>
+                <div class="stat-label">Total Parts</div>
+            </div>
+        </div>
+
+        <div class="steps-table-wrapper">
+            <table class="steps-table">
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>New Parts</th>
+                        <th>Cumulative</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let step of analysis.steps">
+                        <td class="step-num">{{ step.stepIndex + 1 }}</td>
+                        <td>
+                            <span class="part-badge" *ngFor="let p of step.newParts">
+                                {{ p.quantity }}× {{ p.fileName }}
+                            </span>
+                            <span *ngIf="step.newParts.length === 0" class="no-parts">—</span>
+                        </td>
+                        <td class="cumulative">{{ step.cumulativePartCount }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <!-- ─── Generation Progress ─────────────────────────────────────── -->
+    <section class="progress-section" *ngIf="isGenerating">
+        <h2>Generating Manual…</h2>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="progressPercent"></div>
+            </div>
+            <div class="progress-text">
+                Step {{ generationProgress }} of {{ generationTotal }} ({{ progressPercent }}%)
+            </div>
+        </div>
+
+        <div class="preview-window" *ngIf="currentPreview">
+            <img [src]="currentPreview" alt="Step Preview" />
+        </div>
+    </section>
+
+    <!-- ─── Generation Error ────────────────────────────────────────── -->
+    <div class="generation-error" *ngIf="generationError">
+        <span>{{ generationError }}</span>
+        <button class="btn btn-secondary" (click)="generationError = null">Dismiss</button>
+    </div>
+
+
+    <!-- ─── Results / Preview ───────────────────────────────────────── -->
+    <section class="result-section" *ngIf="generatedHtml">
+        <div class="result-header">
+            <h2>Build Manual Ready</h2>
+
+            <div class="result-stats" *ngIf="resultStats">
+                <span>{{ resultStats.totalSteps }} steps</span>
+                <span class="separator">·</span>
+                <span>{{ resultStats.totalParts }} parts</span>
+                <span class="separator">·</span>
+                <span>{{ (resultStats.renderTimeMs / 1000).toFixed(1) }}s</span>
+            </div>
+
+            <div class="result-actions">
+                <button class="btn btn-primary" (click)="downloadHtml()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download HTML
+                </button>
+                <button class="btn btn-secondary" (click)="printManual()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                    </svg>
+                    Print / Save PDF
+                </button>
+                <button class="btn btn-ghost" (click)="reset()">New Manual</button>
+            </div>
+        </div>
+
+        <!-- Page Preview -->
+        <div class="page-preview" *ngIf="pages.length > 0">
+            <div class="page-nav">
+                <button class="nav-btn" (click)="prevPage()" [disabled]="currentPage === 0">‹</button>
+                <span class="page-indicator">Page {{ currentPage + 1 }} of {{ pages.length }}</span>
+                <button class="nav-btn" (click)="nextPage()" [disabled]="currentPage === pages.length - 1">›</button>
+            </div>
+
+            <div class="page-frame" [innerHTML]="pages[currentPage]"></div>
+        </div>
+    </section>
+
+</div>

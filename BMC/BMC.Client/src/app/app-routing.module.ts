@@ -22,6 +22,7 @@ import { PartsUniverseComponent } from './components/parts-universe/parts-univer
 import { ThemeDetailComponent } from './components/theme-detail/theme-detail.component';
 import { SetComparisonComponent } from './components/set-comparison/set-comparison.component';
 import { PartRendererComponent } from './components/part-renderer/part-renderer.component';
+import { ManualGeneratorComponent } from './components/manual-generator/manual-generator.component';
 
 
 import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
@@ -222,6 +223,7 @@ const routes: Routes = [
     { path: 'lego/parts-universe', component: PartsUniverseComponent, canActivate: [AuthGuard], title: 'Parts Universe' },
     { path: 'lego/compare', component: SetComparisonComponent, canActivate: [AuthGuard], title: 'Compare Sets' },
     { path: 'part-renderer', component: PartRendererComponent, canActivate: [AuthGuard], title: 'Part Renderer' },
+    { path: 'manual-generator', component: ManualGeneratorComponent, canActivate: [AuthGuard], title: 'Manual Generator' },
 
 
     //

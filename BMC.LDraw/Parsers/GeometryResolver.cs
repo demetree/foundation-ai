@@ -402,6 +402,102 @@ namespace BMC.LDraw.Parsers
             return mesh;
         }
 
+
+        // ────────────────────────────────────────────────────────
+        // Incremental (delta) resolution — for efficient step-by-step rendering
+        // ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Parse and cache the content once, returning the root geometry.
+        /// Call this once per file, then use ResolveContentStepRange to
+        /// incrementally resolve each step's delta.
+        /// 
+        /// This caches ALL MPD submodels inside this resolver's cache,
+        /// so subsequent LoadFile calls for subfile references will hit
+        /// the in-memory cache rather than disk.
+        /// </summary>
+        public LDrawGeometry PrepareContentForIncrementalResolve(string[] lines, string fileName)
+        {
+            List<LDrawGeometry> geos = GeometryParser.ParseLines(lines, fileName);
+            if (geos.Count == 0) return null;
+
+            // Cache all MPD submodels
+            for (int i = 1; i < geos.Count; i++)
+            {
+                if (geos[i].Name != null)
+                {
+                    _cache[geos[i].Name] = geos[i];
+                }
+            }
+
+            return geos[0];
+        }
+
+
+        /// <summary>
+        /// Resolve only the subfile references in range [fromSubRefIndex, toSubRefIndex)
+        /// from the given root geometry, appending to an existing mesh.
+        /// 
+        /// Use with PrepareContentForIncrementalResolve to build up a mesh
+        /// step-by-step without re-resolving previous steps.
+        /// 
+        /// If includeDirectGeometry is true, also resolves root-level triangles/quads/lines
+        /// (typically only needed for the first call, step 0).
+        /// </summary>
+        public void ResolveContentStepRange(LDrawGeometry root,
+            int fromSubRefIndex, int toSubRefIndex,
+            int parentColourCode, LDrawMesh mesh,
+            bool includeDirectGeometry = false)
+        {
+            int colour = parentColourCode >= 0 ? parentColourCode : 16;
+
+            float[] identity = new float[]
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            };
+
+            if (includeDirectGeometry)
+            {
+                ResolveDirectGeometry(root, identity, colour, 0, false, mesh);
+            }
+
+            int limit = Math.Min(toSubRefIndex, root.SubfileReferences.Count);
+
+            for (int i = fromSubRefIndex; i < limit; i++)
+            {
+                LDrawSubfileReference subRef = root.SubfileReferences[i];
+                LDrawGeometry subGeo = LoadFile(subRef.FileName);
+                if (subGeo == null) continue;
+
+                float[] subMatrix = BuildMatrix(subRef);
+                float[] worldMatrix = MultiplyMatrices(identity, subMatrix);
+                int subColour = ResolveColour(subRef.ColourCode, colour);
+
+                int subEdgeColour = 0;
+                if (subRef.ColourCode != 16 && subRef.ColourCode != 24)
+                {
+                    subEdgeColour = subRef.ColourCode;
+                }
+
+                bool subInvert = false;
+                if (root.InvertNextIndices.Contains(i))
+                {
+                    subInvert = !subInvert;
+                }
+                if (Determinant3x3(subRef.Matrix) < 0)
+                {
+                    subInvert = !subInvert;
+                }
+
+                ResolveRecursive(subGeo, worldMatrix, subColour, subEdgeColour, subInvert, mesh, 1);
+            }
+
+            mesh.ComputeBounds();
+        }
+
         private void ResolveRecursive(LDrawGeometry geo, float[] parentMatrix,
             int parentColour, int parentEdgeColour, bool invertWinding,
             LDrawMesh mesh, int depth)

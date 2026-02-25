@@ -13,7 +13,7 @@ const PROXY_CONFIG = [
         secure: false
     },
     {
-        context: ["/AiChatSignal"],
+        context: ["/AiChatSignal", "/ManualGeneratorSignal"],
         target: "https://localhost:12101",
         secure: false,
         ws: true
