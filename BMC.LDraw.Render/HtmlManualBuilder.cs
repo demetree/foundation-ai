@@ -25,6 +25,7 @@ namespace BMC.LDraw.Render
         private string _modelName;
         private string _pageSize;
         private int _totalParts;
+        private int _pageCount;
 
         // Multi-step page state
         private bool _pageOpen;
@@ -66,6 +67,7 @@ namespace BMC.LDraw.Render
         /// </summary>
         public void AddCoverPage(byte[] finalModelImage)
         {
+            _pageCount++;
             _sb.AppendLine("<div class=\"page cover-page\">");
             _sb.AppendLine("<div class=\"cover-content\">");
             _sb.AppendFormat("<h1 class=\"cover-title\">{0}</h1>\n",
@@ -84,6 +86,7 @@ namespace BMC.LDraw.Render
                     ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount
                     : 0);
             _sb.AppendLine("</div>");
+            _sb.AppendFormat("<div class=\"page-number page-number-light\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
             _sb.AppendLine("</div>");
         }
 
@@ -94,6 +97,7 @@ namespace BMC.LDraw.Render
         public void AddCompletionPage(byte[] completedModelImage)
         {
             CloseCurrentPage();
+            _pageCount++;
             _sb.AppendLine("<div class=\"page completion-page\">");
             _sb.AppendLine("<div class=\"completion-content\">");
             _sb.AppendFormat("<h1 class=\"completion-title\">{0}</h1>\n",
@@ -112,6 +116,7 @@ namespace BMC.LDraw.Render
             _sb.AppendFormat("<div class=\"completion-meta\">{0} Steps · {1} Parts</div>\n",
                 _plan.TotalSteps, totalParts);
             _sb.AppendLine("</div>");
+            _sb.AppendFormat("<div class=\"page-number page-number-light\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
             _sb.AppendLine("</div>");
         }
 
@@ -137,6 +142,7 @@ namespace BMC.LDraw.Render
 
         private void OpenSubmodelPage()
         {
+            _pageCount++;
             _sb.AppendLine("<div class=\"page step-page\">");
             _sb.AppendLine("<div class=\"submodel-callout\">");
             _sb.AppendFormat("<div class=\"submodel-callout-header\">{0}</div>\n",
@@ -173,6 +179,7 @@ namespace BMC.LDraw.Render
         public void EndSubmodelCallout()
         {
             _sb.AppendLine("</div>"); // close .submodel-callout
+            _sb.AppendFormat("<div class=\"page-number\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
             _sb.AppendLine("</div>"); // close .page
             _currentSubmodelName = null;
             _submodelStepsOnPage = 0;
@@ -198,6 +205,7 @@ namespace BMC.LDraw.Render
 
             for (int pg = 0; pg < pageCount; pg++)
             {
+                _pageCount++;
                 _sb.AppendLine("<div class=\"page bom-page\">");
                 _sb.AppendLine("<div class=\"bom-header\">");
 
@@ -277,6 +285,7 @@ namespace BMC.LDraw.Render
                 }
 
                 _sb.AppendLine("</div>"); // bom-grid
+                _sb.AppendFormat("<div class=\"page-number\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
                 _sb.AppendLine("</div>"); // bom-page
             }
         }
@@ -288,6 +297,9 @@ namespace BMC.LDraw.Render
         public ManualGenerationResult Build()
         {
             CloseCurrentPage();
+
+            // Replace page-total placeholder now that all pages are emitted
+            _sb.Replace("{TOTAL_PAGES}", _pageCount.ToString());
 
             _sb.AppendLine("</body>");
             _sb.AppendLine("</html>");
@@ -337,6 +349,7 @@ namespace BMC.LDraw.Render
                 if (small)
                 {
                     // Start a multi-step row page
+                    _pageCount++;
                     _sb.AppendLine("<div class=\"page step-page\">");
                     _sb.AppendFormat("<div class=\"page-header\"><span class=\"page-header-model\">{0}</span></div>\n",
                         System.Net.WebUtility.HtmlEncode(_modelName));
@@ -348,6 +361,7 @@ namespace BMC.LDraw.Render
                 else
                 {
                     // Full page for this step
+                    _pageCount++;
                     _sb.AppendLine("<div class=\"page step-page\">");
                     _sb.AppendFormat("<div class=\"step-header\"><span class=\"step-number\">Step {0}</span>",
                         step.GlobalStepIndex);
@@ -365,6 +379,7 @@ namespace BMC.LDraw.Render
                     _sb.AppendFormat("<div class=\"step-footer\">{0} · Step {1}/{2}</div>\n",
                         System.Net.WebUtility.HtmlEncode(_modelName),
                         step.GlobalStepIndex, _plan.TotalSteps);
+                    _sb.AppendFormat("<div class=\"page-number\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
                     _sb.AppendLine("</div>");
                 }
             }
@@ -403,6 +418,7 @@ namespace BMC.LDraw.Render
             if (_submodelStepsOnPage >= MaxSubStepsPerPage)
             {
                 _sb.AppendLine("</div>"); // close .submodel-callout
+                _sb.AppendFormat("<div class=\"page-number\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
                 _sb.AppendLine("</div>"); // close .page
                 OpenSubmodelPage();
                 _submodelStepsOnPage = 0;
@@ -468,6 +484,7 @@ namespace BMC.LDraw.Render
             if (_pageOpen)
             {
                 _sb.AppendLine("</div>"); // close .multi-step-row
+                _sb.AppendFormat("<div class=\"page-number\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
                 _sb.AppendLine("</div>"); // close .page
                 _pageOpen = false;
                 _stepsOnCurrentPage = 0;
@@ -892,6 +909,18 @@ body {
     font-size: 0.75em;
     color: #94a3b8;
     text-align: center;
+}
+
+.page-number {
+    margin-top: auto;
+    padding-top: 8px;
+    font-size: 0.7em;
+    color: #94a3b8;
+    text-align: center;
+    letter-spacing: 0.03em;
+}
+.page-number-light {
+    color: rgba(255,255,255,0.4);
 }
 
 /* ═══ Bill of Materials ═══ */

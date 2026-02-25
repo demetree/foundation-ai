@@ -18,6 +18,10 @@ namespace BMC.LDraw.Render
         private string _modelName;
         private int _totalParts;
 
+        // Page tracking for footers (page numbering)
+        private readonly List<(SimplePdfPage page, bool isDarkBg)> _allPages
+            = new List<(SimplePdfPage, bool)>();
+
         private double _pageWidth;
         private double _pageHeight;
         private const double Margin = 40;
@@ -59,7 +63,7 @@ namespace BMC.LDraw.Render
 
         public void AddCoverPage(byte[] finalModelImage)
         {
-            var page = AddPage();
+            var page = AddPage(isDarkBackground: true);
 
             // Gradient background
             page.FillGradientRect(0, 0, _pageWidth, _pageHeight,
@@ -292,7 +296,7 @@ namespace BMC.LDraw.Render
 
         public void AddCompletionPage(byte[] completedModelImage)
         {
-            var page = AddPage();
+            var page = AddPage(isDarkBackground: true);
 
             // Forest green gradient background
             page.FillGradientRect(0, 0, _pageWidth, _pageHeight,
@@ -344,6 +348,26 @@ namespace BMC.LDraw.Render
 
         public ManualGenerationResult Build()
         {
+            // Stamp page number footers now that total count is known
+            int totalPages = _allPages.Count;
+            for (int i = 0; i < totalPages; i++)
+            {
+                var (page, isDarkBg) = _allPages[i];
+                double contentW = _pageWidth - Margin * 2;
+
+                // "Page X of Y" — white on dark backgrounds, grey on light
+                byte cr = isDarkBg ? White.r : Grey.r;
+                byte cg = isDarkBg ? White.g : Grey.g;
+                byte cb = isDarkBg ? White.b : Grey.b;
+                byte ca = isDarkBg ? (byte)130 : (byte)255;
+
+                page.DrawTextCentered(
+                    $"Page {i + 1} of {totalPages}",
+                    SimplePdfFont.Regular, TinySize,
+                    Margin, _pageHeight - 20, contentW,
+                    cr, cg, cb, ca);
+            }
+
             byte[] pdfBytes = _doc.Save();
             _doc.Dispose();
 
@@ -359,9 +383,11 @@ namespace BMC.LDraw.Render
 
         // ═══ Private helpers ═══
 
-        private SimplePdfPage AddPage()
+        private SimplePdfPage AddPage(bool isDarkBackground = false)
         {
-            return _doc.AddPage(_pageWidth, _pageHeight);
+            var page = _doc.AddPage(_pageWidth, _pageHeight);
+            _allPages.Add((page, isDarkBackground));
+            return page;
         }
 
 
