@@ -34,6 +34,8 @@
                         "inlineStyleLanguage": "scss",
                         "assets": [
                             "src/favicon.svg",
+                            "src/robots.txt",
+                            "src/manifest.webmanifest",
                             "src/assets"
                         ],
                         "styles": [

@@ -76,7 +76,7 @@ export class AppComponent implements OnInit {
         // Toggle body background and track login page state for layout visibility
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
-                this.isOnLoginPage = (event.urlAfterRedirects === '/login');
+                this.isOnLoginPage = (event.urlAfterRedirects === '/login' || event.urlAfterRedirects === '/');
 
                 if (this.isOnLoginPage) {
                     document.body.className = 'pre-login-background no-select';

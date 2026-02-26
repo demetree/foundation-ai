@@ -1,0 +1,200 @@
+<div class="landing-page">
+
+    <!-- ═══════════════════════════ Hero Section ═══════════════════════════ -->
+    <section class="hero">
+        <!-- Floating brick particles -->
+        <div class="floating-bricks">
+            <i class="fas fa-cube brick brick-1"></i>
+            <i class="fas fa-cube brick brick-2"></i>
+            <i class="fas fa-puzzle-piece brick brick-3"></i>
+            <i class="fas fa-cube brick brick-4"></i>
+            <i class="fas fa-puzzle-piece brick brick-5"></i>
+            <i class="fas fa-cube brick brick-6"></i>
+            <i class="fas fa-puzzle-piece brick brick-7"></i>
+            <i class="fas fa-cube brick brick-8"></i>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-logo">
+                <span class="logo-letter">B</span>
+                <span class="logo-letter">M</span>
+                <span class="logo-letter">C</span>
+            </div>
+            <h1 class="hero-title">Brick Machine Construction</h1>
+            <p class="hero-tagline" [class.visible]="taglineVisible">
+                {{ taglines[activeTaglineIndex] }}
+            </p>
+
+            <div class="hero-cta">
+                <button class="cta-primary" (click)="goToLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <button class="cta-secondary" disabled title="Coming Soon">
+                    <i class="fas fa-user-plus"></i> Create Account
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Stats -->
+        <div class="hero-stats" *ngIf="!loading" @fadeInUp>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-box-open"></i></div>
+                <div class="stat-value">{{ displaySets | number }}</div>
+                <div class="stat-label">LEGO Sets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-puzzle-piece"></i></div>
+                <div class="stat-value">{{ displayParts | number }}</div>
+                <div class="stat-label">Total Parts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-value">{{ displayThemes | number }}</div>
+                <div class="stat-label">Themes</div>
+            </div>
+        </div>
+
+        <!-- Loading skeleton -->
+        <div class="hero-stats" *ngIf="loading">
+            <div class="stat-card skeleton" *ngFor="let i of [1,2,3]">
+                <div class="skeleton-icon"></div>
+                <div class="skeleton-text wide"></div>
+                <div class="skeleton-text short"></div>
+            </div>
+        </div>
+
+        <!-- Theme Picker -->
+        <div class="theme-picker-section" @fadeInUp>
+            <div class="theme-picker-header">
+                <h2><i class="fas fa-palette"></i> Try a Theme</h2>
+                <p>10 hand-crafted themes — pick your vibe</p>
+            </div>
+            <div class="theme-strip">
+                <div class="theme-swatch" *ngFor="let theme of availableThemes"
+                    [class.active]="theme.id === activeThemeId" (click)="setTheme(theme.id)" [title]="theme.label">
+                    <i [class]="theme.icon" class="swatch-icon"></i>
+                    <div class="swatch-dots">
+                        <span *ngFor="let color of theme.swatchColors" [style.background]="color"></span>
+                    </div>
+                    <span class="swatch-label">{{ theme.label }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-scroll-hint">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Featured Sets ═══════════════════════════ -->
+    <section class="section featured-section" *ngIf="featuredSets.length > 0" @fadeInUp>
+        <div class="section-header">
+            <h2><i class="fas fa-trophy"></i> Most Epic Sets</h2>
+            <p class="section-subtitle">The most ambitious LEGO sets ever created</p>
+        </div>
+        <div class="card-grid">
+            <div class="set-card" *ngFor="let set of featuredSets">
+                <div class="set-image">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                        (error)="set.imageUrl = null">
+                    <div class="image-placeholder" *ngIf="!set.imageUrl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="set-badge" *ngIf="set.partCount > 5000">
+                        <i class="fas fa-fire"></i> {{ set.partCount | number }} parts
+                    </div>
+                </div>
+                <div class="set-info">
+                    <span class="set-name">{{ set.name }}</span>
+                    <span class="set-meta">
+                        <span class="set-number">{{ set.setNumber }}</span>
+                        <span *ngIf="set.year"> · {{ set.year }}</span>
+                        <span *ngIf="set.themeName"> · {{ set.themeName }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Random Discovery ═══════════════════════════ -->
+    <section class="section discovery-section" *ngIf="randomSets.length > 0" @fadeInUp>
+        <div class="section-header">
+            <h2><i class="fas fa-dice"></i> Random Discovery</h2>
+            <button class="shuffle-btn" (click)="shuffleDiscovery()" title="Surprise me again!">
+                <i class="fas fa-sync-alt"></i> Shuffle
+            </button>
+        </div>
+        <div class="discovery-grid">
+            <div class="discovery-card" *ngFor="let set of randomSets">
+                <div class="discovery-image">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy">
+                    <div class="image-placeholder" *ngIf="!set.imageUrl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                </div>
+                <div class="discovery-info">
+                    <span class="discovery-name">{{ set.name }}</span>
+                    <span class="discovery-meta">{{ set.setNumber }} · {{ set.year }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Decades ═══════════════════════════ -->
+    <section class="section decades-section" *ngIf="decades.length > 0" @fadeInUp>
+        <div class="section-header">
+            <h2><i class="fas fa-clock"></i> Explore by Decade</h2>
+            <p class="section-subtitle">From 1949 to today — the evolution of LEGO</p>
+        </div>
+        <div class="decade-strip">
+            <div class="decade-card" *ngFor="let d of decades; let i = index" [style.animation-delay]="(i * 60) + 'ms'">
+                <span class="decade-label">{{ d.label }}</span>
+                <div class="decade-stats">
+                    <span><i class="fas fa-box-open"></i> {{ d.setCount | number }}</span>
+                    <span><i class="fas fa-layer-group"></i> {{ d.themeCount }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Features Showcase ═══════════════════════════ -->
+    <section class="section features-section" @fadeInUp>
+        <div class="section-header">
+            <h2><i class="fas fa-star"></i> What's Inside</h2>
+            <p class="section-subtitle">Everything you need to explore, create, and manage your LEGO world</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card" *ngFor="let feature of features">
+                <div class="feature-icon" [ngClass]="feature.gradient">
+                    <i [class]="feature.icon"></i>
+                </div>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.description }}</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ CTA Footer ═══════════════════════════ -->
+    <section class="cta-footer">
+        <div class="cta-content">
+            <h2>Ready to start building?</h2>
+            <p>Join BMC and explore the largest LEGO database on the web.</p>
+            <div class="cta-buttons">
+                <button class="cta-primary large" (click)="goToLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <button class="cta-secondary large" disabled title="Coming Soon">
+                    <i class="fas fa-user-plus"></i> Create Account
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+</div>

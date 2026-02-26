@@ -273,6 +273,8 @@ namespace Foundation.BMC
                 controllers.Add(typeof(MinifigGalleryController));
                 controllers.Add(typeof(PartRendererController));
                 controllers.Add(typeof(ManualGeneratorController));
+                controllers.Add(typeof(PublicShowcaseController));
+                    
 
                 //
                 // Start of code generated controller list for BMC module

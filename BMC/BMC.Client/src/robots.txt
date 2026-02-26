@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /login
+Allow: /u/
+Disallow: /dashboard
+Disallow: /parts
+Disallow: /colours
+Disallow: /lego/
+Disallow: /ai
+Disallow: /system-health
+Disallow: /my-collection
+Disallow: /profile
+Disallow: /api/
+
+# Public profiles are crawlable
+Allow: /u/*
+
+# Sitemap (uncomment when available)
+# Sitemap: https://YOUR_DOMAIN/sitemap.xml
