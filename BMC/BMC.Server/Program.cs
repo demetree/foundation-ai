@@ -538,16 +538,16 @@ namespace Foundation.BMC
                             cspPolicy = "default-src 'self'; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline'; " +
-                                        "img-src 'self' data: blob: ; " +
-                                        "connect-src 'self';";
+                                        "img-src 'self' data: blob: https://cdn.rebrickable.com; " +
+                                        "connect-src 'self' https://cdn.rebrickable.com;";
                         }
                         else
                         {
                             cspPolicy = "default-src 'self'; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline'; " +
-                                        "img-src 'self' data: blob: ; " +
-                                        "connect-src 'self' ;";
+                                        "img-src 'self' data: blob: https://cdn.rebrickable.com; " +
+                                        "connect-src 'self' https://cdn.rebrickable.com;";
                         }
 
                         context.Response.Headers["Content-Security-Policy"] = cspPolicy;

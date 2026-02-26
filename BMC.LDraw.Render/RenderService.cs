@@ -629,7 +629,8 @@ namespace BMC.LDraw.Render
                                      AntiAliasMode antiAliasMode = AntiAliasMode.None,
                                      string backgroundHex = null,
                                      string gradientTopHex = null,
-                                     string gradientBottomHex = null)
+                                     string gradientBottomHex = null,
+                                     RendererType rendererType = RendererType.Rasterizer)
         {
             EnsureColours();
 
@@ -658,9 +659,19 @@ namespace BMC.LDraw.Render
             int renderW = width * ssaaFactor;
             int renderH = height * ssaaFactor;
 
-            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
-            renderer.RenderEdges = renderEdges;
-            renderer.SmoothShading = smoothShading;
+            IRenderer renderer;
+
+            if (rendererType == RendererType.RayTracer)
+            {
+                renderer = new RayTracing.RayTraceRenderer(renderW, renderH);
+            }
+            else
+            {
+                SoftwareRenderer rasterizer = new SoftwareRenderer(renderW, renderH);
+                rasterizer.RenderEdges = renderEdges;
+                rasterizer.SmoothShading = smoothShading;
+                renderer = rasterizer;
+            }
 
             if (gradientTopHex != null && gradientBottomHex != null)
             {
@@ -699,7 +710,8 @@ namespace BMC.LDraw.Render
                                   AntiAliasMode antiAliasMode = AntiAliasMode.None,
                                   string backgroundHex = null,
                                   string gradientTopHex = null,
-                                  string gradientBottomHex = null)
+                                  string gradientBottomHex = null,
+                                  RendererType rendererType = RendererType.Rasterizer)
         {
             byte[] pixels = RenderToPixels(lines: lines,
                                            fileName: fileName,
@@ -713,7 +725,8 @@ namespace BMC.LDraw.Render
                                            antiAliasMode: antiAliasMode,
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
-                                           gradientBottomHex: gradientBottomHex);
+                                           gradientBottomHex: gradientBottomHex,
+                                           rendererType: rendererType);
 
             return ImageExporter.ToPngBytes(pixels, width, height);
         }
@@ -1355,7 +1368,8 @@ namespace BMC.LDraw.Render
             int[] stepEdgeBounds,
             int width, int height,
             float elevation, float azimuth,
-            bool renderEdges, bool smoothShading)
+            bool renderEdges, bool smoothShading,
+            RendererType rendererType = RendererType.Rasterizer)
         {
             // Determine tri/edge range for this step
             int triEnd = stepTriangleBounds[stepIndex];
@@ -1446,9 +1460,18 @@ namespace BMC.LDraw.Render
             // Snap to even for PNG encoding
             dynamicWidth = (dynamicWidth + 1) & ~1;
 
-            SoftwareRenderer renderer = new SoftwareRenderer(dynamicWidth, height);
-            renderer.RenderEdges = renderEdges;
-            renderer.SmoothShading = smoothShading;
+            IRenderer renderer;
+            if (rendererType == RendererType.RayTracer)
+            {
+                renderer = new RayTracing.RayTraceRenderer(dynamicWidth, height);
+            }
+            else
+            {
+                SoftwareRenderer rasterizer = new SoftwareRenderer(dynamicWidth, height);
+                rasterizer.RenderEdges = renderEdges;
+                rasterizer.SmoothShading = smoothShading;
+                renderer = rasterizer;
+            }
 
             byte[] pixels = renderer.Render(renderMesh, camera);
             byte[] png = ImageExporter.ToPngBytes(pixels, dynamicWidth, height);

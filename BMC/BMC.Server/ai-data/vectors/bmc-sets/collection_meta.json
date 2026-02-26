@@ -1,0 +1,1 @@
+{"Name":"bmc-sets","NextDocId":0,"Fields":[{"Name":"vector","DataType":"VectorFP32","Nullable":false,"Dimension":768,"IsVector":true,"IndexType":"Hnsw","Metric":"Cosine","M":16,"EfConstruction":200}]}

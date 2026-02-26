@@ -41,6 +41,7 @@ export interface ManualOptionsDto {
     renderEdges?: boolean;
     smoothShading?: boolean;
     outputFormat?: string;   // "html" or "pdf"
+    renderer?: string;       // "rasterizer" or "raytrace"
 }
 
 @Injectable({

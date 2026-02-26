@@ -1,0 +1,43 @@
+{
+  "Version": "1.8.6.0",
+  "ComparerType": "Tenray.ZoneTree.Comparers.StringOrdinalComparerAscending",
+  "KeyType": "System.String",
+  "ValueType": "System.Int64",
+  "KeySerializerType": "Tenray.ZoneTree.Serializers.Utf8StringSerializer",
+  "ValueSerializerType": "Tenray.ZoneTree.Serializers.Int64Serializer",
+  "MutableSegmentMaxItemCount": 1000000,
+  "DiskSegmentMaxItemCount": 20000000,
+  "WriteAheadLogOptions": {
+    "WriteAheadLogMode": 2,
+    "CustomOptions": null,
+    "CompressionBlockSize": 262144,
+    "CompressionMethod": 0,
+    "CompressionLevel": 0,
+    "SyncCompressedModeOptions": {
+      "EnableTailWriterJob": true,
+      "TailWriterJobInterval": 500
+    },
+    "AsyncCompressedModeOptions": {
+      "EmptyQueuePollInterval": 100
+    },
+    "EnableIncrementalBackup": false
+  },
+  "DiskSegmentOptions": {
+    "DiskSegmentMode": 1,
+    "CompressionBlockSize": 4194304,
+    "CompressionMethod": 0,
+    "CompressionLevel": 0,
+    "MaximumRecordCount": 3000000,
+    "MinimumRecordCount": 1500000,
+    "KeyCacheSize": 1024,
+    "ValueCacheSize": 1024,
+    "KeyCacheRecordLifeTimeInMillisecond": 10000,
+    "ValueCacheRecordLifeTimeInMillisecond": 10000,
+    "DefaultSparseArrayStepSize": 1024
+  },
+  "MutableSegment": 1,
+  "ReadOnlySegments": [],
+  "DiskSegment": 0,
+  "BottomSegments": [],
+  "MaximumOpIndex": 0
+}

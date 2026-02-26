@@ -70,7 +70,8 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         azimuth: -45,
         renderEdges: true,
         smoothShading: true,
-        outputFormat: 'html'
+        outputFormat: 'html',
+        renderer: 'rasterizer'
     };
 
     // ─── Generation State ────────────────────────────────────────────────

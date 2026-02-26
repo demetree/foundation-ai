@@ -302,8 +302,16 @@ namespace BMC.LDraw.Render
             // Rare pixel-level races at triangle edges are benign — both
             // candidates are valid depth values.
             //
+            // Parallelism is capped at half the logical processors so that
+            // a single render doesn't starve the web server, SignalR, or
+            // other concurrent requests.  See RenderConcurrency for rationale.
+            //
             _isTransparentPass = false;
-            Parallel.For(0, opaqueTriangles.Count, i =>
+            var rasterParallelOpts = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = RenderConcurrency.MaxThreads
+            };
+            Parallel.For(0, opaqueTriangles.Count, rasterParallelOpts, i =>
             {
                 MeshTriangle tri = opaqueTriangles[i];
                 RasterizeTriangle(ref tri, vpMatrix);

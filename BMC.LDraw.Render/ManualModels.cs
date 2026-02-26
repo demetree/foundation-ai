@@ -97,6 +97,9 @@ namespace BMC.LDraw.Render
 
         /// <summary>Output format: "html" (default) or "pdf".</summary>
         public string OutputFormat { get; set; } = "html";
+
+        /// <summary>Renderer type: "rasterizer" (default) or "raytrace".</summary>
+        public string Renderer { get; set; } = "rasterizer";
     }
 
 

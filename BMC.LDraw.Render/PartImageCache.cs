@@ -67,10 +67,10 @@ namespace BMC.LDraw.Render
                 }
             }
 
-            // Render in parallel
+            // Render in parallel — capped to avoid starving the web server
             var parallelOptions = new ParallelOptions
             {
-                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount),
+                MaxDegreeOfParallelism = RenderConcurrency.MaxThreads,
                 CancellationToken = ct
             };
 

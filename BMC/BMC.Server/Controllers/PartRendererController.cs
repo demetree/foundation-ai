@@ -78,6 +78,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             string backgroundHex = null,
             string gradientTopHex = null,
             string gradientBottomHex = null,
+            string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -109,7 +110,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 aaMode = AntiAliasMode.SSAA2x;
 
             // Check cache
-            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}";
+            RendererType rendererType = ParseRendererType(renderer);
+            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}:{renderer}";
             if (_cache.TryGetValue(cacheKey, out byte[] cachedBytes))
             {
                 string cachedType = format == "webp" ? "image/webp" : format == "svg" ? "image/svg+xml" : "image/png";
@@ -161,7 +163,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToPng(datPath, width, height, colourCode, elevation, azimuth,
-                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: rendererType);
                     }, renderToken);
                     contentType = "image/png";
                 }
@@ -203,6 +205,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             int frameDelayMs = 80,
             bool renderEdges = true,
             bool smoothShading = true,
+            string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -274,6 +277,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             float explosionFactor = 1.0f,
             bool renderEdges = true,
             bool smoothShading = true,
+            string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -391,6 +395,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             bool renderEdges = true,
             bool smoothShading = true,
             string antiAlias = "none",
+            string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -635,6 +640,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             bool renderEdges = true,
             bool smoothShading = true,
             string antiAlias = "none",
+            string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -720,6 +726,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             string backgroundHex = null,
             string gradientTopHex = null,
             string gradientBottomHex = null,
+            string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -817,8 +824,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                     {
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
+                        RendererType uploadRendererType = ParseRendererType(renderer);
                         return _renderService.RenderToPng(lines, fileName, width, height, colourCode, elevation, azimuth,
-                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex);
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: uploadRendererType);
                     }, renderToken);
                     contentType = "image/png";
                 }
@@ -1069,6 +1077,16 @@ namespace Foundation.BMC.Controllers.WebAPI
         }
 
         /// <summary>
+        /// Parse the renderer string from the client into a RendererType enum.
+        /// </summary>
+        private static RendererType ParseRendererType(string renderer)
+        {
+            if (string.Equals(renderer, "raytrace", StringComparison.OrdinalIgnoreCase))
+                return RendererType.RayTracer;
+            return RendererType.Rasterizer;
+        }
+
+        /// <summary>
         /// Find a .dat file within the LDraw library directory structure.
         /// </summary>
         private static string FindPartFile(string libraryPath, string fileName)
@@ -1105,6 +1123,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         public string BackgroundHex { get; set; } = "";
         public string GradientTopHex { get; set; } = "";
         public string GradientBottomHex { get; set; } = "";
+        public string Renderer { get; set; } = "rasterizer";
         public List<BatchRenderSize> Sizes { get; set; }
     }
 

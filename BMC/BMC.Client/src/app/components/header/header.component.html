@@ -1,5 +1,16 @@
 <nav class="bmc-navbar">
     <div class="navbar-left">
+
+        <!-- Hamburger button (mobile only) -->
+        <button *ngIf="isUserLoggedIn" class="hamburger-btn" (click)="toggleMobileMenu($event)"
+            [attr.aria-expanded]="mobileMenuOpen" aria-label="Toggle navigation menu">
+            <span class="hamburger-icon" [class.open]="mobileMenuOpen">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+        </button>
+
         <a class="navbar-brand" routerLink="/dashboard">
             <!-- Single isometric 1x1 brick logo — theme-aware via CSS custom properties -->
             <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 24" aria-hidden="true">
@@ -56,4 +67,21 @@
             <a class="btn-bmc nav-login-btn" routerLink="/login">Sign In</a>
         </ng-container>
     </div>
+</nav>
+
+<!-- Mobile Navigation Overlay -->
+<div class="mobile-nav-overlay" *ngIf="mobileMenuOpen" (click)="mobileMenuOpen = false"></div>
+
+<!-- Mobile Navigation Panel -->
+<nav class="mobile-nav-panel" *ngIf="mobileMenuOpen" (click)="$event.stopPropagation()">
+    <a *ngFor="let item of navItems; let i = index" class="mobile-nav-item" [routerLink]="item.route"
+        [class.active]="isActive(item.route)" (click)="mobileMenuOpen = false"
+        [style.animation-delay]="(i * 30) + 'ms'">
+
+        <span class="mobile-nav-icon">
+            <i [class]="item.icon"></i>
+        </span>
+        <span class="mobile-nav-label">{{ item.label }}</span>
+        <span class="mobile-nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
+    </a>
 </nav>

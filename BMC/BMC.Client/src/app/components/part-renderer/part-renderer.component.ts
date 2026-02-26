@@ -73,6 +73,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     renderEdges = true;
     smoothShading = true;
     antiAliasMode: 'none' | '2x' | '4x' = 'none';
+    rendererType: 'rasterizer' | 'raytrace' = 'rasterizer';
     outputFormat: 'png' | 'webp' | 'svg' | 'gif' = 'png';
     webpQuality = 90;
     backgroundHex = '';
@@ -413,10 +414,10 @@ export class PartRendererComponent implements OnInit, OnDestroy {
 
         if (this.explodedView) {
             // Exploded view endpoint
-            url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}`;
+            url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}`;
         } else {
             // Standard render endpoint with all options
-            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}`;
+            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
 
             if (this.backgroundHex) {
                 url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
@@ -455,7 +456,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
 
         const headers = this.authService.GetAuthenticationHeaders();
         const partNumber = this.selectedPart.name;
-        const url = `/api/part-renderer/turntable?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}`;
+        const url = `/api/part-renderer/turntable?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}`;
 
         const startTime = performance.now();
 
@@ -528,7 +529,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             });
             const formData = new FormData();
             formData.append('file', this.uploadedFile, this.uploadedFile.name);
-            const url = `/api/part-renderer/render-step-upload?stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}`;
+            const url = `/api/part-renderer/render-step-upload?stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&renderer=${this.rendererType}`;
 
             this.http.post(url, formData, { headers, responseType: 'blob' })
                 .pipe(takeUntil(this.destroy$))
@@ -537,7 +538,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             // Search part step render uses GET
             const headers = this.authService.GetAuthenticationHeaders();
             const partNumber = this.selectedPart!.name;
-            const url = `/api/part-renderer/render-step?partNumber=${encodeURIComponent(partNumber)}&stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}`;
+            const url = `/api/part-renderer/render-step?partNumber=${encodeURIComponent(partNumber)}&stepIndex=${this.currentStep}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&renderer=${this.rendererType}`;
 
             this.http.get(url, { headers, responseType: 'blob' })
                 .pipe(takeUntil(this.destroy$))
@@ -605,6 +606,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             backgroundHex: this.backgroundHex,
             gradientTopHex: this.gradientTopHex,
             gradientBottomHex: this.gradientBottomHex,
+            renderer: this.rendererType,
             sizes: this.activeSizePresets.map(p => ({ width: p.w, height: p.h }))
         };
 
@@ -753,7 +755,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
         formData.append('file', this.uploadedFile, this.uploadedFile.name);
 
         // Build query string with render params
-        let url = `/api/part-renderer/render-upload?colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}`;
+        let url = `/api/part-renderer/render-upload?colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
 
         if (this.backgroundHex) {
             url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;

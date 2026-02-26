@@ -93,6 +93,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 int imageHeight = (int)(imageWidth * 0.75f);
                 float elevation = Math.Clamp(options.Elevation, -90f, 90f);
                 float azimuth = Math.Clamp(options.Azimuth, -360f, 360f);
+                RendererType rendererType = string.Equals(options.Renderer, "raytrace", StringComparison.OrdinalIgnoreCase)
+                    ? RendererType.RayTracer : RendererType.Rasterizer;
 
 
                 // ── Phase 2: Enrich parts with DB lookups ──
@@ -153,7 +155,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                         smoothShading: true,
                         antiAliasMode: AntiAliasMode.SSAA4x,
                         gradientTopHex: "#1A1A2E",
-                        gradientBottomHex: "#0F3460"),
+                        gradientBottomHex: "#0F3460",
+                        rendererType: rendererType),
                     Context.ConnectionAborted);
 
 
@@ -256,7 +259,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                                 subData.triBounds, subData.edgeBounds,
                                 imageWidth, imageHeight,
                                 stepElevation, stepAzimuth,
-                                options.RenderEdges, options.SmoothShading),
+                                options.RenderEdges, options.SmoothShading,
+                                rendererType),
                             Context.ConnectionAborted);
                         stepImageBytes = result.PngBytes;
                     }
@@ -275,7 +279,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                                 rootTriBounds, rootEdgeBounds,
                                 imageWidth, imageHeight,
                                 stepElevation, stepAzimuth,
-                                options.RenderEdges, options.SmoothShading),
+                                options.RenderEdges, options.SmoothShading,
+                                rendererType),
                             Context.ConnectionAborted);
                         stepImageBytes = result.PngBytes;
                     }
@@ -315,7 +320,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                         smoothShading: true,
                         antiAliasMode: AntiAliasMode.SSAA4x,
                         gradientTopHex: "#0A2F1F",
-                        gradientBottomHex: "#0F4C3A"),
+                        gradientBottomHex: "#0F4C3A",
+                        rendererType: rendererType),
                     Context.ConnectionAborted);
 
                 builder.AddCompletionPage(completionImage);

@@ -97,6 +97,14 @@
                     <option value="pdf">PDF (Download)</option>
                 </select>
             </div>
+
+            <div class="option-group">
+                <label for="renderer">Renderer</label>
+                <select id="renderer" [(ngModel)]="options.renderer">
+                    <option value="rasterizer">Rasterizer (Fast)</option>
+                    <option value="raytrace">Ray Tracer (Quality)</option>
+                </select>
+            </div>
         </div>
 
         <div class="action-buttons">

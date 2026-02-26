@@ -36,6 +36,9 @@ namespace BMC.LDraw.Render.RayTracing
         /// <summary>Surface normal at the hit point.</summary>
         public float NX, NY, NZ;
 
+        /// <summary>Barycentric coordinates for per-vertex normal interpolation.</summary>
+        public float U, V;
+
         /// <summary>Index into the triangle array.</summary>
         public int TriIndex;
 

@@ -96,7 +96,14 @@ namespace BMC.LDraw.Render
             //           Each iteration reads shared data (spatialMap, triangleArray)
             //           but writes only to smoothedTriangleArray[triangleIndex].
             //
-            Parallel.For(0, smoothedTriangleArray.Length, triangleIndex =>
+            //           Parallelism is capped at half the logical processors to
+            //           keep the server responsive during manual generation.
+            //
+            var smoothParallelOpts = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = RenderConcurrency.MaxThreads
+            };
+            Parallel.For(0, smoothedTriangleArray.Length, smoothParallelOpts, triangleIndex =>
             {
                 MeshTriangle currentTriangle = smoothedTriangleArray[triangleIndex];
 

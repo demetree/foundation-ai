@@ -204,12 +204,14 @@ namespace BMC.LDraw.Render.RayTracing
                 {
                     int triIdx = node.Indices[i];
 
-                    if (IntersectTriangle(ref ray, ref _triangles[triIdx], tMin, closest.T, out float t, out float nx, out float ny, out float nz))
+                    if (IntersectTriangle(ref ray, ref _triangles[triIdx], tMin, closest.T, out float t, out float nx, out float ny, out float nz, out float hitU, out float hitV))
                     {
                         closest.T = t;
                         closest.NX = nx;
                         closest.NY = ny;
                         closest.NZ = nz;
+                        closest.U = hitU;
+                        closest.V = hitV;
                         closest.TriIndex = triIdx;
                         closest.R = _triangles[triIdx].R;
                         closest.G = _triangles[triIdx].G;
@@ -248,7 +250,7 @@ namespace BMC.LDraw.Render.RayTracing
                 {
                     int triIdx = node.Indices[i];
 
-                    if (IntersectTriangle(ref ray, ref _triangles[triIdx], tMin, tMax, out _, out _, out _, out _))
+                    if (IntersectTriangle(ref ray, ref _triangles[triIdx], tMin, tMax, out _, out _, out _, out _, out _, out _))
                     {
                         return true;
                     }
@@ -276,9 +278,11 @@ namespace BMC.LDraw.Render.RayTracing
         /// </summary>
         private static bool IntersectTriangle(ref Ray ray, ref MeshTriangle tri,
             float tMin, float tMax,
-            out float t, out float nx, out float ny, out float nz)
+            out float t, out float nx, out float ny, out float nz,
+            out float outU, out float outV)
         {
             t = 0; nx = 0; ny = 0; nz = 0;
+            outU = 0; outV = 0;
 
             // Edge vectors
             float e1x = tri.X2 - tri.X1;
@@ -330,6 +334,9 @@ namespace BMC.LDraw.Render.RayTracing
             t = (e2x * qx + e2y * qy + e2z * qz) * invDet;
 
             if (t < tMin || t > tMax) return false;
+
+            outU = u;
+            outV = v;
 
             //
             // Compute face normal (cross product of edges)

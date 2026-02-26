@@ -333,6 +333,21 @@
                         </label>
                     </div>
 
+                    <!-- Renderer Engine -->
+                    <div class="adv-group">
+                        <label class="adv-label">Renderer</label>
+                        <div class="format-btns">
+                            <button class="fmt-btn" [class.active]="rendererType === 'rasterizer'"
+                                (click)="rendererType = 'rasterizer'">
+                                <i class="fas fa-microchip"></i> Rasterizer
+                            </button>
+                            <button class="fmt-btn" [class.active]="rendererType === 'raytrace'"
+                                (click)="rendererType = 'raytrace'">
+                                <i class="fas fa-sun"></i> Ray Tracer
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Anti-Aliasing -->
                     <div class="adv-group">
                         <label class="adv-label">Anti-Aliasing</label>

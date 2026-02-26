@@ -167,11 +167,35 @@ namespace BMC.LDraw.Render.RayTracing
 
             //
             // Ray trace — one scanline at a time in parallel
-            // Each thread gets its own RNG to avoid contention
+            // Each thread gets its own RNG to avoid contention.
             //
-            Parallel.For(0, _height, () => new Random(Environment.CurrentManagedThreadId * 31 + Environment.TickCount),
+            // Parallelism is capped at half the logical processors so that
+            // a single render doesn't starve the web server, SignalR, or
+            // other concurrent requests.  See RenderConcurrency for rationale.
+            //
+            var rtParallelOpts = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = RenderConcurrency.MaxThreads
+            };
+            Parallel.For(0, _height, rtParallelOpts, () => new Random(Environment.CurrentManagedThreadId * 31 + Environment.TickCount),
                 (y, state, rng) =>
             {
+                // Compute per-scanline background colour (gradient or flat)
+                byte rowBgR, rowBgG, rowBgB;
+                if (_hasGradient)
+                {
+                    float gt = (float)y / MathF.Max(_height - 1, 1);
+                    rowBgR = (byte)(_gradTopR + (_gradBotR - _gradTopR) * gt);
+                    rowBgG = (byte)(_gradTopG + (_gradBotG - _gradTopG) * gt);
+                    rowBgB = (byte)(_gradTopB + (_gradBotB - _gradTopB) * gt);
+                }
+                else
+                {
+                    rowBgR = _bgR;
+                    rowBgG = _bgG;
+                    rowBgB = _bgB;
+                }
+
                 for (int x = 0; x < _width; x++)
                 {
                     float accumR = 0, accumG = 0, accumB = 0, accumA = 0;
@@ -209,43 +233,116 @@ namespace BMC.LDraw.Render.RayTracing
                                 Normalize(ref dirX, ref dirY, ref dirZ);
                                 ray = new Ray(eyeX, eyeY, eyeZ, dirX, dirY, dirZ);
                             }
+                            //
+                            // Trace through transparent layers
+                            // Front-to-back compositing: accumulate colour and reduce remaining opacity
+                            //
+                            const int MAX_TRANSPARENT_LAYERS = 8;
+                            float layerR = 0, layerG = 0, layerB = 0;
+                            float remainingAlpha = 1f;
+                            float firstT = float.MaxValue;
+                            float firstNX = 0, firstNY = 0, firstNZ = 0;
 
-                            if (bvh.Intersect(ref ray, out HitRecord hit))
+                            Ray traceRay = ray;
+
+                            for (int layer = 0; layer < MAX_TRANSPARENT_LAYERS; layer++)
                             {
-                                float hitX = ray.OriginX + ray.DirX * hit.T;
-                                float hitY = ray.OriginY + ray.DirY * hit.T;
-                                float hitZ = ray.OriginZ + ray.DirZ * hit.T;
+                                if (!bvh.Intersect(ref traceRay, out HitRecord hit))
+                                {
+                                    // No more surfaces — blend in background
+                                    layerR += remainingAlpha * rowBgR;
+                                    layerG += remainingAlpha * rowBgG;
+                                    layerB += remainingAlpha * rowBgB;
+                                    break;
+                                }
+
+                                float hitX = traceRay.OriginX + traceRay.DirX * hit.T;
+                                float hitY = traceRay.OriginY + traceRay.DirY * hit.T;
+                                float hitZ = traceRay.OriginZ + traceRay.DirZ * hit.T;
 
                                 MaterialFinish finish = bvh.Triangles[hit.TriIndex].Finish;
 
-                                ShadePixel(lighting, bvh, ref ray, ref hit,
+                                // Interpolate per-vertex normals for smooth shading
+                                if (bvh.Triangles[hit.TriIndex].HasPerVertexNormals)
+                                {
+                                    ref MeshTriangle tri = ref bvh.Triangles[hit.TriIndex];
+                                    float bw = 1f - hit.U - hit.V;
+                                    float snx = bw * tri.NX1 + hit.U * tri.NX2 + hit.V * tri.NX3;
+                                    float sny = bw * tri.NY1 + hit.U * tri.NY2 + hit.V * tri.NY3;
+                                    float snz = bw * tri.NZ1 + hit.U * tri.NZ2 + hit.V * tri.NZ3;
+                                    Normalize(ref snx, ref sny, ref snz);
+
+                                    float ndotd = snx * traceRay.DirX + sny * traceRay.DirY + snz * traceRay.DirZ;
+                                    if (ndotd > 0) { snx = -snx; sny = -sny; snz = -snz; }
+
+                                    hit.NX = snx;
+                                    hit.NY = sny;
+                                    hit.NZ = snz;
+                                }
+
+                                ShadePixel(lighting, bvh, ref traceRay, ref hit,
                                            hitX, hitY, hitZ,
                                            eyeX, eyeY, eyeZ,
                                            finish, 0,
                                            shadowSamples, aoSamples, aoRadius, aoIntensity, rng,
-                                           out byte finalR, out byte finalG, out byte finalB);
+                                           out byte sR, out byte sG, out byte sB);
 
-                                accumR += finalR;
-                                accumG += finalG;
-                                accumB += finalB;
-                                accumA += hit.A;
-
-                                // Track closest hit for edge detection G-buffer
-                                if (hit.T < closestT)
+                                // Track first hit for edge detection G-buffer
+                                if (layer == 0)
                                 {
-                                    closestT = hit.T;
-                                    bestNX = hit.NX;
-                                    bestNY = hit.NY;
-                                    bestNZ = hit.NZ;
+                                    firstT = hit.T;
+                                    firstNX = hit.NX;
+                                    firstNY = hit.NY;
+                                    firstNZ = hit.NZ;
                                 }
+
+                                float surfAlpha = hit.A / 255f;
+
+                                if (surfAlpha >= 1f)
+                                {
+                                    // Opaque surface — accumulate and stop
+                                    layerR += remainingAlpha * sR;
+                                    layerG += remainingAlpha * sG;
+                                    layerB += remainingAlpha * sB;
+                                    remainingAlpha = 0f;
+                                    break;
+                                }
+
+                                // Transparent surface — blend and continue
+                                layerR += remainingAlpha * surfAlpha * sR;
+                                layerG += remainingAlpha * surfAlpha * sG;
+                                layerB += remainingAlpha * surfAlpha * sB;
+                                remainingAlpha *= (1f - surfAlpha);
+
+                                if (remainingAlpha < 0.01f) break; // fully absorbed
+
+                                // Continue ray from just past this surface
+                                traceRay = new Ray(
+                                    hitX + traceRay.DirX * 0.01f,
+                                    hitY + traceRay.DirY * 0.01f,
+                                    hitZ + traceRay.DirZ * 0.01f,
+                                    traceRay.DirX, traceRay.DirY, traceRay.DirZ);
                             }
-                            else
+
+                            // If we still have remaining alpha, blend in background
+                            if (remainingAlpha > 0.01f)
                             {
-                                // Background sample
-                                accumR += _bgR;
-                                accumG += _bgG;
-                                accumB += _bgB;
-                                accumA += _bgA;
+                                layerR += remainingAlpha * rowBgR;
+                                layerG += remainingAlpha * rowBgG;
+                                layerB += remainingAlpha * rowBgB;
+                            }
+
+                            accumR += layerR;
+                            accumG += layerG;
+                            accumB += layerB;
+                            accumA += (firstT < float.MaxValue) ? 255f : _bgA;
+
+                            if (firstT < closestT)
+                            {
+                                closestT = firstT;
+                                bestNX = firstNX;
+                                bestNY = firstNY;
+                                bestNZ = firstNZ;
                             }
 
                             sampleCount++;
