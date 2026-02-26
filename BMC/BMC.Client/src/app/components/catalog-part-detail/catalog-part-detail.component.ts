@@ -96,6 +96,13 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     private resizeObserver: ResizeObserver | null = null;
     private sceneReady = false;
 
+    //
+    // When an initialColourId is provided, we defer showing the 3D model
+    // until the colour data has loaded and the correct colour can be applied.
+    // This prevents the visible flicker from default → correct colour.
+    //
+    pendingColourReady = false;
+
     private baseUrl: string;
 
 
@@ -169,6 +176,14 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             // Check for geometry and initialise 3D viewer
             if (part.geometryFilePath) {
                 this.hasGeometry = true;
+
+                //
+                // If we have an initial colour ID, defer showing the model
+                // until colour data is ready (prevents colour flicker).
+                //
+                if (this.initialColourId != null) {
+                    this.pendingColourReady = true;
+                }
 
                 // Allow template to render the canvas element first
                 setTimeout(() => this.initThreeJsAndLoadModel(), 0);
@@ -320,6 +335,12 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             if (matchingColour != null) {
                 this.selectColour(matchingColour);
             }
+
+            //
+            // Colour data is now resolved — clear the pending gate.
+            // If the model already finished loading, this makes it visible.
+            //
+            this.pendingColourReady = false;
         }
     }
 

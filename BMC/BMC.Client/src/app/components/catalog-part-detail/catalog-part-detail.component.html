@@ -47,14 +47,15 @@
                 </div>
 
                 <div class="viewer-container" [class.has-geometry]="hasGeometry">
-                    <!-- Three.js Canvas -->
-                    <canvas #rendererCanvas class="renderer-canvas" *ngIf="hasGeometry">
+                    <!-- Three.js Canvas — hidden while waiting for colour data to prevent flicker -->
+                    <canvas #rendererCanvas class="renderer-canvas" *ngIf="hasGeometry"
+                        [style.visibility]="pendingColourReady ? 'hidden' : 'visible'">
                     </canvas>
 
                     <!-- Loading Overlay -->
-                    <div class="viewer-loading" *ngIf="isLoadingModel">
+                    <div class="viewer-loading" *ngIf="isLoadingModel || pendingColourReady">
                         <div class="loading-spinner"></div>
-                        <span>Loading 3D model&hellip;</span>
+                        <span>{{ pendingColourReady ? 'Applying colour\u2026' : 'Loading 3D model\u2026' }}</span>
                     </div>
 
                     <!-- Error Message -->
@@ -183,16 +184,12 @@
                     <span class="count-badge" *ngIf="visibleColourCount > 0">{{ visibleColourCount }}</span>
 
                     <div class="colour-mode-toggle">
-                        <button class="colour-mode-btn"
-                                [class.active]="colourMode === 'part'"
-                                (click)="setColourMode('part')"
-                                title="Show only colours this part is known to exist in">
+                        <button class="colour-mode-btn" [class.active]="colourMode === 'part'"
+                            (click)="setColourMode('part')" title="Show only colours this part is known to exist in">
                             Part Colours
                         </button>
-                        <button class="colour-mode-btn"
-                                [class.active]="colourMode === 'all'"
-                                (click)="setColourMode('all')"
-                                title="Show all available colours">
+                        <button class="colour-mode-btn" [class.active]="colourMode === 'all'"
+                            (click)="setColourMode('all')" title="Show all available colours">
                             All Colours
                         </button>
                     </div>
@@ -204,9 +201,7 @@
                     <!-- Search box — visible in All Colours mode only -->
                     <div class="colour-search" *ngIf="colourMode === 'all'">
                         <i class="bi bi-search"></i>
-                        <input type="text"
-                               placeholder="Search colours…"
-                               [(ngModel)]="allColoursSearch" />
+                        <input type="text" placeholder="Search colours…" [(ngModel)]="allColoursSearch" />
                     </div>
 
                     <!-- Loading spinner for All Colours fetch -->
@@ -217,60 +212,52 @@
 
                     <!-- Part Colours mode — swatch grid (merged from BrickPartColours + LegoSetParts) -->
                     <div class="colour-swatch-grid" *ngIf="colourMode === 'part' && partColours.length > 0">
-                        <button class="colour-swatch-dot"
-                                *ngFor="let c of partColours"
-                                [class.selected]="selectedColour != null && selectedColour.id === c.id"
-                                [class.transparent]="c.isTransparent"
-                                [class.metallic]="c.isMetallic"
-                                [style.backgroundColor]="getSwatchHex(c)"
-                                [title]="c.name || 'Unknown'"
-                                (click)="selectColour(c)">
+                        <button class="colour-swatch-dot" *ngFor="let c of partColours"
+                            [class.selected]="selectedColour != null && selectedColour.id === c.id"
+                            [class.transparent]="c.isTransparent" [class.metallic]="c.isMetallic"
+                            [style.backgroundColor]="getSwatchHex(c)" [title]="c.name || 'Unknown'"
+                            (click)="selectColour(c)">
                         </button>
                     </div>
 
                     <!-- Part Colours mode — empty state (shown while loading or if truly no data) -->
                     <div class="empty-section"
-                         *ngIf="colourMode === 'part' && partColours.length === 0 && isLoadingColours === false && isLoadingSetParts === false">
+                        *ngIf="colourMode === 'part' && partColours.length === 0 && isLoadingColours === false && isLoadingSetParts === false">
                         <i class="bi bi-dash-circle"></i>
                         No colour variants found for this part
                     </div>
 
                     <!-- All Colours mode — swatch grid from full BrickColour table -->
                     <div class="colour-swatch-grid"
-                         *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length > 0">
-                        <button class="colour-swatch-dot"
-                                *ngFor="let c of filteredAllColours"
-                                [class.selected]="selectedColour != null && selectedColour.id === c.id"
-                                [class.transparent]="c.isTransparent"
-                                [class.metallic]="c.isMetallic"
-                                [style.backgroundColor]="getSwatchHex(c)"
-                                [title]="c.name"
-                                (click)="selectColour(c)">
+                        *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length > 0">
+                        <button class="colour-swatch-dot" *ngFor="let c of filteredAllColours"
+                            [class.selected]="selectedColour != null && selectedColour.id === c.id"
+                            [class.transparent]="c.isTransparent" [class.metallic]="c.isMetallic"
+                            [style.backgroundColor]="getSwatchHex(c)" [title]="c.name" (click)="selectColour(c)">
                         </button>
                     </div>
 
                     <!-- All Colours mode — no search results -->
                     <div class="empty-section"
-                         *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length === 0 && allColoursSearch">
+                        *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length === 0 && allColoursSearch">
                         <i class="bi bi-search"></i>
                         No colours match "{{ allColoursSearch }}"
                     </div>
 
                     <!-- Selected colour label -->
                     <div class="colour-selected-label" *ngIf="selectedColour != null">
-                        <span class="colour-selected-swatch"
-                              [style.backgroundColor]="getSwatchHex(selectedColour)">
+                        <span class="colour-selected-swatch" [style.backgroundColor]="getSwatchHex(selectedColour)">
                         </span>
                         <span class="colour-selected-name">{{ selectedColour.name }}</span>
-                        <button class="colour-clear-btn"
-                                (click)="selectColour(selectedColour)"
-                                title="Clear colour selection">
+                        <button class="colour-clear-btn" (click)="selectColour(selectedColour)"
+                            title="Clear colour selection">
                             <i class="bi bi-x"></i>
                         </button>
                     </div>
 
                     <!-- No selection hint -->
-                    <div class="colour-hint" *ngIf="selectedColour == null && (partColours.length > 0 || allColours.length > 0)">
+                    <div class="colour-hint"
+                        *ngIf="selectedColour == null && (partColours.length > 0 || allColours.length > 0)">
                         <i class="bi bi-cursor"></i>
                         Click a swatch to preview the part in that colour
                     </div>
