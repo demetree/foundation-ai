@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Security;
 using BMC.LDraw.Render;
 
@@ -44,7 +45,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         public ManualGeneratorController(
             IConfiguration configuration,
             ILogger<ManualGeneratorController> logger
-        ) : base("BMC", "PartRenderer")
+        ) : base("BMC", "ManualGenerator")
         {
             _configuration = configuration;
             _logger = logger;
@@ -67,6 +68,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             Microsoft.AspNetCore.Http.IFormFile file,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -111,6 +114,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                 var analysis = await Task.Run(() => renderService.AnalyseSteps(lines, fileName), cancellationToken);
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Manual upload analysed — filename='{fileName}', steps={analysis.Count}");
+
                 return Ok(new
                 {
                     fileName = fileName,
@@ -141,6 +146,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
             catch (Exception ex)
             {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Manual analysis failed — filename='{fileName}'", fileName, ex);
                 _logger.LogError(ex, "Step analysis failed for {FileName}", fileName);
                 return StatusCode(500, "Step analysis failed: " + ex.Message);
             }
@@ -163,6 +169,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             Microsoft.AspNetCore.Http.IFormFile file,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -209,6 +217,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             string generationId = Guid.NewGuid().ToString("N");
             PendingFiles[generationId] = (lines, file.FileName, DateTime.UtcNow);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Manual generation started — filename='{file.FileName}', id={generationId}", generationId);
+
             return Ok(new { generationId = generationId });
         }
 
@@ -227,6 +237,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/manual-generator/download/{id}")]
         public async Task<IActionResult> DownloadManual(string id, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -251,6 +263,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             string ext = isPdf ? ".pdf" : ".html";
             string downloadName = (Path.GetFileNameWithoutExtension(entry.FileName) ?? "manual")
                 + "_build-manual" + ext;
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Manual downloaded — id='{id}'", id);
 
             return File(entry.Bytes, entry.ContentType, downloadName);
         }

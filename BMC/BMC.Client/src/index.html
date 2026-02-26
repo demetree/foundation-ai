@@ -28,6 +28,40 @@
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="manifest" href="manifest.webmanifest">
+    <link rel="canonical" href="/">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "BMC — Brick Machine Construction",
+        "url": "/",
+        "description": "Design, simulate, and build with virtual bricks. Explore 79,000+ parts, browse LEGO sets, generate build manuals, and manage your collection.",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "featureList": [
+            "Parts Catalog — 79,000+ LEGO parts with high-resolution renders",
+            "Part Renderer — Real-time 3D rendering with ray tracing",
+            "Manual Generator — Step-by-step build instruction creation",
+            "Set Explorer — Search and compare every LEGO set",
+            "Theme Browser — Explore sets by theme and decade",
+            "Collection Manager — Track your own LEGO collection",
+            "AI Assistant — Intelligent part and set search",
+            "10 Visual Themes — Fully customizable interface"
+        ],
+        "screenshot": "/assets/og-preview.png",
+        "creator": {
+            "@type": "Organization",
+            "name": "BMC"
+        }
+    }
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
         rel="stylesheet">
@@ -462,13 +496,43 @@
         </div>
     </app-root>
     <noscript>
-        <div
-            style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;text-align:center;padding:2rem;">
-            <div>
-                <h1 style="color:#E3000B;font-size:2rem;margin-bottom:1rem;">BMC</h1>
-                <p style="color:#555;">Brick Machine Construction requires JavaScript to run.<br>Please enable
-                    JavaScript in your browser.</p>
-            </div>
+        <div style="font-family:Inter,system-ui,sans-serif;max-width:800px;margin:0 auto;padding:2rem;color:#333;">
+            <h1 style="color:#E3000B;font-size:2.5rem;margin-bottom:0.5rem;">BMC — Brick Machine Construction</h1>
+            <p style="font-size:1.15rem;color:#555;margin-bottom:2rem;">Design, simulate, and build with virtual bricks.
+                Explore 79,000+ parts, browse thousands of LEGO sets, generate step-by-step build manuals,
+                and manage your entire collection — all in your browser.</p>
+
+            <h2 style="color:#E3000B;">Features</h2>
+            <ul style="line-height:2;">
+                <li><strong>Parts Catalog</strong> — Browse and search 79,000+ LEGO parts with high-resolution renders
+                    in multiple colours</li>
+                <li><strong>Part Renderer</strong> — Real-time 3D rendering with software rasterization and ray tracing
+                </li>
+                <li><strong>Manual Generator</strong> — Produce step-by-step build instructions as PDF or HTML from any
+                    project</li>
+                <li><strong>Set Explorer</strong> — Search, filter, and compare every LEGO set ever made, spanning
+                    decades of history</li>
+                <li><strong>Theme Browser</strong> — Explore sets organized by theme and decade, from the 1940s to today
+                </li>
+                <li><strong>Minifig Gallery</strong> — Browse the complete catalogue of LEGO minifigures</li>
+                <li><strong>Collection Manager</strong> — Track the sets you own, build a wishlist, and manage your
+                    parts inventory</li>
+                <li><strong>AI Assistant</strong> — Intelligent natural-language search for parts and sets</li>
+                <li><strong>10 Visual Themes</strong> — Brick Builder, Miami Vice, Matrix, Cyberpunk, Retro Arcade,
+                    Blueprint, Pastel Dreams, and more</li>
+            </ul>
+
+            <h2 style="color:#E3000B;">Explore by Decade</h2>
+            <p>From 1949 to today — the complete evolution of LEGO. Browse sets and themes organized by decade
+                and discover how LEGO has grown from a small Danish workshop to a global phenomenon.</p>
+
+            <h2 style="color:#E3000B;">Public API</h2>
+            <p>BMC exposes anonymous read-only endpoints for aggregate statistics, featured sets, recent additions,
+                decade analysis, and random set discovery at <code>/api/public/</code>.</p>
+
+            <p style="margin-top:2rem;"><a href="/login" style="color:#E3000B;font-weight:600;">Sign in to BMC →</a></p>
+            <p style="color:#999;font-size:0.85rem;">BMC requires JavaScript for the full interactive experience.
+                Please enable JavaScript in your browser to use the application.</p>
         </div>
     </noscript>
 </body>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 
@@ -193,6 +194,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     // Store in memory cache for subsequent requests
                     //
                     _fileCache.TryAdd(normalisedPath, content);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"LDraw file served (disk read) — path='{normalisedPath}'");
 
                     return Content(content, "text/plain");
                 }

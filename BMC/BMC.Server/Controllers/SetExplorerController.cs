@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using Foundation.Auditor;
 using Foundation.BMC.Services;
 using Foundation.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -45,14 +47,18 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// </summary>
         [HttpGet]
-        public IActionResult GetSetExplorerData()
+        public async Task<IActionResult> GetSetExplorerData()
         {
+            StartAuditEventClock();
+
             var sets = _setExplorerService.GetCachedSets();
 
             if (sets == null)
             {
                 return StatusCode(503, new { message = "Set Explorer data is still being computed. Please try again shortly." });
             }
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.LoadPage, $"Set Explorer data loaded — {sets.Count} sets");
 
             return Ok(sets);
         }

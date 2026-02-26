@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using Foundation.Auditor;
 using Foundation.BMC.Services;
 using Foundation.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -45,14 +47,18 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// </summary>
         [HttpGet]
-        public IActionResult GetMinifigGalleryData()
+        public async Task<IActionResult> GetMinifigGalleryData()
         {
+            StartAuditEventClock();
+
             var minifigs = _minifigGalleryService.GetCachedMinifigs();
 
             if (minifigs == null)
             {
                 return StatusCode(503, new { message = "Minifig Gallery data is still being computed. Please try again shortly." });
             }
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.LoadPage, $"Minifig Gallery data loaded — {minifigs.Count} minifigs");
 
             return Ok(minifigs);
         }

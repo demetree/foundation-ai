@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
@@ -157,6 +158,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine")]
         public async Task<IActionResult> GetMyProfile(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -295,6 +298,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 preferredThemes = preferredThemes
             };
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get my profile");
+
             return Ok(dto);
         }
 
@@ -310,6 +315,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequest request, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (request == null)
             {
                 return BadRequest();
@@ -365,6 +372,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             await _context.SaveChangesAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Profile updated");
+
             return Ok(new { action = "updated" });
         }
 
@@ -385,6 +394,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/avatar")]
         public async Task<IActionResult> UploadAvatar(IFormFile file, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             return await UploadImage(file, "avatar", MAX_AVATAR_SIZE, cancellationToken);
         }
 
@@ -401,6 +411,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/banner")]
         public async Task<IActionResult> UploadBanner(IFormFile file, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             return await UploadImage(file, "banner", MAX_BANNER_SIZE, cancellationToken);
         }
 
@@ -416,6 +427,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/avatar")]
         public async Task<IActionResult> GetAvatar(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             return await ServeImage("avatar", cancellationToken);
         }
 
@@ -431,6 +443,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/banner")]
         public async Task<IActionResult> GetBanner(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             return await ServeImage("banner", cancellationToken);
         }
 
@@ -445,6 +458,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/avatar")]
         public async Task<IActionResult> DeleteAvatar(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             return await RemoveImage("avatar", cancellationToken);
         }
 
@@ -459,6 +473,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/banner")]
         public async Task<IActionResult> DeleteBanner(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             return await RemoveImage("banner", cancellationToken);
         }
 
@@ -519,6 +534,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"{imageType} uploaded — {file.FileName}, {file.Length} bytes");
 
             return Ok(new { action = "uploaded", imageType, fileName = file.FileName, size = file.Length });
         }
@@ -600,6 +617,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             await _context.SaveChangesAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity, $"{imageType} deleted");
+
             return Ok(new { action = "removed", imageType });
         }
 
@@ -640,6 +659,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/links")]
         public async Task<IActionResult> GetMyLinks(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -681,6 +702,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get my links — {links.Count} links");
+
             return Ok(links);
         }
 
@@ -696,6 +719,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/links")]
         public async Task<IActionResult> SaveMyLinks([FromBody] List<SaveLinkRequest> request, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (request == null)
             {
                 return BadRequest();
@@ -785,7 +810,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return Ok(new { action = "saved", linkCount = request.Count(r => validLinkTypeIds.Contains(r.userProfileLinkTypeId) && !string.IsNullOrWhiteSpace(r.url)) });
+            int savedCount = request.Count(r => validLinkTypeIds.Contains(r.userProfileLinkTypeId) && !string.IsNullOrWhiteSpace(r.url));
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Links updated — {savedCount} links saved");
+
+            return Ok(new { action = "saved", linkCount = savedCount });
         }
 
         #endregion
@@ -803,6 +831,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/link-types")]
         public async Task<IActionResult> GetLinkTypes(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -822,6 +852,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get link types — {linkTypes.Count} types");
+
             return Ok(linkTypes);
         }
 
@@ -840,6 +872,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/preferred-themes")]
         public async Task<IActionResult> GetMyPreferredThemes(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -878,6 +912,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get my preferred themes — {themes.Count} themes");
+
             return Ok(themes);
         }
 
@@ -893,6 +929,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/mine/preferred-themes")]
         public async Task<IActionResult> SaveMyPreferredThemes([FromBody] List<SavePreferredThemeRequest> request, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (request == null)
             {
                 return BadRequest();
@@ -975,7 +1013,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return Ok(new { action = "saved", themeCount = request.Count(r => validThemeIds.Contains(r.legoThemeId)) });
+            int savedCount = request.Count(r => validThemeIds.Contains(r.legoThemeId));
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Preferred themes updated — {savedCount} themes saved");
+
+            return Ok(new { action = "saved", themeCount = savedCount });
         }
 
         #endregion
@@ -994,6 +1035,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/profile/{id:int}")]
         public async Task<IActionResult> GetPublicProfile(int id, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
             //
             // Look for active, non-deleted, public profile
             //
@@ -1073,6 +1115,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 links = links,
                 preferredThemes = preferredThemes
             };
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Public profile viewed — id={id}, name='{profile.displayName}'", id.ToString());
 
             return Ok(dto);
         }

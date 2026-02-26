@@ -1,6 +1,8 @@
 User-agent: *
+Allow: /
 Allow: /login
 Allow: /u/
+Allow: /api/public/
 Disallow: /dashboard
 Disallow: /parts
 Disallow: /colours
@@ -14,5 +16,7 @@ Disallow: /api/
 # Public profiles are crawlable
 Allow: /u/*
 
-# Sitemap (uncomment when available)
-# Sitemap: https://YOUR_DOMAIN/sitemap.xml
+# Public API is crawlable (anonymous, read-only)
+Allow: /api/public/*
+
+Sitemap: /sitemap.xml

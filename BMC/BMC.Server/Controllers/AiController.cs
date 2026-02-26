@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using BMC.AI;
@@ -111,6 +112,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             int topK = 10,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -138,10 +141,13 @@ namespace Foundation.BMC.Controllers.WebAPI
                     year = r.Year
                 }).ToList();
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.Search, $"AI semantic search: parts — query='{query}', topK={topK}, results={dtos.Count}");
+
                 return Ok(dtos);
             }
             catch (Exception ex)
             {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"AI parts search failed — query='{query}'", query, ex);
                 _logger.LogError(ex, "Error during AI parts search for query: {Query}", query);
                 return StatusCode(500, "AI search failed. Please try again.");
             }
@@ -162,6 +168,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             int topK = 10,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -189,10 +197,13 @@ namespace Foundation.BMC.Controllers.WebAPI
                     year = r.Year
                 }).ToList();
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.Search, $"AI semantic search: sets — query='{query}', topK={topK}, results={dtos.Count}");
+
                 return Ok(dtos);
             }
             catch (Exception ex)
             {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"AI sets search failed — query='{query}'", query, ex);
                 _logger.LogError(ex, "Error during AI sets search for query: {Query}", query);
                 return StatusCode(500, "AI search failed. Please try again.");
             }
@@ -212,6 +223,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             [FromBody] AiChatRequest request,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -237,10 +250,14 @@ namespace Foundation.BMC.Controllers.WebAPI
                     }).ToList() ?? new List<AiChatSourceDto>()
                 };
 
+                string truncatedQ = request.question.Length > 100 ? request.question.Substring(0, 100) + "..." : request.question;
+                await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, $"AI RAG chat — prompt='{truncatedQ}'");
+
                 return Ok(dto);
             }
             catch (Exception ex)
             {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "AI chat failed", null, ex);
                 _logger.LogError(ex, "Error during AI chat for question: {Question}", request.question);
                 return StatusCode(500, "AI chat failed. Please try again.");
             }
@@ -259,6 +276,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/ai/index")]
         public async Task<IActionResult> IndexData(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -269,6 +288,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 _logger.LogInformation("AI index triggered by user.");
                 await _searchIndex.IndexAllAsync(ct: cancellationToken);
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "AI index rebuild complete");
+
                 return Ok(new AiIndexResultDto
                 {
                     success = true,
@@ -277,6 +298,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
             catch (Exception ex)
             {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "AI index rebuild failed", null, ex);
                 _logger.LogError(ex, "Error during AI index rebuild.");
                 return StatusCode(500, new AiIndexResultDto
                 {

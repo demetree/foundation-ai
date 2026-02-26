@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
@@ -123,6 +124,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/mine")]
         public async Task<IActionResult> GetMyCollections(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -221,6 +224,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 };
             }).ToList();
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get my collections — {summaries.Count} collections");
+
             return Ok(summaries);
         }
 
@@ -241,6 +246,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             int? pageNumber = null,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -315,6 +322,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             List<CollectionPartDto> parts = await query.AsNoTracking().ToListAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get collection parts — id={id}, results={parts.Count}", id.ToString());
+
             return Ok(parts);
         }
 
@@ -329,6 +338,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/{id}/add-part")]
         public async Task<IActionResult> AddPart(int id, [FromBody] AddPartRequest request, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (request == null)
             {
                 return BadRequest();
@@ -380,6 +391,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 existing.quantityOwned = (existing.quantityOwned ?? 0) + Math.Max(request.quantity, 1);
                 await _context.SaveChangesAsync(cancellationToken);
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Add part to collection — id={id}, part={request.brickPartId}, colour={request.brickColourId}, qty updated to {existing.quantityOwned}", id.ToString());
+
                 return Ok(new { action = "updated", quantityOwned = existing.quantityOwned });
             }
             else
@@ -401,6 +414,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 _context.UserCollectionParts.Add(newPart);
                 await _context.SaveChangesAsync(cancellationToken);
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Add part to collection — id={id}, part={request.brickPartId}, colour={request.brickColourId}, qty={newPart.quantityOwned}", id.ToString());
+
                 return Ok(new { action = "created", quantityOwned = newPart.quantityOwned });
             }
         }
@@ -416,6 +431,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/{id}/remove-part/{partId}")]
         public async Task<IActionResult> RemovePart(int id, int partId, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
                 await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
@@ -460,6 +477,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             part.active = false;
             await _context.SaveChangesAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity, $"Remove part from collection — id={id}, partId={partId}", partId.ToString());
+
             return Ok(new { action = "removed" });
         }
 
@@ -477,6 +496,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/{id}/import-set/{setNumber}")]
         public async Task<IActionResult> ImportSet(int id, string setNumber, int quantity = 1, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
                 await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
@@ -595,6 +616,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             _context.UserCollectionSetImports.Add(importRecord);
             await _context.SaveChangesAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Import set to collection — id={id}, set='{setNumber}', added={partsAdded}, updated={partsUpdated}, totalQty={totalQtyAdded}", setNumber);
+
             return Ok(new ImportSetResult
             {
                 partsAdded = partsAdded,
@@ -614,6 +637,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/{id}/imported-sets")]
         public async Task<IActionResult> GetImportedSets(int id, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -662,6 +687,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get imported sets — id={id}, count={imports.Count}", id.ToString());
+
             return Ok(imports);
         }
 
@@ -676,6 +703,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/{id}/wishlist")]
         public async Task<IActionResult> GetWishlist(int id, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -719,6 +748,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Get wishlist — id={id}, count={wishlist.Count}", id.ToString());
+
             return Ok(wishlist);
         }
 
@@ -734,6 +765,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/collection/search-sets")]
         public async Task<IActionResult> SearchSets(string q, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -764,6 +797,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 })
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.Search, $"Collection set search — q='{q}', results={results.Count}");
 
             return Ok(results);
         }

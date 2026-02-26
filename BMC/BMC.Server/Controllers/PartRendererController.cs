@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.BMC.Database;
@@ -169,6 +170,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                 }
 
                 _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Part rendered (cache miss) — part='{partNumber}', {width}x{height}, colour={colourCode}, format={format}", partNumber);
+
                 return File(result, contentType);
             }
             catch (OperationCanceledException)
@@ -177,6 +181,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
             catch (Exception ex)
             {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Part render failed — part='{partNumber}'", partNumber, ex);
                 _logger.LogError(ex, "Error rendering part {PartNumber} with colour {ColourCode}", partNumber, colourCode);
                 return StatusCode(500, "Error rendering part.");
             }
@@ -241,6 +246,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                 }, renderCts.Token);
 
                 _cache.Set(cacheKey, gif, TimeSpan.FromMinutes(10));
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Turntable rendered (cache miss) — part='{partNumber}', {frameCount} frames", partNumber);
+
                 return File(gif, "image/gif");
             }
             catch (OperationCanceledException)
@@ -312,6 +320,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                 }, renderCts.Token);
 
                 _cache.Set(cacheKey, png, TimeSpan.FromMinutes(10));
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Exploded view rendered (cache miss) — part='{partNumber}'", partNumber);
+
                 return File(png, "image/png");
             }
             catch (OperationCanceledException)
@@ -437,6 +448,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                 }, renderCts.Token);
 
                 _cache.Set(cacheKey, png, TimeSpan.FromMinutes(10));
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Render step (cache miss) — part='{partNumber}', step={stepIndex}", partNumber);
+
                 return File(png, "image/png");
             }
             catch (OperationCanceledException)
@@ -467,6 +481,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             [FromBody] BatchRenderRequest request,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -519,6 +535,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                 zipStream.Position = 0;
                 var zipBytes = zipStream.ToArray();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Batch render — part='{request.PartNumber}', {request.Sizes.Count} sizes", request.PartNumber);
+
                 return File(zipBytes, "application/zip", $"{request.PartNumber}_renders.zip");
             }
             catch (OperationCanceledException)
@@ -586,6 +605,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             Microsoft.AspNetCore.Http.IFormFile file,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -609,6 +630,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     EnsureRenderService(dataPath);
                     return _renderService.GetStepCount(lines, file.FileName);
                 }, cancellationToken);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Step count (upload) — file='{file.FileName}', steps={count}");
 
                 return Ok(new { stepCount = count });
             }
@@ -643,6 +666,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -683,6 +708,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     return _renderService.RenderStep(lines, fileName, stepIndex, width, height, colourCode,
                         elevation, azimuth, renderEdges, smoothShading, aaMode);
                 }, renderCts.Token);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Render step (upload) — file='{file.FileName}', step={stepIndex}");
 
                 return File(png, "image/png");
             }
@@ -729,6 +756,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             string renderer = "rasterizer",
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -860,6 +889,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/part-renderer/search")]
         public async Task<IActionResult> Search(string q, int take = 20, CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -891,6 +922,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                     p.ldrawCategory
                 })
                 .ToListAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.Search, $"Part renderer search — q='{q}', results={results.Count}");
 
             return Ok(results);
         }

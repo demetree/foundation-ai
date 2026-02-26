@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- Public landing page -->
+    <url>
+        <loc>/</loc>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- Login page -->
+    <url>
+        <loc>/login</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+    <!--
+        Future: When individual set/part/theme pages become public,
+        generate this sitemap dynamically server-side to include all
+        crawlable detail pages (e.g. /sets/10294, /themes/technic).
+    -->
+</urlset>

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
@@ -133,6 +134,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             int pageNumber = 1,
             CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -243,6 +246,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             //
             _cache.Set(cacheKey, result, PageCacheDuration);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Catalog browse — page={pageNumber}, search='{search ?? ""}', results={totalCount}");
+
             return Ok(result);
         }
 
@@ -260,6 +265,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/parts-catalog/all")]
         public async Task<IActionResult> GetAllCatalogParts(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -325,6 +332,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             _cache.Set(cacheKey, items, SidebarCacheDuration);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Full catalog loaded (IndexedDB sync) — {items.Count} parts");
+
             return Ok(items);
         }
 
@@ -341,6 +350,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/parts-catalog/categories")]
         public async Task<IActionResult> GetCatalogCategories(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -370,6 +381,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             _cache.Set(cacheKey, categories, SidebarCacheDuration);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Catalog categories loaded — {categories.Count} categories");
+
             return Ok(categories);
         }
 
@@ -386,6 +399,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/parts-catalog/part-types")]
         public async Task<IActionResult> GetCatalogPartTypes(CancellationToken cancellationToken = default)
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -413,6 +428,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .ToListAsync(cancellationToken);
 
             _cache.Set(cacheKey, partTypes, SidebarCacheDuration);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Catalog part types loaded — {partTypes.Count} types");
 
             return Ok(partTypes);
         }
