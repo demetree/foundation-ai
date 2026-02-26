@@ -70,35 +70,35 @@ namespace BMC.LDraw.Render
                 DarkNavy.r, DarkNavy.g, DarkNavy.b,
                 MidNavy.r, MidNavy.g, MidNavy.b, diagonal: true);
 
-            double y = _pageHeight * 0.12;
+            double y = _pageHeight * 0.06;
 
             // Title
             page.DrawTextCentered(_modelName, SimplePdfFont.Bold, TitleSize,
                 Margin, y, _pageWidth - Margin * 2,
                 White.r, White.g, White.b);
-            y += 50;
+            y += 42;
 
             // Subtitle
             page.DrawTextCentered("BUILD MANUAL", SimplePdfFont.Regular, SubtitleSize,
                 Margin, y, _pageWidth - Margin * 2,
                 White.r, White.g, White.b, 150);
-            y += 50;
+            y += 30;
 
-            // Cover image
+            // Cover image — fill almost the entire remaining page
             if (finalModelImage != null && finalModelImage.Length > 0)
             {
                 var (imgW, imgH) = SimplePdfPage.GetPngDimensions(finalModelImage);
                 if (imgW > 0 && imgH > 0)
                 {
-                    double maxW = _pageWidth - Margin * 4;
-                    double maxH = _pageHeight * 0.5;
+                    double maxW = _pageWidth - Margin * 2;
+                    double maxH = _pageHeight - y - 60; // Leave room for stats line at bottom
                     double scale = Math.Min(maxW / imgW, maxH / imgH);
                     double drawW = imgW * scale;
                     double drawH = imgH * scale;
                     double cx = _pageWidth / 2;
 
                     page.DrawImage(finalModelImage, cx - drawW / 2, y, drawW, drawH);
-                    y += drawH + 30;
+                    y += drawH + 16;
                 }
             }
 
@@ -303,19 +303,19 @@ namespace BMC.LDraw.Render
             page.FillGradientRect(0, 0, _pageWidth, _pageHeight,
                 10, 47, 31, 15, 76, 58);
 
-            double y = 60;
+            double y = 40;
 
             // Title
             page.DrawTextCentered(_modelName ?? "Model", SimplePdfFont.Bold, 28,
                 0, y, _pageWidth,
                 White.r, White.g, White.b);
-            y += 45;
+            y += 38;
 
             // Subtitle
             page.DrawTextCentered("Build Complete!", SimplePdfFont.Regular, 16,
                 0, y, _pageWidth,
                 White.r, White.g, White.b, 180);
-            y += 50;
+            y += 30;
 
             // Model image
             if (completedModelImage != null && completedModelImage.Length > 0)

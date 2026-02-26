@@ -548,7 +548,9 @@ All operational tables include multi-tenant support, versioning where appropriat
             legoSetTable.comment = "Official LEGO set definitions. Each row represents a distinct set release (e.g. 42131-1 Liebherr Crawler Crane).";
             legoSetTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             legoSetTable.AddIdField();
-            legoSetTable.AddNameField(true, true);
+
+            //legoSetTable.AddNameField(true, true);
+            legoSetTable.AddString500Field("name", false).AddScriptComments("For really long set names").CreateIndex();
 
             legoSetTable.AddString100Field("setNumber", false).AddScriptComments("Official set number including variant suffix (e.g. '42131-1', '10302-1')");
             legoSetTable.AddIntField("year", false).AddScriptComments("Release year of the set");

@@ -89,7 +89,8 @@ namespace BMC.LDraw.Render
                                   AntiAliasMode antiAliasMode = AntiAliasMode.None,
                                   string backgroundHex = null,
                                   string gradientTopHex = null,
-                                  string gradientBottomHex = null)
+                                  string gradientBottomHex = null,
+                                  RendererType rendererType = RendererType.Rasterizer)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -102,7 +103,8 @@ namespace BMC.LDraw.Render
                                            antiAliasMode: antiAliasMode,
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
-                                           gradientBottomHex: gradientBottomHex);
+                                           gradientBottomHex: gradientBottomHex,
+                                           rendererType: rendererType);
 
             return ImageExporter.ToPngBytes(pixels, width, height);
         }
@@ -157,7 +159,8 @@ namespace BMC.LDraw.Render
                                      AntiAliasMode antiAliasMode = AntiAliasMode.None,
                                      string backgroundHex = null,
                                      string gradientTopHex = null,
-                                     string gradientBottomHex = null)
+                                     string gradientBottomHex = null,
+                                     RendererType rendererType = RendererType.Rasterizer)
         {
             EnsureColours();
 
@@ -205,11 +208,21 @@ namespace BMC.LDraw.Render
             int renderH = height * ssaaFactor;
 
             //
-            // Render
+            // Create renderer via IRenderer interface
             //
-            SoftwareRenderer renderer = new SoftwareRenderer(renderW, renderH);
-            renderer.RenderEdges = renderEdges;
-            renderer.SmoothShading = smoothShading;
+            IRenderer renderer;
+
+            if (rendererType == RendererType.RayTracer)
+            {
+                renderer = new RayTracing.RayTraceRenderer(renderW, renderH);
+            }
+            else
+            {
+                SoftwareRenderer rasterizer = new SoftwareRenderer(renderW, renderH);
+                rasterizer.RenderEdges = renderEdges;
+                rasterizer.SmoothShading = smoothShading;
+                renderer = rasterizer;
+            }
 
             //
             // Configure background

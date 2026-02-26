@@ -1020,7 +1020,7 @@ CREATE INDEX `I_LegoTheme_deleted` ON `LegoTheme` (`deleted`);
 -- Official LEGO set definitions. Each row represents a distinct set release (e.g. 42131-1 Liebherr Crawler Crane).
 CREATE TABLE `LegoSet`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`name` VARCHAR(500) NOT NULL,		-- For really long set names
 	`setNumber` VARCHAR(100) NOT NULL,		-- Official set number including variant suffix (e.g. '42131-1', '10302-1')
 	`year` INT NOT NULL,		-- Release year of the set
 	`partCount` INT NOT NULL,		-- Total number of parts in the set (as listed by LEGO)

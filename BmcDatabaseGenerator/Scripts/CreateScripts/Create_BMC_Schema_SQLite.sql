@@ -1135,7 +1135,7 @@ CREATE INDEX "I_LegoTheme_deleted" ON "LegoTheme" ("deleted")
 CREATE TABLE "LegoSet"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"name" VARCHAR(500) NOT NULL COLLATE NOCASE,		-- For really long set names
 	"setNumber" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- Official set number including variant suffix (e.g. '42131-1', '10302-1')
 	"year" INTEGER NOT NULL,		-- Release year of the set
 	"partCount" INTEGER NOT NULL,		-- Total number of parts in the set (as listed by LEGO)

@@ -630,6 +630,7 @@ namespace BMC.LDraw.Render.CLI
             string aaStr = "none";
             string bgHex = null;
             float explodeFactor = 0f;
+            RendererType rendererType = RendererType.Rasterizer;
 
             for (int i = 2; i < args.Length; i++)
             {
@@ -676,6 +677,15 @@ namespace BMC.LDraw.Render.CLI
                         if (i + 1 < args.Length)
                         { float.TryParse(args[i + 1], out explodeFactor); i++; }
                         break;
+                    case "--renderer":
+                        if (i + 1 < args.Length)
+                        {
+                            string rt = args[i + 1].ToLowerInvariant();
+                            if (rt == "raytrace" || rt == "raytracer" || rt == "rt")
+                                rendererType = RendererType.RayTracer;
+                            i++;
+                        }
+                        break;
                 }
             }
 
@@ -711,6 +721,8 @@ namespace BMC.LDraw.Render.CLI
             Console.WriteLine($"Size:     {width}x{height}");
             Console.WriteLine($"Format:   {format.ToUpper()}");
             Console.WriteLine($"Library:  {libraryPath}");
+            if (rendererType == RendererType.RayTracer)
+                Console.WriteLine($"Renderer: Ray Tracer");
 
             try
             {
@@ -739,7 +751,7 @@ namespace BMC.LDraw.Render.CLI
                 }
                 else
                 {
-                    byte[] png = service.RenderToPng(inputFile, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode, backgroundHex: bgHex);
+                    byte[] png = service.RenderToPng(inputFile, width, height, colourCode, renderEdges: renderEdges, smoothShading: smoothShading, antiAliasMode: aaMode, backgroundHex: bgHex, rendererType: rendererType);
                     File.WriteAllBytes(outputFile, png);
                 }
 

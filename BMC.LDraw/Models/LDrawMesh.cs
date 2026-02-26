@@ -3,6 +3,23 @@ using System.Collections.Generic;
 namespace BMC.LDraw.Models
 {
     /// <summary>
+    /// Material finish type for PBR rendering.
+    /// Mapped from LDConfig's CHROME, METAL, PEARLESCENT, RUBBER keywords.
+    /// </summary>
+    public enum MaterialFinish : byte
+    {
+        Solid = 0,
+        Chrome = 1,
+        Metal = 2,
+        Pearlescent = 3,
+        Rubber = 4,
+        Transparent = 5,
+        Milky = 6,
+        Glitter = 7,
+        Speckle = 8
+    }
+
+    /// <summary>
     /// A single resolved triangle in world space, ready for rendering.
     ///
     /// Contains both a flat face normal (NX, NY, NZ) and optional per-vertex normals
@@ -50,6 +67,12 @@ namespace BMC.LDraw.Models
         // Face colour (RGBA, 0–255)
         //
         public byte R, G, B, A;
+
+        /// <summary>
+        /// Material finish — determines how the ray tracer shades this surface
+        /// (reflections for Chrome, roughness for Rubber, etc.).
+        /// </summary>
+        public MaterialFinish Finish;
     }
 
 

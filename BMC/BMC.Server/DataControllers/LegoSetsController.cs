@@ -520,9 +520,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 				return Forbid();
 			}
 
-			if (legoSet.name != null && legoSet.name.Length > 100)
+			if (legoSet.name != null && legoSet.name.Length > 500)
 			{
-				legoSet.name = legoSet.name.Substring(0, 100);
+				legoSet.name = legoSet.name.Substring(0, 500);
 			}
 
 			if (legoSet.setNumber != null && legoSet.setNumber.Length > 100)
@@ -616,9 +616,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			try
 			{
-				if (legoSet.name != null && legoSet.name.Length > 100)
+				if (legoSet.name != null && legoSet.name.Length > 500)
 				{
-					legoSet.name = legoSet.name.Substring(0, 100);
+					legoSet.name = legoSet.name.Substring(0, 500);
 				}
 
 				if (legoSet.setNumber != null && legoSet.setNumber.Length > 100)

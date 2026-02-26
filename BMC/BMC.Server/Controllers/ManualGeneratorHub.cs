@@ -136,21 +136,24 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
                 // ── Phase 4: Premium cover render ──
-                // Render the full model (no step slicing) with gradient + SSAA4x
+                // Render the full model at hero resolution with gradient + SSAA4x.
+                // Cover and completion images are the marquee shots — render at maximum
+                // quality (2400px) for crisp prints and high-DPI displays.
                 Context.ConnectionAborted.ThrowIfCancellationRequested();
+                int heroSize = 2400;
                 byte[] coverImage = await Task.Run(() =>
                     renderService.RenderToPng(
                         lines: lines,
                         fileName: fileName,
-                        width: Math.Max(imageWidth, 768),       // Higher res for cover
-                        height: Math.Max(imageHeight, 768),
+                        width: heroSize,
+                        height: heroSize,
                         elevation: elevation,
                         azimuth: azimuth,
                         renderEdges: true,
                         smoothShading: true,
-                        antiAliasMode: AntiAliasMode.SSAA4x,   // Premium quality
-                        gradientTopHex: "#1A1A2E",             // Deep navy
-                        gradientBottomHex: "#0F3460"),         // Rich dark blue
+                        antiAliasMode: AntiAliasMode.SSAA4x,
+                        gradientTopHex: "#1A1A2E",
+                        gradientBottomHex: "#0F3460"),
                     Context.ConnectionAborted);
 
 
@@ -304,14 +307,14 @@ namespace Foundation.BMC.Controllers.WebAPI
                     renderService.RenderToPng(
                         lines: lines,
                         fileName: fileName,
-                        width: Math.Max(imageWidth, 768),
-                        height: Math.Max(imageHeight, 768),
+                        width: heroSize,
+                        height: heroSize,
                         elevation: elevation + 5f,
-                        azimuth: azimuth + 30f,     // Slightly rotated from cover
+                        azimuth: azimuth + 30f,
                         renderEdges: true,
                         smoothShading: true,
                         antiAliasMode: AntiAliasMode.SSAA4x,
-                        gradientTopHex: "#0A2F1F",    // Deep forest green
+                        gradientTopHex: "#0A2F1F",
                         gradientBottomHex: "#0F4C3A"),
                     Context.ConnectionAborted);
 

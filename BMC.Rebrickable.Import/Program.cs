@@ -79,6 +79,7 @@ namespace BMC.Rebrickable.Import
             IConfigurationRoot config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile("appsettings.Development.json", optional: true)            // to do - make this conditional on environment
                 .AddEnvironmentVariables()
                 .Build();
 

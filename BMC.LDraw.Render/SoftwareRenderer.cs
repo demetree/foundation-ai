@@ -13,7 +13,7 @@ namespace BMC.LDraw.Render
     /// AI-generated — Phase 1.1 edges, Phase 1.2 smooth shading, Phase 1.3 enhanced
     /// lighting added Feb 2026.
     /// </summary>
-    public class SoftwareRenderer
+    public class SoftwareRenderer : IRenderer
     {
         private readonly int _width;
         private readonly int _height;

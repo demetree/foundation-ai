@@ -1271,7 +1271,7 @@ GO
 CREATE TABLE [BMC].[LegoSet]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[name] NVARCHAR(500) NOT NULL,		-- For really long set names
 	[setNumber] NVARCHAR(100) NOT NULL,		-- Official set number including variant suffix (e.g. '42131-1', '10302-1')
 	[year] INT NOT NULL,		-- Release year of the set
 	[partCount] INT NOT NULL,		-- Total number of parts in the set (as listed by LEGO)

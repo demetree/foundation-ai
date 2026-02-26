@@ -655,18 +655,19 @@ namespace BMC.LDraw.Parsers
                 TransformPoint(q.X4, q.Y4, q.Z4, parentMatrix, out x4, out y4, out z4);
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+                MaterialFinish finish = GetMaterialFinish(col);
 
                 bool cull = bfcCertified && a == 255;
 
                 if (invertWinding)
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull, finish));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a, cull, finish));
                 }
                 else
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull, finish));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a, cull, finish));
                 }
             }
 
@@ -788,17 +789,18 @@ namespace BMC.LDraw.Parsers
                 TransformPoint(tri.X3, tri.Y3, tri.Z3, parentMatrix, out x3, out y3, out z3);
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+                MaterialFinish finish = GetMaterialFinish(col);
 
                 bool cull = bfcCertified && a == 255;
 
                 MeshTriangle mt;
                 if (invertWinding)
                 {
-                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull);
+                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull, finish);
                 }
                 else
                 {
-                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull);
+                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull, finish);
                 }
                 mesh.Triangles.Add(mt);
             }
@@ -816,18 +818,19 @@ namespace BMC.LDraw.Parsers
                 TransformPoint(q.X4, q.Y4, q.Z4, parentMatrix, out x4, out y4, out z4);
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+                MaterialFinish finish = GetMaterialFinish(col);
 
                 bool cull = bfcCertified && a == 255;
 
                 if (invertWinding)
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull, finish));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a, cull, finish));
                 }
                 else
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull, finish));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a, cull, finish));
                 }
             }
 
@@ -1106,6 +1109,35 @@ namespace BMC.LDraw.Parsers
             }
         }
 
+
+        /// <summary>
+        /// Get the material finish for a colour code.
+        /// Maps LDConfig's FinishType string to the MaterialFinish enum.
+        /// </summary>
+        private MaterialFinish GetMaterialFinish(int colourCode)
+        {
+            // Direct colour codes are always Solid
+            if (colourCode > 0x2000000) return MaterialFinish.Solid;
+
+            if (_colourTable.TryGetValue(colourCode, out LDrawColour colour))
+            {
+                switch (colour.FinishType)
+                {
+                    case "Chrome":       return MaterialFinish.Chrome;
+                    case "Metal":        return MaterialFinish.Metal;
+                    case "Pearlescent":  return MaterialFinish.Pearlescent;
+                    case "Rubber":       return MaterialFinish.Rubber;
+                    case "Transparent":  return MaterialFinish.Transparent;
+                    case "Milky":        return MaterialFinish.Milky;
+                    case "Glitter":      return MaterialFinish.Glitter;
+                    case "Speckle":      return MaterialFinish.Speckle;
+                    default:             return MaterialFinish.Solid;
+                }
+            }
+
+            return MaterialFinish.Solid;
+        }
+
         /// <summary>
         /// Parse a hex colour string like "#DFC176" into RGB bytes.
         /// </summary>
@@ -1130,7 +1162,8 @@ namespace BMC.LDraw.Parsers
             float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3,
-            byte r, byte g, byte b, byte a, bool cullBackFace)
+            byte r, byte g, byte b, byte a, bool cullBackFace,
+            MaterialFinish finish = MaterialFinish.Solid)
         {
             MeshTriangle t;
             t.X1 = x1; t.Y1 = y1; t.Z1 = z1;
@@ -1138,6 +1171,7 @@ namespace BMC.LDraw.Parsers
             t.X3 = x3; t.Y3 = y3; t.Z3 = z3;
             t.R = r; t.G = g; t.B = b; t.A = a;
             t.CullBackFace = cullBackFace;
+            t.Finish = finish;
 
             // Compute flat normal from cross product of edges
             float e1x = x2 - x1, e1y = y2 - y1, e1z = z2 - z1;

@@ -22,7 +22,7 @@
       <form [formGroup]="legoSetForm" (ngSubmit)="submitForm()">
             <div class="form-group" *ngIf="!isFieldHidden('name')">
                 <label for="LegoSet-name" id="label-LegoSet-name"><span class="text-danger">*</span>Name</label>
-                <input type="text" id="LegoSet-name" formControlName="name" placeholder="Enter Name" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-name" />
+                <textarea id="LegoSet-name" formControlName="name" placeholder="Enter Name" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()"></textarea>
                 <div *ngIf="legoSetForm.get('name')?.invalid && legoSetForm.get('name')?.touched" class="text-danger">
                     Name is required
                 </div>
