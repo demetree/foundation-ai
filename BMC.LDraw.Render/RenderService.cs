@@ -1425,12 +1425,20 @@ namespace BMC.LDraw.Render
             Camera camera = new Camera();
             camera.AutoFrameStep(stepOnlyMesh, preSmoothedFullMesh, elevation, azimuth);
 
-            SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+            // Dynamically size the image width based on the model's projected shape.
+            // Project the render mesh bounding box to find the natural aspect ratio,
+            // then adapt width so wide models get wide images and tall models stay compact.
+            float projAR = camera.GetProjectedAspectRatio(renderMesh);
+            int dynamicWidth = (int)(height * Math.Max(1f, Math.Min(projAR, 2.5f)));
+            // Snap to even for PNG encoding
+            dynamicWidth = (dynamicWidth + 1) & ~1;
+
+            SoftwareRenderer renderer = new SoftwareRenderer(dynamicWidth, height);
             renderer.RenderEdges = renderEdges;
             renderer.SmoothShading = smoothShading;
 
             byte[] pixels = renderer.Render(renderMesh, camera);
-            byte[] png = ImageExporter.ToPngBytes(pixels, width, height);
+            byte[] png = ImageExporter.ToPngBytes(pixels, dynamicWidth, height);
 
             return new StepRenderResult
             {
@@ -1516,13 +1524,18 @@ namespace BMC.LDraw.Render
             Camera camera = new Camera();
             camera.AutoFrameStep(stepMesh, fullMesh, elevation, azimuth);
 
-            SoftwareRenderer renderer = new SoftwareRenderer(width, height);
+            // Dynamic aspect ratio: adapt width to the model's projected shape
+            float projAR = camera.GetProjectedAspectRatio(stepMesh);
+            int dynamicWidth = (int)(height * Math.Max(1f, Math.Min(projAR, 2.5f)));
+            dynamicWidth = (dynamicWidth + 1) & ~1;
+
+            SoftwareRenderer renderer = new SoftwareRenderer(dynamicWidth, height);
             renderer.RenderEdges = renderEdges;
             renderer.SmoothShading = smoothShading;
 
             byte[] pixels = renderer.Render(stepMesh, camera);
 
-            return ImageExporter.ToPngBytes(pixels, width, height);
+            return ImageExporter.ToPngBytes(pixels, dynamicWidth, height);
         }
 
 

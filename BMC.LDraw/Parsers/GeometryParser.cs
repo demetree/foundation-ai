@@ -298,7 +298,7 @@ namespace BMC.LDraw.Parsers
             if (tokens.Length < 15) return null;
 
             LDrawSubfileReference subRef = new LDrawSubfileReference();
-            if (!int.TryParse(tokens[1], out int col)) return null;
+            if (!TryParseColourCode(tokens[1], out int col)) return null;
             subRef.ColourCode = col;
 
             if (!TryParseFloat(tokens[2], out subRef.X)) return null;
@@ -326,7 +326,7 @@ namespace BMC.LDraw.Parsers
             if (tokens.Length < 8) return null;
 
             LDrawLine l = new LDrawLine();
-            if (!int.TryParse(tokens[1], out l.ColourCode)) return null;
+            if (!TryParseColourCode(tokens[1], out l.ColourCode)) return null;
             if (!TryParseFloat(tokens[2], out l.X1)) return null;
             if (!TryParseFloat(tokens[3], out l.Y1)) return null;
             if (!TryParseFloat(tokens[4], out l.Z1)) return null;
@@ -345,7 +345,7 @@ namespace BMC.LDraw.Parsers
             if (tokens.Length < 11) return null;
 
             LDrawTriangle t = new LDrawTriangle();
-            if (!int.TryParse(tokens[1], out t.ColourCode)) return null;
+            if (!TryParseColourCode(tokens[1], out t.ColourCode)) return null;
             if (!TryParseFloat(tokens[2], out t.X1)) return null;
             if (!TryParseFloat(tokens[3], out t.Y1)) return null;
             if (!TryParseFloat(tokens[4], out t.Z1)) return null;
@@ -367,7 +367,7 @@ namespace BMC.LDraw.Parsers
             if (tokens.Length < 14) return null;
 
             LDrawQuad q = new LDrawQuad();
-            if (!int.TryParse(tokens[1], out q.ColourCode)) return null;
+            if (!TryParseColourCode(tokens[1], out q.ColourCode)) return null;
             if (!TryParseFloat(tokens[2], out q.X1)) return null;
             if (!TryParseFloat(tokens[3], out q.Y1)) return null;
             if (!TryParseFloat(tokens[4], out q.Z1)) return null;
@@ -392,7 +392,7 @@ namespace BMC.LDraw.Parsers
             if (tokens.Length < 14) return null;
 
             LDrawConditionalLine c = new LDrawConditionalLine();
-            if (!int.TryParse(tokens[1], out c.ColourCode)) return null;
+            if (!TryParseColourCode(tokens[1], out c.ColourCode)) return null;
             if (!TryParseFloat(tokens[2], out c.X1)) return null;
             if (!TryParseFloat(tokens[3], out c.Y1)) return null;
             if (!TryParseFloat(tokens[4], out c.Z1)) return null;
@@ -411,6 +411,34 @@ namespace BMC.LDraw.Parsers
         private static bool TryParseFloat(string s, out float value)
         {
             return float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+        }
+
+
+        /// <summary>
+        /// Parse an LDraw colour code, handling both standard decimal codes (e.g. "4")
+        /// and hex direct colour codes (e.g. "0x2FF0000" for opaque red).
+        ///
+        /// Direct colour format:
+        ///   0x2RRGGBB — opaque direct colour
+        ///   0x3RRGGBB — semi-transparent direct colour
+        ///   0x4RRGGBB — transparent direct colour
+        ///
+        /// These are stored as the raw integer value; the GeometryResolver extracts
+        /// RGB from the value when converting to RGBA.
+        /// </summary>
+        internal static bool TryParseColourCode(string s, out int value)
+        {
+            if (s != null && s.Length > 2
+                && s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
+            {
+                //
+                // Hex direct colour code
+                //
+                return int.TryParse(s.Substring(2),
+                    NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
+            }
+
+            return int.TryParse(s, out value);
         }
     }
 }

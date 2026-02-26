@@ -29,8 +29,8 @@ namespace BMC.LDraw.Render
         /// <summary>Whether to use orthographic (true) or perspective (false) projection.</summary>
         public bool Orthographic = false;
 
-        /// <summary>Orthographic view width (only used when Orthographic = true).</summary>
-        public float OrthoWidth = 100f;
+        /// <summary>Orthographic view height (only used when Orthographic = true).</summary>
+        public float OrthoHeight = 100f;
 
         public Camera()
         {
@@ -98,8 +98,8 @@ namespace BMC.LDraw.Render
 
         private float[] GetOrthographicMatrix(float aspect)
         {
-            float halfW = OrthoWidth * 0.5f;
-            float halfH = halfW / aspect;
+            float halfH = OrthoHeight * 0.5f;
+            float halfW = halfH * aspect;
             float rangeInv = 1f / (NearPlane - FarPlane);
 
             return new float[]
@@ -155,7 +155,7 @@ namespace BMC.LDraw.Render
 
             NearPlane = distance * 0.01f;
             FarPlane = distance * 10f;
-            OrthoWidth = extent * 1.5f;
+            OrthoHeight = extent * 1.5f;
         }
 
         /// <summary>
@@ -195,7 +195,51 @@ namespace BMC.LDraw.Render
 
             NearPlane = distance * 0.01f;
             FarPlane = distance * 10f;
-            OrthoWidth = extent * 1.5f;
+            OrthoHeight = extent * 1.5f;
+        }
+
+
+        /// <summary>
+        /// Compute the natural aspect ratio (width / height) of a mesh's bounding box
+        /// as projected from the current camera position.
+        ///
+        /// This projects all 8 bounding-box corners into view space and measures the
+        /// horizontal vs vertical extent.  The result tells us how "wide" the model
+        /// looks from this angle, so we can size the render target to match.
+        /// </summary>
+        public float GetProjectedAspectRatio(Models.LDrawMesh mesh)
+        {
+            float[] view = GetViewMatrix();
+
+            // 8 corners of the AABB
+            float[] xs = { mesh.MinX, mesh.MaxX };
+            float[] ys = { mesh.MinY, mesh.MaxY };
+            float[] zs = { mesh.MinZ, mesh.MaxZ };
+
+            float minVX = float.MaxValue, maxVX = float.MinValue;
+            float minVY = float.MaxValue, maxVY = float.MinValue;
+
+            for (int ix = 0; ix < 2; ix++)
+            for (int iy = 0; iy < 2; iy++)
+            for (int iz = 0; iz < 2; iz++)
+            {
+                float wx = xs[ix], wy = ys[iy], wz = zs[iz];
+
+                // Transform to view space (only need X and Y)
+                float vx = view[0] * wx + view[1] * wy + view[2] * wz + view[3];
+                float vy = view[4] * wx + view[5] * wy + view[6] * wz + view[7];
+
+                if (vx < minVX) minVX = vx;
+                if (vx > maxVX) maxVX = vx;
+                if (vy < minVY) minVY = vy;
+                if (vy > maxVY) maxVY = vy;
+            }
+
+            float projW = maxVX - minVX;
+            float projH = maxVY - minVY;
+
+            if (projH < 1e-6f) return 1f;
+            return projW / projH;
         }
 
         // ── Vector math helpers ──

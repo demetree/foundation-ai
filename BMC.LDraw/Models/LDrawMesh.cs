@@ -39,6 +39,13 @@ namespace BMC.LDraw.Models
         /// </summary>
         public bool HasPerVertexNormals;
 
+        /// <summary>
+        /// When true, the renderer should back-face cull this triangle (skip if
+        /// screen-space winding is clockwise).  Set to false for non-BFC-certified
+        /// parts and transparent surfaces so both sides are always rendered.
+        /// </summary>
+        public bool CullBackFace;
+
         //
         // Face colour (RGBA, 0–255)
         //

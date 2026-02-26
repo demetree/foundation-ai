@@ -605,6 +605,12 @@ namespace BMC.LDraw.Parsers
             // Guard against infinite recursion (LDraw files shouldn't nest >100 deep)
             if (depth > 100) return;
 
+            //
+            // Determine whether this file's geometry is BFC-certified.
+            // Only certified geometry gets back-face culling.
+            //
+            bool bfcCertified = geo.BfcCertification == BfcCertification.Certified;
+
             // Resolve direct triangles
             for (int i = 0; i < geo.Triangles.Count; i++)
             {
@@ -618,15 +624,20 @@ namespace BMC.LDraw.Parsers
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
 
+                //
+                // Cull back faces only for BFC-certified opaque geometry
+                //
+                bool cull = bfcCertified && a == 255;
+
                 MeshTriangle mt;
                 if (invertWinding)
                 {
                     // Swap v2 and v3 to flip winding
-                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a);
+                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull);
                 }
                 else
                 {
-                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a);
+                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull);
                 }
                 mesh.Triangles.Add(mt);
             }
@@ -645,15 +656,17 @@ namespace BMC.LDraw.Parsers
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
 
+                bool cull = bfcCertified && a == 255;
+
                 if (invertWinding)
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a, cull));
                 }
                 else
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a, cull));
                 }
             }
 
@@ -724,6 +737,8 @@ namespace BMC.LDraw.Parsers
         private void ResolveDirectGeometry(LDrawGeometry geo, float[] parentMatrix,
             int parentColour, int parentEdgeColour, bool invertWinding, LDrawMesh mesh)
         {
+            bool bfcCertified = geo.BfcCertification == BfcCertification.Certified;
+
             // Triangles
             for (int i = 0; i < geo.Triangles.Count; i++)
             {
@@ -737,14 +752,16 @@ namespace BMC.LDraw.Parsers
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
 
+                bool cull = bfcCertified && a == 255;
+
                 MeshTriangle mt;
                 if (invertWinding)
                 {
-                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a);
+                    mt = MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull);
                 }
                 else
                 {
-                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a);
+                    mt = MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull);
                 }
                 mesh.Triangles.Add(mt);
             }
@@ -763,15 +780,17 @@ namespace BMC.LDraw.Parsers
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
 
+                bool cull = bfcCertified && a == 255;
+
                 if (invertWinding)
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x2, y2, z2, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x4, y4, z4, x3, y3, z3, r, g, b, a, cull));
                 }
                 else
                 {
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a));
-                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b, a, cull));
+                    mesh.Triangles.Add(MakeTriangle(x1, y1, z1, x3, y3, z3, x4, y4, z4, r, g, b, a, cull));
                 }
             }
 
@@ -972,9 +991,35 @@ namespace BMC.LDraw.Parsers
 
         /// <summary>
         /// Convert an LDraw colour code to RGBA bytes.
+        /// Handles standard colour table lookups and direct colour codes (0x2RRGGBB etc.).
         /// </summary>
         private void ColourToRgba(int colourCode, out byte r, out byte g, out byte b, out byte a)
         {
+            //
+            // Direct colour codes: the high nibble encodes the type.
+            //   0x2RRGGBB = opaque (alpha 255)
+            //   0x3RRGGBB = semi-transparent (alpha 128)
+            //   0x4RRGGBB = transparent (alpha 128)
+            //
+            if (colourCode > 0x2000000)
+            {
+                int prefix = (colourCode >> 24) & 0xF;
+                r = (byte)((colourCode >> 16) & 0xFF);
+                g = (byte)((colourCode >> 8) & 0xFF);
+                b = (byte)(colourCode & 0xFF);
+
+                if (prefix == 2)
+                {
+                    a = 255;
+                }
+                else
+                {
+                    // 0x3 and 0x4 = transparent variants
+                    a = 128;
+                }
+                return;
+            }
+
             if (_colourTable.TryGetValue(colourCode, out LDrawColour colour) && colour.HexValue != null)
             {
                 ParseHexColour(colour.HexValue, out r, out g, out b);
@@ -1011,13 +1056,14 @@ namespace BMC.LDraw.Parsers
             float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3,
-            byte r, byte g, byte b, byte a)
+            byte r, byte g, byte b, byte a, bool cullBackFace)
         {
             MeshTriangle t;
             t.X1 = x1; t.Y1 = y1; t.Z1 = z1;
             t.X2 = x2; t.Y2 = y2; t.Z2 = z2;
             t.X3 = x3; t.Y3 = y3; t.Z3 = z3;
             t.R = r; t.G = g; t.B = b; t.A = a;
+            t.CullBackFace = cullBackFace;
 
             // Compute flat normal from cross product of edges
             float e1x = x2 - x1, e1y = y2 - y1, e1z = z2 - z1;

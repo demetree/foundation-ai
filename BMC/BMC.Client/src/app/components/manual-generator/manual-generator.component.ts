@@ -149,6 +149,8 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
                 this.signalr.disconnect();
             }),
             this.signalr.onError$.subscribe((msg: string) => {
+                // Don't show error if generation already completed successfully
+                if (this.resultStats != null) return;
                 this.isGenerating = false;
                 this.generationError = msg;
                 this.signalr.disconnect();
@@ -321,8 +323,12 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
             await this.signalr.generateManual(response.generationId, this.options);
 
         } catch (err: any) {
-            this.generationError = err?.error || 'Failed to start generation.';
-            this.isGenerating = false;
+            // Don't overwrite a successful completion — the invoke can fail
+            // if the connection briefly dropped but the generation still completed.
+            if (this.resultStats == null) {
+                this.generationError = err?.error || 'Failed to start generation.';
+                this.isGenerating = false;
+            }
         }
     }
 
@@ -397,9 +403,22 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     // Download the generated manual as a self-contained HTML file
     //
     downloadHtml(): void {
-        // Preferred path: server-side download URL
+        const downloadName = (this.selectedFile?.name.replace(/\.[^.]+$/, '') || 'manual') + '_build-manual.html';
+
+        // Use in-memory HTML first (already fetched for preview)
+        if (this.generatedHtml) {
+            const blob = new Blob([this.generatedHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = downloadName;
+            link.click();
+            URL.revokeObjectURL(url);
+            return;
+        }
+
+        // Fallback: server-side download URL (if preview wasn't fetched yet)
         if (this.htmlDownloadUrl) {
-            const downloadName = (this.selectedFile?.name.replace(/\.[^.]+$/, '') || 'manual') + '_build-manual.html';
             fetch(this.htmlDownloadUrl, {
                 headers: { Authorization: 'Bearer ' + this.authService.accessToken }
             })
@@ -419,21 +438,7 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
                     console.error('HTML download error:', err);
                     this.generationError = 'Failed to download HTML. Please try again.';
                 });
-            return;
         }
-
-        // Fallback: use in-memory HTML
-        if (this.generatedHtml == null) {
-            return;
-        }
-
-        const blob = new Blob([this.generatedHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = (this.selectedFile?.name.replace(/\.[^.]+$/, '') || 'manual') + '_build-manual.html';
-        link.click();
-        URL.revokeObjectURL(url);
     }
 
     //

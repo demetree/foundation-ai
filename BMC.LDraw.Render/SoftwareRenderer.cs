@@ -380,10 +380,13 @@ namespace BMC.LDraw.Render
             float sy3 = (1f - ny3) * 0.5f * _height;
 
             //
-            // Back-face culling (screen-space winding order)
+            // Back-face culling (screen-space winding order).
+            // Only applied when CullBackFace is set — i.e. the triangle comes from
+            // a BFC-certified part and is opaque.  Non-certified and transparent
+            // triangles render both sides.
             //
             float cross2d = (sx2 - sx1) * (sy3 - sy1) - (sy2 - sy1) * (sx3 - sx1);
-            if (cross2d >= 0)
+            if (tri.CullBackFace == true && cross2d >= 0)
             {
                 return; // CW in screen space = back face
             }

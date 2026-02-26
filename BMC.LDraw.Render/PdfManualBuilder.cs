@@ -132,7 +132,7 @@ namespace BMC.LDraw.Render
             if (step.IsSubmodelStep)
             {
                 string subName = Path.GetFileNameWithoutExtension(step.ModelName);
-                page.DrawText("▸ " + subName, SimplePdfFont.Regular, SmallSize,
+                page.DrawText("\u203A " + subName, SimplePdfFont.Regular, SmallSize,
                     Margin, y + 10, 43, 108, 176);
                 y += 18;
             }

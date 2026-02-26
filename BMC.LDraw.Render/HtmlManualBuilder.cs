@@ -732,8 +732,8 @@ body {
     margin: 12px 0;
 }
 .step-image img {
-    max-width: 100%;
-    max-height: 650px;
+    width: 100%;
+    height: auto;
     border-radius: 6px;
 }
 
@@ -764,8 +764,8 @@ body {
     margin-bottom: 10px;
 }
 .step-cell-image img {
-    max-width: 100%;
-    max-height: 300px;
+    width: 100%;
+    height: auto;
     border-radius: 4px;
 }
 
@@ -807,8 +807,8 @@ body {
     margin-bottom: 8px;
 }
 .submodel-step-image img {
-    max-width: 100%;
-    max-height: 200px;
+    width: 100%;
+    height: auto;
     border-radius: 4px;
 }
 

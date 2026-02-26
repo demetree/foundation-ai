@@ -88,7 +88,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                 // Floor at 800 — the UI option can increase quality but never below this.
                 int imageWidth = Math.Max(800, Math.Clamp(options.ImageSize, 256, 1200));
-                int imageHeight = (int)(imageWidth * 0.75f); // 4:3 landscape
+                int imageHeight = (int)(imageWidth * 0.75f); // Step image height; width is auto-computed per-step from projected aspect ratio
                 float elevation = Math.Clamp(options.Elevation, -90f, 90f);
                 float azimuth = Math.Clamp(options.Azimuth, -360f, 360f);
 
