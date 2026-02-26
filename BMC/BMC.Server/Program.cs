@@ -433,6 +433,12 @@ namespace Foundation.BMC
                 builder.Services.AddSingleton<Foundation.Services.IAuthenticatedUsersProvider,
                     Foundation.Services.SecurityContextAuthenticatedUsersProvider>();
 
+                //
+                // IP Geolocation Services (for login attempt geographic visualization)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IIpGeolocationService, Foundation.Services.IpApiGeolocationService>();
+                builder.Services.AddScoped<Foundation.Services.IpAddressLocationManager>();
+                builder.Services.AddHostedService<Foundation.Services.IpAddressLocationWorker>();
 
                 //
                 // Configurations

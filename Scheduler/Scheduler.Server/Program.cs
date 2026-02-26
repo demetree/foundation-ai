@@ -432,6 +432,13 @@ namespace Foundation.Scheduler
                     Foundation.Services.SecurityContextAuthenticatedUsersProvider>();
 
                 //
+                // IP Geolocation Services (for login attempt geographic visualization)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IIpGeolocationService, Foundation.Services.IpApiGeolocationService>();
+                builder.Services.AddScoped<Foundation.Services.IpAddressLocationManager>();
+                builder.Services.AddHostedService<Foundation.Services.IpAddressLocationWorker>();
+
+                //
                 // Application Metrics Provider (for System Health dashboard)
                 //
                 builder.Services.AddSingleton<Foundation.Services.IApplicationMetricsProvider,

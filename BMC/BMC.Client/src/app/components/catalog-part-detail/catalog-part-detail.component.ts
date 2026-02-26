@@ -178,12 +178,11 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                 this.hasGeometry = true;
 
                 //
-                // If we have an initial colour ID, defer showing the model
-                // until colour data is ready (prevents colour flicker).
+                // Defer showing the model until colour data is ready.
+                // We always want to apply a colour (from the part's known colours,
+                // or Light Bluish Gray as fallback) before revealing the model.
                 //
-                if (this.initialColourId != null) {
-                    this.pendingColourReady = true;
-                }
+                this.pendingColourReady = true;
 
                 // Allow template to render the canvas element first
                 setTimeout(() => this.initThreeJsAndLoadModel(), 0);
@@ -334,14 +333,32 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             const matchingColour = this.partColours.find(c => c.id === this.initialColourId);
             if (matchingColour != null) {
                 this.selectColour(matchingColour);
+            } else if (this.partColours.length > 0) {
+                // Requested colour not found in part's colours — fall back to first available
+                this.selectColour(this.partColours[0]);
+            } else {
+                // No colours at all — apply Light Bluish Gray as the default
+                this.applyDefaultGray();
             }
-
-            //
-            // Colour data is now resolved — clear the pending gate.
-            // If the model already finished loading, this makes it visible.
-            //
-            this.pendingColourReady = false;
         }
+        else {
+            //
+            // No initial colour ID — auto-select the first known colour for this part
+            // so the model renders in a real-world colour instead of the raw file defaults.
+            // If the part has no known colours, apply Light Bluish Gray.
+            //
+            if (this.partColours.length > 0) {
+                this.selectColour(this.partColours[0]);
+            } else {
+                this.applyDefaultGray();
+            }
+        }
+
+        //
+        // Colour data is now resolved — clear the pending gate.
+        // If the model already finished loading, this makes it visible.
+        //
+        this.pendingColourReady = false;
     }
 
 
@@ -435,9 +452,22 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
 
     //
+    // Apply LEGO Light Bluish Gray (#A0A5A9) as the default colour when the part
+    // has no known colour variants.  This gives a neutral, realistic appearance
+    // instead of the raw LDraw file defaults.
+    //
+    private applyDefaultGray(): void {
+        if (this.sceneReady === true) {
+            this.applyColourToScene('#A0A5A9');
+        }
+    }
+
+
+    //
     // AI-Developed — Traverses the THREE.js scene and replaces the colour on all
-    // MeshStandardMaterial instances.  Line/edge materials are intentionally left
-    // unchanged so that part outlines remain visible.
+    // mesh materials.  Handles MeshStandardMaterial, MeshPhongMaterial,
+    // MeshBasicMaterial, and material arrays.  Line/edge materials are
+    // intentionally left unchanged so that part outlines remain visible.
     //
     private applyColourToScene(hexRgb: string): void {
         if (this.scene == null) {
@@ -455,11 +485,17 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         //
         this.scene.traverse(child => {
             if (child instanceof THREE.Mesh) {
-                const material = child.material;
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
 
-                if (material instanceof THREE.MeshStandardMaterial) {
-                    material.color.set(colour);
-                    material.needsUpdate = true;
+                for (const mat of materials) {
+                    if (mat != null && 'color' in mat && mat.color instanceof THREE.Color) {
+                        // Skip line/edge materials — only recolour solid meshes
+                        if (mat instanceof THREE.LineBasicMaterial || mat instanceof THREE.LineDashedMaterial) {
+                            continue;
+                        }
+                        mat.color.set(colour);
+                        mat.needsUpdate = true;
+                    }
                 }
             }
         });
@@ -822,15 +858,49 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                         //
                         group.rotation.x = Math.PI;
 
+                        //
+                        // Replace default yellow materials with LEGO Light Bluish Gray (#A0A5A9).
+                        // LDraw sub-parts without an explicit colour (code 16 = "inherit") can
+                        // fall through to the Three.js default or the LDrawLoader's fallback
+                        // yellow.  We use a fuzzy HSL check to catch any saturated yellow shade
+                        // rather than comparing against an exact hex value.
+                        //
+                        const lightBluishGray = new THREE.Color(0xA0A5A9);
+                        const hsl = { h: 0, s: 0, l: 0 };
+
+                        group.traverse(child => {
+                            if (child instanceof THREE.Mesh) {
+                                const materials = Array.isArray(child.material) ? child.material : [child.material];
+
+                                for (const mat of materials) {
+                                    if (mat != null && 'color' in mat && mat.color instanceof THREE.Color) {
+                                        if (mat instanceof THREE.LineBasicMaterial || mat instanceof THREE.LineDashedMaterial) {
+                                            continue;
+                                        }
+                                        mat.color.getHSL(hsl);
+                                        // Detect saturated yellows: hue ~50-70° (0.14–0.19), saturation > 80%
+                                        if (hsl.h >= 0.14 && hsl.h <= 0.19 && hsl.s > 0.8) {
+                                            mat.color.copy(lightBluishGray);
+                                            mat.needsUpdate = true;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
                         this.scene.add(group);
                         this.centreAndFrameModel(group);
 
                         //
                         // If a colour was already selected before the model finished loading,
                         // apply it now so the viewer reflects the selection immediately.
+                        // If no colour was selected but colour data has been resolved (part
+                        // has no known colours), apply Light Bluish Gray as the default.
                         //
                         if (this.selectedColour != null && this.selectedColour.hexRgb != null) {
                             this.applyColourToScene(this.selectedColour.hexRgb);
+                        } else if (this.pendingColourReady === false && this.selectedColour == null) {
+                            this.applyDefaultGray();
                         }
 
                         this.isLoadingModel = false;

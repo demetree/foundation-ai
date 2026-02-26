@@ -16,9 +16,22 @@
 
         <div class="hero-content">
             <div class="hero-logo">
-                <span class="logo-letter">B</span>
-                <span class="logo-letter">M</span>
-                <span class="logo-letter">C</span>
+                <svg class="hero-brick-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 24" aria-hidden="true">
+                    <g transform="translate(14, 8)">
+                        <!-- Top face (diamond) -->
+                        <path d="M0,-6 L10,0 L0,6 L-10,0 Z" class="brick-top-face" />
+                        <!-- Left face -->
+                        <path d="M-10,0 L0,6 L0,12 L-10,6 Z" class="brick-left-face" />
+                        <!-- Right face -->
+                        <path d="M10,0 L0,6 L0,12 L10,6 Z" class="brick-right-face" />
+                        <!-- Solid cylinder stud -->
+                        <path
+                            d="M-4,0 C-4,1.3 -2.2,2.3 0,2.3 C2.2,2.3 4,1.3 4,0 L4,-2 C4,-0.7 2.2,0.3 0,0.3 C-2.2,0.3 -4,-0.7 -4,-2 Z"
+                            class="brick-stud-wall" />
+                        <ellipse cx="0" cy="-2" rx="4" ry="2.3" class="brick-stud" />
+                    </g>
+                </svg>
+                <span class="hero-brand-text">BMC</span>
             </div>
             <h1 class="hero-title">Brick Machine Construction</h1>
             <p class="hero-tagline" [class.visible]="taglineVisible">

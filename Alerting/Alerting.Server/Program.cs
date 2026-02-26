@@ -373,6 +373,13 @@ namespace Foundation.Alerting
                 builder.Services.AddHostedService<NotificationAuditBufferWorker>();
 
                 //
+                // IP Geolocation Services (for login attempt geographic visualization)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IIpGeolocationService, Foundation.Services.IpApiGeolocationService>();
+                builder.Services.AddScoped<Foundation.Services.IpAddressLocationManager>();
+                builder.Services.AddHostedService<Foundation.Services.IpAddressLocationWorker>();
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

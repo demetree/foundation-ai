@@ -38,49 +38,69 @@
 
 .hero-logo {
     display: flex;
-    gap: 12px;
+    align-items: center;
+    gap: 16px;
     justify-content: center;
     margin-bottom: 1.5rem;
+    animation: heroLogoFadeIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
 
-    .logo-letter {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 80px;
-        height: 80px;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        font-size: 2.5rem;
-        color: var(--bmc-text-primary);
-        background: var(--bmc-gradient-primary);
-        border-radius: 16px;
-        box-shadow: var(--bmc-btn-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        transform: perspective(200px) rotateX(5deg);
-        animation: brickDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+.hero-brick-logo {
+    width: 72px;
+    height: 80px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 
-        &:nth-child(1) {
-            animation-delay: 0.1s;
-        }
+    .brick-top-face {
+        fill: var(--bmc-brick-face, #4A5D6A);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
 
-        &:nth-child(2) {
-            animation-delay: 0.25s;
-        }
+    .brick-left-face {
+        fill: var(--bmc-brick-shadow, #354550);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
 
-        &:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+    .brick-right-face {
+        fill: var(--bmc-brick-light, #5A7080);
+        stroke: var(--bmc-brick-stroke, rgba(0, 0, 0, 0.3));
+        stroke-width: 0.5;
+        stroke-linejoin: round;
+    }
+
+    .brick-stud-wall {
+        fill: var(--bmc-primary-dark, #cc8400);
+    }
+
+    .brick-stud {
+        fill: var(--bmc-primary);
     }
 }
 
-@keyframes brickDrop {
+.hero-brand-text {
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
+    font-size: 4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.06em;
+}
+
+@keyframes heroLogoFadeIn {
     from {
         opacity: 0;
-        transform: perspective(200px) rotateX(25deg) translateY(-60px);
+        transform: translateY(-30px) scale(0.9);
     }
 
     to {
         opacity: 1;
-        transform: perspective(200px) rotateX(5deg) translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -852,11 +872,13 @@
    Responsive
    ---------------------------------------------------------------- */
 @media (max-width: 768px) {
-    .hero-logo .logo-letter {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
-        border-radius: 12px;
+    .hero-brick-logo {
+        width: 56px;
+        height: 64px;
+    }
+
+    .hero-brand-text {
+        font-size: 3rem;
     }
 
     .hero-title {
@@ -917,10 +939,13 @@
 }
 
 @media (max-width: 480px) {
-    .hero-logo .logo-letter {
-        width: 50px;
+    .hero-brick-logo {
+        width: 44px;
         height: 50px;
-        font-size: 1.6rem;
+    }
+
+    .hero-brand-text {
+        font-size: 2.2rem;
     }
 
     .hero-cta {
