@@ -18,6 +18,8 @@ namespace BMC.LDraw.Render.RayTracing
         private readonly int _width;
         private readonly int _height;
         private byte[] _colourBuffer;
+        private float[] _depthBuffer;   // for edge detection
+        private float[] _normalBuffer;  // nx, ny, nz per pixel
 
         // Background
         private byte _bgR, _bgG, _bgB, _bgA;
@@ -42,12 +44,23 @@ namespace BMC.LDraw.Render.RayTracing
         /// <summary>Strength of the AO darkening effect (0 = off, 1 = full).</summary>
         public float AoIntensity { get; set; } = 0.6f;
 
+        /// <summary>Anti-aliasing samples per pixel (1 = off, 4 = 2×2, 9 = 3×3).</summary>
+        public int AaSamples { get; set; } = 1;
+
+        /// <summary>Whether to render edge lines via post-process edge detection.</summary>
+        public bool RenderEdges { get; set; } = true;
+
+        /// <summary>Colour of detected edges (0–255 grey value). Lower = darker edges.</summary>
+        public byte EdgeDarkness { get; set; } = 40;
+
 
         public RayTraceRenderer(int width, int height)
         {
             _width = width;
             _height = height;
             _colourBuffer = new byte[width * height * 4];
+            _depthBuffer = new float[width * height];
+            _normalBuffer = new float[width * height * 3];
         }
 
 
@@ -139,6 +152,18 @@ namespace BMC.LDraw.Render.RayTracing
             int aoSamples = AoSamples;
             float aoRadius = AoRadius;
             float aoIntensity = AoIntensity;
+            int aaSamples = AaSamples;
+
+            // Precompute AA sub-pixel grid
+            int aaGridSize = (int)MathF.Ceiling(MathF.Sqrt(aaSamples));
+            if (aaGridSize < 1) aaGridSize = 1;
+            float aaStep = 1f / aaGridSize;
+
+            //
+            // Initialize depth buffer to max
+            //
+            for (int i = 0; i < _depthBuffer.Length; i++)
+                _depthBuffer[i] = float.MaxValue;
 
             //
             // Ray trace — one scanline at a time in parallel
@@ -149,76 +174,112 @@ namespace BMC.LDraw.Render.RayTracing
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    //
-                    // Map pixel to normalised coordinates [-1, 1]
-                    //
-                    float u = (2f * (x + 0.5f) / _width - 1f);
-                    float v = (1f - 2f * (y + 0.5f) / _height);
+                    float accumR = 0, accumG = 0, accumB = 0, accumA = 0;
+                    float closestT = float.MaxValue;
+                    float bestNX = 0, bestNY = 0, bestNZ = 0;
+                    int sampleCount = 0;
 
-                    Ray ray;
-
-                    if (ortho)
+                    for (int sy = 0; sy < aaGridSize; sy++)
                     {
-                        //
-                        // Orthographic: ray origin moves across the view plane,
-                        // direction is always forward
-                        //
-                        float ox = eyeX + rightX * u * orthoHalfW + upX * v * orthoHalfH;
-                        float oy = eyeY + rightY * u * orthoHalfW + upY * v * orthoHalfH;
-                        float oz = eyeZ + rightZ * u * orthoHalfW + upZ * v * orthoHalfH;
-                        ray = new Ray(ox, oy, oz, fwdX, fwdY, fwdZ);
+                        for (int sx = 0; sx < aaGridSize; sx++)
+                        {
+                            // Jittered sub-pixel offset
+                            float jitterX = (aaSamples > 1) ? (float)rng.NextDouble() * aaStep : 0.5f;
+                            float jitterY = (aaSamples > 1) ? (float)rng.NextDouble() * aaStep : 0.5f;
+                            float px = x + (sx + jitterX) * aaStep;
+                            float py = y + (sy + jitterY) * aaStep;
+
+                            float u = (2f * px / _width - 1f);
+                            float v = (1f - 2f * py / _height);
+
+                            Ray ray;
+
+                            if (ortho)
+                            {
+                                float ox = eyeX + rightX * u * orthoHalfW + upX * v * orthoHalfH;
+                                float oy = eyeY + rightY * u * orthoHalfW + upY * v * orthoHalfH;
+                                float oz = eyeZ + rightZ * u * orthoHalfW + upZ * v * orthoHalfH;
+                                ray = new Ray(ox, oy, oz, fwdX, fwdY, fwdZ);
+                            }
+                            else
+                            {
+                                float dirX = fwdX + rightX * u * halfW + upX * v * halfH;
+                                float dirY = fwdY + rightY * u * halfW + upY * v * halfH;
+                                float dirZ = fwdZ + rightZ * u * halfW + upZ * v * halfH;
+                                Normalize(ref dirX, ref dirY, ref dirZ);
+                                ray = new Ray(eyeX, eyeY, eyeZ, dirX, dirY, dirZ);
+                            }
+
+                            if (bvh.Intersect(ref ray, out HitRecord hit))
+                            {
+                                float hitX = ray.OriginX + ray.DirX * hit.T;
+                                float hitY = ray.OriginY + ray.DirY * hit.T;
+                                float hitZ = ray.OriginZ + ray.DirZ * hit.T;
+
+                                MaterialFinish finish = bvh.Triangles[hit.TriIndex].Finish;
+
+                                ShadePixel(lighting, bvh, ref ray, ref hit,
+                                           hitX, hitY, hitZ,
+                                           eyeX, eyeY, eyeZ,
+                                           finish, 0,
+                                           shadowSamples, aoSamples, aoRadius, aoIntensity, rng,
+                                           out byte finalR, out byte finalG, out byte finalB);
+
+                                accumR += finalR;
+                                accumG += finalG;
+                                accumB += finalB;
+                                accumA += hit.A;
+
+                                // Track closest hit for edge detection G-buffer
+                                if (hit.T < closestT)
+                                {
+                                    closestT = hit.T;
+                                    bestNX = hit.NX;
+                                    bestNY = hit.NY;
+                                    bestNZ = hit.NZ;
+                                }
+                            }
+                            else
+                            {
+                                // Background sample
+                                accumR += _bgR;
+                                accumG += _bgG;
+                                accumB += _bgB;
+                                accumA += _bgA;
+                            }
+
+                            sampleCount++;
+                        }
                     }
-                    else
-                    {
-                        //
-                        // Perspective: rays originate from the eye and fan out
-                        //
-                        float dirX = fwdX + rightX * u * halfW + upX * v * halfH;
-                        float dirY = fwdY + rightY * u * halfW + upY * v * halfH;
-                        float dirZ = fwdZ + rightZ * u * halfW + upZ * v * halfH;
-                        Normalize(ref dirX, ref dirY, ref dirZ);
-                        ray = new Ray(eyeX, eyeY, eyeZ, dirX, dirY, dirZ);
-                    }
 
-                    //
-                    // Cast primary ray
-                    //
-                    if (bvh.Intersect(ref ray, out HitRecord hit))
-                    {
-                        //
-                        // Hit point in world space
-                        //
-                        float hitX = ray.OriginX + ray.DirX * hit.T;
-                        float hitY = ray.OriginY + ray.DirY * hit.T;
-                        float hitZ = ray.OriginZ + ray.DirZ * hit.T;
+                    // Average samples
+                    float invCount = 1f / sampleCount;
+                    int bufIdx = (y * _width + x) * 4;
+                    _colourBuffer[bufIdx]     = (byte)(accumR * invCount + 0.5f);
+                    _colourBuffer[bufIdx + 1] = (byte)(accumG * invCount + 0.5f);
+                    _colourBuffer[bufIdx + 2] = (byte)(accumB * invCount + 0.5f);
+                    _colourBuffer[bufIdx + 3] = (byte)(accumA * invCount + 0.5f);
 
-                        //
-                        // Get material finish for this triangle
-                        //
-                        MaterialFinish finish = bvh.Triangles[hit.TriIndex].Finish;
-
-                        //
-                        // Compute shading with materials
-                        //
-                        ShadePixel(lighting, bvh, ref ray, ref hit,
-                                   hitX, hitY, hitZ,
-                                   eyeX, eyeY, eyeZ,
-                                   finish, 0,
-                                   shadowSamples, aoSamples, aoRadius, aoIntensity, rng,
-                                   out byte finalR, out byte finalG, out byte finalB);
-
-                        int bufIdx = (y * _width + x) * 4;
-                        _colourBuffer[bufIdx] = finalR;
-                        _colourBuffer[bufIdx + 1] = finalG;
-                        _colourBuffer[bufIdx + 2] = finalB;
-                        _colourBuffer[bufIdx + 3] = hit.A;
-                    }
-                    // else: pixel stays at background colour
+                    // Store G-buffer data for edge detection
+                    int pixIdx = y * _width + x;
+                    _depthBuffer[pixIdx] = closestT;
+                    int nIdx = pixIdx * 3;
+                    _normalBuffer[nIdx]     = bestNX;
+                    _normalBuffer[nIdx + 1] = bestNY;
+                    _normalBuffer[nIdx + 2] = bestNZ;
                 }
 
                 return rng;
             },
-            _ => { }); // finalizer — nothing to clean up
+            _ => { }); // finalizer
+
+            //
+            // Post-process: edge detection
+            //
+            if (RenderEdges)
+            {
+                ApplyEdgeDetection();
+            }
 
             return _colourBuffer;
         }
@@ -646,6 +707,84 @@ namespace BMC.LDraw.Render.RayTracing
             // Bitangent = cross(normal, tangent)
             Cross(nx, ny, nz, tx, ty, tz, out bx, out by, out bz);
             Normalize(ref bx, ref by, ref bz);
+        }
+
+
+        /// <summary>
+        /// Post-process: detect edges using depth and normal discontinuities
+        /// and darken those pixels to simulate edge lines.
+        /// </summary>
+        private void ApplyEdgeDetection()
+        {
+            byte edgeVal = EdgeDarkness;
+
+            // Thresholds for edge detection
+            const float DEPTH_THRESHOLD = 0.02f;   // relative depth difference
+            const float NORMAL_THRESHOLD = 0.3f;    // normal dot product difference
+
+            for (int y = 1; y < _height - 1; y++)
+            {
+                for (int x = 1; x < _width - 1; x++)
+                {
+                    int idx = y * _width + x;
+                    float centerDepth = _depthBuffer[idx];
+
+                    // Skip background pixels
+                    if (centerDepth >= float.MaxValue * 0.5f) continue;
+
+                    bool isEdge = false;
+
+                    // Check 4-connected neighbours for depth and normal discontinuities
+                    int[] dx = { -1, 1, 0, 0 };
+                    int[] dy = { 0, 0, -1, 1 };
+
+                    for (int d = 0; d < 4; d++)
+                    {
+                        int nx = x + dx[d];
+                        int ny = y + dy[d];
+                        int nIdx = ny * _width + nx;
+
+                        float neighborDepth = _depthBuffer[nIdx];
+
+                        // Depth edge: significant depth discontinuity
+                        if (neighborDepth >= float.MaxValue * 0.5f)
+                        {
+                            // Neighbour is background — silhouette edge
+                            isEdge = true;
+                            break;
+                        }
+
+                        float depthDiff = MathF.Abs(centerDepth - neighborDepth) / MathF.Max(centerDepth, 1f);
+                        if (depthDiff > DEPTH_THRESHOLD)
+                        {
+                            isEdge = true;
+                            break;
+                        }
+
+                        // Normal edge: sharp crease between surfaces
+                        int cnIdx = idx * 3;
+                        int nnIdx = nIdx * 3;
+                        float dot = _normalBuffer[cnIdx] * _normalBuffer[nnIdx]
+                                  + _normalBuffer[cnIdx + 1] * _normalBuffer[nnIdx + 1]
+                                  + _normalBuffer[cnIdx + 2] * _normalBuffer[nnIdx + 2];
+
+                        if (dot < (1f - NORMAL_THRESHOLD))
+                        {
+                            isEdge = true;
+                            break;
+                        }
+                    }
+
+                    if (isEdge)
+                    {
+                        // Darken this pixel toward edge colour
+                        int bufIdx = idx * 4;
+                        _colourBuffer[bufIdx] = (byte)((_colourBuffer[bufIdx] + edgeVal) / 2);
+                        _colourBuffer[bufIdx + 1] = (byte)((_colourBuffer[bufIdx + 1] + edgeVal) / 2);
+                        _colourBuffer[bufIdx + 2] = (byte)((_colourBuffer[bufIdx + 2] + edgeVal) / 2);
+                    }
+                }
+            }
         }
 
 
