@@ -33,6 +33,14 @@ namespace Foundation.BMC.Controllers.WebAPI
         internal static readonly ConcurrentDictionary<string, (string[] Lines, string FileName, DateTime UploadTime)> PendingFiles
             = new ConcurrentDictionary<string, (string[], string, DateTime)>();
 
+        /// <summary>
+        /// In-memory store for completed manual downloads.
+        /// The hub writes PDF/HTML bytes here; the client fetches via GET.
+        /// Entries are removed on download or after 10 minutes.
+        /// </summary>
+        internal static readonly ConcurrentDictionary<string, (byte[] Bytes, string FileName, string ContentType, DateTime CreatedAt)> CompletedManuals
+            = new ConcurrentDictionary<string, (byte[], string, string, DateTime)>();
+
         public ManualGeneratorController(
             IConfiguration configuration,
             ILogger<ManualGeneratorController> logger
@@ -202,6 +210,49 @@ namespace Foundation.BMC.Controllers.WebAPI
             PendingFiles[generationId] = (lines, file.FileName, DateTime.UtcNow);
 
             return Ok(new { generationId = generationId });
+        }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Download completed manual PDF
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/manual-generator/download/{id}
+        ///
+        /// Serves a completed manual (PDF or HTML) from temporary in-memory storage.
+        /// The entry is removed after download (single-use).
+        /// </summary>
+        [HttpGet]
+        [Route("api/manual-generator/download/{id}")]
+        public async Task<IActionResult> DownloadManual(string id, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            // Evict expired manual downloads (older than 10 minutes)
+            DateTime cutoff = DateTime.UtcNow.AddMinutes(-10);
+            foreach (string key in CompletedManuals.Keys.ToList())
+            {
+                if (CompletedManuals.TryGetValue(key, out var e) && e.CreatedAt < cutoff)
+                {
+                    CompletedManuals.TryRemove(key, out _);
+                }
+            }
+
+            if (!CompletedManuals.TryRemove(id, out var entry))
+            {
+                return NotFound("Download not found or expired.");
+            }
+
+            bool isPdf = entry.ContentType == "application/pdf";
+            string ext = isPdf ? ".pdf" : ".html";
+            string downloadName = (Path.GetFileNameWithoutExtension(entry.FileName) ?? "manual")
+                + "_build-manual" + ext;
+
+            return File(entry.Bytes, entry.ContentType, downloadName);
         }
     }
 }

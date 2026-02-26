@@ -33,6 +33,14 @@ namespace BMC.LDraw.Render
         private const int MaxStepsPerPage = 2;
         private const int SmallStepPartThreshold = 3;
 
+        private int SumAllParts()
+        {
+            int total = 0;
+            for (int s = 0; s < _plan.Steps.Count; s++)
+                foreach (var p in _plan.Steps[s].NewParts) total += p.Quantity;
+            return total;
+        }
+
 
         /// <summary>
         /// Start a new HTML document.
@@ -82,9 +90,7 @@ namespace BMC.LDraw.Render
 
             _sb.AppendFormat("<div class=\"cover-meta\">{0} Steps · {1} Parts</div>\n",
                 _plan.TotalSteps,
-                _plan.Steps.Count > 0
-                    ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount
-                    : 0);
+                SumAllParts());
             _sb.AppendLine("</div>");
             _sb.AppendFormat("<div class=\"page-number page-number-light\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
             _sb.AppendLine("</div>");
@@ -110,11 +116,8 @@ namespace BMC.LDraw.Render
                 _sb.AppendFormat("<img class=\"completion-image\" src=\"data:image/png;base64,{0}\" alt=\"Completed model\" />\n", b64);
             }
 
-            int totalParts = _plan.Steps.Count > 0
-                ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount
-                : 0;
             _sb.AppendFormat("<div class=\"completion-meta\">{0} Steps · {1} Parts</div>\n",
-                _plan.TotalSteps, totalParts);
+                _plan.TotalSteps, SumAllParts());
             _sb.AppendLine("</div>");
             _sb.AppendFormat("<div class=\"page-number page-number-light\">Page {0} of {{TOTAL_PAGES}}</div>\n", _pageCount);
             _sb.AppendLine("</div>");
@@ -160,7 +163,7 @@ namespace BMC.LDraw.Render
         public void AddStep(ManualBuildStep step, byte[] stepImage,
             Dictionary<string, byte[]> partImages)
         {
-            _totalParts = Math.Max(_totalParts, step.CumulativePartCount);
+            foreach (var p in step.NewParts) _totalParts += p.Quantity;
 
             if (step.IsSubmodelStep)
             {

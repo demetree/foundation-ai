@@ -14,7 +14,7 @@
 
 
     <!-- ─── Upload Zone ─────────────────────────────────────────────── -->
-    <section class="upload-section" *ngIf="!generatedHtml && !generatedPdf">
+    <section class="upload-section" *ngIf="!generatedHtml && !generatedPdf && !pdfDownloadUrl">
         <div class="upload-dropzone" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
 
@@ -43,7 +43,8 @@
 
 
     <!-- ─── Options & Actions ───────────────────────────────────────── -->
-    <section class="options-section" *ngIf="selectedFile && !isGenerating && !generatedHtml && !generatedPdf">
+    <section class="options-section"
+        *ngIf="selectedFile && !isGenerating && !generatedHtml && !generatedPdf && !pdfDownloadUrl">
 
         <div class="options-grid">
             <div class="option-group">
@@ -112,7 +113,8 @@
 
 
     <!-- ─── Analysis Results ────────────────────────────────────────── -->
-    <section class="analysis-section" *ngIf="analysis && !isGenerating && !generatedHtml && !generatedPdf">
+    <section class="analysis-section"
+        *ngIf="analysis && !isGenerating && !generatedHtml && !generatedPdf && !pdfDownloadUrl">
         <h2>Step Analysis</h2>
         <div class="analysis-summary">
             <div class="stat-card">
@@ -196,7 +198,7 @@
 
 
     <!-- ─── Results / Preview ───────────────────────────────────────── -->
-    <section class="result-section" *ngIf="generatedHtml || generatedPdf">
+    <section class="result-section" *ngIf="generatedHtml || generatedPdf || pdfDownloadUrl">
         <div class="result-header">
             <h2>Build Manual Ready</h2>
 
@@ -230,7 +232,7 @@
                 </ng-container>
 
                 <!-- PDF actions -->
-                <button class="btn btn-primary" *ngIf="generatedPdf" (click)="downloadPdf()">
+                <button class="btn btn-primary" *ngIf="generatedPdf || pdfDownloadUrl" (click)="downloadPdf()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
@@ -256,7 +258,7 @@
         </div>
 
         <!-- PDF Ready Message -->
-        <div class="pdf-ready-message" *ngIf="generatedPdf">
+        <div class="pdf-ready-message" *ngIf="generatedPdf || pdfDownloadUrl">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />

@@ -326,14 +326,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                 if (isPdf)
                 {
-                    // Send PDF as base64
-                    string pdfBase64 = finalResult.DocumentBytes != null
-                        ? Convert.ToBase64String(finalResult.DocumentBytes) : null;
+                    // Store PDF bytes for HTTP download (avoids SignalR message size limits)
+                    string downloadId = Guid.NewGuid().ToString("N");
+                    ManualGeneratorController.CompletedManuals[downloadId] =
+                        (finalResult.DocumentBytes, fileName, "application/pdf", DateTime.UtcNow);
 
                     await Clients.Caller.SendAsync("GenerationComplete", new
                     {
                         format = "pdf",
-                        pdfBase64 = pdfBase64,
+                        downloadUrl = $"/api/manual-generator/download/{downloadId}",
                         totalSteps = finalResult.TotalSteps,
                         totalParts = finalResult.TotalParts,
                         renderTimeMs = (int)sw.ElapsedMilliseconds
@@ -341,10 +342,16 @@ namespace Foundation.BMC.Controllers.WebAPI
                 }
                 else
                 {
+                    // Store HTML for HTTP download (avoids SignalR message size limits)
+                    string downloadId = Guid.NewGuid().ToString("N");
+                    byte[] htmlBytes = System.Text.Encoding.UTF8.GetBytes(finalResult.Html ?? "");
+                    ManualGeneratorController.CompletedManuals[downloadId] =
+                        (htmlBytes, fileName, "text/html; charset=utf-8", DateTime.UtcNow);
+
                     await Clients.Caller.SendAsync("GenerationComplete", new
                     {
                         format = "html",
-                        html = finalResult.Html,
+                        downloadUrl = $"/api/manual-generator/download/{downloadId}",
                         totalSteps = finalResult.TotalSteps,
                         totalParts = finalResult.TotalParts,
                         renderTimeMs = (int)sw.ElapsedMilliseconds

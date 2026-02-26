@@ -102,9 +102,10 @@ namespace BMC.LDraw.Render
                 }
             }
 
-            // Meta info
-            int totalParts = _plan.Steps.Count > 0
-                ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount : 0;
+            // Meta info — sum NewParts across ALL steps (submodel-safe)
+            int totalParts = 0;
+            for (int s = 0; s < _plan.Steps.Count; s++)
+                foreach (var p in _plan.Steps[s].NewParts) totalParts += p.Quantity;
             page.DrawTextCentered($"{_plan.TotalSteps} Steps · {totalParts} Parts",
                 SimplePdfFont.Regular, BodySize,
                 Margin, y, _pageWidth - Margin * 2,
@@ -121,7 +122,7 @@ namespace BMC.LDraw.Render
         public void AddStep(ManualBuildStep step, byte[] stepImage,
             Dictionary<string, byte[]> partImages)
         {
-            _totalParts = Math.Max(_totalParts, step.CumulativePartCount);
+            foreach (var p in step.NewParts) _totalParts += p.Quantity;
 
             var page = AddPage();
             double contentW = _pageWidth - Margin * 2;
@@ -334,10 +335,11 @@ namespace BMC.LDraw.Render
                 }
             }
 
-            // Stats
-            int totalParts = _plan != null && _plan.Steps.Count > 0
-                ? _plan.Steps[_plan.Steps.Count - 1].CumulativePartCount
-                : 0;
+            // Stats — sum NewParts across ALL steps (submodel-safe)
+            int totalParts = 0;
+            if (_plan != null)
+                for (int s = 0; s < _plan.Steps.Count; s++)
+                    foreach (var p in _plan.Steps[s].NewParts) totalParts += p.Quantity;
             page.DrawTextCentered(
                 $"{_plan?.TotalSteps ?? 0} Steps · {totalParts} Parts",
                 SimplePdfFont.Regular, 11,

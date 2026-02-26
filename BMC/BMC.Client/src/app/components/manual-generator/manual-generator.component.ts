@@ -85,7 +85,9 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
 
     // ─── Result ──────────────────────────────────────────────────────────
     generatedHtml: string | null = null;
-    generatedPdf: string | null = null;   // base64-encoded PDF bytes
+    generatedPdf: string | null = null;   // base64-encoded PDF bytes (legacy)
+    pdfDownloadUrl: string | null = null; // server-side download URL (preferred)
+    htmlDownloadUrl: string | null = null; // server-side download URL for HTML
     resultStats: { totalSteps: number; totalParts: number; renderTimeMs: number } | null = null;
 
     // ─── Pagination ──────────────────────────────────────────────────────
@@ -116,13 +118,30 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
             }),
             this.signalr.onComplete$.subscribe((e: GenerationCompleteEvent) => {
                 this.isGenerating = false;
+                this.generationError = null;
                 this.resultStats = {
                     totalSteps: e.totalSteps,
                     totalParts: e.totalParts,
                     renderTimeMs: e.renderTimeMs
                 };
-                if (e.format === 'pdf' && e.pdfBase64) {
-                    this.generatedPdf = e.pdfBase64;
+                if (e.format === 'pdf') {
+                    this.pdfDownloadUrl = e.downloadUrl ?? null;
+                    this.generatedPdf = e.pdfBase64 ?? null;
+                } else if (e.downloadUrl) {
+                    // Fetch HTML from server (avoids SignalR size limits)
+                    this.htmlDownloadUrl = e.downloadUrl;
+                    fetch(e.downloadUrl, {
+                        headers: { Authorization: 'Bearer ' + this.authService.accessToken }
+                    })
+                        .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
+                        .then(html => {
+                            this.generatedHtml = html;
+                            this.splitPages(html);
+                        })
+                        .catch(err => {
+                            console.error('HTML download error:', err);
+                            this.generationError = 'Failed to download HTML manual.';
+                        });
                 } else {
                     this.generatedHtml = e.html;
                     this.splitPages(e.html!);
@@ -378,6 +397,32 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     // Download the generated manual as a self-contained HTML file
     //
     downloadHtml(): void {
+        // Preferred path: server-side download URL
+        if (this.htmlDownloadUrl) {
+            const downloadName = (this.selectedFile?.name.replace(/\.[^.]+$/, '') || 'manual') + '_build-manual.html';
+            fetch(this.htmlDownloadUrl, {
+                headers: { Authorization: 'Bearer ' + this.authService.accessToken }
+            })
+                .then(r => {
+                    if (!r.ok) throw new Error('Download failed: ' + r.statusText);
+                    return r.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = downloadName;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error('HTML download error:', err);
+                    this.generationError = 'Failed to download HTML. Please try again.';
+                });
+            return;
+        }
+
+        // Fallback: use in-memory HTML
         if (this.generatedHtml == null) {
             return;
         }
@@ -395,6 +440,32 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     // Download the generated manual as a PDF file
     //
     downloadPdf(): void {
+        // Preferred path: server-side download URL (any size)
+        if (this.pdfDownloadUrl) {
+            const downloadName = (this.selectedFile?.name.replace(/\.[^.]+$/, '') || 'manual') + '_build-manual.pdf';
+            fetch(this.pdfDownloadUrl, {
+                headers: { Authorization: 'Bearer ' + this.authService.accessToken }
+            })
+                .then(r => {
+                    if (!r.ok) throw new Error('Download failed: ' + r.statusText);
+                    return r.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = downloadName;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error('PDF download error:', err);
+                    this.generationError = 'Failed to download PDF. Please try again.';
+                });
+            return;
+        }
+
+        // Legacy fallback: base64 in-memory (small PDFs)
         if (this.generatedPdf == null) {
             return;
         }
@@ -445,6 +516,8 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         this.analysis = null;
         this.generatedHtml = null;
         this.generatedPdf = null;
+        this.pdfDownloadUrl = null;
+        this.htmlDownloadUrl = null;
         this.resultStats = null;
         this.pages = [];
         this.currentPreview = null;

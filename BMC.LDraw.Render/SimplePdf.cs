@@ -428,7 +428,7 @@ namespace BMC.LDraw.Render
         internal void WriteObjects(PdfStreamWriter writer)
         {
             // ── Content stream ──
-            byte[] contentBytes = Encoding.ASCII.GetBytes(_stream.ToString());
+            byte[] contentBytes = Encoding.GetEncoding(1252).GetBytes(_stream.ToString());
             byte[] compressed = Deflate(contentBytes);
 
             _doc.WriteStreamObj(writer, _contentsId,

@@ -26,7 +26,8 @@ export interface StepProgressEvent {
 export interface GenerationCompleteEvent {
     format: string;       // "html" or "pdf"
     html: string | null;
-    pdfBase64: string | null;
+    pdfBase64: string | null;      // Legacy (small PDFs)
+    downloadUrl: string | null;    // Preferred for PDF (avoids SignalR size limits)
     totalSteps: number;
     totalParts: number;
     renderTimeMs: number;
