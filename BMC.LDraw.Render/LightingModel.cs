@@ -109,7 +109,7 @@ namespace BMC.LDraw.Render
                 Type = LightType.Directional
             });
 
-            model.AmbientIntensity = 0.35f;
+            model.AmbientIntensity = 0.45f;
             model.SpecularPower = 32f;
             model.SpecularIntensity = 0f; // Off by default for backward compatibility
 

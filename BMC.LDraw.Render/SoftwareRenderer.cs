@@ -76,7 +76,10 @@ namespace BMC.LDraw.Render
         // the surface they sit on.  This prevents Z-fighting between co-planar triangles
         // and the edge lines that trace their outlines.
         //
-        private const float EDGE_DEPTH_BIAS = -0.0005f;
+        // IMPORTANT: this value must be tiny — just enough to beat Z-fighting on coplanar
+        // surfaces, but NOT enough to bleed through adjacent geometry in dense models.
+        //
+        private const float EDGE_DEPTH_BIAS = -0.00002f;
 
 
         public SoftwareRenderer(int width, int height)
@@ -197,6 +200,12 @@ namespace BMC.LDraw.Render
                 //
                 if (depth < _depthBuffer[pixelIdx])
                 {
+                    //
+                    // Clamp minimum alpha — prevents very low alpha values from
+                    // making parts look ghostly/invisible.
+                    //
+                    if (a < 96) a = 96;
+
                     int bufIdx = pixelIdx * 4;
                     float srcA = a / 255f;
                     float invSrcA = 1f - srcA;
@@ -325,6 +334,23 @@ namespace BMC.LDraw.Render
                 {
                     MeshLine edge = mesh.EdgeLines[i];
                     RasterizeEdgeLine(ref edge, vpMatrix);
+                }
+            }
+
+            //
+            // Pass 4 — Render conditional lines (Type 5 silhouette edges)
+            //
+            // These are "smart" edges that only appear at silhouette boundaries,
+            // where a surface transitions from front-facing to back-facing.
+            // They add crisp definition at part outlines without cluttering
+            // curved surfaces with unnecessary edge lines.
+            //
+            if (RenderEdges == true && mesh.ConditionalLines.Count > 0)
+            {
+                for (int i = 0; i < mesh.ConditionalLines.Count; i++)
+                {
+                    MeshConditionalLine cl = mesh.ConditionalLines[i];
+                    RasterizeConditionalLine(ref cl, vpMatrix);
                 }
             }
 
@@ -789,7 +815,83 @@ namespace BMC.LDraw.Render
 
 
         /// <summary>
-        /// Bresenham-style line drawing with per-pixel depth interpolation.
+        /// Rasterize a conditional line (Type 5) — a silhouette edge that only draws
+        /// when the two control points are on the same side of the line in screen space.
+        ///
+        /// This implements the LDraw conditional line spec:
+        ///   The line from P1→P2 is drawn only if control points C1 and C2
+        ///   are on the SAME side of the line P1→P2 in screen space.
+        ///   This condition is true at silhouette boundaries where one adjacent
+        ///   face is front-facing and the other is back-facing.
+        /// </summary>
+        private void RasterizeConditionalLine(ref MeshConditionalLine cl, float[] vpMatrix)
+        {
+            //
+            // Project all four points (2 endpoints + 2 control points) to clip space
+            //
+            float px1, py1, pz1, pw1;
+            float px2, py2, pz2, pw2;
+            float pcx1, pcy1, pcz1, pcw1;
+            float pcx2, pcy2, pcz2, pcw2;
+
+            ProjectPoint(cl.X1, cl.Y1, cl.Z1, vpMatrix, out px1, out py1, out pz1, out pw1);
+            ProjectPoint(cl.X2, cl.Y2, cl.Z2, vpMatrix, out px2, out py2, out pz2, out pw2);
+            ProjectPoint(cl.CX1, cl.CY1, cl.CZ1, vpMatrix, out pcx1, out pcy1, out pcz1, out pcw1);
+            ProjectPoint(cl.CX2, cl.CY2, cl.CZ2, vpMatrix, out pcx2, out pcy2, out pcz2, out pcw2);
+
+            //
+            // Skip if any point is behind the near plane
+            //
+            if (pw1 <= 0.001f || pw2 <= 0.001f || pcw1 <= 0.001f || pcw2 <= 0.001f)
+            {
+                return;
+            }
+
+            //
+            // Convert to screen coordinates
+            //
+            float sx1 = (px1 / pw1 + 1f) * 0.5f * _width;
+            float sy1 = (1f - py1 / pw1) * 0.5f * _height;
+            float sx2 = (px2 / pw2 + 1f) * 0.5f * _width;
+            float sy2 = (1f - py2 / pw2) * 0.5f * _height;
+            float scx1 = (pcx1 / pcw1 + 1f) * 0.5f * _width;
+            float scy1 = (1f - pcy1 / pcw1) * 0.5f * _height;
+            float scx2 = (pcx2 / pcw2 + 1f) * 0.5f * _width;
+            float scy2 = (1f - pcy2 / pcw2) * 0.5f * _height;
+
+            //
+            // Compute the line direction in screen space
+            //
+            float edgeDx = sx2 - sx1;
+            float edgeDy = sy2 - sy1;
+
+            //
+            // Compute cross products of the line direction against
+            // vectors from the first endpoint to each control point.
+            //
+            // cross1 = (edge) × (P1 → C1)
+            // cross2 = (edge) × (P1 → C2)
+            //
+            float cross1 = edgeDx * (scy1 - sy1) - edgeDy * (scx1 - sx1);
+            float cross2 = edgeDx * (scy2 - sy1) - edgeDy * (scx2 - sx1);
+
+            //
+            // Draw the line only if both control points are on the SAME side.
+            // Same sign = same side = silhouette boundary.
+            //
+            if (cross1 * cross2 >= 0)
+            {
+                float nz1 = pz1 / pw1;
+                float nz2 = pz2 / pw2;
+                DrawLine(sx1, sy1, nz1, sx2, sy2, nz2, cl.R, cl.G, cl.B, cl.A);
+            }
+        }
+
+
+        /// <summary>
+        /// Wu's anti-aliased line drawing with per-pixel depth interpolation.
+        /// Draws smooth sub-pixel edges by blending two adjacent pixels at each step,
+        /// weighted by the fractional distance from the ideal line position.
         /// Each pixel is only drawn if it passes the Z-buffer test (with bias applied).
         /// </summary>
         private void DrawLine(
@@ -797,73 +899,111 @@ namespace BMC.LDraw.Render
             float fx2, float fy2, float z2,
             byte r, byte g, byte b, byte a)
         {
-            //
-            // Convert float screen coords to integer pixel positions
-            //
-            int x1 = (int)MathF.Round(fx1);
-            int y1 = (int)MathF.Round(fy1);
-            int x2 = (int)MathF.Round(fx2);
-            int y2 = (int)MathF.Round(fy2);
+            float dx = fx2 - fx1;
+            float dy = fy2 - fy1;
 
-            int dx = Math.Abs(x2 - x1);
-            int dy = Math.Abs(y2 - y1);
-            int stepX = (x1 < x2) ? 1 : -1;
-            int stepY = (y1 < y2) ? 1 : -1;
+            bool steep = MathF.Abs(dy) > MathF.Abs(dx);
 
-            //
-            // Total number of steps for depth interpolation
-            //
-            int totalSteps = Math.Max(dx, dy);
-            if (totalSteps == 0)
+            if (steep)
             {
-                //
-                // Degenerate line (single pixel)
-                //
-                WriteEdgePixel(x1, y1, z1 + EDGE_DEPTH_BIAS, r, g, b, a);
-                return;
+                // Swap x/y so we always iterate along the longer axis
+                (fx1, fy1) = (fy1, fx1);
+                (fx2, fy2) = (fy2, fx2);
             }
 
-            float invTotalSteps = 1f / totalSteps;
-
-            //
-            // Bresenham's line algorithm
-            //
-            int error = dx - dy;
-            int currentX = x1;
-            int currentY = y1;
-
-            for (int step = 0; step <= totalSteps; step++)
+            if (fx1 > fx2)
             {
-                //
-                // Interpolate depth along the line
-                //
-                float t = step * invTotalSteps;
+                // Ensure left-to-right drawing
+                (fx1, fx2) = (fx2, fx1);
+                (fy1, fy2) = (fy2, fy1);
+                (z1, z2) = (z2, z1);
+            }
+
+            dx = fx2 - fx1;
+            dy = fy2 - fy1;
+            float gradient = (dx < 0.0001f) ? 1f : dy / dx;
+
+            // --- First endpoint ---
+            int xEnd1 = (int)MathF.Round(fx1);
+            float yEnd1 = fy1 + gradient * (xEnd1 - fx1);
+            float xGap1 = 1f - Fract(fx1 + 0.5f);
+            int xPixel1 = xEnd1;
+            int yPixel1 = (int)yEnd1;
+            float frac1 = Fract(yEnd1);
+
+            float depth1 = z1 + EDGE_DEPTH_BIAS;
+            if (steep)
+            {
+                WriteEdgePixelAA(yPixel1, xPixel1, depth1, r, g, b, a, (1f - frac1) * xGap1);
+                WriteEdgePixelAA(yPixel1 + 1, xPixel1, depth1, r, g, b, a, frac1 * xGap1);
+            }
+            else
+            {
+                WriteEdgePixelAA(xPixel1, yPixel1, depth1, r, g, b, a, (1f - frac1) * xGap1);
+                WriteEdgePixelAA(xPixel1, yPixel1 + 1, depth1, r, g, b, a, frac1 * xGap1);
+            }
+
+            float intery = yEnd1 + gradient;
+
+            // --- Second endpoint ---
+            int xEnd2 = (int)MathF.Round(fx2);
+            float yEnd2 = fy2 + gradient * (xEnd2 - fx2);
+            float xGap2 = Fract(fx2 + 0.5f);
+            int xPixel2 = xEnd2;
+            int yPixel2 = (int)yEnd2;
+            float frac2 = Fract(yEnd2);
+
+            float depth2 = z2 + EDGE_DEPTH_BIAS;
+            if (steep)
+            {
+                WriteEdgePixelAA(yPixel2, xPixel2, depth2, r, g, b, a, (1f - frac2) * xGap2);
+                WriteEdgePixelAA(yPixel2 + 1, xPixel2, depth2, r, g, b, a, frac2 * xGap2);
+            }
+            else
+            {
+                WriteEdgePixelAA(xPixel2, yPixel2, depth2, r, g, b, a, (1f - frac2) * xGap2);
+                WriteEdgePixelAA(xPixel2, yPixel2 + 1, depth2, r, g, b, a, frac2 * xGap2);
+            }
+
+            // --- Main loop between endpoints ---
+            float totalDist = xPixel2 - xPixel1;
+            if (totalDist < 1f) totalDist = 1f;
+            float invTotalDist = 1f / totalDist;
+
+            for (int x = xPixel1 + 1; x < xPixel2; x++)
+            {
+                float t = (x - xPixel1) * invTotalDist;
                 float depth = z1 + (z2 - z1) * t + EDGE_DEPTH_BIAS;
+                int yInt = (int)intery;
+                float frac = Fract(intery);
 
-                WriteEdgePixel(currentX, currentY, depth, r, g, b, a);
-
-                //
-                // Advance to the next pixel along the line
-                //
-                int error2 = 2 * error;
-
-                if (error2 > -dy)
+                if (steep)
                 {
-                    error -= dy;
-                    currentX += stepX;
+                    WriteEdgePixelAA(yInt, x, depth, r, g, b, a, 1f - frac);
+                    WriteEdgePixelAA(yInt + 1, x, depth, r, g, b, a, frac);
+                }
+                else
+                {
+                    WriteEdgePixelAA(x, yInt, depth, r, g, b, a, 1f - frac);
+                    WriteEdgePixelAA(x, yInt + 1, depth, r, g, b, a, frac);
                 }
 
-                if (error2 < dx)
-                {
-                    error += dx;
-                    currentY += stepY;
-                }
+                intery += gradient;
             }
+        }
+
+        /// <summary>Fractional part of a float (always positive).</summary>
+        private static float Fract(float x)
+        {
+            return x - MathF.Floor(x);
         }
 
 
         /// <summary>
         /// Write a single edge pixel if it is within screen bounds and passes the Z-buffer test.
+        /// Edge pixels do NOT write to the Z-buffer — they are purely decorative overlays
+        /// on the already-rendered triangle surfaces.  This prevents edge lines from
+        /// polluting the depth buffer and bleeding through closer geometry.
         /// </summary>
         private void WriteEdgePixel(int px, int py, float depth, byte r, byte g, byte b, byte a)
         {
@@ -878,16 +1018,46 @@ namespace BMC.LDraw.Render
             int pixelIdx = py * _width + px;
 
             //
-            // Z-buffer test — edge pixels use <= so they draw on top of co-planar surfaces
+            // Z-buffer test — edge pixels use <= so they draw on co-planar surfaces,
+            // but do NOT write to the Z-buffer.  This is critical: edges that pass
+            // the test against their own surface should not prevent other edges or
+            // geometry from rendering correctly.
             //
             if (depth <= _depthBuffer[pixelIdx])
             {
-                _depthBuffer[pixelIdx] = depth;
                 int bufIdx = pixelIdx * 4;
                 _colourBuffer[bufIdx] = r;
                 _colourBuffer[bufIdx + 1] = g;
                 _colourBuffer[bufIdx + 2] = b;
                 _colourBuffer[bufIdx + 3] = a;
+            }
+        }
+
+
+        /// <summary>
+        /// Write an anti-aliased edge pixel, blending with the existing framebuffer
+        /// content based on a coverage factor (0.0–1.0).  Used by Wu's line algorithm.
+        /// </summary>
+        private void WriteEdgePixelAA(int px, int py, float depth, byte r, byte g, byte b, byte a, float coverage)
+        {
+            if (px < 0 || px >= _width || py < 0 || py >= _height)
+                return;
+
+            // Skip nearly-invisible pixels
+            if (coverage < 0.05f) return;
+
+            int pixelIdx = py * _width + px;
+
+            if (depth <= _depthBuffer[pixelIdx])
+            {
+                int bufIdx = pixelIdx * 4;
+                float invCov = 1f - coverage;
+
+                // Blend edge colour with existing pixel
+                _colourBuffer[bufIdx]     = (byte)(r * coverage + _colourBuffer[bufIdx]     * invCov);
+                _colourBuffer[bufIdx + 1] = (byte)(g * coverage + _colourBuffer[bufIdx + 1] * invCov);
+                _colourBuffer[bufIdx + 2] = (byte)(b * coverage + _colourBuffer[bufIdx + 2] * invCov);
+                _colourBuffer[bufIdx + 3] = (byte)Math.Min(255, a * coverage + _colourBuffer[bufIdx + 3] * invCov);
             }
         }
 

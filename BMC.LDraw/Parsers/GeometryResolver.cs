@@ -682,11 +682,48 @@ namespace BMC.LDraw.Parsers
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
 
+                //
+                // Darken edge colours ~35% for a subtler, more integrated outline
+                //
+                r = (byte)(r * 0.65f);
+                g = (byte)(g * 0.65f);
+                b = (byte)(b * 0.65f);
+
                 MeshLine ml;
                 ml.X1 = x1; ml.Y1 = y1; ml.Z1 = z1;
                 ml.X2 = x2; ml.Y2 = y2; ml.Z2 = z2;
                 ml.R = r; ml.G = g; ml.B = b; ml.A = a;
                 mesh.EdgeLines.Add(ml);
+            }
+
+            // Resolve conditional lines (Type 5 — silhouette edges)
+            for (int i = 0; i < geo.ConditionalLines.Count; i++)
+            {
+                LDrawConditionalLine cl = geo.ConditionalLines[i];
+                int col = cl.ColourCode == 24 ? parentEdgeColour : ResolveColour(cl.ColourCode, parentColour);
+
+                float x1, y1, z1, x2, y2, z2;
+                TransformPoint(cl.X1, cl.Y1, cl.Z1, parentMatrix, out x1, out y1, out z1);
+                TransformPoint(cl.X2, cl.Y2, cl.Z2, parentMatrix, out x2, out y2, out z2);
+
+                float cx1, cy1, cz1, cx2, cy2, cz2;
+                TransformPoint(cl.CX1, cl.CY1, cl.CZ1, parentMatrix, out cx1, out cy1, out cz1);
+                TransformPoint(cl.CX2, cl.CY2, cl.CZ2, parentMatrix, out cx2, out cy2, out cz2);
+
+                ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+
+                // Darken edge colours ~35%
+                r = (byte)(r * 0.65f);
+                g = (byte)(g * 0.65f);
+                b = (byte)(b * 0.65f);
+
+                MeshConditionalLine mcl;
+                mcl.X1 = x1; mcl.Y1 = y1; mcl.Z1 = z1;
+                mcl.X2 = x2; mcl.Y2 = y2; mcl.Z2 = z2;
+                mcl.CX1 = cx1; mcl.CY1 = cy1; mcl.CZ1 = cz1;
+                mcl.CX2 = cx2; mcl.CY2 = cy2; mcl.CZ2 = cz2;
+                mcl.R = r; mcl.G = g; mcl.B = b; mcl.A = a;
+                mesh.ConditionalLines.Add(mcl);
             }
 
             // Recurse into subfile references
@@ -806,11 +843,48 @@ namespace BMC.LDraw.Parsers
 
                 ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
 
+                //
+                // Darken edge colours ~35% for a subtler, more integrated outline
+                //
+                r = (byte)(r * 0.65f);
+                g = (byte)(g * 0.65f);
+                b = (byte)(b * 0.65f);
+
                 MeshLine ml;
                 ml.X1 = x1; ml.Y1 = y1; ml.Z1 = z1;
                 ml.X2 = x2; ml.Y2 = y2; ml.Z2 = z2;
                 ml.R = r; ml.G = g; ml.B = b; ml.A = a;
                 mesh.EdgeLines.Add(ml);
+            }
+
+            // Conditional lines (Type 5)
+            for (int i = 0; i < geo.ConditionalLines.Count; i++)
+            {
+                LDrawConditionalLine cl = geo.ConditionalLines[i];
+                int col = cl.ColourCode == 24 ? parentEdgeColour : ResolveColour(cl.ColourCode, parentColour);
+
+                float x1, y1, z1, x2, y2, z2;
+                TransformPoint(cl.X1, cl.Y1, cl.Z1, parentMatrix, out x1, out y1, out z1);
+                TransformPoint(cl.X2, cl.Y2, cl.Z2, parentMatrix, out x2, out y2, out z2);
+
+                float cx1, cy1, cz1, cx2, cy2, cz2;
+                TransformPoint(cl.CX1, cl.CY1, cl.CZ1, parentMatrix, out cx1, out cy1, out cz1);
+                TransformPoint(cl.CX2, cl.CY2, cl.CZ2, parentMatrix, out cx2, out cy2, out cz2);
+
+                ColourToRgba(col, out byte r, out byte g, out byte b, out byte a);
+
+                // Darken edge colours ~35%
+                r = (byte)(r * 0.65f);
+                g = (byte)(g * 0.65f);
+                b = (byte)(b * 0.65f);
+
+                MeshConditionalLine mcl;
+                mcl.X1 = x1; mcl.Y1 = y1; mcl.Z1 = z1;
+                mcl.X2 = x2; mcl.Y2 = y2; mcl.Z2 = z2;
+                mcl.CX1 = cx1; mcl.CY1 = cy1; mcl.CZ1 = cz1;
+                mcl.CX2 = cx2; mcl.CY2 = cy2; mcl.CZ2 = cz2;
+                mcl.R = r; mcl.G = g; mcl.B = b; mcl.A = a;
+                mesh.ConditionalLines.Add(mcl);
             }
         }
 

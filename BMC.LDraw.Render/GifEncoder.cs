@@ -272,10 +272,6 @@ namespace BMC.LDraw.Render
             LzwBitPacker packer = new LzwBitPacker();
             Dictionary<long, int> table = new Dictionary<long, int>();
 
-            // Initialize table
-            for (int i = 0; i < clearCode; i++)
-                table[i] = i;
-
             packer.WriteBits(clearCode, codeBits);
 
             if (indices.Length == 0)
@@ -309,8 +305,6 @@ namespace BMC.LDraw.Render
                         // Table full — reset
                         packer.WriteBits(clearCode, codeBits);
                         table.Clear();
-                        for (int j = 0; j < clearCode; j++)
-                            table[j] = j;
                         nextCode = endCode + 1;
                         codeBits = minCodeSize + 1;
                     }

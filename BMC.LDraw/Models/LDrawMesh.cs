@@ -64,6 +64,28 @@ namespace BMC.LDraw.Models
     }
 
     /// <summary>
+    /// A resolved conditional line (LDraw Type 5) in world space.
+    ///
+    /// The line from (X1,Y1,Z1) to (X2,Y2,Z2) is only drawn when the two
+    /// control points are on opposite sides of the line in screen space.
+    /// This produces silhouette edges at boundaries between front-facing
+    /// and back-facing surfaces — edges that naturally appear only at the
+    /// outline of curved geometry.
+    /// </summary>
+    public struct MeshConditionalLine
+    {
+        // Line endpoints
+        public float X1, Y1, Z1;
+        public float X2, Y2, Z2;
+
+        // Control points for the visibility test
+        public float CX1, CY1, CZ1;
+        public float CX2, CY2, CZ2;
+
+        public byte R, G, B, A;
+    }
+
+    /// <summary>
     /// A fully resolved, world-space triangle mesh ready for rendering.
     /// Produced by GeometryResolver from raw LDraw geometry.
     /// </summary>
@@ -72,8 +94,11 @@ namespace BMC.LDraw.Models
         /// <summary>All resolved triangles in world space.</summary>
         public List<MeshTriangle> Triangles = new List<MeshTriangle>();
 
-        /// <summary>All resolved edge lines in world space.</summary>
+        /// <summary>All resolved edge lines in world space (Type 2).</summary>
         public List<MeshLine> EdgeLines = new List<MeshLine>();
+
+        /// <summary>All resolved conditional lines in world space (Type 5).</summary>
+        public List<MeshConditionalLine> ConditionalLines = new List<MeshConditionalLine>();
 
         // Bounding box (computed during resolution)
         public float MinX, MinY, MinZ;

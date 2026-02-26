@@ -86,9 +86,11 @@ namespace Foundation.BMC.Controllers.WebAPI
                     return;
                 }
 
-                // Floor at 800 — the UI option can increase quality but never below this.
-                int imageWidth = Math.Max(800, Math.Clamp(options.ImageSize, 256, 1200));
-                int imageHeight = (int)(imageWidth * 0.75f); // Step image height; width is auto-computed per-step from projected aspect ratio
+                // Render at 2x resolution for crisp PDF (150+ DPI) and high-DPI screen output.
+                // The dynamic aspect ratio code in RenderStepFromPreSmoothedMesh auto-computes
+                // width from this height based on the model's projected shape.
+                int imageWidth = Math.Max(1600, Math.Clamp(options.ImageSize * 2, 512, 2400));
+                int imageHeight = (int)(imageWidth * 0.75f);
                 float elevation = Math.Clamp(options.Elevation, -90f, 90f);
                 float azimuth = Math.Clamp(options.Azimuth, -360f, 360f);
 
