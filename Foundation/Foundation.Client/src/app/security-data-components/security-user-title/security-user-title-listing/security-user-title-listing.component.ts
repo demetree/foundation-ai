@@ -165,6 +165,7 @@ export class SecurityUserTitleListingComponent implements OnInit, AfterViewInit,
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityUserTitleTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityUserTitleTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

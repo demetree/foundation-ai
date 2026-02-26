@@ -120,11 +120,17 @@ export class PrivilegeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityRolesCount$ = SecurityRoleService.Instance.GetSecurityRolesRowCount({privilegeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityRolesCount$: Observable<bigint | number> | null = null;
+    public get SecurityRolesCount$(): Observable<bigint | number> {
+        if (this._securityRolesCount$ === null) {
+            this._securityRolesCount$ = SecurityRoleService.Instance.GetSecurityRolesRowCount({privilegeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityRolesCount$;
+    }
 
 
 
@@ -169,6 +175,7 @@ export class PrivilegeData {
      this._securityRoles = null;
      this._securityRolesPromise = null;
      this._securityRolesSubject.next(null);
+     this._securityRolesCount$ = null;
 
   }
 
@@ -702,11 +709,7 @@ export class PrivilegeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityRolesCount$ = SecurityRoleService.Instance.GetSecurityRolesRowCount({privilegeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityRolesCount$ = null;
 
 
 

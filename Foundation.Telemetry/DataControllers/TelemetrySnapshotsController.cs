@@ -193,19 +193,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.OrderBy(ts => ts.machineName).ThenBy(ts => ts.dotNetVersion);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.telemetryApplication);
-				query = query.Include(x => x.telemetryCollectionRun);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Telemetry Snapshot, or on an any of the string fields on its immediate relations
@@ -224,6 +211,19 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.telemetryApplication);
+				query = query.Include(x => x.telemetryCollectionRun);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.TelemetrySnapshot> materialized = await query.ToListAsync(cancellationToken);

@@ -165,6 +165,7 @@ export class TelemetryErrorEventListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.telemetryErrorEventTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.telemetryErrorEventTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

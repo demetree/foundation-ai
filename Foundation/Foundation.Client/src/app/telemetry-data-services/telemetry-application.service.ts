@@ -141,11 +141,17 @@ export class TelemetryApplicationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetrySnapshotsCount$ = TelemetrySnapshotService.Instance.GetTelemetrySnapshotsRowCount({telemetryApplicationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetrySnapshotsCount$: Observable<bigint | number> | null = null;
+    public get TelemetrySnapshotsCount$(): Observable<bigint | number> {
+        if (this._telemetrySnapshotsCount$ === null) {
+            this._telemetrySnapshotsCount$ = TelemetrySnapshotService.Instance.GetTelemetrySnapshotsRowCount({telemetryApplicationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetrySnapshotsCount$;
+    }
 
 
 
@@ -160,11 +166,17 @@ export class TelemetryApplicationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryErrorEventsCount$ = TelemetryErrorEventService.Instance.GetTelemetryErrorEventsRowCount({telemetryApplicationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryErrorEventsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryErrorEventsCount$(): Observable<bigint | number> {
+        if (this._telemetryErrorEventsCount$ === null) {
+            this._telemetryErrorEventsCount$ = TelemetryErrorEventService.Instance.GetTelemetryErrorEventsRowCount({telemetryApplicationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryErrorEventsCount$;
+    }
 
 
 
@@ -179,11 +191,17 @@ export class TelemetryApplicationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryLogErrorsCount$ = TelemetryLogErrorService.Instance.GetTelemetryLogErrorsRowCount({telemetryApplicationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryLogErrorsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryLogErrorsCount$(): Observable<bigint | number> {
+        if (this._telemetryLogErrorsCount$ === null) {
+            this._telemetryLogErrorsCount$ = TelemetryLogErrorService.Instance.GetTelemetryLogErrorsRowCount({telemetryApplicationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryLogErrorsCount$;
+    }
 
 
 
@@ -228,14 +246,17 @@ export class TelemetryApplicationData {
      this._telemetrySnapshots = null;
      this._telemetrySnapshotsPromise = null;
      this._telemetrySnapshotsSubject.next(null);
+     this._telemetrySnapshotsCount$ = null;
 
      this._telemetryErrorEvents = null;
      this._telemetryErrorEventsPromise = null;
      this._telemetryErrorEventsSubject.next(null);
+     this._telemetryErrorEventsCount$ = null;
 
      this._telemetryLogErrors = null;
      this._telemetryLogErrorsPromise = null;
      this._telemetryLogErrorsSubject.next(null);
+     this._telemetryLogErrorsCount$ = null;
 
   }
 
@@ -932,11 +953,7 @@ export class TelemetryApplicationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetrySnapshotsCount$ = TelemetrySnapshotService.Instance.GetTelemetrySnapshotsRowCount({telemetryApplicationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetrySnapshotsCount$ = null;
 
 
     (revived as any).TelemetryErrorEvents$ = (revived as any)._telemetryErrorEventsSubject.asObservable().pipe(
@@ -948,11 +965,7 @@ export class TelemetryApplicationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryErrorEventsCount$ = TelemetryErrorEventService.Instance.GetTelemetryErrorEventsRowCount({telemetryApplicationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryErrorEventsCount$ = null;
 
 
     (revived as any).TelemetryLogErrors$ = (revived as any)._telemetryLogErrorsSubject.asObservable().pipe(
@@ -964,11 +977,7 @@ export class TelemetryApplicationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryLogErrorsCount$ = TelemetryLogErrorService.Instance.GetTelemetryLogErrorsRowCount({telemetryApplicationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryLogErrorsCount$ = null;
 
 
 

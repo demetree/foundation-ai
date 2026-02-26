@@ -1,4 +1,4 @@
-<app-security-role-add-edit [showAddButton]="false"></app-security-role-add-edit>
+<app-security-role-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-security-role-add-edit>
 <div class="row" *ngIf="userIsSecuritySecurityRoleReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecuritySecurityRoleWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecuritySecurityRoleWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Security Role">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecuritySecurityRoleWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->
@@ -54,24 +58,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': securityRole.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsSecuritySecurityRoleWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(securityRole)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsSecuritySecurityRoleWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(securityRole)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="securityRole.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(securityRole)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="securityRole.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -220,17 +227,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/securityrole', securityRole.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/securityrole', securityRole.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(securityRole)" *ngIf="userIsSecuritySecurityRoleWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(securityRole)" *ngIf="userIsSecuritySecurityRoleWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(securityRole)" *ngIf="userIsSecuritySecurityRoleWriter() && securityRole.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(securityRole)" *ngIf="userIsSecuritySecurityRoleWriter() && securityRole.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(securityRole)" *ngIf="userIsSecuritySecurityRoleWriter() && securityRole.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(securityRole)" *ngIf="userIsSecuritySecurityRoleWriter() && securityRole.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -245,24 +252,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{securityRole.privilege?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/securityrole', securityRole.id]"
                         ngbTooltip="Security Role Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(securityRole)"
                         ngbTooltip="Edit Security Role">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(securityRole)"
                       ngbTooltip="Delete Security Role" 
                       placement="top"
                       *ngIf="securityRole.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(securityRole)"
                       ngbTooltip="Undelete Security Role" 
                       placement="top"
@@ -292,5 +299,39 @@ End of commented block for alternate definition option -->
          </div>
 End of commented block for alternate definition option  -->
       </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
    </div>
 </div>

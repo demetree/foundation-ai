@@ -82,6 +82,7 @@
   <app-audit-plan-b-table
     *ngIf="userIsAuditorAuditPlanBReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditPlanBCount$ | async) ?? 0">
   </app-audit-plan-b-table>
 </div>

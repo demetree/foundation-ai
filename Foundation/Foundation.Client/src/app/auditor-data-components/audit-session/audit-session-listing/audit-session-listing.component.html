@@ -82,6 +82,7 @@
   <app-audit-session-table
     *ngIf="userIsAuditorAuditSessionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditSessionCount$ | async) ?? 0">
   </app-audit-session-table>
 </div>

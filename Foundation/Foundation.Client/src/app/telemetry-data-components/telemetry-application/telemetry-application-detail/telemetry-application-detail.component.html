@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-telemetry-snapshot-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }"></app-telemetry-snapshot-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-telemetry-snapshot-add-edit [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-snapshot-add-edit>
+                                    <app-telemetry-snapshot-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }" [showAddButton]="true" [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-snapshot-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -92,10 +89,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-telemetry-error-event-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }"></app-telemetry-error-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-telemetry-error-event-add-edit [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-error-event-add-edit>
+                                    <app-telemetry-error-event-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }" [showAddButton]="true" [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-error-event-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -109,10 +103,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-telemetry-log-error-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }"></app-telemetry-log-error-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-telemetry-log-error-add-edit [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-log-error-add-edit>
+                                    <app-telemetry-log-error-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }" [showAddButton]="true" [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-log-error-table>
                                 </div>
                             </div>
                             </ng-template>

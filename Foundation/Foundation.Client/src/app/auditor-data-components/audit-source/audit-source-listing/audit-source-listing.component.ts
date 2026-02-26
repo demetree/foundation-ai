@@ -165,6 +165,7 @@ export class AuditSourceListingComponent implements OnInit, AfterViewInit, CanCo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.auditSourceTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.auditSourceTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #securityGroupSecurityRoleModal let-modal>
-   <div class="modal-header bg-dark text-light security-group-security-role-modal-header">
+   <div class="modal-header security-group-security-role-modal-header">
       <h5 class="modal-title mb-0" id="securityGroupSecurityRoleModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Security Group Security Role' : 'Add Security Group Security Role' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body security-group-security-role-modal-body">
       <form [formGroup]="securityGroupSecurityRoleForm" (ngSubmit)="submitForm()">

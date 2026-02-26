@@ -145,11 +145,17 @@ export class SecurityDepartmentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityTeamsCount$ = SecurityTeamService.Instance.GetSecurityTeamsRowCount({securityDepartmentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityTeamsCount$: Observable<bigint | number> | null = null;
+    public get SecurityTeamsCount$(): Observable<bigint | number> {
+        if (this._securityTeamsCount$ === null) {
+            this._securityTeamsCount$ = SecurityTeamService.Instance.GetSecurityTeamsRowCount({securityDepartmentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityTeamsCount$;
+    }
 
 
 
@@ -164,11 +170,17 @@ export class SecurityDepartmentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityDepartmentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityUsersCount$(): Observable<bigint | number> {
+        if (this._securityUsersCount$ === null) {
+            this._securityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityDepartmentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUsersCount$;
+    }
 
 
 
@@ -183,11 +195,17 @@ export class SecurityDepartmentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityDepartmentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityDepartmentUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityDepartmentUsersCount$(): Observable<bigint | number> {
+        if (this._securityDepartmentUsersCount$ === null) {
+            this._securityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityDepartmentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityDepartmentUsersCount$;
+    }
 
 
 
@@ -232,14 +250,17 @@ export class SecurityDepartmentData {
      this._securityTeams = null;
      this._securityTeamsPromise = null;
      this._securityTeamsSubject.next(null);
+     this._securityTeamsCount$ = null;
 
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
+     this._securityUsersCount$ = null;
 
      this._securityDepartmentUsers = null;
      this._securityDepartmentUsersPromise = null;
      this._securityDepartmentUsersSubject.next(null);
+     this._securityDepartmentUsersCount$ = null;
 
   }
 
@@ -936,11 +957,7 @@ export class SecurityDepartmentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityTeamsCount$ = SecurityTeamService.Instance.GetSecurityTeamsRowCount({securityDepartmentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityTeamsCount$ = null;
 
 
     (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
@@ -952,11 +969,7 @@ export class SecurityDepartmentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityDepartmentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUsersCount$ = null;
 
 
     (revived as any).SecurityDepartmentUsers$ = (revived as any)._securityDepartmentUsersSubject.asObservable().pipe(
@@ -968,11 +981,7 @@ export class SecurityDepartmentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityDepartmentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityDepartmentUsersCount$ = null;
 
 
 

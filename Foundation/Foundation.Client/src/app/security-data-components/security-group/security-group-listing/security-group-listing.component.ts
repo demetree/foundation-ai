@@ -165,6 +165,7 @@ export class SecurityGroupListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityGroupTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityGroupTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

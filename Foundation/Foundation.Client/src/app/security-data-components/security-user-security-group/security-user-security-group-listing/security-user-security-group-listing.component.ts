@@ -165,6 +165,7 @@ export class SecurityUserSecurityGroupListingComponent implements OnInit, AfterV
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityUserSecurityGroupTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityUserSecurityGroupTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

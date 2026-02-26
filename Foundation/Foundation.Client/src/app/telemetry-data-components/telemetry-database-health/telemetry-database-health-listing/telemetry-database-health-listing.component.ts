@@ -165,6 +165,7 @@ export class TelemetryDatabaseHealthListingComponent implements OnInit, AfterVie
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.telemetryDatabaseHealthTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.telemetryDatabaseHealthTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

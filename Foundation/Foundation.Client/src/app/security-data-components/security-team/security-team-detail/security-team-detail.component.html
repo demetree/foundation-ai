@@ -78,10 +78,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-table [queryParams]="{ securityTeamId: securityTeamData?.id }"></app-security-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-add-edit [preSeededData]="{ securityTeamId: securityTeamData?.id }" [hiddenFields]="['securityTeamId']"></app-security-user-add-edit>
+                                    <app-security-user-table [queryParams]="{ securityTeamId: securityTeamData?.id }" [showAddButton]="true" [preSeededData]="{ securityTeamId: securityTeamData?.id }" [hiddenFields]="['securityTeamId']"></app-security-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -95,10 +92,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-team-user-table [queryParams]="{ securityTeamId: securityTeamData?.id }"></app-security-team-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-team-user-add-edit [preSeededData]="{ securityTeamId: securityTeamData?.id }" [hiddenFields]="['securityTeamId']"></app-security-team-user-add-edit>
+                                    <app-security-team-user-table [queryParams]="{ securityTeamId: securityTeamData?.id }" [showAddButton]="true" [preSeededData]="{ securityTeamId: securityTeamData?.id }" [hiddenFields]="['securityTeamId']"></app-security-team-user-table>
                                 </div>
                             </div>
                             </ng-template>

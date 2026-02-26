@@ -60,10 +60,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-entity-data-token-event-table [queryParams]="{ entityDataTokenEventTypeId: entityDataTokenEventTypeData?.id }"></app-entity-data-token-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-entity-data-token-event-add-edit [preSeededData]="{ entityDataTokenEventTypeId: entityDataTokenEventTypeData?.id }" [hiddenFields]="['entityDataTokenEventTypeId']"></app-entity-data-token-event-add-edit>
+                                    <app-entity-data-token-event-table [queryParams]="{ entityDataTokenEventTypeId: entityDataTokenEventTypeData?.id }" [showAddButton]="true" [preSeededData]="{ entityDataTokenEventTypeId: entityDataTokenEventTypeData?.id }" [hiddenFields]="['entityDataTokenEventTypeId']"></app-entity-data-token-event-table>
                                 </div>
                             </div>
                             </ng-template>

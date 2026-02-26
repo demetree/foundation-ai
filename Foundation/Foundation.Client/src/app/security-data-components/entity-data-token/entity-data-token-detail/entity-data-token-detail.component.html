@@ -116,10 +116,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-entity-data-token-event-table [queryParams]="{ entityDataTokenId: entityDataTokenData?.id }"></app-entity-data-token-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-entity-data-token-event-add-edit [preSeededData]="{ entityDataTokenId: entityDataTokenData?.id }" [hiddenFields]="['entityDataTokenId']"></app-entity-data-token-event-add-edit>
+                                    <app-entity-data-token-event-table [queryParams]="{ entityDataTokenId: entityDataTokenData?.id }" [showAddButton]="true" [preSeededData]="{ entityDataTokenId: entityDataTokenData?.id }" [hiddenFields]="['entityDataTokenId']"></app-entity-data-token-event-table>
                                 </div>
                             </div>
                             </ng-template>

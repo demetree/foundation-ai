@@ -128,11 +128,17 @@ export class SecurityUserTitleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityUserTitleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityUsersCount$(): Observable<bigint | number> {
+        if (this._securityUsersCount$ === null) {
+            this._securityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityUserTitleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUsersCount$;
+    }
 
 
 
@@ -177,6 +183,7 @@ export class SecurityUserTitleData {
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
+     this._securityUsersCount$ = null;
 
   }
 
@@ -712,11 +719,7 @@ export class SecurityUserTitleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityUserTitleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUsersCount$ = null;
 
 
 

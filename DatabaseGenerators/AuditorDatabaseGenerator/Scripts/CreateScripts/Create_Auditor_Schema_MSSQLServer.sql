@@ -354,6 +354,18 @@ GO
 CREATE INDEX [I_AuditEvent_auditHostSystemId] ON [Auditor].[AuditEvent] ([auditHostSystemId])
 GO
 
+-- Index on the AuditEvent table's startTime,auditUserId fields.
+CREATE INDEX [I_AuditEvent_startTime_auditUserId] ON [Auditor].[AuditEvent] ([startTime], [auditUserId])
+GO
+
+-- Index on the AuditEvent table's startTime,auditModuleId fields.
+CREATE INDEX [I_AuditEvent_startTime_auditModuleId] ON [Auditor].[AuditEvent] ([startTime], [auditModuleId])
+GO
+
+-- Index on the AuditEvent table's startTime,auditTypeId fields.
+CREATE INDEX [I_AuditEvent_startTime_auditTypeId] ON [Auditor].[AuditEvent] ([startTime], [auditTypeId])
+GO
+
 
 CREATE TABLE [Auditor].[AuditEventEntityState]
 (

@@ -1,0 +1,80 @@
+<div class="add-ip-address-location" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-ip-address-location me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Ip Address Location" 
+        *ngIf="userIsSecurityIpAddressLocationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #ipAddressLocationModal let-modal>
+   <div class="modal-header ip-address-location-modal-header">
+      <h5 class="modal-title mb-0" id="ipAddressLocationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Ip Address Location' : 'Add Ip Address Location' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body ip-address-location-modal-body">
+      <form [formGroup]="ipAddressLocationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('ipAddress')">
+                <label for="IpAddressLocation-ipAddress" id="label-IpAddressLocation-ipAddress"><span class="text-danger">*</span>Ip Address</label>
+                <input type="text" id="IpAddressLocation-ipAddress" formControlName="ipAddress" placeholder="Enter Ip Address" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-ipAddress" />
+                <div *ngIf="ipAddressLocationForm.get('ipAddress')?.invalid && ipAddressLocationForm.get('ipAddress')?.touched" class="text-danger">
+                    Ip Address is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('countryCode')">
+                <label for="IpAddressLocation-countryCode" id="label-IpAddressLocation-countryCode">Country Code</label>
+                <input type="text" id="IpAddressLocation-countryCode" formControlName="countryCode" placeholder="Enter Country Code" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-countryCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('countryName')">
+                <label for="IpAddressLocation-countryName" id="label-IpAddressLocation-countryName">Country Name</label>
+                <input type="text" id="IpAddressLocation-countryName" formControlName="countryName" placeholder="Enter Country Name" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-countryName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('city')">
+                <label for="IpAddressLocation-city" id="label-IpAddressLocation-city">City</label>
+                <input type="text" id="IpAddressLocation-city" formControlName="city" placeholder="Enter City" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-city" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('latitude')">
+                <label for="IpAddressLocation-latitude" id="label-IpAddressLocation-latitude">Latitude</label>
+                <input type="number" id="IpAddressLocation-latitude" formControlName="latitude" placeholder="Enter Latitude" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-latitude" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('longitude')">
+                <label for="IpAddressLocation-longitude" id="label-IpAddressLocation-longitude">Longitude</label>
+                <input type="number" id="IpAddressLocation-longitude" formControlName="longitude" placeholder="Enter Longitude" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-longitude" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastLookupDate')">
+                <label for="IpAddressLocation-lastLookupDate" id="label-IpAddressLocation-lastLookupDate"><span class="text-danger">*</span>Last Lookup Date</label>
+                <input type="datetime-local" id="IpAddressLocation-lastLookupDate" formControlName="lastLookupDate" placeholder="Enter Last Lookup Date" class="form-control ip-address-location-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" aria-labelledby="label-lastLookupDate" />
+                <div *ngIf="ipAddressLocationForm.get('lastLookupDate')?.invalid && ipAddressLocationForm.get('lastLookupDate')?.touched" class="text-danger">
+                    Last Lookup Date is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IpAddressLocation-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" />
+                <label for="IpAddressLocation-active" class="form-check-label" id="label-IpAddressLocation-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IpAddressLocation-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityIpAddressLocationWriter()" />
+                <label for="IpAddressLocation-deleted" class="form-check-label" id="label-IpAddressLocation-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer ip-address-location-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Ip Address Location changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !ipAddressLocationForm.valid || ipAddressLocationForm.pristine  || userIsSecurityIpAddressLocationWriter() == false " ngbTooltip="Save the Ip Address Location changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Ip Address Location' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

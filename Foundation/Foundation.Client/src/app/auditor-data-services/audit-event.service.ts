@@ -188,11 +188,17 @@ export class AuditEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AuditEventEntityStatesCount$ = AuditEventEntityStateService.Instance.GetAuditEventEntityStatesRowCount({auditEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _auditEventEntityStatesCount$: Observable<bigint | number> | null = null;
+    public get AuditEventEntityStatesCount$(): Observable<bigint | number> {
+        if (this._auditEventEntityStatesCount$ === null) {
+            this._auditEventEntityStatesCount$ = AuditEventEntityStateService.Instance.GetAuditEventEntityStatesRowCount({auditEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._auditEventEntityStatesCount$;
+    }
 
 
 
@@ -207,11 +213,17 @@ export class AuditEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AuditEventErrorMessagesCount$ = AuditEventErrorMessageService.Instance.GetAuditEventErrorMessagesRowCount({auditEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _auditEventErrorMessagesCount$: Observable<bigint | number> | null = null;
+    public get AuditEventErrorMessagesCount$(): Observable<bigint | number> {
+        if (this._auditEventErrorMessagesCount$ === null) {
+            this._auditEventErrorMessagesCount$ = AuditEventErrorMessageService.Instance.GetAuditEventErrorMessagesRowCount({auditEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._auditEventErrorMessagesCount$;
+    }
 
 
 
@@ -256,10 +268,12 @@ export class AuditEventData {
      this._auditEventEntityStates = null;
      this._auditEventEntityStatesPromise = null;
      this._auditEventEntityStatesSubject.next(null);
+     this._auditEventEntityStatesCount$ = null;
 
      this._auditEventErrorMessages = null;
      this._auditEventErrorMessagesPromise = null;
      this._auditEventErrorMessagesSubject.next(null);
+     this._auditEventErrorMessagesCount$ = null;
 
   }
 
@@ -887,11 +901,7 @@ export class AuditEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AuditEventEntityStatesCount$ = AuditEventEntityStateService.Instance.GetAuditEventEntityStatesRowCount({auditEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._auditEventEntityStatesCount$ = null;
 
 
     (revived as any).AuditEventErrorMessages$ = (revived as any)._auditEventErrorMessagesSubject.asObservable().pipe(
@@ -903,11 +913,7 @@ export class AuditEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AuditEventErrorMessagesCount$ = AuditEventErrorMessageService.Instance.GetAuditEventErrorMessagesRowCount({auditEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._auditEventErrorMessagesCount$ = null;
 
 
 

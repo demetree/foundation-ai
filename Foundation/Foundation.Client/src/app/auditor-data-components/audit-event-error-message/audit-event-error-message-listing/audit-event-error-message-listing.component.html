@@ -82,6 +82,7 @@
   <app-audit-event-error-message-table
     *ngIf="userIsAuditorAuditEventErrorMessageReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditEventErrorMessageCount$ | async) ?? 0">
   </app-audit-event-error-message-table>
 </div>

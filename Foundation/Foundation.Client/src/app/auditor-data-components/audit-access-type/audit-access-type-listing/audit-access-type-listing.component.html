@@ -82,6 +82,7 @@
   <app-audit-access-type-table
     *ngIf="userIsAuditorAuditAccessTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditAccessTypeCount$ | async) ?? 0">
   </app-audit-access-type-table>
 </div>

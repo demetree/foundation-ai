@@ -82,6 +82,7 @@
   <app-security-team-table
     *ngIf="userIsSecuritySecurityTeamReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSecurityTeamCount$ | async) ?? 0">
   </app-security-team-table>
 </div>

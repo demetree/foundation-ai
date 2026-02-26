@@ -880,6 +880,14 @@
     .subset-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
+
+    .tab-content {
+        padding: 16px;
+    }
+
+    .external-links {
+        flex-wrap: wrap;
+    }
 }
 
 // ── Print Button ────────────────────────────────

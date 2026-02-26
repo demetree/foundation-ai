@@ -84,10 +84,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-external-communication-recipient-table [queryParams]="{ externalCommunicationId: externalCommunicationData?.id }"></app-external-communication-recipient-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-external-communication-recipient-add-edit [preSeededData]="{ externalCommunicationId: externalCommunicationData?.id }" [hiddenFields]="['externalCommunicationId']"></app-external-communication-recipient-add-edit>
+                                    <app-external-communication-recipient-table [queryParams]="{ externalCommunicationId: externalCommunicationData?.id }" [showAddButton]="true" [preSeededData]="{ externalCommunicationId: externalCommunicationData?.id }" [hiddenFields]="['externalCommunicationId']"></app-external-communication-recipient-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -32,6 +32,7 @@ namespace Foundation.Security.Database
 			public String value { get; set; }
 			public Boolean? success { get; set; }
 			public Int32? securityUserId { get; set; }
+			public Int32? ipAddressLocationId { get; set; }
 			public Boolean? active { get; set; }
 			public Boolean? deleted { get; set; }
 		}
@@ -44,6 +45,7 @@ namespace Foundation.Security.Database
 		/// </summary>
 		public class LoginAttemptOutputDTO : LoginAttemptDTO
 		{
+			public IpAddressLocation.IpAddressLocationDTO ipAddressLocation { get; set; }
 			public SecurityUser.SecurityUserDTO securityUser { get; set; }
 		}
 
@@ -70,6 +72,7 @@ namespace Foundation.Security.Database
 				value = this.value,
 				success = this.success,
 				securityUserId = this.securityUserId,
+				ipAddressLocationId = this.ipAddressLocationId,
 				active = this.active,
 				deleted = this.deleted
 			};
@@ -121,8 +124,10 @@ namespace Foundation.Security.Database
 				value = this.value,
 				success = this.success,
 				securityUserId = this.securityUserId,
+				ipAddressLocationId = this.ipAddressLocationId,
 				active = this.active,
 				deleted = this.deleted,
+				ipAddressLocation = this.ipAddressLocation?.ToDTO(),
 				securityUser = this.securityUser?.ToDTO()
 			};
 		}
@@ -173,6 +178,7 @@ namespace Foundation.Security.Database
 				value = dto.value,
 				success = dto.success,
 				securityUserId = dto.securityUserId,
+				ipAddressLocationId = dto.ipAddressLocationId,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
 			};
@@ -201,6 +207,7 @@ namespace Foundation.Security.Database
 			this.value = dto.value;
 			this.success = dto.success;
 			this.securityUserId = dto.securityUserId;
+			this.ipAddressLocationId = dto.ipAddressLocationId;
 			if (dto.active.HasValue == true)
 			{
 				this.active = dto.active.Value;
@@ -234,6 +241,7 @@ namespace Foundation.Security.Database
 				value = this.value,
 				success = this.success,
 				securityUserId = this.securityUserId,
+				ipAddressLocationId = this.ipAddressLocationId,
 				active = this.active,
 				deleted = this.deleted,
 			 };
@@ -299,6 +307,7 @@ namespace Foundation.Security.Database
 				value = loginAttempt.value,
 				success = loginAttempt.success,
 				securityUserId = loginAttempt.securityUserId,
+				ipAddressLocationId = loginAttempt.ipAddressLocationId,
 				active = loginAttempt.active,
 				deleted = loginAttempt.deleted,
 			 };
@@ -331,8 +340,10 @@ namespace Foundation.Security.Database
 				value = loginAttempt.value,
 				success = loginAttempt.success,
 				securityUserId = loginAttempt.securityUserId,
+				ipAddressLocationId = loginAttempt.ipAddressLocationId,
 				active = loginAttempt.active,
 				deleted = loginAttempt.deleted,
+				ipAddressLocation = IpAddressLocation.CreateMinimalAnonymous(loginAttempt.ipAddressLocation),
 				securityUser = SecurityUser.CreateMinimalAnonymous(loginAttempt.securityUser)
 			 };
 		}

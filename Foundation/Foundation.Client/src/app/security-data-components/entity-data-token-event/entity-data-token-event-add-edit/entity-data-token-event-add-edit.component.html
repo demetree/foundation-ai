@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #entityDataTokenEventModal let-modal>
-   <div class="modal-header bg-dark text-light entity-data-token-event-modal-header">
+   <div class="modal-header entity-data-token-event-modal-header">
       <h5 class="modal-title mb-0" id="entityDataTokenEventModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Entity Data Token Event' : 'Add Entity Data Token Event' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body entity-data-token-event-modal-body">
       <form [formGroup]="entityDataTokenEventForm" (ngSubmit)="submitForm()">

@@ -82,6 +82,7 @@
   <app-telemetry-disk-health-table
     *ngIf="userIsTelemetryTelemetryDiskHealthReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetryDiskHealthCount$ | async) ?? 0">
   </app-telemetry-disk-health-table>
 </div>

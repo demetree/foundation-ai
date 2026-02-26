@@ -82,6 +82,7 @@
   <app-module-table
     *ngIf="userIsSecurityModuleReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredModuleCount$ | async) ?? 0">
   </app-module-table>
 </div>

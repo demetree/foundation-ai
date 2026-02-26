@@ -82,6 +82,7 @@
   <app-external-communication-table
     *ngIf="userIsAuditorExternalCommunicationReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredExternalCommunicationCount$ | async) ?? 0">
   </app-external-communication-table>
 </div>

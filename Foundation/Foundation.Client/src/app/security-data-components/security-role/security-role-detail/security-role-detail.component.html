@@ -82,10 +82,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }"></app-security-user-security-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-security-role-add-edit [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-security-user-security-role-add-edit>
+                                    <app-security-user-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }" [showAddButton]="true" [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-security-user-security-role-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -99,10 +96,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-group-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }"></app-security-group-security-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-group-security-role-add-edit [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-security-group-security-role-add-edit>
+                                    <app-security-group-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }" [showAddButton]="true" [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-security-group-security-role-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -116,10 +110,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-module-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }"></app-module-security-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-module-security-role-add-edit [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-module-security-role-add-edit>
+                                    <app-module-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }" [showAddButton]="true" [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-module-security-role-table>
                                 </div>
                             </div>
                             </ng-template>

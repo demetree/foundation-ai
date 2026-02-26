@@ -295,11 +295,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityTenantUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityTenantUsersCount$(): Observable<bigint | number> {
+        if (this._securityTenantUsersCount$ === null) {
+            this._securityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityTenantUsersCount$;
+    }
 
 
 
@@ -314,11 +320,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityOrganizationUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityOrganizationUsersCount$(): Observable<bigint | number> {
+        if (this._securityOrganizationUsersCount$ === null) {
+            this._securityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityOrganizationUsersCount$;
+    }
 
 
 
@@ -333,11 +345,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityDepartmentUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityDepartmentUsersCount$(): Observable<bigint | number> {
+        if (this._securityDepartmentUsersCount$ === null) {
+            this._securityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityDepartmentUsersCount$;
+    }
 
 
 
@@ -352,11 +370,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityTeamUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityTeamUsersCount$(): Observable<bigint | number> {
+        if (this._securityTeamUsersCount$ === null) {
+            this._securityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityTeamUsersCount$;
+    }
 
 
 
@@ -371,11 +395,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserEventsCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserEventsCount$(): Observable<bigint | number> {
+        if (this._securityUserEventsCount$ === null) {
+            this._securityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserEventsCount$;
+    }
 
 
 
@@ -390,11 +420,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserPasswordResetTokensCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserPasswordResetTokensCount$(): Observable<bigint | number> {
+        if (this._securityUserPasswordResetTokensCount$ === null) {
+            this._securityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserPasswordResetTokensCount$;
+    }
 
 
 
@@ -409,11 +445,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserSecurityGroupsCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserSecurityGroupsCount$(): Observable<bigint | number> {
+        if (this._securityUserSecurityGroupsCount$ === null) {
+            this._securityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserSecurityGroupsCount$;
+    }
 
 
 
@@ -428,11 +470,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserSecurityRolesCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserSecurityRolesCount$(): Observable<bigint | number> {
+        if (this._securityUserSecurityRolesCount$ === null) {
+            this._securityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserSecurityRolesCount$;
+    }
 
 
 
@@ -447,11 +495,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public LoginAttemptsCount$ = LoginAttemptService.Instance.GetLoginAttemptsRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _loginAttemptsCount$: Observable<bigint | number> | null = null;
+    public get LoginAttemptsCount$(): Observable<bigint | number> {
+        if (this._loginAttemptsCount$ === null) {
+            this._loginAttemptsCount$ = LoginAttemptService.Instance.GetLoginAttemptsRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._loginAttemptsCount$;
+    }
 
 
 
@@ -466,11 +520,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _entityDataTokensCount$: Observable<bigint | number> | null = null;
+    public get EntityDataTokensCount$(): Observable<bigint | number> {
+        if (this._entityDataTokensCount$ === null) {
+            this._entityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._entityDataTokensCount$;
+    }
 
 
 
@@ -485,11 +545,17 @@ export class SecurityUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _userSessionsCount$: Observable<bigint | number> | null = null;
+    public get UserSessionsCount$(): Observable<bigint | number> {
+        if (this._userSessionsCount$ === null) {
+            this._userSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userSessionsCount$;
+    }
 
 
 
@@ -534,46 +600,57 @@ export class SecurityUserData {
      this._securityTenantUsers = null;
      this._securityTenantUsersPromise = null;
      this._securityTenantUsersSubject.next(null);
+     this._securityTenantUsersCount$ = null;
 
      this._securityOrganizationUsers = null;
      this._securityOrganizationUsersPromise = null;
      this._securityOrganizationUsersSubject.next(null);
+     this._securityOrganizationUsersCount$ = null;
 
      this._securityDepartmentUsers = null;
      this._securityDepartmentUsersPromise = null;
      this._securityDepartmentUsersSubject.next(null);
+     this._securityDepartmentUsersCount$ = null;
 
      this._securityTeamUsers = null;
      this._securityTeamUsersPromise = null;
      this._securityTeamUsersSubject.next(null);
+     this._securityTeamUsersCount$ = null;
 
      this._securityUserEvents = null;
      this._securityUserEventsPromise = null;
      this._securityUserEventsSubject.next(null);
+     this._securityUserEventsCount$ = null;
 
      this._securityUserPasswordResetTokens = null;
      this._securityUserPasswordResetTokensPromise = null;
      this._securityUserPasswordResetTokensSubject.next(null);
+     this._securityUserPasswordResetTokensCount$ = null;
 
      this._securityUserSecurityGroups = null;
      this._securityUserSecurityGroupsPromise = null;
      this._securityUserSecurityGroupsSubject.next(null);
+     this._securityUserSecurityGroupsCount$ = null;
 
      this._securityUserSecurityRoles = null;
      this._securityUserSecurityRolesPromise = null;
      this._securityUserSecurityRolesSubject.next(null);
+     this._securityUserSecurityRolesCount$ = null;
 
      this._loginAttempts = null;
      this._loginAttemptsPromise = null;
      this._loginAttemptsSubject.next(null);
+     this._loginAttemptsCount$ = null;
 
      this._entityDataTokens = null;
      this._entityDataTokensPromise = null;
      this._entityDataTokensSubject.next(null);
+     this._entityDataTokensCount$ = null;
 
      this._userSessions = null;
      this._userSessionsPromise = null;
      this._userSessionsSubject.next(null);
+     this._userSessionsCount$ = null;
 
   }
 
@@ -1876,10 +1953,6 @@ export class SecurityUserService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
-    (revived as any)._securityUsers = null;
-    (revived as any)._securityUsersPromise = null;
-    (revived as any)._securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
-
     (revived as any)._securityTenantUsers = null;
     (revived as any)._securityTenantUsersPromise = null;
     (revived as any)._securityTenantUsersSubject = new BehaviorSubject<SecurityTenantUserData[] | null>(null);
@@ -1936,22 +2009,6 @@ export class SecurityUserService extends SecureEndpointBase {
     // 2. But private methods (loadSecurityUserXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
-    (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._securityUsers === null && (revived as any)._securityUsersPromise === null) {
-                (revived as any).loadSecurityUsers();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
     (revived as any).SecurityTenantUsers$ = (revived as any)._securityTenantUsersSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._securityTenantUsers === null && (revived as any)._securityTenantUsersPromise === null) {
@@ -1961,11 +2018,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityTenantUsersCount$ = null;
 
 
     (revived as any).SecurityOrganizationUsers$ = (revived as any)._securityOrganizationUsersSubject.asObservable().pipe(
@@ -1977,11 +2030,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityOrganizationUsersCount$ = null;
 
 
     (revived as any).SecurityDepartmentUsers$ = (revived as any)._securityDepartmentUsersSubject.asObservable().pipe(
@@ -1993,11 +2042,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityDepartmentUsersCount$ = null;
 
 
     (revived as any).SecurityTeamUsers$ = (revived as any)._securityTeamUsersSubject.asObservable().pipe(
@@ -2009,11 +2054,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityTeamUsersCount$ = null;
 
 
     (revived as any).SecurityUserEvents$ = (revived as any)._securityUserEventsSubject.asObservable().pipe(
@@ -2025,11 +2066,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserEventsCount$ = null;
 
 
     (revived as any).SecurityUserPasswordResetTokens$ = (revived as any)._securityUserPasswordResetTokensSubject.asObservable().pipe(
@@ -2041,11 +2078,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserPasswordResetTokensCount$ = null;
 
 
     (revived as any).SecurityUserSecurityGroups$ = (revived as any)._securityUserSecurityGroupsSubject.asObservable().pipe(
@@ -2057,11 +2090,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserSecurityGroupsCount$ = null;
 
 
     (revived as any).SecurityUserSecurityRoles$ = (revived as any)._securityUserSecurityRolesSubject.asObservable().pipe(
@@ -2073,11 +2102,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserSecurityRolesCount$ = null;
 
 
     (revived as any).LoginAttempts$ = (revived as any)._loginAttemptsSubject.asObservable().pipe(
@@ -2089,11 +2114,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).LoginAttemptsCount$ = LoginAttemptService.Instance.GetLoginAttemptsRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._loginAttemptsCount$ = null;
 
 
     (revived as any).EntityDataTokens$ = (revived as any)._entityDataTokensSubject.asObservable().pipe(
@@ -2105,11 +2126,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._entityDataTokensCount$ = null;
 
 
     (revived as any).UserSessions$ = (revived as any)._userSessionsSubject.asObservable().pipe(
@@ -2121,11 +2138,7 @@ export class SecurityUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._userSessionsCount$ = null;
 
 
 

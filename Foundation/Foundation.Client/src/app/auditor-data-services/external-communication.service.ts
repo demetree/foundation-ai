@@ -140,11 +140,17 @@ export class ExternalCommunicationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ExternalCommunicationRecipientsCount$ = ExternalCommunicationRecipientService.Instance.GetExternalCommunicationRecipientsRowCount({externalCommunicationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _externalCommunicationRecipientsCount$: Observable<bigint | number> | null = null;
+    public get ExternalCommunicationRecipientsCount$(): Observable<bigint | number> {
+        if (this._externalCommunicationRecipientsCount$ === null) {
+            this._externalCommunicationRecipientsCount$ = ExternalCommunicationRecipientService.Instance.GetExternalCommunicationRecipientsRowCount({externalCommunicationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._externalCommunicationRecipientsCount$;
+    }
 
 
 
@@ -189,6 +195,7 @@ export class ExternalCommunicationData {
      this._externalCommunicationRecipients = null;
      this._externalCommunicationRecipientsPromise = null;
      this._externalCommunicationRecipientsSubject.next(null);
+     this._externalCommunicationRecipientsCount$ = null;
 
   }
 
@@ -728,11 +735,7 @@ export class ExternalCommunicationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ExternalCommunicationRecipientsCount$ = ExternalCommunicationRecipientService.Instance.GetExternalCommunicationRecipientsRowCount({externalCommunicationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._externalCommunicationRecipientsCount$ = null;
 
 
 

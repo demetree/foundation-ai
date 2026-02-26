@@ -132,11 +132,17 @@ export class ModuleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ModuleSecurityRolesCount$ = ModuleSecurityRoleService.Instance.GetModuleSecurityRolesRowCount({moduleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _moduleSecurityRolesCount$: Observable<bigint | number> | null = null;
+    public get ModuleSecurityRolesCount$(): Observable<bigint | number> {
+        if (this._moduleSecurityRolesCount$ === null) {
+            this._moduleSecurityRolesCount$ = ModuleSecurityRoleService.Instance.GetModuleSecurityRolesRowCount({moduleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._moduleSecurityRolesCount$;
+    }
 
 
 
@@ -151,11 +157,17 @@ export class ModuleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({moduleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _entityDataTokensCount$: Observable<bigint | number> | null = null;
+    public get EntityDataTokensCount$(): Observable<bigint | number> {
+        if (this._entityDataTokensCount$ === null) {
+            this._entityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({moduleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._entityDataTokensCount$;
+    }
 
 
 
@@ -200,10 +212,12 @@ export class ModuleData {
      this._moduleSecurityRoles = null;
      this._moduleSecurityRolesPromise = null;
      this._moduleSecurityRolesSubject.next(null);
+     this._moduleSecurityRolesCount$ = null;
 
      this._entityDataTokens = null;
      this._entityDataTokensPromise = null;
      this._entityDataTokensSubject.next(null);
+     this._entityDataTokensCount$ = null;
 
   }
 
@@ -819,11 +833,7 @@ export class ModuleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ModuleSecurityRolesCount$ = ModuleSecurityRoleService.Instance.GetModuleSecurityRolesRowCount({moduleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._moduleSecurityRolesCount$ = null;
 
 
     (revived as any).EntityDataTokens$ = (revived as any)._entityDataTokensSubject.asObservable().pipe(
@@ -835,11 +845,7 @@ export class ModuleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({moduleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._entityDataTokensCount$ = null;
 
 
 

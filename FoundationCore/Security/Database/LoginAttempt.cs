@@ -29,9 +29,13 @@ public partial class LoginAttempt
 
     public int? securityUserId { get; set; }
 
+    public int? ipAddressLocationId { get; set; }
+
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual IpAddressLocation ipAddressLocation { get; set; }
 
     public virtual SecurityUser securityUser { get; set; }
 }

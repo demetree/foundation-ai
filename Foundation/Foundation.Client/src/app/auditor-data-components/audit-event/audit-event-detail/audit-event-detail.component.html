@@ -182,10 +182,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-audit-event-entity-state-table [queryParams]="{ auditEventId: auditEventData?.id }"></app-audit-event-entity-state-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-audit-event-entity-state-add-edit [preSeededData]="{ auditEventId: auditEventData?.id }" [hiddenFields]="['auditEventId']"></app-audit-event-entity-state-add-edit>
+                                    <app-audit-event-entity-state-table [queryParams]="{ auditEventId: auditEventData?.id }" [showAddButton]="true" [preSeededData]="{ auditEventId: auditEventData?.id }" [hiddenFields]="['auditEventId']"></app-audit-event-entity-state-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -199,10 +196,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-audit-event-error-message-table [queryParams]="{ auditEventId: auditEventData?.id }"></app-audit-event-error-message-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-audit-event-error-message-add-edit [preSeededData]="{ auditEventId: auditEventData?.id }" [hiddenFields]="['auditEventId']"></app-audit-event-error-message-add-edit>
+                                    <app-audit-event-error-message-table [queryParams]="{ auditEventId: auditEventData?.id }" [showAddButton]="true" [preSeededData]="{ auditEventId: auditEventData?.id }" [hiddenFields]="['auditEventId']"></app-audit-event-error-message-table>
                                 </div>
                             </div>
                             </ng-template>

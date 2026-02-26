@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { SecurityUserData } from './security-user.service';
+import { IpAddressLocationData } from './ip-address-location.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -38,6 +39,7 @@ export class LoginAttemptQueryParameters {
     value: string | null | undefined = null;
     success: boolean | null | undefined = null;
     securityUserId: bigint | number | null | undefined = null;
+    ipAddressLocationId: bigint | number | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
@@ -62,6 +64,7 @@ export class LoginAttemptSubmitData {
     value: string | null = null;
     success: boolean | null = null;
     securityUserId: bigint | number | null = null;
+    ipAddressLocationId: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -121,8 +124,10 @@ export class LoginAttemptData {
     value!: string | null;
     success!: boolean | null;
     securityUserId!: bigint | number;
+    ipAddressLocationId!: bigint | number;
     active!: boolean;
     deleted!: boolean;
+    ipAddressLocation: IpAddressLocationData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     securityUser: SecurityUserData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
@@ -281,6 +286,7 @@ export class LoginAttemptService extends SecureEndpointBase {
         output.value = data.value;
         output.success = data.success;
         output.securityUserId = data.securityUserId;
+        output.ipAddressLocationId = data.ipAddressLocationId;
         output.active = data.active;
         output.deleted = data.deleted;
 

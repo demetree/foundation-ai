@@ -165,6 +165,7 @@ export class AuditEventEntityStateListingComponent implements OnInit, AfterViewI
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.auditEventEntityStateTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.auditEventEntityStateTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

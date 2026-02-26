@@ -143,11 +143,17 @@ export class SecurityTenantData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityOrganizationsCount$ = SecurityOrganizationService.Instance.GetSecurityOrganizationsRowCount({securityTenantId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityOrganizationsCount$: Observable<bigint | number> | null = null;
+    public get SecurityOrganizationsCount$(): Observable<bigint | number> {
+        if (this._securityOrganizationsCount$ === null) {
+            this._securityOrganizationsCount$ = SecurityOrganizationService.Instance.GetSecurityOrganizationsRowCount({securityTenantId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityOrganizationsCount$;
+    }
 
 
 
@@ -162,11 +168,17 @@ export class SecurityTenantData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityTenantId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityUsersCount$(): Observable<bigint | number> {
+        if (this._securityUsersCount$ === null) {
+            this._securityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityTenantId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUsersCount$;
+    }
 
 
 
@@ -181,11 +193,17 @@ export class SecurityTenantData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityTenantId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityTenantUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityTenantUsersCount$(): Observable<bigint | number> {
+        if (this._securityTenantUsersCount$ === null) {
+            this._securityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityTenantId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityTenantUsersCount$;
+    }
 
 
 
@@ -230,14 +248,17 @@ export class SecurityTenantData {
      this._securityOrganizations = null;
      this._securityOrganizationsPromise = null;
      this._securityOrganizationsSubject.next(null);
+     this._securityOrganizationsCount$ = null;
 
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
+     this._securityUsersCount$ = null;
 
      this._securityTenantUsers = null;
      this._securityTenantUsersPromise = null;
      this._securityTenantUsersSubject.next(null);
+     this._securityTenantUsersCount$ = null;
 
   }
 
@@ -934,11 +955,7 @@ export class SecurityTenantService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityOrganizationsCount$ = SecurityOrganizationService.Instance.GetSecurityOrganizationsRowCount({securityTenantId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityOrganizationsCount$ = null;
 
 
     (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
@@ -950,11 +967,7 @@ export class SecurityTenantService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityTenantId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUsersCount$ = null;
 
 
     (revived as any).SecurityTenantUsers$ = (revived as any)._securityTenantUsersSubject.asObservable().pipe(
@@ -966,11 +979,7 @@ export class SecurityTenantService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityTenantId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityTenantUsersCount$ = null;
 
 
 

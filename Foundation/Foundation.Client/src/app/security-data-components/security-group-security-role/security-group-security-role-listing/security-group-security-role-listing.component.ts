@@ -165,6 +165,7 @@ export class SecurityGroupSecurityRoleListingComponent implements OnInit, AfterV
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityGroupSecurityRoleTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityGroupSecurityRoleTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

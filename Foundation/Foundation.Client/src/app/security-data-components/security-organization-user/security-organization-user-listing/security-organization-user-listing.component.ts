@@ -165,6 +165,7 @@ export class SecurityOrganizationUserListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityOrganizationUserTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityOrganizationUserTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

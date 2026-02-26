@@ -1,4 +1,4 @@
-<app-audit-user-add-edit [showAddButton]="false"></app-audit-user-add-edit>
+<app-audit-user-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-audit-user-add-edit>
 <div class="row" *ngIf="userIsAuditorAuditUserReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAuditorAuditUserWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAuditorAuditUserWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Audit User">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAuditorAuditUserWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->
@@ -46,17 +50,19 @@ End of commented block for alternate definition option -->
             <!-- Only visible rows are rendered -->
           <tr *cdkVirtualFor="let auditUser of filteredAuditUsers; trackBy: getAuditUserId">
             <td class="header-action-button" *ngIf="userIsAuditorAuditUserWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(auditUser)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsAuditorAuditUserWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(auditUser)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-trash"></i>
               </button>
@@ -199,14 +205,14 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/audituser', auditUser.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/audituser', auditUser.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(auditUser)" *ngIf="userIsAuditorAuditUserWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(auditUser)" *ngIf="userIsAuditorAuditUserWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(auditUser)" *ngIf="userIsAuditorAuditUserWriter()" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(auditUser)" *ngIf="userIsAuditorAuditUserWriter()" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
 
@@ -220,17 +226,17 @@ End of commented block for alternate definition option -->
                <strong>{{auditUser.name}}</strong>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/audituser', auditUser.id]"
                         ngbTooltip="Audit User Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(auditUser)"
                         ngbTooltip="Edit Audit User">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                      (click)="handleDelete(auditUser)"
                      ngbTooltip="Delete Audit User" 
                      placement="top">
@@ -255,5 +261,39 @@ End of commented block for alternate definition option -->
          </div>
 End of commented block for alternate definition option  -->
       </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
    </div>
 </div>

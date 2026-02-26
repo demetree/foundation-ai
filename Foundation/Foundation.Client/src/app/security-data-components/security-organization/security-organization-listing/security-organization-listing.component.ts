@@ -165,6 +165,7 @@ export class SecurityOrganizationListingComponent implements OnInit, AfterViewIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityOrganizationTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityOrganizationTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

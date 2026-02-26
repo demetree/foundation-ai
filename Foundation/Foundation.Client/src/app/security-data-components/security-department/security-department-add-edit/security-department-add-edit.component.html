@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #securityDepartmentModal let-modal>
-   <div class="modal-header bg-dark text-light security-department-modal-header">
+   <div class="modal-header security-department-modal-header">
       <h5 class="modal-title mb-0" id="securityDepartmentModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Security Department' : 'Add Security Department' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body security-department-modal-body">
       <form [formGroup]="securityDepartmentForm" (ngSubmit)="submitForm()">

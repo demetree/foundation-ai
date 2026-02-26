@@ -129,11 +129,17 @@ export class AuditUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AuditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _auditEventsCount$: Observable<bigint | number> | null = null;
+    public get AuditEventsCount$(): Observable<bigint | number> {
+        if (this._auditEventsCount$ === null) {
+            this._auditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._auditEventsCount$;
+    }
 
 
 
@@ -148,11 +154,17 @@ export class AuditUserData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ExternalCommunicationsCount$ = ExternalCommunicationService.Instance.GetExternalCommunicationsRowCount({auditUserId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _externalCommunicationsCount$: Observable<bigint | number> | null = null;
+    public get ExternalCommunicationsCount$(): Observable<bigint | number> {
+        if (this._externalCommunicationsCount$ === null) {
+            this._externalCommunicationsCount$ = ExternalCommunicationService.Instance.GetExternalCommunicationsRowCount({auditUserId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._externalCommunicationsCount$;
+    }
 
 
 
@@ -197,10 +209,12 @@ export class AuditUserData {
      this._auditEvents = null;
      this._auditEventsPromise = null;
      this._auditEventsSubject.next(null);
+     this._auditEventsCount$ = null;
 
      this._externalCommunications = null;
      this._externalCommunicationsPromise = null;
      this._externalCommunicationsSubject.next(null);
+     this._externalCommunicationsCount$ = null;
 
   }
 
@@ -815,11 +829,7 @@ export class AuditUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AuditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._auditEventsCount$ = null;
 
 
     (revived as any).ExternalCommunications$ = (revived as any)._externalCommunicationsSubject.asObservable().pipe(
@@ -831,11 +841,7 @@ export class AuditUserService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ExternalCommunicationsCount$ = ExternalCommunicationService.Instance.GetExternalCommunicationsRowCount({auditUserId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._externalCommunicationsCount$ = null;
 
 
 

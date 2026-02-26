@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #loginAttemptModal let-modal>
-   <div class="modal-header bg-dark text-light login-attempt-modal-header">
+   <div class="modal-header login-attempt-modal-header">
       <h5 class="modal-title mb-0" id="loginAttemptModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Login Attempt' : 'Add Login Attempt' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body login-attempt-modal-body">
       <form [formGroup]="loginAttemptForm" (ngSubmit)="submitForm()">
@@ -65,6 +64,13 @@
                 <select id="LoginAttempt-securityUserId" formControlName="securityUserId" class="form-select login-attempt-select" [disabled]="!userIsSecurityLoginAttemptWriter()">
                     <option [ngValue]="null">Select Security User</option>
                     <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('ipAddressLocationId')">
+                <label for="LoginAttempt-ipAddressLocationId" id="label-LoginAttempt-ipAddressLocationId">Ip Address Location</label>
+                <select id="LoginAttempt-ipAddressLocationId" formControlName="ipAddressLocationId" class="form-select login-attempt-select" [disabled]="!userIsSecurityLoginAttemptWriter()">
+                    <option [ngValue]="null">Select Ip Address Location</option>
+                    <option *ngFor="let ipAddressLocation of ipAddressLocations$ | async" [ngValue]="ipAddressLocation.id">{{[ipAddressLocation.ipAddress] | filterAndJoin}}</option>
                 </select>
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>

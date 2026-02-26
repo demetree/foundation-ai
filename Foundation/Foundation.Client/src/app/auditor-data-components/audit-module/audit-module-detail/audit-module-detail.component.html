@@ -64,10 +64,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-audit-module-entity-table [queryParams]="{ auditModuleId: auditModuleData?.id }"></app-audit-module-entity-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-audit-module-entity-add-edit [preSeededData]="{ auditModuleId: auditModuleData?.id }" [hiddenFields]="['auditModuleId']"></app-audit-module-entity-add-edit>
+                                    <app-audit-module-entity-table [queryParams]="{ auditModuleId: auditModuleData?.id }" [showAddButton]="true" [preSeededData]="{ auditModuleId: auditModuleData?.id }" [hiddenFields]="['auditModuleId']"></app-audit-module-entity-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -81,10 +78,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-audit-event-table [queryParams]="{ auditModuleId: auditModuleData?.id }"></app-audit-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-audit-event-add-edit [preSeededData]="{ auditModuleId: auditModuleData?.id }" [hiddenFields]="['auditModuleId']"></app-audit-event-add-edit>
+                                    <app-audit-event-table [queryParams]="{ auditModuleId: auditModuleData?.id }" [showAddButton]="true" [preSeededData]="{ auditModuleId: auditModuleData?.id }" [hiddenFields]="['auditModuleId']"></app-audit-event-table>
                                 </div>
                             </div>
                             </ng-template>

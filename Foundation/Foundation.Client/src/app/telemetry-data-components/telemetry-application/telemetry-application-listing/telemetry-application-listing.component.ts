@@ -165,6 +165,7 @@ export class TelemetryApplicationListingComponent implements OnInit, AfterViewIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.telemetryApplicationTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.telemetryApplicationTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

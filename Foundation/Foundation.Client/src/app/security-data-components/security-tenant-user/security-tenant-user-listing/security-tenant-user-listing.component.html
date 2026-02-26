@@ -82,6 +82,7 @@
   <app-security-tenant-user-table
     *ngIf="userIsSecuritySecurityTenantUserReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSecurityTenantUserCount$ | async) ?? 0">
   </app-security-tenant-user-table>
 </div>

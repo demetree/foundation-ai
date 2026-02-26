@@ -71,6 +71,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			string value = null,
 			bool? success = null,
 			int? securityUserId = null,
+			int? ipAddressLocationId = null,
 			bool? active = null,
 			bool? deleted = null,
 			int? pageSize = null,
@@ -156,6 +157,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(la => la.securityUserId == securityUserId.Value);
 			}
+			if (ipAddressLocationId.HasValue == true)
+			{
+				query = query.Where(la => la.ipAddressLocationId == ipAddressLocationId.Value);
+			}
 			if (userIsWriter == true)
 			{
 				if (active.HasValue == true)
@@ -183,18 +188,6 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			query = query.OrderByDescending(la => la.timeStamp);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.securityUser);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Login Attempt, or on an any of the string fields on its immediate relations
@@ -210,6 +203,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.ipAddress.Contains(anyStringContains)
 			       || x.userAgent.Contains(anyStringContains)
 			       || x.value.Contains(anyStringContains)
+			       || (includeRelations == true && x.ipAddressLocation.ipAddress.Contains(anyStringContains))
+			       || (includeRelations == true && x.ipAddressLocation.countryCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.ipAddressLocation.countryName.Contains(anyStringContains))
+			       || (includeRelations == true && x.ipAddressLocation.city.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityUser.accountName.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityUser.password.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityUser.firstName.Contains(anyStringContains))
@@ -228,6 +225,19 @@ namespace Foundation.Security.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.ipAddressLocation);
+				query = query.Include(x => x.securityUser);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.LoginAttempt> materialized = await query.ToListAsync(cancellationToken);
@@ -277,6 +287,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			string value = null,
 			bool? success = null,
 			int? securityUserId = null,
+			int? ipAddressLocationId = null,
 			bool? active = null,
 			bool? deleted = null,
 			string anyStringContains = null,
@@ -344,6 +355,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(la => la.securityUserId == securityUserId.Value);
 			}
+			if (ipAddressLocationId.HasValue == true)
+			{
+				query = query.Where(la => la.ipAddressLocationId == ipAddressLocationId.Value);
+			}
 			if (userIsWriter == true)
 			{
 				if (active.HasValue == true)
@@ -383,6 +398,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.ipAddress.Contains(anyStringContains)
 			       || x.userAgent.Contains(anyStringContains)
 			       || x.value.Contains(anyStringContains)
+			       || x.ipAddressLocation.ipAddress.Contains(anyStringContains)
+			       || x.ipAddressLocation.countryCode.Contains(anyStringContains)
+			       || x.ipAddressLocation.countryName.Contains(anyStringContains)
+			       || x.ipAddressLocation.city.Contains(anyStringContains)
 			       || x.securityUser.accountName.Contains(anyStringContains)
 			       || x.securityUser.password.Contains(anyStringContains)
 			       || x.securityUser.firstName.Contains(anyStringContains)
@@ -446,6 +465,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.ipAddressLocation);
 					query = query.Include(x => x.securityUser);
 					query = query.AsSplitQuery();
 				}
@@ -811,6 +831,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			string value = null,
 			bool? success = null,
 			int? securityUserId = null,
+			int? ipAddressLocationId = null,
 			bool? active = null,
 			bool? deleted = null,
 			string anyStringContains = null,
@@ -894,6 +915,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(la => la.securityUserId == securityUserId.Value);
 			}
+			if (ipAddressLocationId.HasValue == true)
+			{
+				query = query.Where(la => la.ipAddressLocationId == ipAddressLocationId.Value);
+			}
 			if (userIsWriter == true)
 			{
 				if (active.HasValue == true)
@@ -934,6 +959,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.ipAddress.Contains(anyStringContains)
 			       || x.userAgent.Contains(anyStringContains)
 			       || x.value.Contains(anyStringContains)
+			       || x.ipAddressLocation.ipAddress.Contains(anyStringContains)
+			       || x.ipAddressLocation.countryCode.Contains(anyStringContains)
+			       || x.ipAddressLocation.countryName.Contains(anyStringContains)
+			       || x.ipAddressLocation.city.Contains(anyStringContains)
 			       || x.securityUser.accountName.Contains(anyStringContains)
 			       || x.securityUser.password.Contains(anyStringContains)
 			       || x.securityUser.firstName.Contains(anyStringContains)

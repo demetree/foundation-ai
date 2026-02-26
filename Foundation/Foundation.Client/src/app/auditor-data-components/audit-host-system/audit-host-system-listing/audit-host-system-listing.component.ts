@@ -165,6 +165,7 @@ export class AuditHostSystemListingComponent implements OnInit, AfterViewInit, C
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.auditHostSystemTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.auditHostSystemTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

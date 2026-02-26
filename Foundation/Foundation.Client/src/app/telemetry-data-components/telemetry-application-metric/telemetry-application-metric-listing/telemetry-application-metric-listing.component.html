@@ -82,6 +82,7 @@
   <app-telemetry-application-metric-table
     *ngIf="userIsTelemetryTelemetryApplicationMetricReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetryApplicationMetricCount$ | async) ?? 0">
   </app-telemetry-application-metric-table>
 </div>

@@ -68,10 +68,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-table [queryParams]="{ securityUserTitleId: securityUserTitleData?.id }"></app-security-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-add-edit [preSeededData]="{ securityUserTitleId: securityUserTitleData?.id }" [hiddenFields]="['securityUserTitleId']"></app-security-user-add-edit>
+                                    <app-security-user-table [queryParams]="{ securityUserTitleId: securityUserTitleData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserTitleId: securityUserTitleData?.id }" [hiddenFields]="['securityUserTitleId']"></app-security-user-table>
                                 </div>
                             </div>
                             </ng-template>

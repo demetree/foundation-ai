@@ -82,6 +82,7 @@
   <app-audit-event-table
     *ngIf="userIsAuditorAuditEventReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditEventCount$ | async) ?? 0">
   </app-audit-event-table>
 </div>

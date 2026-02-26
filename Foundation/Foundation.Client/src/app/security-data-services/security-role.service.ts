@@ -146,11 +146,17 @@ export class SecurityRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserSecurityRolesCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserSecurityRolesCount$(): Observable<bigint | number> {
+        if (this._securityUserSecurityRolesCount$ === null) {
+            this._securityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserSecurityRolesCount$;
+    }
 
 
 
@@ -165,11 +171,17 @@ export class SecurityRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityGroupSecurityRolesCount$ = SecurityGroupSecurityRoleService.Instance.GetSecurityGroupSecurityRolesRowCount({securityRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityGroupSecurityRolesCount$: Observable<bigint | number> | null = null;
+    public get SecurityGroupSecurityRolesCount$(): Observable<bigint | number> {
+        if (this._securityGroupSecurityRolesCount$ === null) {
+            this._securityGroupSecurityRolesCount$ = SecurityGroupSecurityRoleService.Instance.GetSecurityGroupSecurityRolesRowCount({securityRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityGroupSecurityRolesCount$;
+    }
 
 
 
@@ -184,11 +196,17 @@ export class SecurityRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ModuleSecurityRolesCount$ = ModuleSecurityRoleService.Instance.GetModuleSecurityRolesRowCount({securityRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _moduleSecurityRolesCount$: Observable<bigint | number> | null = null;
+    public get ModuleSecurityRolesCount$(): Observable<bigint | number> {
+        if (this._moduleSecurityRolesCount$ === null) {
+            this._moduleSecurityRolesCount$ = ModuleSecurityRoleService.Instance.GetModuleSecurityRolesRowCount({securityRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._moduleSecurityRolesCount$;
+    }
 
 
 
@@ -233,14 +251,17 @@ export class SecurityRoleData {
      this._securityUserSecurityRoles = null;
      this._securityUserSecurityRolesPromise = null;
      this._securityUserSecurityRolesSubject.next(null);
+     this._securityUserSecurityRolesCount$ = null;
 
      this._securityGroupSecurityRoles = null;
      this._securityGroupSecurityRolesPromise = null;
      this._securityGroupSecurityRolesSubject.next(null);
+     this._securityGroupSecurityRolesCount$ = null;
 
      this._moduleSecurityRoles = null;
      this._moduleSecurityRolesPromise = null;
      this._moduleSecurityRolesSubject.next(null);
+     this._moduleSecurityRolesCount$ = null;
 
   }
 
@@ -938,11 +959,7 @@ export class SecurityRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserSecurityRolesCount$ = null;
 
 
     (revived as any).SecurityGroupSecurityRoles$ = (revived as any)._securityGroupSecurityRolesSubject.asObservable().pipe(
@@ -954,11 +971,7 @@ export class SecurityRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityGroupSecurityRolesCount$ = SecurityGroupSecurityRoleService.Instance.GetSecurityGroupSecurityRolesRowCount({securityRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityGroupSecurityRolesCount$ = null;
 
 
     (revived as any).ModuleSecurityRoles$ = (revived as any)._moduleSecurityRolesSubject.asObservable().pipe(
@@ -970,11 +983,7 @@ export class SecurityRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ModuleSecurityRolesCount$ = ModuleSecurityRoleService.Instance.GetModuleSecurityRolesRowCount({securityRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._moduleSecurityRolesCount$ = null;
 
 
 

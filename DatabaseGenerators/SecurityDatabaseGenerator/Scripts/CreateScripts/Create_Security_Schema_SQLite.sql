@@ -5,6 +5,7 @@
 -- DROP TABLE "EntityDataTokenEventType"
 -- DROP TABLE "EntityDataToken"
 -- DROP TABLE "LoginAttempt"
+-- DROP TABLE "IpAddressLocation"
 -- DROP TABLE "SystemSetting"
 -- DROP TABLE "ModuleSecurityRole"
 -- DROP TABLE "Module"
@@ -35,6 +36,7 @@
 -- ALTER INDEX ALL ON "EntityDataTokenEventType" DISABLE
 -- ALTER INDEX ALL ON "EntityDataToken" DISABLE
 -- ALTER INDEX ALL ON "LoginAttempt" DISABLE
+-- ALTER INDEX ALL ON "IpAddressLocation" DISABLE
 -- ALTER INDEX ALL ON "SystemSetting" DISABLE
 -- ALTER INDEX ALL ON "ModuleSecurityRole" DISABLE
 -- ALTER INDEX ALL ON "Module" DISABLE
@@ -65,6 +67,7 @@
 -- ALTER INDEX ALL ON "EntityDataTokenEventType" REBUILD
 -- ALTER INDEX ALL ON "EntityDataToken" REBUILD
 -- ALTER INDEX ALL ON "LoginAttempt" REBUILD
+-- ALTER INDEX ALL ON "IpAddressLocation" REBUILD
 -- ALTER INDEX ALL ON "SystemSetting" REBUILD
 -- ALTER INDEX ALL ON "ModuleSecurityRole" REBUILD
 -- ALTER INDEX ALL ON "Module" REBUILD
@@ -977,6 +980,37 @@ CREATE INDEX "I_SystemSetting_id_active_deleted" ON "SystemSetting" ("id", "acti
 ;
 
 
+CREATE TABLE "IpAddressLocation"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"ipAddress" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,
+	"countryCode" VARCHAR(10) NULL COLLATE NOCASE,
+	"countryName" VARCHAR(100) NULL COLLATE NOCASE,
+	"city" VARCHAR(100) NULL COLLATE NOCASE,
+	"latitude" REAL NULL,
+	"longitude" REAL NULL,
+	"lastLookupDate" DATETIME NOT NULL,
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the IpAddressLocation table's ipAddress field.
+CREATE INDEX "I_IpAddressLocation_ipAddress" ON "IpAddressLocation" ("ipAddress")
+;
+
+-- Index on the IpAddressLocation table's active field.
+CREATE INDEX "I_IpAddressLocation_active" ON "IpAddressLocation" ("active")
+;
+
+-- Index on the IpAddressLocation table's deleted field.
+CREATE INDEX "I_IpAddressLocation_deleted" ON "IpAddressLocation" ("deleted")
+;
+
+-- Index on the IpAddressLocation table's id,active,deleted fields.
+CREATE INDEX "I_IpAddressLocation_id_active_deleted" ON "IpAddressLocation" ("id", "active", "deleted")
+;
+
+
 CREATE TABLE "LoginAttempt"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -990,12 +1024,18 @@ CREATE TABLE "LoginAttempt"
 	"value" TEXT NULL COLLATE NOCASE,
 	"success" BIT NULL,		-- null = unknown/pending, true = success, false = failure
 	"securityUserId" INTEGER NULL,		-- Link to user if identified during login attempt
+	"ipAddressLocationId" INTEGER NULL,		-- Link to cached geolocation data for this IP.  Populated asynchronously by the IpAddressLocationWorker background service.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	FOREIGN KEY ("securityUserId") REFERENCES "SecurityUser"("id")		-- Foreign key to the SecurityUser table.
+	FOREIGN KEY ("securityUserId") REFERENCES "SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	FOREIGN KEY ("ipAddressLocationId") REFERENCES "IpAddressLocation"("id")		-- Foreign key to the IpAddressLocation table.
 );
 -- Index on the LoginAttempt table's securityUserId field.
 CREATE INDEX "I_LoginAttempt_securityUserId" ON "LoginAttempt" ("securityUserId")
+;
+
+-- Index on the LoginAttempt table's ipAddressLocationId field.
+CREATE INDEX "I_LoginAttempt_ipAddressLocationId" ON "LoginAttempt" ("ipAddressLocationId")
 ;
 
 -- Index on the LoginAttempt table's active field.

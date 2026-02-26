@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #telemetryApplicationMetricModal let-modal>
-   <div class="modal-header bg-dark text-light telemetry-application-metric-modal-header">
+   <div class="modal-header telemetry-application-metric-modal-header">
       <h5 class="modal-title mb-0" id="telemetryApplicationMetricModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Telemetry Application Metric' : 'Add Telemetry Application Metric' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body telemetry-application-metric-modal-body">
       <form [formGroup]="telemetryApplicationMetricForm" (ngSubmit)="submitForm()">

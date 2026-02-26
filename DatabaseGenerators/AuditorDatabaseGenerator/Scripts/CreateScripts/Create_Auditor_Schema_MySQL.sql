@@ -268,6 +268,15 @@ CREATE INDEX `I_AuditEvent_auditResourceId` ON `AuditEvent` (`auditResourceId`);
 -- Index on the AuditEvent table's auditHostSystemId field.
 CREATE INDEX `I_AuditEvent_auditHostSystemId` ON `AuditEvent` (`auditHostSystemId`);
 
+-- Index on the AuditEvent table's startTime,auditUserId fields.
+CREATE INDEX `I_AuditEvent_startTime_auditUserId` ON `AuditEvent` (`startTime`, `auditUserId`);
+
+-- Index on the AuditEvent table's startTime,auditModuleId fields.
+CREATE INDEX `I_AuditEvent_startTime_auditModuleId` ON `AuditEvent` (`startTime`, `auditModuleId`);
+
+-- Index on the AuditEvent table's startTime,auditTypeId fields.
+CREATE INDEX `I_AuditEvent_startTime_auditTypeId` ON `AuditEvent` (`startTime`, `auditTypeId`);
+
 
 CREATE TABLE `AuditEventEntityState`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,

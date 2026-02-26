@@ -69,7 +69,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			string errorMessage = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -138,30 +137,17 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.OrderBy(tcr => tcr.id);
 
+			if (includeRelations == true)
+			{
+				query = query.AsSplitQuery();
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{
 			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
 			
-			if (includeRelations == true)
-			{
-				query = query.AsSplitQuery();
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Telemetry Collection Run, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.errorMessage.Contains(anyStringContains)
-			   );
-			}
-
 			query = query.AsNoTracking();
 			
 			List<Database.TelemetryCollectionRun> materialized = await query.ToListAsync(cancellationToken);
@@ -206,7 +192,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			int? applicationsPolled = null,
 			int? applicationsSucceeded = null,
 			string errorMessage = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -256,19 +241,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 				query = query.Where(tcr => tcr.errorMessage == errorMessage);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Telemetry Collection Run, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.errorMessage.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -623,7 +595,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			int? applicationsPolled = null,
 			int? applicationsSucceeded = null,
 			string errorMessage = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -688,19 +659,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (string.IsNullOrEmpty(errorMessage) == false)
 			{
 				query = query.Where(tcr => tcr.errorMessage == errorMessage);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Telemetry Collection Run, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.errorMessage.Contains(anyStringContains)
-			   );
 			}
 
 

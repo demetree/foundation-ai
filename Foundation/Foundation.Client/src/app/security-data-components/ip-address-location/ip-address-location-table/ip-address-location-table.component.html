@@ -1,0 +1,363 @@
+<app-ip-address-location-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-ip-address-location-add-edit>
+<div class="row" *ngIf="userIsSecurityIpAddressLocationReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityIpAddressLocationWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Ip Address Location">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityIpAddressLocationWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('ipAddress')">
+                Ip  Address
+                <span *ngIf="sortColumn === 'ipAddress'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('countryCode')">
+                Country  Code
+                <span *ngIf="sortColumn === 'countryCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('countryName')">
+                Country  Name
+                <span *ngIf="sortColumn === 'countryName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('city')">
+                City
+                <span *ngIf="sortColumn === 'city'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('latitude')">
+                Latitude
+                <span *ngIf="sortColumn === 'latitude'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('longitude')">
+                Longitude
+                <span *ngIf="sortColumn === 'longitude'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastLookupDate')">
+                Last  Lookup  Date
+                <span *ngIf="sortColumn === 'lastLookupDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let ipAddressLocation of filteredIpAddressLocations; trackBy: getIpAddressLocationId"
+              [ngClass]="{
+                 'row-inactive': ipAddressLocation.active == false,
+                 'row-deleted': ipAddressLocation.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSecurityIpAddressLocationWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(ipAddressLocation)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSecurityIpAddressLocationWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(ipAddressLocation)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="ipAddressLocation.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(ipAddressLocation)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="ipAddressLocation.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(ipAddressLocation, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(ipAddressLocation, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(ipAddressLocation, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(ipAddressLocation, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(ipAddressLocation, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(ipAddressLocation, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(ipAddressLocation, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(ipAddressLocation, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/ipaddresslocation', ipAddressLocation.id]" class="btn btn-link text-left" ngbTooltip="Open Ip Address Location details">{{ipAddressLocation.ipAddress}}</a></td>
+            <td class="text-truncate">{{ipAddressLocation.countryCode}}</td>
+            <td class="text-truncate">{{ipAddressLocation.countryName}}</td>
+            <td class="text-truncate">{{ipAddressLocation.city}}</td>
+            <td class="text-truncate">{{ipAddressLocation.latitude | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{ipAddressLocation.longitude | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{ipAddressLocation.lastLookupDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let ipAddressLocation of filteredIpAddressLocations; trackBy: getIpAddressLocationId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': ipAddressLocation.active == false,
+                 'row-deleted': ipAddressLocation.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(ipAddressLocation, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(ipAddressLocation, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(ipAddressLocation, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(ipAddressLocation, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(ipAddressLocation, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(ipAddressLocation, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(ipAddressLocation, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(ipAddressLocation, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(ipAddressLocation, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(ipAddressLocation, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(ipAddressLocation, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(ipAddressLocation, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(ipAddressLocation, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/ipaddresslocation', ipAddressLocation.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(ipAddressLocation)" *ngIf="userIsSecurityIpAddressLocationWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(ipAddressLocation)" *ngIf="userIsSecurityIpAddressLocationWriter() && ipAddressLocation.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(ipAddressLocation)" *ngIf="userIsSecurityIpAddressLocationWriter() && ipAddressLocation.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{ipAddressLocation.ipAddress}}</strong>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/ipaddresslocation', ipAddressLocation.id]"
+                        ngbTooltip="Ip Address Location Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(ipAddressLocation)"
+                        ngbTooltip="Edit Ip Address Location">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(ipAddressLocation)"
+                      ngbTooltip="Delete Ip Address Location" 
+                      placement="top"
+                      *ngIf="ipAddressLocation.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(ipAddressLocation)"
+                      ngbTooltip="Undelete Ip Address Location" 
+                      placement="top"
+                      *ngIf="ipAddressLocation.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.ipAddress != null">
+              <strong>Ip Address: </strong>
+              {{ipAddressLocation.ipAddress}}
+            </p>
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.countryCode != null">
+              <strong>Country Code: </strong>
+              {{ipAddressLocation.countryCode}}
+            </p>
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.countryName != null">
+              <strong>Country Name: </strong>
+              {{ipAddressLocation.countryName}}
+            </p>
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.city != null">
+              <strong>City: </strong>
+              {{ipAddressLocation.city}}
+            </p>
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.latitude != null">
+              <strong>Latitude: </strong>
+              {{ipAddressLocation.latitude | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.longitude != null">
+              <strong>Longitude: </strong>
+              {{ipAddressLocation.longitude | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="ip-address-location-info" *ngIf="ipAddressLocation.lastLookupDate != null">
+              <strong>Last Lookup Date: </strong>
+              {{ipAddressLocation.lastLookupDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

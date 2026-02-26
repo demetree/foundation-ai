@@ -17,6 +17,7 @@ GO
 -- DROP TABLE [Security].[EntityDataTokenEventType]
 -- DROP TABLE [Security].[EntityDataToken]
 -- DROP TABLE [Security].[LoginAttempt]
+-- DROP TABLE [Security].[IpAddressLocation]
 -- DROP TABLE [Security].[SystemSetting]
 -- DROP TABLE [Security].[ModuleSecurityRole]
 -- DROP TABLE [Security].[Module]
@@ -47,6 +48,7 @@ GO
 -- ALTER INDEX ALL ON [Security].[EntityDataTokenEventType] DISABLE
 -- ALTER INDEX ALL ON [Security].[EntityDataToken] DISABLE
 -- ALTER INDEX ALL ON [Security].[LoginAttempt] DISABLE
+-- ALTER INDEX ALL ON [Security].[IpAddressLocation] DISABLE
 -- ALTER INDEX ALL ON [Security].[SystemSetting] DISABLE
 -- ALTER INDEX ALL ON [Security].[ModuleSecurityRole] DISABLE
 -- ALTER INDEX ALL ON [Security].[Module] DISABLE
@@ -77,6 +79,7 @@ GO
 -- ALTER INDEX ALL ON [Security].[EntityDataTokenEventType] REBUILD
 -- ALTER INDEX ALL ON [Security].[EntityDataToken] REBUILD
 -- ALTER INDEX ALL ON [Security].[LoginAttempt] REBUILD
+-- ALTER INDEX ALL ON [Security].[IpAddressLocation] REBUILD
 -- ALTER INDEX ALL ON [Security].[SystemSetting] REBUILD
 -- ALTER INDEX ALL ON [Security].[ModuleSecurityRole] REBUILD
 -- ALTER INDEX ALL ON [Security].[Module] REBUILD
@@ -1073,6 +1076,39 @@ CREATE INDEX [I_SystemSetting_id_active_deleted] ON [Security].[SystemSetting] (
 GO
 
 
+CREATE TABLE [Security].[IpAddressLocation]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[ipAddress] NVARCHAR(50) NOT NULL UNIQUE,
+	[countryCode] NVARCHAR(10) NULL,
+	[countryName] NVARCHAR(100) NULL,
+	[city] NVARCHAR(100) NULL,
+	[latitude] FLOAT NULL,
+	[longitude] FLOAT NULL,
+	[lastLookupDate] DATETIME2(7) NOT NULL,
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the IpAddressLocation table's ipAddress field.
+CREATE INDEX [I_IpAddressLocation_ipAddress] ON [Security].[IpAddressLocation] ([ipAddress])
+GO
+
+-- Index on the IpAddressLocation table's active field.
+CREATE INDEX [I_IpAddressLocation_active] ON [Security].[IpAddressLocation] ([active])
+GO
+
+-- Index on the IpAddressLocation table's deleted field.
+CREATE INDEX [I_IpAddressLocation_deleted] ON [Security].[IpAddressLocation] ([deleted])
+GO
+
+-- Index on the IpAddressLocation table's id,active,deleted fields.
+CREATE INDEX [I_IpAddressLocation_id_active_deleted] ON [Security].[IpAddressLocation] ([id], [active], [deleted])
+GO
+
+
 CREATE TABLE [Security].[LoginAttempt]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
@@ -1086,15 +1122,21 @@ CREATE TABLE [Security].[LoginAttempt]
 	[value] NVARCHAR(MAX) NULL,
 	[success] BIT NULL,		-- null = unknown/pending, true = success, false = failure
 	[securityUserId] INT NULL,		-- Link to user if identified during login attempt
+	[ipAddressLocationId] INT NULL,		-- Link to cached geolocation data for this IP.  Populated asynchronously by the IpAddressLocationWorker background service.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
-	CONSTRAINT [FK_LoginAttempt_SecurityUser_securityUserId] FOREIGN KEY ([securityUserId]) REFERENCES [Security].[SecurityUser] ([id])		-- Foreign key to the SecurityUser table.
+	CONSTRAINT [FK_LoginAttempt_SecurityUser_securityUserId] FOREIGN KEY ([securityUserId]) REFERENCES [Security].[SecurityUser] ([id]),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT [FK_LoginAttempt_IpAddressLocation_ipAddressLocationId] FOREIGN KEY ([ipAddressLocationId]) REFERENCES [Security].[IpAddressLocation] ([id])		-- Foreign key to the IpAddressLocation table.
 )
 GO
 
 -- Index on the LoginAttempt table's securityUserId field.
 CREATE INDEX [I_LoginAttempt_securityUserId] ON [Security].[LoginAttempt] ([securityUserId])
+GO
+
+-- Index on the LoginAttempt table's ipAddressLocationId field.
+CREATE INDEX [I_LoginAttempt_ipAddressLocationId] ON [Security].[LoginAttempt] ([ipAddressLocationId])
 GO
 
 -- Index on the LoginAttempt table's active field.

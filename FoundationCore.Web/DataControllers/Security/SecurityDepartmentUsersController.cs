@@ -72,7 +72,6 @@ namespace Foundation.Security.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -160,12 +159,6 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			query = query.OrderBy(sdu => sdu.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.securityDepartment);
@@ -173,35 +166,12 @@ namespace Foundation.Security.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Security Department User, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.securityDepartment.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityDepartment.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.accountName.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.password.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.firstName.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.middleName.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.lastName.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.emailAddress.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.cellPhoneNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.phoneNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.phoneExtension.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.authenticationDomain.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.alternateIdentifier.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.settings.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.authenticationToken.Contains(anyStringContains))
-			       || (includeRelations == true && x.securityUser.twoFactorToken.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.SecurityDepartmentUser> materialized = await query.ToListAsync(cancellationToken);
@@ -250,7 +220,6 @@ namespace Foundation.Security.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -319,35 +288,6 @@ namespace Foundation.Security.Controllers.WebAPI
 				query = query.Where(sdu => sdu.active == true);
 				query = query.Where(sdu => sdu.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Security Department User, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.securityDepartment.name.Contains(anyStringContains)
-			       || x.securityDepartment.description.Contains(anyStringContains)
-			       || x.securityUser.accountName.Contains(anyStringContains)
-			       || x.securityUser.password.Contains(anyStringContains)
-			       || x.securityUser.firstName.Contains(anyStringContains)
-			       || x.securityUser.middleName.Contains(anyStringContains)
-			       || x.securityUser.lastName.Contains(anyStringContains)
-			       || x.securityUser.emailAddress.Contains(anyStringContains)
-			       || x.securityUser.cellPhoneNumber.Contains(anyStringContains)
-			       || x.securityUser.phoneNumber.Contains(anyStringContains)
-			       || x.securityUser.phoneExtension.Contains(anyStringContains)
-			       || x.securityUser.description.Contains(anyStringContains)
-			       || x.securityUser.authenticationDomain.Contains(anyStringContains)
-			       || x.securityUser.alternateIdentifier.Contains(anyStringContains)
-			       || x.securityUser.settings.Contains(anyStringContains)
-			       || x.securityUser.authenticationToken.Contains(anyStringContains)
-			       || x.securityUser.twoFactorToken.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -714,7 +654,6 @@ namespace Foundation.Security.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -798,35 +737,6 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(sdu => sdu.active == true);
 				query = query.Where(sdu => sdu.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Security Department User, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.securityDepartment.name.Contains(anyStringContains)
-			       || x.securityDepartment.description.Contains(anyStringContains)
-			       || x.securityUser.accountName.Contains(anyStringContains)
-			       || x.securityUser.password.Contains(anyStringContains)
-			       || x.securityUser.firstName.Contains(anyStringContains)
-			       || x.securityUser.middleName.Contains(anyStringContains)
-			       || x.securityUser.lastName.Contains(anyStringContains)
-			       || x.securityUser.emailAddress.Contains(anyStringContains)
-			       || x.securityUser.cellPhoneNumber.Contains(anyStringContains)
-			       || x.securityUser.phoneNumber.Contains(anyStringContains)
-			       || x.securityUser.phoneExtension.Contains(anyStringContains)
-			       || x.securityUser.description.Contains(anyStringContains)
-			       || x.securityUser.authenticationDomain.Contains(anyStringContains)
-			       || x.securityUser.alternateIdentifier.Contains(anyStringContains)
-			       || x.securityUser.settings.Contains(anyStringContains)
-			       || x.securityUser.authenticationToken.Contains(anyStringContains)
-			       || x.securityUser.twoFactorToken.Contains(anyStringContains)
-			   );
 			}
 
 

@@ -205,11 +205,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryDatabaseHealthsCount$ = TelemetryDatabaseHealthService.Instance.GetTelemetryDatabaseHealthsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryDatabaseHealthsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryDatabaseHealthsCount$(): Observable<bigint | number> {
+        if (this._telemetryDatabaseHealthsCount$ === null) {
+            this._telemetryDatabaseHealthsCount$ = TelemetryDatabaseHealthService.Instance.GetTelemetryDatabaseHealthsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryDatabaseHealthsCount$;
+    }
 
 
 
@@ -224,11 +230,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryDiskHealthsCount$ = TelemetryDiskHealthService.Instance.GetTelemetryDiskHealthsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryDiskHealthsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryDiskHealthsCount$(): Observable<bigint | number> {
+        if (this._telemetryDiskHealthsCount$ === null) {
+            this._telemetryDiskHealthsCount$ = TelemetryDiskHealthService.Instance.GetTelemetryDiskHealthsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryDiskHealthsCount$;
+    }
 
 
 
@@ -243,11 +255,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryNetworkHealthsCount$ = TelemetryNetworkHealthService.Instance.GetTelemetryNetworkHealthsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryNetworkHealthsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryNetworkHealthsCount$(): Observable<bigint | number> {
+        if (this._telemetryNetworkHealthsCount$ === null) {
+            this._telemetryNetworkHealthsCount$ = TelemetryNetworkHealthService.Instance.GetTelemetryNetworkHealthsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryNetworkHealthsCount$;
+    }
 
 
 
@@ -262,11 +280,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetrySessionSnapshotsCount$ = TelemetrySessionSnapshotService.Instance.GetTelemetrySessionSnapshotsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetrySessionSnapshotsCount$: Observable<bigint | number> | null = null;
+    public get TelemetrySessionSnapshotsCount$(): Observable<bigint | number> {
+        if (this._telemetrySessionSnapshotsCount$ === null) {
+            this._telemetrySessionSnapshotsCount$ = TelemetrySessionSnapshotService.Instance.GetTelemetrySessionSnapshotsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetrySessionSnapshotsCount$;
+    }
 
 
 
@@ -281,11 +305,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryApplicationMetricsCount$ = TelemetryApplicationMetricService.Instance.GetTelemetryApplicationMetricsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryApplicationMetricsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryApplicationMetricsCount$(): Observable<bigint | number> {
+        if (this._telemetryApplicationMetricsCount$ === null) {
+            this._telemetryApplicationMetricsCount$ = TelemetryApplicationMetricService.Instance.GetTelemetryApplicationMetricsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryApplicationMetricsCount$;
+    }
 
 
 
@@ -300,11 +330,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryErrorEventsCount$ = TelemetryErrorEventService.Instance.GetTelemetryErrorEventsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryErrorEventsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryErrorEventsCount$(): Observable<bigint | number> {
+        if (this._telemetryErrorEventsCount$ === null) {
+            this._telemetryErrorEventsCount$ = TelemetryErrorEventService.Instance.GetTelemetryErrorEventsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryErrorEventsCount$;
+    }
 
 
 
@@ -319,11 +355,17 @@ export class TelemetrySnapshotData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TelemetryLogErrorsCount$ = TelemetryLogErrorService.Instance.GetTelemetryLogErrorsRowCount({telemetrySnapshotId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _telemetryLogErrorsCount$: Observable<bigint | number> | null = null;
+    public get TelemetryLogErrorsCount$(): Observable<bigint | number> {
+        if (this._telemetryLogErrorsCount$ === null) {
+            this._telemetryLogErrorsCount$ = TelemetryLogErrorService.Instance.GetTelemetryLogErrorsRowCount({telemetrySnapshotId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._telemetryLogErrorsCount$;
+    }
 
 
 
@@ -368,30 +410,37 @@ export class TelemetrySnapshotData {
      this._telemetryDatabaseHealths = null;
      this._telemetryDatabaseHealthsPromise = null;
      this._telemetryDatabaseHealthsSubject.next(null);
+     this._telemetryDatabaseHealthsCount$ = null;
 
      this._telemetryDiskHealths = null;
      this._telemetryDiskHealthsPromise = null;
      this._telemetryDiskHealthsSubject.next(null);
+     this._telemetryDiskHealthsCount$ = null;
 
      this._telemetryNetworkHealths = null;
      this._telemetryNetworkHealthsPromise = null;
      this._telemetryNetworkHealthsSubject.next(null);
+     this._telemetryNetworkHealthsCount$ = null;
 
      this._telemetrySessionSnapshots = null;
      this._telemetrySessionSnapshotsPromise = null;
      this._telemetrySessionSnapshotsSubject.next(null);
+     this._telemetrySessionSnapshotsCount$ = null;
 
      this._telemetryApplicationMetrics = null;
      this._telemetryApplicationMetricsPromise = null;
      this._telemetryApplicationMetricsSubject.next(null);
+     this._telemetryApplicationMetricsCount$ = null;
 
      this._telemetryErrorEvents = null;
      this._telemetryErrorEventsPromise = null;
      this._telemetryErrorEventsSubject.next(null);
+     this._telemetryErrorEventsCount$ = null;
 
      this._telemetryLogErrors = null;
      this._telemetryLogErrorsPromise = null;
      this._telemetryLogErrorsSubject.next(null);
+     this._telemetryLogErrorsCount$ = null;
 
   }
 
@@ -1420,11 +1469,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryDatabaseHealthsCount$ = TelemetryDatabaseHealthService.Instance.GetTelemetryDatabaseHealthsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryDatabaseHealthsCount$ = null;
 
 
     (revived as any).TelemetryDiskHealths$ = (revived as any)._telemetryDiskHealthsSubject.asObservable().pipe(
@@ -1436,11 +1481,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryDiskHealthsCount$ = TelemetryDiskHealthService.Instance.GetTelemetryDiskHealthsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryDiskHealthsCount$ = null;
 
 
     (revived as any).TelemetryNetworkHealths$ = (revived as any)._telemetryNetworkHealthsSubject.asObservable().pipe(
@@ -1452,11 +1493,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryNetworkHealthsCount$ = TelemetryNetworkHealthService.Instance.GetTelemetryNetworkHealthsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryNetworkHealthsCount$ = null;
 
 
     (revived as any).TelemetrySessionSnapshots$ = (revived as any)._telemetrySessionSnapshotsSubject.asObservable().pipe(
@@ -1468,11 +1505,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetrySessionSnapshotsCount$ = TelemetrySessionSnapshotService.Instance.GetTelemetrySessionSnapshotsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetrySessionSnapshotsCount$ = null;
 
 
     (revived as any).TelemetryApplicationMetrics$ = (revived as any)._telemetryApplicationMetricsSubject.asObservable().pipe(
@@ -1484,11 +1517,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryApplicationMetricsCount$ = TelemetryApplicationMetricService.Instance.GetTelemetryApplicationMetricsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryApplicationMetricsCount$ = null;
 
 
     (revived as any).TelemetryErrorEvents$ = (revived as any)._telemetryErrorEventsSubject.asObservable().pipe(
@@ -1500,11 +1529,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryErrorEventsCount$ = TelemetryErrorEventService.Instance.GetTelemetryErrorEventsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryErrorEventsCount$ = null;
 
 
     (revived as any).TelemetryLogErrors$ = (revived as any)._telemetryLogErrorsSubject.asObservable().pipe(
@@ -1516,11 +1541,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TelemetryLogErrorsCount$ = TelemetryLogErrorService.Instance.GetTelemetryLogErrorsRowCount({telemetrySnapshotId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._telemetryLogErrorsCount$ = null;
 
 
 

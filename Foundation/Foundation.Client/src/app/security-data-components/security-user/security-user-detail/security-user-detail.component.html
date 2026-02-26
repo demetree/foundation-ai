@@ -220,10 +220,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-tenant-user-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-tenant-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-tenant-user-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-tenant-user-add-edit>
+                                    <app-security-tenant-user-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-tenant-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -237,10 +234,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-organization-user-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-organization-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-organization-user-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-organization-user-add-edit>
+                                    <app-security-organization-user-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-organization-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -254,10 +248,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-department-user-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-department-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-department-user-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-department-user-add-edit>
+                                    <app-security-department-user-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-department-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -271,10 +262,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-team-user-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-team-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-team-user-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-team-user-add-edit>
+                                    <app-security-team-user-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-team-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -288,10 +276,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-event-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-user-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-event-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-event-add-edit>
+                                    <app-security-user-event-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-event-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -305,10 +290,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-password-reset-token-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-user-password-reset-token-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-password-reset-token-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-password-reset-token-add-edit>
+                                    <app-security-user-password-reset-token-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-password-reset-token-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -322,10 +304,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-security-group-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-user-security-group-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-security-group-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-security-group-add-edit>
+                                    <app-security-user-security-group-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-security-group-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -339,10 +318,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-security-role-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-security-user-security-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-security-role-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-security-role-add-edit>
+                                    <app-security-user-security-role-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-security-user-security-role-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -356,10 +332,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-login-attempt-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-login-attempt-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-login-attempt-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-login-attempt-add-edit>
+                                    <app-login-attempt-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-login-attempt-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -373,10 +346,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-entity-data-token-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-entity-data-token-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-entity-data-token-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-entity-data-token-add-edit>
+                                    <app-entity-data-token-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-entity-data-token-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -390,10 +360,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-user-session-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-user-session-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-user-session-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-user-session-add-edit>
+                                    <app-user-session-table [queryParams]="{ securityUserId: securityUserData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-user-session-table>
                                 </div>
                             </div>
                             </ng-template>

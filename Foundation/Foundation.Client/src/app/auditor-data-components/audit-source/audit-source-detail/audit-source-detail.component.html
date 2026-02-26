@@ -64,10 +64,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-audit-event-table [queryParams]="{ auditSourceId: auditSourceData?.id }"></app-audit-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-audit-event-add-edit [preSeededData]="{ auditSourceId: auditSourceData?.id }" [hiddenFields]="['auditSourceId']"></app-audit-event-add-edit>
+                                    <app-audit-event-table [queryParams]="{ auditSourceId: auditSourceData?.id }" [showAddButton]="true" [preSeededData]="{ auditSourceId: auditSourceData?.id }" [hiddenFields]="['auditSourceId']"></app-audit-event-table>
                                 </div>
                             </div>
                             </ng-template>

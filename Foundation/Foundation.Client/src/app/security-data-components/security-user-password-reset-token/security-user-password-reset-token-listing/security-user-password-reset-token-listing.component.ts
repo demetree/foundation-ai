@@ -165,6 +165,7 @@ export class SecurityUserPasswordResetTokenListingComponent implements OnInit, A
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityUserPasswordResetTokenTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityUserPasswordResetTokenTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

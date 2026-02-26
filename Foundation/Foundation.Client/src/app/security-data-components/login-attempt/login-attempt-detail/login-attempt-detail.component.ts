@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { LoginAttemptService, LoginAttemptData, LoginAttemptSubmitData } from '../../../security-data-services/login-attempt.service';
 import { SecurityUserService } from '../../../security-data-services/security-user.service';
+import { IpAddressLocationService } from '../../../security-data-services/ip-address-location.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -45,6 +46,7 @@ interface LoginAttemptFormValues {
   value: string | null,
   success: boolean | null,
   securityUserId: number | bigint | null,       // For FK link number
+  ipAddressLocationId: number | bigint | null,       // For FK link number
   active: boolean,
   deleted: boolean,
 };
@@ -84,6 +86,7 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         value: [''],
         success: [false],
         securityUserId: [null],
+        ipAddressLocationId: [null],
         active: [true],
         deleted: [false],
       });
@@ -101,12 +104,14 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
 
   loginAttempts$ = this.loginAttemptService.GetLoginAttemptList();
   public securityUsers$ = this.securityUserService.GetSecurityUserList();
+  public ipAddressLocations$ = this.ipAddressLocationService.GetIpAddressLocationList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public loginAttemptService: LoginAttemptService,
     public securityUserService: SecurityUserService,
+    public ipAddressLocationService: IpAddressLocationService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -398,6 +403,7 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         value: '',
         success: false,
         securityUserId: null,
+        ipAddressLocationId: null,
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -419,6 +425,7 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         value: loginAttemptData.value ?? '',
         success: loginAttemptData.success ?? false,
         securityUserId: loginAttemptData.securityUserId,
+        ipAddressLocationId: loginAttemptData.ipAddressLocationId,
         active: loginAttemptData.active ?? true,
         deleted: loginAttemptData.deleted ?? false,
       }, { emitEvent: false});
@@ -490,6 +497,7 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         value: formValue.value?.trim() || null,
         success: formValue.success == true ? true : formValue.success == false ? false : null,
         securityUserId: formValue.securityUserId ? Number(formValue.securityUserId) : null,
+        ipAddressLocationId: formValue.ipAddressLocationId ? Number(formValue.ipAddressLocationId) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

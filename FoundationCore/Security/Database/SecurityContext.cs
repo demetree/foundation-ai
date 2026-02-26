@@ -19,6 +19,8 @@ public partial class SecurityContext : DbContext
 
     public virtual DbSet<EntityDataTokenEventType> EntityDataTokenEventTypes { get; set; }
 
+    public virtual DbSet<IpAddressLocation> IpAddressLocations { get; set; }
+
     public virtual DbSet<LoginAttempt> LoginAttempts { get; set; }
 
     public virtual DbSet<Module> Modules { get; set; }
@@ -73,7 +75,7 @@ public partial class SecurityContext : DbContext
     {
         modelBuilder.Entity<EntityDataToken>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EntityDa__3213E83F0AB722E5");
+            entity.HasKey(e => e.id).HasName("PK__EntityDa__3213E83FF768139E");
 
             entity.ToTable("EntityDataToken", "Security");
 
@@ -93,7 +95,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.token, "I_EntityDataToken_token");
 
-            entity.HasIndex(e => e.token, "UQ__EntityDa__CA90DA7A2DDB4224").IsUnique();
+            entity.HasIndex(e => e.token, "UQ__EntityDa__CA90DA7A16F25758").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.authenticationToken)
@@ -121,7 +123,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<EntityDataTokenEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EntityDa__3213E83FF6D969F0");
+            entity.HasKey(e => e.id).HasName("PK__EntityDa__3213E83FADE6703F");
 
             entity.ToTable("EntityDataTokenEvent", "Security");
 
@@ -149,13 +151,13 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<EntityDataTokenEventType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EntityDa__3213E83F2DCAB8DE");
+            entity.HasKey(e => e.id).HasName("PK__EntityDa__3213E83F494B4BB6");
 
             entity.ToTable("EntityDataTokenEventType", "Security");
 
             entity.HasIndex(e => e.name, "I_EntityDataTokenEventType_name");
 
-            entity.HasIndex(e => e.name, "UQ__EntityDa__72E12F1BD95AF924").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__EntityDa__72E12F1B014B09B0").IsUnique();
 
             entity.Property(e => e.description).HasMaxLength(500);
             entity.Property(e => e.name)
@@ -163,15 +165,42 @@ public partial class SecurityContext : DbContext
                 .HasMaxLength(100);
         });
 
+        modelBuilder.Entity<IpAddressLocation>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("PK__IpAddres__3213E83F407E1B35");
+
+            entity.ToTable("IpAddressLocation", "Security");
+
+            entity.HasIndex(e => e.active, "I_IpAddressLocation_active");
+
+            entity.HasIndex(e => e.deleted, "I_IpAddressLocation_deleted");
+
+            entity.HasIndex(e => new { e.id, e.active, e.deleted }, "I_IpAddressLocation_id_active_deleted");
+
+            entity.HasIndex(e => e.ipAddress, "I_IpAddressLocation_ipAddress");
+
+            entity.HasIndex(e => e.ipAddress, "UQ__IpAddres__89E5C7F015C435C3").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.city).HasMaxLength(100);
+            entity.Property(e => e.countryCode).HasMaxLength(10);
+            entity.Property(e => e.countryName).HasMaxLength(100);
+            entity.Property(e => e.ipAddress)
+                .IsRequired()
+                .HasMaxLength(50);
+        });
+
         modelBuilder.Entity<LoginAttempt>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LoginAtt__3213E83FB21B365A");
+            entity.HasKey(e => e.id).HasName("PK__LoginAtt__3213E83F09767F52");
 
             entity.ToTable("LoginAttempt", "Security");
 
             entity.HasIndex(e => e.active, "I_LoginAttempt_active");
 
             entity.HasIndex(e => e.deleted, "I_LoginAttempt_deleted");
+
+            entity.HasIndex(e => e.ipAddressLocationId, "I_LoginAttempt_ipAddressLocationId");
 
             entity.HasIndex(e => e.securityUserId, "I_LoginAttempt_securityUserId");
 
@@ -184,12 +213,14 @@ public partial class SecurityContext : DbContext
             entity.Property(e => e.userAgent).HasMaxLength(250);
             entity.Property(e => e.userName).HasMaxLength(250);
 
+            entity.HasOne(d => d.ipAddressLocation).WithMany(p => p.LoginAttempts).HasForeignKey(d => d.ipAddressLocationId);
+
             entity.HasOne(d => d.securityUser).WithMany(p => p.LoginAttempts).HasForeignKey(d => d.securityUserId);
         });
 
         modelBuilder.Entity<Module>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Module__3213E83F78C0423C");
+            entity.HasKey(e => e.id).HasName("PK__Module__3213E83FFFB41F07");
 
             entity.ToTable("Module", "Security");
 
@@ -201,7 +232,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.name, "I_Module_name");
 
-            entity.HasIndex(e => e.name, "UQ__Module__72E12F1B52D4E6F7").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Module__72E12F1B35981CE4").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -212,7 +243,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<ModuleSecurityRole>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ModuleSe__3213E83F0D6E654B");
+            entity.HasKey(e => e.id).HasName("PK__ModuleSe__3213E83FFC4C598A");
 
             entity.ToTable("ModuleSecurityRole", "Security");
 
@@ -244,7 +275,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<OAUTHToken>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OAUTHTok__3213E83FB3C609DE");
+            entity.HasKey(e => e.id).HasName("PK__OAUTHTok__3213E83FE44B6DE5");
 
             entity.ToTable("OAUTHToken", "Security");
 
@@ -267,13 +298,13 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<Privilege>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Privileg__3213E83F370AA416");
+            entity.HasKey(e => e.id).HasName("PK__Privileg__3213E83F9E4CAB77");
 
             entity.ToTable("Privilege", "Security");
 
             entity.HasIndex(e => e.name, "I_Privilege_name");
 
-            entity.HasIndex(e => e.name, "UQ__Privileg__72E12F1B994AA710").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Privileg__72E12F1B2715F0D9").IsUnique();
 
             entity.Property(e => e.description).HasMaxLength(500);
             entity.Property(e => e.name)
@@ -283,7 +314,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityDepartment>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F86677372");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F44A7B952");
 
             entity.ToTable("SecurityDepartment", "Security");
 
@@ -299,7 +330,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityOrganizationId, e.name }, "UC_SecurityDepartment_securityOrganizationId_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F941FEE85CB").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94D92FFFD0").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -314,7 +345,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityDepartmentUser>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FCBC2D082");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F62046765");
 
             entity.ToTable("SecurityDepartmentUser", "Security");
 
@@ -338,7 +369,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityDepartmentId, e.securityUserId }, "UC_SecurityDepartmentUser_securityDepartmentId_securityUserId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94C551BA50").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F945F1F88BA").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -353,7 +384,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityGroup>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FABD542B4");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FCCD9DE76");
 
             entity.ToTable("SecurityGroup", "Security");
 
@@ -365,7 +396,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.name, "I_SecurityGroup_name");
 
-            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B7EAC8DFC").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B4AEA1B9B").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -376,7 +407,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityGroupSecurityRole>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FFCA101C1");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F220A6FB6");
 
             entity.ToTable("SecurityGroupSecurityRole", "Security");
 
@@ -410,7 +441,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityOrganization>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F3986E0A1");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F1F6F5B72");
 
             entity.ToTable("SecurityOrganization", "Security");
 
@@ -426,7 +457,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityTenantId, e.name }, "UC_SecurityOrganization_securityTenantId_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F941CF169FC").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94F08AFA63").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -441,7 +472,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityOrganizationUser>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F294DE996");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FE8BA09EA");
 
             entity.ToTable("SecurityOrganizationUser", "Security");
 
@@ -465,7 +496,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityOrganizationId, e.securityUserId }, "UC_SecurityOrganizationUser_securityOrganizationId_securityUserId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F9492597658").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F9467AC7CFB").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -480,7 +511,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityRole>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FE60BF46A");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F253A9081");
 
             entity.ToTable("SecurityRole", "Security");
 
@@ -494,7 +525,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.privilegeId, "I_SecurityRole_privilegeId");
 
-            entity.HasIndex(e => e.name, "UQ__Security__72E12F1BE103C734").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Security__72E12F1BDBA6B521").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.comments).HasMaxLength(1000);
@@ -510,7 +541,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityTeam>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F6E33970D");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F70C4E137");
 
             entity.ToTable("SecurityTeam", "Security");
 
@@ -526,7 +557,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityDepartmentId, e.name }, "UC_SecurityTeam_securityDepartmentId_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94E3B9D50A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F943735005D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -541,7 +572,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityTeamUser>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FD44A939F");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F0B6333D0");
 
             entity.ToTable("SecurityTeamUser", "Security");
 
@@ -565,7 +596,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityTeamId, e.securityUserId }, "UC_SecurityTeamUser_securityTeamId_securityUserId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F946897AC55").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F9442FB3BC2").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -580,7 +611,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityTenant>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FA75D306E");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FF29BF1F5");
 
             entity.ToTable("SecurityTenant", "Security");
 
@@ -592,9 +623,9 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.name, "I_SecurityTenant_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F9487805AB0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94486B3FE0").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B856B4488").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B32EACFCA").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -605,7 +636,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityTenantUser>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F558835C5");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FE3F0E66A");
 
             entity.ToTable("SecurityTenantUser", "Security");
 
@@ -627,7 +658,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => new { e.securityTenantId, e.securityUserId }, "UC_SecurityTenantUser_securityTenantId_securityUserId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94B986662A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94FD4BD610").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -642,7 +673,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUser>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F2A9686F1");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F0CD6509E");
 
             entity.ToTable("SecurityUser", "Security");
 
@@ -674,9 +705,9 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.securityUserTitleId, "I_SecurityUser_securityUserTitleId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F9429DEEB57").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94677802AA").IsUnique();
 
-            entity.HasIndex(e => e.accountName, "UQ__Security__62DA37728CB89773").IsUnique();
+            entity.HasIndex(e => e.accountName, "UQ__Security__62DA3772212BAA1B").IsUnique();
 
             entity.Property(e => e.accountName)
                 .IsRequired()
@@ -712,7 +743,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUserEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F4627D7BE");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F7E609BE9");
 
             entity.ToTable("SecurityUserEvent", "Security");
 
@@ -742,13 +773,13 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUserEventType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F18866933");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FC9A4F951");
 
             entity.ToTable("SecurityUserEventType", "Security");
 
             entity.HasIndex(e => e.name, "I_SecurityUserEventType_name");
 
-            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B68FB4430").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B79B2E48C").IsUnique();
 
             entity.Property(e => e.description).HasMaxLength(500);
             entity.Property(e => e.name)
@@ -758,7 +789,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUserPasswordResetToken>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FD52C6DDC");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F9E121839");
 
             entity.ToTable("SecurityUserPasswordResetToken", "Security");
 
@@ -793,7 +824,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUserSecurityGroup>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F6D303116");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FD29D31CE");
 
             entity.ToTable("SecurityUserSecurityGroup", "Security");
 
@@ -823,7 +854,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUserSecurityRole>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F6B56FBE4");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83FF7FEE862");
 
             entity.ToTable("SecurityUserSecurityRole", "Security");
 
@@ -857,7 +888,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SecurityUserTitle>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F8AE8B851");
+            entity.HasKey(e => e.id).HasName("PK__Security__3213E83F3D2FC97D");
 
             entity.ToTable("SecurityUserTitle", "Security");
 
@@ -869,9 +900,9 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.name, "I_SecurityUserTitle_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94A7FE7A30").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Security__3E543F94C1C55538").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Security__72E12F1BAEACED2A").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Security__72E12F1B64BE121C").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -882,7 +913,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<SystemSetting>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__SystemSe__3213E83F815D0FA7");
+            entity.HasKey(e => e.id).HasName("PK__SystemSe__3213E83F14163F63");
 
             entity.ToTable("SystemSetting", "Security");
 
@@ -894,7 +925,7 @@ public partial class SecurityContext : DbContext
 
             entity.HasIndex(e => e.name, "I_SystemSetting_name");
 
-            entity.HasIndex(e => e.name, "UQ__SystemSe__72E12F1B187B0E9E").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__SystemSe__72E12F1B1B898817").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -905,7 +936,7 @@ public partial class SecurityContext : DbContext
 
         modelBuilder.Entity<UserSession>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserSess__3213E83FD56E5A7E");
+            entity.HasKey(e => e.id).HasName("PK__UserSess__3213E83F14A66914");
 
             entity.ToTable("UserSession", "Security");
 

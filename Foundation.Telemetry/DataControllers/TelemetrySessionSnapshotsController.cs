@@ -69,7 +69,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			DateTime? newestSessionStart = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -138,33 +137,18 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.OrderBy(tss => tss.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.telemetrySnapshot);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Telemetry Session Snapshot, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.telemetrySnapshot.machineName.Contains(anyStringContains))
-			       || (includeRelations == true && x.telemetrySnapshot.dotNetVersion.Contains(anyStringContains))
-			       || (includeRelations == true && x.telemetrySnapshot.statusJson.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.TelemetrySessionSnapshot> materialized = await query.ToListAsync(cancellationToken);
@@ -209,7 +193,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			int? expiredSessionCount = null,
 			DateTime? oldestSessionStart = null,
 			DateTime? newestSessionStart = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -259,21 +242,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 				query = query.Where(tss => tss.newestSessionStart == newestSessionStart.Value);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Telemetry Session Snapshot, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.telemetrySnapshot.machineName.Contains(anyStringContains)
-			       || x.telemetrySnapshot.dotNetVersion.Contains(anyStringContains)
-			       || x.telemetrySnapshot.statusJson.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -629,7 +597,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			int? expiredSessionCount = null,
 			DateTime? oldestSessionStart = null,
 			DateTime? newestSessionStart = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -694,21 +661,6 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (newestSessionStart.HasValue == true)
 			{
 				query = query.Where(tss => tss.newestSessionStart == newestSessionStart.Value);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Telemetry Session Snapshot, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.telemetrySnapshot.machineName.Contains(anyStringContains)
-			       || x.telemetrySnapshot.dotNetVersion.Contains(anyStringContains)
-			       || x.telemetrySnapshot.statusJson.Contains(anyStringContains)
-			   );
 			}
 
 

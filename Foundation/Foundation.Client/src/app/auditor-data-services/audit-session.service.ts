@@ -123,11 +123,17 @@ export class AuditSessionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AuditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditSessionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _auditEventsCount$: Observable<bigint | number> | null = null;
+    public get AuditEventsCount$(): Observable<bigint | number> {
+        if (this._auditEventsCount$ === null) {
+            this._auditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditSessionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._auditEventsCount$;
+    }
 
 
 
@@ -172,6 +178,7 @@ export class AuditSessionData {
      this._auditEvents = null;
      this._auditEventsPromise = null;
      this._auditEventsSubject.next(null);
+     this._auditEventsCount$ = null;
 
   }
 
@@ -706,11 +713,7 @@ export class AuditSessionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AuditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditSessionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._auditEventsCount$ = null;
 
 
 

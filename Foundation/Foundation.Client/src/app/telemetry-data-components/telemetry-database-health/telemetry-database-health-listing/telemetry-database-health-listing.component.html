@@ -82,6 +82,7 @@
   <app-telemetry-database-health-table
     *ngIf="userIsTelemetryTelemetryDatabaseHealthReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetryDatabaseHealthCount$ | async) ?? 0">
   </app-telemetry-database-health-table>
 </div>

@@ -12,6 +12,7 @@ import {Injectable} from '@angular/core';
 import {EntityDataTokenService} from  './entity-data-token.service';
 import {EntityDataTokenEventService} from  './entity-data-token-event.service';
 import {EntityDataTokenEventTypeService} from  './entity-data-token-event-type.service';
+import {IpAddressLocationService} from  './ip-address-location.service';
 import {LoginAttemptService} from  './login-attempt.service';
 import {ModuleService} from  './module.service';
 import {ModuleSecurityRoleService} from  './module-security-role.service';
@@ -47,6 +48,7 @@ export class SecurityDataServiceManagerService  {
     constructor(public entityDataTokenService: EntityDataTokenService
               , public entityDataTokenEventService: EntityDataTokenEventService
               , public entityDataTokenEventTypeService: EntityDataTokenEventTypeService
+              , public ipAddressLocationService: IpAddressLocationService
               , public loginAttemptService: LoginAttemptService
               , public moduleService: ModuleService
               , public moduleSecurityRoleService: ModuleSecurityRoleService
@@ -80,6 +82,7 @@ export class SecurityDataServiceManagerService  {
         this.entityDataTokenService.ClearAllCaches();
         this.entityDataTokenEventService.ClearAllCaches();
         this.entityDataTokenEventTypeService.ClearAllCaches();
+        this.ipAddressLocationService.ClearAllCaches();
         this.loginAttemptService.ClearAllCaches();
         this.moduleService.ClearAllCaches();
         this.moduleSecurityRoleService.ClearAllCaches();

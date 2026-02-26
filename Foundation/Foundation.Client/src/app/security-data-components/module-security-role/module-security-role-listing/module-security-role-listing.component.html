@@ -82,6 +82,7 @@
   <app-module-security-role-table
     *ngIf="userIsSecurityModuleSecurityRoleReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredModuleSecurityRoleCount$ | async) ?? 0">
   </app-module-security-role-table>
 </div>

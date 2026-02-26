@@ -82,6 +82,7 @@
   <app-o-a-u-t-h-token-table
     *ngIf="userIsSecurityOAUTHTokenReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredOAUTHTokenCount$ | async) ?? 0">
   </app-o-a-u-t-h-token-table>
 </div>

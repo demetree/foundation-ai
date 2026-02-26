@@ -82,6 +82,7 @@
   <app-user-session-table
     *ngIf="userIsSecurityUserSessionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredUserSessionCount$ | async) ?? 0">
   </app-user-session-table>
 </div>

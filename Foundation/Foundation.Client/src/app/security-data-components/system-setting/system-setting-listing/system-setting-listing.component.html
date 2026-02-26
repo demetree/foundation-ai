@@ -82,6 +82,7 @@
   <app-system-setting-table
     *ngIf="userIsSecuritySystemSettingReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSystemSettingCount$ | async) ?? 0">
   </app-system-setting-table>
 </div>

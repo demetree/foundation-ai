@@ -82,6 +82,7 @@
   <app-login-attempt-table
     *ngIf="userIsSecurityLoginAttemptReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredLoginAttemptCount$ | async) ?? 0">
   </app-login-attempt-table>
 </div>

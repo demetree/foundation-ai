@@ -82,6 +82,7 @@
   <app-telemetry-network-health-table
     *ngIf="userIsTelemetryTelemetryNetworkHealthReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetryNetworkHealthCount$ | async) ?? 0">
   </app-telemetry-network-health-table>
 </div>

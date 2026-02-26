@@ -165,6 +165,7 @@ export class TelemetryApplicationMetricListingComponent implements OnInit, After
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.telemetryApplicationMetricTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.telemetryApplicationMetricTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -82,6 +82,7 @@
   <app-external-communication-recipient-table
     *ngIf="userIsAuditorExternalCommunicationRecipientReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredExternalCommunicationRecipientCount$ | async) ?? 0">
   </app-external-communication-recipient-table>
 </div>

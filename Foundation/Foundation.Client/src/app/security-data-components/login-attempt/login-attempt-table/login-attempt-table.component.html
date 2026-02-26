@@ -1,4 +1,4 @@
-<app-login-attempt-add-edit [showAddButton]="false"></app-login-attempt-add-edit>
+<app-login-attempt-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-login-attempt-add-edit>
 <div class="row" *ngIf="userIsSecurityLoginAttemptReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityLoginAttemptWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityLoginAttemptWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Login Attempt">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityLoginAttemptWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->
@@ -63,6 +67,10 @@
                 Security  User
                 <span *ngIf="sortColumn === 'securityUser.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('ipAddressLocation.name')">
+                Ip  Address  Location
+                <span *ngIf="sortColumn === 'ipAddressLocation.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -78,24 +86,27 @@ End of commented block for alternate definition option -->
                  'row-deleted': loginAttempt.deleted == true 
                  }">
             <td class="header-action-button" *ngIf="userIsSecurityLoginAttemptWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(loginAttempt)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsSecurityLoginAttemptWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(loginAttempt)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top"
                       *ngIf="loginAttempt.deleted == false">
                 <i class="fa fa-trash"></i>
               </button>
-              <button class="btn btn-sm"
+              <button class="action-btn action-undelete"
                       (click)="handleUndelete(loginAttempt)"
                       ngbTooltip="Undelete" 
+                      container="body"
                       placement="top"
                       *ngIf="loginAttempt.deleted == true">
                 <i class="fa fa-trash-arrow-up"></i>
@@ -155,6 +166,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{loginAttempt.value}}</td>
             <td class="text-truncate"><boolean-icon [value]="loginAttempt.success"/></td>
             <td class="text-truncate"><a [routerLink]="['/securityuser', loginAttempt.securityUserId]" class="btn btn-link text-left" ngbTooltip="Open Security User details">{{loginAttempt.securityUser?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/ipaddresslocation', loginAttempt.ipAddressLocationId]" class="btn btn-link text-left" ngbTooltip="Open Ip Address Location details">{{loginAttempt.ipAddressLocation?.name}}</a></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -250,17 +262,17 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/loginattempt', loginAttempt.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/loginattempt', loginAttempt.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(loginAttempt)" *ngIf="userIsSecurityLoginAttemptWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(loginAttempt)" *ngIf="userIsSecurityLoginAttemptWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(loginAttempt)" *ngIf="userIsSecurityLoginAttemptWriter() && loginAttempt.deleted == false" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(loginAttempt)" *ngIf="userIsSecurityLoginAttemptWriter() && loginAttempt.deleted == false" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
-            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(loginAttempt)" *ngIf="userIsSecurityLoginAttemptWriter() && loginAttempt.deleted == true" ngbTooltip="Undelete">
+            <button class="action-btn action-undelete" (click)="handleUndelete(loginAttempt)" *ngIf="userIsSecurityLoginAttemptWriter() && loginAttempt.deleted == true" ngbTooltip="Undelete">
               <i class="fa fa-trash-arrow-upp"></i> UnDelete
             </button>
 
@@ -275,24 +287,24 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{loginAttempt.securityUser?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/loginattempt', loginAttempt.id]"
                         ngbTooltip="Login Attempt Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(loginAttempt)"
                         ngbTooltip="Edit Login Attempt">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                       (click)="handleDelete(loginAttempt)"
                       ngbTooltip="Delete Login Attempt" 
                       placement="top"
                       *ngIf="loginAttempt.deleted == false">
                   <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-undelete"
                       (click)="handleUndelete(loginAttempt)"
                       ngbTooltip="Undelete Login Attempt" 
                       placement="top"
@@ -342,9 +354,47 @@ End of commented block for alternate definition option -->
               <strong>Security User: </strong>
               <a [routerLink]="['/securityuser', loginAttempt.securityUserId]" class="text-left p-0 m-0" ngbTooltip="Open Security User details">{{loginAttempt.securityUser?.name}}</a>
             </p>
+            <p class="login-attempt-info" *ngIf="loginAttempt.ipAddressLocationId != null">
+              <strong>Ip Address Location: </strong>
+              <a [routerLink]="['/ipaddresslocation', loginAttempt.ipAddressLocationId]" class="text-left p-0 m-0" ngbTooltip="Open Ip Address Location details">{{loginAttempt.ipAddressLocation?.name}}</a>
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->
       </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
    </div>
 </div>

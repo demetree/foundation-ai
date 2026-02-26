@@ -165,6 +165,7 @@ export class SecurityRoleListingComponent implements OnInit, AfterViewInit, CanC
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityRoleTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityRoleTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -165,6 +165,7 @@ export class TelemetryNetworkHealthListingComponent implements OnInit, AfterView
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.telemetryNetworkHealthTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.telemetryNetworkHealthTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

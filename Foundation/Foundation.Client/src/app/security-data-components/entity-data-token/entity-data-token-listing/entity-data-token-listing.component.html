@@ -82,6 +82,7 @@
   <app-entity-data-token-table
     *ngIf="userIsSecurityEntityDataTokenReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredEntityDataTokenCount$ | async) ?? 0">
   </app-entity-data-token-table>
 </div>

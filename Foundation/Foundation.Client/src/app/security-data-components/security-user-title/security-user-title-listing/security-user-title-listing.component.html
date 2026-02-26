@@ -82,6 +82,7 @@
   <app-security-user-title-table
     *ngIf="userIsSecuritySecurityUserTitleReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSecurityUserTitleCount$ | async) ?? 0">
   </app-security-user-title-table>
 </div>

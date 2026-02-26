@@ -139,11 +139,17 @@ export class SecurityTeamData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityTeamId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityUsersCount$(): Observable<bigint | number> {
+        if (this._securityUsersCount$ === null) {
+            this._securityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityTeamId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUsersCount$;
+    }
 
 
 
@@ -158,11 +164,17 @@ export class SecurityTeamData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityTeamId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityTeamUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityTeamUsersCount$(): Observable<bigint | number> {
+        if (this._securityTeamUsersCount$ === null) {
+            this._securityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityTeamId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityTeamUsersCount$;
+    }
 
 
 
@@ -207,10 +219,12 @@ export class SecurityTeamData {
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
+     this._securityUsersCount$ = null;
 
      this._securityTeamUsers = null;
      this._securityTeamUsersPromise = null;
      this._securityTeamUsersSubject.next(null);
+     this._securityTeamUsersCount$ = null;
 
   }
 
@@ -827,11 +841,7 @@ export class SecurityTeamService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityTeamId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUsersCount$ = null;
 
 
     (revived as any).SecurityTeamUsers$ = (revived as any)._securityTeamUsersSubject.asObservable().pipe(
@@ -843,11 +853,7 @@ export class SecurityTeamService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityTeamId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityTeamUsersCount$ = null;
 
 
 

@@ -194,27 +194,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 
 			query = query.OrderByDescending(ae => ae.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.auditAccessType);
-				query = query.Include(x => x.auditHostSystem);
-				query = query.Include(x => x.auditModule);
-				query = query.Include(x => x.auditModuleEntity);
-				query = query.Include(x => x.auditResource);
-				query = query.Include(x => x.auditSession);
-				query = query.Include(x => x.auditSource);
-				query = query.Include(x => x.auditType);
-				query = query.Include(x => x.auditUser);
-				query = query.Include(x => x.auditUserAgent);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Audit Event, or on an any of the string fields on its immediate relations
@@ -249,6 +228,27 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.auditAccessType);
+				query = query.Include(x => x.auditHostSystem);
+				query = query.Include(x => x.auditModule);
+				query = query.Include(x => x.auditModuleEntity);
+				query = query.Include(x => x.auditResource);
+				query = query.Include(x => x.auditSession);
+				query = query.Include(x => x.auditSource);
+				query = query.Include(x => x.auditType);
+				query = query.Include(x => x.auditUser);
+				query = query.Include(x => x.auditUserAgent);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.AuditEvent> materialized = await query.ToListAsync(cancellationToken);

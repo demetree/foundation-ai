@@ -132,11 +132,17 @@ export class SecurityGroupData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityGroupId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserSecurityGroupsCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserSecurityGroupsCount$(): Observable<bigint | number> {
+        if (this._securityUserSecurityGroupsCount$ === null) {
+            this._securityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityGroupId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserSecurityGroupsCount$;
+    }
 
 
 
@@ -151,11 +157,17 @@ export class SecurityGroupData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityGroupSecurityRolesCount$ = SecurityGroupSecurityRoleService.Instance.GetSecurityGroupSecurityRolesRowCount({securityGroupId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityGroupSecurityRolesCount$: Observable<bigint | number> | null = null;
+    public get SecurityGroupSecurityRolesCount$(): Observable<bigint | number> {
+        if (this._securityGroupSecurityRolesCount$ === null) {
+            this._securityGroupSecurityRolesCount$ = SecurityGroupSecurityRoleService.Instance.GetSecurityGroupSecurityRolesRowCount({securityGroupId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityGroupSecurityRolesCount$;
+    }
 
 
 
@@ -200,10 +212,12 @@ export class SecurityGroupData {
      this._securityUserSecurityGroups = null;
      this._securityUserSecurityGroupsPromise = null;
      this._securityUserSecurityGroupsSubject.next(null);
+     this._securityUserSecurityGroupsCount$ = null;
 
      this._securityGroupSecurityRoles = null;
      this._securityGroupSecurityRolesPromise = null;
      this._securityGroupSecurityRolesSubject.next(null);
+     this._securityGroupSecurityRolesCount$ = null;
 
   }
 
@@ -819,11 +833,7 @@ export class SecurityGroupService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityGroupId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserSecurityGroupsCount$ = null;
 
 
     (revived as any).SecurityGroupSecurityRoles$ = (revived as any)._securityGroupSecurityRolesSubject.asObservable().pipe(
@@ -835,11 +845,7 @@ export class SecurityGroupService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityGroupSecurityRolesCount$ = SecurityGroupSecurityRoleService.Instance.GetSecurityGroupSecurityRolesRowCount({securityGroupId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityGroupSecurityRolesCount$ = null;
 
 
 

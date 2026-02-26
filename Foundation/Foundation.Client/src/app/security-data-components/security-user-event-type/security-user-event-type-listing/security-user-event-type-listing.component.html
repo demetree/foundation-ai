@@ -82,6 +82,7 @@
   <app-security-user-event-type-table
     *ngIf="userIsSecuritySecurityUserEventTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSecurityUserEventTypeCount$ | async) ?? 0">
   </app-security-user-event-type-table>
 </div>

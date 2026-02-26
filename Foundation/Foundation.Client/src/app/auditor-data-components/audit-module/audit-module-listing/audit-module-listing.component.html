@@ -82,6 +82,7 @@
   <app-audit-module-table
     *ngIf="userIsAuditorAuditModuleReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditModuleCount$ | async) ?? 0">
   </app-audit-module-table>
 </div>

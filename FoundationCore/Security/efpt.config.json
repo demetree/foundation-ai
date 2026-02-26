@@ -4,18 +4,15 @@
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
-   "IrregularWords": null,
    "MinimumProductVersion": "2.6.1301",
    "ModelNamespace": null,
    "OutputContextPath": "",
    "OutputPath": "Security\\Database",
-   "PluralRules": null,
    "PreserveCasingWithRegex": true,
    "ProjectRootNamespace": "Foundation",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
-   "SingularRules": null,
    "T4TemplatePath": null,
    "Tables": [
       {
@@ -28,6 +25,10 @@
       },
       {
          "Name": "[Security].[EntityDataTokenEventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[IpAddressLocation]",
          "ObjectType": 0
       },
       {

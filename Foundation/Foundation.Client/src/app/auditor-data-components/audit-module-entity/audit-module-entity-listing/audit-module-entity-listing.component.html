@@ -82,6 +82,7 @@
   <app-audit-module-entity-table
     *ngIf="userIsAuditorAuditModuleEntityReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditModuleEntityCount$ | async) ?? 0">
   </app-audit-module-entity-table>
 </div>

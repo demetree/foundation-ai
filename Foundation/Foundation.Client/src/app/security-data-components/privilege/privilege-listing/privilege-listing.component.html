@@ -82,6 +82,7 @@
   <app-privilege-table
     *ngIf="userIsSecurityPrivilegeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPrivilegeCount$ | async) ?? 0">
   </app-privilege-table>
 </div>

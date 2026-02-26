@@ -165,6 +165,7 @@ export class ExternalCommunicationRecipientListingComponent implements OnInit, A
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.externalCommunicationRecipientTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.externalCommunicationRecipientTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

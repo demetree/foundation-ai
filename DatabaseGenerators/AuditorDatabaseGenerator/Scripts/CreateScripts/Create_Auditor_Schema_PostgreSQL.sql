@@ -75,7 +75,8 @@ CREATE TABLE "Auditor"."AuditType"
 	"description" VARCHAR(500) NULL
 );
 -- Index on the AuditType table's name field.
-CREATE INDEX "I_AuditType_name" ON "Auditor"."AuditType" ("name");
+CREATE INDEX "I_AuditType_name" ON "Auditor"."AuditType" ("name")
+;
 
 INSERT INTO "Auditor"."AuditType" ( "name", "description" ) VALUES  ( 'Login', 'Log in to the system' );
 
@@ -123,7 +124,8 @@ CREATE TABLE "Auditor"."AuditAccessType"
 	"description" VARCHAR(500) NULL
 );
 -- Index on the AuditAccessType table's name field.
-CREATE INDEX "I_AuditAccessType_name" ON "Auditor"."AuditAccessType" ("name");
+CREATE INDEX "I_AuditAccessType_name" ON "Auditor"."AuditAccessType" ("name")
+;
 
 INSERT INTO "Auditor"."AuditAccessType" ( "name", "description" ) VALUES  ( 'Web Browser', 'User connecting with a web browser to access the system.' );
 
@@ -140,7 +142,8 @@ CREATE TABLE "Auditor"."AuditUser"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditUser table's name field.
-CREATE INDEX "I_AuditUser_name" ON "Auditor"."AuditUser" ("name");
+CREATE INDEX "I_AuditUser_name" ON "Auditor"."AuditUser" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditSession"
@@ -151,7 +154,8 @@ CREATE TABLE "Auditor"."AuditSession"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditSession table's name field.
-CREATE INDEX "I_AuditSession_name" ON "Auditor"."AuditSession" ("name");
+CREATE INDEX "I_AuditSession_name" ON "Auditor"."AuditSession" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditSource"
@@ -162,7 +166,8 @@ CREATE TABLE "Auditor"."AuditSource"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditSource table's name field.
-CREATE INDEX "I_AuditSource_name" ON "Auditor"."AuditSource" ("name");
+CREATE INDEX "I_AuditSource_name" ON "Auditor"."AuditSource" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditUserAgent"
@@ -173,7 +178,8 @@ CREATE TABLE "Auditor"."AuditUserAgent"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditUserAgent table's name field.
-CREATE INDEX "I_AuditUserAgent_name" ON "Auditor"."AuditUserAgent" ("name");
+CREATE INDEX "I_AuditUserAgent_name" ON "Auditor"."AuditUserAgent" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditHostSystem"
@@ -184,7 +190,8 @@ CREATE TABLE "Auditor"."AuditHostSystem"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditHostSystem table's name field.
-CREATE INDEX "I_AuditHostSystem_name" ON "Auditor"."AuditHostSystem" ("name");
+CREATE INDEX "I_AuditHostSystem_name" ON "Auditor"."AuditHostSystem" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditResource"
@@ -195,7 +202,8 @@ CREATE TABLE "Auditor"."AuditResource"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditResource table's name field.
-CREATE INDEX "I_AuditResource_name" ON "Auditor"."AuditResource" ("name");
+CREATE INDEX "I_AuditResource_name" ON "Auditor"."AuditResource" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditModule"
@@ -206,7 +214,8 @@ CREATE TABLE "Auditor"."AuditModule"
 	"firstAccess" TIMESTAMP NULL
 );
 -- Index on the AuditModule table's name field.
-CREATE INDEX "I_AuditModule_name" ON "Auditor"."AuditModule" ("name");
+CREATE INDEX "I_AuditModule_name" ON "Auditor"."AuditModule" ("name")
+;
 
 
 CREATE TABLE "Auditor"."AuditModuleEntity"
@@ -216,13 +225,15 @@ CREATE TABLE "Auditor"."AuditModuleEntity"
 	"name" VARCHAR(500) NOT NULL,
 	"comments" VARCHAR(1000) NULL,
 	"firstAccess" TIMESTAMP NULL,
-	CONSTRAINT "FK_AuditModuleEntity_AuditModule_auditModuleId" FOREIGN KEY ("auditModuleId") REFERENCES "Auditor"."AuditModule"("id")		-- Foreign key to the AuditModule table.
+	CONSTRAINT "auditModuleId" FOREIGN KEY ("auditModuleId") REFERENCES "Auditor"."AuditModule"("id")		-- Foreign key to the AuditModule table.
 );
 -- Index on the AuditModuleEntity table's auditModuleId field.
-CREATE INDEX "I_AuditModuleEntity_auditModuleId" ON "Auditor"."AuditModuleEntity" ("auditModuleId");
+CREATE INDEX "I_AuditModuleEntity_auditModuleId" ON "Auditor"."AuditModuleEntity" ("auditModuleId")
+;
 
 -- Index on the AuditModuleEntity table's auditModuleId,name fields.
-CREATE INDEX "I_AuditModuleEntity_auditModuleId_name" ON "Auditor"."AuditModuleEntity" ("auditModuleId", "name");
+CREATE INDEX "I_AuditModuleEntity_auditModuleId_name" ON "Auditor"."AuditModuleEntity" ("auditModuleId", "name")
+;
 
 
 CREATE TABLE "Auditor"."AuditEvent"
@@ -244,52 +255,76 @@ CREATE TABLE "Auditor"."AuditEvent"
 	"primaryKey" VARCHAR(250) NULL,
 	"threadId" INT NULL,
 	"message" TEXT NOT NULL,
-	CONSTRAINT "FK_AuditEvent_AuditUser_auditUserId" FOREIGN KEY ("auditUserId") REFERENCES "Auditor"."AuditUser"("id"),		-- Foreign key to the AuditUser table.
-	CONSTRAINT "FK_AuditEvent_AuditSession_auditSessionId" FOREIGN KEY ("auditSessionId") REFERENCES "Auditor"."AuditSession"("id"),		-- Foreign key to the AuditSession table.
-	CONSTRAINT "FK_AuditEvent_AuditType_auditTypeId" FOREIGN KEY ("auditTypeId") REFERENCES "Auditor"."AuditType"("id"),		-- Foreign key to the AuditType table.
-	CONSTRAINT "FK_AuditEvent_AuditAccessType_auditAccessTypeId" FOREIGN KEY ("auditAccessTypeId") REFERENCES "Auditor"."AuditAccessType"("id"),		-- Foreign key to the AuditAccessType table.
-	CONSTRAINT "FK_AuditEvent_AuditSource_auditSourceId" FOREIGN KEY ("auditSourceId") REFERENCES "Auditor"."AuditSource"("id"),		-- Foreign key to the AuditSource table.
-	CONSTRAINT "FK_AuditEvent_AuditUserAgent_auditUserAgentId" FOREIGN KEY ("auditUserAgentId") REFERENCES "Auditor"."AuditUserAgent"("id"),		-- Foreign key to the AuditUserAgent table.
-	CONSTRAINT "FK_AuditEvent_AuditModule_auditModuleId" FOREIGN KEY ("auditModuleId") REFERENCES "Auditor"."AuditModule"("id"),		-- Foreign key to the AuditModule table.
-	CONSTRAINT "FK_AuditEvent_AuditModuleEntity_auditModuleEntityId" FOREIGN KEY ("auditModuleEntityId") REFERENCES "Auditor"."AuditModuleEntity"("id"),		-- Foreign key to the AuditModuleEntity table.
-	CONSTRAINT "FK_AuditEvent_AuditResource_auditResourceId" FOREIGN KEY ("auditResourceId") REFERENCES "Auditor"."AuditResource"("id"),		-- Foreign key to the AuditResource table.
-	CONSTRAINT "FK_AuditEvent_AuditHostSystem_auditHostSystemId" FOREIGN KEY ("auditHostSystemId") REFERENCES "Auditor"."AuditHostSystem"("id")		-- Foreign key to the AuditHostSystem table.
+	CONSTRAINT "auditUserId" FOREIGN KEY ("auditUserId") REFERENCES "Auditor"."AuditUser"("id"),		-- Foreign key to the AuditUser table.
+	CONSTRAINT "auditSessionId" FOREIGN KEY ("auditSessionId") REFERENCES "Auditor"."AuditSession"("id"),		-- Foreign key to the AuditSession table.
+	CONSTRAINT "auditTypeId" FOREIGN KEY ("auditTypeId") REFERENCES "Auditor"."AuditType"("id"),		-- Foreign key to the AuditType table.
+	CONSTRAINT "auditAccessTypeId" FOREIGN KEY ("auditAccessTypeId") REFERENCES "Auditor"."AuditAccessType"("id"),		-- Foreign key to the AuditAccessType table.
+	CONSTRAINT "auditSourceId" FOREIGN KEY ("auditSourceId") REFERENCES "Auditor"."AuditSource"("id"),		-- Foreign key to the AuditSource table.
+	CONSTRAINT "auditUserAgentId" FOREIGN KEY ("auditUserAgentId") REFERENCES "Auditor"."AuditUserAgent"("id"),		-- Foreign key to the AuditUserAgent table.
+	CONSTRAINT "auditModuleId" FOREIGN KEY ("auditModuleId") REFERENCES "Auditor"."AuditModule"("id"),		-- Foreign key to the AuditModule table.
+	CONSTRAINT "auditModuleEntityId" FOREIGN KEY ("auditModuleEntityId") REFERENCES "Auditor"."AuditModuleEntity"("id"),		-- Foreign key to the AuditModuleEntity table.
+	CONSTRAINT "auditResourceId" FOREIGN KEY ("auditResourceId") REFERENCES "Auditor"."AuditResource"("id"),		-- Foreign key to the AuditResource table.
+	CONSTRAINT "auditHostSystemId" FOREIGN KEY ("auditHostSystemId") REFERENCES "Auditor"."AuditHostSystem"("id")		-- Foreign key to the AuditHostSystem table.
 );
 -- Index on the AuditEvent table's startTime field.
-CREATE INDEX "I_AuditEvent_startTime" ON "Auditor"."AuditEvent" ("startTime");
+CREATE INDEX "I_AuditEvent_startTime" ON "Auditor"."AuditEvent" ("startTime")
+;
 
 -- Index on the AuditEvent table's stopTime field.
-CREATE INDEX "I_AuditEvent_stopTime" ON "Auditor"."AuditEvent" ("stopTime");
+CREATE INDEX "I_AuditEvent_stopTime" ON "Auditor"."AuditEvent" ("stopTime")
+;
 
 -- Index on the AuditEvent table's auditUserId field.
-CREATE INDEX "I_AuditEvent_auditUserId" ON "Auditor"."AuditEvent" ("auditUserId");
+CREATE INDEX "I_AuditEvent_auditUserId" ON "Auditor"."AuditEvent" ("auditUserId")
+;
 
 -- Index on the AuditEvent table's auditSessionId field.
-CREATE INDEX "I_AuditEvent_auditSessionId" ON "Auditor"."AuditEvent" ("auditSessionId");
+CREATE INDEX "I_AuditEvent_auditSessionId" ON "Auditor"."AuditEvent" ("auditSessionId")
+;
 
 -- Index on the AuditEvent table's auditTypeId field.
-CREATE INDEX "I_AuditEvent_auditTypeId" ON "Auditor"."AuditEvent" ("auditTypeId");
+CREATE INDEX "I_AuditEvent_auditTypeId" ON "Auditor"."AuditEvent" ("auditTypeId")
+;
 
 -- Index on the AuditEvent table's auditAccessTypeId field.
-CREATE INDEX "I_AuditEvent_auditAccessTypeId" ON "Auditor"."AuditEvent" ("auditAccessTypeId");
+CREATE INDEX "I_AuditEvent_auditAccessTypeId" ON "Auditor"."AuditEvent" ("auditAccessTypeId")
+;
 
 -- Index on the AuditEvent table's auditSourceId field.
-CREATE INDEX "I_AuditEvent_auditSourceId" ON "Auditor"."AuditEvent" ("auditSourceId");
+CREATE INDEX "I_AuditEvent_auditSourceId" ON "Auditor"."AuditEvent" ("auditSourceId")
+;
 
 -- Index on the AuditEvent table's auditUserAgentId field.
-CREATE INDEX "I_AuditEvent_auditUserAgentId" ON "Auditor"."AuditEvent" ("auditUserAgentId");
+CREATE INDEX "I_AuditEvent_auditUserAgentId" ON "Auditor"."AuditEvent" ("auditUserAgentId")
+;
 
 -- Index on the AuditEvent table's auditModuleId field.
-CREATE INDEX "I_AuditEvent_auditModuleId" ON "Auditor"."AuditEvent" ("auditModuleId");
+CREATE INDEX "I_AuditEvent_auditModuleId" ON "Auditor"."AuditEvent" ("auditModuleId")
+;
 
 -- Index on the AuditEvent table's auditModuleEntityId field.
-CREATE INDEX "I_AuditEvent_auditModuleEntityId" ON "Auditor"."AuditEvent" ("auditModuleEntityId");
+CREATE INDEX "I_AuditEvent_auditModuleEntityId" ON "Auditor"."AuditEvent" ("auditModuleEntityId")
+;
 
 -- Index on the AuditEvent table's auditResourceId field.
-CREATE INDEX "I_AuditEvent_auditResourceId" ON "Auditor"."AuditEvent" ("auditResourceId");
+CREATE INDEX "I_AuditEvent_auditResourceId" ON "Auditor"."AuditEvent" ("auditResourceId")
+;
 
 -- Index on the AuditEvent table's auditHostSystemId field.
-CREATE INDEX "I_AuditEvent_auditHostSystemId" ON "Auditor"."AuditEvent" ("auditHostSystemId");
+CREATE INDEX "I_AuditEvent_auditHostSystemId" ON "Auditor"."AuditEvent" ("auditHostSystemId")
+;
+
+-- Index on the AuditEvent table's startTime,auditUserId fields.
+CREATE INDEX "I_AuditEvent_startTime_auditUserId" ON "Auditor"."AuditEvent" ("startTime", "auditUserId")
+;
+
+-- Index on the AuditEvent table's startTime,auditModuleId fields.
+CREATE INDEX "I_AuditEvent_startTime_auditModuleId" ON "Auditor"."AuditEvent" ("startTime", "auditModuleId")
+;
+
+-- Index on the AuditEvent table's startTime,auditTypeId fields.
+CREATE INDEX "I_AuditEvent_startTime_auditTypeId" ON "Auditor"."AuditEvent" ("startTime", "auditTypeId")
+;
 
 
 CREATE TABLE "Auditor"."AuditEventEntityState"
@@ -298,10 +333,11 @@ CREATE TABLE "Auditor"."AuditEventEntityState"
 	"auditEventId" INT NOT NULL,		-- Link to the AuditEvent table.
 	"beforeState" TEXT NULL,
 	"afterState" TEXT NULL,
-	CONSTRAINT "FK_AuditEventEntityState_AuditEvent_auditEventId" FOREIGN KEY ("auditEventId") REFERENCES "Auditor"."AuditEvent"("id")		-- Foreign key to the AuditEvent table.
+	CONSTRAINT "auditEventId" FOREIGN KEY ("auditEventId") REFERENCES "Auditor"."AuditEvent"("id")		-- Foreign key to the AuditEvent table.
 );
 -- Index on the AuditEventEntityState table's auditEventId field.
-CREATE INDEX "I_AuditEventEntityState_auditEventId" ON "Auditor"."AuditEventEntityState" ("auditEventId");
+CREATE INDEX "I_AuditEventEntityState_auditEventId" ON "Auditor"."AuditEventEntityState" ("auditEventId")
+;
 
 
 CREATE TABLE "Auditor"."AuditEventErrorMessage"
@@ -309,10 +345,11 @@ CREATE TABLE "Auditor"."AuditEventErrorMessage"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"auditEventId" INT NOT NULL,		-- Link to the AuditEvent table.
 	"errorMessage" TEXT NOT NULL,
-	CONSTRAINT "FK_AuditEventErrorMessage_AuditEvent_auditEventId" FOREIGN KEY ("auditEventId") REFERENCES "Auditor"."AuditEvent"("id")		-- Foreign key to the AuditEvent table.
+	CONSTRAINT "auditEventId" FOREIGN KEY ("auditEventId") REFERENCES "Auditor"."AuditEvent"("id")		-- Foreign key to the AuditEvent table.
 );
 -- Index on the AuditEventErrorMessage table's auditEventId field.
-CREATE INDEX "I_AuditEventErrorMessage_auditEventId" ON "Auditor"."AuditEventErrorMessage" ("auditEventId");
+CREATE INDEX "I_AuditEventErrorMessage_auditEventId" ON "Auditor"."AuditEventErrorMessage" ("auditEventId")
+;
 
 
 CREATE TABLE "Auditor"."AuditPlanB"
@@ -340,10 +377,12 @@ CREATE TABLE "Auditor"."AuditPlanB"
 	"exceptionText" TEXT NULL
 );
 -- Index on the AuditPlanB table's startTime field.
-CREATE INDEX "I_AuditPlanB_startTime" ON "Auditor"."AuditPlanB" ("startTime");
+CREATE INDEX "I_AuditPlanB_startTime" ON "Auditor"."AuditPlanB" ("startTime")
+;
 
 -- Index on the AuditPlanB table's stopTime field.
-CREATE INDEX "I_AuditPlanB_stopTime" ON "Auditor"."AuditPlanB" ("stopTime");
+CREATE INDEX "I_AuditPlanB_stopTime" ON "Auditor"."AuditPlanB" ("stopTime")
+;
 
 
 CREATE TABLE "Auditor"."ExternalCommunication"
@@ -357,10 +396,11 @@ CREATE TABLE "Auditor"."ExternalCommunication"
 	"completedSuccessfully" BOOLEAN NOT NULL DEFAULT true,
 	"responseMessage" TEXT NULL,
 	"exceptionText" TEXT NULL,
-	CONSTRAINT "FK_ExternalCommunication_AuditUser_auditUserId" FOREIGN KEY ("auditUserId") REFERENCES "Auditor"."AuditUser"("id")		-- Foreign key to the AuditUser table.
+	CONSTRAINT "auditUserId" FOREIGN KEY ("auditUserId") REFERENCES "Auditor"."AuditUser"("id")		-- Foreign key to the AuditUser table.
 );
 -- Index on the ExternalCommunication table's auditUserId field.
-CREATE INDEX "I_ExternalCommunication_auditUserId" ON "Auditor"."ExternalCommunication" ("auditUserId");
+CREATE INDEX "I_ExternalCommunication_auditUserId" ON "Auditor"."ExternalCommunication" ("auditUserId")
+;
 
 
 CREATE TABLE "Auditor"."ExternalCommunicationRecipient"
@@ -369,9 +409,10 @@ CREATE TABLE "Auditor"."ExternalCommunicationRecipient"
 	"externalCommunicationId" INT NULL,		-- Link to the ExternalCommunication table.
 	"recipient" VARCHAR(100) NULL,
 	"type" VARCHAR(50) NULL,
-	CONSTRAINT "FK_ExternalCommunicationRecipient_ExternalCommunication_externalCommunicationId" FOREIGN KEY ("externalCommunicationId") REFERENCES "Auditor"."ExternalCommunication"("id")		-- Foreign key to the ExternalCommunication table.
+	CONSTRAINT "externalCommunicationId" FOREIGN KEY ("externalCommunicationId") REFERENCES "Auditor"."ExternalCommunication"("id")		-- Foreign key to the ExternalCommunication table.
 );
 -- Index on the ExternalCommunicationRecipient table's externalCommunicationId field.
-CREATE INDEX "I_ExternalCommunicationRecipient_externalCommunicationId" ON "Auditor"."ExternalCommunicationRecipient" ("externalCommunicationId");
+CREATE INDEX "I_ExternalCommunicationRecipient_externalCommunicationId" ON "Auditor"."ExternalCommunicationRecipient" ("externalCommunicationId")
+;
 
 

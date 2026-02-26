@@ -145,18 +145,6 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			query = query.OrderBy(sr => sr.name).ThenBy(sr => sr.description).ThenBy(sr => sr.comments);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.privilege);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Security Role, or on an any of the string fields on its immediate relations
@@ -174,6 +162,18 @@ namespace Foundation.Security.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.privilege);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.SecurityRole> materialized = await query.ToListAsync(cancellationToken);

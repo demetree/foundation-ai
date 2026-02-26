@@ -165,6 +165,7 @@ export class PrivilegeListingComponent implements OnInit, AfterViewInit, CanComp
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.privilegeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.privilegeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

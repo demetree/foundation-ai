@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #moduleModal let-modal>
-   <div class="modal-header bg-dark text-light module-modal-header">
+   <div class="modal-header module-modal-header">
       <h5 class="modal-title mb-0" id="moduleModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Module' : 'Add Module' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body module-modal-body">
       <form [formGroup]="moduleForm" (ngSubmit)="submitForm()">

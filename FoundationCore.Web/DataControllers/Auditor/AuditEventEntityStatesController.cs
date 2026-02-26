@@ -68,7 +68,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			string afterState = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -116,34 +115,18 @@ namespace Foundation.Auditor.Controllers.WebAPI
 
 			query = query.OrderBy(aees => aees.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.auditEvent);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Audit Event Entity State, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.beforeState.Contains(anyStringContains)
-			       || x.afterState.Contains(anyStringContains)
-			       || (includeRelations == true && x.auditEvent.primaryKey.Contains(anyStringContains))
-			       || (includeRelations == true && x.auditEvent.message.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.AuditEventEntityState> materialized = await query.ToListAsync(cancellationToken);
@@ -187,7 +170,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			int? auditEventId = null,
 			string beforeState = null,
 			string afterState = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -216,22 +198,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			{
 				query = query.Where(aees => aees.afterState == afterState);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Audit Event Entity State, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.beforeState.Contains(anyStringContains)
-			       || x.afterState.Contains(anyStringContains)
-			       || x.auditEvent.primaryKey.Contains(anyStringContains)
-			       || x.auditEvent.message.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -565,7 +531,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			int? auditEventId = null,
 			string beforeState = null,
 			string afterState = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -609,22 +574,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			if (string.IsNullOrEmpty(afterState) == false)
 			{
 				query = query.Where(aees => aees.afterState == afterState);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Audit Event Entity State, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.beforeState.Contains(anyStringContains)
-			       || x.afterState.Contains(anyStringContains)
-			       || x.auditEvent.primaryKey.Contains(anyStringContains)
-			       || x.auditEvent.message.Contains(anyStringContains)
-			   );
 			}
 
 

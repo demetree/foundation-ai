@@ -72,10 +72,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-organization-table [queryParams]="{ securityTenantId: securityTenantData?.id }"></app-security-organization-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-organization-add-edit [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-organization-add-edit>
+                                    <app-security-organization-table [queryParams]="{ securityTenantId: securityTenantData?.id }" [showAddButton]="true" [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-organization-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -89,10 +86,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-table [queryParams]="{ securityTenantId: securityTenantData?.id }"></app-security-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-add-edit [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-user-add-edit>
+                                    <app-security-user-table [queryParams]="{ securityTenantId: securityTenantData?.id }" [showAddButton]="true" [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -106,10 +100,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-tenant-user-table [queryParams]="{ securityTenantId: securityTenantData?.id }"></app-security-tenant-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-tenant-user-add-edit [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-tenant-user-add-edit>
+                                    <app-security-tenant-user-table [queryParams]="{ securityTenantId: securityTenantData?.id }" [showAddButton]="true" [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-tenant-user-table>
                                 </div>
                             </div>
                             </ng-template>

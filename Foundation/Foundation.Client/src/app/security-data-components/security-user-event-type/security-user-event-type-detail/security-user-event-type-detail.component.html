@@ -60,10 +60,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-event-table [queryParams]="{ securityUserEventTypeId: securityUserEventTypeData?.id }"></app-security-user-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-event-add-edit [preSeededData]="{ securityUserEventTypeId: securityUserEventTypeData?.id }" [hiddenFields]="['securityUserEventTypeId']"></app-security-user-event-add-edit>
+                                    <app-security-user-event-table [queryParams]="{ securityUserEventTypeId: securityUserEventTypeData?.id }" [showAddButton]="true" [preSeededData]="{ securityUserEventTypeId: securityUserEventTypeData?.id }" [hiddenFields]="['securityUserEventTypeId']"></app-security-user-event-table>
                                 </div>
                             </div>
                             </ng-template>

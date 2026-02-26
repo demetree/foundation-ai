@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #securityTenantModal let-modal>
-   <div class="modal-header bg-dark text-light security-tenant-modal-header">
+   <div class="modal-header security-tenant-modal-header">
       <h5 class="modal-title mb-0" id="securityTenantModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Security Tenant' : 'Add Security Tenant' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body security-tenant-modal-body">
       <form [formGroup]="securityTenantForm" (ngSubmit)="submitForm()">

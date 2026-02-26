@@ -120,11 +120,17 @@ export class EntityDataTokenEventTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EntityDataTokenEventsCount$ = EntityDataTokenEventService.Instance.GetEntityDataTokenEventsRowCount({entityDataTokenEventTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _entityDataTokenEventsCount$: Observable<bigint | number> | null = null;
+    public get EntityDataTokenEventsCount$(): Observable<bigint | number> {
+        if (this._entityDataTokenEventsCount$ === null) {
+            this._entityDataTokenEventsCount$ = EntityDataTokenEventService.Instance.GetEntityDataTokenEventsRowCount({entityDataTokenEventTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._entityDataTokenEventsCount$;
+    }
 
 
 
@@ -169,6 +175,7 @@ export class EntityDataTokenEventTypeData {
      this._entityDataTokenEvents = null;
      this._entityDataTokenEventsPromise = null;
      this._entityDataTokenEventsSubject.next(null);
+     this._entityDataTokenEventsCount$ = null;
 
   }
 
@@ -702,11 +709,7 @@ export class EntityDataTokenEventTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EntityDataTokenEventsCount$ = EntityDataTokenEventService.Instance.GetEntityDataTokenEventsRowCount({entityDataTokenEventTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._entityDataTokenEventsCount$ = null;
 
 
 

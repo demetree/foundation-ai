@@ -82,6 +82,7 @@
   <app-security-user-security-group-table
     *ngIf="userIsSecuritySecurityUserSecurityGroupReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSecurityUserSecurityGroupCount$ | async) ?? 0">
   </app-security-user-security-group-table>
 </div>

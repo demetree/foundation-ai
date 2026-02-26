@@ -866,6 +866,15 @@
         padding: 16px;
     }
 
+    .search-wrapper {
+        min-width: auto;
+    }
+
+    .year-range {
+        width: 100%;
+        justify-content: center;
+    }
+
     .sets-grid,
     .card-row {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

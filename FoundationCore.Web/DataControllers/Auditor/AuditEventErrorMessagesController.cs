@@ -67,7 +67,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			string errorMessage = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -111,33 +110,18 @@ namespace Foundation.Auditor.Controllers.WebAPI
 
 			query = query.OrderBy(aeem => aeem.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.auditEvent);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Audit Event Error Message, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.errorMessage.Contains(anyStringContains)
-			       || (includeRelations == true && x.auditEvent.primaryKey.Contains(anyStringContains))
-			       || (includeRelations == true && x.auditEvent.message.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.AuditEventErrorMessage> materialized = await query.ToListAsync(cancellationToken);
@@ -180,7 +164,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			int? auditEventId = null,
 			string errorMessage = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -205,21 +188,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			{
 				query = query.Where(aeem => aeem.errorMessage == errorMessage);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Audit Event Error Message, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.errorMessage.Contains(anyStringContains)
-			       || x.auditEvent.primaryKey.Contains(anyStringContains)
-			       || x.auditEvent.message.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -552,7 +520,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			int? auditEventId = null,
 			string errorMessage = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -592,21 +559,6 @@ namespace Foundation.Auditor.Controllers.WebAPI
 			if (string.IsNullOrEmpty(errorMessage) == false)
 			{
 				query = query.Where(aeem => aeem.errorMessage == errorMessage);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Audit Event Error Message, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.errorMessage.Contains(anyStringContains)
-			       || x.auditEvent.primaryKey.Contains(anyStringContains)
-			       || x.auditEvent.message.Contains(anyStringContains)
-			   );
 			}
 
 

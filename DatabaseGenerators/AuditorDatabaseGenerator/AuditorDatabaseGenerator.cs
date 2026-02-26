@@ -151,7 +151,6 @@ namespace Foundation.Auditor.Database
             auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventStartTimeField, auditEventUserLinkField });      // Activity by day per user, top users
             auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventStartTimeField, auditEventModuleLinkField });    // Top modules, module usage over time
             auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventStartTimeField, auditEventTypeLinkField });      // Event type breakdown by time range
-            auditEventTable.CreateIndexForFields(new Database.Table.Field[] { auditEventUserLinkField });                                // Single-user session drill-down
 
             //
             // Set the expected override state for this table.  

@@ -165,6 +165,7 @@ export class TelemetryDiskHealthListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.telemetryDiskHealthTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.telemetryDiskHealthTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -82,6 +82,7 @@
   <app-telemetry-collection-run-table
     *ngIf="userIsTelemetryTelemetryCollectionRunReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetryCollectionRunCount$ | async) ?? 0">
   </app-telemetry-collection-run-table>
 </div>

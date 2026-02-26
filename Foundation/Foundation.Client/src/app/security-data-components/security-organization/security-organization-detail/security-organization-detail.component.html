@@ -78,10 +78,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-department-table [queryParams]="{ securityOrganizationId: securityOrganizationData?.id }"></app-security-department-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-department-add-edit [preSeededData]="{ securityOrganizationId: securityOrganizationData?.id }" [hiddenFields]="['securityOrganizationId']"></app-security-department-add-edit>
+                                    <app-security-department-table [queryParams]="{ securityOrganizationId: securityOrganizationData?.id }" [showAddButton]="true" [preSeededData]="{ securityOrganizationId: securityOrganizationData?.id }" [hiddenFields]="['securityOrganizationId']"></app-security-department-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -95,10 +92,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-user-table [queryParams]="{ securityOrganizationId: securityOrganizationData?.id }"></app-security-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-user-add-edit [preSeededData]="{ securityOrganizationId: securityOrganizationData?.id }" [hiddenFields]="['securityOrganizationId']"></app-security-user-add-edit>
+                                    <app-security-user-table [queryParams]="{ securityOrganizationId: securityOrganizationData?.id }" [showAddButton]="true" [preSeededData]="{ securityOrganizationId: securityOrganizationData?.id }" [hiddenFields]="['securityOrganizationId']"></app-security-user-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -112,10 +106,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-organization-user-table [queryParams]="{ securityOrganizationId: securityOrganizationData?.id }"></app-security-organization-user-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-organization-user-add-edit [preSeededData]="{ securityOrganizationId: securityOrganizationData?.id }" [hiddenFields]="['securityOrganizationId']"></app-security-organization-user-add-edit>
+                                    <app-security-organization-user-table [queryParams]="{ securityOrganizationId: securityOrganizationData?.id }" [showAddButton]="true" [preSeededData]="{ securityOrganizationId: securityOrganizationData?.id }" [hiddenFields]="['securityOrganizationId']"></app-security-organization-user-table>
                                 </div>
                             </div>
                             </ng-template>

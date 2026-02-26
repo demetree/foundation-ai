@@ -82,6 +82,7 @@
   <app-audit-host-system-table
     *ngIf="userIsAuditorAuditHostSystemReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditHostSystemCount$ | async) ?? 0">
   </app-audit-host-system-table>
 </div>

@@ -82,6 +82,7 @@
   <app-audit-user-agent-table
     *ngIf="userIsAuditorAuditUserAgentReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditUserAgentCount$ | async) ?? 0">
   </app-audit-user-agent-table>
 </div>

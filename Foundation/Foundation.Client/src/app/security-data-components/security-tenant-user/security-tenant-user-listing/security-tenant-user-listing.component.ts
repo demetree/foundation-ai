@@ -165,6 +165,7 @@ export class SecurityTenantUserListingComponent implements OnInit, AfterViewInit
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityTenantUserTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityTenantUserTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

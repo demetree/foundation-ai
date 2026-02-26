@@ -222,3 +222,90 @@
         letter-spacing: 0.05em;
     }
 }
+
+
+/* ----------------------------------------------------------------
+   Responsive — Tablet
+   ---------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .login-page {
+        padding: 16px;
+    }
+
+    .login-container {
+        padding: 36px 28px;
+    }
+
+    .brand-logo-hero {
+        width: 88px;
+        height: 88px;
+        margin-bottom: 12px;
+    }
+
+    .login-brand {
+        margin-bottom: 24px;
+    }
+
+    .login-form {
+        gap: 16px;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Responsive — Phone
+   ---------------------------------------------------------------- */
+@media (max-width: 480px) {
+    .login-page {
+        padding: 8px;
+        min-height: calc(100vh - var(--header-height, 56px));
+    }
+
+    .login-container {
+        padding: 24px 20px;
+        border-radius: var(--radius-lg);
+    }
+
+    .brand-logo-hero {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 8px;
+    }
+
+    .brand-title {
+        font-size: 1.3rem;
+    }
+
+    .brand-subtitle {
+        font-size: 0.68rem;
+    }
+
+    .login-brand {
+        margin-bottom: 16px;
+    }
+
+    .login-form {
+        gap: 12px;
+    }
+
+    .form-label {
+        font-size: 0.72rem;
+        margin-bottom: 4px;
+    }
+
+    .input-wrapper .form-control {
+        height: 40px;
+        font-size: 0.85rem;
+    }
+
+    .login-btn {
+        height: 40px;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .login-footer {
+        margin-top: 14px;
+        padding-top: 12px;
+    }
+}

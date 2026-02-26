@@ -129,11 +129,17 @@ export class AuditModuleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AuditModuleEntitiesCount$ = AuditModuleEntityService.Instance.GetAuditModuleEntitiesRowCount({auditModuleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _auditModuleEntitiesCount$: Observable<bigint | number> | null = null;
+    public get AuditModuleEntitiesCount$(): Observable<bigint | number> {
+        if (this._auditModuleEntitiesCount$ === null) {
+            this._auditModuleEntitiesCount$ = AuditModuleEntityService.Instance.GetAuditModuleEntitiesRowCount({auditModuleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._auditModuleEntitiesCount$;
+    }
 
 
 
@@ -148,11 +154,17 @@ export class AuditModuleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AuditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditModuleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _auditEventsCount$: Observable<bigint | number> | null = null;
+    public get AuditEventsCount$(): Observable<bigint | number> {
+        if (this._auditEventsCount$ === null) {
+            this._auditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditModuleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._auditEventsCount$;
+    }
 
 
 
@@ -197,10 +209,12 @@ export class AuditModuleData {
      this._auditModuleEntities = null;
      this._auditModuleEntitiesPromise = null;
      this._auditModuleEntitiesSubject.next(null);
+     this._auditModuleEntitiesCount$ = null;
 
      this._auditEvents = null;
      this._auditEventsPromise = null;
      this._auditEventsSubject.next(null);
+     this._auditEventsCount$ = null;
 
   }
 
@@ -815,11 +829,7 @@ export class AuditModuleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AuditModuleEntitiesCount$ = AuditModuleEntityService.Instance.GetAuditModuleEntitiesRowCount({auditModuleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._auditModuleEntitiesCount$ = null;
 
 
     (revived as any).AuditEvents$ = (revived as any)._auditEventsSubject.asObservable().pipe(
@@ -831,11 +841,7 @@ export class AuditModuleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AuditEventsCount$ = AuditEventService.Instance.GetAuditEventsRowCount({auditModuleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._auditEventsCount$ = null;
 
 
 

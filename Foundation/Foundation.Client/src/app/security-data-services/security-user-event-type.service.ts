@@ -120,11 +120,17 @@ export class SecurityUserEventTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserEventTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUserEventsCount$: Observable<bigint | number> | null = null;
+    public get SecurityUserEventsCount$(): Observable<bigint | number> {
+        if (this._securityUserEventsCount$ === null) {
+            this._securityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserEventTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUserEventsCount$;
+    }
 
 
 
@@ -169,6 +175,7 @@ export class SecurityUserEventTypeData {
      this._securityUserEvents = null;
      this._securityUserEventsPromise = null;
      this._securityUserEventsSubject.next(null);
+     this._securityUserEventsCount$ = null;
 
   }
 
@@ -702,11 +709,7 @@ export class SecurityUserEventTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserEventTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUserEventsCount$ = null;
 
 
 

@@ -68,10 +68,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-module-security-role-table [queryParams]="{ moduleId: moduleData?.id }"></app-module-security-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-module-security-role-add-edit [preSeededData]="{ moduleId: moduleData?.id }" [hiddenFields]="['moduleId']"></app-module-security-role-add-edit>
+                                    <app-module-security-role-table [queryParams]="{ moduleId: moduleData?.id }" [showAddButton]="true" [preSeededData]="{ moduleId: moduleData?.id }" [hiddenFields]="['moduleId']"></app-module-security-role-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -85,10 +82,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-entity-data-token-table [queryParams]="{ moduleId: moduleData?.id }"></app-entity-data-token-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-entity-data-token-add-edit [preSeededData]="{ moduleId: moduleData?.id }" [hiddenFields]="['moduleId']"></app-entity-data-token-add-edit>
+                                    <app-entity-data-token-table [queryParams]="{ moduleId: moduleData?.id }" [showAddButton]="true" [preSeededData]="{ moduleId: moduleData?.id }" [hiddenFields]="['moduleId']"></app-entity-data-token-table>
                                 </div>
                             </div>
                             </ng-template>

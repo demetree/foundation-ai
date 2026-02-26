@@ -145,11 +145,17 @@ export class SecurityOrganizationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityDepartmentsCount$ = SecurityDepartmentService.Instance.GetSecurityDepartmentsRowCount({securityOrganizationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityDepartmentsCount$: Observable<bigint | number> | null = null;
+    public get SecurityDepartmentsCount$(): Observable<bigint | number> {
+        if (this._securityDepartmentsCount$ === null) {
+            this._securityDepartmentsCount$ = SecurityDepartmentService.Instance.GetSecurityDepartmentsRowCount({securityOrganizationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityDepartmentsCount$;
+    }
 
 
 
@@ -164,11 +170,17 @@ export class SecurityOrganizationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityOrganizationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityUsersCount$(): Observable<bigint | number> {
+        if (this._securityUsersCount$ === null) {
+            this._securityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityOrganizationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityUsersCount$;
+    }
 
 
 
@@ -183,11 +195,17 @@ export class SecurityOrganizationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityOrganizationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _securityOrganizationUsersCount$: Observable<bigint | number> | null = null;
+    public get SecurityOrganizationUsersCount$(): Observable<bigint | number> {
+        if (this._securityOrganizationUsersCount$ === null) {
+            this._securityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityOrganizationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._securityOrganizationUsersCount$;
+    }
 
 
 
@@ -232,14 +250,17 @@ export class SecurityOrganizationData {
      this._securityDepartments = null;
      this._securityDepartmentsPromise = null;
      this._securityDepartmentsSubject.next(null);
+     this._securityDepartmentsCount$ = null;
 
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
+     this._securityUsersCount$ = null;
 
      this._securityOrganizationUsers = null;
      this._securityOrganizationUsersPromise = null;
      this._securityOrganizationUsersSubject.next(null);
+     this._securityOrganizationUsersCount$ = null;
 
   }
 
@@ -936,11 +957,7 @@ export class SecurityOrganizationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityDepartmentsCount$ = SecurityDepartmentService.Instance.GetSecurityDepartmentsRowCount({securityOrganizationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityDepartmentsCount$ = null;
 
 
     (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
@@ -952,11 +969,7 @@ export class SecurityOrganizationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityOrganizationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityUsersCount$ = null;
 
 
     (revived as any).SecurityOrganizationUsers$ = (revived as any)._securityOrganizationUsersSubject.asObservable().pipe(
@@ -968,11 +981,7 @@ export class SecurityOrganizationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityOrganizationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._securityOrganizationUsersCount$ = null;
 
 
 

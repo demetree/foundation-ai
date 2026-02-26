@@ -620,6 +620,37 @@ namespace Foundation.Security.Database
 
 
 
+            /*
+             * 
+             *  IP Address Location cache table for geolocation data.
+             *  Cached lookups from external geolocation providers (e.g. ip-api.com).
+             *  One record per unique IP address, referenced by LoginAttempt via FK.
+             * 
+             */
+            Database.Table ipAddressLocationTable = database.AddTable("IpAddressLocation");
+            ipAddressLocationTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            ipAddressLocationTable.displayNameForTable = "IP Address Location";
+            ipAddressLocationTable.AddIdField();
+            Database.Table.Field ipAddressLocationIpField = ipAddressLocationTable.AddString50Field("ipAddress", false);
+            ipAddressLocationIpField.unique = true;
+            ipAddressLocationIpField.CreateIndex();
+            ipAddressLocationTable.SetDisplayNameField(ipAddressLocationIpField);
+            ipAddressLocationTable.AddString10Field("countryCode");
+            ipAddressLocationTable.AddString100Field("countryName");
+            ipAddressLocationTable.AddString100Field("city");
+            ipAddressLocationTable.AddDoubleField("latitude", true);
+            ipAddressLocationTable.AddDoubleField("longitude", true);
+            ipAddressLocationTable.AddDateTimeField("lastLookupDate", false);
+            ipAddressLocationTable.AddControlFields(false);
+            ipAddressLocationTable.AddSortSequence("lastLookupDate", true);
+
+            Database.Table.Index ipAddressLocationIdActiveDeletedIndex = ipAddressLocationTable.CreateIndex("I_IpAddressLocation_id_active_deleted");
+            ipAddressLocationIdActiveDeletedIndex.AddField("id");
+            ipAddressLocationIdActiveDeletedIndex.AddField("active");
+            ipAddressLocationIdActiveDeletedIndex.AddField("deleted");
+
+
+
             Database.Table loginAttemptTable = database.AddTable("LoginAttempt");
             loginAttemptTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);       // can't edit login attempts..
             loginAttemptTable.AddIdField();
@@ -633,6 +664,7 @@ namespace Foundation.Security.Database
             loginAttemptTable.AddTextField("value");
             loginAttemptTable.AddBoolField("success", true).AddScriptComments("null = unknown/pending, true = success, false = failure");
             loginAttemptTable.AddForeignKeyField("securityUserId", securityUserTable, true).AddScriptComments("Link to user if identified during login attempt");
+            loginAttemptTable.AddForeignKeyField("ipAddressLocationId", ipAddressLocationTable, true).AddScriptComments("Link to cached geolocation data for this IP.  Populated asynchronously by the IpAddressLocationWorker background service.");
             loginAttemptTable.AddControlFields(false);
             loginAttemptTable.AddSortSequence("timeStamp", true);
 

@@ -82,6 +82,7 @@
   <app-telemetry-log-error-table
     *ngIf="userIsTelemetryTelemetryLogErrorReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetryLogErrorCount$ | async) ?? 0">
   </app-telemetry-log-error-table>
 </div>

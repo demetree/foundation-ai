@@ -165,6 +165,7 @@ export class SecurityUserEventTypeListingComponent implements OnInit, AfterViewI
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.securityUserEventTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.securityUserEventTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

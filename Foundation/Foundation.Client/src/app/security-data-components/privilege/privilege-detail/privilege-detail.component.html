@@ -60,10 +60,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-security-role-table [queryParams]="{ privilegeId: privilegeData?.id }"></app-security-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-security-role-add-edit [preSeededData]="{ privilegeId: privilegeData?.id }" [hiddenFields]="['privilegeId']"></app-security-role-add-edit>
+                                    <app-security-role-table [queryParams]="{ privilegeId: privilegeData?.id }" [showAddButton]="true" [preSeededData]="{ privilegeId: privilegeData?.id }" [hiddenFields]="['privilegeId']"></app-security-role-table>
                                 </div>
                             </div>
                             </ng-template>

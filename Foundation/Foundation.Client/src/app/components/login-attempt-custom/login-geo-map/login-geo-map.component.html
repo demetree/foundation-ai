@@ -1,0 +1,91 @@
+<!-- Login Geo Map Component Template -->
+<!-- Interactive world map + country summary for login attempt geolocation -->
+<!-- AI-assisted development - February 2026 -->
+
+<div class="geo-map-container">
+
+    <!-- No Geo Data State -->
+    <div *ngIf="hasGeoData === false" class="no-data-state">
+        <i class="fa-solid fa-globe fa-3x text-muted opacity-50 mb-2"></i>
+        <h6 class="text-muted">No Geographic Data Available</h6>
+        <p class="text-muted small mb-0">
+            Geographic data will appear here once login attempt IP addresses have been resolved.
+            <br>
+            <span class="text-muted fst-italic">{{ totalAttemptCount }} attempt(s) without geo data</span>
+        </p>
+    </div>
+
+    <!-- Geo Data Content -->
+    <ng-container *ngIf="hasGeoData === true">
+
+        <!-- Stats bar -->
+        <div class="geo-stats-bar mb-3">
+            <span class="badge bg-primary me-2">
+                <i class="fa-solid fa-map-marker-alt me-1"></i>{{ geoGroups.length }} Location(s)
+            </span>
+            <span class="badge bg-secondary me-2">
+                {{ geoDataCount }} of {{ totalAttemptCount }} attempts mapped
+            </span>
+        </div>
+
+        <!-- Map -->
+        <div class="map-wrapper">
+            <div #mapContainer class="leaflet-map"></div>
+        </div>
+
+        <!-- Country / Continent Summary Table -->
+        <div class="country-summary mt-3" *ngIf="continentGroups.length > 0">
+
+            <h6 class="summary-title">
+                <i class="fa-solid fa-earth-americas me-2"></i>Geographic Breakdown
+            </h6>
+
+            <div *ngFor="let continent of continentGroups" class="continent-group">
+
+                <!-- Continent Header (clickable) -->
+                <div class="continent-header" (click)="toggleContinent(continent)">
+                    <div class="continent-name">
+                        <i class="fa-solid me-2"
+                            [ngClass]="continent.isExpanded === true ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                        {{ continent.name }}
+                    </div>
+                    <span class="badge bg-secondary">{{ continent.totalAttempts }} attempts</span>
+                </div>
+
+                <!-- Country Rows -->
+                <div class="country-rows" *ngIf="continent.isExpanded === true">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Country</th>
+                                <th class="text-center">IPs</th>
+                                <th class="text-center">Attempts</th>
+                                <th class="text-center">Success</th>
+                                <th class="text-center">Failed</th>
+                                <th class="text-end">Fail Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let country of continent.countries">
+                                <td class="country-cell">
+                                    <span class="flag-emoji me-1">{{ getFlagEmoji(country.countryCode) }}</span>
+                                    {{ country.countryName }}
+                                </td>
+                                <td class="text-center">{{ country.ipCount }}</td>
+                                <td class="text-center">{{ country.totalAttempts }}</td>
+                                <td class="text-center text-success">{{ country.successCount }}</td>
+                                <td class="text-center text-danger">{{ country.failureCount }}</td>
+                                <td class="text-end">
+                                    <span class="badge" [ngClass]="getFailureRateBadgeClass(country.failureRate)">
+                                        {{ country.failureRate }}%
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </ng-container>
+</div>

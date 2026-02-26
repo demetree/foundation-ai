@@ -165,6 +165,7 @@ export class EntityDataTokenEventTypeListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.entityDataTokenEventTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.entityDataTokenEventTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

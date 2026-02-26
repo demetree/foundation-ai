@@ -82,6 +82,7 @@
   <app-audit-source-table
     *ngIf="userIsAuditorAuditSourceReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAuditSourceCount$ | async) ?? 0">
   </app-audit-source-table>
 </div>

@@ -82,6 +82,7 @@
   <app-telemetry-snapshot-table
     *ngIf="userIsTelemetryTelemetrySnapshotReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTelemetrySnapshotCount$ | async) ?? 0">
   </app-telemetry-snapshot-table>
 </div>

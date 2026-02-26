@@ -59,7 +59,8 @@ CREATE TABLE "AuditType"
 	"description" VARCHAR(500) NULL COLLATE NOCASE
 );
 -- Index on the AuditType table's name field.
-CREATE INDEX "I_AuditType_name" ON "AuditType" ("name");
+CREATE INDEX "I_AuditType_name" ON "AuditType" ("name")
+;
 
 INSERT INTO "AuditType" ( "name", "description" ) VALUES  ( 'Login', 'Log in to the system' );
 
@@ -107,7 +108,8 @@ CREATE TABLE "AuditAccessType"
 	"description" VARCHAR(500) NULL COLLATE NOCASE
 );
 -- Index on the AuditAccessType table's name field.
-CREATE INDEX "I_AuditAccessType_name" ON "AuditAccessType" ("name");
+CREATE INDEX "I_AuditAccessType_name" ON "AuditAccessType" ("name")
+;
 
 INSERT INTO "AuditAccessType" ( "name", "description" ) VALUES  ( 'Web Browser', 'User connecting with a web browser to access the system.' );
 
@@ -124,7 +126,8 @@ CREATE TABLE "AuditUser"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditUser table's name field.
-CREATE INDEX "I_AuditUser_name" ON "AuditUser" ("name");
+CREATE INDEX "I_AuditUser_name" ON "AuditUser" ("name")
+;
 
 
 CREATE TABLE "AuditSession"
@@ -135,7 +138,8 @@ CREATE TABLE "AuditSession"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditSession table's name field.
-CREATE INDEX "I_AuditSession_name" ON "AuditSession" ("name");
+CREATE INDEX "I_AuditSession_name" ON "AuditSession" ("name")
+;
 
 
 CREATE TABLE "AuditSource"
@@ -146,7 +150,8 @@ CREATE TABLE "AuditSource"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditSource table's name field.
-CREATE INDEX "I_AuditSource_name" ON "AuditSource" ("name");
+CREATE INDEX "I_AuditSource_name" ON "AuditSource" ("name")
+;
 
 
 CREATE TABLE "AuditUserAgent"
@@ -157,7 +162,8 @@ CREATE TABLE "AuditUserAgent"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditUserAgent table's name field.
-CREATE INDEX "I_AuditUserAgent_name" ON "AuditUserAgent" ("name");
+CREATE INDEX "I_AuditUserAgent_name" ON "AuditUserAgent" ("name")
+;
 
 
 CREATE TABLE "AuditHostSystem"
@@ -168,7 +174,8 @@ CREATE TABLE "AuditHostSystem"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditHostSystem table's name field.
-CREATE INDEX "I_AuditHostSystem_name" ON "AuditHostSystem" ("name");
+CREATE INDEX "I_AuditHostSystem_name" ON "AuditHostSystem" ("name")
+;
 
 
 CREATE TABLE "AuditResource"
@@ -179,7 +186,8 @@ CREATE TABLE "AuditResource"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditResource table's name field.
-CREATE INDEX "I_AuditResource_name" ON "AuditResource" ("name");
+CREATE INDEX "I_AuditResource_name" ON "AuditResource" ("name")
+;
 
 
 CREATE TABLE "AuditModule"
@@ -190,7 +198,8 @@ CREATE TABLE "AuditModule"
 	"firstAccess" DATETIME NULL
 );
 -- Index on the AuditModule table's name field.
-CREATE INDEX "I_AuditModule_name" ON "AuditModule" ("name");
+CREATE INDEX "I_AuditModule_name" ON "AuditModule" ("name")
+;
 
 
 CREATE TABLE "AuditModuleEntity"
@@ -203,10 +212,12 @@ CREATE TABLE "AuditModuleEntity"
 	FOREIGN KEY ("auditModuleId") REFERENCES "AuditModule"("id")		-- Foreign key to the AuditModule table.
 );
 -- Index on the AuditModuleEntity table's auditModuleId field.
-CREATE INDEX "I_AuditModuleEntity_auditModuleId" ON "AuditModuleEntity" ("auditModuleId");
+CREATE INDEX "I_AuditModuleEntity_auditModuleId" ON "AuditModuleEntity" ("auditModuleId")
+;
 
 -- Index on the AuditModuleEntity table's auditModuleId,name fields.
-CREATE INDEX "I_AuditModuleEntity_auditModuleId_name" ON "AuditModuleEntity" ("auditModuleId", "name");
+CREATE INDEX "I_AuditModuleEntity_auditModuleId_name" ON "AuditModuleEntity" ("auditModuleId", "name")
+;
 
 
 CREATE TABLE "AuditEvent"
@@ -240,40 +251,64 @@ CREATE TABLE "AuditEvent"
 	FOREIGN KEY ("auditHostSystemId") REFERENCES "AuditHostSystem"("id")		-- Foreign key to the AuditHostSystem table.
 );
 -- Index on the AuditEvent table's startTime field.
-CREATE INDEX "I_AuditEvent_startTime" ON "AuditEvent" ("startTime");
+CREATE INDEX "I_AuditEvent_startTime" ON "AuditEvent" ("startTime")
+;
 
 -- Index on the AuditEvent table's stopTime field.
-CREATE INDEX "I_AuditEvent_stopTime" ON "AuditEvent" ("stopTime");
+CREATE INDEX "I_AuditEvent_stopTime" ON "AuditEvent" ("stopTime")
+;
 
 -- Index on the AuditEvent table's auditUserId field.
-CREATE INDEX "I_AuditEvent_auditUserId" ON "AuditEvent" ("auditUserId");
+CREATE INDEX "I_AuditEvent_auditUserId" ON "AuditEvent" ("auditUserId")
+;
 
 -- Index on the AuditEvent table's auditSessionId field.
-CREATE INDEX "I_AuditEvent_auditSessionId" ON "AuditEvent" ("auditSessionId");
+CREATE INDEX "I_AuditEvent_auditSessionId" ON "AuditEvent" ("auditSessionId")
+;
 
 -- Index on the AuditEvent table's auditTypeId field.
-CREATE INDEX "I_AuditEvent_auditTypeId" ON "AuditEvent" ("auditTypeId");
+CREATE INDEX "I_AuditEvent_auditTypeId" ON "AuditEvent" ("auditTypeId")
+;
 
 -- Index on the AuditEvent table's auditAccessTypeId field.
-CREATE INDEX "I_AuditEvent_auditAccessTypeId" ON "AuditEvent" ("auditAccessTypeId");
+CREATE INDEX "I_AuditEvent_auditAccessTypeId" ON "AuditEvent" ("auditAccessTypeId")
+;
 
 -- Index on the AuditEvent table's auditSourceId field.
-CREATE INDEX "I_AuditEvent_auditSourceId" ON "AuditEvent" ("auditSourceId");
+CREATE INDEX "I_AuditEvent_auditSourceId" ON "AuditEvent" ("auditSourceId")
+;
 
 -- Index on the AuditEvent table's auditUserAgentId field.
-CREATE INDEX "I_AuditEvent_auditUserAgentId" ON "AuditEvent" ("auditUserAgentId");
+CREATE INDEX "I_AuditEvent_auditUserAgentId" ON "AuditEvent" ("auditUserAgentId")
+;
 
 -- Index on the AuditEvent table's auditModuleId field.
-CREATE INDEX "I_AuditEvent_auditModuleId" ON "AuditEvent" ("auditModuleId");
+CREATE INDEX "I_AuditEvent_auditModuleId" ON "AuditEvent" ("auditModuleId")
+;
 
 -- Index on the AuditEvent table's auditModuleEntityId field.
-CREATE INDEX "I_AuditEvent_auditModuleEntityId" ON "AuditEvent" ("auditModuleEntityId");
+CREATE INDEX "I_AuditEvent_auditModuleEntityId" ON "AuditEvent" ("auditModuleEntityId")
+;
 
 -- Index on the AuditEvent table's auditResourceId field.
-CREATE INDEX "I_AuditEvent_auditResourceId" ON "AuditEvent" ("auditResourceId");
+CREATE INDEX "I_AuditEvent_auditResourceId" ON "AuditEvent" ("auditResourceId")
+;
 
 -- Index on the AuditEvent table's auditHostSystemId field.
-CREATE INDEX "I_AuditEvent_auditHostSystemId" ON "AuditEvent" ("auditHostSystemId");
+CREATE INDEX "I_AuditEvent_auditHostSystemId" ON "AuditEvent" ("auditHostSystemId")
+;
+
+-- Index on the AuditEvent table's startTime,auditUserId fields.
+CREATE INDEX "I_AuditEvent_startTime_auditUserId" ON "AuditEvent" ("startTime", "auditUserId")
+;
+
+-- Index on the AuditEvent table's startTime,auditModuleId fields.
+CREATE INDEX "I_AuditEvent_startTime_auditModuleId" ON "AuditEvent" ("startTime", "auditModuleId")
+;
+
+-- Index on the AuditEvent table's startTime,auditTypeId fields.
+CREATE INDEX "I_AuditEvent_startTime_auditTypeId" ON "AuditEvent" ("startTime", "auditTypeId")
+;
 
 
 CREATE TABLE "AuditEventEntityState"
@@ -285,7 +320,8 @@ CREATE TABLE "AuditEventEntityState"
 	FOREIGN KEY ("auditEventId") REFERENCES "AuditEvent"("id")		-- Foreign key to the AuditEvent table.
 );
 -- Index on the AuditEventEntityState table's auditEventId field.
-CREATE INDEX "I_AuditEventEntityState_auditEventId" ON "AuditEventEntityState" ("auditEventId");
+CREATE INDEX "I_AuditEventEntityState_auditEventId" ON "AuditEventEntityState" ("auditEventId")
+;
 
 
 CREATE TABLE "AuditEventErrorMessage"
@@ -296,7 +332,8 @@ CREATE TABLE "AuditEventErrorMessage"
 	FOREIGN KEY ("auditEventId") REFERENCES "AuditEvent"("id")		-- Foreign key to the AuditEvent table.
 );
 -- Index on the AuditEventErrorMessage table's auditEventId field.
-CREATE INDEX "I_AuditEventErrorMessage_auditEventId" ON "AuditEventErrorMessage" ("auditEventId");
+CREATE INDEX "I_AuditEventErrorMessage_auditEventId" ON "AuditEventErrorMessage" ("auditEventId")
+;
 
 
 CREATE TABLE "AuditPlanB"
@@ -324,10 +361,12 @@ CREATE TABLE "AuditPlanB"
 	"exceptionText" TEXT NULL COLLATE NOCASE
 );
 -- Index on the AuditPlanB table's startTime field.
-CREATE INDEX "I_AuditPlanB_startTime" ON "AuditPlanB" ("startTime");
+CREATE INDEX "I_AuditPlanB_startTime" ON "AuditPlanB" ("startTime")
+;
 
 -- Index on the AuditPlanB table's stopTime field.
-CREATE INDEX "I_AuditPlanB_stopTime" ON "AuditPlanB" ("stopTime");
+CREATE INDEX "I_AuditPlanB_stopTime" ON "AuditPlanB" ("stopTime")
+;
 
 
 CREATE TABLE "ExternalCommunication"
@@ -344,7 +383,8 @@ CREATE TABLE "ExternalCommunication"
 	FOREIGN KEY ("auditUserId") REFERENCES "AuditUser"("id")		-- Foreign key to the AuditUser table.
 );
 -- Index on the ExternalCommunication table's auditUserId field.
-CREATE INDEX "I_ExternalCommunication_auditUserId" ON "ExternalCommunication" ("auditUserId");
+CREATE INDEX "I_ExternalCommunication_auditUserId" ON "ExternalCommunication" ("auditUserId")
+;
 
 
 CREATE TABLE "ExternalCommunicationRecipient"
@@ -356,6 +396,7 @@ CREATE TABLE "ExternalCommunicationRecipient"
 	FOREIGN KEY ("externalCommunicationId") REFERENCES "ExternalCommunication"("id")		-- Foreign key to the ExternalCommunication table.
 );
 -- Index on the ExternalCommunicationRecipient table's externalCommunicationId field.
-CREATE INDEX "I_ExternalCommunicationRecipient_externalCommunicationId" ON "ExternalCommunicationRecipient" ("externalCommunicationId");
+CREATE INDEX "I_ExternalCommunicationRecipient_externalCommunicationId" ON "ExternalCommunicationRecipient" ("externalCommunicationId")
+;
 
 
