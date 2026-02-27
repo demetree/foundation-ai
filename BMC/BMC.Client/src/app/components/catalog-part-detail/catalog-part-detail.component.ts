@@ -27,6 +27,24 @@ import { lastValueFrom, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 
+/**
+ * Lightweight DTO returned by the /api/parts-catalog/{partId}/set-appearances endpoint.
+ * Flat fields only — no nested navigation properties.
+ */
+export interface SetAppearanceDto {
+    setName: string;
+    setNumber: string;
+    year: number;
+    partCount: number;
+    imageUrl: string | null;
+    colourName: string | null;
+    colourHex: string | null;
+    ldrawColourCode: number;
+    quantity: number;
+    isSpare: boolean;
+    legoSetId: number;
+}
+
 @Component({
     selector: 'app-catalog-part-detail',
     templateUrl: './catalog-part-detail.component.html',
@@ -83,7 +101,8 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     private setPartsSourceLoaded = false;
 
     // Set parts panel
-    setParts: LegoSetPartData[] = [];
+    setParts: SetAppearanceDto[] = [];
+    totalSetPartsCount = 0;
     isLoadingSetParts = false;
     setPartsSearch = '';
     setPartsSortField: 'set' | 'setNum' | 'colour' | 'qty' = 'qty';
@@ -339,10 +358,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
 
     private async loadSetParts(): Promise<void> {
-        if (this.part == null || typeof this.part.LegoSetParts === 'undefined') {
-            //
-            // No set parts data available — mark this source as done.
-            //
+        if (this.part == null) {
             this.setPartsSourceLoaded = true;
             this.buildPartColourList();
             return;
@@ -351,17 +367,22 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.isLoadingSetParts = true;
 
         try {
-            this.setParts = await this.part.LegoSetParts;
+            const headers = this.authService.GetAuthenticationHeaders();
+            const url = `${this.baseUrl}api/parts-catalog/${this.part.id}/set-appearances?limit=100&sortBy=year&sortDir=desc`;
+
+            const result = await this.http.get<{ totalCount: number; items: SetAppearanceDto[] }>(
+                url, { headers }
+            ).toPromise();
+
+            this.totalSetPartsCount = result?.totalCount ?? 0;
+            this.setParts = result?.items ?? [];
         }
         catch {
             this.setParts = [];
+            this.totalSetPartsCount = 0;
         }
         finally {
             this.isLoadingSetParts = false;
-
-            //
-            // Mark this source as loaded and attempt to build the merged colour list.
-            //
             this.setPartsSourceLoaded = true;
             this.buildPartColourList();
         }
@@ -397,12 +418,21 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
 
         //
-        // Source 2: LegoSetPart records — each set appearance carries the colour the part
-        // was used in.  This is often a richer source than the direct BrickPartColour table.
+        // Source 2: Set appearances — each set appearance carries the colour the part
+        // was used in.  The set-appearances endpoint returns flat DTOs, so we construct
+        // synthetic BrickColourData entries from the flat fields.
         //
         for (const setPart of this.setParts) {
-            if (setPart.brickColour != null) {
-                colourMap.set(setPart.brickColour.id, setPart.brickColour);
+            if (setPart.colourName != null && setPart.ldrawColourCode != null) {
+                const key = setPart.ldrawColourCode;
+                if (!colourMap.has(key)) {
+                    const synthetic = new BrickColourData();
+                    synthetic.id = setPart.ldrawColourCode;
+                    synthetic.name = setPart.colourName;
+                    synthetic.hexRgb = setPart.colourHex;
+                    synthetic.ldrawColourCode = setPart.ldrawColourCode;
+                    colourMap.set(key, synthetic);
+                }
             }
         }
 
@@ -715,7 +745,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     //  Set Parts Panel
     // ────────────────────────────────────────────────────────────────
 
-    get filteredSetParts(): LegoSetPartData[] {
+    get filteredSetParts(): SetAppearanceDto[] {
         if (!this.setPartsSearch.trim()) {
             return this.setParts;
         }
@@ -723,25 +753,25 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         const q = this.setPartsSearch.toLowerCase();
 
         return this.setParts.filter(sp => {
-            const setName = (sp.legoSet?.name ?? '').toLowerCase();
-            const colourName = (sp.brickColour?.name ?? '').toLowerCase();
+            const setName = (sp.setName ?? '').toLowerCase();
+            const colourName = (sp.colourName ?? '').toLowerCase();
             return setName.includes(q) || colourName.includes(q);
         });
     }
 
 
-    get sortedSetParts(): LegoSetPartData[] {
+    get sortedSetParts(): SetAppearanceDto[] {
         const parts = [...this.filteredSetParts];
         const dir = this.setPartsSortDir === 'asc' ? 1 : -1;
 
         parts.sort((a, b) => {
             switch (this.setPartsSortField) {
                 case 'set':
-                    return (a.legoSet?.name ?? '').localeCompare(b.legoSet?.name ?? '') * dir;
+                    return (a.setName ?? '').localeCompare(b.setName ?? '') * dir;
                 case 'setNum':
-                    return (a.legoSet?.setNumber ?? '').localeCompare(b.legoSet?.setNumber ?? '') * dir;
+                    return (a.setNumber ?? '').localeCompare(b.setNumber ?? '') * dir;
                 case 'colour':
-                    return (a.brickColour?.name ?? '').localeCompare(b.brickColour?.name ?? '') * dir;
+                    return (a.colourName ?? '').localeCompare(b.colourName ?? '') * dir;
                 case 'qty':
                     return (Number(a.quantity ?? 0) - Number(b.quantity ?? 0)) * dir;
                 default:
@@ -763,19 +793,18 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     }
 
 
-    navigateToSet(sp: LegoSetPartData): void {
-        if (sp.legoSet?.id) {
-            this.router.navigate(['/lego/sets', sp.legoSet.id]);
+    navigateToSet(sp: SetAppearanceDto): void {
+        if (sp.legoSetId) {
+            this.router.navigate(['/lego/sets', sp.legoSetId]);
         }
     }
 
 
-    getSwatchColor(sp: LegoSetPartData): string {
-        const hex = sp.brickColour?.hexRgb;
+    getSwatchColor(sp: SetAppearanceDto): string {
+        const hex = sp.colourHex;
         if (!hex) {
             return 'transparent';
         }
-        // Handle both '05131D' and '#05131D' formats
         return hex.startsWith('#') ? hex : '#' + hex;
     }
 

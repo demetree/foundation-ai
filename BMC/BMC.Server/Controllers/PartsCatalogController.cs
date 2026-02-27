@@ -113,6 +113,35 @@ namespace Foundation.BMC.Controllers.WebAPI
             public int partCount { get; set; }
         }
 
+        /// <summary>
+        /// Lightweight set appearance DTO — flat fields, no navigation properties.
+        /// Used by the catalog-part-detail "Appears In Sets" panel.
+        /// </summary>
+        public class SetAppearanceDto
+        {
+            public string setName { get; set; }
+            public string setNumber { get; set; }
+            public int year { get; set; }
+            public int partCount { get; set; }
+            public string imageUrl { get; set; }
+            public string colourName { get; set; }
+            public string colourHex { get; set; }
+            public int ldrawColourCode { get; set; }
+            public int quantity { get; set; }
+            public bool isSpare { get; set; }
+            public int legoSetId { get; set; }
+        }
+
+        /// <summary>
+        /// Response wrapper for set appearances — includes total count
+        /// so the client can show "X total, showing Y newest" in the badge.
+        /// </summary>
+        public class SetAppearancesResult
+        {
+            public int totalCount { get; set; }
+            public List<SetAppearanceDto> items { get; set; }
+        }
+
         #endregion
 
 
@@ -432,6 +461,132 @@ namespace Foundation.BMC.Controllers.WebAPI
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Catalog part types loaded — {partTypes.Count} types");
 
             return Ok(partTypes);
+        }
+
+
+        /// <summary>
+        /// GET /api/parts-catalog/{partId}/set-appearances
+        ///
+        /// Returns a limited, sorted list of sets that contain the specified part,
+        /// along with the total count of all set appearances.
+        ///
+        /// Designed for the catalog-part-detail "Appears In Sets" panel so that
+        /// only a lightweight payload is transferred instead of the full entity graph.
+        ///
+        /// Cached for 2 minutes per unique combination of parameters.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/parts-catalog/{partId}/set-appearances")]
+        public async Task<IActionResult> GetSetAppearances(
+            int partId,
+            int limit = 100,
+            string sortBy = "year",
+            string sortDir = "desc",
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            // Clamp limit
+            if (limit <= 0) limit = 100;
+            if (limit > 500) limit = 500;
+
+            // Normalise sort params
+            sortBy = (sortBy ?? "year").ToLower();
+            sortDir = (sortDir ?? "desc").ToLower();
+
+            string cacheKey = $"catalog:set-appearances:{partId}:{limit}:{sortBy}:{sortDir}";
+
+            if (_cache.TryGetValue(cacheKey, out SetAppearancesResult cached))
+            {
+                return Ok(cached);
+            }
+
+            //
+            // Base query: active, non-deleted set parts for this brick part
+            //
+            IQueryable<LegoSetPart> query = _context.LegoSetParts
+                .Where(sp => sp.brickPartId == partId
+                          && sp.active == true
+                          && sp.deleted == false
+                          && sp.legoSet != null
+                          && sp.legoSet.active == true
+                          && sp.legoSet.deleted == false);
+
+            //
+            // Total count before sorting / limiting
+            //
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            //
+            // Apply sort
+            //
+            bool asc = sortDir == "asc";
+
+            query = sortBy switch
+            {
+                "set" => asc
+                    ? query.OrderBy(sp => sp.legoSet.name)
+                    : query.OrderByDescending(sp => sp.legoSet.name),
+
+                "setnum" => asc
+                    ? query.OrderBy(sp => sp.legoSet.setNumber)
+                    : query.OrderByDescending(sp => sp.legoSet.setNumber),
+
+                "colour" => asc
+                    ? query.OrderBy(sp => sp.brickColour.name)
+                    : query.OrderByDescending(sp => sp.brickColour.name),
+
+                "qty" => asc
+                    ? query.OrderBy(sp => sp.quantity)
+                    : query.OrderByDescending(sp => sp.quantity),
+
+                // "year" or anything else defaults to year
+                _ => asc
+                    ? query.OrderBy(sp => sp.legoSet.year).ThenBy(sp => sp.legoSet.name)
+                    : query.OrderByDescending(sp => sp.legoSet.year).ThenBy(sp => sp.legoSet.name),
+            };
+
+            //
+            // Project to lightweight DTO and take the limit
+            //
+            List<SetAppearanceDto> items = await query
+                .Take(limit)
+                .Select(sp => new SetAppearanceDto
+                {
+                    setName = sp.legoSet.name,
+                    setNumber = sp.legoSet.setNumber,
+                    year = sp.legoSet.year,
+                    partCount = sp.legoSet.partCount,
+                    imageUrl = sp.legoSet.imageUrl,
+                    colourName = sp.brickColour != null ? sp.brickColour.name : null,
+                    colourHex = sp.brickColour != null ? sp.brickColour.hexRgb : null,
+                    ldrawColourCode = sp.brickColour != null ? sp.brickColour.ldrawColourCode : 0,
+                    quantity = sp.quantity ?? 0,
+                    isSpare = sp.isSpare,
+                    legoSetId = sp.legoSetId,
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            SetAppearancesResult result = new SetAppearancesResult
+            {
+                totalCount = totalCount,
+                items = items
+            };
+
+            _cache.Set(cacheKey, result, PageCacheDuration);
+
+            await CreateAuditEventAsync(
+                AuditEngine.AuditType.ReadList,
+                $"Set appearances for part {partId} — {totalCount} total, returned {items.Count}");
+
+            return Ok(result);
         }
     }
 }

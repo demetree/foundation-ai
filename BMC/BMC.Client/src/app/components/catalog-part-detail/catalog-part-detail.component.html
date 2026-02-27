@@ -350,7 +350,8 @@
                     <div class="sets-panel-title">
                         <i class="bi bi-box-seam"></i>
                         Appears In Sets
-                        <span class="count-badge" *ngIf="setParts.length > 0">{{ setParts.length }}</span>
+                        <span class="count-badge" *ngIf="totalSetPartsCount > 0">{{ totalSetPartsCount }}</span>
+                        <span class="sets-cap-hint" *ngIf="totalSetPartsCount > 100">showing 100 newest sets</span>
                     </div>
                     <div class="sets-search" *ngIf="setParts.length > 0">
                         <i class="bi bi-search"></i>
@@ -385,15 +386,15 @@
                             <!-- Rows -->
                             <div class="sets-row" *ngFor="let sp of sortedSetParts" (click)="navigateToSet(sp)">
                                 <span class="sets-col-set">
-                                    {{ sp.legoSet?.name || '—' }}
+                                    {{ sp.setName || '—' }}
                                 </span>
                                 <span class="sets-col-setnum mono">
-                                    {{ sp.legoSet?.setNumber || '—' }}
+                                    {{ sp.setNumber || '—' }}
                                 </span>
                                 <span class="sets-col-colour">
                                     <span class="colour-swatch" [style.backgroundColor]="getSwatchColor(sp)">
                                     </span>
-                                    {{ sp.brickColour?.name || '—' }}
+                                    {{ sp.colourName || '—' }}
                                 </span>
                                 <span class="sets-col-qty">{{ sp.quantity ?? '—' }}</span>
                             </div>

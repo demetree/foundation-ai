@@ -730,6 +730,14 @@
 
 /* .colour-picker-card inherits .info-card base styles — no overrides needed */
 
+.sets-cap-hint {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--bmc-text-muted);
+    font-style: italic;
+    margin-left: 4px;
+}
+
 .colour-picker-header {
     //
     // Override the default info-card-header to accommodate the mode toggle on the right
