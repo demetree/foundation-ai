@@ -111,7 +111,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     renderTimeMs = 0;
 
     // Tab mode
-    activeTab: 'search' | 'upload' = 'search';
+    activeTab: 'search' | 'upload' = 'upload';
 
     // Upload state
     uploadedFile: File | null = null;

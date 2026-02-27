@@ -32,18 +32,51 @@
     <!-- Main Content -->
     <div class="detail-body">
 
-        <!-- 3D Viewer Panel -->
+        <!-- Viewer Panel -->
         <div class="viewer-panel">
-            <div class="viewer-card">
+
+            <!-- Tab Bar -->
+            <div class="viewer-tab-bar">
+                <button class="viewer-tab" [class.active]="activeViewerTab === '3d'" (click)="activeViewerTab = '3d'">
+                    <i class="bi bi-badge-3d"></i> 3D Viewer
+                </button>
+                <button class="viewer-tab" [class.active]="activeViewerTab === 'render'"
+                    (click)="activeViewerTab = 'render'" *ngIf="hasGeometry">
+                    <i class="bi bi-camera"></i> Server Render
+                </button>
+            </div>
+
+
+            <!-- ═══ 3D Viewer Tab ═══ -->
+            <div class="viewer-card" [hidden]="activeViewerTab !== '3d'">
                 <div class="viewer-header">
                     <span class="viewer-title">
                         <i class="bi bi-badge-3d"></i>
                         3D Preview
                     </span>
-                    <div class="viewer-controls-hint" *ngIf="hasGeometry">
-                        <span><i class="bi bi-mouse"></i> Drag to rotate</span>
-                        <span><i class="bi bi-zoom-in"></i> Scroll to zoom</span>
+                    <div class="viewer-header-actions">
+                        <button class="pose-btn" *ngIf="hasGeometry" [class.active]="poseMode"
+                            (click)="togglePoseMode()" title="Pose the part, then send view to Server Render">
+                            <i class="bi bi-bounding-box"></i>
+                            {{ poseMode ? 'Posing' : 'Pose Part' }}
+                        </button>
+                        <button class="pose-render-btn" *ngIf="poseMode" (click)="applyPoseToRender()"
+                            title="Use current camera angle for server render">
+                            <i class="bi bi-camera"></i> Render This View
+                        </button>
                     </div>
+                </div>
+
+                <!-- Pose Mode HUD -->
+                <div class="pose-hud" *ngIf="poseMode && hasGeometry">
+                    <span><i class="bi bi-arrows-angle-expand"></i> {{ getCameraAngles().elevation }}° elev</span>
+                    <span><i class="bi bi-arrow-repeat"></i> {{ getCameraAngles().azimuth }}° azim</span>
+                    <span class="pose-hint"><i class="bi bi-mouse"></i> Drag to rotate · Scroll to zoom</span>
+                </div>
+
+                <div class="viewer-controls-hint" *ngIf="hasGeometry && !poseMode">
+                    <span><i class="bi bi-mouse"></i> Drag to rotate</span>
+                    <span><i class="bi bi-zoom-in"></i> Scroll to zoom</span>
                 </div>
 
                 <div class="viewer-container" [class.has-geometry]="hasGeometry">
@@ -55,7 +88,7 @@
                     <!-- Loading Overlay -->
                     <div class="viewer-loading" *ngIf="isLoadingModel || pendingColourReady">
                         <div class="loading-spinner"></div>
-                        <span>{{ pendingColourReady ? 'Applying colour\u2026' : 'Loading 3D model\u2026' }}</span>
+                        <span>{{ pendingColourReady ? 'Applying colour…' : 'Loading 3D model…' }}</span>
                     </div>
 
                     <!-- Error Message -->
@@ -79,6 +112,235 @@
                             No geometry file — showing dimension preview
                         </div>
                     </div>
+                </div>
+            </div>
+
+
+            <!-- ═══ Server Render Tab ═══ -->
+            <div class="server-render-panel" *ngIf="activeViewerTab === 'render'">
+
+                <!-- Config Column -->
+                <div class="render-config">
+
+                    <!-- Colour Section -->
+                    <div class="render-section">
+                        <div class="render-section-title"><i class="bi bi-palette"></i> Colour</div>
+                        <div class="colour-selected-label" *ngIf="selectedColour != null">
+                            <span class="colour-selected-swatch"
+                                [style.backgroundColor]="getSwatchHex(selectedColour)"></span>
+                            <span>{{ selectedColour.name }} · LDraw {{ selectedColour.ldrawColourCode }}</span>
+                        </div>
+                        <div class="colour-selected-label" *ngIf="selectedColour == null">
+                            <span class="colour-selected-swatch" style="background-color: #C4C8CB;"></span>
+                            <span>Light Bluish Gray · default</span>
+                        </div>
+                        <div class="render-hint">Select a colour from the Colour Preview panel →</div>
+                    </div>
+
+                    <!-- View Section -->
+                    <div class="render-section">
+                        <div class="render-section-title"><i class="bi bi-camera-video"></i> View Angle</div>
+                        <div class="render-presets">
+                            <button *ngFor="let a of anglePresets" class="render-preset-btn"
+                                [class.active]="isSelectedAngle(a)" (click)="selectRenderAngle(a)"
+                                [title]="'Elevation ' + a.elevation + '° / Azimuth ' + a.azimuth + '°'">
+                                <i class="bi" [ngClass]="a.icon"></i> {{ a.label }}
+                            </button>
+                        </div>
+                        <div class="size-info">{{ renderElevation }}° elev · {{ renderAzimuth }}° azim</div>
+                        <label class="render-checkbox">
+                            <input type="checkbox" [checked]="flipView" (change)="flipView = !flipView" />
+                            <i class="bi bi-arrow-repeat"></i> Flip 180°
+                        </label>
+                    </div>
+
+                    <!-- Output Section -->
+                    <div class="render-section">
+                        <div class="render-section-title"><i class="bi bi-file-image"></i> Output</div>
+
+                        <div class="render-subsection">
+                            <span class="render-sublabel">Format</span>
+                            <div class="render-presets">
+                                <button class="render-preset-btn" [class.active]="outputFormat === 'png'"
+                                    (click)="outputFormat = 'png'">PNG</button>
+                                <button class="render-preset-btn" [class.active]="outputFormat === 'webp'"
+                                    (click)="outputFormat = 'webp'">WebP</button>
+                                <button class="render-preset-btn" [class.active]="outputFormat === 'svg'"
+                                    (click)="outputFormat = 'svg'">SVG</button>
+                                <button class="render-preset-btn" [class.active]="outputFormat === 'gif'"
+                                    (click)="outputFormat = 'gif'">
+                                    GIF <span class="format-tag">360°</span>
+                                </button>
+                            </div>
+                            <div class="quality-slider" *ngIf="outputFormat === 'webp'">
+                                <span class="render-sublabel">Quality</span>
+                                <div class="slider-row">
+                                    <input type="range" min="1" max="100" step="1" [value]="webpQuality"
+                                        (input)="webpQuality = +$any($event.target).value" />
+                                    <span class="slider-value">{{ webpQuality }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="render-subsection">
+                            <span class="render-sublabel">Size</span>
+                            <div class="size-category-tabs">
+                                <button *ngFor="let cat of sizeCategories" class="size-cat-btn"
+                                    [class.active]="sizeCategory === cat.key" (click)="sizeCategory = cat.key">
+                                    <i class="bi" [ngClass]="cat.icon"></i> {{ cat.label }}
+                                </button>
+                            </div>
+                            <div class="render-presets">
+                                <button *ngFor="let p of activeSizePresets" class="render-preset-btn"
+                                    [class.active]="isSelectedSize(p)" (click)="selectRenderSize(p)"
+                                    [title]="p.w + ' × ' + p.h">
+                                    {{ p.label }}
+                                </button>
+                            </div>
+                            <div class="size-info">{{ sizeDisplayLabel }}</div>
+                        </div>
+
+                        <div class="render-subsection">
+                            <span class="render-sublabel">Anti-Aliasing</span>
+                            <div class="render-presets">
+                                <button class="render-preset-btn" [class.active]="antiAliasMode === 'none'"
+                                    (click)="antiAliasMode = 'none'">Off</button>
+                                <button class="render-preset-btn" [class.active]="antiAliasMode === '2x'"
+                                    (click)="antiAliasMode = '2x'">2× SSAA</button>
+                                <button class="render-preset-btn" [class.active]="antiAliasMode === '4x'"
+                                    (click)="antiAliasMode = '4x'">4× SSAA</button>
+                            </div>
+                            <div class="render-warning"
+                                *ngIf="antiAliasMode === '4x' && (renderWidth > 2560 || renderHeight > 2560)">
+                                <i class="bi bi-exclamation-triangle"></i> Auto-downgraded to 2× at this resolution
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Section -->
+                    <div class="render-section">
+                        <div class="render-section-title"><i class="bi bi-sliders"></i> Appearance</div>
+
+                        <label class="render-checkbox">
+                            <input type="checkbox" [checked]="renderEdges" (change)="renderEdges = !renderEdges" />
+                            Edge lines
+                        </label>
+                        <label class="render-checkbox">
+                            <input type="checkbox" [checked]="smoothShading"
+                                (change)="smoothShading = !smoothShading" />
+                            Smooth shading
+                        </label>
+
+                        <div class="render-subsection">
+                            <span class="render-sublabel">Renderer</span>
+                            <div class="render-presets">
+                                <button class="render-preset-btn" [class.active]="rendererType === 'rasterizer'"
+                                    (click)="rendererType = 'rasterizer'">
+                                    <i class="bi bi-cpu"></i> Rasterizer
+                                </button>
+                                <button class="render-preset-btn" [class.active]="rendererType === 'raytrace'"
+                                    (click)="rendererType = 'raytrace'">
+                                    <i class="bi bi-brightness-high"></i> Ray Tracer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="render-subsection">
+                            <span class="render-sublabel">Background</span>
+                            <div class="bg-presets">
+                                <button *ngFor="let p of bgPresets" class="bg-preset-btn"
+                                    [class.active]="isActiveBgPreset(p)" [title]="p.label" (click)="applyBgPreset(p)">
+                                    <span class="bg-swatch"
+                                        [style.background]="p.top ? 'linear-gradient(180deg, ' + p.top + ', ' + p.bottom + ')' : 'repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 8px 8px'">
+                                    </span>
+                                    <span class="bg-preset-label">{{ p.label }}</span>
+                                </button>
+                            </div>
+                            <div class="hex-row">
+                                <input type="text" class="hex-input" placeholder="Top #hex" [value]="gradientTopHex"
+                                    (input)="gradientTopHex = $any($event.target).value" />
+                                <input type="text" class="hex-input" placeholder="Bottom #hex"
+                                    [value]="gradientBottomHex"
+                                    (input)="gradientBottomHex = $any($event.target).value" />
+                            </div>
+                        </div>
+
+                        <div class="render-subsection">
+                            <label class="render-checkbox">
+                                <input type="checkbox" [checked]="explodedView"
+                                    (change)="explodedView = !explodedView" />
+                                Exploded View
+                            </label>
+                            <div class="slider-row" *ngIf="explodedView">
+                                <input type="range" min="0.1" max="3.0" step="0.1" [value]="explosionFactor"
+                                    (input)="explosionFactor = +$any($event.target).value" />
+                                <span class="slider-value">{{ explosionFactor.toFixed(1) }}×</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Render Button -->
+                    <div class="render-actions">
+                        <button class="render-btn" [disabled]="rendering" (click)="renderPart()">
+                            <i class="bi" [ngClass]="rendering ? 'bi-arrow-repeat spin' : 'bi-camera'"></i>
+                            {{ rendering ? 'Rendering…' : 'Render Part' }}
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Preview Column -->
+                <div class="render-preview">
+
+                    <!-- Empty State -->
+                    <div class="preview-empty" *ngIf="!renderedImageUrl && !rendering && !renderError">
+                        <i class="bi bi-image"></i>
+                        <h3>No render yet</h3>
+                        <p>Configure settings and click <strong>Render Part</strong></p>
+                    </div>
+
+                    <!-- Rendering Spinner -->
+                    <div class="preview-loading" *ngIf="rendering">
+                        <div class="render-spinner">
+                            <i class="bi bi-gear spin spinner-icon"></i>
+                            <div class="spinner-text">Rendering…</div>
+                            <div class="spinner-sub">Processing geometry on server</div>
+                        </div>
+                    </div>
+
+                    <!-- Error -->
+                    <div class="preview-error" *ngIf="renderError && !rendering">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>{{ renderError }}</p>
+                        <button class="retry-btn" (click)="renderPart()">
+                            <i class="bi bi-arrow-clockwise"></i> Retry
+                        </button>
+                    </div>
+
+                    <!-- Rendered Image -->
+                    <div class="preview-image" *ngIf="renderedImageUrl && !rendering">
+                        <img [src]="renderedImageUrl" alt="Rendered part" class="rendered-img" />
+
+                        <div class="preview-toolbar">
+                            <div class="render-stats">
+                                <span class="stat"><i class="bi bi-clock"></i> {{ renderTimeMs }}ms</span>
+                                <span class="stat"><i class="bi bi-aspect-ratio"></i> {{ renderWidth }}×{{ renderHeight
+                                    }}</span>
+                            </div>
+                            <div class="preview-actions">
+                                <button class="download-btn" (click)="downloadRender()">
+                                    <i class="bi bi-download"></i> Download {{ renderedFormat.toUpperCase() }}
+                                </button>
+                                <button class="download-btn batch-btn" [disabled]="batchExporting"
+                                    (click)="batchExport()">
+                                    <i class="bi"
+                                        [ngClass]="batchExporting ? 'bi-arrow-repeat spin' : 'bi-file-earmark-zip'"></i>
+                                    {{ batchExporting ? 'Exporting…' : 'Export All Sizes' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

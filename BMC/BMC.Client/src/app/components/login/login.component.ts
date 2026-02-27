@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 
@@ -8,7 +8,7 @@ import { AlertService, MessageSeverity } from '../../services/alert.service';
     templateUrl: './login.component.html',
     styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
     userName = '';
     password = '';
@@ -22,7 +22,22 @@ export class LoginComponent {
         private authService: AuthService,
         private alertService: AlertService,
         private router: Router,
+        private route: ActivatedRoute
     ) { }
+
+
+    ngOnInit(): void {
+
+        //
+        // If a returnUrl query parameter was provided (e.g. from the public landing page),
+        // set it as the post-login redirect destination.
+        //
+        let returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+        if (returnUrl) {
+            this.authService.loginRedirectUrl = returnUrl;
+        }
+    }
 
 
     login() {

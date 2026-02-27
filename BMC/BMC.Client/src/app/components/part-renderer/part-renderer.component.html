@@ -22,11 +22,12 @@
 
             <!-- Tab Bar -->
             <div class="tab-bar">
-                <button class="tab-btn" [class.active]="activeTab === 'search'" (click)="activeTab = 'search'">
-                    <i class="fas fa-search"></i> Search Parts
-                </button>
                 <button class="tab-btn" [class.active]="activeTab === 'upload'" (click)="activeTab = 'upload'">
                     <i class="fas fa-upload"></i> Upload File
+                </button>
+
+                <button class="tab-btn" [class.active]="activeTab === 'search'" (click)="activeTab = 'search'">
+                    <i class="fas fa-search"></i> Search Parts
                 </button>
             </div>
 

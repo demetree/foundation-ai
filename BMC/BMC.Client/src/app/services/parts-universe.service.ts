@@ -17,6 +17,7 @@ import { IndexedDBCacheService } from './indexeddb-cache.service';
 // ───────────────────────────── DTOs ─────────────────────────────
 
 export interface ColourEntry {
+    brickColourId: number;
     name: string;
     hex: string;
     qty: number;
@@ -79,6 +80,8 @@ export interface HeatmapCell {
     colourIdx: number;
     hex: string;
     qty: number;
+    brickPartId: number;
+    brickColourId: number;
 }
 
 export interface HeatmapData {

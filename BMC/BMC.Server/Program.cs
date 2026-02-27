@@ -131,6 +131,14 @@ namespace Foundation.BMC
                 builder.Services.AddSingleton<MinifigGalleryService>();
                 builder.Services.AddHostedService(sp => sp.GetRequiredService<MinifigGalleryService>());
 
+                //
+                // Data import worker — hourly checks LDraw + Rebrickable for upstream changes
+                //
+                if (builder.Configuration.GetValue<bool>("DataImport:Enabled", false) == true)
+                {
+                    builder.Services.AddHostedService<DataImportWorker>();
+                }
+
 
                 //
                 // Add HTTP client factory

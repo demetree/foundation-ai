@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, finalize } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -54,6 +55,7 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
     // Import set modal state removed — now handled by ImportSetModalComponent via NgbModal
 
     constructor(
+        private router: Router,
         private collectionService: CollectionService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService,

@@ -85,18 +85,36 @@ namespace Foundation.BMC.Services
 
                 if (diskPayload != null)
                 {
-                    lock (_payloadLock)
+                    //
+                    // Validate schema freshness — if the first colour entry has BrickColourId == 0,
+                    // the disk cache was written before that field was added and should be discarded.
+                    //
+                    bool hasStaleSchema = diskPayload.RankedParts
+                        .Where(rp => rp.Colours != null && rp.Colours.Count > 0)
+                        .Take(1)
+                        .Any(rp => rp.Colours[0].BrickColourId == 0);
+
+                    if (hasStaleSchema)
                     {
-                        _cachedPayload = diskPayload;
+                        _logger.LogInformation(
+                            "[PartsUniverseService] Disk cache has stale schema (missing BrickColourId) — recomputing."
+                        );
                     }
+                    else
+                    {
+                        lock (_payloadLock)
+                        {
+                            _cachedPayload = diskPayload;
+                        }
 
-                    _logger.LogInformation(
-                        "[PartsUniverseService] Loaded from disk cache — {PartCount} parts ranked, computed at {ComputedAt}",
-                        diskPayload.RankedParts.Count,
-                        diskPayload.ComputedAtUtc
-                    );
+                        _logger.LogInformation(
+                            "[PartsUniverseService] Loaded from disk cache — {PartCount} parts ranked, computed at {ComputedAt}",
+                            diskPayload.RankedParts.Count,
+                            diskPayload.ComputedAtUtc
+                        );
 
-                    return;
+                        return;
+                    }
                 }
 
                 //
@@ -246,10 +264,10 @@ namespace Foundation.BMC.Services
                     PartTypeName = a.Part.partType?.name ?? "Unknown",
                     TotalQty = a.TotalQty,
                     SetCount = a.SetIds.Count,
-                    Colours = a.ColourMap.Values
-                        .OrderByDescending(c => c.Qty)
+                    Colours = a.ColourMap
+                        .OrderByDescending(c => c.Value.Qty)
                         .Take(5)
-                        .Select(c => new ColourEntryDto { Name = c.Name, Hex = c.Hex, Qty = c.Qty })
+                        .Select(c => new ColourEntryDto { BrickColourId = c.Key, Name = c.Value.Name, Hex = c.Value.Hex, Qty = c.Value.Qty })
                         .ToList(),
                     Themes = a.ThemeMap
                         .OrderByDescending(kv => kv.Value)
@@ -818,6 +836,7 @@ namespace Foundation.BMC.Services
 
     public class ColourEntryDto
     {
+        public int BrickColourId { get; set; }
         public string Name { get; set; }
         public string Hex { get; set; }
         public int Qty { get; set; }

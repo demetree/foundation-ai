@@ -502,7 +502,11 @@ export class PartsUniverseComponent implements OnInit, OnDestroy {
                 const key = c.hex.replace('#', '').toLowerCase();
                 const colourIdx = colourIdxMap.get(key);
                 if (colourIdx !== undefined) {
-                    cells.push({ partIdx, colourIdx, hex: c.hex, qty: c.qty });
+                    cells.push({
+                        partIdx, colourIdx, hex: c.hex, qty: c.qty,
+                        brickPartId: rp.brickPartId,
+                        brickColourId: c.brickColourId
+                    });
                 }
             }
         });
@@ -1073,7 +1077,18 @@ export class PartsUniverseComponent implements OnInit, OnDestroy {
             .on('mouseleave', function () {
                 d3.select(this).attr('stroke', 'rgba(255,255,255,0.15)').attr('stroke-width', 0.5);
                 tooltip.style('opacity', 0);
-            });
+            })
+            .on('click', (_event: MouseEvent, d: HeatmapCell) => {
+                //
+                // Navigate to the catalog part detail with the clicked colour pre-selected
+                //
+                if (d.brickPartId != null) {
+                    this.router.navigate(['/parts', d.brickPartId], {
+                        queryParams: d.brickColourId != null ? { colourId: d.brickColourId } : undefined
+                    });
+                }
+            })
+            .style('cursor', 'pointer');
 
         // Rank numbers on left
         svg.selectAll('text.rank-num')

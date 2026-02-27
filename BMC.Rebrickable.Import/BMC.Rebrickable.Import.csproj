@@ -9,11 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BmcDatabase\BmcDatabase.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="EFCore.BulkExtensions.MIT" Version="10.*" />
+    <ProjectReference Include="..\BMC.Rebrickable\BMC.Rebrickable.csproj" />
   </ItemGroup>
 
   <ItemGroup>

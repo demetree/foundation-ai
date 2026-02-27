@@ -116,7 +116,9 @@
 
         <!-- Grid View -->
         <div class="parts-grid" *ngIf="!loadingParts && viewMode === 'grid' && displayedParts.length > 0">
-            <div class="part-card" *ngFor="let part of displayedParts">
+            <div class="part-card" *ngFor="let part of displayedParts"
+                (click)="router.navigate(['/parts', part.brickPartId], { queryParams: { colourId: part.brickColourId } })"
+                style="cursor: pointer;">
 
                 <!-- Thumbnail -->
                 <div class="card-thumbnail">
@@ -145,7 +147,8 @@
                         <span class="qty-separator">/</span>
                         <span class="qty-badge available" title="Available">{{ getQuantityAvailable(part) }}</span>
                     </div>
-                    <button class="btn-icon danger" (click)="removePart(part)" title="Remove part">
+                    <button class="btn-icon danger" (click)="$event.stopPropagation(); removePart(part)"
+                        title="Remove part">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -168,7 +171,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let part of displayedParts">
+                    <tr *ngFor="let part of displayedParts" style="cursor: pointer;"
+                        (click)="router.navigate(['/parts', part.brickPartId], { queryParams: { colourId: part.brickColourId } })">
                         <td>
                             <div class="part-cell">
                                 <strong>{{ part.ldrawTitle || part.partName }}</strong>
@@ -184,7 +188,8 @@
                         <td class="num">{{ part.quantityUsed }}</td>
                         <td class="num">{{ getQuantityAvailable(part) }}</td>
                         <td>
-                            <button class="btn-icon danger" (click)="removePart(part)" title="Remove">
+                            <button class="btn-icon danger" (click)="$event.stopPropagation(); removePart(part)"
+                                title="Remove">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
@@ -224,7 +229,8 @@
         </div>
 
         <div class="sets-grid" *ngIf="!loadingImports && importedSets.length > 0">
-            <div class="set-card" *ngFor="let s of importedSets">
+            <div class="set-card" *ngFor="let s of importedSets" (click)="router.navigate(['/lego/sets', s.legoSetId])"
+                style="cursor: pointer;">
                 <!-- Set Image -->
                 <div class="set-image-wrap">
                     <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.setName" class="set-image" />
@@ -251,7 +257,7 @@
                     <span class="set-qty" *ngIf="s.quantity > 1">×{{ s.quantity }}</span>
                     <span class="set-date">{{ s.importedDate | date:'mediumDate' }}</span>
                     <a *ngIf="s.rebrickableUrl" [href]="s.rebrickableUrl" target="_blank" rel="noopener"
-                        class="btn-icon external" title="View on Rebrickable">
+                        class="btn-icon external" title="View on Rebrickable" (click)="$event.stopPropagation()">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
@@ -274,7 +280,9 @@
         </div>
 
         <div class="wishlist-grid" *ngIf="!loadingWishlist && wishlistItems.length > 0">
-            <div class="wishlist-card" *ngFor="let w of wishlistItems">
+            <div class="wishlist-card" *ngFor="let w of wishlistItems"
+                (click)="router.navigate(['/parts', w.brickPartId], { queryParams: w.brickColourId ? { colourId: w.brickColourId } : {} })"
+                style="cursor: pointer;">
                 <div class="wish-colour">
                     <span class="colour-dot lg" [style.background-color]="getColourStyle(w.colourHex || '')"
                         [title]="w.colourName"></span>

@@ -238,4 +238,12 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
     goToLogin(): void {
         this.router.navigate(['/login']);
     }
+
+
+    /// Navigate to login with a returnUrl pointing to the set detail page
+    goToSetDetail(set: FeaturedSet): void {
+        this.router.navigate(['/login'], {
+            queryParams: { returnUrl: '/lego/sets/' + set.id }
+        });
+    }
 }

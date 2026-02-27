@@ -8,6 +8,7 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, Inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -22,7 +23,8 @@ import { BrickColourService, BrickColourData } from '../../bmc-data-services/bri
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 
 @Component({
@@ -104,6 +106,86 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     pendingColourReady = false;
 
     private baseUrl: string;
+    private destroy$ = new Subject<void>();
+
+    // ────────────────────────────────────────────────────────────────
+    //  Server Render Tab — State
+    // ────────────────────────────────────────────────────────────────
+
+    activeViewerTab: '3d' | 'render' = '3d';
+    poseMode = false;
+
+    // Render config
+    renderWidth = 512;
+    renderHeight = 512;
+    renderElevation = 30;
+    renderAzimuth = -45;
+    flipView = false;
+    renderEdges = true;
+    smoothShading = true;
+    antiAliasMode: 'none' | '2x' | '4x' = 'none';
+    rendererType: 'rasterizer' | 'raytrace' = 'rasterizer';
+    outputFormat: 'png' | 'webp' | 'svg' | 'gif' = 'png';
+    webpQuality = 90;
+    backgroundHex = '';
+    gradientTopHex = '';
+    gradientBottomHex = '';
+    explodedView = false;
+    explosionFactor = 1.0;
+
+    // Render output state
+    rendering = false;
+    renderError = '';
+    renderTimeMs = 0;
+    renderedImageUrl: SafeUrl | null = null;
+    private renderedBlobUrl: string | null = null;
+    renderedFormat = 'png';
+    batchExporting = false;
+
+    // Size presets
+    sizeCategory: 'standard' | 'desktop' | 'mobile' = 'standard';
+
+    sizeCategories = [
+        { key: 'standard' as const, label: 'Standard', icon: 'bi-grid-3x3' },
+        { key: 'desktop' as const, label: 'Desktop', icon: 'bi-display' },
+        { key: 'mobile' as const, label: 'Mobile', icon: 'bi-phone' },
+    ];
+
+    sizePresets: { label: string; w: number; h: number; category: string }[] = [
+        { label: '256²', w: 256, h: 256, category: 'standard' },
+        { label: '512²', w: 512, h: 512, category: 'standard' },
+        { label: '768²', w: 768, h: 768, category: 'standard' },
+        { label: '1024²', w: 1024, h: 1024, category: 'standard' },
+        { label: 'HD', w: 1920, h: 1080, category: 'desktop' },
+        { label: '2K', w: 2560, h: 1440, category: 'desktop' },
+        { label: '4K', w: 3840, h: 2160, category: 'desktop' },
+        { label: 'Ultrawide', w: 3440, h: 1440, category: 'desktop' },
+        { label: 'Phone', w: 1080, h: 1920, category: 'mobile' },
+        { label: 'Phone+', w: 1284, h: 2778, category: 'mobile' },
+        { label: 'Tablet', w: 2048, h: 2732, category: 'mobile' },
+        { label: 'Square', w: 1080, h: 1080, category: 'mobile' },
+    ];
+
+    anglePresets = [
+        { label: 'Standard', icon: 'bi-box', elevation: 30, azimuth: -45 },
+        { label: 'Front', icon: 'bi-square', elevation: 0, azimuth: 0 },
+        { label: 'Top', icon: 'bi-arrow-down', elevation: 90, azimuth: 0 },
+        { label: 'Side', icon: 'bi-arrow-right', elevation: 0, azimuth: -90 },
+        { label: '3/4 High', icon: 'bi-triangle', elevation: 45, azimuth: -45 },
+        { label: '3/4 Low', icon: 'bi-dash-lg', elevation: 15, azimuth: -45 },
+    ];
+
+    bgPresets = [
+        { label: 'None', icon: 'bi-x-circle', top: '', bottom: '', bg: '' },
+        { label: 'Dark', icon: 'bi-moon', top: '#1a1a2e', bottom: '#16213e', bg: '' },
+        { label: 'Sunset', icon: 'bi-brightness-high', top: '#ff6b6b', bottom: '#ffd93d', bg: '' },
+        { label: 'Ocean', icon: 'bi-water', top: '#0f3460', bottom: '#1a508b', bg: '' },
+        { label: 'Forest', icon: 'bi-tree', top: '#1b4332', bottom: '#2d6a4f', bg: '' },
+        { label: 'Midnight', icon: 'bi-stars', top: '#0d0d2b', bottom: '#1a1a40', bg: '' },
+        { label: 'Blush', icon: 'bi-heart', top: '#ee9ca7', bottom: '#ffdde1', bg: '' },
+        { label: 'Slate', icon: 'bi-cloud', top: '#2c3e50', bottom: '#4ca1af', bg: '' },
+        { label: 'Studio', icon: 'bi-lightbulb', top: '#e8e8e8', bottom: '#f5f5f5', bg: '' },
+    ];
 
 
     constructor(
@@ -115,6 +197,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         private brickPartService: BrickPartService,
         private brickColourService: BrickColourService,
         private fileCacheService: LDrawFileCacheService,
+        private sanitizer: DomSanitizer,
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
@@ -147,6 +230,9 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     ngOnDestroy(): void {
         this.stopAnimation();
         this.cleanupThreeJs();
+        this.revokeRenderBlob();
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
 
@@ -343,13 +429,9 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
         else {
             //
-            // No initial colour ID — auto-select the first known colour for this part
-            // so the model renders in a real-world colour instead of the raw file defaults.
-            // If the part has no known colours, apply Light Bluish Gray.
+            // No initial colour ID — only apply Light Bluish Gray if no colours are known.
             //
-            if (this.partColours.length > 0) {
-                this.selectColour(this.partColours[0]);
-            } else {
+            if (this.partColours.length === 0) {
                 this.applyDefaultGray();
             }
         }
@@ -437,6 +519,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         if (this.selectedColour != null && this.selectedColour.id === colour.id) {
             this.selectedColour = null;
             this.resetSceneColours();
+            this.updateRouteColour(null);
             return;
         }
 
@@ -448,18 +531,58 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         if (this.sceneReady === true && colour.hexRgb != null) {
             this.applyColourToScene(colour.hexRgb);
         }
+
+        this.updateRouteColour(colour.id);
     }
 
 
     //
-    // Apply LEGO Light Bluish Gray (#A0A5A9) as the default colour when the part
-    // has no known colour variants.  This gives a neutral, realistic appearance
-    // instead of the raw LDraw file defaults.
+    // Update the URL query parameter to reflect the currently selected colour.
+    // Uses replaceUrl so that each swatch click doesn't pollute browser history.
+    //
+    private updateRouteColour(colourId: bigint | number | null): void {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { colourId: colourId != null ? colourId.toString() : null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+        });
+    }
+
+
+    //
+    // Apply LEGO Light Bluish Gray (#C4C8CB) as the default colour when the part
+    // has no known colour variants.  Only replaces the LDrawLoader's fallback
+    // yellow — intentional sub-part colours are left untouched so multi-colour
+    // parts retain their correct appearance.
     //
     private applyDefaultGray(): void {
-        if (this.sceneReady === true) {
-            this.applyColourToScene('#A0A5A9');
+        if (this.sceneReady !== true || this.scene == null) {
+            return;
         }
+
+        const lightBluishGray = new THREE.Color(0xC4C8CB);
+        const hsl = { h: 0, s: 0, l: 0 };
+
+        this.scene.traverse(child => {
+            if (child instanceof THREE.Mesh) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+
+                for (const mat of materials) {
+                    if (mat != null && 'color' in mat && mat.color instanceof THREE.Color) {
+                        if (mat instanceof THREE.LineBasicMaterial || mat instanceof THREE.LineDashedMaterial) {
+                            continue;
+                        }
+                        mat.color.getHSL(hsl);
+                        // Only replace saturated yellows (the LDrawLoader fallback colour)
+                        if (hsl.h >= 0.14 && hsl.h <= 0.19 && hsl.s > 0.8) {
+                            mat.color.copy(lightBluishGray);
+                            mat.needsUpdate = true;
+                        }
+                    }
+                }
+            }
+        });
     }
 
 
@@ -865,7 +988,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                         // yellow.  We use a fuzzy HSL check to catch any saturated yellow shade
                         // rather than comparing against an exact hex value.
                         //
-                        const lightBluishGray = new THREE.Color(0xA0A5A9);
+                        const lightBluishGray = new THREE.Color(0xC4C8CB);
                         const hsl = { h: 0, s: 0, l: 0 };
 
                         group.traverse(child => {
@@ -1174,5 +1297,292 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             side: '#e09520',
             stroke: '#8d6e3f'
         };
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Server Render Tab — Methods
+    // ────────────────────────────────────────────────────────────────
+
+    get activeSizePresets() {
+        return this.sizePresets.filter(p => p.category === this.sizeCategory);
+    }
+
+
+    get effectiveAntiAlias(): string {
+        if (this.antiAliasMode === '4x' && (this.renderWidth > 2560 || this.renderHeight > 2560)) {
+            return '2x';
+        }
+        return this.antiAliasMode;
+    }
+
+
+    get sizeDisplayLabel(): string {
+        if (this.outputFormat === 'svg') return 'Vector (scalable)';
+        return `${this.renderWidth} × ${this.renderHeight} px`;
+    }
+
+
+    selectRenderSize(preset: { w: number; h: number }): void {
+        this.renderWidth = preset.w;
+        this.renderHeight = preset.h;
+    }
+
+
+    isSelectedSize(preset: { w: number; h: number }): boolean {
+        return this.renderWidth === preset.w && this.renderHeight === preset.h;
+    }
+
+
+    selectRenderAngle(preset: { elevation: number; azimuth: number }): void {
+        this.renderElevation = preset.elevation;
+        this.renderAzimuth = preset.azimuth;
+    }
+
+
+    isSelectedAngle(preset: { elevation: number; azimuth: number }): boolean {
+        return this.renderElevation === preset.elevation && this.renderAzimuth === preset.azimuth;
+    }
+
+
+    applyBgPreset(preset: { top: string; bottom: string; bg: string }): void {
+        this.gradientTopHex = preset.top;
+        this.gradientBottomHex = preset.bottom;
+        this.backgroundHex = preset.bg;
+    }
+
+
+    isActiveBgPreset(preset: { top: string; bottom: string }): boolean {
+        return this.gradientTopHex === preset.top && this.gradientBottomHex === preset.bottom;
+    }
+
+
+    //
+    // Pose Part Mode — extract camera angles from OrbitControls
+    //
+    togglePoseMode(): void {
+        this.poseMode = !this.poseMode;
+        if (this.controls) {
+            this.controls.autoRotate = !this.poseMode;
+        }
+    }
+
+
+    getCameraAngles(): { elevation: number; azimuth: number } {
+        if (this.camera == null || this.controls == null) {
+            return { elevation: 30, azimuth: -45 };
+        }
+
+        const position = this.camera.position.clone().sub(this.controls.target);
+        const distance = position.length();
+
+        if (distance === 0) {
+            return { elevation: 0, azimuth: 0 };
+        }
+
+        //
+        // The server-side renderer's Camera.AutoFrame uses:
+        //   EyeX = cx + distance * cos(elev) * sin(azim)
+        //   EyeZ = cz + distance * cos(elev) * cos(azim)
+        // with native LDraw coordinates (Y-down, Z toward viewer).
+        //
+        // Three.js LDrawLoader applies a (1, -1, -1) transform, flipping Y and Z.
+        // Elevation: positive = above in both systems (Y flip cancels out).
+        // Azimuth: Z flip means we must negate.  Proof: default camera at
+        //   (0.7d, 0.5d, 0.7d) gives atan2 = +45°, but server default is -45°.
+        //
+        const elevation = Math.round(Math.asin(position.y / distance) * (180 / Math.PI));
+        const azimuth = -Math.round(Math.atan2(position.x, position.z) * (180 / Math.PI));
+
+        return { elevation, azimuth };
+    }
+
+
+    applyPoseToRender(): void {
+        const angles = this.getCameraAngles();
+        this.renderElevation = angles.elevation;
+        this.renderAzimuth = angles.azimuth;
+        this.activeViewerTab = 'render';
+
+        //
+        // Auto-trigger the render so the user immediately sees the posed view
+        // instead of a stale previous render.
+        //
+        setTimeout(() => this.renderPart(), 0);
+    }
+
+
+    //
+    // Server-Side Rendering
+    //
+    renderPart(): void {
+        if (this.part == null || this.rendering) {
+            return;
+        }
+
+        //
+        // Turntable GIF uses a separate endpoint
+        //
+        if (this.outputFormat === 'gif') {
+            this.renderTurntable();
+            return;
+        }
+
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeRenderBlob();
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        const partNumber = this.part.name;
+        const colourCode = this.selectedColour != null ? Number(this.selectedColour.ldrawColourCode) : 71;
+        const effectiveAzimuth = this.flipView ? this.renderAzimuth + 180 : this.renderAzimuth;
+
+        let url: string;
+
+        if (this.explodedView) {
+            url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}`;
+        } else {
+            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
+
+            if (this.backgroundHex) {
+                url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
+            }
+            if (this.gradientTopHex && this.gradientBottomHex) {
+                url += `&gradientTopHex=${encodeURIComponent(this.gradientTopHex)}&gradientBottomHex=${encodeURIComponent(this.gradientBottomHex)}`;
+            }
+        }
+
+        const startTime = performance.now();
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = this.explodedView ? 'png' : this.outputFormat;
+                    this.rendering = false;
+                },
+                error: (err) => {
+                    this.renderTimeMs = 0;
+                    this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Render failed. Please try again.';
+                    this.rendering = false;
+                }
+            });
+    }
+
+
+    private renderTurntable(): void {
+        if (this.part == null || this.rendering) {
+            return;
+        }
+
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeRenderBlob();
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        const partNumber = this.part.name;
+        const colourCode = this.selectedColour != null ? Number(this.selectedColour.ldrawColourCode) : 71;
+        const url = `/api/part-renderer/turntable?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}`;
+
+        const startTime = performance.now();
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = 'gif';
+                    this.rendering = false;
+                },
+                error: (err) => {
+                    this.renderTimeMs = 0;
+                    this.renderError = err.status === 404 ? 'Part geometry file not found.' : 'Turntable render failed. Please try again.';
+                    this.rendering = false;
+                }
+            });
+    }
+
+
+    downloadRender(): void {
+        if (this.renderedBlobUrl == null || this.part == null) {
+            return;
+        }
+
+        const colourCode = this.selectedColour != null ? Number(this.selectedColour.ldrawColourCode) : 71;
+        const ext = this.renderedFormat === 'gif' ? 'gif' : this.renderedFormat === 'webp' ? 'webp' : this.renderedFormat === 'svg' ? 'svg' : 'png';
+        const baseName = `${this.part.name}_c${colourCode}_${this.renderWidth}x${this.renderHeight}`;
+        const a = document.createElement('a');
+        a.href = this.renderedBlobUrl;
+        a.download = `${baseName}.${ext}`;
+        a.click();
+    }
+
+
+    batchExport(): void {
+        if (this.part == null || this.batchExporting) {
+            return;
+        }
+
+        this.batchExporting = true;
+        const headers = this.authService.GetAuthenticationHeaders()
+            .set('Content-Type', 'application/json');
+
+        const colourCode = this.selectedColour != null ? Number(this.selectedColour.ldrawColourCode) : 71;
+        const effectiveAzimuth = this.flipView ? this.renderAzimuth + 180 : this.renderAzimuth;
+
+        const body = {
+            partNumber: this.part.name,
+            colourCode: colourCode,
+            elevation: this.renderElevation,
+            azimuth: effectiveAzimuth,
+            renderEdges: this.renderEdges,
+            smoothShading: this.smoothShading,
+            antiAlias: this.effectiveAntiAlias,
+            backgroundHex: this.backgroundHex,
+            gradientTopHex: this.gradientTopHex,
+            gradientBottomHex: this.gradientBottomHex,
+            renderer: this.rendererType,
+            sizes: this.activeSizePresets.map(p => ({ width: p.w, height: p.h }))
+        };
+
+        this.http.post('/api/part-renderer/batch-render', body, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${this.part!.name}_renders.zip`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.batchExporting = false;
+                },
+                error: () => {
+                    this.batchExporting = false;
+                    this.renderError = 'Batch export failed. Please try again.';
+                }
+            });
+    }
+
+
+    getSelectedRenderColourName(): string {
+        if (this.selectedColour != null) {
+            return this.selectedColour.name || 'Unknown';
+        }
+        return 'Light Bluish Gray';
+    }
+
+
+    private revokeRenderBlob(): void {
+        if (this.renderedBlobUrl != null) {
+            URL.revokeObjectURL(this.renderedBlobUrl);
+            this.renderedBlobUrl = null;
+            this.renderedImageUrl = null;
+        }
     }
 }

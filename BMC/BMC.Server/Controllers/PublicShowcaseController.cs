@@ -54,13 +54,19 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpGet("stats")]
         public IActionResult GetStats()
         {
+            //
+            // Check the service first — if data isn't ready yet, return 503 immediately
+            // WITHOUT caching the null result.  Previous code used GetOrCreate which
+            // cached null for 1 hour, causing the landing page to be broken until the
+            // cache entry expired even though the data was available seconds later.
+            //
+            var sets = _setExplorerService.GetCachedSets();
+            if (sets == null)
+                return StatusCode(503, new { message = "Data is still being computed. Please try again shortly." });
+
             var stats = _cache.GetOrCreate("public:stats", entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
-
-                var sets = _setExplorerService.GetCachedSets();
-                if (sets == null)
-                    return null;
 
                 return new
                 {
@@ -71,9 +77,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                     oldestYear = sets.Where(s => s.Year > 0).Min(s => s.Year)
                 };
             });
-
-            if (stats == null)
-                return StatusCode(503, new { message = "Data is still being computed. Please try again shortly." });
 
             return Ok(stats);
         }
@@ -90,12 +93,13 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpGet("featured-sets")]
         public IActionResult GetFeaturedSets()
         {
+            var sets = _setExplorerService.GetCachedSets();
+            if (sets == null)
+                return StatusCode(503, new { message = "Data is still being computed." });
+
             var featured = _cache.GetOrCreate("public:featured-sets", entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
-
-                var sets = _setExplorerService.GetCachedSets();
-                if (sets == null) return null;
 
                 return sets
                     .OrderByDescending(s => s.PartCount)
@@ -107,9 +111,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                     })
                     .ToList();
             });
-
-            if (featured == null)
-                return StatusCode(503, new { message = "Data is still being computed." });
 
             return Ok(featured);
         }
@@ -126,12 +127,13 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpGet("recent-sets")]
         public IActionResult GetRecentSets()
         {
+            var sets = _setExplorerService.GetCachedSets();
+            if (sets == null)
+                return StatusCode(503, new { message = "Data is still being computed." });
+
             var recent = _cache.GetOrCreate("public:recent-sets", entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
-
-                var sets = _setExplorerService.GetCachedSets();
-                if (sets == null) return null;
 
                 return sets
                     .Take(12)
@@ -142,9 +144,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                     })
                     .ToList();
             });
-
-            if (recent == null)
-                return StatusCode(503, new { message = "Data is still being computed." });
 
             return Ok(recent);
         }
@@ -161,12 +160,13 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpGet("decades")]
         public IActionResult GetDecades()
         {
+            var sets = _setExplorerService.GetCachedSets();
+            if (sets == null)
+                return StatusCode(503, new { message = "Data is still being computed." });
+
             var decades = _cache.GetOrCreate("public:decades", entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24);
-
-                var sets = _setExplorerService.GetCachedSets();
-                if (sets == null) return null;
 
                 return sets
                     .Where(s => s.Year > 0)
@@ -182,9 +182,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                     })
                     .ToList();
             });
-
-            if (decades == null)
-                return StatusCode(503, new { message = "Data is still being computed." });
 
             return Ok(decades);
         }

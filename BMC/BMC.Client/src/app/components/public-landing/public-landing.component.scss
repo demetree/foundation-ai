@@ -152,15 +152,31 @@
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     box-shadow: var(--bmc-btn-shadow);
+    animation: ctaGlow 2s ease-in-out infinite;
 
     &:hover {
         transform: translateY(-2px);
         box-shadow: var(--bmc-btn-shadow-hover);
+        animation: none;
     }
 
     &.large {
         padding: 18px 40px;
         font-size: 1.1rem;
+    }
+}
+
+@keyframes ctaGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(var(--bmc-primary-rgb, 255, 165, 0), 0.3),
+            0 0 20px rgba(var(--bmc-primary-rgb, 255, 165, 0), 0.15);
+    }
+
+    50% {
+        box-shadow: 0 0 16px rgba(var(--bmc-primary-rgb, 255, 165, 0), 0.6),
+            0 0 40px rgba(var(--bmc-primary-rgb, 255, 165, 0), 0.3);
     }
 }
 
@@ -547,12 +563,16 @@
     border-radius: 14px;
     overflow: hidden;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-    cursor: default;
+    cursor: pointer;
 
     &:hover {
         transform: translateY(-4px);
         border-color: var(--bmc-border-strong);
         box-shadow: var(--bmc-shadow-md);
+
+        .card-hover-overlay {
+            opacity: 1;
+        }
     }
 
     .set-image {
@@ -659,9 +679,14 @@
     border-radius: 12px;
     overflow: hidden;
     transition: transform 0.2s;
+    cursor: pointer;
 
     &:hover {
         transform: translateY(-3px);
+
+        .card-hover-overlay {
+            opacity: 1;
+        }
     }
 
     .discovery-image {
@@ -727,6 +752,7 @@
     padding: 1rem;
     text-align: center;
     transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
 
     &:hover {
         transform: translateY(-3px);
@@ -772,6 +798,7 @@
     border-radius: 16px;
     padding: 2rem;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
 
     &:hover {
         transform: translateY(-4px);
@@ -864,6 +891,32 @@
         gap: 1rem;
         justify-content: center;
         flex-wrap: wrap;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Card Hover Overlay — shared by set-card and discovery-card
+   ---------------------------------------------------------------- */
+.card-hover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+
+    i {
+        font-size: 1rem;
     }
 }
 

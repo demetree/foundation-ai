@@ -108,7 +108,7 @@
             <p class="section-subtitle">The most ambitious LEGO sets ever created</p>
         </div>
         <div class="card-grid">
-            <div class="set-card" *ngFor="let set of featuredSets">
+            <div class="set-card" *ngFor="let set of featuredSets" (click)="goToSetDetail(set)">
                 <div class="set-image">
                     <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
                         (error)="set.imageUrl = null">
@@ -117,6 +117,9 @@
                     </div>
                     <div class="set-badge" *ngIf="set.partCount > 5000">
                         <i class="fas fa-fire"></i> {{ set.partCount | number }} parts
+                    </div>
+                    <div class="card-hover-overlay">
+                        <i class="fas fa-sign-in-alt"></i> Sign in to explore
                     </div>
                 </div>
                 <div class="set-info">
@@ -141,11 +144,14 @@
             </button>
         </div>
         <div class="discovery-grid">
-            <div class="discovery-card" *ngFor="let set of randomSets">
+            <div class="discovery-card" *ngFor="let set of randomSets" (click)="goToSetDetail(set)">
                 <div class="discovery-image">
                     <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy">
                     <div class="image-placeholder" *ngIf="!set.imageUrl">
                         <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="card-hover-overlay">
+                        <i class="fas fa-sign-in-alt"></i> Sign in to explore
                     </div>
                 </div>
                 <div class="discovery-info">
@@ -164,7 +170,8 @@
             <p class="section-subtitle">From 1949 to today — the evolution of LEGO</p>
         </div>
         <div class="decade-strip">
-            <div class="decade-card" *ngFor="let d of decades; let i = index" [style.animation-delay]="(i * 60) + 'ms'">
+            <div class="decade-card" *ngFor="let d of decades; let i = index" [style.animation-delay]="(i * 60) + 'ms'"
+                (click)="goToLogin()">
                 <span class="decade-label">{{ d.label }}</span>
                 <div class="decade-stats">
                     <span><i class="fas fa-box-open"></i> {{ d.setCount | number }}</span>
@@ -182,7 +189,7 @@
             <p class="section-subtitle">Everything you need to explore, create, and manage your LEGO world</p>
         </div>
         <div class="features-grid">
-            <div class="feature-card" *ngFor="let feature of features">
+            <div class="feature-card" *ngFor="let feature of features" (click)="goToLogin()">
                 <div class="feature-icon" [ngClass]="feature.gradient">
                     <i [class]="feature.icon"></i>
                 </div>

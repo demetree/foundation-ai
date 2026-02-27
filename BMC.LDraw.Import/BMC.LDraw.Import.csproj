@@ -10,8 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BMC.LDraw\BMC.LDraw.csproj" />
-    <ProjectReference Include="..\BmcDatabase\BmcDatabase.csproj" />
-    <PackageReference Include="EFCore.BulkExtensions.MIT" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
