@@ -106,7 +106,8 @@
 .input-wrapper .form-control {
     padding-left: 40px;
     height: 44px;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    /* must be >= 16px to prevent iOS Safari auto-zoom on focus */
 }
 
 .input-wrapper:focus-within .input-icon {
@@ -295,7 +296,8 @@
 
     .input-wrapper .form-control {
         height: 40px;
-        font-size: 0.85rem;
+        font-size: 1rem;
+        /* must be >= 16px to prevent iOS Safari auto-zoom on focus */
     }
 
     .login-btn {

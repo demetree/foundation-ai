@@ -1381,18 +1381,29 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
 
         //
-        // The server-side renderer's Camera.AutoFrame uses:
-        //   EyeX = cx + distance * cos(elev) * sin(azim)
-        //   EyeZ = cz + distance * cos(elev) * cos(azim)
-        // with native LDraw coordinates (Y-down, Z toward viewer).
+        // The LDrawLoader applies `group.rotation.x = Math.PI` which transforms:
+        //   X_ldraw →  X_threejs
+        //   Y_ldraw → -Y_threejs   (flipped)
+        //   Z_ldraw → -Z_threejs   (flipped)
         //
-        // Three.js LDrawLoader applies a (1, -1, -1) transform, flipping Y and Z.
-        // Elevation: positive = above in both systems (Y flip cancels out).
-        // Azimuth: Z flip means we must negate.  Proof: default camera at
-        //   (0.7d, 0.5d, 0.7d) gives atan2 = +45°, but server default is -45°.
+        // The server's Camera.AutoFrame uses LDraw-native coordinates where:
+        //   EyeX = cx + d * cos(elev) * sin(azim)
+        //   EyeY = cy - d * sin(elev)
+        //   EyeZ = cz + d * cos(elev) * cos(azim)
+        //
+        // Converting Three.js camera position to LDraw:
+        //   x_ldraw =  x_threejs
+        //   y_ldraw = -y_threejs
+        //   z_ldraw = -z_threejs
+        //
+        // Server elevation: positive = above (EyeY more negative in Y-down LDraw).
+        //   sin(elev) = -y_ldraw / d  (relative to center)
+        //             = -(-y_threejs) / d = y_threejs / d
+        //
+        // Server azimuth: atan2(x_ldraw, z_ldraw) = atan2(x_threejs, -z_threejs)
         //
         const elevation = Math.round(Math.asin(position.y / distance) * (180 / Math.PI));
-        const azimuth = -Math.round(Math.atan2(position.x, position.z) * (180 / Math.PI));
+        const azimuth = Math.round(Math.atan2(position.x, -position.z) * (180 / Math.PI));
 
         return { elevation, azimuth };
     }
