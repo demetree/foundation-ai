@@ -80,6 +80,9 @@ namespace Foundation.BMC.Controllers.WebAPI
             string gradientTopHex = null,
             string gradientBottomHex = null,
             string renderer = "rasterizer",
+            bool enablePbr = true,
+            float exposure = 1.0f,
+            float aperture = 0f,
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -112,7 +115,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             // Check cache
             RendererType rendererType = ParseRendererType(renderer);
-            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}:{renderer}";
+            exposure = Math.Clamp(exposure, 0.1f, 10f);
+            aperture = Math.Clamp(aperture, 0f, 10f);
+            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}:{renderer}:{enablePbr}:{exposure}:{aperture}";
             if (_cache.TryGetValue(cacheKey, out byte[] cachedBytes))
             {
                 string cachedType = format == "webp" ? "image/webp" : format == "svg" ? "image/svg+xml" : "image/png";
@@ -152,7 +157,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToWebP(datPath, width, height, colourCode, elevation, azimuth,
-                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality,
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
                     }, renderToken);
                     contentType = "image/webp";
                 }
@@ -164,7 +170,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToPng(datPath, width, height, colourCode, elevation, azimuth,
-                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: rendererType);
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: rendererType,
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
                     }, renderToken);
                     contentType = "image/png";
                 }
@@ -754,6 +761,9 @@ namespace Foundation.BMC.Controllers.WebAPI
             string gradientTopHex = null,
             string gradientBottomHex = null,
             string renderer = "rasterizer",
+            bool enablePbr = true,
+            float exposure = 1.0f,
+            float aperture = 0f,
             CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
@@ -781,6 +791,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             elevation = Math.Clamp(elevation, -90f, 90f);
             azimuth = Math.Clamp(azimuth, -360f, 360f);
             quality = Math.Clamp(quality, 1, 100);
+            exposure = Math.Clamp(exposure, 0.1f, 10f);
+            aperture = Math.Clamp(aperture, 0f, 10f);
             format = (format ?? "png").ToLowerInvariant();
             antiAlias = (antiAlias ?? "none").ToLowerInvariant();
 
@@ -831,7 +843,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                         string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToWebP(lines, fileName, width, height, colourCode, elevation, azimuth,
-                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality);
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality,
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
                     }, renderToken);
                     contentType = "image/webp";
                 }
@@ -855,7 +868,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         RendererType uploadRendererType = ParseRendererType(renderer);
                         return _renderService.RenderToPng(lines, fileName, width, height, colourCode, elevation, azimuth,
-                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: uploadRendererType);
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: uploadRendererType,
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
                     }, renderToken);
                     contentType = "image/png";
                 }

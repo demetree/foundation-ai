@@ -152,6 +152,11 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     explodedView = false;
     explosionFactor = 1.0;
 
+    // PBR ray trace options (only apply when rendererType === 'raytrace')
+    enablePbr = true;
+    exposure = 1.0;
+    aperture = 0;
+
     // Render output state
     rendering = false;
     renderError = '';
@@ -1481,8 +1486,15 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
         if (this.explodedView) {
             url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}`;
+            if (this.rendererType === 'raytrace') {
+                url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;
+            }
         } else {
             url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
+
+            if (this.rendererType === 'raytrace') {
+                url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;
+            }
 
             if (this.backgroundHex) {
                 url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;

@@ -82,6 +82,11 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     explodedView = false;
     explosionFactor = 1.0;
 
+    // PBR ray trace options (only apply when rendererType === 'raytrace')
+    enablePbr = true;
+    exposure = 1.0;
+    aperture = 0;
+
     // Build steps
     stepCount = 0;
     currentStep = 0;
@@ -419,6 +424,10 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             // Standard render endpoint with all options
             url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
 
+            if (this.rendererType === 'raytrace') {
+                url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;
+            }
+
             if (this.backgroundHex) {
                 url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
             }
@@ -607,6 +616,9 @@ export class PartRendererComponent implements OnInit, OnDestroy {
             gradientTopHex: this.gradientTopHex,
             gradientBottomHex: this.gradientBottomHex,
             renderer: this.rendererType,
+            enablePbr: this.rendererType === 'raytrace' ? this.enablePbr : undefined,
+            exposure: this.rendererType === 'raytrace' ? this.exposure : undefined,
+            aperture: this.rendererType === 'raytrace' ? this.aperture : undefined,
             sizes: this.activeSizePresets.map(p => ({ width: p.w, height: p.h }))
         };
 
@@ -756,6 +768,10 @@ export class PartRendererComponent implements OnInit, OnDestroy {
 
         // Build query string with render params
         let url = `/api/part-renderer/render-upload?colourCode=${this.selectedColourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.selectedElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
+
+        if (this.rendererType === 'raytrace') {
+            url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;
+        }
 
         if (this.backgroundHex) {
             url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;

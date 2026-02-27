@@ -90,7 +90,10 @@ namespace BMC.LDraw.Render
                                   string backgroundHex = null,
                                   string gradientTopHex = null,
                                   string gradientBottomHex = null,
-                                  RendererType rendererType = RendererType.Rasterizer)
+                                  RendererType rendererType = RendererType.Rasterizer,
+                                  bool enablePbr = true,
+                                  float exposure = 1.0f,
+                                  float aperture = 0f)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -104,7 +107,10 @@ namespace BMC.LDraw.Render
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
                                            gradientBottomHex: gradientBottomHex,
-                                           rendererType: rendererType);
+                                           rendererType: rendererType,
+                                           enablePbr: enablePbr,
+                                           exposure: exposure,
+                                           aperture: aperture);
 
             return ImageExporter.ToPngBytes(pixels, width, height);
         }
@@ -126,7 +132,10 @@ namespace BMC.LDraw.Render
                                    string backgroundHex = null,
                                    string gradientTopHex = null,
                                    string gradientBottomHex = null,
-                                   int quality = 90)
+                                   int quality = 90,
+                                   bool enablePbr = true,
+                                   float exposure = 1.0f,
+                                   float aperture = 0f)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -139,7 +148,10 @@ namespace BMC.LDraw.Render
                                            antiAliasMode: antiAliasMode,
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
-                                           gradientBottomHex: gradientBottomHex);
+                                           gradientBottomHex: gradientBottomHex,
+                                           enablePbr: enablePbr,
+                                           exposure: exposure,
+                                           aperture: aperture);
 
             return ImageExporter.ToWebPBytes(pixels, width, height, quality);
         }
@@ -160,7 +172,10 @@ namespace BMC.LDraw.Render
                                      string backgroundHex = null,
                                      string gradientTopHex = null,
                                      string gradientBottomHex = null,
-                                     RendererType rendererType = RendererType.Rasterizer)
+                                     RendererType rendererType = RendererType.Rasterizer,
+                                     bool enablePbr = true,
+                                     float exposure = 1.0f,
+                                     float aperture = 0f)
         {
             EnsureColours();
 
@@ -214,7 +229,13 @@ namespace BMC.LDraw.Render
 
             if (rendererType == RendererType.RayTracer)
             {
-                renderer = new RayTracing.RayTraceRenderer(renderW, renderH);
+                var rt = new RayTracing.RayTraceRenderer(renderW, renderH);
+                rt.Environment = new RayTracing.ProceduralSky();
+                rt.Lighting = LightingModel.Studio();
+                rt.EnablePbr = enablePbr;
+                rt.Exposure = exposure;
+                camera.Aperture = aperture;
+                renderer = rt;
             }
             else
             {
@@ -630,7 +651,10 @@ namespace BMC.LDraw.Render
                                      string backgroundHex = null,
                                      string gradientTopHex = null,
                                      string gradientBottomHex = null,
-                                     RendererType rendererType = RendererType.Rasterizer)
+                                     RendererType rendererType = RendererType.Rasterizer,
+                                     bool enablePbr = true,
+                                     float exposure = 1.0f,
+                                     float aperture = 0f)
         {
             EnsureColours();
 
@@ -663,7 +687,13 @@ namespace BMC.LDraw.Render
 
             if (rendererType == RendererType.RayTracer)
             {
-                renderer = new RayTracing.RayTraceRenderer(renderW, renderH);
+                var rt = new RayTracing.RayTraceRenderer(renderW, renderH);
+                rt.Environment = new RayTracing.ProceduralSky();
+                rt.Lighting = LightingModel.Studio();
+                rt.EnablePbr = enablePbr;
+                rt.Exposure = exposure;
+                camera.Aperture = aperture;
+                renderer = rt;
             }
             else
             {
@@ -711,7 +741,10 @@ namespace BMC.LDraw.Render
                                   string backgroundHex = null,
                                   string gradientTopHex = null,
                                   string gradientBottomHex = null,
-                                  RendererType rendererType = RendererType.Rasterizer)
+                                  RendererType rendererType = RendererType.Rasterizer,
+                                  bool enablePbr = true,
+                                  float exposure = 1.0f,
+                                  float aperture = 0f)
         {
             byte[] pixels = RenderToPixels(lines: lines,
                                            fileName: fileName,
@@ -726,7 +759,10 @@ namespace BMC.LDraw.Render
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
                                            gradientBottomHex: gradientBottomHex,
-                                           rendererType: rendererType);
+                                           rendererType: rendererType,
+                                           enablePbr: enablePbr,
+                                           exposure: exposure,
+                                           aperture: aperture);
 
             return ImageExporter.ToPngBytes(pixels, width, height);
         }
@@ -747,7 +783,10 @@ namespace BMC.LDraw.Render
                                    string backgroundHex = null,
                                    string gradientTopHex = null,
                                    string gradientBottomHex = null,
-                                   int quality = 90)
+                                   int quality = 90,
+                                   bool enablePbr = true,
+                                   float exposure = 1.0f,
+                                   float aperture = 0f)
         {
             byte[] pixels = RenderToPixels(lines: lines,
                                            fileName: fileName,
@@ -761,7 +800,10 @@ namespace BMC.LDraw.Render
                                            antiAliasMode: antiAliasMode,
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
-                                           gradientBottomHex: gradientBottomHex);
+                                           gradientBottomHex: gradientBottomHex,
+                                           enablePbr: enablePbr,
+                                           exposure: exposure,
+                                           aperture: aperture);
 
             return ImageExporter.ToWebPBytes(pixels, width, height, quality);
         }

@@ -42,6 +42,9 @@ export interface ManualOptionsDto {
     smoothShading?: boolean;
     outputFormat?: string;   // "html" or "pdf"
     renderer?: string;       // "rasterizer" or "raytrace"
+    enablePbr?: boolean;
+    exposure?: number;
+    aperture?: number;
 }
 
 @Injectable({

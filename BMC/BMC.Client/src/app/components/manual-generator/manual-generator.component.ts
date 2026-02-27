@@ -71,7 +71,10 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
         renderEdges: true,
         smoothShading: true,
         outputFormat: 'html',
-        renderer: 'rasterizer'
+        renderer: 'rasterizer',
+        enablePbr: true,
+        exposure: 1.0,
+        aperture: 0
     };
 
     // ─── Generation State ────────────────────────────────────────────────

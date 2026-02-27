@@ -245,6 +245,29 @@
                             </div>
                         </div>
 
+                        <!-- Ray Trace Options (shown only when Ray Tracer is selected) -->
+                        <div class="render-subsection" *ngIf="rendererType === 'raytrace'">
+                            <span class="render-sublabel"><i class="bi bi-brightness-high"></i> Ray Trace Options</span>
+                            <label class="render-checkbox">
+                                <input type="checkbox" [checked]="enablePbr" (change)="enablePbr = !enablePbr" />
+                                PBR Shading
+                            </label>
+                            <div class="slider-row" style="margin-top: 6px;">
+                                <span class="render-sublabel"
+                                    style="font-size: 0.75rem; min-width: auto;">Exposure</span>
+                                <input type="range" min="0.5" max="3.0" step="0.1" [value]="exposure"
+                                    (input)="exposure = +$any($event.target).value" />
+                                <span class="slider-value">{{ exposure.toFixed(1) }}</span>
+                            </div>
+                            <div class="slider-row" style="margin-top: 6px;">
+                                <span class="render-sublabel" style="font-size: 0.75rem; min-width: auto;">Depth of
+                                    Field</span>
+                                <input type="range" min="0" max="5.0" step="0.1" [value]="aperture"
+                                    (input)="aperture = +$any($event.target).value" />
+                                <span class="slider-value">{{ aperture > 0 ? aperture.toFixed(1) : 'Off' }}</span>
+                            </div>
+                        </div>
+
                         <div class="render-subsection">
                             <span class="render-sublabel">Background</span>
                             <div class="bg-presets">

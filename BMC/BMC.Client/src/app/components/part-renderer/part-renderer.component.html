@@ -349,6 +349,26 @@
                         </div>
                     </div>
 
+                    <!-- Ray Trace Options (shown only when Ray Tracer is selected) -->
+                    <div class="adv-group" *ngIf="rendererType === 'raytrace'">
+                        <label class="adv-label"><i class="fas fa-sun"></i> Ray Trace Options</label>
+                        <label class="adv-checkbox">
+                            <input type="checkbox" [checked]="enablePbr" (change)="enablePbr = !enablePbr" />
+                            PBR Shading
+                        </label>
+                        <div class="slider-row" style="margin-top: 6px;">
+                            <label class="adv-label" style="font-size: 0.7rem; margin: 0;">Exposure</label>
+                            <input type="range" min="0.5" max="3.0" step="0.1" [value]="exposure"
+                                (input)="exposure = +$any($event.target).value" />
+                            <span class="slider-value">{{ exposure.toFixed(1) }}</span>
+                        </div>
+                        <div class="slider-row" style="margin-top: 6px;">
+                            <label class="adv-label" style="font-size: 0.7rem; margin: 0;">Depth of Field</label>
+                            <input type="range" min="0" max="5.0" step="0.1" [value]="aperture"
+                                (input)="aperture = +$any($event.target).value" />
+                            <span class="slider-value">{{ aperture > 0 ? aperture.toFixed(1) : 'Off' }}</span>
+                        </div>
+                    </div>
                     <!-- Anti-Aliasing -->
                     <div class="adv-group">
                         <label class="adv-label">Anti-Aliasing</label>

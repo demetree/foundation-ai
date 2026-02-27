@@ -39,6 +39,34 @@ namespace BMC.LDraw.Render
             UpX = 0; UpY = -1; UpZ = 0; // LDraw Y-axis points down
         }
 
+
+        /// <summary>
+        /// Aperture radius for depth-of-field simulation.
+        /// 0 = pinhole camera (no DoF), larger = more background/foreground blur.
+        /// Typical range: 0.5–5.0 for LEGO-scale models.
+        /// </summary>
+        public float Aperture = 0f;
+
+        /// <summary>
+        /// Distance from the camera at which objects are perfectly in focus.
+        /// When 0, automatically computed from the eye-to-target distance.
+        /// </summary>
+        public float FocusDistance = 0f;
+
+
+        /// <summary>
+        /// Get the effective focus distance (auto-calculated if not explicitly set).
+        /// </summary>
+        public float GetEffectiveFocusDistance()
+        {
+            if (FocusDistance > 0f) return FocusDistance;
+
+            float dx = TargetX - EyeX;
+            float dy = TargetY - EyeY;
+            float dz = TargetZ - EyeZ;
+
+            return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
         /// <summary>
         /// Compute the view matrix (LookAt).
         /// </summary>

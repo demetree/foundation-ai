@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using BMC.LDraw.Models;
+using BMC.LDraw.Render;
 
 namespace BMC.LDraw.Render.RayTracing
 {
@@ -26,6 +27,11 @@ namespace BMC.LDraw.Render.RayTracing
         private bool _hasGradient;
         private byte _gradTopR, _gradTopG, _gradTopB;
         private byte _gradBotR, _gradBotG, _gradBotB;
+
+
+        // HDR accumulation buffer (3 floats per pixel: R, G, B in linear space)
+        private float[] _hdrBuffer;
+        private byte[] _alphaBuffer;
 
 
         public int Width => _width;
@@ -54,6 +60,21 @@ namespace BMC.LDraw.Render.RayTracing
         public byte EdgeDarkness { get; set; } = 40;
 
 
+        // ── PBR Feature Toggles ──
+
+        /// <summary>Enable PBR shading (Cook-Torrance GGX).  When false, uses legacy Blinn-Phong.</summary>
+        public bool EnablePbr { get; set; } = true;
+
+        /// <summary>Enable ACES filmic tone mapping + sRGB gamma. When false, clamps directly to [0, 255].</summary>
+        public bool EnableToneMapping { get; set; } = true;
+
+        /// <summary>Exposure multiplier for tone mapping.  Higher = brighter overall image.</summary>
+        public float Exposure { get; set; } = 1.0f;
+
+        /// <summary>Environment map for sky/reflections.  Null = use flat background colour.</summary>
+        public IEnvironmentMap Environment { get; set; }
+
+
         public RayTraceRenderer(int width, int height)
         {
             _width = width;
@@ -61,6 +82,8 @@ namespace BMC.LDraw.Render.RayTracing
             _colourBuffer = new byte[width * height * 4];
             _depthBuffer = new float[width * height];
             _normalBuffer = new float[width * height * 3];
+            _hdrBuffer = new float[width * height * 3];
+            _alphaBuffer = new byte[width * height];
         }
 
 
@@ -153,6 +176,14 @@ namespace BMC.LDraw.Render.RayTracing
             float aoRadius = AoRadius;
             float aoIntensity = AoIntensity;
             int aaSamples = AaSamples;
+            bool usePbr = EnablePbr;
+            bool useToneMapping = EnableToneMapping;
+            IEnvironmentMap envMap = Environment;
+
+            // DoF settings
+            float aperture = camera.Aperture;
+            bool dofEnabled = aperture > 0f;
+            float focusDist = dofEnabled ? camera.GetEffectiveFocusDistance() : 0f;
 
             // Precompute AA sub-pixel grid
             int aaGridSize = (int)MathF.Ceiling(MathF.Sqrt(aaSamples));
@@ -166,6 +197,14 @@ namespace BMC.LDraw.Render.RayTracing
                 _depthBuffer[i] = float.MaxValue;
 
             //
+            // Normalise background to [0, 1] floats for HDR mixing
+            // (environment map may return HDR values > 1.0)
+            //
+            float rowBgRNorm = _bgR / 255f;
+            float rowBgGNorm = _bgG / 255f;
+            float rowBgBNorm = _bgB / 255f;
+
+            //
             // Ray trace — one scanline at a time in parallel
             // Each thread gets its own RNG to avoid contention.
             //
@@ -177,23 +216,23 @@ namespace BMC.LDraw.Render.RayTracing
             {
                 MaxDegreeOfParallelism = RenderConcurrency.MaxThreads
             };
-            Parallel.For(0, _height, rtParallelOpts, () => new Random(Environment.CurrentManagedThreadId * 31 + Environment.TickCount),
+            Parallel.For(0, _height, rtParallelOpts, () => new Random(System.Environment.CurrentManagedThreadId * 31 + System.Environment.TickCount),
                 (y, state, rng) =>
             {
-                // Compute per-scanline background colour (gradient or flat)
-                byte rowBgR, rowBgG, rowBgB;
+                // Compute per-scanline background colour (gradient or flat) as normalised floats
+                float rowBgR, rowBgG, rowBgB;
                 if (_hasGradient)
                 {
                     float gt = (float)y / MathF.Max(_height - 1, 1);
-                    rowBgR = (byte)(_gradTopR + (_gradBotR - _gradTopR) * gt);
-                    rowBgG = (byte)(_gradTopG + (_gradBotG - _gradTopG) * gt);
-                    rowBgB = (byte)(_gradTopB + (_gradBotB - _gradTopB) * gt);
+                    rowBgR = (_gradTopR + (_gradBotR - _gradTopR) * gt) / 255f;
+                    rowBgG = (_gradTopG + (_gradBotG - _gradTopG) * gt) / 255f;
+                    rowBgB = (_gradTopB + (_gradBotB - _gradTopB) * gt) / 255f;
                 }
                 else
                 {
-                    rowBgR = _bgR;
-                    rowBgG = _bgG;
-                    rowBgB = _bgB;
+                    rowBgR = _bgR / 255f;
+                    rowBgG = _bgG / 255f;
+                    rowBgB = _bgB / 255f;
                 }
 
                 for (int x = 0; x < _width; x++)
@@ -243,16 +282,73 @@ namespace BMC.LDraw.Render.RayTracing
                             float firstT = float.MaxValue;
                             float firstNX = 0, firstNY = 0, firstNZ = 0;
 
-                            Ray traceRay = ray;
+                            //
+                            // DoF: jitter ray origin on aperture disk
+                            //
+                            Ray traceRay;
+
+                            if (dofEnabled)
+                            {
+                                // Compute the point on the focal plane this ray aims at
+                                float focusX, focusY, focusZ;
+
+                                if (ortho)
+                                {
+                                    focusX = ray.OriginX + ray.DirX * focusDist;
+                                    focusY = ray.OriginY + ray.DirY * focusDist;
+                                    focusZ = ray.OriginZ + ray.DirZ * focusDist;
+                                }
+                                else
+                                {
+                                    focusX = eyeX + ray.DirX * focusDist;
+                                    focusY = eyeY + ray.DirY * focusDist;
+                                    focusZ = eyeZ + ray.DirZ * focusDist;
+                                }
+
+                                // Random point on aperture disk
+                                float angle = (float)(rng.NextDouble() * 2.0 * Math.PI);
+                                float radius = aperture * MathF.Sqrt((float)rng.NextDouble());
+                                float offX = MathF.Cos(angle) * radius;
+                                float offY = MathF.Sin(angle) * radius;
+
+                                float newOriginX = ray.OriginX + rightX * offX + upX * offY;
+                                float newOriginY = ray.OriginY + rightY * offX + upY * offY;
+                                float newOriginZ = ray.OriginZ + rightZ * offX + upZ * offY;
+
+                                float newDirX = focusX - newOriginX;
+                                float newDirY = focusY - newOriginY;
+                                float newDirZ = focusZ - newOriginZ;
+                                Normalize(ref newDirX, ref newDirY, ref newDirZ);
+
+                                traceRay = new Ray(newOriginX, newOriginY, newOriginZ,
+                                                   newDirX, newDirY, newDirZ);
+                            }
+                            else
+                            {
+                                traceRay = ray;
+                            }
 
                             for (int layer = 0; layer < MAX_TRANSPARENT_LAYERS; layer++)
                             {
                                 if (!bvh.Intersect(ref traceRay, out HitRecord hit))
                                 {
-                                    // No more surfaces — blend in background
-                                    layerR += remainingAlpha * rowBgR;
-                                    layerG += remainingAlpha * rowBgG;
-                                    layerB += remainingAlpha * rowBgB;
+                                    //
+                                    // Ray miss — sample environment or use background
+                                    //
+                                    if (envMap != null)
+                                    {
+                                        envMap.Sample(traceRay.DirX, traceRay.DirY, traceRay.DirZ,
+                                                      out float envR, out float envG, out float envB);
+                                        layerR += remainingAlpha * envR;
+                                        layerG += remainingAlpha * envG;
+                                        layerB += remainingAlpha * envB;
+                                    }
+                                    else
+                                    {
+                                        layerR += remainingAlpha * rowBgR;
+                                        layerG += remainingAlpha * rowBgG;
+                                        layerB += remainingAlpha * rowBgB;
+                                    }
                                     break;
                                 }
 
@@ -280,12 +376,88 @@ namespace BMC.LDraw.Render.RayTracing
                                     hit.NZ = snz;
                                 }
 
-                                ShadePixel(lighting, bvh, ref traceRay, ref hit,
-                                           hitX, hitY, hitZ,
-                                           eyeX, eyeY, eyeZ,
-                                           finish, 0,
-                                           shadowSamples, aoSamples, aoRadius, aoIntensity, rng,
-                                           out byte sR, out byte sG, out byte sB);
+                                //
+                                // Shade: PBR or legacy Blinn-Phong
+                                //
+                                float sR, sG, sB;
+
+                                if (usePbr)
+                                {
+                                    PbrMaterial mat = PbrMaterial.FromFinish(finish);
+                                    PbrShading.Shade(lighting, bvh, ref hit,
+                                        hitX, hitY, hitZ,
+                                        eyeX, eyeY, eyeZ,
+                                        mat, shadowSamples, rng,
+                                        out sR, out sG, out sB);
+
+                                    // Environment-based reflections for glossy/metallic surfaces
+                                    if (envMap != null && mat.Metalness > 0.1f && layer == 0)
+                                    {
+                                        float nx2 = hit.NX, ny2 = hit.NY, nz2 = hit.NZ;
+                                        float dDotn = traceRay.DirX * nx2 + traceRay.DirY * ny2 + traceRay.DirZ * nz2;
+                                        float reflDirX = traceRay.DirX - 2f * dDotn * nx2;
+                                        float reflDirY = traceRay.DirY - 2f * dDotn * ny2;
+                                        float reflDirZ = traceRay.DirZ - 2f * dDotn * nz2;
+                                        Normalize(ref reflDirX, ref reflDirY, ref reflDirZ);
+
+                                        Ray reflRay = new Ray(
+                                            hitX + nx2 * 0.01f, hitY + ny2 * 0.01f, hitZ + nz2 * 0.01f,
+                                            reflDirX, reflDirY, reflDirZ);
+
+                                        float envReflR, envReflG, envReflB;
+
+                                        if (bvh.Intersect(ref reflRay, out HitRecord reflHit))
+                                        {
+                                            float rHitX = reflRay.OriginX + reflRay.DirX * reflHit.T;
+                                            float rHitY = reflRay.OriginY + reflRay.DirY * reflHit.T;
+                                            float rHitZ = reflRay.OriginZ + reflRay.DirZ * reflHit.T;
+                                            PbrMaterial rMat = PbrMaterial.FromFinish(bvh.Triangles[reflHit.TriIndex].Finish);
+                                            PbrShading.Shade(lighting, bvh, ref reflHit,
+                                                rHitX, rHitY, rHitZ, hitX, hitY, hitZ,
+                                                rMat, 1, rng, out envReflR, out envReflG, out envReflB);
+                                        }
+                                        else
+                                        {
+                                            envMap.Sample(reflDirX, reflDirY, reflDirZ,
+                                                          out envReflR, out envReflG, out envReflB);
+                                        }
+
+                                        float reflectivity = mat.Metalness * (1f - mat.Roughness);
+                                        float albedoR = hit.R / 255f;
+                                        float albedoG = hit.G / 255f;
+                                        float albedoB = hit.B / 255f;
+
+                                        sR = sR * (1f - reflectivity) + envReflR * reflectivity * albedoR;
+                                        sG = sG * (1f - reflectivity) + envReflG * reflectivity * albedoG;
+                                        sB = sB * (1f - reflectivity) + envReflB * reflectivity * albedoB;
+                                    }
+                                }
+                                else
+                                {
+                                    // Legacy Blinn-Phong path
+                                    ShadePixel(lighting, bvh, ref traceRay, ref hit,
+                                               hitX, hitY, hitZ,
+                                               eyeX, eyeY, eyeZ,
+                                               finish, 0,
+                                               shadowSamples, aoSamples, aoRadius, aoIntensity, rng,
+                                               out byte bpR, out byte bpG, out byte bpB);
+                                    sR = bpR / 255f;
+                                    sG = bpG / 255f;
+                                    sB = bpB / 255f;
+                                }
+
+                                //
+                                // Ambient occlusion (applied to both PBR and legacy)
+                                //
+                                if (aoSamples > 0 && aoIntensity > 0f && layer == 0)
+                                {
+                                    float ao = ComputeAO(bvh, ref hit, hitX, hitY, hitZ,
+                                                         aoSamples, aoRadius, rng);
+                                    float aoFactor = 1f - ao * aoIntensity;
+                                    sR *= aoFactor;
+                                    sG *= aoFactor;
+                                    sB *= aoFactor;
+                                }
 
                                 // Track first hit for edge detection G-buffer
                                 if (layer == 0)
@@ -300,7 +472,6 @@ namespace BMC.LDraw.Render.RayTracing
 
                                 if (surfAlpha >= 1f)
                                 {
-                                    // Opaque surface — accumulate and stop
                                     layerR += remainingAlpha * sR;
                                     layerG += remainingAlpha * sG;
                                     layerB += remainingAlpha * sB;
@@ -314,9 +485,8 @@ namespace BMC.LDraw.Render.RayTracing
                                 layerB += remainingAlpha * surfAlpha * sB;
                                 remainingAlpha *= (1f - surfAlpha);
 
-                                if (remainingAlpha < 0.01f) break; // fully absorbed
+                                if (remainingAlpha < 0.01f) break;
 
-                                // Continue ray from just past this surface
                                 traceRay = new Ray(
                                     hitX + traceRay.DirX * 0.01f,
                                     hitY + traceRay.DirY * 0.01f,
@@ -324,12 +494,23 @@ namespace BMC.LDraw.Render.RayTracing
                                     traceRay.DirX, traceRay.DirY, traceRay.DirZ);
                             }
 
-                            // If we still have remaining alpha, blend in background
+                            // If we still have remaining alpha, blend in background/env
                             if (remainingAlpha > 0.01f)
                             {
-                                layerR += remainingAlpha * rowBgR;
-                                layerG += remainingAlpha * rowBgG;
-                                layerB += remainingAlpha * rowBgB;
+                                if (envMap != null)
+                                {
+                                    envMap.Sample(traceRay.DirX, traceRay.DirY, traceRay.DirZ,
+                                                  out float ebgR, out float ebgG, out float ebgB);
+                                    layerR += remainingAlpha * ebgR;
+                                    layerG += remainingAlpha * ebgG;
+                                    layerB += remainingAlpha * ebgB;
+                                }
+                                else
+                                {
+                                    layerR += remainingAlpha * rowBgR;
+                                    layerG += remainingAlpha * rowBgG;
+                                    layerB += remainingAlpha * rowBgB;
+                                }
                             }
 
                             accumR += layerR;
@@ -349,26 +530,52 @@ namespace BMC.LDraw.Render.RayTracing
                         }
                     }
 
-                    // Average samples
+                    // Average samples and write to HDR buffer
                     float invCount = 1f / sampleCount;
-                    int bufIdx = (y * _width + x) * 4;
-                    _colourBuffer[bufIdx]     = (byte)(accumR * invCount + 0.5f);
-                    _colourBuffer[bufIdx + 1] = (byte)(accumG * invCount + 0.5f);
-                    _colourBuffer[bufIdx + 2] = (byte)(accumB * invCount + 0.5f);
-                    _colourBuffer[bufIdx + 3] = (byte)(accumA * invCount + 0.5f);
+                    int pixIdx = y * _width + x;
+                    int hdrIdx = pixIdx * 3;
+
+                    _hdrBuffer[hdrIdx]     = accumR * invCount;
+                    _hdrBuffer[hdrIdx + 1] = accumG * invCount;
+                    _hdrBuffer[hdrIdx + 2] = accumB * invCount;
+                    _alphaBuffer[pixIdx] = (byte)(accumA * invCount + 0.5f);
 
                     // Store G-buffer data for edge detection
-                    int pixIdx = y * _width + x;
                     _depthBuffer[pixIdx] = closestT;
-                    int nIdx = pixIdx * 3;
-                    _normalBuffer[nIdx]     = bestNX;
-                    _normalBuffer[nIdx + 1] = bestNY;
-                    _normalBuffer[nIdx + 2] = bestNZ;
+                    int nBufIdx = pixIdx * 3;
+                    _normalBuffer[nBufIdx]     = bestNX;
+                    _normalBuffer[nBufIdx + 1] = bestNY;
+                    _normalBuffer[nBufIdx + 2] = bestNZ;
                 }
 
                 return rng;
             },
             _ => { }); // finalizer
+
+            //
+            // Post-process: tone mapping (HDR → LDR byte buffer)
+            //
+            if (useToneMapping)
+            {
+                ToneMapper.Apply(_hdrBuffer, _alphaBuffer, _colourBuffer,
+                                _width * _height, Exposure);
+            }
+            else
+            {
+                // Direct clamp (legacy behaviour)
+                for (int i = 0; i < _width * _height; i++)
+                {
+                    int hIdx = i * 3;
+                    int cIdx = i * 4;
+                    int ir = (int)(_hdrBuffer[hIdx] * 255f + 0.5f);
+                    int ig = (int)(_hdrBuffer[hIdx + 1] * 255f + 0.5f);
+                    int ib = (int)(_hdrBuffer[hIdx + 2] * 255f + 0.5f);
+                    _colourBuffer[cIdx]     = (byte)(ir > 255 ? 255 : (ir < 0 ? 0 : ir));
+                    _colourBuffer[cIdx + 1] = (byte)(ig > 255 ? 255 : (ig < 0 ? 0 : ig));
+                    _colourBuffer[cIdx + 2] = (byte)(ib > 255 ? 255 : (ib < 0 ? 0 : ib));
+                    _colourBuffer[cIdx + 3] = _alphaBuffer[i];
+                }
+            }
 
             //
             // Post-process: edge detection
