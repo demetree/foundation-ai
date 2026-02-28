@@ -481,6 +481,98 @@
     bottom: 10px;
 }
 
+.compare-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    border: 1px solid var(--bmc-glass-border);
+    background: var(--bmc-glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--bmc-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    padding: 0;
+
+    &:hover {
+        border-color: #667eea;
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.15);
+    }
+
+    &.active {
+        opacity: 1;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+    }
+}
+
+.set-card:hover .compare-badge {
+    opacity: 1;
+}
+
+.compare-header-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+    color: #a78bfa;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    i {
+        margin-right: 6px;
+    }
+
+    &:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));
+        border-color: rgba(102, 126, 234, 0.6);
+        color: #c4b5fd;
+        box-shadow: 0 2px 12px rgba(102, 126, 234, 0.2);
+    }
+}
+
+.compare-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--bmc-border);
+    background: transparent;
+    color: var(--bmc-text-muted);
+    font-size: 0.6rem;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    &.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        color: #fff;
+    }
+}
+
 .card-body {
     padding: 14px 14px 8px;
     flex: 1;

@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
 import { AuthService } from '../../services/auth.service';
 import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
+import { SetComparisonService } from '../../services/set-comparison.service';
 
 
 /**
@@ -84,7 +85,8 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         private http: HttpClient,
         private authService: AuthService,
         private setExplorerApi: SetExplorerApiService,
-        public ownershipCache: SetOwnershipCacheService
+        public ownershipCache: SetOwnershipCacheService,
+        public comparisonService: SetComparisonService
     ) {
         this.ownershipCache.ensureLoaded();
         this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$))
@@ -416,6 +418,15 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
 
     navigateBack(): void {
         this.router.navigate(['/lego']);
+    }
+
+    toggleCompare(event: MouseEvent, set: SetExplorerItem): void {
+        event.stopPropagation();
+        this.comparisonService.toggleSet(set);
+    }
+
+    goToCompare(): void {
+        this.router.navigate(['/lego/compare']);
     }
 
 
