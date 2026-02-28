@@ -1,0 +1,73 @@
+<div class="add-connector-type-compatibility" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-connector-type-compatibility me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Connector Type Compatibility" 
+        *ngIf="userIsBMCConnectorTypeCompatibilityWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #connectorTypeCompatibilityModal let-modal>
+   <div class="modal-header connector-type-compatibility-modal-header">
+      <h5 class="modal-title mb-0" id="connectorTypeCompatibilityModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Connector Type Compatibility' : 'Add Connector Type Compatibility' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body connector-type-compatibility-modal-body">
+      <form [formGroup]="connectorTypeCompatibilityForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('maleConnectorTypeId')">
+                <label for="ConnectorTypeCompatibility-maleConnectorTypeId" id="label-ConnectorTypeCompatibility-maleConnectorTypeId"><span class="text-danger">*</span>Male Connector Type</label>
+                <select id="ConnectorTypeCompatibility-maleConnectorTypeId" formControlName="maleConnectorTypeId" class="form-select connector-type-compatibility-select" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()">
+                    <option [ngValue]="null">Select Connector Type</option>
+                    <option *ngFor="let connectorType of connectorTypes$ | async" [ngValue]="connectorType.id">{{connectorType.name}}</option>
+                </select>
+                <div *ngIf="connectorTypeCompatibilityForm.get('maleConnectorTypeId')?.invalid && connectorTypeCompatibilityForm.get('maleConnectorTypeId')?.touched" class="text-danger">
+                    Male Connector Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('femaleConnectorTypeId')">
+                <label for="ConnectorTypeCompatibility-femaleConnectorTypeId" id="label-ConnectorTypeCompatibility-femaleConnectorTypeId"><span class="text-danger">*</span>Female Connector Type</label>
+                <select id="ConnectorTypeCompatibility-femaleConnectorTypeId" formControlName="femaleConnectorTypeId" class="form-select connector-type-compatibility-select" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()">
+                    <option [ngValue]="null">Select Connector Type</option>
+                    <option *ngFor="let connectorType of connectorTypes$ | async" [ngValue]="connectorType.id">{{connectorType.name}}</option>
+                </select>
+                <div *ngIf="connectorTypeCompatibilityForm.get('femaleConnectorTypeId')?.invalid && connectorTypeCompatibilityForm.get('femaleConnectorTypeId')?.touched" class="text-danger">
+                    Female Connector Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('connectionStrength')">
+                <label for="ConnectorTypeCompatibility-connectionStrength" id="label-ConnectorTypeCompatibility-connectionStrength"><span class="text-danger">*</span>Connection Strength</label>
+                <input type="text" id="ConnectorTypeCompatibility-connectionStrength" formControlName="connectionStrength" placeholder="Enter Connection Strength" class="form-control connector-type-compatibility-input" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()" aria-labelledby="label-connectionStrength" />
+                <div *ngIf="connectorTypeCompatibilityForm.get('connectionStrength')?.invalid && connectorTypeCompatibilityForm.get('connectionStrength')?.touched" class="text-danger">
+                    Connection Strength is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConnectorTypeCompatibility-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()" />
+                <label for="ConnectorTypeCompatibility-active" class="form-check-label" id="label-ConnectorTypeCompatibility-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConnectorTypeCompatibility-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()" />
+                <label for="ConnectorTypeCompatibility-deleted" class="form-check-label" id="label-ConnectorTypeCompatibility-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer connector-type-compatibility-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Connector Type Compatibility changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !connectorTypeCompatibilityForm.valid || connectorTypeCompatibilityForm.pristine  || userIsBMCConnectorTypeCompatibilityWriter() == false " ngbTooltip="Save the Connector Type Compatibility changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Connector Type Compatibility' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

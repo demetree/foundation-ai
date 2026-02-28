@@ -124,6 +124,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[ConnectorTypeCompatibility]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ContentReport]",
          "ObjectType": 0
       },
@@ -172,7 +176,31 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[ModelBuildStep]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ModelDocument]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ModelDocumentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ModelStepPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ModelSubFile]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ModerationAction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PartSubFileReference]",
          "ObjectType": 0
       },
       {
@@ -240,6 +268,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[RebrickableUserLink]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[RenderPreset]",
          "ObjectType": 0
       },
@@ -296,6 +328,22 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[UserLostPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserPartList]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserPartListChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserPartListItem]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[UserProfile]",
          "ObjectType": 0
       },
@@ -317,6 +365,18 @@
       },
       {
          "Name": "[BMC].[UserProfileStat]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserSetList]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserSetListChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserSetListItem]",
          "ObjectType": 0
       },
       {

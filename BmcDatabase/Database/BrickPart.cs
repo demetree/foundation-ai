@@ -11,7 +11,19 @@ public partial class BrickPart
 
     public string name { get; set; }
 
+    public string rebrickablePartNum { get; set; }
+
+    public string rebrickablePartUrl { get; set; }
+
+    public string rebrickableImgUrl { get; set; }
+
     public string ldrawPartId { get; set; }
+
+    public string bricklinkId { get; set; }
+
+    public string brickowlId { get; set; }
+
+    public string legoDesignId { get; set; }
 
     public string ldrawTitle { get; set; }
 
@@ -25,8 +37,6 @@ public partial class BrickPart
 
     public int brickCategoryId { get; set; }
 
-    public string rebrickablePartNum { get; set; }
-
     public float? widthLdu { get; set; }
 
     public float? heightLdu { get; set; }
@@ -35,11 +45,55 @@ public partial class BrickPart
 
     public float? massGrams { get; set; }
 
-    public string geometryFilePath { get; set; }
+    public float? momentOfInertiaX { get; set; }
+
+    public float? momentOfInertiaY { get; set; }
+
+    public float? momentOfInertiaZ { get; set; }
+
+    public float? frictionCoefficient { get; set; }
+
+    public string materialType { get; set; }
+
+    public float? centerOfMassX { get; set; }
+
+    public float? centerOfMassY { get; set; }
+
+    public float? centerOfMassZ { get; set; }
+
+    public string geometryFileName { get; set; }
+
+    public long? geometrySize { get; set; }
+
+    public byte[] geometryData { get; set; }
+
+    public string geometryMimeType { get; set; }
+
+    public string geometryFileFormat { get; set; }
+
+    public string geometryOriginalFileName { get; set; }
+
+    public float? boundingBoxMinX { get; set; }
+
+    public float? boundingBoxMinY { get; set; }
+
+    public float? boundingBoxMinZ { get; set; }
+
+    public float? boundingBoxMaxX { get; set; }
+
+    public float? boundingBoxMaxY { get; set; }
+
+    public float? boundingBoxMaxZ { get; set; }
+
+    public int? subFileCount { get; set; }
+
+    public int? polygonCount { get; set; }
 
     public int? toothCount { get; set; }
 
     public float? gearRatio { get; set; }
+
+    public DateTime? lastModifiedDate { get; set; }
 
     public int versionNumber { get; set; }
 
@@ -63,9 +117,19 @@ public partial class BrickPart
 
     public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();
 
+    public virtual ICollection<ModelStepPart> ModelStepParts { get; set; } = new List<ModelStepPart>();
+
+    public virtual ICollection<PartSubFileReference> PartSubFileReferenceparentBrickParts { get; set; } = new List<PartSubFileReference>();
+
+    public virtual ICollection<PartSubFileReference> PartSubFileReferencereferencedBrickParts { get; set; } = new List<PartSubFileReference>();
+
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
 
     public virtual ICollection<UserCollectionPart> UserCollectionParts { get; set; } = new List<UserCollectionPart>();
+
+    public virtual ICollection<UserLostPart> UserLostParts { get; set; } = new List<UserLostPart>();
+
+    public virtual ICollection<UserPartListItem> UserPartListItems { get; set; } = new List<UserPartListItem>();
 
     public virtual ICollection<UserWishlistItem> UserWishlistItems { get; set; } = new List<UserWishlistItem>();
 

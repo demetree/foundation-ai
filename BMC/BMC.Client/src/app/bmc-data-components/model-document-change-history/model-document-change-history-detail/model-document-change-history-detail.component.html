@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 model-document-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="model-document-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Model Document Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Model Document Change History' : 'Add Model Document Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCModelDocumentChangeHistoryReader()">
+                <div class="col m-2 model-document-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="modelDocumentChangeHistoryForm" (ngSubmit)="submitForm()" class="model-document-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('modelDocumentId')">
+                                <label for="ModelDocumentChangeHistory-modelDocumentId" id="label-ModelDocumentChangeHistory-modelDocumentId"><span class="text-danger">*</span>Model Document</label>
+                                <select id="ModelDocumentChangeHistory-modelDocumentId" formControlName="modelDocumentId" class="form-select model-document-change-history-select" [disabled]="!userIsBMCModelDocumentChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Model Document</option>
+                                    <option *ngFor="let modelDocument of modelDocuments$ | async" [ngValue]="modelDocument.id">{{modelDocument.name}}</option>
+                                </select>
+                                <div *ngIf="modelDocumentChangeHistoryForm.get('modelDocumentId')?.invalid && modelDocumentChangeHistoryForm.get('modelDocumentId')?.touched" class="text-danger">
+                                    Model Document is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ModelDocumentChangeHistory-versionNumber" id="label-ModelDocumentChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ModelDocumentChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control model-document-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ModelDocumentChangeHistory-timeStamp" id="label-ModelDocumentChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ModelDocumentChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control model-document-change-history-input" [disabled]="!userIsBMCModelDocumentChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="modelDocumentChangeHistoryForm.get('timeStamp')?.invalid && modelDocumentChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ModelDocumentChangeHistory-userId" id="label-ModelDocumentChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ModelDocumentChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control model-document-change-history-input" [disabled]="!userIsBMCModelDocumentChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="modelDocumentChangeHistoryForm.get('userId')?.invalid && modelDocumentChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ModelDocumentChangeHistory-data" id="label-ModelDocumentChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ModelDocumentChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control model-document-change-history-input" [disabled]="!userIsBMCModelDocumentChangeHistoryWriter()"></textarea>
+                                <div *ngIf="modelDocumentChangeHistoryForm.get('data')?.invalid && modelDocumentChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="model-document-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="modelDocumentChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Model Document Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !modelDocumentChangeHistoryForm.valid || !modelDocumentChangeHistoryForm.dirty || modelDocumentChangeHistoryForm.pristine  || userIsBMCModelDocumentChangeHistoryWriter() == false " ngbTooltip="Save the Model Document Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Model Document Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

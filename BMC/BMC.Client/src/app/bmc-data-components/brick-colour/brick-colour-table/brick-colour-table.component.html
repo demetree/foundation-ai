@@ -31,9 +31,21 @@
                 Name
                 <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('rebrickableColorId')">
+                Rebrickable  Color  Id
+                <span *ngIf="sortColumn === 'rebrickableColorId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('ldrawColourCode')">
                 Ldraw  Colour  Code
                 <span *ngIf="sortColumn === 'ldrawColourCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bricklinkColorId')">
+                Bricklink  Color  Id
+                <span *ngIf="sortColumn === 'bricklinkColorId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickowlColorId')">
+                Brickowl  Color  Id
+                <span *ngIf="sortColumn === 'brickowlColorId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('hexRgb')">
                 Hex  Rgb
@@ -157,7 +169,10 @@ End of commented block for alternate definition option -->
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/brickcolour', brickColour.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Colour details">{{brickColour.name}}</a></td>
+            <td class="text-truncate">{{brickColour.rebrickableColorId | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickColour.ldrawColourCode | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickColour.bricklinkColorId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickColour.brickowlColorId | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickColour.hexRgb}}</td>
             <td class="text-truncate">{{brickColour.hexEdgeColour}}</td>
             <td class="text-truncate">{{brickColour.alpha | bigNumberFormat : '1.0-2'}}</td>
@@ -318,9 +333,21 @@ End of commented block for alternate definition option -->
               <strong>Name: </strong>
               {{brickColour.name}}
             </p>
+            <p class="brick-colour-info" *ngIf="brickColour.rebrickableColorId != null">
+              <strong>Rebrickable Color Id: </strong>
+              {{brickColour.rebrickableColorId | bigNumberFormat : '1.0-2'}}
+            </p>
             <p class="brick-colour-info" *ngIf="brickColour.ldrawColourCode != null">
               <strong>Ldraw Colour Code: </strong>
               {{brickColour.ldrawColourCode | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-colour-info" *ngIf="brickColour.bricklinkColorId != null">
+              <strong>Bricklink Color Id: </strong>
+              {{brickColour.bricklinkColorId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-colour-info" *ngIf="brickColour.brickowlColorId != null">
+              <strong>Brickowl Color Id: </strong>
+              {{brickColour.brickowlColorId | bigNumberFormat : '1.0-2'}}
             </p>
             <p class="brick-colour-info" *ngIf="brickColour.hexRgb != null">
               <strong>Hex Rgb: </strong>

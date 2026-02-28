@@ -222,8 +222,8 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
 
         // Kick off 3D thumbnail rendering (with colour overrides)
         const partsWithGeometry = this.displayedParts
-            .filter(p => p.geometryFilePath)
-            .map(p => ({ geometryFilePath: p.geometryFilePath, colourHex: this.normalizeHex(p.colourHex) }));
+            .filter(p => p.geometryOriginalFileName)
+            .map(p => ({ geometryOriginalFileName: p.geometryOriginalFileName, colourHex: this.normalizeHex(p.colourHex) }));
         if (partsWithGeometry.length > 0) {
             this.thumbnailService.renderBatch(partsWithGeometry);
         }
@@ -332,7 +332,7 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
     }
 
     getThumbnailKey(part: CollectionPart): string {
-        return LDrawThumbnailService.cacheKey(part.geometryFilePath, this.normalizeHex(part.colourHex));
+        return LDrawThumbnailService.cacheKey(part.geometryOriginalFileName, this.normalizeHex(part.colourHex));
     }
 
     getColourStyle(hex: string): string {

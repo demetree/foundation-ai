@@ -63,15 +63,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/BrickConnections")]
 		public async Task<IActionResult> GetBrickConnections(
 			int? projectId = null,
-			long? sourcePlacedBrickId = null,
-			long? sourceConnectorId = null,
-			long? targetPlacedBrickId = null,
-			long? targetConnectorId = null,
+			int? sourcePlacedBrickId = null,
+			int? sourceConnectorId = null,
+			int? targetPlacedBrickId = null,
+			int? targetConnectorId = null,
+			string connectionStrength = null,
+			bool? isLocked = null,
+			float? angleDegrees = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
+			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -139,6 +143,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.targetConnectorId == targetConnectorId.Value);
 			}
+			if (string.IsNullOrEmpty(connectionStrength) == false)
+			{
+				query = query.Where(bc => bc.connectionStrength == connectionStrength);
+			}
+			if (isLocked.HasValue == true)
+			{
+				query = query.Where(bc => bc.isLocked == isLocked.Value);
+			}
+			if (angleDegrees.HasValue == true)
+			{
+				query = query.Where(bc => bc.angleDegrees == angleDegrees.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bc => bc.objectGuid == objectGuid);
@@ -168,11 +184,32 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bc => bc.deleted == false);
 			}
 
-			query = query.OrderBy(bc => bc.id);
+			query = query.OrderBy(bc => bc.connectionStrength);
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Brick Connection, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.connectionStrength.Contains(anyStringContains)
+			       || (includeRelations == true && x.project.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.project.thumbnailImagePath.Contains(anyStringContains))
+			   );
+			}
 
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.project);
+				query = query.Include(x => x.sourceConnector);
+				query = query.Include(x => x.sourcePlacedBrick);
+				query = query.Include(x => x.targetConnector);
+				query = query.Include(x => x.targetPlacedBrick);
 				query = query.AsSplitQuery();
 			}
 
@@ -222,13 +259,17 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/BrickConnections/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? projectId = null,
-			long? sourcePlacedBrickId = null,
-			long? sourceConnectorId = null,
-			long? targetPlacedBrickId = null,
-			long? targetConnectorId = null,
+			int? sourcePlacedBrickId = null,
+			int? sourceConnectorId = null,
+			int? targetPlacedBrickId = null,
+			int? targetConnectorId = null,
+			string connectionStrength = null,
+			bool? isLocked = null,
+			float? angleDegrees = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -278,6 +319,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.targetConnectorId == targetConnectorId.Value);
 			}
+			if (connectionStrength != null)
+			{
+				query = query.Where(bc => bc.connectionStrength == connectionStrength);
+			}
+			if (isLocked.HasValue == true)
+			{
+				query = query.Where(bc => bc.isLocked == isLocked.Value);
+			}
+			if (angleDegrees.HasValue == true)
+			{
+				query = query.Where(bc => bc.angleDegrees == angleDegrees.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bc => bc.objectGuid == objectGuid);
@@ -306,6 +359,23 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bc => bc.active == true);
 				query = query.Where(bc => bc.deleted == false);
 			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Brick Connection, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.connectionStrength.Contains(anyStringContains)
+			       || x.project.name.Contains(anyStringContains)
+			       || x.project.description.Contains(anyStringContains)
+			       || x.project.notes.Contains(anyStringContains)
+			       || x.project.thumbnailImagePath.Contains(anyStringContains)
+			   );
+			}
+
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -367,6 +437,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (includeRelations == true)
 				{
 					query = query.Include(x => x.project);
+					query = query.Include(x => x.sourceConnector);
+					query = query.Include(x => x.sourcePlacedBrick);
+					query = query.Include(x => x.targetConnector);
+					query = query.Include(x => x.targetPlacedBrick);
 					query = query.AsSplitQuery();
 				}
 
@@ -380,7 +454,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "BMC.BrickConnection Entity was read with Admin privilege." : "BMC.BrickConnection Entity was read.");
 
-					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BrickConnection", materialized.id, materialized.id.ToString()));
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BrickConnection", materialized.id, materialized.connectionStrength));
 
 
 					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -521,6 +595,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				return Forbid();
 			}
 
+			if (brickConnection.connectionStrength != null && brickConnection.connectionStrength.Length > 50)
+			{
+				brickConnection.connectionStrength = brickConnection.connectionStrength.Substring(0, 50);
+			}
+
 			EntityEntry<Database.BrickConnection> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(brickConnection);
 
@@ -610,6 +689,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				brickConnection.tenantGuid = userTenantGuid;
 
+				if (brickConnection.connectionStrength != null && brickConnection.connectionStrength.Length > 50)
+				{
+					brickConnection.connectionStrength = brickConnection.connectionStrength.Substring(0, 50);
+				}
+
 				brickConnection.objectGuid = Guid.NewGuid();
 				_context.BrickConnections.Add(brickConnection);
 				await _context.SaveChangesAsync(cancellationToken);
@@ -631,7 +715,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BrickConnection", brickConnection.id, brickConnection.id.ToString()));
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BrickConnection", brickConnection.id, brickConnection.connectionStrength));
 
 			return CreatedAtRoute("BrickConnection", new { id = brickConnection.id }, Database.BrickConnection.CreateAnonymousWithFirstLevelSubObjects(brickConnection));
 		}
@@ -739,13 +823,17 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			int? projectId = null,
-			long? sourcePlacedBrickId = null,
-			long? sourceConnectorId = null,
-			long? targetPlacedBrickId = null,
-			long? targetConnectorId = null,
+			int? sourcePlacedBrickId = null,
+			int? sourceConnectorId = null,
+			int? targetPlacedBrickId = null,
+			int? targetConnectorId = null,
+			string connectionStrength = null,
+			bool? isLocked = null,
+			float? angleDegrees = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -814,6 +902,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.targetConnectorId == targetConnectorId.Value);
 			}
+			if (string.IsNullOrEmpty(connectionStrength) == false)
+			{
+				query = query.Where(bc => bc.connectionStrength == connectionStrength);
+			}
+			if (isLocked.HasValue == true)
+			{
+				query = query.Where(bc => bc.isLocked == isLocked.Value);
+			}
+			if (angleDegrees.HasValue == true)
+			{
+				query = query.Where(bc => bc.angleDegrees == angleDegrees.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bc => bc.objectGuid == objectGuid);
@@ -844,10 +944,27 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
+			//
+			// Add the any string contains parameter to span all the string fields on the Brick Connection, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.connectionStrength.Contains(anyStringContains)
+			       || x.project.name.Contains(anyStringContains)
+			       || x.project.description.Contains(anyStringContains)
+			       || x.project.notes.Contains(anyStringContains)
+			       || x.project.thumbnailImagePath.Contains(anyStringContains)
+			   );
+			}
+
+
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.id);
+			query = query.OrderBy(x => x.connectionStrength);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

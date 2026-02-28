@@ -27,6 +27,7 @@ import { ProjectService } from '../../../bmc-data-services/project.service';
 import { BrickPartService } from '../../../bmc-data-services/brick-part.service';
 import { BrickColourService } from '../../../bmc-data-services/brick-colour.service';
 import { PlacedBrickChangeHistoryService } from '../../../bmc-data-services/placed-brick-change-history.service';
+import { BrickConnectionService } from '../../../bmc-data-services/brick-connection.service';
 import { SubmodelPlacedBrickService } from '../../../bmc-data-services/submodel-placed-brick.service';
 import { BuildStepPartService } from '../../../bmc-data-services/build-step-part.service';
 import { BuildStepAnnotationService } from '../../../bmc-data-services/build-step-annotation.service';
@@ -116,6 +117,7 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
   public brickParts$ = this.brickPartService.GetBrickPartList();
   public brickColours$ = this.brickColourService.GetBrickColourList();
   public placedBrickChangeHistories$ = this.placedBrickChangeHistoryService.GetPlacedBrickChangeHistoryList();
+  public brickConnections$ = this.brickConnectionService.GetBrickConnectionList();
   public submodelPlacedBricks$ = this.submodelPlacedBrickService.GetSubmodelPlacedBrickList();
   public buildStepParts$ = this.buildStepPartService.GetBuildStepPartList();
   public buildStepAnnotations$ = this.buildStepAnnotationService.GetBuildStepAnnotationList();
@@ -128,6 +130,7 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
     public brickPartService: BrickPartService,
     public brickColourService: BrickColourService,
     public placedBrickChangeHistoryService: PlacedBrickChangeHistoryService,
+    public brickConnectionService: BrickConnectionService,
     public submodelPlacedBrickService: SubmodelPlacedBrickService,
     public buildStepPartService: BuildStepPartService,
     public buildStepAnnotationService: BuildStepAnnotationService,

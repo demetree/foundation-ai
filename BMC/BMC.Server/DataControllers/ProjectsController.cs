@@ -781,6 +781,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 					project.BrickConnections = null;
 					project.BuildManuals = null;
+					project.ModelDocuments = null;
 					project.PlacedBricks = null;
 					project.ProjectCameraPresets = null;
 					project.ProjectChangeHistories = null;
@@ -906,6 +907,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				cloneOfExisting.BrickConnections = null;
 				cloneOfExisting.BuildManuals = null;
+				cloneOfExisting.ModelDocuments = null;
 				cloneOfExisting.PlacedBricks = null;
 				cloneOfExisting.ProjectCameraPresets = null;
 				cloneOfExisting.ProjectChangeHistories = null;

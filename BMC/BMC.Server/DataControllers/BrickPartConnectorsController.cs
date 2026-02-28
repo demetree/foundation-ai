@@ -70,6 +70,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? orientationX = null,
 			float? orientationY = null,
 			float? orientationZ = null,
+			int? connectorGroupId = null,
+			bool? isAutoExtracted = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -139,6 +141,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (orientationZ.HasValue == true)
 			{
 				query = query.Where(bpc => bpc.orientationZ == orientationZ.Value);
+			}
+			if (connectorGroupId.HasValue == true)
+			{
+				query = query.Where(bpc => bpc.connectorGroupId == connectorGroupId.Value);
+			}
+			if (isAutoExtracted.HasValue == true)
+			{
+				query = query.Where(bpc => bpc.isAutoExtracted == isAutoExtracted.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -235,6 +245,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? orientationX = null,
 			float? orientationY = null,
 			float? orientationZ = null,
+			int? connectorGroupId = null,
+			bool? isAutoExtracted = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -286,6 +298,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (orientationZ.HasValue == true)
 			{
 				query = query.Where(bpc => bpc.orientationZ == orientationZ.Value);
+			}
+			if (connectorGroupId.HasValue == true)
+			{
+				query = query.Where(bpc => bpc.connectorGroupId == connectorGroupId.Value);
+			}
+			if (isAutoExtracted.HasValue == true)
+			{
+				query = query.Where(bpc => bpc.isAutoExtracted == isAutoExtracted.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -684,6 +704,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? orientationX = null,
 			float? orientationY = null,
 			float? orientationZ = null,
+			int? connectorGroupId = null,
+			bool? isAutoExtracted = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -751,6 +773,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (orientationZ.HasValue == true)
 			{
 				query = query.Where(bpc => bpc.orientationZ == orientationZ.Value);
+			}
+			if (connectorGroupId.HasValue == true)
+			{
+				query = query.Where(bpc => bpc.connectorGroupId == connectorGroupId.Value);
+			}
+			if (isAutoExtracted.HasValue == true)
+			{
+				query = query.Where(bpc => bpc.isAutoExtracted == isAutoExtracted.Value);
 			}
 			if (sequence.HasValue == true)
 			{

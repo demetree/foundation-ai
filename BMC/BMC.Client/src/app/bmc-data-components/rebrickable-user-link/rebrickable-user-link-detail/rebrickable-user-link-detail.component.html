@@ -1,0 +1,77 @@
+<div class="container-fluid p-1 m-0 rebrickable-user-link-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="rebrickable-user-link-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Rebrickable User Link</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Rebrickable User Link' : 'Add Rebrickable User Link'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCRebrickableUserLinkReader()">
+                <div class="col m-2 rebrickable-user-link-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="rebrickableUserLinkForm" (ngSubmit)="submitForm()" class="rebrickable-user-link-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableUsername')">
+                                <label for="RebrickableUserLink-rebrickableUsername" id="label-RebrickableUserLink-rebrickableUsername"><span class="text-danger">*</span>Rebrickable Username</label>
+                                <input type="text" id="RebrickableUserLink-rebrickableUsername" formControlName="rebrickableUsername" placeholder="Enter Rebrickable Username" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-rebrickableUsername" />
+                                <div *ngIf="rebrickableUserLinkForm.get('rebrickableUsername')?.invalid && rebrickableUserLinkForm.get('rebrickableUsername')?.touched" class="text-danger">
+                                    Rebrickable Username is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('encryptedApiToken')">
+                                <label for="RebrickableUserLink-encryptedApiToken" id="label-RebrickableUserLink-encryptedApiToken"><span class="text-danger">*</span>Encrypted Api Token</label>
+                                <textarea id="RebrickableUserLink-encryptedApiToken" formControlName="encryptedApiToken" placeholder="Enter Encrypted Api Token" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()"></textarea>
+                                <div *ngIf="rebrickableUserLinkForm.get('encryptedApiToken')?.invalid && rebrickableUserLinkForm.get('encryptedApiToken')?.touched" class="text-danger">
+                                    Encrypted Api Token is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastSyncDate')">
+                                <label for="RebrickableUserLink-lastSyncDate" id="label-RebrickableUserLink-lastSyncDate">Last Sync Date</label>
+                                <input type="datetime-local" id="RebrickableUserLink-lastSyncDate" formControlName="lastSyncDate" placeholder="Enter Last Sync Date" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-lastSyncDate" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('syncEnabled')">
+                                <input type="checkbox" id="RebrickableUserLink-syncEnabled" formControlName="syncEnabled" class="form-check-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" />
+                                <label for="RebrickableUserLink-syncEnabled" class="form-check-label" id="label-RebrickableUserLink-syncEnabled"><span class="text-danger">*</span>Sync Enabled</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('syncDirectionFlags')">
+                                <label for="RebrickableUserLink-syncDirectionFlags" id="label-RebrickableUserLink-syncDirectionFlags"><span class="text-danger">*</span>Sync Direction Flags</label>
+                                <input type="text" id="RebrickableUserLink-syncDirectionFlags" formControlName="syncDirectionFlags" placeholder="Enter Sync Direction Flags" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-syncDirectionFlags" />
+                                <div *ngIf="rebrickableUserLinkForm.get('syncDirectionFlags')?.invalid && rebrickableUserLinkForm.get('syncDirectionFlags')?.touched" class="text-danger">
+                                    Sync Direction Flags is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RebrickableUserLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" />
+                                <label for="RebrickableUserLink-active" class="form-check-label" id="label-RebrickableUserLink-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RebrickableUserLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" />
+                                <label for="RebrickableUserLink-deleted" class="form-check-label" id="label-RebrickableUserLink-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="rebrickable-user-link-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="rebrickableUserLinkForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Rebrickable User Link">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !rebrickableUserLinkForm.valid || !rebrickableUserLinkForm.dirty || rebrickableUserLinkForm.pristine  || userIsBMCRebrickableUserLinkWriter() == false " ngbTooltip="Save the Rebrickable User Link changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Rebrickable User Link' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

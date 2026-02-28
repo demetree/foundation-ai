@@ -132,12 +132,10 @@ namespace Foundation.BMC
                 builder.Services.AddHostedService(sp => sp.GetRequiredService<MinifigGalleryService>());
 
                 //
-                // Data import worker — hourly checks LDraw + Rebrickable for upstream changes
+                // Data import worker — auto-bootstraps on first run (empty database),
+                // then checks LDraw + Rebrickable for upstream changes on an hourly basis.
                 //
-                if (builder.Configuration.GetValue<bool>("DataImport:Enabled", false) == true)
-                {
-                    builder.Services.AddHostedService<DataImportWorker>();
-                }
+                builder.Services.AddHostedService<DataImportWorker>();
 
 
                 //

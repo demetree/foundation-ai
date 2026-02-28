@@ -23,6 +23,7 @@ import { SubmodelService, SubmodelData } from './submodel.service';
 import { ProjectTagAssignmentService, ProjectTagAssignmentData } from './project-tag-assignment.service';
 import { ProjectCameraPresetService, ProjectCameraPresetData } from './project-camera-preset.service';
 import { ProjectReferenceImageService, ProjectReferenceImageData } from './project-reference-image.service';
+import { ModelDocumentService, ModelDocumentData } from './model-document.service';
 import { BuildManualService, BuildManualData } from './build-manual.service';
 import { ProjectRenderService, ProjectRenderData } from './project-render.service';
 import { ProjectExportService, ProjectExportData } from './project-export.service';
@@ -183,6 +184,11 @@ export class ProjectData {
     private _projectReferenceImages: ProjectReferenceImageData[] | null = null;
     private _projectReferenceImagesPromise: Promise<ProjectReferenceImageData[]> | null  = null;
     private _projectReferenceImagesSubject = new BehaviorSubject<ProjectReferenceImageData[] | null>(null);
+
+                
+    private _modelDocuments: ModelDocumentData[] | null = null;
+    private _modelDocumentsPromise: Promise<ModelDocumentData[]> | null  = null;
+    private _modelDocumentsSubject = new BehaviorSubject<ModelDocumentData[] | null>(null);
 
                 
     private _buildManuals: BuildManualData[] | null = null;
@@ -396,6 +402,31 @@ export class ProjectData {
 
 
 
+    public ModelDocuments$ = this._modelDocumentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._modelDocuments === null && this._modelDocumentsPromise === null) {
+            this.loadModelDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _modelDocumentsCount$: Observable<bigint | number> | null = null;
+    public get ModelDocumentsCount$(): Observable<bigint | number> {
+        if (this._modelDocumentsCount$ === null) {
+            this._modelDocumentsCount$ = ModelDocumentService.Instance.GetModelDocumentsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._modelDocumentsCount$;
+    }
+
+
+
     public BuildManuals$ = this._buildManualsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -568,6 +599,11 @@ export class ProjectData {
      this._projectReferenceImagesPromise = null;
      this._projectReferenceImagesSubject.next(null);
      this._projectReferenceImagesCount$ = null;
+
+     this._modelDocuments = null;
+     this._modelDocumentsPromise = null;
+     this._modelDocumentsSubject.next(null);
+     this._modelDocumentsCount$ = null;
 
      this._buildManuals = null;
      this._buildManualsPromise = null;
@@ -1055,6 +1091,71 @@ export class ProjectData {
 
     /**
      *
+     * Gets the ModelDocuments for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.ModelDocuments.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get ModelDocuments(): Promise<ModelDocumentData[]> {
+        if (this._modelDocuments !== null) {
+            return Promise.resolve(this._modelDocuments);
+        }
+
+        if (this._modelDocumentsPromise !== null) {
+            return this._modelDocumentsPromise;
+        }
+
+        // Start the load
+        this.loadModelDocuments();
+
+        return this._modelDocumentsPromise!;
+    }
+
+
+
+    private loadModelDocuments(): void {
+
+        this._modelDocumentsPromise = lastValueFrom(
+            ProjectService.Instance.GetModelDocumentsForProject(this.id)
+        )
+        .then(ModelDocuments => {
+            this._modelDocuments = ModelDocuments ?? [];
+            this._modelDocumentsSubject.next(this._modelDocuments);
+            return this._modelDocuments;
+         })
+        .catch(err => {
+            this._modelDocuments = [];
+            this._modelDocumentsSubject.next(this._modelDocuments);
+            throw err;
+        })
+        .finally(() => {
+            this._modelDocumentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ModelDocument. Call after mutations to force refresh.
+     */
+    public ClearModelDocumentsCache(): void {
+        this._modelDocuments = null;
+        this._modelDocumentsPromise = null;
+        this._modelDocumentsSubject.next(this._modelDocuments);      // Emit to observable
+    }
+
+    public get HasModelDocuments(): Promise<boolean> {
+        return this.ModelDocuments.then(modelDocuments => modelDocuments.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the BuildManuals for this Project.
      *
      * If already loaded, returns cached array.
@@ -1398,6 +1499,7 @@ export class ProjectService extends SecureEndpointBase {
         private projectTagAssignmentService: ProjectTagAssignmentService,
         private projectCameraPresetService: ProjectCameraPresetService,
         private projectReferenceImageService: ProjectReferenceImageService,
+        private modelDocumentService: ModelDocumentService,
         private buildManualService: BuildManualService,
         private projectRenderService: ProjectRenderService,
         private projectExportService: ProjectExportService,
@@ -1936,6 +2038,16 @@ export class ProjectService extends SecureEndpointBase {
     }
 
 
+    public GetModelDocumentsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ModelDocumentData[]> {
+        return this.modelDocumentService.GetModelDocumentList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetBuildManualsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildManualData[]> {
         return this.buildManualService.GetBuildManualList({
             projectId: projectId,
@@ -2038,6 +2150,10 @@ export class ProjectService extends SecureEndpointBase {
     (revived as any)._projectReferenceImages = null;
     (revived as any)._projectReferenceImagesPromise = null;
     (revived as any)._projectReferenceImagesSubject = new BehaviorSubject<ProjectReferenceImageData[] | null>(null);
+
+    (revived as any)._modelDocuments = null;
+    (revived as any)._modelDocumentsPromise = null;
+    (revived as any)._modelDocumentsSubject = new BehaviorSubject<ModelDocumentData[] | null>(null);
 
     (revived as any)._buildManuals = null;
     (revived as any)._buildManualsPromise = null;
@@ -2149,6 +2265,18 @@ export class ProjectService extends SecureEndpointBase {
       );
 
     (revived as any)._projectReferenceImagesCount$ = null;
+
+
+    (revived as any).ModelDocuments$ = (revived as any)._modelDocumentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._modelDocuments === null && (revived as any)._modelDocumentsPromise === null) {
+                (revived as any).loadModelDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._modelDocumentsCount$ = null;
 
 
     (revived as any).BuildManuals$ = (revived as any)._buildManualsSubject.asObservable().pipe(

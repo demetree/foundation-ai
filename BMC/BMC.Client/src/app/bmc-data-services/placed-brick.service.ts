@@ -20,6 +20,7 @@ import { ProjectData } from './project.service';
 import { BrickPartData } from './brick-part.service';
 import { BrickColourData } from './brick-colour.service';
 import { PlacedBrickChangeHistoryService, PlacedBrickChangeHistoryData } from './placed-brick-change-history.service';
+import { BrickConnectionService, BrickConnectionData } from './brick-connection.service';
 import { SubmodelPlacedBrickService, SubmodelPlacedBrickData } from './submodel-placed-brick.service';
 import { BuildStepPartService, BuildStepPartData } from './build-step-part.service';
 import { BuildStepAnnotationService, BuildStepAnnotationData } from './build-step-annotation.service';
@@ -172,6 +173,14 @@ export class PlacedBrickData {
     private _placedBrickChangeHistoriesSubject = new BehaviorSubject<PlacedBrickChangeHistoryData[] | null>(null);
 
                 
+    private _brickConnectionSourcePlacedBricks: BrickConnectionData[] | null = null;
+    private _brickConnectionSourcePlacedBricksPromise: Promise<BrickConnectionData[]> | null  = null;
+    private _brickConnectionSourcePlacedBricksSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+                    
+    private _brickConnectionTargetPlacedBricks: BrickConnectionData[] | null = null;
+    private _brickConnectionTargetPlacedBricksPromise: Promise<BrickConnectionData[]> | null  = null;
+    private _brickConnectionTargetPlacedBricksSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+                    
     private _submodelPlacedBricks: SubmodelPlacedBrickData[] | null = null;
     private _submodelPlacedBricksPromise: Promise<SubmodelPlacedBrickData[]> | null  = null;
     private _submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
@@ -226,6 +235,54 @@ export class PlacedBrickData {
         return this._placedBrickChangeHistoriesCount$;
     }
 
+
+
+    public BrickConnectionSourcePlacedBricks$ = this._brickConnectionSourcePlacedBricksSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickConnectionSourcePlacedBricks === null && this._brickConnectionSourcePlacedBricksPromise === null) {
+            this.loadBrickConnectionSourcePlacedBricks(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _brickConnectionSourcePlacedBricksCount$: Observable<bigint | number> | null = null;
+    public get BrickConnectionSourcePlacedBricksCount$(): Observable<bigint | number> {
+        if (this._brickConnectionSourcePlacedBricksCount$ === null) {
+            this._brickConnectionSourcePlacedBricksCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({sourcePlacedBrickId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickConnectionSourcePlacedBricksCount$;
+    }
+
+
+    public BrickConnectionTargetPlacedBricks$ = this._brickConnectionTargetPlacedBricksSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickConnectionTargetPlacedBricks === null && this._brickConnectionTargetPlacedBricksPromise === null) {
+            this.loadBrickConnectionTargetPlacedBricks(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _brickConnectionTargetPlacedBricksCount$: Observable<bigint | number> | null = null;
+    public get BrickConnectionTargetPlacedBricksCount$(): Observable<bigint | number> {
+        if (this._brickConnectionTargetPlacedBricksCount$ === null) {
+            this._brickConnectionTargetPlacedBricksCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({targetPlacedBrickId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickConnectionTargetPlacedBricksCount$;
+    }
 
 
     public SubmodelPlacedBricks$ = this._submodelPlacedBricksSubject.asObservable().pipe(
@@ -346,6 +403,16 @@ export class PlacedBrickData {
      this._placedBrickChangeHistoriesSubject.next(null);
      this._placedBrickChangeHistoriesCount$ = null;
 
+     this._brickConnectionSourcePlacedBricks = null;
+     this._brickConnectionSourcePlacedBricksPromise = null;
+     this._brickConnectionSourcePlacedBricksSubject.next(null);
+     this._brickConnectionSourcePlacedBricksCount$ = null;
+
+     this._brickConnectionTargetPlacedBricks = null;
+     this._brickConnectionTargetPlacedBricksPromise = null;
+     this._brickConnectionTargetPlacedBricksSubject.next(null);
+     this._brickConnectionTargetPlacedBricksCount$ = null;
+
      this._submodelPlacedBricks = null;
      this._submodelPlacedBricksPromise = null;
      this._submodelPlacedBricksSubject.next(null);
@@ -432,6 +499,136 @@ export class PlacedBrickData {
 
     public get HasPlacedBrickChangeHistories(): Promise<boolean> {
         return this.PlacedBrickChangeHistories.then(placedBrickChangeHistories => placedBrickChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickConnectionSourcePlacedBricks for this PlacedBrick.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.placedBrick.BrickConnectionSourcePlacedBricks.then(sourcePlacedBricks => { ... })
+     *   or
+     *   await this.placedBrick.sourcePlacedBricks
+     *
+    */
+    public get BrickConnectionSourcePlacedBricks(): Promise<BrickConnectionData[]> {
+        if (this._brickConnectionSourcePlacedBricks !== null) {
+            return Promise.resolve(this._brickConnectionSourcePlacedBricks);
+        }
+
+        if (this._brickConnectionSourcePlacedBricksPromise !== null) {
+            return this._brickConnectionSourcePlacedBricksPromise;
+        }
+
+        // Start the load
+        this.loadBrickConnectionSourcePlacedBricks();
+
+        return this._brickConnectionSourcePlacedBricksPromise!;
+    }
+
+
+
+    private loadBrickConnectionSourcePlacedBricks(): void {
+
+        this._brickConnectionSourcePlacedBricksPromise = lastValueFrom(
+            PlacedBrickService.Instance.GetBrickConnectionSourcePlacedBricksForPlacedBrick(this.id)
+        )
+        .then(BrickConnectionSourcePlacedBricks => {
+            this._brickConnectionSourcePlacedBricks = BrickConnectionSourcePlacedBricks ?? [];
+            this._brickConnectionSourcePlacedBricksSubject.next(this._brickConnectionSourcePlacedBricks);
+            return this._brickConnectionSourcePlacedBricks;
+         })
+        .catch(err => {
+            this._brickConnectionSourcePlacedBricks = [];
+            this._brickConnectionSourcePlacedBricksSubject.next(this._brickConnectionSourcePlacedBricks);
+            throw err;
+        })
+        .finally(() => {
+            this._brickConnectionSourcePlacedBricksPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickConnectionSourcePlacedBrick. Call after mutations to force refresh.
+     */
+    public ClearBrickConnectionSourcePlacedBricksCache(): void {
+        this._brickConnectionSourcePlacedBricks = null;
+        this._brickConnectionSourcePlacedBricksPromise = null;
+        this._brickConnectionSourcePlacedBricksSubject.next(this._brickConnectionSourcePlacedBricks);      // Emit to observable
+    }
+
+    public get HasBrickConnectionSourcePlacedBricks(): Promise<boolean> {
+        return this.BrickConnectionSourcePlacedBricks.then(brickConnectionSourcePlacedBricks => brickConnectionSourcePlacedBricks.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickConnectionTargetPlacedBricks for this PlacedBrick.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.placedBrick.BrickConnectionTargetPlacedBricks.then(targetPlacedBricks => { ... })
+     *   or
+     *   await this.placedBrick.targetPlacedBricks
+     *
+    */
+    public get BrickConnectionTargetPlacedBricks(): Promise<BrickConnectionData[]> {
+        if (this._brickConnectionTargetPlacedBricks !== null) {
+            return Promise.resolve(this._brickConnectionTargetPlacedBricks);
+        }
+
+        if (this._brickConnectionTargetPlacedBricksPromise !== null) {
+            return this._brickConnectionTargetPlacedBricksPromise;
+        }
+
+        // Start the load
+        this.loadBrickConnectionTargetPlacedBricks();
+
+        return this._brickConnectionTargetPlacedBricksPromise!;
+    }
+
+
+
+    private loadBrickConnectionTargetPlacedBricks(): void {
+
+        this._brickConnectionTargetPlacedBricksPromise = lastValueFrom(
+            PlacedBrickService.Instance.GetBrickConnectionTargetPlacedBricksForPlacedBrick(this.id)
+        )
+        .then(BrickConnectionTargetPlacedBricks => {
+            this._brickConnectionTargetPlacedBricks = BrickConnectionTargetPlacedBricks ?? [];
+            this._brickConnectionTargetPlacedBricksSubject.next(this._brickConnectionTargetPlacedBricks);
+            return this._brickConnectionTargetPlacedBricks;
+         })
+        .catch(err => {
+            this._brickConnectionTargetPlacedBricks = [];
+            this._brickConnectionTargetPlacedBricksSubject.next(this._brickConnectionTargetPlacedBricks);
+            throw err;
+        })
+        .finally(() => {
+            this._brickConnectionTargetPlacedBricksPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickConnectionTargetPlacedBrick. Call after mutations to force refresh.
+     */
+    public ClearBrickConnectionTargetPlacedBricksCache(): void {
+        this._brickConnectionTargetPlacedBricks = null;
+        this._brickConnectionTargetPlacedBricksPromise = null;
+        this._brickConnectionTargetPlacedBricksSubject.next(this._brickConnectionTargetPlacedBricks);      // Emit to observable
+    }
+
+    public get HasBrickConnectionTargetPlacedBricks(): Promise<boolean> {
+        return this.BrickConnectionTargetPlacedBricks.then(brickConnectionTargetPlacedBricks => brickConnectionTargetPlacedBricks.length > 0);
     }
 
 
@@ -709,6 +906,7 @@ export class PlacedBrickService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private placedBrickChangeHistoryService: PlacedBrickChangeHistoryService,
+        private brickConnectionService: BrickConnectionService,
         private submodelPlacedBrickService: SubmodelPlacedBrickService,
         private buildStepPartService: BuildStepPartService,
         private buildStepAnnotationService: BuildStepAnnotationService,
@@ -1192,6 +1390,26 @@ export class PlacedBrickService extends SecureEndpointBase {
     }
 
 
+    public GetBrickConnectionSourcePlacedBricksForPlacedBrick(placedBrickId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickConnectionData[]> {
+        return this.brickConnectionService.GetBrickConnectionList({
+            sourcePlacedBrickId: placedBrickId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBrickConnectionTargetPlacedBricksForPlacedBrick(placedBrickId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickConnectionData[]> {
+        return this.brickConnectionService.GetBrickConnectionList({
+            targetPlacedBrickId: placedBrickId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetSubmodelPlacedBricksForPlacedBrick(placedBrickId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<SubmodelPlacedBrickData[]> {
         return this.submodelPlacedBrickService.GetSubmodelPlacedBrickList({
             placedBrickId: placedBrickId,
@@ -1261,6 +1479,14 @@ export class PlacedBrickService extends SecureEndpointBase {
     (revived as any)._placedBrickChangeHistoriesPromise = null;
     (revived as any)._placedBrickChangeHistoriesSubject = new BehaviorSubject<PlacedBrickChangeHistoryData[] | null>(null);
 
+    (revived as any)._brickConnectionSourcePlacedBricks = null;
+    (revived as any)._brickConnectionSourcePlacedBricksPromise = null;
+    (revived as any)._brickConnectionSourcePlacedBricksSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+
+    (revived as any)._brickConnectionTargetPlacedBricks = null;
+    (revived as any)._brickConnectionTargetPlacedBricksPromise = null;
+    (revived as any)._brickConnectionTargetPlacedBricksSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+
     (revived as any)._submodelPlacedBricks = null;
     (revived as any)._submodelPlacedBricksPromise = null;
     (revived as any)._submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
@@ -1295,6 +1521,30 @@ export class PlacedBrickService extends SecureEndpointBase {
       );
 
     (revived as any)._placedBrickChangeHistoriesCount$ = null;
+
+
+    (revived as any).BrickConnectionSourcePlacedBricks$ = (revived as any)._brickConnectionSourcePlacedBricksSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickConnectionSourcePlacedBricks === null && (revived as any)._brickConnectionSourcePlacedBricksPromise === null) {
+                (revived as any).loadBrickConnectionSourcePlacedBricks();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._brickConnectionSourcePlacedBricksCount$ = null;
+
+
+    (revived as any).BrickConnectionTargetPlacedBricks$ = (revived as any)._brickConnectionTargetPlacedBricksSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickConnectionTargetPlacedBricks === null && (revived as any)._brickConnectionTargetPlacedBricksPromise === null) {
+                (revived as any).loadBrickConnectionTargetPlacedBricks();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._brickConnectionTargetPlacedBricksCount$ = null;
 
 
     (revived as any).SubmodelPlacedBricks$ = (revived as any)._submodelPlacedBricksSubject.asObservable().pipe(

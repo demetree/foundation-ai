@@ -30,6 +30,7 @@ import { SubmodelService } from '../../../bmc-data-services/submodel.service';
 import { ProjectTagAssignmentService } from '../../../bmc-data-services/project-tag-assignment.service';
 import { ProjectCameraPresetService } from '../../../bmc-data-services/project-camera-preset.service';
 import { ProjectReferenceImageService } from '../../../bmc-data-services/project-reference-image.service';
+import { ModelDocumentService } from '../../../bmc-data-services/model-document.service';
 import { BuildManualService } from '../../../bmc-data-services/build-manual.service';
 import { ProjectRenderService } from '../../../bmc-data-services/project-render.service';
 import { ProjectExportService } from '../../../bmc-data-services/project-export.service';
@@ -111,6 +112,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
   public projectTagAssignments$ = this.projectTagAssignmentService.GetProjectTagAssignmentList();
   public projectCameraPresets$ = this.projectCameraPresetService.GetProjectCameraPresetList();
   public projectReferenceImages$ = this.projectReferenceImageService.GetProjectReferenceImageList();
+  public modelDocuments$ = this.modelDocumentService.GetModelDocumentList();
   public buildManuals$ = this.buildManualService.GetBuildManualList();
   public projectRenders$ = this.projectRenderService.GetProjectRenderList();
   public projectExports$ = this.projectExportService.GetProjectExportList();
@@ -127,6 +129,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
     public projectTagAssignmentService: ProjectTagAssignmentService,
     public projectCameraPresetService: ProjectCameraPresetService,
     public projectReferenceImageService: ProjectReferenceImageService,
+    public modelDocumentService: ModelDocumentService,
     public buildManualService: BuildManualService,
     public projectRenderService: ProjectRenderService,
     public projectExportService: ProjectExportService,

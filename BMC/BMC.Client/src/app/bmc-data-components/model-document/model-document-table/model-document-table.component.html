@@ -1,0 +1,409 @@
+<app-model-document-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-model-document-add-edit>
+<div class="row" *ngIf="userIsBMCModelDocumentReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCModelDocumentWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Model Document">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCModelDocumentWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('project.name')">
+                Project
+                <span *ngIf="sortColumn === 'project.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sourceFormat')">
+                Source  Format
+                <span *ngIf="sortColumn === 'sourceFormat'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sourceFileName')">
+                Source  File  Name
+                <span *ngIf="sortColumn === 'sourceFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sourceFileFileName')">
+                Source  File  File  Name
+                <span *ngIf="sortColumn === 'sourceFileFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sourceFileSize')">
+                Source  File  Size
+                <span *ngIf="sortColumn === 'sourceFileSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sourceFileData')">
+                Source  File  Data
+                <span *ngIf="sortColumn === 'sourceFileData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sourceFileMimeType')">
+                Source  File  Mime  Type
+                <span *ngIf="sortColumn === 'sourceFileMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('author')">
+                Author
+                <span *ngIf="sortColumn === 'author'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalPartCount')">
+                Total  Part  Count
+                <span *ngIf="sortColumn === 'totalPartCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalStepCount')">
+                Total  Step  Count
+                <span *ngIf="sortColumn === 'totalStepCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let modelDocument of filteredModelDocuments; trackBy: getModelDocumentId"
+              [ngClass]="{
+                 'row-inactive': modelDocument.active == false,
+                 'row-deleted': modelDocument.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCModelDocumentWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(modelDocument)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCModelDocumentWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(modelDocument)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="modelDocument.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(modelDocument)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="modelDocument.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(modelDocument, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(modelDocument, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(modelDocument, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(modelDocument, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(modelDocument, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(modelDocument, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(modelDocument, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(modelDocument, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/project', modelDocument.projectId]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{modelDocument.project?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/modeldocument', modelDocument.id]" class="btn btn-link text-left" ngbTooltip="Open Model Document details">{{modelDocument.name}}</a></td>
+            <td class="text-truncate">{{modelDocument.description}}</td>
+            <td class="text-truncate">{{modelDocument.sourceFormat}}</td>
+            <td class="text-truncate">{{modelDocument.sourceFileName}}</td>
+            <td class="text-truncate">{{modelDocument.sourceFileFileName}}</td>
+            <td class="text-truncate">{{modelDocument.sourceFileSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{modelDocument.sourceFileData}}</td>
+            <td class="text-truncate">{{modelDocument.sourceFileMimeType}}</td>
+            <td class="text-truncate">{{modelDocument.author}}</td>
+            <td class="text-truncate">{{modelDocument.totalPartCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{modelDocument.totalStepCount | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let modelDocument of filteredModelDocuments; trackBy: getModelDocumentId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': modelDocument.active == false,
+                 'row-deleted': modelDocument.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(modelDocument, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(modelDocument, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(modelDocument, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(modelDocument, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(modelDocument, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(modelDocument, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(modelDocument, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(modelDocument, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(modelDocument, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(modelDocument, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(modelDocument, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(modelDocument, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(modelDocument, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/modeldocument', modelDocument.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(modelDocument)" *ngIf="userIsBMCModelDocumentWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(modelDocument)" *ngIf="userIsBMCModelDocumentWriter() && modelDocument.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(modelDocument)" *ngIf="userIsBMCModelDocumentWriter() && modelDocument.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{modelDocument.name}}</strong>
+               <small class="text-muted d-block">{{modelDocument.project?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/modeldocument', modelDocument.id]"
+                        ngbTooltip="Model Document Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(modelDocument)"
+                        ngbTooltip="Edit Model Document">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(modelDocument)"
+                      ngbTooltip="Delete Model Document" 
+                      placement="top"
+                      *ngIf="modelDocument.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(modelDocument)"
+                      ngbTooltip="Undelete Model Document" 
+                      placement="top"
+                      *ngIf="modelDocument.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="model-document-info" *ngIf="modelDocument.projectId != null">
+              <strong>Project: </strong>
+              <a [routerLink]="['/project', modelDocument.projectId]" class="text-left p-0 m-0" ngbTooltip="Open Project details">{{modelDocument.project?.name}}</a>
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.name != null">
+              <strong>Name: </strong>
+              {{modelDocument.name}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.description != null">
+              <strong>Description: </strong>
+              {{modelDocument.description}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.sourceFormat != null">
+              <strong>Source Format: </strong>
+              {{modelDocument.sourceFormat}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.sourceFileName != null">
+              <strong>Source File Name: </strong>
+              {{modelDocument.sourceFileName}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.sourceFileFileName != null">
+              <strong>Source File File Name: </strong>
+              {{modelDocument.sourceFileFileName}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.sourceFileSize != null">
+              <strong>Source File Size: </strong>
+              {{modelDocument.sourceFileSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.sourceFileData != null">
+              <strong>Source File Data: </strong>
+              {{modelDocument.sourceFileData}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.sourceFileMimeType != null">
+              <strong>Source File Mime Type: </strong>
+              {{modelDocument.sourceFileMimeType}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.author != null">
+              <strong>Author: </strong>
+              {{modelDocument.author}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.totalPartCount != null">
+              <strong>Total Part Count: </strong>
+              {{modelDocument.totalPartCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.totalStepCount != null">
+              <strong>Total Step Count: </strong>
+              {{modelDocument.totalStepCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

@@ -28,20 +28,56 @@
                                 </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sourcePlacedBrickId')">
-                                <label for="BrickConnection-sourcePlacedBrickId" id="label-BrickConnection-sourcePlacedBrickId">Source Placed Brick Id</label>
-                                <input type="number" id="BrickConnection-sourcePlacedBrickId" formControlName="sourcePlacedBrickId" placeholder="Enter Source Placed Brick Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-sourcePlacedBrickId" />
+                                <label for="BrickConnection-sourcePlacedBrickId" id="label-BrickConnection-sourcePlacedBrickId"><span class="text-danger">*</span>Source Placed Brick</label>
+                                <select id="BrickConnection-sourcePlacedBrickId" formControlName="sourcePlacedBrickId" class="form-select brick-connection-select" [disabled]="!userIsBMCBrickConnectionWriter()">
+                                    <option [ngValue]="null">Select Placed Brick</option>
+                                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                                </select>
+                                <div *ngIf="brickConnectionForm.get('sourcePlacedBrickId')?.invalid && brickConnectionForm.get('sourcePlacedBrickId')?.touched" class="text-danger">
+                                    Source Placed Brick is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sourceConnectorId')">
-                                <label for="BrickConnection-sourceConnectorId" id="label-BrickConnection-sourceConnectorId">Source Connector Id</label>
-                                <input type="number" id="BrickConnection-sourceConnectorId" formControlName="sourceConnectorId" placeholder="Enter Source Connector Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-sourceConnectorId" />
+                                <label for="BrickConnection-sourceConnectorId" id="label-BrickConnection-sourceConnectorId"><span class="text-danger">*</span>Source Connector</label>
+                                <select id="BrickConnection-sourceConnectorId" formControlName="sourceConnectorId" class="form-select brick-connection-select" [disabled]="!userIsBMCBrickConnectionWriter()">
+                                    <option [ngValue]="null">Select Brick Part Connector</option>
+                                    <option *ngFor="let brickPartConnector of brickPartConnectors$ | async" [ngValue]="brickPartConnector.id">{{brickPartConnector.id}}</option>
+                                </select>
+                                <div *ngIf="brickConnectionForm.get('sourceConnectorId')?.invalid && brickConnectionForm.get('sourceConnectorId')?.touched" class="text-danger">
+                                    Source Connector is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('targetPlacedBrickId')">
-                                <label for="BrickConnection-targetPlacedBrickId" id="label-BrickConnection-targetPlacedBrickId">Target Placed Brick Id</label>
-                                <input type="number" id="BrickConnection-targetPlacedBrickId" formControlName="targetPlacedBrickId" placeholder="Enter Target Placed Brick Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-targetPlacedBrickId" />
+                                <label for="BrickConnection-targetPlacedBrickId" id="label-BrickConnection-targetPlacedBrickId"><span class="text-danger">*</span>Target Placed Brick</label>
+                                <select id="BrickConnection-targetPlacedBrickId" formControlName="targetPlacedBrickId" class="form-select brick-connection-select" [disabled]="!userIsBMCBrickConnectionWriter()">
+                                    <option [ngValue]="null">Select Placed Brick</option>
+                                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                                </select>
+                                <div *ngIf="brickConnectionForm.get('targetPlacedBrickId')?.invalid && brickConnectionForm.get('targetPlacedBrickId')?.touched" class="text-danger">
+                                    Target Placed Brick is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('targetConnectorId')">
-                                <label for="BrickConnection-targetConnectorId" id="label-BrickConnection-targetConnectorId">Target Connector Id</label>
-                                <input type="number" id="BrickConnection-targetConnectorId" formControlName="targetConnectorId" placeholder="Enter Target Connector Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-targetConnectorId" />
+                                <label for="BrickConnection-targetConnectorId" id="label-BrickConnection-targetConnectorId"><span class="text-danger">*</span>Target Connector</label>
+                                <select id="BrickConnection-targetConnectorId" formControlName="targetConnectorId" class="form-select brick-connection-select" [disabled]="!userIsBMCBrickConnectionWriter()">
+                                    <option [ngValue]="null">Select Brick Part Connector</option>
+                                    <option *ngFor="let brickPartConnector of brickPartConnectors$ | async" [ngValue]="brickPartConnector.id">{{brickPartConnector.id}}</option>
+                                </select>
+                                <div *ngIf="brickConnectionForm.get('targetConnectorId')?.invalid && brickConnectionForm.get('targetConnectorId')?.touched" class="text-danger">
+                                    Target Connector is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('connectionStrength')">
+                                <label for="BrickConnection-connectionStrength" id="label-BrickConnection-connectionStrength">Connection Strength</label>
+                                <input type="text" id="BrickConnection-connectionStrength" formControlName="connectionStrength" placeholder="Enter Connection Strength" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-connectionStrength" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isLocked')">
+                                <input type="checkbox" id="BrickConnection-isLocked" formControlName="isLocked" class="form-check-input" [disabled]="!userIsBMCBrickConnectionWriter()" />
+                                <label for="BrickConnection-isLocked" class="form-check-label" id="label-BrickConnection-isLocked"><span class="text-danger">*</span>Is Locked</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('angleDegrees')">
+                                <label for="BrickConnection-angleDegrees" id="label-BrickConnection-angleDegrees">Angle Degrees</label>
+                                <input type="number" id="BrickConnection-angleDegrees" formControlName="angleDegrees" placeholder="Enter Angle Degrees" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-angleDegrees" />
                             </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="BrickConnection-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickConnectionWriter()" />

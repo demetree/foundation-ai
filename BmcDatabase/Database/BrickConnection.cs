@@ -13,13 +13,19 @@ public partial class BrickConnection
 
     public int projectId { get; set; }
 
-    public long? sourcePlacedBrickId { get; set; }
+    public int sourcePlacedBrickId { get; set; }
 
-    public long? sourceConnectorId { get; set; }
+    public int sourceConnectorId { get; set; }
 
-    public long? targetPlacedBrickId { get; set; }
+    public int targetPlacedBrickId { get; set; }
 
-    public long? targetConnectorId { get; set; }
+    public int targetConnectorId { get; set; }
+
+    public string connectionStrength { get; set; }
+
+    public bool isLocked { get; set; }
+
+    public float? angleDegrees { get; set; }
 
     public Guid objectGuid { get; set; }
 
@@ -28,4 +34,12 @@ public partial class BrickConnection
     public bool deleted { get; set; }
 
     public virtual Project project { get; set; }
+
+    public virtual BrickPartConnector sourceConnector { get; set; }
+
+    public virtual PlacedBrick sourcePlacedBrick { get; set; }
+
+    public virtual BrickPartConnector targetConnector { get; set; }
+
+    public virtual PlacedBrick targetPlacedBrick { get; set; }
 }

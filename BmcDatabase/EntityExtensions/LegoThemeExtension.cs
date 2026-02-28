@@ -26,7 +26,8 @@ namespace Foundation.BMC.Database
 			[Required]
 			public String description { get; set; }
 			public Int32? legoThemeId { get; set; }
-			public Int32? rebrickableThemeId { get; set; }
+			[Required]
+			public Int32 rebrickableThemeId { get; set; }
 			public Int32? sequence { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }

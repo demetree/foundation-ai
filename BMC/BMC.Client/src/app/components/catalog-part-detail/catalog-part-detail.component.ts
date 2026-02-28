@@ -297,7 +297,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             this.loadSetParts();
 
             // Check for geometry and initialise 3D viewer
-            if (part.geometryFilePath) {
+            if (part.geometryOriginalFileName) {
                 this.hasGeometry = true;
 
                 //
@@ -738,7 +738,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         //
         // Reload the model with original colours
         //
-        if (this.part.geometryFilePath != null) {
+        if (this.part.geometryOriginalFileName != null) {
             this.loadLDrawModel();
         }
         else {
@@ -984,7 +984,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     // ────────────────────────────────────────────────────────────────
 
     private loadLDrawModel(): void {
-        if (this.part == null || this.part.geometryFilePath == null) {
+        if (this.part == null || this.part.geometryOriginalFileName == null) {
             return;
         }
 
@@ -1015,7 +1015,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         // Preload LDraw colour configuration, then load the model.
         // Using callback-based load() for more reliable error handling.
         //
-        const mainFileUrl = this.baseUrl + 'api/ldraw/file/' + this.part.geometryFilePath;
+        const mainFileUrl = this.baseUrl + 'api/ldraw/file/' + this.part.geometryOriginalFileName;
 
         console.log('[LDraw] Starting model load:', mainFileUrl);
 

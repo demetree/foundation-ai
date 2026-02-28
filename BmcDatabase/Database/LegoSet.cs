@@ -25,6 +25,10 @@ public partial class LegoSet
 
     public string rebrickableUrl { get; set; }
 
+    public string rebrickableSetNum { get; set; }
+
+    public DateTime? lastModifiedDate { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
@@ -40,6 +44,10 @@ public partial class LegoSet
     public virtual ICollection<LegoSetSubset> LegoSetSubsetparentLegoSets { get; set; } = new List<LegoSetSubset>();
 
     public virtual ICollection<UserCollectionSetImport> UserCollectionSetImports { get; set; } = new List<UserCollectionSetImport>();
+
+    public virtual ICollection<UserLostPart> UserLostParts { get; set; } = new List<UserLostPart>();
+
+    public virtual ICollection<UserSetListItem> UserSetListItems { get; set; } = new List<UserSetListItem>();
 
     public virtual ICollection<UserSetOwnership> UserSetOwnerships { get; set; } = new List<UserSetOwnership>();
 

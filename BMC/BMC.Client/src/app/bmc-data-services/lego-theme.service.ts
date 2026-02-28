@@ -52,7 +52,7 @@ export class LegoThemeSubmitData {
     name!: string;
     description!: string;
     legoThemeId: bigint | number | null = null;
-    rebrickableThemeId: bigint | number | null = null;
+    rebrickableThemeId!: bigint | number;
     sequence: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;

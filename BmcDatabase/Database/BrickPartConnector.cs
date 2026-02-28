@@ -25,6 +25,10 @@ public partial class BrickPartConnector
 
     public float? orientationZ { get; set; }
 
+    public int? connectorGroupId { get; set; }
+
+    public bool isAutoExtracted { get; set; }
+
     public int? sequence { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -32,6 +36,10 @@ public partial class BrickPartConnector
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<BrickConnection> BrickConnectionsourceConnectors { get; set; } = new List<BrickConnection>();
+
+    public virtual ICollection<BrickConnection> BrickConnectiontargetConnectors { get; set; } = new List<BrickConnection>();
 
     public virtual BrickPart brickPart { get; set; }
 

@@ -1,0 +1,354 @@
+:host {
+  color: var(--bmc-text-primary);
+}
+
+.virtual-table-container {
+  height: calc(100vh - 220px);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--bmc-shadow-sm);
+  background: var(--bmc-panel-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fixed header (outside viewport) */
+.table-header-fixed {
+  background: var(--bmc-panel-bg);
+  z-index: 30;
+  border-bottom: 2px solid var(--bmc-border-strong);
+  box-shadow: var(--bmc-shadow-sm);
+}
+
+/* Viewport — the only thing that scrolls */
+.viewport {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;         /* to allow scrolling if the content exceeds width.  Note headers won't move with content, but will accept that compromise for not making data unreachable. */
+  scrollbar-gutter: stable; /* eliminates scrollbar jump */
+
+  /* Hack for consistnent column sizing between header and body tables*/
+  padding-right: 17px;
+  margin-right: -17px;
+}
+
+.mobile-viewport {
+  height: calc(100vh - 180px); /* or whatever fits your layout */
+  display: block;
+}
+
+/* Base table — shared by header and body */
+.custom-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+}
+
+/* Header table keeps Bootstrap look */
+.table-header-fixed .custom-table {
+  border-collapse: collapse;
+}
+
+/* Inactive (deactivated) rows */
+tr.row-inactive,
+.card.row-inactive {
+  font-style: italic;
+  opacity: 0.75; // Slightly faded for extra clarity
+}
+
+/* Deleted rows */
+tr.row-deleted,
+.card.row-deleted {
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: var(--bmc-text-muted); // Muted color
+}
+
+/* Combine both if deleted takes precedence */
+tr.row-deleted.row-inactive,
+.card.row-deleted.row-inactive {
+  font-style: normal; // Strikethrough wins over italic
+}
+
+.card.row-inactive {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.card.row-deleted {
+  text-decoration: line-through;
+  opacity: 0.6;
+  background-color: var(--bmc-bg-elevated); // Light gray background
+}
+
+
+
+/* Body table — completely clean (no Bootstrap magic) */
+.viewport .custom-table {
+  background: transparent;
+}
+
+  /* Manual striping & hover (exactly what Bootstrap does) */
+  .viewport .custom-table tbody tr {
+    background-color: transparent;
+  }
+
+    .viewport .custom-table tbody tr:nth-child(odd) {
+      background-color: var(--bmc-bg-elevated);
+    }
+
+    .viewport .custom-table tbody tr:hover {
+      background-color: var(--bmc-bg-hover) !important;
+    }
+
+/* Perfect alignment — header and body use IDENTICAL rules */
+.custom-table th,
+.custom-table td {
+  padding: 0.75rem !important;
+  border: none !important;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+/* Action button columns — identical in header and body */
+.header-action-button {
+  width: 45px !important;
+  min-width: 45px !important;
+  max-width: 45px !important;
+  padding: 0.5rem 0.25rem !important;
+  text-align: center;
+}
+
+/* Sortable header styling */
+.sortable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 1.5rem;
+  white-space: nowrap;
+}
+
+  .sortable:hover {
+    background-color: var(--bmc-bg-elevated);
+  }
+
+/* Sort arrows */
+.arrow-up::after,
+.arrow-down::after {
+  content: '';
+  display: inline-block;
+  margin-left: 5px;
+  width: 0;
+  height: 0;
+  vertical-align: middle;
+}
+
+.arrow-up::after {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid var(--bmc-text-primary);
+}
+
+.arrow-down::after {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--bmc-text-primary);
+}
+
+/* CDK wrapper — never adds unwanted padding */
+.cdk-virtual-scroll-content-wrapper {
+  width: 100% !important;
+}
+
+
+/* Nicer custom scrollbar */
+.viewport::-webkit-scrollbar {
+  width: 10px;
+}
+
+.viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.viewport::-webkit-scrollbar-thumb {
+  background: var(--bmc-scrollbar-thumb);
+  border-radius: 5px;
+}
+
+.viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--bmc-scrollbar-thumb-hover);
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--bmc-border);        /* Matches form-control border for consistency */
+  border-radius: 4px;               /* Slight rounding for modern look */
+  flex-shrink: 0;                   /* Prevents shrinking in flex layouts */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle depth */
+}
+
+/* Slightly larger swatch on desktop for better visibility */
+@media (min-width: 768px) {
+  .color-swatch {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Ensure the text doesn't get truncated awkwardly when next to the swatch */
+td .color-swatch,
+.col-7 .color-swatch {
+  vertical-align: middle;
+}
+
+
+
+/* Glassmorphism table container */
+.virtual-table-container {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bmc-panel-border);
+}
+
+/* Table header text contrast */
+.table-header-fixed th,
+.table-header-fixed .sortable {
+  color: var(--bmc-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Row hover transition */
+.viewport .custom-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Table cell and link text contrast */
+.viewport .custom-table td {
+  color: var(--bmc-text-primary);
+}
+
+.viewport .custom-table a {
+  color: var(--bmc-primary);
+}
+
+/* Card-style rows (mobile) text contrast */
+.card.data-card {
+  background-color: var(--bmc-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--bmc-panel-border);
+  color: var(--bmc-text-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+}
+
+.card.data-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--bmc-shadow-md, rgba(0, 0, 0, 0.1));
+}
+
+.card.data-card .card-header {
+  color: var(--bmc-text-primary);
+  border-bottom-color: var(--bmc-border);
+}
+
+/* Custom action buttons — no Bootstrap, full theme control */
+.action-btn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--bmc-text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.action-btn:hover {
+  background-color: var(--bmc-bg-hover);
+}
+
+.action-view {
+  color: var(--bmc-primary);
+}
+
+.action-view:hover {
+  color: var(--bmc-primary);
+}
+
+.action-edit {
+  color: var(--bmc-text-primary);
+}
+
+.action-add {
+  color: var(--bmc-primary);
+  font-size: 1rem;
+}
+
+.action-add:hover {
+  background-color: var(--bmc-accent-glow-soft);
+  color: var(--bmc-primary);
+}
+
+.action-delete {
+  color: #dc3545;
+}
+
+.action-delete:hover {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}
+
+.action-undelete {
+  color: #ffc107;
+}
+
+.action-undelete:hover {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+/* Pagination */
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bmc-panel-bg);
+  border-top: 1px solid var(--bmc-border);
+}
+
+.pagination-btn {
+  border: none;
+  background: transparent;
+  color: var(--bmc-text-primary);
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--bmc-bg-hover);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--bmc-text-secondary, var(--bmc-text-primary));
+  padding: 0 0.5rem;
+}

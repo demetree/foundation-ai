@@ -17,6 +17,8 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ProjectData } from './project.service';
+import { PlacedBrickData } from './placed-brick.service';
+import { BrickPartConnectorData } from './brick-part-connector.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -33,6 +35,9 @@ export class BrickConnectionQueryParameters {
     sourceConnectorId: bigint | number | null | undefined = null;
     targetPlacedBrickId: bigint | number | null | undefined = null;
     targetConnectorId: bigint | number | null | undefined = null;
+    connectionStrength: string | null | undefined = null;
+    isLocked: boolean | null | undefined = null;
+    angleDegrees: number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -49,10 +54,13 @@ export class BrickConnectionQueryParameters {
 export class BrickConnectionSubmitData {
     id!: bigint | number;
     projectId!: bigint | number;
-    sourcePlacedBrickId: bigint | number | null = null;
-    sourceConnectorId: bigint | number | null = null;
-    targetPlacedBrickId: bigint | number | null = null;
-    targetConnectorId: bigint | number | null = null;
+    sourcePlacedBrickId!: bigint | number;
+    sourceConnectorId!: bigint | number;
+    targetPlacedBrickId!: bigint | number;
+    targetConnectorId!: bigint | number;
+    connectionStrength: string | null = null;
+    isLocked!: boolean;
+    angleDegrees: number | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -107,10 +115,17 @@ export class BrickConnectionData {
     sourceConnectorId!: bigint | number;
     targetPlacedBrickId!: bigint | number;
     targetConnectorId!: bigint | number;
+    connectionStrength!: string | null;
+    isLocked!: boolean;
+    angleDegrees!: number | null;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
     project: ProjectData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    sourcePlacedBrick: PlacedBrickData | null | undefined = null;            // Navigation property with non-standard field name (populated when includeRelations=true)
+    sourceConnector: BrickPartConnectorData | null | undefined = null;            // Navigation property with non-standard field name (populated when includeRelations=true)
+    targetPlacedBrick: PlacedBrickData | null | undefined = null;            // Navigation property with non-standard field name (populated when includeRelations=true)
+    targetConnector: BrickPartConnectorData | null | undefined = null;            // Navigation property with non-standard field name (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -263,6 +278,9 @@ export class BrickConnectionService extends SecureEndpointBase {
         output.sourceConnectorId = data.sourceConnectorId;
         output.targetPlacedBrickId = data.targetPlacedBrickId;
         output.targetConnectorId = data.targetConnectorId;
+        output.connectionStrength = data.connectionStrength;
+        output.isLocked = data.isLocked;
+        output.angleDegrees = data.angleDegrees;
         output.active = data.active;
         output.deleted = data.deleted;
 

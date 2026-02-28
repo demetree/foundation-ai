@@ -24,7 +24,10 @@ namespace Foundation.BMC.Database
 			[Required]
 			public String name { get; set; }
 			[Required]
-			public Int32 ldrawColourCode { get; set; }
+			public Int32 rebrickableColorId { get; set; }
+			public Int32? ldrawColourCode { get; set; }
+			public Int32? bricklinkColorId { get; set; }
+			public Int32? brickowlColorId { get; set; }
 			public String hexRgb { get; set; }
 			public String hexEdgeColour { get; set; }
 			public Int32? alpha { get; set; }
@@ -68,7 +71,10 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				name = this.name,
+				rebrickableColorId = this.rebrickableColorId,
 				ldrawColourCode = this.ldrawColourCode,
+				bricklinkColorId = this.bricklinkColorId,
+				brickowlColorId = this.brickowlColorId,
 				hexRgb = this.hexRgb,
 				hexEdgeColour = this.hexEdgeColour,
 				alpha = this.alpha,
@@ -121,7 +127,10 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				name = this.name,
+				rebrickableColorId = this.rebrickableColorId,
 				ldrawColourCode = this.ldrawColourCode,
+				bricklinkColorId = this.bricklinkColorId,
+				brickowlColorId = this.brickowlColorId,
 				hexRgb = this.hexRgb,
 				hexEdgeColour = this.hexEdgeColour,
 				alpha = this.alpha,
@@ -175,7 +184,10 @@ namespace Foundation.BMC.Database
 			{
 				id = dto.id,
 				name = dto.name,
+				rebrickableColorId = dto.rebrickableColorId,
 				ldrawColourCode = dto.ldrawColourCode,
+				bricklinkColorId = dto.bricklinkColorId,
+				brickowlColorId = dto.brickowlColorId,
 				hexRgb = dto.hexRgb,
 				hexEdgeColour = dto.hexEdgeColour,
 				alpha = dto.alpha,
@@ -205,7 +217,10 @@ namespace Foundation.BMC.Database
 			}
 
 			this.name = dto.name;
+			this.rebrickableColorId = dto.rebrickableColorId;
 			this.ldrawColourCode = dto.ldrawColourCode;
+			this.bricklinkColorId = dto.bricklinkColorId;
+			this.brickowlColorId = dto.brickowlColorId;
 			this.hexRgb = dto.hexRgb;
 			this.hexEdgeColour = dto.hexEdgeColour;
 			this.alpha = dto.alpha;
@@ -240,7 +255,10 @@ namespace Foundation.BMC.Database
 			return new BrickColour{
 				id = this.id,
 				name = this.name,
+				rebrickableColorId = this.rebrickableColorId,
 				ldrawColourCode = this.ldrawColourCode,
+				bricklinkColorId = this.bricklinkColorId,
+				brickowlColorId = this.brickowlColorId,
 				hexRgb = this.hexRgb,
 				hexEdgeColour = this.hexEdgeColour,
 				alpha = this.alpha,
@@ -307,7 +325,10 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickColour.id,
 				name = brickColour.name,
+				rebrickableColorId = brickColour.rebrickableColorId,
 				ldrawColourCode = brickColour.ldrawColourCode,
+				bricklinkColorId = brickColour.bricklinkColorId,
+				brickowlColorId = brickColour.brickowlColorId,
 				hexRgb = brickColour.hexRgb,
 				hexEdgeColour = brickColour.hexEdgeColour,
 				alpha = brickColour.alpha,
@@ -341,7 +362,10 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickColour.id,
 				name = brickColour.name,
+				rebrickableColorId = brickColour.rebrickableColorId,
 				ldrawColourCode = brickColour.ldrawColourCode,
+				bricklinkColorId = brickColour.bricklinkColorId,
+				brickowlColorId = brickColour.brickowlColorId,
 				hexRgb = brickColour.hexRgb,
 				hexEdgeColour = brickColour.hexEdgeColour,
 				alpha = brickColour.alpha,

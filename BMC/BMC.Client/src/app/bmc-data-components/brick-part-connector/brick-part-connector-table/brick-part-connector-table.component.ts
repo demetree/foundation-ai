@@ -183,6 +183,8 @@ export class BrickPartConnectorTableComponent implements OnInit, OnChanges, Afte
     { key: 'orientationX', label: 'Orientation X', width: undefined },
     { key: 'orientationY', label: 'Orientation Y', width: undefined },
     { key: 'orientationZ', label: 'Orientation Z', width: undefined },
+    { key: 'connectorGroupId', label: 'Connector Group Id', width: undefined },
+    { key: 'isAutoExtracted', label: 'Is Auto Extracted', width: '120px', template: 'boolean' },
     { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
@@ -337,6 +339,8 @@ export class BrickPartConnectorTableComponent implements OnInit, OnChanges, Afte
                       'orientationX',
                       'orientationY',
                       'orientationZ',
+                      'connectorGroupId',
+                      'isAutoExtracted',
                       'sequence',
         ];
 

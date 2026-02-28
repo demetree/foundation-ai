@@ -36,6 +36,7 @@ import {BuildStepAnnotationTypeService} from  './build-step-annotation-type.serv
 import {BuildStepPartService} from  './build-step-part.service';
 import {ColourFinishService} from  './colour-finish.service';
 import {ConnectorTypeService} from  './connector-type.service';
+import {ConnectorTypeCompatibilityService} from  './connector-type-compatibility.service';
 import {ContentReportService} from  './content-report.service';
 import {ContentReportReasonService} from  './content-report-reason.service';
 import {ExportFormatService} from  './export-format.service';
@@ -48,7 +49,13 @@ import {LegoThemeService} from  './lego-theme.service';
 import {MocCommentService} from  './moc-comment.service';
 import {MocFavouriteService} from  './moc-favourite.service';
 import {MocLikeService} from  './moc-like.service';
+import {ModelBuildStepService} from  './model-build-step.service';
+import {ModelDocumentService} from  './model-document.service';
+import {ModelDocumentChangeHistoryService} from  './model-document-change-history.service';
+import {ModelStepPartService} from  './model-step-part.service';
+import {ModelSubFileService} from  './model-sub-file.service';
 import {ModerationActionService} from  './moderation-action.service';
+import {PartSubFileReferenceService} from  './part-sub-file-reference.service';
 import {PartTypeService} from  './part-type.service';
 import {PendingRegistrationService} from  './pending-registration.service';
 import {PlacedBrickService} from  './placed-brick.service';
@@ -65,6 +72,7 @@ import {ProjectTagAssignmentService} from  './project-tag-assignment.service';
 import {PublishedMocService} from  './published-moc.service';
 import {PublishedMocChangeHistoryService} from  './published-moc-change-history.service';
 import {PublishedMocImageService} from  './published-moc-image.service';
+import {RebrickableUserLinkService} from  './rebrickable-user-link.service';
 import {RenderPresetService} from  './render-preset.service';
 import {SharedInstructionService} from  './shared-instruction.service';
 import {SharedInstructionChangeHistoryService} from  './shared-instruction-change-history.service';
@@ -79,12 +87,19 @@ import {UserCollectionChangeHistoryService} from  './user-collection-change-hist
 import {UserCollectionPartService} from  './user-collection-part.service';
 import {UserCollectionSetImportService} from  './user-collection-set-import.service';
 import {UserFollowService} from  './user-follow.service';
+import {UserLostPartService} from  './user-lost-part.service';
+import {UserPartListService} from  './user-part-list.service';
+import {UserPartListChangeHistoryService} from  './user-part-list-change-history.service';
+import {UserPartListItemService} from  './user-part-list-item.service';
 import {UserProfileService} from  './user-profile.service';
 import {UserProfileChangeHistoryService} from  './user-profile-change-history.service';
 import {UserProfileLinkService} from  './user-profile-link.service';
 import {UserProfileLinkTypeService} from  './user-profile-link-type.service';
 import {UserProfilePreferredThemeService} from  './user-profile-preferred-theme.service';
 import {UserProfileStatService} from  './user-profile-stat.service';
+import {UserSetListService} from  './user-set-list.service';
+import {UserSetListChangeHistoryService} from  './user-set-list-change-history.service';
+import {UserSetListItemService} from  './user-set-list-item.service';
 import {UserSetOwnershipService} from  './user-set-ownership.service';
 import {UserWishlistItemService} from  './user-wishlist-item.service';
 
@@ -121,6 +136,7 @@ export class BMCDataServiceManagerService  {
               , public buildStepPartService: BuildStepPartService
               , public colourFinishService: ColourFinishService
               , public connectorTypeService: ConnectorTypeService
+              , public connectorTypeCompatibilityService: ConnectorTypeCompatibilityService
               , public contentReportService: ContentReportService
               , public contentReportReasonService: ContentReportReasonService
               , public exportFormatService: ExportFormatService
@@ -133,7 +149,13 @@ export class BMCDataServiceManagerService  {
               , public mocCommentService: MocCommentService
               , public mocFavouriteService: MocFavouriteService
               , public mocLikeService: MocLikeService
+              , public modelBuildStepService: ModelBuildStepService
+              , public modelDocumentService: ModelDocumentService
+              , public modelDocumentChangeHistoryService: ModelDocumentChangeHistoryService
+              , public modelStepPartService: ModelStepPartService
+              , public modelSubFileService: ModelSubFileService
               , public moderationActionService: ModerationActionService
+              , public partSubFileReferenceService: PartSubFileReferenceService
               , public partTypeService: PartTypeService
               , public pendingRegistrationService: PendingRegistrationService
               , public placedBrickService: PlacedBrickService
@@ -150,6 +172,7 @@ export class BMCDataServiceManagerService  {
               , public publishedMocService: PublishedMocService
               , public publishedMocChangeHistoryService: PublishedMocChangeHistoryService
               , public publishedMocImageService: PublishedMocImageService
+              , public rebrickableUserLinkService: RebrickableUserLinkService
               , public renderPresetService: RenderPresetService
               , public sharedInstructionService: SharedInstructionService
               , public sharedInstructionChangeHistoryService: SharedInstructionChangeHistoryService
@@ -164,12 +187,19 @@ export class BMCDataServiceManagerService  {
               , public userCollectionPartService: UserCollectionPartService
               , public userCollectionSetImportService: UserCollectionSetImportService
               , public userFollowService: UserFollowService
+              , public userLostPartService: UserLostPartService
+              , public userPartListService: UserPartListService
+              , public userPartListChangeHistoryService: UserPartListChangeHistoryService
+              , public userPartListItemService: UserPartListItemService
               , public userProfileService: UserProfileService
               , public userProfileChangeHistoryService: UserProfileChangeHistoryService
               , public userProfileLinkService: UserProfileLinkService
               , public userProfileLinkTypeService: UserProfileLinkTypeService
               , public userProfilePreferredThemeService: UserProfilePreferredThemeService
               , public userProfileStatService: UserProfileStatService
+              , public userSetListService: UserSetListService
+              , public userSetListChangeHistoryService: UserSetListChangeHistoryService
+              , public userSetListItemService: UserSetListItemService
               , public userSetOwnershipService: UserSetOwnershipService
               , public userWishlistItemService: UserWishlistItemService
 ) { }  
@@ -204,6 +234,7 @@ export class BMCDataServiceManagerService  {
         this.buildStepPartService.ClearAllCaches();
         this.colourFinishService.ClearAllCaches();
         this.connectorTypeService.ClearAllCaches();
+        this.connectorTypeCompatibilityService.ClearAllCaches();
         this.contentReportService.ClearAllCaches();
         this.contentReportReasonService.ClearAllCaches();
         this.exportFormatService.ClearAllCaches();
@@ -216,7 +247,13 @@ export class BMCDataServiceManagerService  {
         this.mocCommentService.ClearAllCaches();
         this.mocFavouriteService.ClearAllCaches();
         this.mocLikeService.ClearAllCaches();
+        this.modelBuildStepService.ClearAllCaches();
+        this.modelDocumentService.ClearAllCaches();
+        this.modelDocumentChangeHistoryService.ClearAllCaches();
+        this.modelStepPartService.ClearAllCaches();
+        this.modelSubFileService.ClearAllCaches();
         this.moderationActionService.ClearAllCaches();
+        this.partSubFileReferenceService.ClearAllCaches();
         this.partTypeService.ClearAllCaches();
         this.pendingRegistrationService.ClearAllCaches();
         this.placedBrickService.ClearAllCaches();
@@ -233,6 +270,7 @@ export class BMCDataServiceManagerService  {
         this.publishedMocService.ClearAllCaches();
         this.publishedMocChangeHistoryService.ClearAllCaches();
         this.publishedMocImageService.ClearAllCaches();
+        this.rebrickableUserLinkService.ClearAllCaches();
         this.renderPresetService.ClearAllCaches();
         this.sharedInstructionService.ClearAllCaches();
         this.sharedInstructionChangeHistoryService.ClearAllCaches();
@@ -247,12 +285,19 @@ export class BMCDataServiceManagerService  {
         this.userCollectionPartService.ClearAllCaches();
         this.userCollectionSetImportService.ClearAllCaches();
         this.userFollowService.ClearAllCaches();
+        this.userLostPartService.ClearAllCaches();
+        this.userPartListService.ClearAllCaches();
+        this.userPartListChangeHistoryService.ClearAllCaches();
+        this.userPartListItemService.ClearAllCaches();
         this.userProfileService.ClearAllCaches();
         this.userProfileChangeHistoryService.ClearAllCaches();
         this.userProfileLinkService.ClearAllCaches();
         this.userProfileLinkTypeService.ClearAllCaches();
         this.userProfilePreferredThemeService.ClearAllCaches();
         this.userProfileStatService.ClearAllCaches();
+        this.userSetListService.ClearAllCaches();
+        this.userSetListChangeHistoryService.ClearAllCaches();
+        this.userSetListItemService.ClearAllCaches();
         this.userSetOwnershipService.ClearAllCaches();
         this.userWishlistItemService.ClearAllCaches();
     }

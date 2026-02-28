@@ -446,8 +446,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                     var dbColours = await _db.BrickColours
                         .AsNoTracking()
                         .Where(bc => bc.active && !bc.deleted
-                            && allColourCodes.Contains(bc.ldrawColourCode))
-                        .Select(bc => new { bc.ldrawColourCode, bc.name, bc.hexRgb })
+                            && bc.ldrawColourCode.HasValue
+                            && allColourCodes.Contains(bc.ldrawColourCode.Value))
+                        .Select(bc => new { ldrawColourCode = bc.ldrawColourCode.Value, bc.name, bc.hexRgb })
                         .ToListAsync();
 
                     foreach (var bc in dbColours)

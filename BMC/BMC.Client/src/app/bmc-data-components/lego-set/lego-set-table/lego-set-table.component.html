@@ -59,6 +59,14 @@
                 Rebrickable  Url
                 <span *ngIf="sortColumn === 'rebrickableUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('rebrickableSetNum')">
+                Rebrickable  Set  Num
+                <span *ngIf="sortColumn === 'rebrickableSetNum'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastModifiedDate')">
+                Last  Modified  Date
+                <span *ngIf="sortColumn === 'lastModifiedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -152,6 +160,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{legoSet.imageUrl}}</td>
             <td class="text-truncate">{{legoSet.brickLinkUrl}}</td>
             <td class="text-truncate">{{legoSet.rebrickableUrl}}</td>
+            <td class="text-truncate">{{legoSet.rebrickableSetNum}}</td>
+            <td class="text-truncate">{{legoSet.lastModifiedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -330,6 +340,14 @@ End of commented block for alternate definition option -->
             <p class="lego-set-info" *ngIf="legoSet.rebrickableUrl != null">
               <strong>Rebrickable Url: </strong>
               {{legoSet.rebrickableUrl}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.rebrickableSetNum != null">
+              <strong>Rebrickable Set Num: </strong>
+              {{legoSet.rebrickableSetNum}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.lastModifiedDate != null">
+              <strong>Last Modified Date: </strong>
+              {{legoSet.lastModifiedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             </div>
          </div>

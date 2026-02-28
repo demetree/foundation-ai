@@ -31,21 +31,33 @@
                 Project
                 <span *ngIf="sortColumn === 'project.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('sourcePlacedBrickId')">
-                Source  Placed  Brick  Id
-                <span *ngIf="sortColumn === 'sourcePlacedBrickId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('sourcePlacedBrick.name')">
+                Source  Placed  Brick
+                <span *ngIf="sortColumn === 'sourcePlacedBrick.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('sourceConnectorId')">
-                Source  Connector  Id
-                <span *ngIf="sortColumn === 'sourceConnectorId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('sourceConnector.name')">
+                Source  Connector
+                <span *ngIf="sortColumn === 'sourceConnector.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('targetPlacedBrickId')">
-                Target  Placed  Brick  Id
-                <span *ngIf="sortColumn === 'targetPlacedBrickId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('targetPlacedBrick.name')">
+                Target  Placed  Brick
+                <span *ngIf="sortColumn === 'targetPlacedBrick.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('targetConnectorId')">
-                Target  Connector  Id
-                <span *ngIf="sortColumn === 'targetConnectorId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('targetConnector.name')">
+                Target  Connector
+                <span *ngIf="sortColumn === 'targetConnector.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('connectionStrength')">
+                Connection  Strength
+                <span *ngIf="sortColumn === 'connectionStrength'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isLocked')">
+                Is  Locked
+                <span *ngIf="sortColumn === 'isLocked'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('angleDegrees')">
+                Angle  Degrees
+                <span *ngIf="sortColumn === 'angleDegrees'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
 End of commented block for alternate definition option -->
           </tr>
@@ -133,10 +145,13 @@ End of commented block for alternate definition option -->
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/project', brickConnection.projectId]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{brickConnection.project?.name}}</a></td>
-            <td class="text-truncate"><a [routerLink]="['/brickconnection', brickConnection.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Connection details">{{brickConnection.sourcePlacedBrickId | bigNumberFormat : '1.0-2'}}</a></td>
-            <td class="text-truncate">{{brickConnection.sourceConnectorId | bigNumberFormat : '1.0-2'}}</td>
-            <td class="text-truncate">{{brickConnection.targetPlacedBrickId | bigNumberFormat : '1.0-2'}}</td>
-            <td class="text-truncate">{{brickConnection.targetConnectorId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/placedbrick', brickConnection.sourcePlacedBrickId]" class="btn btn-link text-left" ngbTooltip="Open Placed Brick details">{{brickConnection.sourcePlacedBrick?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/brickpartconnector', brickConnection.sourceConnectorId]" class="btn btn-link text-left" ngbTooltip="Open Brick Part Connector details">{{brickConnection.sourceConnector?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/placedbrick', brickConnection.targetPlacedBrickId]" class="btn btn-link text-left" ngbTooltip="Open Placed Brick details">{{brickConnection.targetPlacedBrick?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/brickpartconnector', brickConnection.targetConnectorId]" class="btn btn-link text-left" ngbTooltip="Open Brick Part Connector details">{{brickConnection.targetConnector?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/brickconnection', brickConnection.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Connection details">{{brickConnection.connectionStrength}}</a></td>
+            <td class="text-truncate"><boolean-icon [value]="brickConnection.isLocked"/></td>
+            <td class="text-truncate">{{brickConnection.angleDegrees | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -289,20 +304,32 @@ End of commented block for alternate definition option -->
               <a [routerLink]="['/project', brickConnection.projectId]" class="text-left p-0 m-0" ngbTooltip="Open Project details">{{brickConnection.project?.name}}</a>
             </p>
             <p class="brick-connection-info" *ngIf="brickConnection.sourcePlacedBrickId != null">
-              <strong>Source Placed Brick Id: </strong>
-              {{brickConnection.sourcePlacedBrickId | bigNumberFormat : '1.0-2'}}
+              <strong>Source Placed Brick: </strong>
+              <a [routerLink]="['/placedbrick', brickConnection.sourcePlacedBrickId]" class="text-left p-0 m-0" ngbTooltip="Open Placed Brick details">{{brickConnection.sourcePlacedBrick?.name}}</a>
             </p>
             <p class="brick-connection-info" *ngIf="brickConnection.sourceConnectorId != null">
-              <strong>Source Connector Id: </strong>
-              {{brickConnection.sourceConnectorId | bigNumberFormat : '1.0-2'}}
+              <strong>Source Connector: </strong>
+              <a [routerLink]="['/brickpartconnector', brickConnection.sourceConnectorId]" class="text-left p-0 m-0" ngbTooltip="Open Brick Part Connector details">{{brickConnection.sourceConnector?.name}}</a>
             </p>
             <p class="brick-connection-info" *ngIf="brickConnection.targetPlacedBrickId != null">
-              <strong>Target Placed Brick Id: </strong>
-              {{brickConnection.targetPlacedBrickId | bigNumberFormat : '1.0-2'}}
+              <strong>Target Placed Brick: </strong>
+              <a [routerLink]="['/placedbrick', brickConnection.targetPlacedBrickId]" class="text-left p-0 m-0" ngbTooltip="Open Placed Brick details">{{brickConnection.targetPlacedBrick?.name}}</a>
             </p>
             <p class="brick-connection-info" *ngIf="brickConnection.targetConnectorId != null">
-              <strong>Target Connector Id: </strong>
-              {{brickConnection.targetConnectorId | bigNumberFormat : '1.0-2'}}
+              <strong>Target Connector: </strong>
+              <a [routerLink]="['/brickpartconnector', brickConnection.targetConnectorId]" class="text-left p-0 m-0" ngbTooltip="Open Brick Part Connector details">{{brickConnection.targetConnector?.name}}</a>
+            </p>
+            <p class="brick-connection-info" *ngIf="brickConnection.connectionStrength != null">
+              <strong>Connection Strength: </strong>
+              {{brickConnection.connectionStrength}}
+            </p>
+            <p class="brick-connection-info" *ngIf="brickConnection.isLocked != null">
+              <strong>Is Locked: </strong>
+              <boolean-icon [value]="brickConnection.isLocked"/>
+            </p>
+            <p class="brick-connection-info" *ngIf="brickConnection.angleDegrees != null">
+              <strong>Angle Degrees: </strong>
+              {{brickConnection.angleDegrees | bigNumberFormat : '1.0-2'}}
             </p>
             </div>
          </div>

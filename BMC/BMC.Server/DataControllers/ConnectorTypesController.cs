@@ -67,6 +67,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? degreesOfFreedom = null,
 			bool? allowsRotation = null,
 			bool? allowsSlide = null,
+			float? minAngleDegrees = null,
+			float? maxAngleDegrees = null,
+			float? snapIncrementDegrees = null,
+			float? clutchForceNewtons = null,
+			string maleOrFemale = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -126,6 +131,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(ct => ct.allowsSlide == allowsSlide.Value);
 			}
+			if (minAngleDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.minAngleDegrees == minAngleDegrees.Value);
+			}
+			if (maxAngleDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.maxAngleDegrees == maxAngleDegrees.Value);
+			}
+			if (snapIncrementDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.snapIncrementDegrees == snapIncrementDegrees.Value);
+			}
+			if (clutchForceNewtons.HasValue == true)
+			{
+				query = query.Where(ct => ct.clutchForceNewtons == clutchForceNewtons.Value);
+			}
+			if (string.IsNullOrEmpty(maleOrFemale) == false)
+			{
+				query = query.Where(ct => ct.maleOrFemale == maleOrFemale);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ct => ct.sequence == sequence.Value);
@@ -159,7 +184,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(ct => ct.deleted == false);
 			}
 
-			query = query.OrderBy(ct => ct.sequence).ThenBy(ct => ct.name).ThenBy(ct => ct.description);
+			query = query.OrderBy(ct => ct.sequence).ThenBy(ct => ct.name).ThenBy(ct => ct.description).ThenBy(ct => ct.maleOrFemale);
 
 
 			//
@@ -172,6 +197,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.maleOrFemale.Contains(anyStringContains)
 			   );
 			}
 
@@ -230,6 +256,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? degreesOfFreedom = null,
 			bool? allowsRotation = null,
 			bool? allowsSlide = null,
+			float? minAngleDegrees = null,
+			float? maxAngleDegrees = null,
+			float? snapIncrementDegrees = null,
+			float? clutchForceNewtons = null,
+			string maleOrFemale = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -270,6 +301,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (allowsSlide.HasValue == true)
 			{
 				query = query.Where(ct => ct.allowsSlide == allowsSlide.Value);
+			}
+			if (minAngleDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.minAngleDegrees == minAngleDegrees.Value);
+			}
+			if (maxAngleDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.maxAngleDegrees == maxAngleDegrees.Value);
+			}
+			if (snapIncrementDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.snapIncrementDegrees == snapIncrementDegrees.Value);
+			}
+			if (clutchForceNewtons.HasValue == true)
+			{
+				query = query.Where(ct => ct.clutchForceNewtons == clutchForceNewtons.Value);
+			}
+			if (maleOrFemale != null)
+			{
+				query = query.Where(ct => ct.maleOrFemale == maleOrFemale);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -314,6 +365,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.maleOrFemale.Contains(anyStringContains)
 			   );
 			}
 
@@ -498,6 +550,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				connectorType.description = connectorType.description.Substring(0, 500);
 			}
 
+			if (connectorType.maleOrFemale != null && connectorType.maleOrFemale.Length > 10)
+			{
+				connectorType.maleOrFemale = connectorType.maleOrFemale.Substring(0, 10);
+			}
+
 			EntityEntry<Database.ConnectorType> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(connectorType);
 
@@ -577,6 +634,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (connectorType.description != null && connectorType.description.Length > 500)
 				{
 					connectorType.description = connectorType.description.Substring(0, 500);
+				}
+
+				if (connectorType.maleOrFemale != null && connectorType.maleOrFemale.Length > 10)
+				{
+					connectorType.maleOrFemale = connectorType.maleOrFemale.Substring(0, 10);
 				}
 
 				connectorType.objectGuid = Guid.NewGuid();
@@ -697,6 +759,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? degreesOfFreedom = null,
 			bool? allowsRotation = null,
 			bool? allowsSlide = null,
+			float? minAngleDegrees = null,
+			float? maxAngleDegrees = null,
+			float? snapIncrementDegrees = null,
+			float? clutchForceNewtons = null,
+			string maleOrFemale = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -754,6 +821,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(ct => ct.allowsSlide == allowsSlide.Value);
 			}
+			if (minAngleDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.minAngleDegrees == minAngleDegrees.Value);
+			}
+			if (maxAngleDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.maxAngleDegrees == maxAngleDegrees.Value);
+			}
+			if (snapIncrementDegrees.HasValue == true)
+			{
+				query = query.Where(ct => ct.snapIncrementDegrees == snapIncrementDegrees.Value);
+			}
+			if (clutchForceNewtons.HasValue == true)
+			{
+				query = query.Where(ct => ct.clutchForceNewtons == clutchForceNewtons.Value);
+			}
+			if (string.IsNullOrEmpty(maleOrFemale) == false)
+			{
+				query = query.Where(ct => ct.maleOrFemale == maleOrFemale);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ct => ct.sequence == sequence.Value);
@@ -798,11 +885,12 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.maleOrFemale.Contains(anyStringContains)
 			   );
 			}
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description);
+			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description).ThenBy(x => x.maleOrFemale);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

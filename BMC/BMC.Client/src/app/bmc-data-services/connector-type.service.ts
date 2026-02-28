@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { ConnectorTypeCompatibilityService, ConnectorTypeCompatibilityData } from './connector-type-compatibility.service';
 import { BrickPartConnectorService, BrickPartConnectorData } from './brick-part-connector.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -33,6 +34,11 @@ export class ConnectorTypeQueryParameters {
     degreesOfFreedom: bigint | number | null | undefined = null;
     allowsRotation: boolean | null | undefined = null;
     allowsSlide: boolean | null | undefined = null;
+    minAngleDegrees: number | null | undefined = null;
+    maxAngleDegrees: number | null | undefined = null;
+    snapIncrementDegrees: number | null | undefined = null;
+    clutchForceNewtons: number | null | undefined = null;
+    maleOrFemale: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -54,6 +60,11 @@ export class ConnectorTypeSubmitData {
     degreesOfFreedom: bigint | number | null = null;
     allowsRotation!: boolean;
     allowsSlide!: boolean;
+    minAngleDegrees: number | null = null;
+    maxAngleDegrees: number | null = null;
+    snapIncrementDegrees: number | null = null;
+    clutchForceNewtons: number | null = null;
+    maleOrFemale: string | null = null;
     sequence: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -109,6 +120,11 @@ export class ConnectorTypeData {
     degreesOfFreedom!: bigint | number;
     allowsRotation!: boolean;
     allowsSlide!: boolean;
+    minAngleDegrees!: number | null;
+    maxAngleDegrees!: number | null;
+    snapIncrementDegrees!: number | null;
+    clutchForceNewtons!: number | null;
+    maleOrFemale!: string | null;
     sequence!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -117,6 +133,14 @@ export class ConnectorTypeData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _connectorTypeCompatibilityMaleConnectorTypes: ConnectorTypeCompatibilityData[] | null = null;
+    private _connectorTypeCompatibilityMaleConnectorTypesPromise: Promise<ConnectorTypeCompatibilityData[]> | null  = null;
+    private _connectorTypeCompatibilityMaleConnectorTypesSubject = new BehaviorSubject<ConnectorTypeCompatibilityData[] | null>(null);
+                    
+    private _connectorTypeCompatibilityFemaleConnectorTypes: ConnectorTypeCompatibilityData[] | null = null;
+    private _connectorTypeCompatibilityFemaleConnectorTypesPromise: Promise<ConnectorTypeCompatibilityData[]> | null  = null;
+    private _connectorTypeCompatibilityFemaleConnectorTypesSubject = new BehaviorSubject<ConnectorTypeCompatibilityData[] | null>(null);
+                    
     private _brickPartConnectors: BrickPartConnectorData[] | null = null;
     private _brickPartConnectorsPromise: Promise<BrickPartConnectorData[]> | null  = null;
     private _brickPartConnectorsSubject = new BehaviorSubject<BrickPartConnectorData[] | null>(null);
@@ -129,6 +153,54 @@ export class ConnectorTypeData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public ConnectorTypeCompatibilityMaleConnectorTypes$ = this._connectorTypeCompatibilityMaleConnectorTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._connectorTypeCompatibilityMaleConnectorTypes === null && this._connectorTypeCompatibilityMaleConnectorTypesPromise === null) {
+            this.loadConnectorTypeCompatibilityMaleConnectorTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _connectorTypeCompatibilityMaleConnectorTypesCount$: Observable<bigint | number> | null = null;
+    public get ConnectorTypeCompatibilityMaleConnectorTypesCount$(): Observable<bigint | number> {
+        if (this._connectorTypeCompatibilityMaleConnectorTypesCount$ === null) {
+            this._connectorTypeCompatibilityMaleConnectorTypesCount$ = ConnectorTypeCompatibilityService.Instance.GetConnectorTypeCompatibilitiesRowCount({maleConnectorTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._connectorTypeCompatibilityMaleConnectorTypesCount$;
+    }
+
+
+    public ConnectorTypeCompatibilityFemaleConnectorTypes$ = this._connectorTypeCompatibilityFemaleConnectorTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._connectorTypeCompatibilityFemaleConnectorTypes === null && this._connectorTypeCompatibilityFemaleConnectorTypesPromise === null) {
+            this.loadConnectorTypeCompatibilityFemaleConnectorTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _connectorTypeCompatibilityFemaleConnectorTypesCount$: Observable<bigint | number> | null = null;
+    public get ConnectorTypeCompatibilityFemaleConnectorTypesCount$(): Observable<bigint | number> {
+        if (this._connectorTypeCompatibilityFemaleConnectorTypesCount$ === null) {
+            this._connectorTypeCompatibilityFemaleConnectorTypesCount$ = ConnectorTypeCompatibilityService.Instance.GetConnectorTypeCompatibilitiesRowCount({femaleConnectorTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._connectorTypeCompatibilityFemaleConnectorTypesCount$;
+    }
+
+
     public BrickPartConnectors$ = this._brickPartConnectorsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -192,6 +264,16 @@ export class ConnectorTypeData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._connectorTypeCompatibilityMaleConnectorTypes = null;
+     this._connectorTypeCompatibilityMaleConnectorTypesPromise = null;
+     this._connectorTypeCompatibilityMaleConnectorTypesSubject.next(null);
+     this._connectorTypeCompatibilityMaleConnectorTypesCount$ = null;
+
+     this._connectorTypeCompatibilityFemaleConnectorTypes = null;
+     this._connectorTypeCompatibilityFemaleConnectorTypesPromise = null;
+     this._connectorTypeCompatibilityFemaleConnectorTypesSubject.next(null);
+     this._connectorTypeCompatibilityFemaleConnectorTypesCount$ = null;
+
      this._brickPartConnectors = null;
      this._brickPartConnectorsPromise = null;
      this._brickPartConnectorsSubject.next(null);
@@ -203,6 +285,136 @@ export class ConnectorTypeData {
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the ConnectorTypeCompatibilityMaleConnectorTypes for this ConnectorType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.connectorType.ConnectorTypeCompatibilityMaleConnectorTypes.then(maleConnectorTypes => { ... })
+     *   or
+     *   await this.connectorType.maleConnectorTypes
+     *
+    */
+    public get ConnectorTypeCompatibilityMaleConnectorTypes(): Promise<ConnectorTypeCompatibilityData[]> {
+        if (this._connectorTypeCompatibilityMaleConnectorTypes !== null) {
+            return Promise.resolve(this._connectorTypeCompatibilityMaleConnectorTypes);
+        }
+
+        if (this._connectorTypeCompatibilityMaleConnectorTypesPromise !== null) {
+            return this._connectorTypeCompatibilityMaleConnectorTypesPromise;
+        }
+
+        // Start the load
+        this.loadConnectorTypeCompatibilityMaleConnectorTypes();
+
+        return this._connectorTypeCompatibilityMaleConnectorTypesPromise!;
+    }
+
+
+
+    private loadConnectorTypeCompatibilityMaleConnectorTypes(): void {
+
+        this._connectorTypeCompatibilityMaleConnectorTypesPromise = lastValueFrom(
+            ConnectorTypeService.Instance.GetConnectorTypeCompatibilityMaleConnectorTypesForConnectorType(this.id)
+        )
+        .then(ConnectorTypeCompatibilityMaleConnectorTypes => {
+            this._connectorTypeCompatibilityMaleConnectorTypes = ConnectorTypeCompatibilityMaleConnectorTypes ?? [];
+            this._connectorTypeCompatibilityMaleConnectorTypesSubject.next(this._connectorTypeCompatibilityMaleConnectorTypes);
+            return this._connectorTypeCompatibilityMaleConnectorTypes;
+         })
+        .catch(err => {
+            this._connectorTypeCompatibilityMaleConnectorTypes = [];
+            this._connectorTypeCompatibilityMaleConnectorTypesSubject.next(this._connectorTypeCompatibilityMaleConnectorTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._connectorTypeCompatibilityMaleConnectorTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ConnectorTypeCompatibilityMaleConnectorType. Call after mutations to force refresh.
+     */
+    public ClearConnectorTypeCompatibilityMaleConnectorTypesCache(): void {
+        this._connectorTypeCompatibilityMaleConnectorTypes = null;
+        this._connectorTypeCompatibilityMaleConnectorTypesPromise = null;
+        this._connectorTypeCompatibilityMaleConnectorTypesSubject.next(this._connectorTypeCompatibilityMaleConnectorTypes);      // Emit to observable
+    }
+
+    public get HasConnectorTypeCompatibilityMaleConnectorTypes(): Promise<boolean> {
+        return this.ConnectorTypeCompatibilityMaleConnectorTypes.then(connectorTypeCompatibilityMaleConnectorTypes => connectorTypeCompatibilityMaleConnectorTypes.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ConnectorTypeCompatibilityFemaleConnectorTypes for this ConnectorType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.connectorType.ConnectorTypeCompatibilityFemaleConnectorTypes.then(femaleConnectorTypes => { ... })
+     *   or
+     *   await this.connectorType.femaleConnectorTypes
+     *
+    */
+    public get ConnectorTypeCompatibilityFemaleConnectorTypes(): Promise<ConnectorTypeCompatibilityData[]> {
+        if (this._connectorTypeCompatibilityFemaleConnectorTypes !== null) {
+            return Promise.resolve(this._connectorTypeCompatibilityFemaleConnectorTypes);
+        }
+
+        if (this._connectorTypeCompatibilityFemaleConnectorTypesPromise !== null) {
+            return this._connectorTypeCompatibilityFemaleConnectorTypesPromise;
+        }
+
+        // Start the load
+        this.loadConnectorTypeCompatibilityFemaleConnectorTypes();
+
+        return this._connectorTypeCompatibilityFemaleConnectorTypesPromise!;
+    }
+
+
+
+    private loadConnectorTypeCompatibilityFemaleConnectorTypes(): void {
+
+        this._connectorTypeCompatibilityFemaleConnectorTypesPromise = lastValueFrom(
+            ConnectorTypeService.Instance.GetConnectorTypeCompatibilityFemaleConnectorTypesForConnectorType(this.id)
+        )
+        .then(ConnectorTypeCompatibilityFemaleConnectorTypes => {
+            this._connectorTypeCompatibilityFemaleConnectorTypes = ConnectorTypeCompatibilityFemaleConnectorTypes ?? [];
+            this._connectorTypeCompatibilityFemaleConnectorTypesSubject.next(this._connectorTypeCompatibilityFemaleConnectorTypes);
+            return this._connectorTypeCompatibilityFemaleConnectorTypes;
+         })
+        .catch(err => {
+            this._connectorTypeCompatibilityFemaleConnectorTypes = [];
+            this._connectorTypeCompatibilityFemaleConnectorTypesSubject.next(this._connectorTypeCompatibilityFemaleConnectorTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._connectorTypeCompatibilityFemaleConnectorTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ConnectorTypeCompatibilityFemaleConnectorType. Call after mutations to force refresh.
+     */
+    public ClearConnectorTypeCompatibilityFemaleConnectorTypesCache(): void {
+        this._connectorTypeCompatibilityFemaleConnectorTypes = null;
+        this._connectorTypeCompatibilityFemaleConnectorTypesPromise = null;
+        this._connectorTypeCompatibilityFemaleConnectorTypesSubject.next(this._connectorTypeCompatibilityFemaleConnectorTypes);      // Emit to observable
+    }
+
+    public get HasConnectorTypeCompatibilityFemaleConnectorTypes(): Promise<boolean> {
+        return this.ConnectorTypeCompatibilityFemaleConnectorTypes.then(connectorTypeCompatibilityFemaleConnectorTypes => connectorTypeCompatibilityFemaleConnectorTypes.length > 0);
+    }
+
+
     /**
      *
      * Gets the BrickPartConnectors for this ConnectorType.
@@ -303,6 +515,7 @@ export class ConnectorTypeService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private connectorTypeCompatibilityService: ConnectorTypeCompatibilityService,
         private brickPartConnectorService: BrickPartConnectorService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -366,6 +579,11 @@ export class ConnectorTypeService extends SecureEndpointBase {
         output.degreesOfFreedom = data.degreesOfFreedom;
         output.allowsRotation = data.allowsRotation;
         output.allowsSlide = data.allowsSlide;
+        output.minAngleDegrees = data.minAngleDegrees;
+        output.maxAngleDegrees = data.maxAngleDegrees;
+        output.snapIncrementDegrees = data.snapIncrementDegrees;
+        output.clutchForceNewtons = data.clutchForceNewtons;
+        output.maleOrFemale = data.maleOrFemale;
         output.sequence = data.sequence;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -665,6 +883,26 @@ export class ConnectorTypeService extends SecureEndpointBase {
         return userIsBMCConnectorTypeWriter;
     }
 
+    public GetConnectorTypeCompatibilityMaleConnectorTypesForConnectorType(connectorTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConnectorTypeCompatibilityData[]> {
+        return this.connectorTypeCompatibilityService.GetConnectorTypeCompatibilityList({
+            maleConnectorTypeId: connectorTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetConnectorTypeCompatibilityFemaleConnectorTypesForConnectorType(connectorTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConnectorTypeCompatibilityData[]> {
+        return this.connectorTypeCompatibilityService.GetConnectorTypeCompatibilityList({
+            femaleConnectorTypeId: connectorTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetBrickPartConnectorsForConnectorType(connectorTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickPartConnectorData[]> {
         return this.brickPartConnectorService.GetBrickPartConnectorList({
             connectorTypeId: connectorTypeId,
@@ -710,6 +948,14 @@ export class ConnectorTypeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._connectorTypeCompatibilityMaleConnectorTypes = null;
+    (revived as any)._connectorTypeCompatibilityMaleConnectorTypesPromise = null;
+    (revived as any)._connectorTypeCompatibilityMaleConnectorTypesSubject = new BehaviorSubject<ConnectorTypeCompatibilityData[] | null>(null);
+
+    (revived as any)._connectorTypeCompatibilityFemaleConnectorTypes = null;
+    (revived as any)._connectorTypeCompatibilityFemaleConnectorTypesPromise = null;
+    (revived as any)._connectorTypeCompatibilityFemaleConnectorTypesSubject = new BehaviorSubject<ConnectorTypeCompatibilityData[] | null>(null);
+
     (revived as any)._brickPartConnectors = null;
     (revived as any)._brickPartConnectorsPromise = null;
     (revived as any)._brickPartConnectorsSubject = new BehaviorSubject<BrickPartConnectorData[] | null>(null);
@@ -726,6 +972,30 @@ export class ConnectorTypeService extends SecureEndpointBase {
     // 2. But private methods (loadConnectorTypeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).ConnectorTypeCompatibilityMaleConnectorTypes$ = (revived as any)._connectorTypeCompatibilityMaleConnectorTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._connectorTypeCompatibilityMaleConnectorTypes === null && (revived as any)._connectorTypeCompatibilityMaleConnectorTypesPromise === null) {
+                (revived as any).loadConnectorTypeCompatibilityMaleConnectorTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._connectorTypeCompatibilityMaleConnectorTypesCount$ = null;
+
+
+    (revived as any).ConnectorTypeCompatibilityFemaleConnectorTypes$ = (revived as any)._connectorTypeCompatibilityFemaleConnectorTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._connectorTypeCompatibilityFemaleConnectorTypes === null && (revived as any)._connectorTypeCompatibilityFemaleConnectorTypesPromise === null) {
+                (revived as any).loadConnectorTypeCompatibilityFemaleConnectorTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._connectorTypeCompatibilityFemaleConnectorTypesCount$ = null;
+
+
     (revived as any).BrickPartConnectors$ = (revived as any)._brickPartConnectorsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._brickPartConnectors === null && (revived as any)._brickPartConnectorsPromise === null) {

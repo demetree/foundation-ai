@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BrickPartConnectorService, BrickPartConnectorData, BrickPartConnectorSubmitData } from '../../../bmc-data-services/brick-part-connector.service';
 import { BrickPartService } from '../../../bmc-data-services/brick-part.service';
 import { ConnectorTypeService } from '../../../bmc-data-services/connector-type.service';
+import { BrickConnectionService } from '../../../bmc-data-services/brick-connection.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -44,6 +45,8 @@ interface BrickPartConnectorFormValues {
   orientationX: string | null,     // Stored as string for form input, converted to number on submit.
   orientationY: string | null,     // Stored as string for form input, converted to number on submit.
   orientationZ: string | null,     // Stored as string for form input, converted to number on submit.
+  connectorGroupId: string | null,     // Stored as string for form input, converted to number on submit.
+  isAutoExtracted: boolean,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -82,6 +85,8 @@ export class BrickPartConnectorDetailComponent implements OnInit, CanComponentDe
         orientationX: [''],
         orientationY: [''],
         orientationZ: [''],
+        connectorGroupId: [''],
+        isAutoExtracted: [false],
         sequence: [''],
         active: [true],
         deleted: [false],
@@ -101,6 +106,7 @@ export class BrickPartConnectorDetailComponent implements OnInit, CanComponentDe
   brickPartConnectors$ = this.brickPartConnectorService.GetBrickPartConnectorList();
   public brickParts$ = this.brickPartService.GetBrickPartList();
   public connectorTypes$ = this.connectorTypeService.GetConnectorTypeList();
+  public brickConnections$ = this.brickConnectionService.GetBrickConnectionList();
 
   private destroy$ = new Subject<void>();
 
@@ -108,6 +114,7 @@ export class BrickPartConnectorDetailComponent implements OnInit, CanComponentDe
     public brickPartConnectorService: BrickPartConnectorService,
     public brickPartService: BrickPartService,
     public connectorTypeService: ConnectorTypeService,
+    public brickConnectionService: BrickConnectionService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -397,6 +404,8 @@ export class BrickPartConnectorDetailComponent implements OnInit, CanComponentDe
         orientationX: '',
         orientationY: '',
         orientationZ: '',
+        connectorGroupId: '',
+        isAutoExtracted: false,
         sequence: '',
         active: true,
         deleted: false,
@@ -417,6 +426,8 @@ export class BrickPartConnectorDetailComponent implements OnInit, CanComponentDe
         orientationX: brickPartConnectorData.orientationX?.toString() ?? '',
         orientationY: brickPartConnectorData.orientationY?.toString() ?? '',
         orientationZ: brickPartConnectorData.orientationZ?.toString() ?? '',
+        connectorGroupId: brickPartConnectorData.connectorGroupId?.toString() ?? '',
+        isAutoExtracted: brickPartConnectorData.isAutoExtracted ?? false,
         sequence: brickPartConnectorData.sequence?.toString() ?? '',
         active: brickPartConnectorData.active ?? true,
         deleted: brickPartConnectorData.deleted ?? false,
@@ -487,6 +498,8 @@ export class BrickPartConnectorDetailComponent implements OnInit, CanComponentDe
         orientationX: formValue.orientationX ? Number(formValue.orientationX) : null,
         orientationY: formValue.orientationY ? Number(formValue.orientationY) : null,
         orientationZ: formValue.orientationZ ? Number(formValue.orientationZ) : null,
+        connectorGroupId: formValue.connectorGroupId ? Number(formValue.connectorGroupId) : null,
+        isAutoExtracted: !!formValue.isAutoExtracted,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { BrickPartData } from './brick-part.service';
 import { ConnectorTypeData } from './connector-type.service';
+import { BrickConnectionService, BrickConnectionData } from './brick-connection.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -37,6 +38,8 @@ export class BrickPartConnectorQueryParameters {
     orientationX: number | null | undefined = null;
     orientationY: number | null | undefined = null;
     orientationZ: number | null | undefined = null;
+    connectorGroupId: bigint | number | null | undefined = null;
+    isAutoExtracted: boolean | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -61,6 +64,8 @@ export class BrickPartConnectorSubmitData {
     orientationX: number | null = null;
     orientationY: number | null = null;
     orientationZ: number | null = null;
+    connectorGroupId: bigint | number | null = null;
+    isAutoExtracted!: boolean;
     sequence: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -119,6 +124,8 @@ export class BrickPartConnectorData {
     orientationX!: number | null;
     orientationY!: number | null;
     orientationZ!: number | null;
+    connectorGroupId!: bigint | number;
+    isAutoExtracted!: boolean;
     sequence!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -129,6 +136,14 @@ export class BrickPartConnectorData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _brickConnectionSourceConnectors: BrickConnectionData[] | null = null;
+    private _brickConnectionSourceConnectorsPromise: Promise<BrickConnectionData[]> | null  = null;
+    private _brickConnectionSourceConnectorsSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+                    
+    private _brickConnectionTargetConnectors: BrickConnectionData[] | null = null;
+    private _brickConnectionTargetConnectorsPromise: Promise<BrickConnectionData[]> | null  = null;
+    private _brickConnectionTargetConnectorsSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+                    
 
     //
     // Public observables — use with | async in templates
@@ -136,6 +151,54 @@ export class BrickPartConnectorData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public BrickConnectionSourceConnectors$ = this._brickConnectionSourceConnectorsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickConnectionSourceConnectors === null && this._brickConnectionSourceConnectorsPromise === null) {
+            this.loadBrickConnectionSourceConnectors(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _brickConnectionSourceConnectorsCount$: Observable<bigint | number> | null = null;
+    public get BrickConnectionSourceConnectorsCount$(): Observable<bigint | number> {
+        if (this._brickConnectionSourceConnectorsCount$ === null) {
+            this._brickConnectionSourceConnectorsCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({sourceConnectorId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickConnectionSourceConnectorsCount$;
+    }
+
+
+    public BrickConnectionTargetConnectors$ = this._brickConnectionTargetConnectorsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickConnectionTargetConnectors === null && this._brickConnectionTargetConnectorsPromise === null) {
+            this.loadBrickConnectionTargetConnectors(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _brickConnectionTargetConnectorsCount$: Observable<bigint | number> | null = null;
+    public get BrickConnectionTargetConnectorsCount$(): Observable<bigint | number> {
+        if (this._brickConnectionTargetConnectorsCount$ === null) {
+            this._brickConnectionTargetConnectorsCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({targetConnectorId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickConnectionTargetConnectorsCount$;
+    }
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -174,12 +237,152 @@ export class BrickPartConnectorData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._brickConnectionSourceConnectors = null;
+     this._brickConnectionSourceConnectorsPromise = null;
+     this._brickConnectionSourceConnectorsSubject.next(null);
+     this._brickConnectionSourceConnectorsCount$ = null;
+
+     this._brickConnectionTargetConnectors = null;
+     this._brickConnectionTargetConnectorsPromise = null;
+     this._brickConnectionTargetConnectorsSubject.next(null);
+     this._brickConnectionTargetConnectorsCount$ = null;
+
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the BrickConnectionSourceConnectors for this BrickPartConnector.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPartConnector.BrickConnectionSourceConnectors.then(sourceConnectors => { ... })
+     *   or
+     *   await this.brickPartConnector.sourceConnectors
+     *
+    */
+    public get BrickConnectionSourceConnectors(): Promise<BrickConnectionData[]> {
+        if (this._brickConnectionSourceConnectors !== null) {
+            return Promise.resolve(this._brickConnectionSourceConnectors);
+        }
+
+        if (this._brickConnectionSourceConnectorsPromise !== null) {
+            return this._brickConnectionSourceConnectorsPromise;
+        }
+
+        // Start the load
+        this.loadBrickConnectionSourceConnectors();
+
+        return this._brickConnectionSourceConnectorsPromise!;
+    }
+
+
+
+    private loadBrickConnectionSourceConnectors(): void {
+
+        this._brickConnectionSourceConnectorsPromise = lastValueFrom(
+            BrickPartConnectorService.Instance.GetBrickConnectionSourceConnectorsForBrickPartConnector(this.id)
+        )
+        .then(BrickConnectionSourceConnectors => {
+            this._brickConnectionSourceConnectors = BrickConnectionSourceConnectors ?? [];
+            this._brickConnectionSourceConnectorsSubject.next(this._brickConnectionSourceConnectors);
+            return this._brickConnectionSourceConnectors;
+         })
+        .catch(err => {
+            this._brickConnectionSourceConnectors = [];
+            this._brickConnectionSourceConnectorsSubject.next(this._brickConnectionSourceConnectors);
+            throw err;
+        })
+        .finally(() => {
+            this._brickConnectionSourceConnectorsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickConnectionSourceConnector. Call after mutations to force refresh.
+     */
+    public ClearBrickConnectionSourceConnectorsCache(): void {
+        this._brickConnectionSourceConnectors = null;
+        this._brickConnectionSourceConnectorsPromise = null;
+        this._brickConnectionSourceConnectorsSubject.next(this._brickConnectionSourceConnectors);      // Emit to observable
+    }
+
+    public get HasBrickConnectionSourceConnectors(): Promise<boolean> {
+        return this.BrickConnectionSourceConnectors.then(brickConnectionSourceConnectors => brickConnectionSourceConnectors.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickConnectionTargetConnectors for this BrickPartConnector.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPartConnector.BrickConnectionTargetConnectors.then(targetConnectors => { ... })
+     *   or
+     *   await this.brickPartConnector.targetConnectors
+     *
+    */
+    public get BrickConnectionTargetConnectors(): Promise<BrickConnectionData[]> {
+        if (this._brickConnectionTargetConnectors !== null) {
+            return Promise.resolve(this._brickConnectionTargetConnectors);
+        }
+
+        if (this._brickConnectionTargetConnectorsPromise !== null) {
+            return this._brickConnectionTargetConnectorsPromise;
+        }
+
+        // Start the load
+        this.loadBrickConnectionTargetConnectors();
+
+        return this._brickConnectionTargetConnectorsPromise!;
+    }
+
+
+
+    private loadBrickConnectionTargetConnectors(): void {
+
+        this._brickConnectionTargetConnectorsPromise = lastValueFrom(
+            BrickPartConnectorService.Instance.GetBrickConnectionTargetConnectorsForBrickPartConnector(this.id)
+        )
+        .then(BrickConnectionTargetConnectors => {
+            this._brickConnectionTargetConnectors = BrickConnectionTargetConnectors ?? [];
+            this._brickConnectionTargetConnectorsSubject.next(this._brickConnectionTargetConnectors);
+            return this._brickConnectionTargetConnectors;
+         })
+        .catch(err => {
+            this._brickConnectionTargetConnectors = [];
+            this._brickConnectionTargetConnectorsSubject.next(this._brickConnectionTargetConnectors);
+            throw err;
+        })
+        .finally(() => {
+            this._brickConnectionTargetConnectorsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickConnectionTargetConnector. Call after mutations to force refresh.
+     */
+    public ClearBrickConnectionTargetConnectorsCache(): void {
+        this._brickConnectionTargetConnectors = null;
+        this._brickConnectionTargetConnectorsPromise = null;
+        this._brickConnectionTargetConnectorsSubject.next(this._brickConnectionTargetConnectors);      // Emit to observable
+    }
+
+    public get HasBrickConnectionTargetConnectors(): Promise<boolean> {
+        return this.BrickConnectionTargetConnectors.then(brickConnectionTargetConnectors => brickConnectionTargetConnectors.length > 0);
+    }
+
+
 
 
     /**
@@ -215,6 +418,7 @@ export class BrickPartConnectorService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private brickConnectionService: BrickConnectionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -280,6 +484,8 @@ export class BrickPartConnectorService extends SecureEndpointBase {
         output.orientationX = data.orientationX;
         output.orientationY = data.orientationY;
         output.orientationZ = data.orientationZ;
+        output.connectorGroupId = data.connectorGroupId;
+        output.isAutoExtracted = data.isAutoExtracted;
         output.sequence = data.sequence;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -579,6 +785,26 @@ export class BrickPartConnectorService extends SecureEndpointBase {
         return userIsBMCBrickPartConnectorWriter;
     }
 
+    public GetBrickConnectionSourceConnectorsForBrickPartConnector(brickPartConnectorId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickConnectionData[]> {
+        return this.brickConnectionService.GetBrickConnectionList({
+            sourceConnectorId: brickPartConnectorId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBrickConnectionTargetConnectorsForBrickPartConnector(brickPartConnectorId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickConnectionData[]> {
+        return this.brickConnectionService.GetBrickConnectionList({
+            targetConnectorId: brickPartConnectorId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full BrickPartConnectorData instance.
@@ -614,6 +840,14 @@ export class BrickPartConnectorService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._brickConnectionSourceConnectors = null;
+    (revived as any)._brickConnectionSourceConnectorsPromise = null;
+    (revived as any)._brickConnectionSourceConnectorsSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+
+    (revived as any)._brickConnectionTargetConnectors = null;
+    (revived as any)._brickConnectionTargetConnectorsPromise = null;
+    (revived as any)._brickConnectionTargetConnectorsSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -626,6 +860,30 @@ export class BrickPartConnectorService extends SecureEndpointBase {
     // 2. But private methods (loadBrickPartConnectorXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).BrickConnectionSourceConnectors$ = (revived as any)._brickConnectionSourceConnectorsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickConnectionSourceConnectors === null && (revived as any)._brickConnectionSourceConnectorsPromise === null) {
+                (revived as any).loadBrickConnectionSourceConnectors();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._brickConnectionSourceConnectorsCount$ = null;
+
+
+    (revived as any).BrickConnectionTargetConnectors$ = (revived as any)._brickConnectionTargetConnectorsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickConnectionTargetConnectors === null && (revived as any)._brickConnectionTargetConnectorsPromise === null) {
+                (revived as any).loadBrickConnectionTargetConnectors();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._brickConnectionTargetConnectorsCount$ = null;
+
+
 
     return revived;
   }

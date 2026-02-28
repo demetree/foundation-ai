@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ConnectorTypeService, ConnectorTypeData, ConnectorTypeSubmitData } from '../../../bmc-data-services/connector-type.service';
+import { ConnectorTypeCompatibilityService } from '../../../bmc-data-services/connector-type-compatibility.service';
 import { BrickPartConnectorService } from '../../../bmc-data-services/brick-part-connector.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -40,6 +41,11 @@ interface ConnectorTypeFormValues {
   degreesOfFreedom: string | null,     // Stored as string for form input, converted to number on submit.
   allowsRotation: boolean,
   allowsSlide: boolean,
+  minAngleDegrees: string | null,     // Stored as string for form input, converted to number on submit.
+  maxAngleDegrees: string | null,     // Stored as string for form input, converted to number on submit.
+  snapIncrementDegrees: string | null,     // Stored as string for form input, converted to number on submit.
+  clutchForceNewtons: string | null,     // Stored as string for form input, converted to number on submit.
+  maleOrFemale: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -75,6 +81,11 @@ export class ConnectorTypeDetailComponent implements OnInit, CanComponentDeactiv
         degreesOfFreedom: [''],
         allowsRotation: [false],
         allowsSlide: [false],
+        minAngleDegrees: [''],
+        maxAngleDegrees: [''],
+        snapIncrementDegrees: [''],
+        clutchForceNewtons: [''],
+        maleOrFemale: [''],
         sequence: [''],
         active: [true],
         deleted: [false],
@@ -92,12 +103,14 @@ export class ConnectorTypeDetailComponent implements OnInit, CanComponentDeactiv
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   connectorTypes$ = this.connectorTypeService.GetConnectorTypeList();
+  public connectorTypeCompatibilities$ = this.connectorTypeCompatibilityService.GetConnectorTypeCompatibilityList();
   public brickPartConnectors$ = this.brickPartConnectorService.GetBrickPartConnectorList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public connectorTypeService: ConnectorTypeService,
+    public connectorTypeCompatibilityService: ConnectorTypeCompatibilityService,
     public brickPartConnectorService: BrickPartConnectorService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -385,6 +398,11 @@ export class ConnectorTypeDetailComponent implements OnInit, CanComponentDeactiv
         degreesOfFreedom: '',
         allowsRotation: false,
         allowsSlide: false,
+        minAngleDegrees: '',
+        maxAngleDegrees: '',
+        snapIncrementDegrees: '',
+        clutchForceNewtons: '',
+        maleOrFemale: '',
         sequence: '',
         active: true,
         deleted: false,
@@ -402,6 +420,11 @@ export class ConnectorTypeDetailComponent implements OnInit, CanComponentDeactiv
         degreesOfFreedom: connectorTypeData.degreesOfFreedom?.toString() ?? '',
         allowsRotation: connectorTypeData.allowsRotation ?? false,
         allowsSlide: connectorTypeData.allowsSlide ?? false,
+        minAngleDegrees: connectorTypeData.minAngleDegrees?.toString() ?? '',
+        maxAngleDegrees: connectorTypeData.maxAngleDegrees?.toString() ?? '',
+        snapIncrementDegrees: connectorTypeData.snapIncrementDegrees?.toString() ?? '',
+        clutchForceNewtons: connectorTypeData.clutchForceNewtons?.toString() ?? '',
+        maleOrFemale: connectorTypeData.maleOrFemale ?? '',
         sequence: connectorTypeData.sequence?.toString() ?? '',
         active: connectorTypeData.active ?? true,
         deleted: connectorTypeData.deleted ?? false,
@@ -469,6 +492,11 @@ export class ConnectorTypeDetailComponent implements OnInit, CanComponentDeactiv
         degreesOfFreedom: formValue.degreesOfFreedom ? Number(formValue.degreesOfFreedom) : null,
         allowsRotation: !!formValue.allowsRotation,
         allowsSlide: !!formValue.allowsSlide,
+        minAngleDegrees: formValue.minAngleDegrees ? Number(formValue.minAngleDegrees) : null,
+        maxAngleDegrees: formValue.maxAngleDegrees ? Number(formValue.maxAngleDegrees) : null,
+        snapIncrementDegrees: formValue.snapIncrementDegrees ? Number(formValue.snapIncrementDegrees) : null,
+        clutchForceNewtons: formValue.clutchForceNewtons ? Number(formValue.clutchForceNewtons) : null,
+        maleOrFemale: formValue.maleOrFemale?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

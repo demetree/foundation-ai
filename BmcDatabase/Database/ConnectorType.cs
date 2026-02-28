@@ -19,6 +19,16 @@ public partial class ConnectorType
 
     public bool allowsSlide { get; set; }
 
+    public float? minAngleDegrees { get; set; }
+
+    public float? maxAngleDegrees { get; set; }
+
+    public float? snapIncrementDegrees { get; set; }
+
+    public float? clutchForceNewtons { get; set; }
+
+    public string maleOrFemale { get; set; }
+
     public int? sequence { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -28,4 +38,8 @@ public partial class ConnectorType
     public bool deleted { get; set; }
 
     public virtual ICollection<BrickPartConnector> BrickPartConnectors { get; set; } = new List<BrickPartConnector>();
+
+    public virtual ICollection<ConnectorTypeCompatibility> ConnectorTypeCompatibilityfemaleConnectorTypes { get; set; } = new List<ConnectorTypeCompatibility>();
+
+    public virtual ICollection<ConnectorTypeCompatibility> ConnectorTypeCompatibilitymaleConnectorTypes { get; set; } = new List<ConnectorTypeCompatibility>();
 }

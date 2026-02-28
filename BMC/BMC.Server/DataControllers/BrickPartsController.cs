@@ -17,6 +17,11 @@ using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
 using Foundation.ChangeHistory;
+using System.IO;
+using System.Net;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -67,21 +72,47 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/BrickParts")]
 		public async Task<IActionResult> GetBrickParts(
 			string name = null,
+			string rebrickablePartNum = null,
+			string rebrickablePartUrl = null,
+			string rebrickableImgUrl = null,
 			string ldrawPartId = null,
+			string bricklinkId = null,
+			string brickowlId = null,
+			string legoDesignId = null,
 			string ldrawTitle = null,
 			string ldrawCategory = null,
 			int? partTypeId = null,
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
-			string rebrickablePartNum = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
 			float? depthLdu = null,
 			float? massGrams = null,
-			string geometryFilePath = null,
+			float? momentOfInertiaX = null,
+			float? momentOfInertiaY = null,
+			float? momentOfInertiaZ = null,
+			float? frictionCoefficient = null,
+			string materialType = null,
+			float? centerOfMassX = null,
+			float? centerOfMassY = null,
+			float? centerOfMassZ = null,
+			string geometryFileName = null,
+			long? geometrySize = null,
+			string geometryMimeType = null,
+			string geometryFileFormat = null,
+			string geometryOriginalFileName = null,
+			float? boundingBoxMinX = null,
+			float? boundingBoxMinY = null,
+			float? boundingBoxMinZ = null,
+			float? boundingBoxMaxX = null,
+			float? boundingBoxMaxY = null,
+			float? boundingBoxMaxZ = null,
+			int? subFileCount = null,
+			int? polygonCount = null,
 			int? toothCount = null,
 			float? gearRatio = null,
+			DateTime? lastModifiedDate = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -120,14 +151,46 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.BrickPart> query = (from bp in _context.BrickParts select bp);
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(bp => bp.name == name);
 			}
+			if (string.IsNullOrEmpty(rebrickablePartNum) == false)
+			{
+				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
+			}
+			if (string.IsNullOrEmpty(rebrickablePartUrl) == false)
+			{
+				query = query.Where(bp => bp.rebrickablePartUrl == rebrickablePartUrl);
+			}
+			if (string.IsNullOrEmpty(rebrickableImgUrl) == false)
+			{
+				query = query.Where(bp => bp.rebrickableImgUrl == rebrickableImgUrl);
+			}
 			if (string.IsNullOrEmpty(ldrawPartId) == false)
 			{
 				query = query.Where(bp => bp.ldrawPartId == ldrawPartId);
+			}
+			if (string.IsNullOrEmpty(bricklinkId) == false)
+			{
+				query = query.Where(bp => bp.bricklinkId == bricklinkId);
+			}
+			if (string.IsNullOrEmpty(brickowlId) == false)
+			{
+				query = query.Where(bp => bp.brickowlId == brickowlId);
+			}
+			if (string.IsNullOrEmpty(legoDesignId) == false)
+			{
+				query = query.Where(bp => bp.legoDesignId == legoDesignId);
 			}
 			if (string.IsNullOrEmpty(ldrawTitle) == false)
 			{
@@ -153,10 +216,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.brickCategoryId == brickCategoryId.Value);
 			}
-			if (string.IsNullOrEmpty(rebrickablePartNum) == false)
-			{
-				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
-			}
 			if (widthLdu.HasValue == true)
 			{
 				query = query.Where(bp => bp.widthLdu == widthLdu.Value);
@@ -173,9 +232,89 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.massGrams == massGrams.Value);
 			}
-			if (string.IsNullOrEmpty(geometryFilePath) == false)
+			if (momentOfInertiaX.HasValue == true)
 			{
-				query = query.Where(bp => bp.geometryFilePath == geometryFilePath);
+				query = query.Where(bp => bp.momentOfInertiaX == momentOfInertiaX.Value);
+			}
+			if (momentOfInertiaY.HasValue == true)
+			{
+				query = query.Where(bp => bp.momentOfInertiaY == momentOfInertiaY.Value);
+			}
+			if (momentOfInertiaZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.momentOfInertiaZ == momentOfInertiaZ.Value);
+			}
+			if (frictionCoefficient.HasValue == true)
+			{
+				query = query.Where(bp => bp.frictionCoefficient == frictionCoefficient.Value);
+			}
+			if (string.IsNullOrEmpty(materialType) == false)
+			{
+				query = query.Where(bp => bp.materialType == materialType);
+			}
+			if (centerOfMassX.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassX == centerOfMassX.Value);
+			}
+			if (centerOfMassY.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassY == centerOfMassY.Value);
+			}
+			if (centerOfMassZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassZ == centerOfMassZ.Value);
+			}
+			if (string.IsNullOrEmpty(geometryFileName) == false)
+			{
+				query = query.Where(bp => bp.geometryFileName == geometryFileName);
+			}
+			if (geometrySize.HasValue == true)
+			{
+				query = query.Where(bp => bp.geometrySize == geometrySize.Value);
+			}
+			if (string.IsNullOrEmpty(geometryMimeType) == false)
+			{
+				query = query.Where(bp => bp.geometryMimeType == geometryMimeType);
+			}
+			if (string.IsNullOrEmpty(geometryFileFormat) == false)
+			{
+				query = query.Where(bp => bp.geometryFileFormat == geometryFileFormat);
+			}
+			if (string.IsNullOrEmpty(geometryOriginalFileName) == false)
+			{
+				query = query.Where(bp => bp.geometryOriginalFileName == geometryOriginalFileName);
+			}
+			if (boundingBoxMinX.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinX == boundingBoxMinX.Value);
+			}
+			if (boundingBoxMinY.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinY == boundingBoxMinY.Value);
+			}
+			if (boundingBoxMinZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinZ == boundingBoxMinZ.Value);
+			}
+			if (boundingBoxMaxX.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxX == boundingBoxMaxX.Value);
+			}
+			if (boundingBoxMaxY.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxY == boundingBoxMaxY.Value);
+			}
+			if (boundingBoxMaxZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxZ == boundingBoxMaxZ.Value);
+			}
+			if (subFileCount.HasValue == true)
+			{
+				query = query.Where(bp => bp.subFileCount == subFileCount.Value);
+			}
+			if (polygonCount.HasValue == true)
+			{
+				query = query.Where(bp => bp.polygonCount == polygonCount.Value);
 			}
 			if (toothCount.HasValue == true)
 			{
@@ -184,6 +323,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (gearRatio.HasValue == true)
 			{
 				query = query.Where(bp => bp.gearRatio == gearRatio.Value);
+			}
+			if (lastModifiedDate.HasValue == true)
+			{
+				query = query.Where(bp => bp.lastModifiedDate == lastModifiedDate.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -218,7 +361,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bp => bp.deleted == false);
 			}
 
-			query = query.OrderBy(bp => bp.name).ThenBy(bp => bp.ldrawPartId).ThenBy(bp => bp.ldrawTitle);
+			query = query.OrderBy(bp => bp.name).ThenBy(bp => bp.rebrickablePartNum).ThenBy(bp => bp.rebrickablePartUrl);
 
 
 			//
@@ -230,13 +373,22 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
+			       || x.rebrickablePartNum.Contains(anyStringContains)
+			       || x.rebrickablePartUrl.Contains(anyStringContains)
+			       || x.rebrickableImgUrl.Contains(anyStringContains)
 			       || x.ldrawPartId.Contains(anyStringContains)
+			       || x.bricklinkId.Contains(anyStringContains)
+			       || x.brickowlId.Contains(anyStringContains)
+			       || x.legoDesignId.Contains(anyStringContains)
 			       || x.ldrawTitle.Contains(anyStringContains)
 			       || x.ldrawCategory.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
-			       || x.rebrickablePartNum.Contains(anyStringContains)
-			       || x.geometryFilePath.Contains(anyStringContains)
+			       || x.materialType.Contains(anyStringContains)
+			       || x.geometryFileName.Contains(anyStringContains)
+			       || x.geometryMimeType.Contains(anyStringContains)
+			       || x.geometryFileFormat.Contains(anyStringContains)
+			       || x.geometryOriginalFileName.Contains(anyStringContains)
 			       || (includeRelations == true && x.brickCategory.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickCategory.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.partType.name.Contains(anyStringContains))
@@ -269,6 +421,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+			if (diskBasedBinaryStorageMode == true)
+			{
+				var tasks = materialized.Select(async brickPart =>
+				{
+
+					if (brickPart.geometryData == null &&
+					    brickPart.geometrySize.HasValue == true &&
+					    brickPart.geometrySize.Value > 0)
+					{
+					    brickPart.geometryData = await LoadDataFromDiskAsync(brickPart.objectGuid, brickPart.versionNumber, "data");
+					}
+
+				}).ToList();
+
+				// Run tasks concurrently and await their completion
+				await Task.WhenAll(tasks);
+			}
+
 			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "BMC.BrickPart Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "BMC.BrickPart Entity list was read.  Returning " + materialized.Count + " rows of data.");
 
 			// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -297,21 +469,47 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/BrickParts/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
+			string rebrickablePartNum = null,
+			string rebrickablePartUrl = null,
+			string rebrickableImgUrl = null,
 			string ldrawPartId = null,
+			string bricklinkId = null,
+			string brickowlId = null,
+			string legoDesignId = null,
 			string ldrawTitle = null,
 			string ldrawCategory = null,
 			int? partTypeId = null,
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
-			string rebrickablePartNum = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
 			float? depthLdu = null,
 			float? massGrams = null,
-			string geometryFilePath = null,
+			float? momentOfInertiaX = null,
+			float? momentOfInertiaY = null,
+			float? momentOfInertiaZ = null,
+			float? frictionCoefficient = null,
+			string materialType = null,
+			float? centerOfMassX = null,
+			float? centerOfMassY = null,
+			float? centerOfMassZ = null,
+			string geometryFileName = null,
+			long? geometrySize = null,
+			string geometryMimeType = null,
+			string geometryFileFormat = null,
+			string geometryOriginalFileName = null,
+			float? boundingBoxMinX = null,
+			float? boundingBoxMinY = null,
+			float? boundingBoxMinZ = null,
+			float? boundingBoxMaxX = null,
+			float? boundingBoxMaxY = null,
+			float? boundingBoxMaxZ = null,
+			int? subFileCount = null,
+			int? polygonCount = null,
 			int? toothCount = null,
 			float? gearRatio = null,
+			DateTime? lastModifiedDate = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -332,14 +530,46 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			//
+			// Fix any non-UTC date parameters that come in.
+			//
+			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.BrickPart> query = (from bp in _context.BrickParts select bp);
 			if (name != null)
 			{
 				query = query.Where(bp => bp.name == name);
 			}
+			if (rebrickablePartNum != null)
+			{
+				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
+			}
+			if (rebrickablePartUrl != null)
+			{
+				query = query.Where(bp => bp.rebrickablePartUrl == rebrickablePartUrl);
+			}
+			if (rebrickableImgUrl != null)
+			{
+				query = query.Where(bp => bp.rebrickableImgUrl == rebrickableImgUrl);
+			}
 			if (ldrawPartId != null)
 			{
 				query = query.Where(bp => bp.ldrawPartId == ldrawPartId);
+			}
+			if (bricklinkId != null)
+			{
+				query = query.Where(bp => bp.bricklinkId == bricklinkId);
+			}
+			if (brickowlId != null)
+			{
+				query = query.Where(bp => bp.brickowlId == brickowlId);
+			}
+			if (legoDesignId != null)
+			{
+				query = query.Where(bp => bp.legoDesignId == legoDesignId);
 			}
 			if (ldrawTitle != null)
 			{
@@ -365,10 +595,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.brickCategoryId == brickCategoryId.Value);
 			}
-			if (rebrickablePartNum != null)
-			{
-				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
-			}
 			if (widthLdu.HasValue == true)
 			{
 				query = query.Where(bp => bp.widthLdu == widthLdu.Value);
@@ -385,9 +611,89 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.massGrams == massGrams.Value);
 			}
-			if (geometryFilePath != null)
+			if (momentOfInertiaX.HasValue == true)
 			{
-				query = query.Where(bp => bp.geometryFilePath == geometryFilePath);
+				query = query.Where(bp => bp.momentOfInertiaX == momentOfInertiaX.Value);
+			}
+			if (momentOfInertiaY.HasValue == true)
+			{
+				query = query.Where(bp => bp.momentOfInertiaY == momentOfInertiaY.Value);
+			}
+			if (momentOfInertiaZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.momentOfInertiaZ == momentOfInertiaZ.Value);
+			}
+			if (frictionCoefficient.HasValue == true)
+			{
+				query = query.Where(bp => bp.frictionCoefficient == frictionCoefficient.Value);
+			}
+			if (materialType != null)
+			{
+				query = query.Where(bp => bp.materialType == materialType);
+			}
+			if (centerOfMassX.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassX == centerOfMassX.Value);
+			}
+			if (centerOfMassY.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassY == centerOfMassY.Value);
+			}
+			if (centerOfMassZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassZ == centerOfMassZ.Value);
+			}
+			if (geometryFileName != null)
+			{
+				query = query.Where(bp => bp.geometryFileName == geometryFileName);
+			}
+			if (geometrySize.HasValue == true)
+			{
+				query = query.Where(bp => bp.geometrySize == geometrySize.Value);
+			}
+			if (geometryMimeType != null)
+			{
+				query = query.Where(bp => bp.geometryMimeType == geometryMimeType);
+			}
+			if (geometryFileFormat != null)
+			{
+				query = query.Where(bp => bp.geometryFileFormat == geometryFileFormat);
+			}
+			if (geometryOriginalFileName != null)
+			{
+				query = query.Where(bp => bp.geometryOriginalFileName == geometryOriginalFileName);
+			}
+			if (boundingBoxMinX.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinX == boundingBoxMinX.Value);
+			}
+			if (boundingBoxMinY.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinY == boundingBoxMinY.Value);
+			}
+			if (boundingBoxMinZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinZ == boundingBoxMinZ.Value);
+			}
+			if (boundingBoxMaxX.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxX == boundingBoxMaxX.Value);
+			}
+			if (boundingBoxMaxY.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxY == boundingBoxMaxY.Value);
+			}
+			if (boundingBoxMaxZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxZ == boundingBoxMaxZ.Value);
+			}
+			if (subFileCount.HasValue == true)
+			{
+				query = query.Where(bp => bp.subFileCount == subFileCount.Value);
+			}
+			if (polygonCount.HasValue == true)
+			{
+				query = query.Where(bp => bp.polygonCount == polygonCount.Value);
 			}
 			if (toothCount.HasValue == true)
 			{
@@ -396,6 +702,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (gearRatio.HasValue == true)
 			{
 				query = query.Where(bp => bp.gearRatio == gearRatio.Value);
+			}
+			if (lastModifiedDate.HasValue == true)
+			{
+				query = query.Where(bp => bp.lastModifiedDate == lastModifiedDate.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -439,13 +749,22 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
+			       || x.rebrickablePartNum.Contains(anyStringContains)
+			       || x.rebrickablePartUrl.Contains(anyStringContains)
+			       || x.rebrickableImgUrl.Contains(anyStringContains)
 			       || x.ldrawPartId.Contains(anyStringContains)
+			       || x.bricklinkId.Contains(anyStringContains)
+			       || x.brickowlId.Contains(anyStringContains)
+			       || x.legoDesignId.Contains(anyStringContains)
 			       || x.ldrawTitle.Contains(anyStringContains)
 			       || x.ldrawCategory.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
-			       || x.rebrickablePartNum.Contains(anyStringContains)
-			       || x.geometryFilePath.Contains(anyStringContains)
+			       || x.materialType.Contains(anyStringContains)
+			       || x.geometryFileName.Contains(anyStringContains)
+			       || x.geometryMimeType.Contains(anyStringContains)
+			       || x.geometryFileFormat.Contains(anyStringContains)
+			       || x.geometryOriginalFileName.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
 			       || x.partType.name.Contains(anyStringContains)
@@ -507,6 +826,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 				if (materialized != null)
 				{
+					bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+					if (diskBasedBinaryStorageMode == true &&
+					    materialized.geometryData == null &&
+					    materialized.geometrySize.HasValue == true &&
+					    materialized.geometrySize.Value > 0)
+					{
+					    materialized.geometryData = await LoadDataFromDiskAsync(materialized.objectGuid, materialized.versionNumber, "data", cancellationToken);
+					}
+
 					
 					// Convert all the date properties to be of kind UTC.
 					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
@@ -648,9 +977,39 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.name = brickPart.name.Substring(0, 100);
 				}
 
+				if (brickPart.rebrickablePartNum != null && brickPart.rebrickablePartNum.Length > 100)
+				{
+					brickPart.rebrickablePartNum = brickPart.rebrickablePartNum.Substring(0, 100);
+				}
+
+				if (brickPart.rebrickablePartUrl != null && brickPart.rebrickablePartUrl.Length > 250)
+				{
+					brickPart.rebrickablePartUrl = brickPart.rebrickablePartUrl.Substring(0, 250);
+				}
+
+				if (brickPart.rebrickableImgUrl != null && brickPart.rebrickableImgUrl.Length > 250)
+				{
+					brickPart.rebrickableImgUrl = brickPart.rebrickableImgUrl.Substring(0, 250);
+				}
+
 				if (brickPart.ldrawPartId != null && brickPart.ldrawPartId.Length > 100)
 				{
 					brickPart.ldrawPartId = brickPart.ldrawPartId.Substring(0, 100);
+				}
+
+				if (brickPart.bricklinkId != null && brickPart.bricklinkId.Length > 100)
+				{
+					brickPart.bricklinkId = brickPart.bricklinkId.Substring(0, 100);
+				}
+
+				if (brickPart.brickowlId != null && brickPart.brickowlId.Length > 100)
+				{
+					brickPart.brickowlId = brickPart.brickowlId.Substring(0, 100);
+				}
+
+				if (brickPart.legoDesignId != null && brickPart.legoDesignId.Length > 100)
+				{
+					brickPart.legoDesignId = brickPart.legoDesignId.Substring(0, 100);
 				}
 
 				if (brickPart.ldrawTitle != null && brickPart.ldrawTitle.Length > 250)
@@ -668,18 +1027,79 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.author = brickPart.author.Substring(0, 100);
 				}
 
-				if (brickPart.rebrickablePartNum != null && brickPart.rebrickablePartNum.Length > 100)
+				if (brickPart.materialType != null && brickPart.materialType.Length > 50)
 				{
-					brickPart.rebrickablePartNum = brickPart.rebrickablePartNum.Substring(0, 100);
+					brickPart.materialType = brickPart.materialType.Substring(0, 50);
 				}
 
-				if (brickPart.geometryFilePath != null && brickPart.geometryFilePath.Length > 250)
+				if (brickPart.geometryFileName != null && brickPart.geometryFileName.Length > 250)
 				{
-					brickPart.geometryFilePath = brickPart.geometryFilePath.Substring(0, 250);
+					brickPart.geometryFileName = brickPart.geometryFileName.Substring(0, 250);
 				}
+
+				if (brickPart.geometryMimeType != null && brickPart.geometryMimeType.Length > 100)
+				{
+					brickPart.geometryMimeType = brickPart.geometryMimeType.Substring(0, 100);
+				}
+
+				if (brickPart.geometryFileFormat != null && brickPart.geometryFileFormat.Length > 50)
+				{
+					brickPart.geometryFileFormat = brickPart.geometryFileFormat.Substring(0, 50);
+				}
+
+				if (brickPart.geometryOriginalFileName != null && brickPart.geometryOriginalFileName.Length > 250)
+				{
+					brickPart.geometryOriginalFileName = brickPart.geometryOriginalFileName.Substring(0, 250);
+				}
+
+				if (brickPart.lastModifiedDate.HasValue == true && brickPart.lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					brickPart.lastModifiedDate = brickPart.lastModifiedDate.Value.ToUniversalTime();
+				}
+
+
+				//
+				// Add default values for any missing data attribute fields.
+				//
+				if (brickPart.geometryData != null && string.IsNullOrEmpty(brickPart.geometryFileName))
+				{
+				    brickPart.geometryFileName = brickPart.objectGuid.ToString() + ".data";
+				}
+
+				if (brickPart.geometryData != null && (brickPart.geometrySize.HasValue == false || brickPart.geometrySize != brickPart.geometryData.Length))
+				{
+				    brickPart.geometrySize = brickPart.geometryData.Length;
+				}
+
+				if (brickPart.geometryData != null && string.IsNullOrEmpty(brickPart.geometryMimeType))
+				{
+				    brickPart.geometryMimeType = "application/octet-stream";
+				}
+
+				bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
 
 				try
 				{
+					byte[] dataReferenceBeforeClearing = brickPart.geometryData;
+
+					if (diskBasedBinaryStorageMode == true &&
+					    brickPart.geometryFileName != null &&
+					    brickPart.geometryData != null &&
+					    brickPart.geometrySize.HasValue == true &&
+					    brickPart.geometrySize.Value > 0)
+					{
+					    //
+					    // write the bytes to disk
+					    //
+					    WriteDataToDisk(brickPart.objectGuid, brickPart.versionNumber, brickPart.geometryData, "data");
+
+					    //
+					    // Clear the data from the object before we put it into the db
+					    //
+					    brickPart.geometryData = null;
+
+					}
+
 				    EntityEntry<Database.BrickPart> attached = _context.Entry(existing);
 				    attached.CurrentValues.SetValues(brickPart);
 
@@ -702,6 +1122,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 				        transaction.Commit();
 				    }
+
+					if (diskBasedBinaryStorageMode == true)
+					{
+					    //
+					    // Put the data bytes back into the object that will be returned.
+					    //
+					    brickPart.geometryData = dataReferenceBeforeClearing;
+					}
 
 					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
 						"BMC.BrickPart entity successfully updated.",
@@ -772,9 +1200,39 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.name = brickPart.name.Substring(0, 100);
 				}
 
+				if (brickPart.rebrickablePartNum != null && brickPart.rebrickablePartNum.Length > 100)
+				{
+					brickPart.rebrickablePartNum = brickPart.rebrickablePartNum.Substring(0, 100);
+				}
+
+				if (brickPart.rebrickablePartUrl != null && brickPart.rebrickablePartUrl.Length > 250)
+				{
+					brickPart.rebrickablePartUrl = brickPart.rebrickablePartUrl.Substring(0, 250);
+				}
+
+				if (brickPart.rebrickableImgUrl != null && brickPart.rebrickableImgUrl.Length > 250)
+				{
+					brickPart.rebrickableImgUrl = brickPart.rebrickableImgUrl.Substring(0, 250);
+				}
+
 				if (brickPart.ldrawPartId != null && brickPart.ldrawPartId.Length > 100)
 				{
 					brickPart.ldrawPartId = brickPart.ldrawPartId.Substring(0, 100);
+				}
+
+				if (brickPart.bricklinkId != null && brickPart.bricklinkId.Length > 100)
+				{
+					brickPart.bricklinkId = brickPart.bricklinkId.Substring(0, 100);
+				}
+
+				if (brickPart.brickowlId != null && brickPart.brickowlId.Length > 100)
+				{
+					brickPart.brickowlId = brickPart.brickowlId.Substring(0, 100);
+				}
+
+				if (brickPart.legoDesignId != null && brickPart.legoDesignId.Length > 100)
+				{
+					brickPart.legoDesignId = brickPart.legoDesignId.Substring(0, 100);
 				}
 
 				if (brickPart.ldrawTitle != null && brickPart.ldrawTitle.Length > 250)
@@ -792,18 +1250,79 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.author = brickPart.author.Substring(0, 100);
 				}
 
-				if (brickPart.rebrickablePartNum != null && brickPart.rebrickablePartNum.Length > 100)
+				if (brickPart.materialType != null && brickPart.materialType.Length > 50)
 				{
-					brickPart.rebrickablePartNum = brickPart.rebrickablePartNum.Substring(0, 100);
+					brickPart.materialType = brickPart.materialType.Substring(0, 50);
 				}
 
-				if (brickPart.geometryFilePath != null && brickPart.geometryFilePath.Length > 250)
+				if (brickPart.geometryFileName != null && brickPart.geometryFileName.Length > 250)
 				{
-					brickPart.geometryFilePath = brickPart.geometryFilePath.Substring(0, 250);
+					brickPart.geometryFileName = brickPart.geometryFileName.Substring(0, 250);
+				}
+
+				if (brickPart.geometryMimeType != null && brickPart.geometryMimeType.Length > 100)
+				{
+					brickPart.geometryMimeType = brickPart.geometryMimeType.Substring(0, 100);
+				}
+
+				if (brickPart.geometryFileFormat != null && brickPart.geometryFileFormat.Length > 50)
+				{
+					brickPart.geometryFileFormat = brickPart.geometryFileFormat.Substring(0, 50);
+				}
+
+				if (brickPart.geometryOriginalFileName != null && brickPart.geometryOriginalFileName.Length > 250)
+				{
+					brickPart.geometryOriginalFileName = brickPart.geometryOriginalFileName.Substring(0, 250);
+				}
+
+				if (brickPart.lastModifiedDate.HasValue == true && brickPart.lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					brickPart.lastModifiedDate = brickPart.lastModifiedDate.Value.ToUniversalTime();
 				}
 
 				brickPart.objectGuid = Guid.NewGuid();
+
+				//
+				// Add default values for any missing data attribute fields.
+				//
+				if (brickPart.geometryData != null && string.IsNullOrEmpty(brickPart.geometryFileName))
+				{
+				    brickPart.geometryFileName = brickPart.objectGuid.ToString() + ".data";
+				}
+
+				if (brickPart.geometryData != null && (brickPart.geometrySize.HasValue == false || brickPart.geometrySize != brickPart.geometryData.Length))
+				{
+				    brickPart.geometrySize = brickPart.geometryData.Length;
+				}
+
+				if (brickPart.geometryData != null && string.IsNullOrEmpty(brickPart.geometryMimeType))
+				{
+				    brickPart.geometryMimeType = "application/octet-stream";
+				}
+
 				brickPart.versionNumber = 1;
+
+				bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+				byte[] dataReferenceBeforeClearing = brickPart.geometryData;
+
+				if (diskBasedBinaryStorageMode == true &&
+				    brickPart.geometryData != null &&
+				    brickPart.geometryFileName != null &&
+				    brickPart.geometrySize.HasValue == true &&
+				    brickPart.geometrySize.Value > 0)
+				{
+				    //
+				    // write the bytes to disk
+				    //
+				    await WriteDataToDiskAsync(brickPart.objectGuid, brickPart.versionNumber, brickPart.geometryData, "data", cancellationToken);
+
+				    //
+				    // Clear the data from the object before we put it into the db
+				    //
+				    brickPart.geometryData = null;
+
+				}
 
 				_context.BrickParts.Add(brickPart);
 
@@ -823,6 +1342,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					brickPart.geometryData = null;
 					brickPart.BrickElements = null;
 					brickPart.BrickPartChangeHistories = null;
 					brickPart.BrickPartColours = null;
@@ -830,8 +1350,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.BrickPartRelationshipchildBrickParts = null;
 					brickPart.BrickPartRelationshipparentBrickParts = null;
 					brickPart.LegoSetParts = null;
+					brickPart.ModelStepParts = null;
+					brickPart.PartSubFileReferenceparentBrickParts = null;
+					brickPart.PartSubFileReferencereferencedBrickParts = null;
 					brickPart.PlacedBricks = null;
 					brickPart.UserCollectionParts = null;
+					brickPart.UserLostParts = null;
+					brickPart.UserPartListItems = null;
 					brickPart.UserWishlistItems = null;
 					brickPart.brickCategory = null;
 					brickPart.partType = null;
@@ -856,6 +1381,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 						JsonSerializer.Serialize(Database.BrickPart.CreateAnonymousWithFirstLevelSubObjects(brickPart)),
 						null);
 
+
+
+					if (diskBasedBinaryStorageMode == true)
+					{
+					    //
+					    // Put the data bytes back into the object that will be returned.
+					    //
+					    brickPart.geometryData = dataReferenceBeforeClearing;
+					}
 
 				}
 			}
@@ -911,6 +1445,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			        (x.id == id)
 			        select x);
 
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
 
 			//
 			// Make sure nobody else is editing this BrickPart concurrently
@@ -934,6 +1470,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.geometryData = null;
 				cloneOfExisting.BrickElements = null;
 				cloneOfExisting.BrickPartChangeHistories = null;
 				cloneOfExisting.BrickPartColours = null;
@@ -941,8 +1478,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 				cloneOfExisting.BrickPartRelationshipchildBrickParts = null;
 				cloneOfExisting.BrickPartRelationshipparentBrickParts = null;
 				cloneOfExisting.LegoSetParts = null;
+				cloneOfExisting.ModelStepParts = null;
+				cloneOfExisting.PartSubFileReferenceparentBrickParts = null;
+				cloneOfExisting.PartSubFileReferencereferencedBrickParts = null;
 				cloneOfExisting.PlacedBricks = null;
 				cloneOfExisting.UserCollectionParts = null;
+				cloneOfExisting.UserLostParts = null;
+				cloneOfExisting.UserPartListItems = null;
 				cloneOfExisting.UserWishlistItems = null;
 				cloneOfExisting.brickCategory = null;
 				cloneOfExisting.partType = null;
@@ -974,24 +1516,63 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    // Put all other fields back the way that they were 
 				    //
 				    brickPart.name = oldBrickPart.name;
+				    brickPart.rebrickablePartNum = oldBrickPart.rebrickablePartNum;
+				    brickPart.rebrickablePartUrl = oldBrickPart.rebrickablePartUrl;
+				    brickPart.rebrickableImgUrl = oldBrickPart.rebrickableImgUrl;
 				    brickPart.ldrawPartId = oldBrickPart.ldrawPartId;
+				    brickPart.bricklinkId = oldBrickPart.bricklinkId;
+				    brickPart.brickowlId = oldBrickPart.brickowlId;
+				    brickPart.legoDesignId = oldBrickPart.legoDesignId;
 				    brickPart.ldrawTitle = oldBrickPart.ldrawTitle;
 				    brickPart.ldrawCategory = oldBrickPart.ldrawCategory;
 				    brickPart.partTypeId = oldBrickPart.partTypeId;
 				    brickPart.keywords = oldBrickPart.keywords;
 				    brickPart.author = oldBrickPart.author;
 				    brickPart.brickCategoryId = oldBrickPart.brickCategoryId;
-				    brickPart.rebrickablePartNum = oldBrickPart.rebrickablePartNum;
 				    brickPart.widthLdu = oldBrickPart.widthLdu;
 				    brickPart.heightLdu = oldBrickPart.heightLdu;
 				    brickPart.depthLdu = oldBrickPart.depthLdu;
 				    brickPart.massGrams = oldBrickPart.massGrams;
-				    brickPart.geometryFilePath = oldBrickPart.geometryFilePath;
+				    brickPart.momentOfInertiaX = oldBrickPart.momentOfInertiaX;
+				    brickPart.momentOfInertiaY = oldBrickPart.momentOfInertiaY;
+				    brickPart.momentOfInertiaZ = oldBrickPart.momentOfInertiaZ;
+				    brickPart.frictionCoefficient = oldBrickPart.frictionCoefficient;
+				    brickPart.materialType = oldBrickPart.materialType;
+				    brickPart.centerOfMassX = oldBrickPart.centerOfMassX;
+				    brickPart.centerOfMassY = oldBrickPart.centerOfMassY;
+				    brickPart.centerOfMassZ = oldBrickPart.centerOfMassZ;
+				    brickPart.geometryFileName = oldBrickPart.geometryFileName;
+				    brickPart.geometrySize = oldBrickPart.geometrySize;
+				    brickPart.geometryData = oldBrickPart.geometryData;
+				    brickPart.geometryMimeType = oldBrickPart.geometryMimeType;
+				    brickPart.geometryFileFormat = oldBrickPart.geometryFileFormat;
+				    brickPart.geometryOriginalFileName = oldBrickPart.geometryOriginalFileName;
+				    brickPart.boundingBoxMinX = oldBrickPart.boundingBoxMinX;
+				    brickPart.boundingBoxMinY = oldBrickPart.boundingBoxMinY;
+				    brickPart.boundingBoxMinZ = oldBrickPart.boundingBoxMinZ;
+				    brickPart.boundingBoxMaxX = oldBrickPart.boundingBoxMaxX;
+				    brickPart.boundingBoxMaxY = oldBrickPart.boundingBoxMaxY;
+				    brickPart.boundingBoxMaxZ = oldBrickPart.boundingBoxMaxZ;
+				    brickPart.subFileCount = oldBrickPart.subFileCount;
+				    brickPart.polygonCount = oldBrickPart.polygonCount;
 				    brickPart.toothCount = oldBrickPart.toothCount;
 				    brickPart.gearRatio = oldBrickPart.gearRatio;
+				    brickPart.lastModifiedDate = oldBrickPart.lastModifiedDate;
 				    brickPart.objectGuid = oldBrickPart.objectGuid;
 				    brickPart.active = oldBrickPart.active;
 				    brickPart.deleted = oldBrickPart.deleted;
+				    //
+				    // If disk based binary mode is on, then we need to copy the old data file over as well.
+				    //
+				    if (diskBasedBinaryStorageMode == true)
+				    {
+				    	Byte[] binaryData = LoadDataFromDisk(oldBrickPart.objectGuid, oldBrickPart.versionNumber, "data");
+
+				    	//
+				    	// Write out the data as the new version
+				    	//
+				    	WriteDataToDisk(brickPart.objectGuid, brickPart.versionNumber, binaryData, "data");
+				    }
 
 				    string serializedBrickPart = JsonSerializer.Serialize(brickPart);
 
@@ -1297,6 +1878,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.BrickPart cloneOfExisting = (Database.BrickPart)_context.Entry(brickPart).GetDatabaseValues().ToObject();
 
 
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
 			lock (brickPartDeleteSyncRoot)
 			{
 			    try
@@ -1305,6 +1888,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			        brickPart.versionNumber++;
 
 			        _context.SaveChanges();
+
+			        //
+			        // If in disk based storage mode, create a copy of the disk data file for the new version.
+			        //
+			        if (diskBasedBinaryStorageMode == true)
+			        {
+			        	Byte[] binaryData = LoadDataFromDisk(brickPart.objectGuid, brickPart.versionNumber -1, "data");
+
+			        	//
+			        	// Write out the same data
+			        	//
+			        	WriteDataToDisk(brickPart.objectGuid, brickPart.versionNumber, binaryData, "data");
+			        }
 
 			        //
 			        // Now add the change history
@@ -1359,21 +1955,47 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			string name = null,
+			string rebrickablePartNum = null,
+			string rebrickablePartUrl = null,
+			string rebrickableImgUrl = null,
 			string ldrawPartId = null,
+			string bricklinkId = null,
+			string brickowlId = null,
+			string legoDesignId = null,
 			string ldrawTitle = null,
 			string ldrawCategory = null,
 			int? partTypeId = null,
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
-			string rebrickablePartNum = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
 			float? depthLdu = null,
 			float? massGrams = null,
-			string geometryFilePath = null,
+			float? momentOfInertiaX = null,
+			float? momentOfInertiaY = null,
+			float? momentOfInertiaZ = null,
+			float? frictionCoefficient = null,
+			string materialType = null,
+			float? centerOfMassX = null,
+			float? centerOfMassY = null,
+			float? centerOfMassZ = null,
+			string geometryFileName = null,
+			long? geometrySize = null,
+			string geometryMimeType = null,
+			string geometryFileFormat = null,
+			string geometryOriginalFileName = null,
+			float? boundingBoxMinX = null,
+			float? boundingBoxMinY = null,
+			float? boundingBoxMinZ = null,
+			float? boundingBoxMaxX = null,
+			float? boundingBoxMaxY = null,
+			float? boundingBoxMaxZ = null,
+			int? subFileCount = null,
+			int? polygonCount = null,
 			int? toothCount = null,
 			float? gearRatio = null,
+			DateTime? lastModifiedDate = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1410,14 +2032,46 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.BrickPart> query = (from bp in _context.BrickParts select bp);
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(bp => bp.name == name);
 			}
+			if (string.IsNullOrEmpty(rebrickablePartNum) == false)
+			{
+				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
+			}
+			if (string.IsNullOrEmpty(rebrickablePartUrl) == false)
+			{
+				query = query.Where(bp => bp.rebrickablePartUrl == rebrickablePartUrl);
+			}
+			if (string.IsNullOrEmpty(rebrickableImgUrl) == false)
+			{
+				query = query.Where(bp => bp.rebrickableImgUrl == rebrickableImgUrl);
+			}
 			if (string.IsNullOrEmpty(ldrawPartId) == false)
 			{
 				query = query.Where(bp => bp.ldrawPartId == ldrawPartId);
+			}
+			if (string.IsNullOrEmpty(bricklinkId) == false)
+			{
+				query = query.Where(bp => bp.bricklinkId == bricklinkId);
+			}
+			if (string.IsNullOrEmpty(brickowlId) == false)
+			{
+				query = query.Where(bp => bp.brickowlId == brickowlId);
+			}
+			if (string.IsNullOrEmpty(legoDesignId) == false)
+			{
+				query = query.Where(bp => bp.legoDesignId == legoDesignId);
 			}
 			if (string.IsNullOrEmpty(ldrawTitle) == false)
 			{
@@ -1443,10 +2097,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.brickCategoryId == brickCategoryId.Value);
 			}
-			if (string.IsNullOrEmpty(rebrickablePartNum) == false)
-			{
-				query = query.Where(bp => bp.rebrickablePartNum == rebrickablePartNum);
-			}
 			if (widthLdu.HasValue == true)
 			{
 				query = query.Where(bp => bp.widthLdu == widthLdu.Value);
@@ -1463,9 +2113,89 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.massGrams == massGrams.Value);
 			}
-			if (string.IsNullOrEmpty(geometryFilePath) == false)
+			if (momentOfInertiaX.HasValue == true)
 			{
-				query = query.Where(bp => bp.geometryFilePath == geometryFilePath);
+				query = query.Where(bp => bp.momentOfInertiaX == momentOfInertiaX.Value);
+			}
+			if (momentOfInertiaY.HasValue == true)
+			{
+				query = query.Where(bp => bp.momentOfInertiaY == momentOfInertiaY.Value);
+			}
+			if (momentOfInertiaZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.momentOfInertiaZ == momentOfInertiaZ.Value);
+			}
+			if (frictionCoefficient.HasValue == true)
+			{
+				query = query.Where(bp => bp.frictionCoefficient == frictionCoefficient.Value);
+			}
+			if (string.IsNullOrEmpty(materialType) == false)
+			{
+				query = query.Where(bp => bp.materialType == materialType);
+			}
+			if (centerOfMassX.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassX == centerOfMassX.Value);
+			}
+			if (centerOfMassY.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassY == centerOfMassY.Value);
+			}
+			if (centerOfMassZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.centerOfMassZ == centerOfMassZ.Value);
+			}
+			if (string.IsNullOrEmpty(geometryFileName) == false)
+			{
+				query = query.Where(bp => bp.geometryFileName == geometryFileName);
+			}
+			if (geometrySize.HasValue == true)
+			{
+				query = query.Where(bp => bp.geometrySize == geometrySize.Value);
+			}
+			if (string.IsNullOrEmpty(geometryMimeType) == false)
+			{
+				query = query.Where(bp => bp.geometryMimeType == geometryMimeType);
+			}
+			if (string.IsNullOrEmpty(geometryFileFormat) == false)
+			{
+				query = query.Where(bp => bp.geometryFileFormat == geometryFileFormat);
+			}
+			if (string.IsNullOrEmpty(geometryOriginalFileName) == false)
+			{
+				query = query.Where(bp => bp.geometryOriginalFileName == geometryOriginalFileName);
+			}
+			if (boundingBoxMinX.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinX == boundingBoxMinX.Value);
+			}
+			if (boundingBoxMinY.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinY == boundingBoxMinY.Value);
+			}
+			if (boundingBoxMinZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMinZ == boundingBoxMinZ.Value);
+			}
+			if (boundingBoxMaxX.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxX == boundingBoxMaxX.Value);
+			}
+			if (boundingBoxMaxY.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxY == boundingBoxMaxY.Value);
+			}
+			if (boundingBoxMaxZ.HasValue == true)
+			{
+				query = query.Where(bp => bp.boundingBoxMaxZ == boundingBoxMaxZ.Value);
+			}
+			if (subFileCount.HasValue == true)
+			{
+				query = query.Where(bp => bp.subFileCount == subFileCount.Value);
+			}
+			if (polygonCount.HasValue == true)
+			{
+				query = query.Where(bp => bp.polygonCount == polygonCount.Value);
 			}
 			if (toothCount.HasValue == true)
 			{
@@ -1474,6 +2204,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (gearRatio.HasValue == true)
 			{
 				query = query.Where(bp => bp.gearRatio == gearRatio.Value);
+			}
+			if (lastModifiedDate.HasValue == true)
+			{
+				query = query.Where(bp => bp.lastModifiedDate == lastModifiedDate.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1518,13 +2252,22 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
+			       || x.rebrickablePartNum.Contains(anyStringContains)
+			       || x.rebrickablePartUrl.Contains(anyStringContains)
+			       || x.rebrickableImgUrl.Contains(anyStringContains)
 			       || x.ldrawPartId.Contains(anyStringContains)
+			       || x.bricklinkId.Contains(anyStringContains)
+			       || x.brickowlId.Contains(anyStringContains)
+			       || x.legoDesignId.Contains(anyStringContains)
 			       || x.ldrawTitle.Contains(anyStringContains)
 			       || x.ldrawCategory.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
-			       || x.rebrickablePartNum.Contains(anyStringContains)
-			       || x.geometryFilePath.Contains(anyStringContains)
+			       || x.materialType.Contains(anyStringContains)
+			       || x.geometryFileName.Contains(anyStringContains)
+			       || x.geometryMimeType.Contains(anyStringContains)
+			       || x.geometryFileFormat.Contains(anyStringContains)
+			       || x.geometryOriginalFileName.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
 			       || x.partType.name.Contains(anyStringContains)
@@ -1533,7 +2276,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
-			query = query.OrderBy(x => x.name).ThenBy(x => x.ldrawPartId).ThenBy(x => x.ldrawTitle);
+			query = query.OrderBy(x => x.name).ThenBy(x => x.rebrickablePartNum).ThenBy(x => x.rebrickablePartUrl);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{
@@ -1573,5 +2316,241 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+
+
+        [Route("api/BrickPart/Data/{id:int}")]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [HttpPost]
+        [HttpPut]
+        public async Task<IActionResult> UploadData(int id, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			MediaTypeHeaderValue mediaTypeHeader; 
+
+            if (!HttpContext.Request.HasFormContentType ||
+				!MediaTypeHeaderValue.TryParse(HttpContext.Request.ContentType, out mediaTypeHeader) ||
+                string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
+            {
+                return new UnsupportedMediaTypeResult();
+            }
+
+
+            Database.BrickPart brickPart = await (from x in _context.BrickParts where x.id == id && x.active == true && x.deleted == false select x).FirstOrDefaultAsync();
+            if (brickPart == null)
+            {
+                return NotFound();
+            }
+
+            bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+
+            // This will be used to signal whether we are saving data or clearing it.
+            bool foundFileData = false;
+
+
+            //
+            // This will get the first file from the request and save it
+            //
+			try
+			{
+                MultipartReader reader = new MultipartReader(mediaTypeHeader.Boundary.Value, HttpContext.Request.Body);
+                MultipartSection section = await reader.ReadNextSectionAsync();
+
+                while (section != null)
+				{
+					ContentDispositionHeaderValue contentDisposition;
+
+					bool hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
+
+
+					if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
+						!string.IsNullOrEmpty(contentDisposition.FileName.Value))
+					{
+
+						foundFileData = true;
+						string fileName = contentDisposition.FileName.ToString().Trim('"');
+
+						// default the mime type to be the one for arbitrary binary data unless we have a mime type on the content headers that tells us otherwise.
+						MediaTypeHeaderValue mediaType;
+						bool hasMediaTypeHeader = MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
+
+						string mimeType = "application/octet-stream";
+						if (hasMediaTypeHeader && mediaTypeHeader.MediaType != null )
+						{
+							mimeType = mediaTypeHeader.MediaType.ToString();
+						}
+
+						lock (brickPartPutSyncRoot)
+						{
+							try
+							{
+								using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+								{
+									brickPart.geometryFileName = fileName.Trim();
+									brickPart.geometryMimeType = mimeType;
+									brickPart.geometrySize = section.Body.Length;
+
+									brickPart.versionNumber++;
+
+									if (diskBasedBinaryStorageMode == true &&
+										 brickPart.geometryFileName != null &&
+										 brickPart.geometrySize > 0)
+									{
+										//
+										// write the bytes to disk
+										//
+										WriteDataToDisk(brickPart.objectGuid, brickPart.versionNumber, section.Body, "data");
+										//
+										// Clear the data from the object before we put it into the db
+										//
+										brickPart.geometryData = null;
+									}
+									else
+									{
+										using (MemoryStream memoryStream = new MemoryStream((int)section.Body.Length))
+										{
+											section.Body.CopyTo(memoryStream);
+											brickPart.geometryData = memoryStream.ToArray();
+										}
+									}
+									//
+									// Now add the change history
+									//
+									BrickPartChangeHistory brickPartChangeHistory = new BrickPartChangeHistory();
+									brickPartChangeHistory.brickPartId = brickPart.id;
+									brickPartChangeHistory.versionNumber = brickPart.versionNumber;
+									brickPartChangeHistory.timeStamp = DateTime.UtcNow;
+									brickPartChangeHistory.userId = securityUser.id;
+									brickPartChangeHistory.data = JsonSerializer.Serialize(Database.BrickPart.CreateAnonymousWithFirstLevelSubObjects(brickPart));
+									_context.BrickPartChangeHistories.Add(brickPartChangeHistory);
+
+									_context.SaveChanges();
+
+									transaction.Commit();
+
+									CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "BrickPart Data Uploaded with filename of " + fileName + " and with size of " + section.Body.Length, id.ToString());
+								}
+							}
+							catch (Exception ex)
+							{
+								CreateAuditEvent(AuditEngine.AuditType.DeleteEntity, "BrickPart Data Upload Failed.", false, id.ToString(), "", "", ex);
+
+								return Problem(ex.Message);
+							}
+						}
+
+
+						//
+						// Stop looking for more files.
+						//
+						break;
+					}
+
+					section = await reader.ReadNextSectionAsync();
+				}
+            }
+            catch (Exception ex)
+            {
+                CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "Caught error in UploadData handler", id.ToString(), ex);
+
+                return Problem(ex.Message);
+            }
+
+            //
+            // Treat the situation where we have a valid ID but no file content as a request to clear the data
+            //
+            if (foundFileData == false)
+            {
+                lock (brickPartPutSyncRoot)
+                {
+                    try
+                    {
+                        using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                        {
+                            if (diskBasedBinaryStorageMode == true)
+                            {
+								DeleteDataFromDisk(brickPart.objectGuid, brickPart.versionNumber, "data");
+                            }
+
+                            brickPart.geometryFileName = null;
+                            brickPart.geometryMimeType = null;
+                            brickPart.geometrySize = 0;
+                            brickPart.geometryData = null;
+                            brickPart.versionNumber++;
+
+
+                            //
+                            // Now add the change history
+                            //
+                            BrickPartChangeHistory brickPartChangeHistory = new BrickPartChangeHistory();
+                            brickPartChangeHistory.brickPartId = brickPart.id;
+                            brickPartChangeHistory.versionNumber = brickPart.versionNumber;
+                            brickPartChangeHistory.timeStamp = DateTime.UtcNow;
+                            brickPartChangeHistory.userId = securityUser.id;
+                                    brickPartChangeHistory.data = JsonSerializer.Serialize(Database.BrickPart.CreateAnonymousWithFirstLevelSubObjects(brickPart));
+                            _context.BrickPartChangeHistories.Add(brickPartChangeHistory);
+
+                            _context.SaveChanges();
+
+                            transaction.Commit();
+
+                            CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "BrickPart data cleared.", id.ToString());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CreateAuditEvent(AuditEngine.AuditType.DeleteEntity, "BrickPart data clear failed.", false, id.ToString(), "", "", ex);
+
+                        return Problem(ex.Message);
+                    }
+                }
+            }
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/BrickPart/Data/{id:int}")]
+        public async Task<IActionResult> DownloadDataAsync(int id, CancellationToken cancellationToken = default)
+        {
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			using (BMCContext context = new BMCContext())
+            {
+                //
+                // Return the data to the user as though it was a file.
+                //
+                Database.BrickPart brickPart = await (from d in context.BrickParts
+                                                where d.id == id &&
+                                                d.active == true &&
+                                                d.deleted == false
+                                                select d).FirstOrDefaultAsync();
+
+                if (brickPart != null && brickPart.geometryData != null)
+                {
+                   return File(brickPart.geometryData.ToArray<byte>(), brickPart.geometryMimeType, brickPart.geometryFileName != null ? brickPart.geometryFileName.Trim() : "BrickPart_" + brickPart.id.ToString(), true);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+        }
 	}
 }

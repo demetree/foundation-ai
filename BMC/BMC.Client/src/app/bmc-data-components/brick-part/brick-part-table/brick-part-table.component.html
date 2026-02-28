@@ -31,9 +31,33 @@
                 Name
                 <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('rebrickablePartNum')">
+                Rebrickable  Part  Num
+                <span *ngIf="sortColumn === 'rebrickablePartNum'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('rebrickablePartUrl')">
+                Rebrickable  Part  Url
+                <span *ngIf="sortColumn === 'rebrickablePartUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('rebrickableImgUrl')">
+                Rebrickable  Img  Url
+                <span *ngIf="sortColumn === 'rebrickableImgUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('ldrawPartId')">
                 Ldraw  Part  Id
                 <span *ngIf="sortColumn === 'ldrawPartId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bricklinkId')">
+                Bricklink  Id
+                <span *ngIf="sortColumn === 'bricklinkId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickowlId')">
+                Brickowl  Id
+                <span *ngIf="sortColumn === 'brickowlId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('legoDesignId')">
+                Lego  Design  Id
+                <span *ngIf="sortColumn === 'legoDesignId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('ldrawTitle')">
                 Ldraw  Title
@@ -59,10 +83,6 @@
                 Brick  Category
                 <span *ngIf="sortColumn === 'brickCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('rebrickablePartNum')">
-                Rebrickable  Part  Num
-                <span *ngIf="sortColumn === 'rebrickablePartNum'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
-            </th>
             <th class="sortable" scope="col" (click)="sortBy('widthLdu')">
                 Width  Ldu
                 <span *ngIf="sortColumn === 'widthLdu'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -79,9 +99,93 @@
                 Mass  Grams
                 <span *ngIf="sortColumn === 'massGrams'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('geometryFilePath')">
-                Geometry  File  Path
-                <span *ngIf="sortColumn === 'geometryFilePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('momentOfInertiaX')">
+                Moment  Of  Inertia  X
+                <span *ngIf="sortColumn === 'momentOfInertiaX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('momentOfInertiaY')">
+                Moment  Of  Inertia  Y
+                <span *ngIf="sortColumn === 'momentOfInertiaY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('momentOfInertiaZ')">
+                Moment  Of  Inertia  Z
+                <span *ngIf="sortColumn === 'momentOfInertiaZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('frictionCoefficient')">
+                Friction  Coefficient
+                <span *ngIf="sortColumn === 'frictionCoefficient'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('materialType')">
+                Material  Type
+                <span *ngIf="sortColumn === 'materialType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('centerOfMassX')">
+                Center  Of  Mass  X
+                <span *ngIf="sortColumn === 'centerOfMassX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('centerOfMassY')">
+                Center  Of  Mass  Y
+                <span *ngIf="sortColumn === 'centerOfMassY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('centerOfMassZ')">
+                Center  Of  Mass  Z
+                <span *ngIf="sortColumn === 'centerOfMassZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('geometryFileName')">
+                Geometry  File  Name
+                <span *ngIf="sortColumn === 'geometryFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('geometrySize')">
+                Geometry  Size
+                <span *ngIf="sortColumn === 'geometrySize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('geometryData')">
+                Geometry  Data
+                <span *ngIf="sortColumn === 'geometryData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('geometryMimeType')">
+                Geometry  Mime  Type
+                <span *ngIf="sortColumn === 'geometryMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('geometryFileFormat')">
+                Geometry  File  Format
+                <span *ngIf="sortColumn === 'geometryFileFormat'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('geometryOriginalFileName')">
+                Geometry  Original  File  Name
+                <span *ngIf="sortColumn === 'geometryOriginalFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('boundingBoxMinX')">
+                Bounding  Box  Min  X
+                <span *ngIf="sortColumn === 'boundingBoxMinX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('boundingBoxMinY')">
+                Bounding  Box  Min  Y
+                <span *ngIf="sortColumn === 'boundingBoxMinY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('boundingBoxMinZ')">
+                Bounding  Box  Min  Z
+                <span *ngIf="sortColumn === 'boundingBoxMinZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('boundingBoxMaxX')">
+                Bounding  Box  Max  X
+                <span *ngIf="sortColumn === 'boundingBoxMaxX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('boundingBoxMaxY')">
+                Bounding  Box  Max  Y
+                <span *ngIf="sortColumn === 'boundingBoxMaxY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('boundingBoxMaxZ')">
+                Bounding  Box  Max  Z
+                <span *ngIf="sortColumn === 'boundingBoxMaxZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('subFileCount')">
+                Sub  File  Count
+                <span *ngIf="sortColumn === 'subFileCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('polygonCount')">
+                Polygon  Count
+                <span *ngIf="sortColumn === 'polygonCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('toothCount')">
                 Tooth  Count
@@ -90,6 +194,10 @@
             <th class="sortable" scope="col" (click)="sortBy('gearRatio')">
                 Gear  Ratio
                 <span *ngIf="sortColumn === 'gearRatio'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastModifiedDate')">
+                Last  Modified  Date
+                <span *ngIf="sortColumn === 'lastModifiedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
 End of commented block for alternate definition option -->
           </tr>
@@ -177,21 +285,48 @@ End of commented block for alternate definition option -->
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/brickpart', brickPart.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Part details">{{brickPart.name}}</a></td>
+            <td class="text-truncate">{{brickPart.rebrickablePartNum}}</td>
+            <td class="text-truncate">{{brickPart.rebrickablePartUrl}}</td>
+            <td class="text-truncate">{{brickPart.rebrickableImgUrl}}</td>
             <td class="text-truncate">{{brickPart.ldrawPartId}}</td>
+            <td class="text-truncate">{{brickPart.bricklinkId}}</td>
+            <td class="text-truncate">{{brickPart.brickowlId}}</td>
+            <td class="text-truncate">{{brickPart.legoDesignId}}</td>
             <td class="text-truncate">{{brickPart.ldrawTitle}}</td>
             <td class="text-truncate">{{brickPart.ldrawCategory}}</td>
             <td class="text-truncate"><a [routerLink]="['/parttype', brickPart.partTypeId]" class="btn btn-link text-left" ngbTooltip="Open Part Type details">{{brickPart.partType?.name}}</a></td>
             <td class="text-truncate">{{brickPart.keywords}}</td>
             <td class="text-truncate">{{brickPart.author}}</td>
             <td class="text-truncate"><a [routerLink]="['/brickcategory', brickPart.brickCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Brick Category details">{{brickPart.brickCategory?.name}}</a></td>
-            <td class="text-truncate">{{brickPart.rebrickablePartNum}}</td>
             <td class="text-truncate">{{brickPart.widthLdu | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.heightLdu | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.depthLdu | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.massGrams | bigNumberFormat : '1.0-2'}}</td>
-            <td class="text-truncate">{{brickPart.geometryFilePath}}</td>
+            <td class="text-truncate">{{brickPart.momentOfInertiaX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.momentOfInertiaY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.momentOfInertiaZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.frictionCoefficient | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.materialType}}</td>
+            <td class="text-truncate">{{brickPart.centerOfMassX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.centerOfMassY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.centerOfMassZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.geometryFileName}}</td>
+            <td class="text-truncate">{{brickPart.geometrySize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.geometryData}}</td>
+            <td class="text-truncate">{{brickPart.geometryMimeType}}</td>
+            <td class="text-truncate">{{brickPart.geometryFileFormat}}</td>
+            <td class="text-truncate">{{brickPart.geometryOriginalFileName}}</td>
+            <td class="text-truncate">{{brickPart.boundingBoxMinX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.boundingBoxMinY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.boundingBoxMinZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.boundingBoxMaxX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.boundingBoxMaxY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.boundingBoxMaxZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.subFileCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.polygonCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.toothCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.gearRatio | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPart.lastModifiedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -343,9 +478,33 @@ End of commented block for alternate definition option -->
               <strong>Name: </strong>
               {{brickPart.name}}
             </p>
+            <p class="brick-part-info" *ngIf="brickPart.rebrickablePartNum != null">
+              <strong>Rebrickable Part Num: </strong>
+              {{brickPart.rebrickablePartNum}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.rebrickablePartUrl != null">
+              <strong>Rebrickable Part Url: </strong>
+              {{brickPart.rebrickablePartUrl}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.rebrickableImgUrl != null">
+              <strong>Rebrickable Img Url: </strong>
+              {{brickPart.rebrickableImgUrl}}
+            </p>
             <p class="brick-part-info" *ngIf="brickPart.ldrawPartId != null">
               <strong>Ldraw Part Id: </strong>
               {{brickPart.ldrawPartId}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.bricklinkId != null">
+              <strong>Bricklink Id: </strong>
+              {{brickPart.bricklinkId}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.brickowlId != null">
+              <strong>Brickowl Id: </strong>
+              {{brickPart.brickowlId}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.legoDesignId != null">
+              <strong>Lego Design Id: </strong>
+              {{brickPart.legoDesignId}}
             </p>
             <p class="brick-part-info" *ngIf="brickPart.ldrawTitle != null">
               <strong>Ldraw Title: </strong>
@@ -371,10 +530,6 @@ End of commented block for alternate definition option -->
               <strong>Brick Category: </strong>
               <a [routerLink]="['/brickcategory', brickPart.brickCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Brick Category details">{{brickPart.brickCategory?.name}}</a>
             </p>
-            <p class="brick-part-info" *ngIf="brickPart.rebrickablePartNum != null">
-              <strong>Rebrickable Part Num: </strong>
-              {{brickPart.rebrickablePartNum}}
-            </p>
             <p class="brick-part-info" *ngIf="brickPart.widthLdu != null">
               <strong>Width Ldu: </strong>
               {{brickPart.widthLdu | bigNumberFormat : '1.0-2'}}
@@ -391,9 +546,93 @@ End of commented block for alternate definition option -->
               <strong>Mass Grams: </strong>
               {{brickPart.massGrams | bigNumberFormat : '1.0-2'}}
             </p>
-            <p class="brick-part-info" *ngIf="brickPart.geometryFilePath != null">
-              <strong>Geometry File Path: </strong>
-              {{brickPart.geometryFilePath}}
+            <p class="brick-part-info" *ngIf="brickPart.momentOfInertiaX != null">
+              <strong>Moment Of Inertia X: </strong>
+              {{brickPart.momentOfInertiaX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.momentOfInertiaY != null">
+              <strong>Moment Of Inertia Y: </strong>
+              {{brickPart.momentOfInertiaY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.momentOfInertiaZ != null">
+              <strong>Moment Of Inertia Z: </strong>
+              {{brickPart.momentOfInertiaZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.frictionCoefficient != null">
+              <strong>Friction Coefficient: </strong>
+              {{brickPart.frictionCoefficient | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.materialType != null">
+              <strong>Material Type: </strong>
+              {{brickPart.materialType}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.centerOfMassX != null">
+              <strong>Center Of Mass X: </strong>
+              {{brickPart.centerOfMassX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.centerOfMassY != null">
+              <strong>Center Of Mass Y: </strong>
+              {{brickPart.centerOfMassY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.centerOfMassZ != null">
+              <strong>Center Of Mass Z: </strong>
+              {{brickPart.centerOfMassZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.geometryFileName != null">
+              <strong>Geometry File Name: </strong>
+              {{brickPart.geometryFileName}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.geometrySize != null">
+              <strong>Geometry Size: </strong>
+              {{brickPart.geometrySize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.geometryData != null">
+              <strong>Geometry Data: </strong>
+              {{brickPart.geometryData}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.geometryMimeType != null">
+              <strong>Geometry Mime Type: </strong>
+              {{brickPart.geometryMimeType}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.geometryFileFormat != null">
+              <strong>Geometry File Format: </strong>
+              {{brickPart.geometryFileFormat}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.geometryOriginalFileName != null">
+              <strong>Geometry Original File Name: </strong>
+              {{brickPart.geometryOriginalFileName}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.boundingBoxMinX != null">
+              <strong>Bounding Box Min X: </strong>
+              {{brickPart.boundingBoxMinX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.boundingBoxMinY != null">
+              <strong>Bounding Box Min Y: </strong>
+              {{brickPart.boundingBoxMinY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.boundingBoxMinZ != null">
+              <strong>Bounding Box Min Z: </strong>
+              {{brickPart.boundingBoxMinZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.boundingBoxMaxX != null">
+              <strong>Bounding Box Max X: </strong>
+              {{brickPart.boundingBoxMaxX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.boundingBoxMaxY != null">
+              <strong>Bounding Box Max Y: </strong>
+              {{brickPart.boundingBoxMaxY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.boundingBoxMaxZ != null">
+              <strong>Bounding Box Max Z: </strong>
+              {{brickPart.boundingBoxMaxZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.subFileCount != null">
+              <strong>Sub File Count: </strong>
+              {{brickPart.subFileCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.polygonCount != null">
+              <strong>Polygon Count: </strong>
+              {{brickPart.polygonCount | bigNumberFormat : '1.0-2'}}
             </p>
             <p class="brick-part-info" *ngIf="brickPart.toothCount != null">
               <strong>Tooth Count: </strong>
@@ -402,6 +641,10 @@ End of commented block for alternate definition option -->
             <p class="brick-part-info" *ngIf="brickPart.gearRatio != null">
               <strong>Gear Ratio: </strong>
               {{brickPart.gearRatio | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.lastModifiedDate != null">
+              <strong>Last Modified Date: </strong>
+              {{brickPart.lastModifiedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             </div>
          </div>

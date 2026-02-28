@@ -70,6 +70,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string imageUrl = null,
 			string brickLinkUrl = null,
 			string rebrickableUrl = null,
+			string rebrickableSetNum = null,
+			DateTime? lastModifiedDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -107,6 +109,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.LegoSet> query = (from ls in _context.LegoSets select ls);
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -139,6 +149,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(rebrickableUrl) == false)
 			{
 				query = query.Where(ls => ls.rebrickableUrl == rebrickableUrl);
+			}
+			if (string.IsNullOrEmpty(rebrickableSetNum) == false)
+			{
+				query = query.Where(ls => ls.rebrickableSetNum == rebrickableSetNum);
+			}
+			if (lastModifiedDate.HasValue == true)
+			{
+				query = query.Where(ls => ls.lastModifiedDate == lastModifiedDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -185,6 +203,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.imageUrl.Contains(anyStringContains)
 			       || x.brickLinkUrl.Contains(anyStringContains)
 			       || x.rebrickableUrl.Contains(anyStringContains)
+			       || x.rebrickableSetNum.Contains(anyStringContains)
 			       || (includeRelations == true && x.legoTheme.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.legoTheme.description.Contains(anyStringContains))
 			   );
@@ -249,6 +268,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string imageUrl = null,
 			string brickLinkUrl = null,
 			string rebrickableUrl = null,
+			string rebrickableSetNum = null,
+			DateTime? lastModifiedDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -267,6 +288,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			//
+			// Fix any non-UTC date parameters that come in.
+			//
+			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
 
 			IQueryable<Database.LegoSet> query = (from ls in _context.LegoSets select ls);
 			if (name != null)
@@ -300,6 +329,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (rebrickableUrl != null)
 			{
 				query = query.Where(ls => ls.rebrickableUrl == rebrickableUrl);
+			}
+			if (rebrickableSetNum != null)
+			{
+				query = query.Where(ls => ls.rebrickableSetNum == rebrickableSetNum);
+			}
+			if (lastModifiedDate.HasValue == true)
+			{
+				query = query.Where(ls => ls.lastModifiedDate == lastModifiedDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -343,6 +380,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.imageUrl.Contains(anyStringContains)
 			       || x.brickLinkUrl.Contains(anyStringContains)
 			       || x.rebrickableUrl.Contains(anyStringContains)
+			       || x.rebrickableSetNum.Contains(anyStringContains)
 			       || x.legoTheme.name.Contains(anyStringContains)
 			       || x.legoTheme.description.Contains(anyStringContains)
 			   );
@@ -545,6 +583,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				legoSet.rebrickableUrl = legoSet.rebrickableUrl.Substring(0, 250);
 			}
 
+			if (legoSet.rebrickableSetNum != null && legoSet.rebrickableSetNum.Length > 100)
+			{
+				legoSet.rebrickableSetNum = legoSet.rebrickableSetNum.Substring(0, 100);
+			}
+
+			if (legoSet.lastModifiedDate.HasValue == true && legoSet.lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				legoSet.lastModifiedDate = legoSet.lastModifiedDate.Value.ToUniversalTime();
+			}
+
 			EntityEntry<Database.LegoSet> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(legoSet);
 
@@ -639,6 +687,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (legoSet.rebrickableUrl != null && legoSet.rebrickableUrl.Length > 250)
 				{
 					legoSet.rebrickableUrl = legoSet.rebrickableUrl.Substring(0, 250);
+				}
+
+				if (legoSet.rebrickableSetNum != null && legoSet.rebrickableSetNum.Length > 100)
+				{
+					legoSet.rebrickableSetNum = legoSet.rebrickableSetNum.Substring(0, 100);
+				}
+
+				if (legoSet.lastModifiedDate.HasValue == true && legoSet.lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					legoSet.lastModifiedDate = legoSet.lastModifiedDate.Value.ToUniversalTime();
 				}
 
 				legoSet.objectGuid = Guid.NewGuid();
@@ -762,6 +820,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string imageUrl = null,
 			string brickLinkUrl = null,
 			string rebrickableUrl = null,
+			string rebrickableSetNum = null,
+			DateTime? lastModifiedDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -797,6 +857,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.LegoSet> query = (from ls in _context.LegoSets select ls);
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -829,6 +897,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(rebrickableUrl) == false)
 			{
 				query = query.Where(ls => ls.rebrickableUrl == rebrickableUrl);
+			}
+			if (string.IsNullOrEmpty(rebrickableSetNum) == false)
+			{
+				query = query.Where(ls => ls.rebrickableSetNum == rebrickableSetNum);
+			}
+			if (lastModifiedDate.HasValue == true)
+			{
+				query = query.Where(ls => ls.lastModifiedDate == lastModifiedDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -873,6 +949,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.imageUrl.Contains(anyStringContains)
 			       || x.brickLinkUrl.Contains(anyStringContains)
 			       || x.rebrickableUrl.Contains(anyStringContains)
+			       || x.rebrickableSetNum.Contains(anyStringContains)
 			       || x.legoTheme.name.Contains(anyStringContains)
 			       || x.legoTheme.description.Contains(anyStringContains)
 			   );

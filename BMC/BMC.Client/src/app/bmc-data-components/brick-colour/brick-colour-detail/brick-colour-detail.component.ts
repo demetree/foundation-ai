@@ -26,10 +26,13 @@ import { BrickColourService, BrickColourData, BrickColourSubmitData } from '../.
 import { ColourFinishService } from '../../../bmc-data-services/colour-finish.service';
 import { BrickPartColourService } from '../../../bmc-data-services/brick-part-colour.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
+import { ModelStepPartService } from '../../../bmc-data-services/model-step-part.service';
 import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.service';
 import { BrickElementService } from '../../../bmc-data-services/brick-element.service';
 import { UserCollectionPartService } from '../../../bmc-data-services/user-collection-part.service';
 import { UserWishlistItemService } from '../../../bmc-data-services/user-wishlist-item.service';
+import { UserPartListItemService } from '../../../bmc-data-services/user-part-list-item.service';
+import { UserLostPartService } from '../../../bmc-data-services/user-lost-part.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -42,7 +45,10 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 //
 interface BrickColourFormValues {
   name: string,
-  ldrawColourCode: string,     // Stored as string for form input, converted to number on submit.
+  rebrickableColorId: string,     // Stored as string for form input, converted to number on submit.
+  ldrawColourCode: string | null,     // Stored as string for form input, converted to number on submit.
+  bricklinkColorId: string | null,     // Stored as string for form input, converted to number on submit.
+  brickowlColorId: string | null,     // Stored as string for form input, converted to number on submit.
   hexRgb: string | null,
   hexEdgeColour: string | null,
   alpha: string | null,     // Stored as string for form input, converted to number on submit.
@@ -82,7 +88,10 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
 
   public brickColourForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
-        ldrawColourCode: ['', Validators.required],
+        rebrickableColorId: ['', Validators.required],
+        ldrawColourCode: [''],
+        bricklinkColorId: [''],
+        brickowlColorId: [''],
         hexRgb: [''],
         hexEdgeColour: [''],
         alpha: [''],
@@ -111,10 +120,13 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
   public colourFinishes$ = this.colourFinishService.GetColourFinishList();
   public brickPartColours$ = this.brickPartColourService.GetBrickPartColourList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
+  public modelStepParts$ = this.modelStepPartService.GetModelStepPartList();
   public legoSetParts$ = this.legoSetPartService.GetLegoSetPartList();
   public brickElements$ = this.brickElementService.GetBrickElementList();
   public userCollectionParts$ = this.userCollectionPartService.GetUserCollectionPartList();
   public userWishlistItems$ = this.userWishlistItemService.GetUserWishlistItemList();
+  public userPartListItems$ = this.userPartListItemService.GetUserPartListItemList();
+  public userLostParts$ = this.userLostPartService.GetUserLostPartList();
 
   private destroy$ = new Subject<void>();
 
@@ -123,10 +135,13 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
     public colourFinishService: ColourFinishService,
     public brickPartColourService: BrickPartColourService,
     public placedBrickService: PlacedBrickService,
+    public modelStepPartService: ModelStepPartService,
     public legoSetPartService: LegoSetPartService,
     public brickElementService: BrickElementService,
     public userCollectionPartService: UserCollectionPartService,
     public userWishlistItemService: UserWishlistItemService,
+    public userPartListItemService: UserPartListItemService,
+    public userLostPartService: UserLostPartService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -409,7 +424,10 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
       //
       this.brickColourForm.reset({
         name: '',
+        rebrickableColorId: '',
         ldrawColourCode: '',
+        bricklinkColorId: '',
+        brickowlColorId: '',
         hexRgb: '',
         hexEdgeColour: '',
         alpha: '',
@@ -431,7 +449,10 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         //
         this.brickColourForm.reset({
         name: brickColourData.name ?? '',
+        rebrickableColorId: brickColourData.rebrickableColorId?.toString() ?? '',
         ldrawColourCode: brickColourData.ldrawColourCode?.toString() ?? '',
+        bricklinkColorId: brickColourData.bricklinkColorId?.toString() ?? '',
+        brickowlColorId: brickColourData.brickowlColorId?.toString() ?? '',
         hexRgb: brickColourData.hexRgb ?? '',
         hexEdgeColour: brickColourData.hexEdgeColour ?? '',
         alpha: brickColourData.alpha?.toString() ?? '',
@@ -503,7 +524,10 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
     const brickColourSubmitData: BrickColourSubmitData = {
         id: this.brickColourData?.id || 0,
         name: formValue.name!.trim(),
-        ldrawColourCode: Number(formValue.ldrawColourCode),
+        rebrickableColorId: Number(formValue.rebrickableColorId),
+        ldrawColourCode: formValue.ldrawColourCode ? Number(formValue.ldrawColourCode) : null,
+        bricklinkColorId: formValue.bricklinkColorId ? Number(formValue.bricklinkColorId) : null,
+        brickowlColorId: formValue.brickowlColorId ? Number(formValue.brickowlColorId) : null,
         hexRgb: formValue.hexRgb?.trim() || null,
         hexEdgeColour: formValue.hexEdgeColour?.trim() || null,
         alpha: formValue.alpha ? Number(formValue.alpha) : null,

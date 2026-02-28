@@ -35,6 +35,8 @@ public partial class Project
 
     public virtual ICollection<BuildManual> BuildManuals { get; set; } = new List<BuildManual>();
 
+    public virtual ICollection<ModelDocument> ModelDocuments { get; set; } = new List<ModelDocument>();
+
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
 
     public virtual ICollection<ProjectCameraPreset> ProjectCameraPresets { get; set; } = new List<ProjectCameraPreset>();

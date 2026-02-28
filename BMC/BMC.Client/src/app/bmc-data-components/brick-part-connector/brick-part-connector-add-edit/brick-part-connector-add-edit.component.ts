@@ -44,6 +44,8 @@ interface BrickPartConnectorFormValues {
   orientationX: string | null,     // Stored as string for form input, converted to number on submit.
   orientationY: string | null,     // Stored as string for form input, converted to number on submit.
   orientationZ: string | null,     // Stored as string for form input, converted to number on submit.
+  connectorGroupId: string | null,     // Stored as string for form input, converted to number on submit.
+  isAutoExtracted: boolean,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -85,6 +87,8 @@ export class BrickPartConnectorAddEditComponent {
         orientationX: [''],
         orientationY: [''],
         orientationZ: [''],
+        connectorGroupId: [''],
+        isAutoExtracted: [false],
         sequence: [''],
         active: [true],
         deleted: [false],
@@ -233,6 +237,8 @@ export class BrickPartConnectorAddEditComponent {
         orientationX: formValue.orientationX ? Number(formValue.orientationX) : null,
         orientationY: formValue.orientationY ? Number(formValue.orientationY) : null,
         orientationZ: formValue.orientationZ ? Number(formValue.orientationZ) : null,
+        connectorGroupId: formValue.connectorGroupId ? Number(formValue.connectorGroupId) : null,
+        isAutoExtracted: !!formValue.isAutoExtracted,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
@@ -369,6 +375,8 @@ export class BrickPartConnectorAddEditComponent {
         orientationX: '',
         orientationY: '',
         orientationZ: '',
+        connectorGroupId: '',
+        isAutoExtracted: false,
         sequence: '',
         active: true,
         deleted: false,
@@ -389,6 +397,8 @@ export class BrickPartConnectorAddEditComponent {
         orientationX: brickPartConnectorData.orientationX?.toString() ?? '',
         orientationY: brickPartConnectorData.orientationY?.toString() ?? '',
         orientationZ: brickPartConnectorData.orientationZ?.toString() ?? '',
+        connectorGroupId: brickPartConnectorData.connectorGroupId?.toString() ?? '',
+        isAutoExtracted: brickPartConnectorData.isAutoExtracted ?? false,
         sequence: brickPartConnectorData.sequence?.toString() ?? '',
         active: brickPartConnectorData.active ?? true,
         deleted: brickPartConnectorData.deleted ?? false,

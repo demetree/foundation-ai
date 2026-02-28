@@ -180,6 +180,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="modelDocumentService.userIsBMCModelDocumentReader()">
+                            <button ngbNavLink>Model Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.ModelDocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-model-document-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-model-document-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="buildManualService.userIsBMCBuildManualReader()">
                             <button ngbNavLink>Build Manuals
                                 <span class="badge bg-primary ms-2">

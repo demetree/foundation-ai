@@ -63,7 +63,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/BrickColours")]
 		public async Task<IActionResult> GetBrickColours(
 			string name = null,
+			int? rebrickableColorId = null,
 			int? ldrawColourCode = null,
+			int? bricklinkColorId = null,
+			int? brickowlColorId = null,
 			string hexRgb = null,
 			string hexEdgeColour = null,
 			int? alpha = null,
@@ -115,9 +118,21 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.name == name);
 			}
+			if (rebrickableColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.rebrickableColorId == rebrickableColorId.Value);
+			}
 			if (ldrawColourCode.HasValue == true)
 			{
 				query = query.Where(bc => bc.ldrawColourCode == ldrawColourCode.Value);
+			}
+			if (bricklinkColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.bricklinkColorId == bricklinkColorId.Value);
+			}
+			if (brickowlColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.brickowlColorId == brickowlColorId.Value);
 			}
 			if (string.IsNullOrEmpty(hexRgb) == false)
 			{
@@ -255,7 +270,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/BrickColours/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
+			int? rebrickableColorId = null,
 			int? ldrawColourCode = null,
+			int? bricklinkColorId = null,
+			int? brickowlColorId = null,
 			string hexRgb = null,
 			string hexEdgeColour = null,
 			int? alpha = null,
@@ -289,9 +307,21 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.name == name);
 			}
+			if (rebrickableColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.rebrickableColorId == rebrickableColorId.Value);
+			}
 			if (ldrawColourCode.HasValue == true)
 			{
 				query = query.Where(bc => bc.ldrawColourCode == ldrawColourCode.Value);
+			}
+			if (bricklinkColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.bricklinkColorId == bricklinkColorId.Value);
+			}
+			if (brickowlColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.brickowlColorId == brickowlColorId.Value);
 			}
 			if (hexRgb != null)
 			{
@@ -761,7 +791,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			string name = null,
+			int? rebrickableColorId = null,
 			int? ldrawColourCode = null,
+			int? bricklinkColorId = null,
+			int? brickowlColorId = null,
 			string hexRgb = null,
 			string hexEdgeColour = null,
 			int? alpha = null,
@@ -811,9 +844,21 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.name == name);
 			}
+			if (rebrickableColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.rebrickableColorId == rebrickableColorId.Value);
+			}
 			if (ldrawColourCode.HasValue == true)
 			{
 				query = query.Where(bc => bc.ldrawColourCode == ldrawColourCode.Value);
+			}
+			if (bricklinkColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.bricklinkColorId == bricklinkColorId.Value);
+			}
+			if (brickowlColorId.HasValue == true)
+			{
+				query = query.Where(bc => bc.brickowlColorId == brickowlColorId.Value);
 			}
 			if (string.IsNullOrEmpty(hexRgb) == false)
 			{

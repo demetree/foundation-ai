@@ -1,0 +1,235 @@
+:host {
+  color: var(--bmc-text-primary);
+}
+
+.add-model-document {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.btn-add-model-document {
+  background-color: var(--bmc-primary);
+  border-color: var(--bmc-primary);
+  height: 37px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  width: 60px;
+}
+
+.model-document-modal-header {
+}
+
+.model-document-modal-body {
+  padding: 15px;
+  font-size: 1rem;
+}
+
+.section-heading {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: var(--bmc-text-primary);
+}
+
+.model-document-input, .model-document-select {
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.model-document-input::placeholder, .model-document-select::placeholder {
+  color: var(--bmc-text-muted);
+}
+
+
+
+// Styles for the color picker
+.color-picker {
+  // Native color inputs are usually square and small; make it a reasonable size
+  width: 60px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+// Style for the read-only hex display next to the picker
+.input-color-display {
+  margin-bottom: 0; // Align properly with the picker
+}
+
+
+.model-document-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  padding-bottom: 0px;
+  border: none;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Theme-aware form controls */
+.form-control, .form-select {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-primary);
+  box-shadow: 0 0 0 0.2rem var(--bmc-accent-glow-soft);
+}
+
+.form-control::placeholder {
+  color: var(--bmc-text-muted);
+}
+
+/* Premium checkbox styling */
+.form-check {
+  padding-left: 2rem;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-check-input {
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0;
+  margin-left: -2rem;
+  background-color: var(--bmc-bg-elevated);
+  border: 2px solid var(--bmc-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+}
+
+.form-check-input:checked {
+  background-color: var(--bmc-primary);
+  border-color: var(--bmc-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 0.75em;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.form-check-input:focus {
+  border-color: var(--bmc-primary);
+  box-shadow: 0 0 0 0.2rem var(--bmc-accent-glow-soft);
+  outline: none;
+}
+
+.form-check-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-check-label {
+  color: var(--bmc-text-primary);
+  cursor: pointer;
+  padding-left: 0.5rem;
+  font-weight: 500;
+}
+
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
+.btn-primary {
+  --bs-btn-bg: var(--bmc-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--bmc-primary);
+  --bs-btn-hover-bg: var(--bmc-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--bmc-primary);
+  --bs-btn-active-bg: var(--bmc-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-border-color: var(--bmc-primary);
+  --bs-btn-disabled-bg: var(--bmc-primary);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-border-color: var(--bmc-primary);
+  --bs-btn-focus-shadow-rgb: var(--bmc-primary-rgb, 13, 110, 253);
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--bmc-bg-elevated);
+  --bs-btn-color: var(--bmc-text-primary);
+  --bs-btn-border-color: var(--bmc-border);
+  --bs-btn-hover-bg: var(--bmc-bg-hover);
+  --bs-btn-hover-color: var(--bmc-text-primary);
+  --bs-btn-hover-border-color: var(--bmc-border);
+  --bs-btn-active-bg: var(--bmc-bg-hover);
+  --bs-btn-active-color: var(--bmc-text-primary);
+  --bs-btn-active-border-color: var(--bmc-border);
+}
+
+/* Modal and form contrast */
+.modal-content {
+  background-color: var(--bmc-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--bmc-panel-border);
+  color: var(--bmc-text-primary);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background-color: var(--bmc-bg-elevated);
+  border-bottom: 1px solid var(--bmc-border);
+  color: var(--bmc-text-primary);
+}
+
+.modal-header .modal-title {
+  color: var(--bmc-text-primary);
+}
+
+/* Theme-aware close button */
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--bmc-text-primary);
+  font-size: 1.25rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  line-height: 1;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.modal-close-btn:hover {
+  opacity: 1;
+  background-color: var(--bmc-bg-hover);
+}
+
+.modal-body {
+  background-color: var(--bmc-panel-bg);
+  color: var(--bmc-text-primary);
+}
+
+.modal-footer {
+  background-color: var(--bmc-panel-bg);
+  border-top: 1px solid var(--bmc-border);
+}
+
+label {
+  color: var(--bmc-text-primary);
+}

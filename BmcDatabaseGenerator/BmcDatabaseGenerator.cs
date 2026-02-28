@@ -136,6 +136,13 @@ All operational tables include multi-tenant support, versioning where appropriat
             connectorTypeTable.AddBoolField("allowsRotation", false, false).AddScriptComments("Whether this connection allows rotation around its axis");
             connectorTypeTable.AddBoolField("allowsSlide", false, false).AddScriptComments("Whether this connection allows sliding along its axis");
 
+            // Constraint parameters for physics simulation
+            connectorTypeTable.AddSingleField("minAngleDegrees", true).AddScriptComments("Minimum angle of rotation for hinge-type connectors (null = no minimum)");
+            connectorTypeTable.AddSingleField("maxAngleDegrees", true).AddScriptComments("Maximum angle of rotation for hinge-type connectors (null = no maximum)");
+            connectorTypeTable.AddSingleField("snapIncrementDegrees", true).AddScriptComments("Snap increment for click hinges (e.g. 22.5 degrees, null = continuous)");
+            connectorTypeTable.AddSingleField("clutchForceNewtons", true).AddScriptComments("Force needed to disconnect this connector type (null = unknown)");
+            connectorTypeTable.AddString10Field("maleOrFemale", true).AddScriptComments("Pairing role: Male, Female, or Both (for compatibility matching logic)");
+
             connectorTypeTable.AddSequenceField();
             connectorTypeTable.AddControlFields();
 
@@ -148,6 +155,29 @@ All operational tables include multi-tenant support, versioning where appropriat
             connectorTypeTable.AddData(new Dictionary<string, string> { { "name", "AxleEnd" }, { "description", "End of a Technic axle — inserts into an axle hole" }, { "degreesOfFreedom", "1" }, { "allowsRotation", "true" }, { "allowsSlide", "false" }, { "sequence", "13" }, { "objectGuid", "c0110001-0001-4000-8000-000000000013" } });
             connectorTypeTable.AddData(new Dictionary<string, string> { { "name", "BallJointSocket" }, { "description", "Ball joint socket — accepts a ball joint for multi-axis rotation" }, { "degreesOfFreedom", "2" }, { "allowsRotation", "true" }, { "allowsSlide", "false" }, { "sequence", "20" }, { "objectGuid", "c0110001-0001-4000-8000-000000000020" } });
             connectorTypeTable.AddData(new Dictionary<string, string> { { "name", "BallJoint" }, { "description", "Ball joint — inserts into a ball joint socket" }, { "degreesOfFreedom", "2" }, { "allowsRotation", "true" }, { "allowsSlide", "false" }, { "sequence", "21" }, { "objectGuid", "c0110001-0001-4000-8000-000000000021" } });
+
+
+            // -------------------------------------------------
+            // ConnectorTypeCompatibility — Which connector types can mate
+            // -------------------------------------------------
+            Database.Table connectorTypeCompatibilityTable = database.AddTable("ConnectorTypeCompatibility");
+            connectorTypeCompatibilityTable.comment = "Defines which connector types can physically connect to each other (e.g. Stud↔AntiStud, Pin↔PinHole).";
+            connectorTypeCompatibilityTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            connectorTypeCompatibilityTable.AddIdField();
+
+            connectorTypeCompatibilityTable.AddForeignKeyField("maleConnectorTypeId", connectorTypeTable, false).AddScriptComments("The male/inserting connector type");
+            connectorTypeCompatibilityTable.AddForeignKeyField("femaleConnectorTypeId", connectorTypeTable, false).AddScriptComments("The female/receiving connector type");
+            connectorTypeCompatibilityTable.AddString50Field("connectionStrength", false).AddScriptComments("Connection strength: Tight, Friction, Free");
+
+            connectorTypeCompatibilityTable.AddControlFields();
+
+            connectorTypeCompatibilityTable.AddUniqueConstraint(new List<string>() { "maleConnectorTypeId", "femaleConnectorTypeId" }, false);
+
+            // Seed data — core compatibility pairs
+            connectorTypeCompatibilityTable.AddData(new Dictionary<string, string> { { "connectionStrength", "Tight" }, { "link:ConnectorType:name:maleConnectorTypeId", "Stud" }, { "link:ConnectorType:name:femaleConnectorTypeId", "AntiStud" }, { "objectGuid", "cc100001-0001-4000-8000-000000000001" } });
+            connectorTypeCompatibilityTable.AddData(new Dictionary<string, string> { { "connectionStrength", "Friction" }, { "link:ConnectorType:name:maleConnectorTypeId", "Pin" }, { "link:ConnectorType:name:femaleConnectorTypeId", "PinHole" }, { "objectGuid", "cc100001-0001-4000-8000-000000000002" } });
+            connectorTypeCompatibilityTable.AddData(new Dictionary<string, string> { { "connectionStrength", "Tight" }, { "link:ConnectorType:name:maleConnectorTypeId", "AxleEnd" }, { "link:ConnectorType:name:femaleConnectorTypeId", "AxleHole" }, { "objectGuid", "cc100001-0001-4000-8000-000000000003" } });
+            connectorTypeCompatibilityTable.AddData(new Dictionary<string, string> { { "connectionStrength", "Friction" }, { "link:ConnectorType:name:maleConnectorTypeId", "BallJoint" }, { "link:ConnectorType:name:femaleConnectorTypeId", "BallJointSocket" }, { "objectGuid", "cc100001-0001-4000-8000-000000000004" } });
 
 
             // -------------------------------------------------
@@ -188,7 +218,12 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickColourTable.AddIdField();
             brickColourTable.AddNameField(true, true);
 
-            brickColourTable.AddIntField("ldrawColourCode", false).AddScriptComments("LDraw standard colour code number");
+            // Rebrickable-primary identity — rebrickableColorId is the primary lookup key
+            brickColourTable.AddIntField("rebrickableColorId", false).AddScriptComments("Rebrickable color ID — primary lookup key for API sync");
+            brickColourTable.AddIntField("ldrawColourCode", true).AddScriptComments("LDraw standard colour code number (nullable — some Rebrickable colors may not map to LDraw)");
+            brickColourTable.AddIntField("bricklinkColorId", true).AddScriptComments("BrickLink color ID for cross-referencing");
+            brickColourTable.AddIntField("brickowlColorId", true).AddScriptComments("BrickOwl color ID for cross-referencing");
+
             brickColourTable.AddHTMLColorField("hexRgb").AddScriptComments("Hex RGB colour value (e.g. #FF0000)");
             brickColourTable.AddHTMLColorField("hexEdgeColour").AddScriptComments("LDraw edge/contrast colour hex value for wireframe and outline rendering");
             brickColourTable.AddIntField("alpha").AddScriptComments("Alpha transparency value (0-255, 255 = fully opaque)");
@@ -201,17 +236,20 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickColourTable.AddSequenceField();
             brickColourTable.AddControlFields();
 
-            brickColourTable.AddUniqueConstraint(new List<string>() { "ldrawColourCode" }, false);
+            brickColourTable.AddUniqueConstraint(new List<string>() { "rebrickableColorId" }, false);
 
-            // Seed common solid colours (edge colours, finish FK, and LEGO IDs from LDConfig.ldr)
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Black" }, { "ldrawColourCode", "0" }, { "hexRgb", "#1B2A34" }, { "hexEdgeColour", "#808080" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "26" }, { "sequence", "1" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000001" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Blue" }, { "ldrawColourCode", "1" }, { "hexRgb", "#1E5AA8" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "23" }, { "sequence", "2" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000002" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Green" }, { "ldrawColourCode", "2" }, { "hexRgb", "#00852B" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "28" }, { "sequence", "3" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000003" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Red" }, { "ldrawColourCode", "4" }, { "hexRgb", "#B40000" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "21" }, { "sequence", "4" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000004" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Yellow" }, { "ldrawColourCode", "14" }, { "hexRgb", "#FAC80A" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "24" }, { "sequence", "5" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000005" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "White" }, { "ldrawColourCode", "15" }, { "hexRgb", "#F4F4F4" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "1" }, { "sequence", "6" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000006" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Light Bluish Grey" }, { "ldrawColourCode", "71" }, { "hexRgb", "#969696" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "194" }, { "sequence", "7" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000007" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Dark Bluish Grey" }, { "ldrawColourCode", "72" }, { "hexRgb", "#646464" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "199" }, { "sequence", "8" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000008" } });
+            //
+            // No need to do this.  Data sync will take care of it.
+            //
+            //// Seed common solid colours (edge colours, finish FK, and LEGO IDs from LDConfig.ldr)
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Black" }, { "ldrawColourCode", "0" }, { "hexRgb", "#1B2A34" }, { "hexEdgeColour", "#808080" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "26" }, { "sequence", "1" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000001" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Blue" }, { "ldrawColourCode", "1" }, { "hexRgb", "#1E5AA8" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "23" }, { "sequence", "2" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000002" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Green" }, { "ldrawColourCode", "2" }, { "hexRgb", "#00852B" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "28" }, { "sequence", "3" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000003" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Red" }, { "ldrawColourCode", "4" }, { "hexRgb", "#B40000" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "21" }, { "sequence", "4" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000004" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Yellow" }, { "ldrawColourCode", "14" }, { "hexRgb", "#FAC80A" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "24" }, { "sequence", "5" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000005" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "White" }, { "ldrawColourCode", "15" }, { "hexRgb", "#F4F4F4" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "1" }, { "sequence", "6" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000006" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Light Bluish Grey" }, { "ldrawColourCode", "71" }, { "hexRgb", "#969696" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "194" }, { "sequence", "7" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000007" } });
+            //brickColourTable.AddData(new Dictionary<string, string> { { "name", "Dark Bluish Grey" }, { "ldrawColourCode", "72" }, { "hexRgb", "#646464" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "199" }, { "sequence", "8" }, { "link:ColourFinish:name:colourFinishId", "Solid" }, { "objectGuid", "c0100001-0001-4000-8000-000000000008" } });
 
             #endregion
 
@@ -250,7 +288,18 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickPartTable.AddIdField();
             brickPartTable.AddNameField(true, true);
 
-            brickPartTable.AddString100Field("ldrawPartId", false).AddScriptComments("LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library");
+            // Rebrickable-primary identity — rebrickablePartNum is the primary lookup key
+            brickPartTable.AddString100Field("rebrickablePartNum", false).AddScriptComments("Rebrickable part_num — primary lookup key for the parts catalog");
+            brickPartTable.AddString250Field("rebrickablePartUrl", true).AddScriptComments("URL to part page on Rebrickable");
+            brickPartTable.AddString250Field("rebrickableImgUrl", true).AddScriptComments("URL to part image on Rebrickable");
+
+            // Cross-reference IDs to other ecosystems
+            brickPartTable.AddString100Field("ldrawPartId", true).AddScriptComments("LDraw part ID (e.g. 3001, 32523) — nullable, some Rebrickable parts have no LDraw file");
+            brickPartTable.AddString100Field("bricklinkId", true).AddScriptComments("BrickLink part ID for cross-referencing");
+            brickPartTable.AddString100Field("brickowlId", true).AddScriptComments("BrickOwl part ID for cross-referencing");
+            brickPartTable.AddString100Field("legoDesignId", true).AddScriptComments("Official LEGO design number for cross-referencing");
+
+            // LDraw metadata (populated when LDraw geometry is available)
             brickPartTable.AddString250Field("ldrawTitle").AddScriptComments("Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')");
             brickPartTable.AddString100Field("ldrawCategory").AddScriptComments("Part category from LDraw !CATEGORY meta or inferred from title first word");
             brickPartTable.AddForeignKeyField(partTypeTable, false).AddScriptComments("LDraw part classification — FK to PartType lookup table");
@@ -259,8 +308,6 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             brickPartTable.AddForeignKeyField(brickCategoryTable, false).AddScriptComments("The category this part belongs to");
 
-            brickPartTable.AddString100Field("rebrickablePartNum", true).AddScriptComments("Rebrickable part_num when it differs from ldrawPartId (e.g. for prints, patterns, or alternate IDs)");
-
             // Physical dimensions in LDraw units (1 LDU = 0.4mm)
             brickPartTable.AddSingleField("widthLdu", true).AddScriptComments("Part width in LDraw units (null if not yet computed)");
             brickPartTable.AddSingleField("heightLdu", true).AddScriptComments("Part height in LDraw units (null if not yet computed)");
@@ -268,18 +315,43 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             // Physics properties
             brickPartTable.AddSingleField("massGrams", true).AddScriptComments("Part mass in grams (for physics simulation, null if unknown)");
+            brickPartTable.AddSingleField("momentOfInertiaX", true).AddScriptComments("Rotational inertia about X axis (kg·m², null if unknown)");
+            brickPartTable.AddSingleField("momentOfInertiaY", true).AddScriptComments("Rotational inertia about Y axis (kg·m², null if unknown)");
+            brickPartTable.AddSingleField("momentOfInertiaZ", true).AddScriptComments("Rotational inertia about Z axis (kg·m², null if unknown)");
+            brickPartTable.AddSingleField("frictionCoefficient", true).AddScriptComments("Surface friction coefficient for physics (null if unknown)");
+            brickPartTable.AddString50Field("materialType", true).AddScriptComments("Material type: ABS, Rubber, Metal, Fabric, etc. (null if unknown)");
+            brickPartTable.AddSingleField("centerOfMassX", true).AddScriptComments("Center of mass X offset from part origin in LDU (null if unknown)");
+            brickPartTable.AddSingleField("centerOfMassY", true).AddScriptComments("Center of mass Y offset from part origin in LDU (null if unknown)");
+            brickPartTable.AddSingleField("centerOfMassZ", true).AddScriptComments("Center of mass Z offset from part origin in LDU (null if unknown)");
 
-            // Geometry reference
-            brickPartTable.AddString250Field("geometryFilePath").AddScriptComments("Relative path to the LDraw .dat geometry file");
+            // Geometry — stored as binary blob for deployment simplicity
+            brickPartTable.AddBinaryDataFields("geometry");  // geometryFileName, geometrySize, geometryData, geometryMimeType
+            brickPartTable.AddString50Field("geometryFileFormat", true).AddScriptComments("Format of stored geometry: LDraw, ProcessedBinary, etc.");
+            brickPartTable.AddString250Field("geometryOriginalFileName", true).AddScriptComments("Original LDraw filename for reference (e.g. '3001.dat')");
+
+            // Bounding volume (pre-computed from geometry, for fast spatial queries)
+            brickPartTable.AddSingleField("boundingBoxMinX", true).AddScriptComments("Axis-aligned bounding box minimum X in LDU");
+            brickPartTable.AddSingleField("boundingBoxMinY", true).AddScriptComments("Axis-aligned bounding box minimum Y in LDU");
+            brickPartTable.AddSingleField("boundingBoxMinZ", true).AddScriptComments("Axis-aligned bounding box minimum Z in LDU");
+            brickPartTable.AddSingleField("boundingBoxMaxX", true).AddScriptComments("Axis-aligned bounding box maximum X in LDU");
+            brickPartTable.AddSingleField("boundingBoxMaxY", true).AddScriptComments("Axis-aligned bounding box maximum Y in LDU");
+            brickPartTable.AddSingleField("boundingBoxMaxZ", true).AddScriptComments("Axis-aligned bounding box maximum Z in LDU");
+
+            // Geometry metadata
+            brickPartTable.AddIntField("subFileCount", true).AddScriptComments("Number of LDraw sub-file references in this part (for instancing)");
+            brickPartTable.AddIntField("polygonCount", true).AddScriptComments("Total polygon count for LOD decisions and performance budgets");
 
             // Technic-specific properties
             brickPartTable.AddIntField("toothCount", true).AddScriptComments("For gears: number of teeth. Null for non-gear parts.");
             brickPartTable.AddSingleField("gearRatio", true).AddScriptComments("For gears: effective gear ratio relative to a base gear. Null for non-gear parts.");
 
+            // Sync metadata
+            brickPartTable.AddDateTimeField("lastModifiedDate", true).AddScriptComments("Last modification date for incremental sync with Rebrickable");
+
             brickPartTable.AddVersionControl();
             brickPartTable.AddControlFields();
 
-            brickPartTable.AddUniqueConstraint(new List<string>() { "ldrawPartId" }, false);
+            brickPartTable.AddUniqueConstraint(new List<string>() { "rebrickablePartNum" }, false);
 
 
             // -------------------------------------------------
@@ -304,6 +376,10 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickPartConnectorTable.AddSingleField("orientationY").AddScriptComments("Y component of connector direction unit vector");
             brickPartConnectorTable.AddSingleField("orientationZ").AddScriptComments("Z component of connector direction unit vector");
 
+            // Grouping and extraction metadata
+            brickPartConnectorTable.AddIntField("connectorGroupId", true).AddScriptComments("Groups connectors that act together (e.g. all studs on top of a 2x4 share a group ID)");
+            brickPartConnectorTable.AddBoolField("isAutoExtracted", false, false).AddScriptComments("Whether this connector position was auto-extracted from LDraw geometry analysis");
+
             brickPartConnectorTable.AddSequenceField();
             brickPartConnectorTable.AddControlFields();
 
@@ -323,6 +399,25 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickPartColourTable.AddControlFields();
 
             brickPartColourTable.AddUniqueConstraint(new List<string>() { "brickPartId", "brickColourId" }, false);
+
+
+            // -------------------------------------------------
+            // PartSubFileReference — Hierarchical LDraw sub-file references
+            // -------------------------------------------------
+            Database.Table partSubFileReferenceTable = database.AddTable("PartSubFileReference");
+            partSubFileReferenceTable.comment = "Models how LDraw parts reference sub-files hierarchically. Crucial for instanced rendering and understanding part decomposition.";
+            partSubFileReferenceTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_CATALOG_WRITER_PERMISSION_LEVEL);
+            partSubFileReferenceTable.customWriteAccessRole = BMC_CATALOG_WRITER_CUSTOM_ROLE_NAME;
+            partSubFileReferenceTable.AddIdField();
+
+            partSubFileReferenceTable.AddForeignKeyField("parentBrickPartId", brickPartTable, false).AddScriptComments("The part containing the sub-file reference");
+            partSubFileReferenceTable.AddForeignKeyField("referencedBrickPartId", brickPartTable, true).AddScriptComments("The referenced sub-file as a BrickPart (null if sub-file is not cataloged)");
+            partSubFileReferenceTable.AddString250Field("referencedFileName", false).AddScriptComments("Original LDraw sub-file filename (e.g. 'stud.dat', 's/3001s01.dat')");
+            partSubFileReferenceTable.AddString500Field("transformMatrix", false).AddScriptComments("4x3 transform matrix as space-delimited floats (x y z a b c d e f g h i)");
+            partSubFileReferenceTable.AddIntField("colorCode", true).AddScriptComments("LDraw color code override (16=inherit parent, null=inherit parent)");
+
+            partSubFileReferenceTable.AddSequenceField();
+            partSubFileReferenceTable.AddControlFields();
 
             #endregion
 
@@ -391,13 +486,18 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             brickConnectionTable.AddForeignKeyField(projectTable, false).AddScriptComments("The project this connection belongs to");
 
-            // Source side of the connection
-            brickConnectionTable.AddLongField("sourcePlacedBrickId").AddScriptComments("FK to the source PlacedBrick");
-            brickConnectionTable.AddLongField("sourceConnectorId").AddScriptComments("FK to the BrickPartConnector on the source brick");
+            // Source side of the connection — proper FK relationships
+            brickConnectionTable.AddForeignKeyField("sourcePlacedBrickId", placedBrickTable, false).AddScriptComments("FK to the source PlacedBrick");
+            brickConnectionTable.AddForeignKeyField("sourceConnectorId", brickPartConnectorTable, false).AddScriptComments("FK to the BrickPartConnector on the source brick");
 
-            // Target side of the connection
-            brickConnectionTable.AddLongField("targetPlacedBrickId").AddScriptComments("FK to the target PlacedBrick");
-            brickConnectionTable.AddLongField("targetConnectorId").AddScriptComments("FK to the BrickPartConnector on the target brick");
+            // Target side of the connection — proper FK relationships
+            brickConnectionTable.AddForeignKeyField("targetPlacedBrickId", placedBrickTable, false).AddScriptComments("FK to the target PlacedBrick");
+            brickConnectionTable.AddForeignKeyField("targetConnectorId", brickPartConnectorTable, false).AddScriptComments("FK to the BrickPartConnector on the target brick");
+
+            // Connection metadata for physics simulation
+            brickConnectionTable.AddString50Field("connectionStrength", true).AddScriptComments("Connection strength: Snapped, Friction, Free (null = unknown)");
+            brickConnectionTable.AddBoolField("isLocked", false, false).AddScriptComments("Whether the user has locked this connection from being broken in the editor");
+            brickConnectionTable.AddSingleField("angleDegrees", true).AddScriptComments("Current angle for rotational connections (null = default/fixed)");
 
             brickConnectionTable.AddControlFields();
 
@@ -522,6 +622,100 @@ All operational tables include multi-tenant support, versioning where appropriat
             #endregion
 
 
+            #region Model Documents and Build Steps (MPD Support)
+
+            // -------------------------------------------------
+            // ModelDocument — Top-level container for multi-part model documents
+            // -------------------------------------------------
+            Database.Table modelDocumentTable = database.AddTable("ModelDocument");
+            modelDocumentTable.comment = "Persistent representation of an imported or authored multi-part model document (MPD/LDR). Top-level container for complex models with build steps.";
+            modelDocumentTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
+            modelDocumentTable.AddIdField();
+            modelDocumentTable.AddMultiTenantSupport();
+
+            modelDocumentTable.AddForeignKeyField(projectTable, true).AddScriptComments("Optional link to a BMC project if authored in BMC (null for imported documents)");
+            modelDocumentTable.AddString250Field("name", false).AddScriptComments("Document name or title").CreateIndex();
+            modelDocumentTable.AddTextField("description").AddScriptComments("Description of the model document");
+            modelDocumentTable.AddString50Field("sourceFormat", false).AddScriptComments("Source file format: MPD, LDR, StudioIO, BMCNative");
+            modelDocumentTable.AddString250Field("sourceFileName").AddScriptComments("Original filename if imported (e.g. 'crane_42131.mpd')");
+            modelDocumentTable.AddBinaryDataFields("sourceFile");  // sourceFileFileName, sourceFileSize, sourceFileData, sourceFileMimeType
+            modelDocumentTable.AddString100Field("author").AddScriptComments("Model author from the file header");
+            modelDocumentTable.AddIntField("totalPartCount", true).AddScriptComments("Cached total part count across all sub-files");
+            modelDocumentTable.AddIntField("totalStepCount", true).AddScriptComments("Cached total build step count across all sub-files");
+
+            modelDocumentTable.AddVersionControl();
+            modelDocumentTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // ModelSubFile — Individual sub-files within an MPD document
+            // -------------------------------------------------
+            Database.Table modelSubFileTable = database.AddTable("ModelSubFile");
+            modelSubFileTable.comment = "Individual sub-files within a model document (MPD). Each represents a sub-assembly or the main model. Maps to LDraw '0 FILE' blocks.";
+            modelSubFileTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
+            modelSubFileTable.AddIdField();
+            modelSubFileTable.AddMultiTenantSupport();
+
+            modelSubFileTable.AddForeignKeyField(modelDocumentTable, false).AddScriptComments("The document this sub-file belongs to");
+            modelSubFileTable.AddString250Field("fileName", false).AddScriptComments("Sub-file name as declared in '0 FILE' (e.g. 'main.ldr', 'wheel_assembly.ldr')");
+            modelSubFileTable.AddBoolField("isMainModel", false, false).AddScriptComments("Whether this is the main (first) model in the MPD — only rendered sub-files are those referenced by this");
+            modelSubFileTable.AddForeignKeyField("parentModelSubFileId", modelSubFileTable, true).AddScriptComments("Optional parent sub-file for nested sub-assemblies (null = top-level)");
+
+            modelSubFileTable.AddSequenceField();
+            modelSubFileTable.AddControlFields();
+
+            modelSubFileTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "modelDocumentId", "fileName" }, false);
+
+
+            // -------------------------------------------------
+            // ModelBuildStep — Individual build steps within a sub-file
+            // -------------------------------------------------
+            Database.Table modelBuildStepTable = database.AddTable("ModelBuildStep");
+            modelBuildStepTable.comment = "Individual build steps within a model sub-file. Modeled from LDraw '0 STEP' and '0 ROTSTEP' meta-commands.";
+            modelBuildStepTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
+            modelBuildStepTable.AddIdField();
+            modelBuildStepTable.AddMultiTenantSupport();
+
+            modelBuildStepTable.AddForeignKeyField(modelSubFileTable, false).AddScriptComments("The sub-file this step belongs to");
+            modelBuildStepTable.AddIntField("stepNumber", false).AddScriptComments("Sequential step number within this sub-file");
+
+            // ROTSTEP view rotation for instruction rendering
+            modelBuildStepTable.AddString10Field("rotationType", true).AddScriptComments("ROTSTEP rotation type: REL (relative), ABS (absolute), ADD (additive). Null = no rotation.");
+            modelBuildStepTable.AddSingleField("rotationX", true).AddScriptComments("ROTSTEP X rotation angle in degrees");
+            modelBuildStepTable.AddSingleField("rotationY", true).AddScriptComments("ROTSTEP Y rotation angle in degrees");
+            modelBuildStepTable.AddSingleField("rotationZ", true).AddScriptComments("ROTSTEP Z rotation angle in degrees");
+            modelBuildStepTable.AddTextField("description").AddScriptComments("Optional step description or annotation");
+
+            modelBuildStepTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // ModelStepPart — Parts placed during a specific build step
+            // -------------------------------------------------
+            Database.Table modelStepPartTable = database.AddTable("ModelStepPart");
+            modelStepPartTable.comment = "Parts placed during a specific build step. Represents LDraw type 1 sub-file reference lines between STEP commands.";
+            modelStepPartTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
+            modelStepPartTable.AddIdField();
+            modelStepPartTable.AddMultiTenantSupport();
+
+            modelStepPartTable.AddForeignKeyField(modelBuildStepTable, false).AddScriptComments("The build step this part placement belongs to");
+            modelStepPartTable.AddForeignKeyField(brickPartTable, true).AddScriptComments("FK to BrickPart if this part is in the catalog (null if not yet cataloged)");
+            modelStepPartTable.AddForeignKeyField(brickColourTable, true).AddScriptComments("FK to BrickColour if the color is mapped (null if unmapped)");
+            modelStepPartTable.AddString250Field("partFileName", false).AddScriptComments("Original LDraw part filename from the type 1 line (e.g. '3001.dat')");
+            modelStepPartTable.AddIntField("colorCode", false).AddScriptComments("LDraw color code used in the file");
+
+            // Position from the LDraw type 1 line
+            modelStepPartTable.AddSingleField("positionX").AddScriptComments("X position from the LDraw type 1 reference line (LDU)");
+            modelStepPartTable.AddSingleField("positionY").AddScriptComments("Y position from the LDraw type 1 reference line (LDU)");
+            modelStepPartTable.AddSingleField("positionZ").AddScriptComments("Z position from the LDraw type 1 reference line (LDU)");
+            modelStepPartTable.AddString500Field("transformMatrix", false).AddScriptComments("3x3 rotation matrix as space-delimited floats (a b c d e f g h i)");
+
+            modelStepPartTable.AddSequenceField();
+            modelStepPartTable.AddControlFields();
+
+            #endregion
+
+
             #region LEGO Set Reference Data
 
             // -------------------------------------------------
@@ -535,7 +729,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             legoThemeTable.AddForeignKeyField(legoThemeTable, true).AddScriptComments("Parent theme for hierarchical nesting (self-referencing FK, null = top-level)");
 
-            legoThemeTable.AddIntField("rebrickableThemeId", true).AddScriptComments("Rebrickable theme ID for cross-referencing during bulk import");
+            legoThemeTable.AddIntField("rebrickableThemeId", false).AddScriptComments("Rebrickable theme ID — source of truth for theme identity");
 
             legoThemeTable.AddSequenceField();
             legoThemeTable.AddControlFields();
@@ -559,6 +753,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             legoSetTable.AddString250Field("imageUrl").AddScriptComments("URL to the set's official box art or primary image");
             legoSetTable.AddString250Field("brickLinkUrl").AddScriptComments("URL to the set's BrickLink catalogue page");
             legoSetTable.AddString250Field("rebrickableUrl").AddScriptComments("URL to the set's Rebrickable page");
+            legoSetTable.AddString100Field("rebrickableSetNum", true).AddScriptComments("Explicit Rebrickable set number if it differs from setNumber");
+            legoSetTable.AddDateTimeField("lastModifiedDate", true).AddScriptComments("Last modification date for incremental sync with Rebrickable");
 
             legoSetTable.AddControlFields();
 
@@ -747,6 +943,122 @@ All operational tables include multi-tenant support, versioning where appropriat
             userCollectionSetImportTable.AddControlFields();
 
             userCollectionSetImportTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userCollectionId", "legoSetId" }, false);
+
+
+            // -------------------------------------------------
+            // RebrickableUserLink — User's Rebrickable API token for sync
+            // -------------------------------------------------
+            Database.Table rebrickableUserLinkTable = database.AddTable("RebrickableUserLink");
+            rebrickableUserLinkTable.comment = "Stores each user's Rebrickable API token for bidirectional collection sync. One link per tenant.";
+            rebrickableUserLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            rebrickableUserLinkTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            rebrickableUserLinkTable.AddIdField();
+            rebrickableUserLinkTable.AddMultiTenantSupport();
+
+            rebrickableUserLinkTable.AddString100Field("rebrickableUsername", false).AddScriptComments("User's Rebrickable username for display and reference");
+            rebrickableUserLinkTable.AddString500Field("encryptedApiToken", false).AddScriptComments("Encrypted Rebrickable user token — used for API calls on behalf of the user");
+            rebrickableUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of last successful sync with Rebrickable");
+            rebrickableUserLinkTable.AddBoolField("syncEnabled", false, true).AddScriptComments("Whether automatic sync is enabled for this user");
+            rebrickableUserLinkTable.AddString50Field("syncDirectionFlags", false).AddScriptComments("Sync direction: Both, ToRebrickable, FromRebrickable");
+
+            rebrickableUserLinkTable.AddControlFields();
+
+            rebrickableUserLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // UserPartList — Named part lists (Rebrickable partlists mirror)
+            // -------------------------------------------------
+            Database.Table userPartListTable = database.AddTable("UserPartList");
+            userPartListTable.comment = "Named part lists, mirroring Rebrickable's partlists/ endpoint. Users can have multiple named lists for organizing parts.";
+            userPartListTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            userPartListTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            userPartListTable.AddIdField();
+            userPartListTable.AddMultiTenantSupport();
+
+            userPartListTable.AddNameField(true, true);
+            userPartListTable.AddBoolField("isBuildable", false, false).AddScriptComments("Whether this list represents buildable parts (for build matching)");
+            userPartListTable.AddIntField("rebrickableListId", true).AddScriptComments("Rebrickable list ID for bidirectional sync (null = BMC-only list)");
+
+            userPartListTable.AddVersionControl();
+            userPartListTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // UserPartListItem — Parts within a named part list
+            // -------------------------------------------------
+            Database.Table userPartListItemTable = database.AddTable("UserPartListItem");
+            userPartListItemTable.comment = "Individual part+colour entries within a user's named part list. Mirrors Rebrickable's partlists/{id}/parts/ endpoint.";
+            userPartListItemTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            userPartListItemTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            userPartListItemTable.AddIdField();
+            userPartListItemTable.AddMultiTenantSupport();
+
+            userPartListItemTable.AddForeignKeyField(userPartListTable, false).AddScriptComments("The part list this item belongs to");
+            userPartListItemTable.AddForeignKeyField(brickPartTable, false).AddScriptComments("The part definition");
+            userPartListItemTable.AddForeignKeyField(brickColourTable, false).AddScriptComments("The specific colour of this part");
+            userPartListItemTable.AddIntField("quantity", false).AddScriptComments("Number of this part+colour in the list");
+
+            userPartListItemTable.AddControlFields();
+
+            userPartListItemTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userPartListId", "brickPartId", "brickColourId" }, false);
+
+
+            // -------------------------------------------------
+            // UserSetList — Named set lists (Rebrickable setlists mirror)
+            // 1
+            Database.Table userSetListTable = database.AddTable("UserSetList");
+            userSetListTable.comment = "Named set lists, mirroring Rebrickable's setlists/ endpoint. Users can have multiple named lists for organizing sets.";
+            userSetListTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            userSetListTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            userSetListTable.AddIdField();
+            userSetListTable.AddMultiTenantSupport();
+
+            userSetListTable.AddNameField(true, true);
+            userSetListTable.AddBoolField("isBuildable", false, false).AddScriptComments("Whether this list represents buildable sets (for build matching)");
+            userSetListTable.AddIntField("rebrickableListId", true).AddScriptComments("Rebrickable list ID for bidirectional sync (null = BMC-only list)");
+
+            userSetListTable.AddVersionControl();
+            userSetListTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // UserSetListItem — Sets within a named set list
+            // -------------------------------------------------
+            Database.Table userSetListItemTable = database.AddTable("UserSetListItem");
+            userSetListItemTable.comment = "Individual set entries within a user's named set list. Mirrors Rebrickable's setlists/{id}/sets/ endpoint.";
+            userSetListItemTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            userSetListItemTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            userSetListItemTable.AddIdField();
+            userSetListItemTable.AddMultiTenantSupport();
+
+            userSetListItemTable.AddForeignKeyField(userSetListTable, false).AddScriptComments("The set list this item belongs to");
+            userSetListItemTable.AddForeignKeyField(legoSetTable, false).AddScriptComments("The set in this list");
+            userSetListItemTable.AddIntField("quantity", false, 1).AddScriptComments("Number of copies of this set in the list");
+            userSetListItemTable.AddBoolField("includeSpares", false, true).AddScriptComments("Whether to include spare parts from this set in build matching");
+
+            userSetListItemTable.AddControlFields();
+
+            userSetListItemTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userSetListId", "legoSetId" }, false);
+
+
+            // -------------------------------------------------
+            // UserLostPart — Parts lost from sets (Rebrickable lost_parts mirror)
+            // -------------------------------------------------
+            Database.Table userLostPartTable = database.AddTable("UserLostPart");
+            userLostPartTable.comment = "Parts lost from sets, mirroring Rebrickable's lost_parts/ endpoint. Tracks which parts are missing from a user's collection.";
+            userLostPartTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            userLostPartTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            userLostPartTable.AddIdField();
+            userLostPartTable.AddMultiTenantSupport();
+
+            userLostPartTable.AddForeignKeyField(brickPartTable, false).AddScriptComments("The part that was lost");
+            userLostPartTable.AddForeignKeyField(brickColourTable, false).AddScriptComments("The colour of the lost part");
+            userLostPartTable.AddForeignKeyField(legoSetTable, true).AddScriptComments("The set the part was lost from (null if unknown)");
+            userLostPartTable.AddIntField("lostQuantity", false).AddScriptComments("Number of this part+colour that were lost");
+            userLostPartTable.AddIntField("rebrickableInvPartId", true).AddScriptComments("Rebrickable inventory_part ID for bidirectional sync (null = BMC-only entry)");
+
+            userLostPartTable.AddControlFields();
 
             #endregion
 

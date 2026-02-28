@@ -755,6 +755,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					placedBrick.BrickConnectionsourcePlacedBricks = null;
+					placedBrick.BrickConnectiontargetPlacedBricks = null;
 					placedBrick.BuildStepAnnotations = null;
 					placedBrick.BuildStepParts = null;
 					placedBrick.PlacedBrickChangeHistories = null;
@@ -876,6 +878,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.BrickConnectionsourcePlacedBricks = null;
+				cloneOfExisting.BrickConnectiontargetPlacedBricks = null;
 				cloneOfExisting.BuildStepAnnotations = null;
 				cloneOfExisting.BuildStepParts = null;
 				cloneOfExisting.PlacedBrickChangeHistories = null;

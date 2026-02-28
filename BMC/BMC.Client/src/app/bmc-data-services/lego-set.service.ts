@@ -21,6 +21,8 @@ import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
 import { LegoSetMinifigService, LegoSetMinifigData } from './lego-set-minifig.service';
 import { LegoSetSubsetService, LegoSetSubsetData } from './lego-set-subset.service';
 import { UserCollectionSetImportService, UserCollectionSetImportData } from './user-collection-set-import.service';
+import { UserSetListItemService, UserSetListItemData } from './user-set-list-item.service';
+import { UserLostPartService, UserLostPartData } from './user-lost-part.service';
 import { UserSetOwnershipService, UserSetOwnershipData } from './user-set-ownership.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -41,6 +43,8 @@ export class LegoSetQueryParameters {
     imageUrl: string | null | undefined = null;
     brickLinkUrl: string | null | undefined = null;
     rebrickableUrl: string | null | undefined = null;
+    rebrickableSetNum: string | null | undefined = null;
+    lastModifiedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -64,6 +68,8 @@ export class LegoSetSubmitData {
     imageUrl: string | null = null;
     brickLinkUrl: string | null = null;
     rebrickableUrl: string | null = null;
+    rebrickableSetNum: string | null = null;
+    lastModifiedDate: string | null = null;     // ISO 8601 (full datetime)
     active!: boolean;
     deleted!: boolean;
 }
@@ -121,6 +127,8 @@ export class LegoSetData {
     imageUrl!: string | null;
     brickLinkUrl!: string | null;
     rebrickableUrl!: string | null;
+    rebrickableSetNum!: string | null;
+    lastModifiedDate!: string | null;   // ISO 8601 (full datetime)
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -150,6 +158,16 @@ export class LegoSetData {
     private _userCollectionSetImports: UserCollectionSetImportData[] | null = null;
     private _userCollectionSetImportsPromise: Promise<UserCollectionSetImportData[]> | null  = null;
     private _userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
+
+                
+    private _userSetListItems: UserSetListItemData[] | null = null;
+    private _userSetListItemsPromise: Promise<UserSetListItemData[]> | null  = null;
+    private _userSetListItemsSubject = new BehaviorSubject<UserSetListItemData[] | null>(null);
+
+                
+    private _userLostParts: UserLostPartData[] | null = null;
+    private _userLostPartsPromise: Promise<UserLostPartData[]> | null  = null;
+    private _userLostPartsSubject = new BehaviorSubject<UserLostPartData[] | null>(null);
 
                 
     private _userSetOwnerships: UserSetOwnershipData[] | null = null;
@@ -287,6 +305,56 @@ export class LegoSetData {
 
 
 
+    public UserSetListItems$ = this._userSetListItemsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userSetListItems === null && this._userSetListItemsPromise === null) {
+            this.loadUserSetListItems(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _userSetListItemsCount$: Observable<bigint | number> | null = null;
+    public get UserSetListItemsCount$(): Observable<bigint | number> {
+        if (this._userSetListItemsCount$ === null) {
+            this._userSetListItemsCount$ = UserSetListItemService.Instance.GetUserSetListItemsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userSetListItemsCount$;
+    }
+
+
+
+    public UserLostParts$ = this._userLostPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userLostParts === null && this._userLostPartsPromise === null) {
+            this.loadUserLostParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _userLostPartsCount$: Observable<bigint | number> | null = null;
+    public get UserLostPartsCount$(): Observable<bigint | number> {
+        if (this._userLostPartsCount$ === null) {
+            this._userLostPartsCount$ = UserLostPartService.Instance.GetUserLostPartsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userLostPartsCount$;
+    }
+
+
+
     public UserSetOwnerships$ = this._userSetOwnershipsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -374,6 +442,16 @@ export class LegoSetData {
      this._userCollectionSetImportsPromise = null;
      this._userCollectionSetImportsSubject.next(null);
      this._userCollectionSetImportsCount$ = null;
+
+     this._userSetListItems = null;
+     this._userSetListItemsPromise = null;
+     this._userSetListItemsSubject.next(null);
+     this._userSetListItemsCount$ = null;
+
+     this._userLostParts = null;
+     this._userLostPartsPromise = null;
+     this._userLostPartsSubject.next(null);
+     this._userLostPartsCount$ = null;
 
      this._userSetOwnerships = null;
      this._userSetOwnershipsPromise = null;
@@ -713,6 +791,136 @@ export class LegoSetData {
 
     /**
      *
+     * Gets the UserSetListItems for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.UserSetListItems.then(legoSets => { ... })
+     *   or
+     *   await this.legoSet.legoSets
+     *
+    */
+    public get UserSetListItems(): Promise<UserSetListItemData[]> {
+        if (this._userSetListItems !== null) {
+            return Promise.resolve(this._userSetListItems);
+        }
+
+        if (this._userSetListItemsPromise !== null) {
+            return this._userSetListItemsPromise;
+        }
+
+        // Start the load
+        this.loadUserSetListItems();
+
+        return this._userSetListItemsPromise!;
+    }
+
+
+
+    private loadUserSetListItems(): void {
+
+        this._userSetListItemsPromise = lastValueFrom(
+            LegoSetService.Instance.GetUserSetListItemsForLegoSet(this.id)
+        )
+        .then(UserSetListItems => {
+            this._userSetListItems = UserSetListItems ?? [];
+            this._userSetListItemsSubject.next(this._userSetListItems);
+            return this._userSetListItems;
+         })
+        .catch(err => {
+            this._userSetListItems = [];
+            this._userSetListItemsSubject.next(this._userSetListItems);
+            throw err;
+        })
+        .finally(() => {
+            this._userSetListItemsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserSetListItem. Call after mutations to force refresh.
+     */
+    public ClearUserSetListItemsCache(): void {
+        this._userSetListItems = null;
+        this._userSetListItemsPromise = null;
+        this._userSetListItemsSubject.next(this._userSetListItems);      // Emit to observable
+    }
+
+    public get HasUserSetListItems(): Promise<boolean> {
+        return this.UserSetListItems.then(userSetListItems => userSetListItems.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the UserLostParts for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.UserLostParts.then(legoSets => { ... })
+     *   or
+     *   await this.legoSet.legoSets
+     *
+    */
+    public get UserLostParts(): Promise<UserLostPartData[]> {
+        if (this._userLostParts !== null) {
+            return Promise.resolve(this._userLostParts);
+        }
+
+        if (this._userLostPartsPromise !== null) {
+            return this._userLostPartsPromise;
+        }
+
+        // Start the load
+        this.loadUserLostParts();
+
+        return this._userLostPartsPromise!;
+    }
+
+
+
+    private loadUserLostParts(): void {
+
+        this._userLostPartsPromise = lastValueFrom(
+            LegoSetService.Instance.GetUserLostPartsForLegoSet(this.id)
+        )
+        .then(UserLostParts => {
+            this._userLostParts = UserLostParts ?? [];
+            this._userLostPartsSubject.next(this._userLostParts);
+            return this._userLostParts;
+         })
+        .catch(err => {
+            this._userLostParts = [];
+            this._userLostPartsSubject.next(this._userLostParts);
+            throw err;
+        })
+        .finally(() => {
+            this._userLostPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserLostPart. Call after mutations to force refresh.
+     */
+    public ClearUserLostPartsCache(): void {
+        this._userLostParts = null;
+        this._userLostPartsPromise = null;
+        this._userLostPartsSubject.next(this._userLostParts);      // Emit to observable
+    }
+
+    public get HasUserLostParts(): Promise<boolean> {
+        return this.UserLostParts.then(userLostParts => userLostParts.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the UserSetOwnerships for this LegoSet.
      *
      * If already loaded, returns cached array.
@@ -815,6 +1023,8 @@ export class LegoSetService extends SecureEndpointBase {
         private legoSetMinifigService: LegoSetMinifigService,
         private legoSetSubsetService: LegoSetSubsetService,
         private userCollectionSetImportService: UserCollectionSetImportService,
+        private userSetListItemService: UserSetListItemService,
+        private userLostPartService: UserLostPartService,
         private userSetOwnershipService: UserSetOwnershipService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -881,6 +1091,8 @@ export class LegoSetService extends SecureEndpointBase {
         output.imageUrl = data.imageUrl;
         output.brickLinkUrl = data.brickLinkUrl;
         output.rebrickableUrl = data.rebrickableUrl;
+        output.rebrickableSetNum = data.rebrickableSetNum;
+        output.lastModifiedDate = data.lastModifiedDate;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -1229,6 +1441,26 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
+    public GetUserSetListItemsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserSetListItemData[]> {
+        return this.userSetListItemService.GetUserSetListItemList({
+            legoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetUserLostPartsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserLostPartData[]> {
+        return this.userLostPartService.GetUserLostPartList({
+            legoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetUserSetOwnershipsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserSetOwnershipData[]> {
         return this.userSetOwnershipService.GetUserSetOwnershipList({
             legoSetId: legoSetId,
@@ -1293,6 +1525,14 @@ export class LegoSetService extends SecureEndpointBase {
     (revived as any)._userCollectionSetImports = null;
     (revived as any)._userCollectionSetImportsPromise = null;
     (revived as any)._userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
+
+    (revived as any)._userSetListItems = null;
+    (revived as any)._userSetListItemsPromise = null;
+    (revived as any)._userSetListItemsSubject = new BehaviorSubject<UserSetListItemData[] | null>(null);
+
+    (revived as any)._userLostParts = null;
+    (revived as any)._userLostPartsPromise = null;
+    (revived as any)._userLostPartsSubject = new BehaviorSubject<UserLostPartData[] | null>(null);
 
     (revived as any)._userSetOwnerships = null;
     (revived as any)._userSetOwnershipsPromise = null;
@@ -1368,6 +1608,30 @@ export class LegoSetService extends SecureEndpointBase {
       );
 
     (revived as any)._userCollectionSetImportsCount$ = null;
+
+
+    (revived as any).UserSetListItems$ = (revived as any)._userSetListItemsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userSetListItems === null && (revived as any)._userSetListItemsPromise === null) {
+                (revived as any).loadUserSetListItems();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._userSetListItemsCount$ = null;
+
+
+    (revived as any).UserLostParts$ = (revived as any)._userLostPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userLostParts === null && (revived as any)._userLostPartsPromise === null) {
+                (revived as any).loadUserLostParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._userLostPartsCount$ = null;
 
 
     (revived as any).UserSetOwnerships$ = (revived as any)._userSetOwnershipsSubject.asObservable().pipe(

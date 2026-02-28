@@ -1,0 +1,65 @@
+<div class="add-user-part-list" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-part-list me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Part List" 
+        *ngIf="userIsBMCUserPartListWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userPartListModal let-modal>
+   <div class="modal-header user-part-list-modal-header">
+      <h5 class="modal-title mb-0" id="userPartListModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Part List' : 'Add User Part List' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body user-part-list-modal-body">
+      <form [formGroup]="userPartListForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="UserPartList-name" id="label-UserPartList-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="UserPartList-name" formControlName="name" placeholder="Enter Name" class="form-control user-part-list-input" [disabled]="!userIsBMCUserPartListWriter()" aria-labelledby="label-name" />
+                <div *ngIf="userPartListForm.get('name')?.invalid && userPartListForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isBuildable')">
+                <input type="checkbox" id="UserPartList-isBuildable" formControlName="isBuildable" class="form-check-input" [disabled]="!userIsBMCUserPartListWriter()" />
+                <label for="UserPartList-isBuildable" class="form-check-label" id="label-UserPartList-isBuildable"><span class="text-danger">*</span>Is Buildable</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rebrickableListId')">
+                <label for="UserPartList-rebrickableListId" id="label-UserPartList-rebrickableListId">Rebrickable List Id</label>
+                <input type="number" id="UserPartList-rebrickableListId" formControlName="rebrickableListId" placeholder="Enter Rebrickable List Id" class="form-control user-part-list-input" [disabled]="!userIsBMCUserPartListWriter()" aria-labelledby="label-rebrickableListId" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserPartList-versionNumber" id="label-UserPartList-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserPartList-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-part-list-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserPartList-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserPartListWriter()" />
+                <label for="UserPartList-active" class="form-check-label" id="label-UserPartList-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserPartList-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserPartListWriter()" />
+                <label for="UserPartList-deleted" class="form-check-label" id="label-UserPartList-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-part-list-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Part List changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userPartListForm.valid || userPartListForm.pristine  || userIsBMCUserPartListWriter() == false " ngbTooltip="Save the User Part List changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Part List' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

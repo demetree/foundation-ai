@@ -1,0 +1,83 @@
+<div class="add-model-build-step" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-model-build-step me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Model Build Step" 
+        *ngIf="userIsBMCModelBuildStepWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #modelBuildStepModal let-modal>
+   <div class="modal-header model-build-step-modal-header">
+      <h5 class="modal-title mb-0" id="modelBuildStepModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Model Build Step' : 'Add Model Build Step' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body model-build-step-modal-body">
+      <form [formGroup]="modelBuildStepForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('modelSubFileId')">
+                <label for="ModelBuildStep-modelSubFileId" id="label-ModelBuildStep-modelSubFileId"><span class="text-danger">*</span>Model Sub File</label>
+                <select id="ModelBuildStep-modelSubFileId" formControlName="modelSubFileId" class="form-select model-build-step-select" [disabled]="!userIsBMCModelBuildStepWriter()">
+                    <option [ngValue]="null">Select Model Sub File</option>
+                    <option *ngFor="let modelSubFile of modelSubFiles$ | async" [ngValue]="modelSubFile.id">{{modelSubFile.fileName}}</option>
+                </select>
+                <div *ngIf="modelBuildStepForm.get('modelSubFileId')?.invalid && modelBuildStepForm.get('modelSubFileId')?.touched" class="text-danger">
+                    Model Sub File is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('stepNumber')">
+                <label for="ModelBuildStep-stepNumber" id="label-ModelBuildStep-stepNumber"><span class="text-danger">*</span>Step Number</label>
+                <input type="number" id="ModelBuildStep-stepNumber" formControlName="stepNumber" placeholder="Enter Step Number" class="form-control model-build-step-input" [disabled]="!userIsBMCModelBuildStepWriter()" aria-labelledby="label-stepNumber" />
+                <div *ngIf="modelBuildStepForm.get('stepNumber')?.invalid && modelBuildStepForm.get('stepNumber')?.touched" class="text-danger">
+                    Step Number is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationType')">
+                <label for="ModelBuildStep-rotationType" id="label-ModelBuildStep-rotationType">Rotation Type</label>
+                <input type="text" id="ModelBuildStep-rotationType" formControlName="rotationType" placeholder="Enter Rotation Type" class="form-control model-build-step-input" [disabled]="!userIsBMCModelBuildStepWriter()" aria-labelledby="label-rotationType" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationX')">
+                <label for="ModelBuildStep-rotationX" id="label-ModelBuildStep-rotationX">Rotation X</label>
+                <input type="number" id="ModelBuildStep-rotationX" formControlName="rotationX" placeholder="Enter Rotation X" class="form-control model-build-step-input" [disabled]="!userIsBMCModelBuildStepWriter()" aria-labelledby="label-rotationX" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationY')">
+                <label for="ModelBuildStep-rotationY" id="label-ModelBuildStep-rotationY">Rotation Y</label>
+                <input type="number" id="ModelBuildStep-rotationY" formControlName="rotationY" placeholder="Enter Rotation Y" class="form-control model-build-step-input" [disabled]="!userIsBMCModelBuildStepWriter()" aria-labelledby="label-rotationY" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationZ')">
+                <label for="ModelBuildStep-rotationZ" id="label-ModelBuildStep-rotationZ">Rotation Z</label>
+                <input type="number" id="ModelBuildStep-rotationZ" formControlName="rotationZ" placeholder="Enter Rotation Z" class="form-control model-build-step-input" [disabled]="!userIsBMCModelBuildStepWriter()" aria-labelledby="label-rotationZ" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ModelBuildStep-description" id="label-ModelBuildStep-description">Description</label>
+                <textarea id="ModelBuildStep-description" formControlName="description" placeholder="Enter Description" class="form-control model-build-step-input" [disabled]="!userIsBMCModelBuildStepWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ModelBuildStep-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCModelBuildStepWriter()" />
+                <label for="ModelBuildStep-active" class="form-check-label" id="label-ModelBuildStep-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ModelBuildStep-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCModelBuildStepWriter()" />
+                <label for="ModelBuildStep-deleted" class="form-check-label" id="label-ModelBuildStep-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer model-build-step-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Model Build Step changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !modelBuildStepForm.valid || modelBuildStepForm.pristine  || userIsBMCModelBuildStepWriter() == false " ngbTooltip="Save the Model Build Step changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Model Build Step' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

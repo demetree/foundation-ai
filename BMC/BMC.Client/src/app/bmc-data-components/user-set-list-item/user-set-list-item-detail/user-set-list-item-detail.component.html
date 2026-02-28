@@ -1,0 +1,79 @@
+<div class="container-fluid p-1 m-0 user-set-list-item-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-set-list-item-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Set List Item</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Set List Item' : 'Add User Set List Item'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserSetListItemReader()">
+                <div class="col m-2 user-set-list-item-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userSetListItemForm" (ngSubmit)="submitForm()" class="user-set-list-item-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userSetListId')">
+                                <label for="UserSetListItem-userSetListId" id="label-UserSetListItem-userSetListId"><span class="text-danger">*</span>User Set List</label>
+                                <select id="UserSetListItem-userSetListId" formControlName="userSetListId" class="form-select user-set-list-item-select" [disabled]="!userIsBMCUserSetListItemWriter()">
+                                    <option [ngValue]="null">Select User Set List</option>
+                                    <option *ngFor="let userSetList of userSetLists$ | async" [ngValue]="userSetList.id">{{userSetList.name}}</option>
+                                </select>
+                                <div *ngIf="userSetListItemForm.get('userSetListId')?.invalid && userSetListItemForm.get('userSetListId')?.touched" class="text-danger">
+                                    User Set List is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('legoSetId')">
+                                <label for="UserSetListItem-legoSetId" id="label-UserSetListItem-legoSetId"><span class="text-danger">*</span>Lego Set</label>
+                                <select id="UserSetListItem-legoSetId" formControlName="legoSetId" class="form-select user-set-list-item-select" [disabled]="!userIsBMCUserSetListItemWriter()">
+                                    <option [ngValue]="null">Select Lego Set</option>
+                                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                                </select>
+                                <div *ngIf="userSetListItemForm.get('legoSetId')?.invalid && userSetListItemForm.get('legoSetId')?.touched" class="text-danger">
+                                    Lego Set is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                                <label for="UserSetListItem-quantity" id="label-UserSetListItem-quantity"><span class="text-danger">*</span>Quantity</label>
+                                <input type="number" id="UserSetListItem-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control user-set-list-item-input" [disabled]="!userIsBMCUserSetListItemWriter()" aria-labelledby="label-quantity" />
+                                <div *ngIf="userSetListItemForm.get('quantity')?.invalid && userSetListItemForm.get('quantity')?.touched" class="text-danger">
+                                    Quantity is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('includeSpares')">
+                                <input type="checkbox" id="UserSetListItem-includeSpares" formControlName="includeSpares" class="form-check-input" [disabled]="!userIsBMCUserSetListItemWriter()" />
+                                <label for="UserSetListItem-includeSpares" class="form-check-label" id="label-UserSetListItem-includeSpares"><span class="text-danger">*</span>Include Spares</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserSetListItem-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserSetListItemWriter()" />
+                                <label for="UserSetListItem-active" class="form-check-label" id="label-UserSetListItem-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserSetListItem-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserSetListItemWriter()" />
+                                <label for="UserSetListItem-deleted" class="form-check-label" id="label-UserSetListItem-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-set-list-item-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userSetListItemForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Set List Item">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userSetListItemForm.valid || !userSetListItemForm.dirty || userSetListItemForm.pristine  || userIsBMCUserSetListItemWriter() == false " ngbTooltip="Save the User Set List Item changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Set List Item' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

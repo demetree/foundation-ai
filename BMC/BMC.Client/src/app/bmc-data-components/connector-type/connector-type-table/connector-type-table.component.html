@@ -47,6 +47,26 @@
                 Allows  Slide
                 <span *ngIf="sortColumn === 'allowsSlide'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('minAngleDegrees')">
+                Min  Angle  Degrees
+                <span *ngIf="sortColumn === 'minAngleDegrees'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('maxAngleDegrees')">
+                Max  Angle  Degrees
+                <span *ngIf="sortColumn === 'maxAngleDegrees'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('snapIncrementDegrees')">
+                Snap  Increment  Degrees
+                <span *ngIf="sortColumn === 'snapIncrementDegrees'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('clutchForceNewtons')">
+                Clutch  Force  Newtons
+                <span *ngIf="sortColumn === 'clutchForceNewtons'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('maleOrFemale')">
+                Male  Or  Female
+                <span *ngIf="sortColumn === 'maleOrFemale'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
                 <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -141,6 +161,11 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{connectorType.degreesOfFreedom | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="connectorType.allowsRotation"/></td>
             <td class="text-truncate"><boolean-icon [value]="connectorType.allowsSlide"/></td>
+            <td class="text-truncate">{{connectorType.minAngleDegrees | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{connectorType.maxAngleDegrees | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{connectorType.snapIncrementDegrees | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{connectorType.clutchForceNewtons | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{connectorType.maleOrFemale}}</td>
             <td class="text-truncate">{{connectorType.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
@@ -307,6 +332,26 @@ End of commented block for alternate definition option -->
             <p class="connector-type-info" *ngIf="connectorType.allowsSlide != null">
               <strong>Allows Slide: </strong>
               <boolean-icon [value]="connectorType.allowsSlide"/>
+            </p>
+            <p class="connector-type-info" *ngIf="connectorType.minAngleDegrees != null">
+              <strong>Min Angle Degrees: </strong>
+              {{connectorType.minAngleDegrees | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="connector-type-info" *ngIf="connectorType.maxAngleDegrees != null">
+              <strong>Max Angle Degrees: </strong>
+              {{connectorType.maxAngleDegrees | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="connector-type-info" *ngIf="connectorType.snapIncrementDegrees != null">
+              <strong>Snap Increment Degrees: </strong>
+              {{connectorType.snapIncrementDegrees | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="connector-type-info" *ngIf="connectorType.clutchForceNewtons != null">
+              <strong>Clutch Force Newtons: </strong>
+              {{connectorType.clutchForceNewtons | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="connector-type-info" *ngIf="connectorType.maleOrFemale != null">
+              <strong>Male Or Female: </strong>
+              {{connectorType.maleOrFemale}}
             </p>
             <p class="connector-type-info" *ngIf="connectorType.sequence != null">
               <strong>Sequence: </strong>

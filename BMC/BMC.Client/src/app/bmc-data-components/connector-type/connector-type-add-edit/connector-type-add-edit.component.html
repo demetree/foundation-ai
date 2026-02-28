@@ -46,6 +46,26 @@
                 <input type="checkbox" id="ConnectorType-allowsSlide" formControlName="allowsSlide" class="form-check-input" [disabled]="!userIsBMCConnectorTypeWriter()" />
                 <label for="ConnectorType-allowsSlide" class="form-check-label" id="label-ConnectorType-allowsSlide"><span class="text-danger">*</span>Allows Slide</label>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('minAngleDegrees')">
+                <label for="ConnectorType-minAngleDegrees" id="label-ConnectorType-minAngleDegrees">Min Angle Degrees</label>
+                <input type="number" id="ConnectorType-minAngleDegrees" formControlName="minAngleDegrees" placeholder="Enter Min Angle Degrees" class="form-control connector-type-input" [disabled]="!userIsBMCConnectorTypeWriter()" aria-labelledby="label-minAngleDegrees" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('maxAngleDegrees')">
+                <label for="ConnectorType-maxAngleDegrees" id="label-ConnectorType-maxAngleDegrees">Max Angle Degrees</label>
+                <input type="number" id="ConnectorType-maxAngleDegrees" formControlName="maxAngleDegrees" placeholder="Enter Max Angle Degrees" class="form-control connector-type-input" [disabled]="!userIsBMCConnectorTypeWriter()" aria-labelledby="label-maxAngleDegrees" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('snapIncrementDegrees')">
+                <label for="ConnectorType-snapIncrementDegrees" id="label-ConnectorType-snapIncrementDegrees">Snap Increment Degrees</label>
+                <input type="number" id="ConnectorType-snapIncrementDegrees" formControlName="snapIncrementDegrees" placeholder="Enter Snap Increment Degrees" class="form-control connector-type-input" [disabled]="!userIsBMCConnectorTypeWriter()" aria-labelledby="label-snapIncrementDegrees" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('clutchForceNewtons')">
+                <label for="ConnectorType-clutchForceNewtons" id="label-ConnectorType-clutchForceNewtons">Clutch Force Newtons</label>
+                <input type="number" id="ConnectorType-clutchForceNewtons" formControlName="clutchForceNewtons" placeholder="Enter Clutch Force Newtons" class="form-control connector-type-input" [disabled]="!userIsBMCConnectorTypeWriter()" aria-labelledby="label-clutchForceNewtons" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('maleOrFemale')">
+                <label for="ConnectorType-maleOrFemale" id="label-ConnectorType-maleOrFemale">Male Or Female</label>
+                <input type="text" id="ConnectorType-maleOrFemale" formControlName="maleOrFemale" placeholder="Enter Male Or Female" class="form-control connector-type-input" [disabled]="!userIsBMCConnectorTypeWriter()" aria-labelledby="label-maleOrFemale" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                 <label for="ConnectorType-sequence" id="label-ConnectorType-sequence">Sequence</label>
                 <input type="number" id="ConnectorType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control connector-type-input" [disabled]="!userIsBMCConnectorTypeWriter()" aria-labelledby="label-sequence" />

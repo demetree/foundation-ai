@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 connector-type-compatibility-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="connector-type-compatibility-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Connector Type Compatibility</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Connector Type Compatibility' : 'Add Connector Type Compatibility'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCConnectorTypeCompatibilityReader()">
+                <div class="col m-2 connector-type-compatibility-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="connectorTypeCompatibilityForm" (ngSubmit)="submitForm()" class="connector-type-compatibility-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('maleConnectorTypeId')">
+                                <label for="ConnectorTypeCompatibility-maleConnectorTypeId" id="label-ConnectorTypeCompatibility-maleConnectorTypeId"><span class="text-danger">*</span>Male Connector Type</label>
+                                <select id="ConnectorTypeCompatibility-maleConnectorTypeId" formControlName="maleConnectorTypeId" class="form-select connector-type-compatibility-select" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()">
+                                    <option [ngValue]="null">Select Connector Type</option>
+                                    <option *ngFor="let connectorType of connectorTypes$ | async" [ngValue]="connectorType.id">{{connectorType.name}}</option>
+                                </select>
+                                <div *ngIf="connectorTypeCompatibilityForm.get('maleConnectorTypeId')?.invalid && connectorTypeCompatibilityForm.get('maleConnectorTypeId')?.touched" class="text-danger">
+                                    Male Connector Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('femaleConnectorTypeId')">
+                                <label for="ConnectorTypeCompatibility-femaleConnectorTypeId" id="label-ConnectorTypeCompatibility-femaleConnectorTypeId"><span class="text-danger">*</span>Female Connector Type</label>
+                                <select id="ConnectorTypeCompatibility-femaleConnectorTypeId" formControlName="femaleConnectorTypeId" class="form-select connector-type-compatibility-select" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()">
+                                    <option [ngValue]="null">Select Connector Type</option>
+                                    <option *ngFor="let connectorType of connectorTypes$ | async" [ngValue]="connectorType.id">{{connectorType.name}}</option>
+                                </select>
+                                <div *ngIf="connectorTypeCompatibilityForm.get('femaleConnectorTypeId')?.invalid && connectorTypeCompatibilityForm.get('femaleConnectorTypeId')?.touched" class="text-danger">
+                                    Female Connector Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('connectionStrength')">
+                                <label for="ConnectorTypeCompatibility-connectionStrength" id="label-ConnectorTypeCompatibility-connectionStrength"><span class="text-danger">*</span>Connection Strength</label>
+                                <input type="text" id="ConnectorTypeCompatibility-connectionStrength" formControlName="connectionStrength" placeholder="Enter Connection Strength" class="form-control connector-type-compatibility-input" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()" aria-labelledby="label-connectionStrength" />
+                                <div *ngIf="connectorTypeCompatibilityForm.get('connectionStrength')?.invalid && connectorTypeCompatibilityForm.get('connectionStrength')?.touched" class="text-danger">
+                                    Connection Strength is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConnectorTypeCompatibility-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()" />
+                                <label for="ConnectorTypeCompatibility-active" class="form-check-label" id="label-ConnectorTypeCompatibility-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConnectorTypeCompatibility-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCConnectorTypeCompatibilityWriter()" />
+                                <label for="ConnectorTypeCompatibility-deleted" class="form-check-label" id="label-ConnectorTypeCompatibility-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="connector-type-compatibility-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="connectorTypeCompatibilityForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Connector Type Compatibility">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !connectorTypeCompatibilityForm.valid || !connectorTypeCompatibilityForm.dirty || connectorTypeCompatibilityForm.pristine  || userIsBMCConnectorTypeCompatibilityWriter() == false " ngbTooltip="Save the Connector Type Compatibility changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Connector Type Compatibility' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

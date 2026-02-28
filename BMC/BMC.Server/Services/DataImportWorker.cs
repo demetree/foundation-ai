@@ -83,19 +83,97 @@ namespace Foundation.BMC.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             //
+            // Check if data import is enabled — if not, exit immediately.
+            // The worker is always registered in DI but respects the config flag.
+            //
+            bool enabled = _configuration.GetValue<bool>("DataImport:Enabled", true);
+
+            if (enabled == false)
+            {
+                _logger.LogInformation("{Prefix} Data import is disabled via configuration — worker will not run.", LOG_PREFIX);
+                return;
+            }
+
+            //
             // Delay briefly to let the host finish starting up
             //
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken).ConfigureAwait(false);
 
             int intervalMinutes = _configuration.GetValue<int>("DataImport:IntervalMinutes", 60);
 
+            //
+            // Auto-bootstrap: if the database is empty, run a full import immediately
+            // before entering the normal hourly check loop.
+            //
+            bool autoBootstrap = _configuration.GetValue<bool>("DataImport:AutoBootstrap", true);
+
+            if (autoBootstrap)
+            {
+                try
+                {
+                    bool isEmpty = await IsDatabaseEmptyAsync(stoppingToken).ConfigureAwait(false);
+
+                    if (isEmpty)
+                    {
+                        _logger.LogInformation(
+                            "{Prefix} ═══════════════════════════════════════════════════════",
+                            LOG_PREFIX
+                        );
+                        _logger.LogInformation(
+                            "{Prefix} FIRST-RUN BOOTSTRAP: Empty database detected — starting full data import.",
+                            LOG_PREFIX
+                        );
+                        _logger.LogInformation(
+                            "{Prefix} This will download all Rebrickable CSVs and LDraw data files.",
+                            LOG_PREFIX
+                        );
+                        _logger.LogInformation(
+                            "{Prefix} This may take several minutes on first run.",
+                            LOG_PREFIX
+                        );
+                        _logger.LogInformation(
+                            "{Prefix} ═══════════════════════════════════════════════════════",
+                            LOG_PREFIX
+                        );
+
+                        await RunImportCycleAsync(stoppingToken).ConfigureAwait(false);
+
+                        _logger.LogInformation(
+                            "{Prefix} First-run bootstrap complete. Entering normal hourly check cycle.",
+                            LOG_PREFIX
+                        );
+                    }
+                    else
+                    {
+                        _logger.LogInformation(
+                            "{Prefix} Database already populated — skipping bootstrap.",
+                            LOG_PREFIX
+                        );
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("{Prefix} Bootstrap cancelled during shutdown.", LOG_PREFIX);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "{Prefix} Bootstrap import failed — will continue with normal cycle.", LOG_PREFIX);
+                }
+            }
+
             _logger.LogInformation(
-                "{Prefix} Starting — will check for updates every {Interval} minutes",
+                "{Prefix} Starting hourly cycle — will check for updates every {Interval} minutes",
                 LOG_PREFIX, intervalMinutes
             );
 
             while (stoppingToken.IsCancellationRequested == false)
             {
+                //
+                // Wait for the configured interval before the next check
+                //
+                await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken).ConfigureAwait(false);
+
                 try
                 {
                     await RunImportCycleAsync(stoppingToken).ConfigureAwait(false);
@@ -109,12 +187,32 @@ namespace Foundation.BMC.Services
                 {
                     _logger.LogError(ex, "{Prefix} Import cycle failed — will retry next cycle.", LOG_PREFIX);
                 }
-
-                //
-                // Wait for the configured interval before the next check
-                //
-                await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken).ConfigureAwait(false);
             }
+        }
+
+
+        /// <summary>
+        /// Checks whether the database is effectively empty (no meaningful data imported yet).
+        /// Uses BrickParts count as the indicator — if Rebrickable import has run,
+        /// there should be 50,000+ parts.
+        /// </summary>
+        private async Task<bool> IsDatabaseEmptyAsync(CancellationToken ct)
+        {
+            using IServiceScope scope = _scopeFactory.CreateScope();
+
+            BMCContext context = scope.ServiceProvider.GetRequiredService<BMCContext>();
+
+            int partCount = await context.BrickParts
+                .CountAsync(ct)
+                .ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "{Prefix} Database check: {Count} parts in BrickParts table.",
+                LOG_PREFIX, partCount
+            );
+
+            // Threshold of 100 — a handful of manually-added parts doesn't count as "populated"
+            return partCount < 100;
         }
 
 

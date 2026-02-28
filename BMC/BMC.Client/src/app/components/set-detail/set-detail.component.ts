@@ -556,9 +556,9 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     private renderPartThumbnails(): void {
         const requests = this.parts
-            .filter(p => p.brickPart?.geometryFilePath)
+            .filter(p => p.brickPart?.geometryOriginalFileName)
             .map(p => ({
-                geometryFilePath: p.brickPart!.geometryFilePath!,
+                geometryOriginalFileName: p.brickPart!.geometryOriginalFileName!,
                 colourHex: this.normalizeHex(p.brickColour?.hexRgb)
             }));
         if (requests.length > 0) {
@@ -568,7 +568,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     getPartThumbnailKey(p: LegoSetPartData): string {
         return LDrawThumbnailService.cacheKey(
-            p.brickPart?.geometryFilePath ?? '',
+            p.brickPart?.geometryOriginalFileName ?? '',
             this.normalizeHex(p.brickColour?.hexRgb)
         );
     }

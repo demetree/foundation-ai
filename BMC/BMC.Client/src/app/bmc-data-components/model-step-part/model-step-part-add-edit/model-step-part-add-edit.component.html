@@ -1,0 +1,107 @@
+<div class="add-model-step-part" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-model-step-part me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Model Step Part" 
+        *ngIf="userIsBMCModelStepPartWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #modelStepPartModal let-modal>
+   <div class="modal-header model-step-part-modal-header">
+      <h5 class="modal-title mb-0" id="modelStepPartModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Model Step Part' : 'Add Model Step Part' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body model-step-part-modal-body">
+      <form [formGroup]="modelStepPartForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('modelBuildStepId')">
+                <label for="ModelStepPart-modelBuildStepId" id="label-ModelStepPart-modelBuildStepId"><span class="text-danger">*</span>Model Build Step</label>
+                <select id="ModelStepPart-modelBuildStepId" formControlName="modelBuildStepId" class="form-select model-step-part-select" [disabled]="!userIsBMCModelStepPartWriter()">
+                    <option [ngValue]="null">Select Model Build Step</option>
+                    <option *ngFor="let modelBuildStep of modelBuildSteps$ | async" [ngValue]="modelBuildStep.id">{{modelBuildStep.rotationType}}</option>
+                </select>
+                <div *ngIf="modelStepPartForm.get('modelBuildStepId')?.invalid && modelStepPartForm.get('modelBuildStepId')?.touched" class="text-danger">
+                    Model Build Step is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                <label for="ModelStepPart-brickPartId" id="label-ModelStepPart-brickPartId">Brick Part</label>
+                <select id="ModelStepPart-brickPartId" formControlName="brickPartId" class="form-select model-step-part-select" [disabled]="!userIsBMCModelStepPartWriter()">
+                    <option [ngValue]="null">Select Brick Part</option>
+                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
+                <label for="ModelStepPart-brickColourId" id="label-ModelStepPart-brickColourId">Brick Colour</label>
+                <select id="ModelStepPart-brickColourId" formControlName="brickColourId" class="form-select model-step-part-select" [disabled]="!userIsBMCModelStepPartWriter()">
+                    <option [ngValue]="null">Select Brick Colour</option>
+                    <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('partFileName')">
+                <label for="ModelStepPart-partFileName" id="label-ModelStepPart-partFileName"><span class="text-danger">*</span>Part File Name</label>
+                <input type="text" id="ModelStepPart-partFileName" formControlName="partFileName" placeholder="Enter Part File Name" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()" aria-labelledby="label-partFileName" />
+                <div *ngIf="modelStepPartForm.get('partFileName')?.invalid && modelStepPartForm.get('partFileName')?.touched" class="text-danger">
+                    Part File Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('colorCode')">
+                <label for="ModelStepPart-colorCode" id="label-ModelStepPart-colorCode"><span class="text-danger">*</span>Color Code</label>
+                <input type="number" id="ModelStepPart-colorCode" formControlName="colorCode" placeholder="Enter Color Code" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()" aria-labelledby="label-colorCode" />
+                <div *ngIf="modelStepPartForm.get('colorCode')?.invalid && modelStepPartForm.get('colorCode')?.touched" class="text-danger">
+                    Color Code is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                <label for="ModelStepPart-positionX" id="label-ModelStepPart-positionX">Position X</label>
+                <input type="number" id="ModelStepPart-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()" aria-labelledby="label-positionX" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                <label for="ModelStepPart-positionY" id="label-ModelStepPart-positionY">Position Y</label>
+                <input type="number" id="ModelStepPart-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()" aria-labelledby="label-positionY" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionZ')">
+                <label for="ModelStepPart-positionZ" id="label-ModelStepPart-positionZ">Position Z</label>
+                <input type="number" id="ModelStepPart-positionZ" formControlName="positionZ" placeholder="Enter Position Z" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()" aria-labelledby="label-positionZ" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('transformMatrix')">
+                <label for="ModelStepPart-transformMatrix" id="label-ModelStepPart-transformMatrix"><span class="text-danger">*</span>Transform Matrix</label>
+                <textarea id="ModelStepPart-transformMatrix" formControlName="transformMatrix" placeholder="Enter Transform Matrix" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()"></textarea>
+                <div *ngIf="modelStepPartForm.get('transformMatrix')?.invalid && modelStepPartForm.get('transformMatrix')?.touched" class="text-danger">
+                    Transform Matrix is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ModelStepPart-sequence" id="label-ModelStepPart-sequence">Sequence</label>
+                <input type="number" id="ModelStepPart-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control model-step-part-input" [disabled]="!userIsBMCModelStepPartWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ModelStepPart-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCModelStepPartWriter()" />
+                <label for="ModelStepPart-active" class="form-check-label" id="label-ModelStepPart-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ModelStepPart-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCModelStepPartWriter()" />
+                <label for="ModelStepPart-deleted" class="form-check-label" id="label-ModelStepPart-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer model-step-part-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Model Step Part changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !modelStepPartForm.valid || modelStepPartForm.pristine  || userIsBMCModelStepPartWriter() == false " ngbTooltip="Save the Model Step Part changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Model Step Part' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

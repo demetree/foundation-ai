@@ -33,7 +33,7 @@ export interface RankedPart {
     name: string;
     ldrawPartId: string;
     ldrawTitle: string;
-    geometryFilePath: string;
+    geometryOriginalFileName: string;
     categoryName: string;
     partTypeName: string;
     totalQty: number;

@@ -69,7 +69,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string categoryName { get; set; }
             public int partTypeId { get; set; }
             public string partTypeName { get; set; }
-            public string geometryFilePath { get; set; }
+            public string geometryOriginalFileName { get; set; }
             public string keywords { get; set; }
             public string author { get; set; }
             public float? widthLdu { get; set; }
@@ -189,7 +189,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             // Base query: only parts with LDraw geometry data, active and not deleted
             //
             IQueryable<BrickPart> query = _context.BrickParts
-                .Where(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false);
+                .Where(bp => bp.geometryOriginalFileName != null && bp.active == true && bp.deleted == false);
 
             //
             // Category filter
@@ -248,7 +248,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     categoryName = bp.brickCategory != null ? bp.brickCategory.name : null,
                     partTypeId = bp.partTypeId,
                     partTypeName = bp.partType != null ? bp.partType.name : null,
-                    geometryFilePath = bp.geometryFilePath,
+                    geometryOriginalFileName = bp.geometryOriginalFileName,
                     keywords = bp.keywords,
                     author = bp.author,
                     widthLdu = bp.widthLdu,
@@ -322,7 +322,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             // Step 2: Load all renderable parts.
             //
             List<CatalogPartDto> items = await _context.BrickParts
-                .Where(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false)
+                .Where(bp => bp.geometryOriginalFileName != null && bp.active == true && bp.deleted == false)
                 .OrderByDescending(bp => bp.id)   // deterministic order; client re-sorts
                 .Select(bp => new CatalogPartDto
                 {
@@ -335,7 +335,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     categoryName = bp.brickCategory != null ? bp.brickCategory.name : null,
                     partTypeId = bp.partTypeId,
                     partTypeName = bp.partType != null ? bp.partType.name : null,
-                    geometryFilePath = bp.geometryFilePath,
+                    geometryOriginalFileName = bp.geometryOriginalFileName,
                     keywords = bp.keywords,
                     author = bp.author,
                     widthLdu = bp.widthLdu,
@@ -400,7 +400,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     id = c.id,
                     name = c.name,
                     description = c.description,
-                    partCount = c.BrickParts.Count(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false)
+                    partCount = c.BrickParts.Count(bp => bp.geometryOriginalFileName != null && bp.active == true && bp.deleted == false)
                 })
                 .Where(c => c.partCount > 0)
                 .OrderByDescending(c => c.partCount)
@@ -448,7 +448,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     id = pt.id,
                     name = pt.name,
-                    partCount = pt.BrickParts.Count(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false)
+                    partCount = pt.BrickParts.Count(bp => bp.geometryOriginalFileName != null && bp.active == true && bp.deleted == false)
                 })
                 .Where(pt => pt.partCount > 0)
                 .OrderByDescending(pt => pt.partCount)
@@ -566,7 +566,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     imageUrl = sp.legoSet.imageUrl,
                     colourName = sp.brickColour != null ? sp.brickColour.name : null,
                     colourHex = sp.brickColour != null ? sp.brickColour.hexRgb : null,
-                    ldrawColourCode = sp.brickColour != null ? sp.brickColour.ldrawColourCode : 0,
+                    ldrawColourCode = sp.brickColour != null ? sp.brickColour.ldrawColourCode ?? 0 : 0,
                     quantity = sp.quantity ?? 0,
                     isSpare = sp.isSpare,
                     legoSetId = sp.legoSetId,
@@ -625,7 +625,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             // Get the set of renderable part IDs
             //
             HashSet<int> renderablePartIds = (await _context.BrickParts
-                .Where(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false)
+                .Where(bp => bp.geometryOriginalFileName != null && bp.active == true && bp.deleted == false)
                 .Select(bp => bp.id)
                 .ToListAsync(cancellationToken))
                 .ToHashSet();

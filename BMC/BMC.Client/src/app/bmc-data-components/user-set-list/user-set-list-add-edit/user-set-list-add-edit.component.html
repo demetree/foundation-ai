@@ -1,0 +1,65 @@
+<div class="add-user-set-list" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-set-list me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Set List" 
+        *ngIf="userIsBMCUserSetListWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userSetListModal let-modal>
+   <div class="modal-header user-set-list-modal-header">
+      <h5 class="modal-title mb-0" id="userSetListModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Set List' : 'Add User Set List' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body user-set-list-modal-body">
+      <form [formGroup]="userSetListForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="UserSetList-name" id="label-UserSetList-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="UserSetList-name" formControlName="name" placeholder="Enter Name" class="form-control user-set-list-input" [disabled]="!userIsBMCUserSetListWriter()" aria-labelledby="label-name" />
+                <div *ngIf="userSetListForm.get('name')?.invalid && userSetListForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isBuildable')">
+                <input type="checkbox" id="UserSetList-isBuildable" formControlName="isBuildable" class="form-check-input" [disabled]="!userIsBMCUserSetListWriter()" />
+                <label for="UserSetList-isBuildable" class="form-check-label" id="label-UserSetList-isBuildable"><span class="text-danger">*</span>Is Buildable</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rebrickableListId')">
+                <label for="UserSetList-rebrickableListId" id="label-UserSetList-rebrickableListId">Rebrickable List Id</label>
+                <input type="number" id="UserSetList-rebrickableListId" formControlName="rebrickableListId" placeholder="Enter Rebrickable List Id" class="form-control user-set-list-input" [disabled]="!userIsBMCUserSetListWriter()" aria-labelledby="label-rebrickableListId" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserSetList-versionNumber" id="label-UserSetList-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserSetList-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-set-list-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserSetList-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserSetListWriter()" />
+                <label for="UserSetList-active" class="form-check-label" id="label-UserSetList-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserSetList-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserSetListWriter()" />
+                <label for="UserSetList-deleted" class="form-check-label" id="label-UserSetList-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-set-list-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Set List changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userSetListForm.valid || userSetListForm.pristine  || userIsBMCUserSetListWriter() == false " ngbTooltip="Save the User Set List changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Set List' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

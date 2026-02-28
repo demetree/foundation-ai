@@ -28,12 +28,16 @@ import { BrickCategoryService } from '../../../bmc-data-services/brick-category.
 import { BrickPartChangeHistoryService } from '../../../bmc-data-services/brick-part-change-history.service';
 import { BrickPartConnectorService } from '../../../bmc-data-services/brick-part-connector.service';
 import { BrickPartColourService } from '../../../bmc-data-services/brick-part-colour.service';
+import { PartSubFileReferenceService } from '../../../bmc-data-services/part-sub-file-reference.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
+import { ModelStepPartService } from '../../../bmc-data-services/model-step-part.service';
 import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.service';
 import { BrickPartRelationshipService } from '../../../bmc-data-services/brick-part-relationship.service';
 import { BrickElementService } from '../../../bmc-data-services/brick-element.service';
 import { UserCollectionPartService } from '../../../bmc-data-services/user-collection-part.service';
 import { UserWishlistItemService } from '../../../bmc-data-services/user-wishlist-item.service';
+import { UserPartListItemService } from '../../../bmc-data-services/user-part-list-item.service';
+import { UserLostPartService } from '../../../bmc-data-services/user-lost-part.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -46,21 +50,48 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 //
 interface BrickPartFormValues {
   name: string,
-  ldrawPartId: string,
+  rebrickablePartNum: string,
+  rebrickablePartUrl: string | null,
+  rebrickableImgUrl: string | null,
+  ldrawPartId: string | null,
+  bricklinkId: string | null,
+  brickowlId: string | null,
+  legoDesignId: string | null,
   ldrawTitle: string | null,
   ldrawCategory: string | null,
   partTypeId: number | bigint,       // For FK link number
   keywords: string | null,
   author: string | null,
   brickCategoryId: number | bigint,       // For FK link number
-  rebrickablePartNum: string | null,
   widthLdu: string | null,     // Stored as string for form input, converted to number on submit.
   heightLdu: string | null,     // Stored as string for form input, converted to number on submit.
   depthLdu: string | null,     // Stored as string for form input, converted to number on submit.
   massGrams: string | null,     // Stored as string for form input, converted to number on submit.
-  geometryFilePath: string | null,
+  momentOfInertiaX: string | null,     // Stored as string for form input, converted to number on submit.
+  momentOfInertiaY: string | null,     // Stored as string for form input, converted to number on submit.
+  momentOfInertiaZ: string | null,     // Stored as string for form input, converted to number on submit.
+  frictionCoefficient: string | null,     // Stored as string for form input, converted to number on submit.
+  materialType: string | null,
+  centerOfMassX: string | null,     // Stored as string for form input, converted to number on submit.
+  centerOfMassY: string | null,     // Stored as string for form input, converted to number on submit.
+  centerOfMassZ: string | null,     // Stored as string for form input, converted to number on submit.
+  geometryFileName: string | null,
+  geometrySize: string | null,     // Stored as string for form input, converted to number on submit.
+  geometryData: string | null,
+  geometryMimeType: string | null,
+  geometryFileFormat: string | null,
+  geometryOriginalFileName: string | null,
+  boundingBoxMinX: string | null,     // Stored as string for form input, converted to number on submit.
+  boundingBoxMinY: string | null,     // Stored as string for form input, converted to number on submit.
+  boundingBoxMinZ: string | null,     // Stored as string for form input, converted to number on submit.
+  boundingBoxMaxX: string | null,     // Stored as string for form input, converted to number on submit.
+  boundingBoxMaxY: string | null,     // Stored as string for form input, converted to number on submit.
+  boundingBoxMaxZ: string | null,     // Stored as string for form input, converted to number on submit.
+  subFileCount: string | null,     // Stored as string for form input, converted to number on submit.
+  polygonCount: string | null,     // Stored as string for form input, converted to number on submit.
   toothCount: string | null,     // Stored as string for form input, converted to number on submit.
   gearRatio: string | null,     // Stored as string for form input, converted to number on submit.
+  lastModifiedDate: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -92,21 +123,48 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
 
   public brickPartForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
-        ldrawPartId: ['', Validators.required],
+        rebrickablePartNum: ['', Validators.required],
+        rebrickablePartUrl: [''],
+        rebrickableImgUrl: [''],
+        ldrawPartId: [''],
+        bricklinkId: [''],
+        brickowlId: [''],
+        legoDesignId: [''],
         ldrawTitle: [''],
         ldrawCategory: [''],
         partTypeId: [null, Validators.required],
         keywords: [''],
         author: [''],
         brickCategoryId: [null, Validators.required],
-        rebrickablePartNum: [''],
         widthLdu: [''],
         heightLdu: [''],
         depthLdu: [''],
         massGrams: [''],
-        geometryFilePath: [''],
+        momentOfInertiaX: [''],
+        momentOfInertiaY: [''],
+        momentOfInertiaZ: [''],
+        frictionCoefficient: [''],
+        materialType: [''],
+        centerOfMassX: [''],
+        centerOfMassY: [''],
+        centerOfMassZ: [''],
+        geometryFileName: [''],
+        geometrySize: [''],
+        geometryData: [''],
+        geometryMimeType: [''],
+        geometryFileFormat: [''],
+        geometryOriginalFileName: [''],
+        boundingBoxMinX: [''],
+        boundingBoxMinY: [''],
+        boundingBoxMinZ: [''],
+        boundingBoxMaxX: [''],
+        boundingBoxMaxY: [''],
+        boundingBoxMaxZ: [''],
+        subFileCount: [''],
+        polygonCount: [''],
         toothCount: [''],
         gearRatio: [''],
+        lastModifiedDate: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -129,12 +187,16 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
   public brickPartChangeHistories$ = this.brickPartChangeHistoryService.GetBrickPartChangeHistoryList();
   public brickPartConnectors$ = this.brickPartConnectorService.GetBrickPartConnectorList();
   public brickPartColours$ = this.brickPartColourService.GetBrickPartColourList();
+  public partSubFileReferences$ = this.partSubFileReferenceService.GetPartSubFileReferenceList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
+  public modelStepParts$ = this.modelStepPartService.GetModelStepPartList();
   public legoSetParts$ = this.legoSetPartService.GetLegoSetPartList();
   public brickPartRelationships$ = this.brickPartRelationshipService.GetBrickPartRelationshipList();
   public brickElements$ = this.brickElementService.GetBrickElementList();
   public userCollectionParts$ = this.userCollectionPartService.GetUserCollectionPartList();
   public userWishlistItems$ = this.userWishlistItemService.GetUserWishlistItemList();
+  public userPartListItems$ = this.userPartListItemService.GetUserPartListItemList();
+  public userLostParts$ = this.userLostPartService.GetUserLostPartList();
 
   private destroy$ = new Subject<void>();
 
@@ -145,12 +207,16 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
     public brickPartChangeHistoryService: BrickPartChangeHistoryService,
     public brickPartConnectorService: BrickPartConnectorService,
     public brickPartColourService: BrickPartColourService,
+    public partSubFileReferenceService: PartSubFileReferenceService,
     public placedBrickService: PlacedBrickService,
+    public modelStepPartService: ModelStepPartService,
     public legoSetPartService: LegoSetPartService,
     public brickPartRelationshipService: BrickPartRelationshipService,
     public brickElementService: BrickElementService,
     public userCollectionPartService: UserCollectionPartService,
     public userWishlistItemService: UserWishlistItemService,
+    public userPartListItemService: UserPartListItemService,
+    public userLostPartService: UserLostPartService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -433,21 +499,48 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
       //
       this.brickPartForm.reset({
         name: '',
+        rebrickablePartNum: '',
+        rebrickablePartUrl: '',
+        rebrickableImgUrl: '',
         ldrawPartId: '',
+        bricklinkId: '',
+        brickowlId: '',
+        legoDesignId: '',
         ldrawTitle: '',
         ldrawCategory: '',
         partTypeId: null,
         keywords: '',
         author: '',
         brickCategoryId: null,
-        rebrickablePartNum: '',
         widthLdu: '',
         heightLdu: '',
         depthLdu: '',
         massGrams: '',
-        geometryFilePath: '',
+        momentOfInertiaX: '',
+        momentOfInertiaY: '',
+        momentOfInertiaZ: '',
+        frictionCoefficient: '',
+        materialType: '',
+        centerOfMassX: '',
+        centerOfMassY: '',
+        centerOfMassZ: '',
+        geometryFileName: '',
+        geometrySize: '',
+        geometryData: '',
+        geometryMimeType: '',
+        geometryFileFormat: '',
+        geometryOriginalFileName: '',
+        boundingBoxMinX: '',
+        boundingBoxMinY: '',
+        boundingBoxMinZ: '',
+        boundingBoxMaxX: '',
+        boundingBoxMaxY: '',
+        boundingBoxMaxZ: '',
+        subFileCount: '',
+        polygonCount: '',
         toothCount: '',
         gearRatio: '',
+        lastModifiedDate: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -461,21 +554,48 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         //
         this.brickPartForm.reset({
         name: brickPartData.name ?? '',
+        rebrickablePartNum: brickPartData.rebrickablePartNum ?? '',
+        rebrickablePartUrl: brickPartData.rebrickablePartUrl ?? '',
+        rebrickableImgUrl: brickPartData.rebrickableImgUrl ?? '',
         ldrawPartId: brickPartData.ldrawPartId ?? '',
+        bricklinkId: brickPartData.bricklinkId ?? '',
+        brickowlId: brickPartData.brickowlId ?? '',
+        legoDesignId: brickPartData.legoDesignId ?? '',
         ldrawTitle: brickPartData.ldrawTitle ?? '',
         ldrawCategory: brickPartData.ldrawCategory ?? '',
         partTypeId: brickPartData.partTypeId,
         keywords: brickPartData.keywords ?? '',
         author: brickPartData.author ?? '',
         brickCategoryId: brickPartData.brickCategoryId,
-        rebrickablePartNum: brickPartData.rebrickablePartNum ?? '',
         widthLdu: brickPartData.widthLdu?.toString() ?? '',
         heightLdu: brickPartData.heightLdu?.toString() ?? '',
         depthLdu: brickPartData.depthLdu?.toString() ?? '',
         massGrams: brickPartData.massGrams?.toString() ?? '',
-        geometryFilePath: brickPartData.geometryFilePath ?? '',
+        momentOfInertiaX: brickPartData.momentOfInertiaX?.toString() ?? '',
+        momentOfInertiaY: brickPartData.momentOfInertiaY?.toString() ?? '',
+        momentOfInertiaZ: brickPartData.momentOfInertiaZ?.toString() ?? '',
+        frictionCoefficient: brickPartData.frictionCoefficient?.toString() ?? '',
+        materialType: brickPartData.materialType ?? '',
+        centerOfMassX: brickPartData.centerOfMassX?.toString() ?? '',
+        centerOfMassY: brickPartData.centerOfMassY?.toString() ?? '',
+        centerOfMassZ: brickPartData.centerOfMassZ?.toString() ?? '',
+        geometryFileName: brickPartData.geometryFileName ?? '',
+        geometrySize: brickPartData.geometrySize?.toString() ?? '',
+        geometryData: brickPartData.geometryData ?? '',
+        geometryMimeType: brickPartData.geometryMimeType ?? '',
+        geometryFileFormat: brickPartData.geometryFileFormat ?? '',
+        geometryOriginalFileName: brickPartData.geometryOriginalFileName ?? '',
+        boundingBoxMinX: brickPartData.boundingBoxMinX?.toString() ?? '',
+        boundingBoxMinY: brickPartData.boundingBoxMinY?.toString() ?? '',
+        boundingBoxMinZ: brickPartData.boundingBoxMinZ?.toString() ?? '',
+        boundingBoxMaxX: brickPartData.boundingBoxMaxX?.toString() ?? '',
+        boundingBoxMaxY: brickPartData.boundingBoxMaxY?.toString() ?? '',
+        boundingBoxMaxZ: brickPartData.boundingBoxMaxZ?.toString() ?? '',
+        subFileCount: brickPartData.subFileCount?.toString() ?? '',
+        polygonCount: brickPartData.polygonCount?.toString() ?? '',
         toothCount: brickPartData.toothCount?.toString() ?? '',
         gearRatio: brickPartData.gearRatio?.toString() ?? '',
+        lastModifiedDate: isoUtcStringToDateTimeLocal(brickPartData.lastModifiedDate) ?? '',
         versionNumber: brickPartData.versionNumber?.toString() ?? '',
         active: brickPartData.active ?? true,
         deleted: brickPartData.deleted ?? false,
@@ -539,21 +659,48 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
     const brickPartSubmitData: BrickPartSubmitData = {
         id: this.brickPartData?.id || 0,
         name: formValue.name!.trim(),
-        ldrawPartId: formValue.ldrawPartId!.trim(),
+        rebrickablePartNum: formValue.rebrickablePartNum!.trim(),
+        rebrickablePartUrl: formValue.rebrickablePartUrl?.trim() || null,
+        rebrickableImgUrl: formValue.rebrickableImgUrl?.trim() || null,
+        ldrawPartId: formValue.ldrawPartId?.trim() || null,
+        bricklinkId: formValue.bricklinkId?.trim() || null,
+        brickowlId: formValue.brickowlId?.trim() || null,
+        legoDesignId: formValue.legoDesignId?.trim() || null,
         ldrawTitle: formValue.ldrawTitle?.trim() || null,
         ldrawCategory: formValue.ldrawCategory?.trim() || null,
         partTypeId: Number(formValue.partTypeId),
         keywords: formValue.keywords?.trim() || null,
         author: formValue.author?.trim() || null,
         brickCategoryId: Number(formValue.brickCategoryId),
-        rebrickablePartNum: formValue.rebrickablePartNum?.trim() || null,
         widthLdu: formValue.widthLdu ? Number(formValue.widthLdu) : null,
         heightLdu: formValue.heightLdu ? Number(formValue.heightLdu) : null,
         depthLdu: formValue.depthLdu ? Number(formValue.depthLdu) : null,
         massGrams: formValue.massGrams ? Number(formValue.massGrams) : null,
-        geometryFilePath: formValue.geometryFilePath?.trim() || null,
+        momentOfInertiaX: formValue.momentOfInertiaX ? Number(formValue.momentOfInertiaX) : null,
+        momentOfInertiaY: formValue.momentOfInertiaY ? Number(formValue.momentOfInertiaY) : null,
+        momentOfInertiaZ: formValue.momentOfInertiaZ ? Number(formValue.momentOfInertiaZ) : null,
+        frictionCoefficient: formValue.frictionCoefficient ? Number(formValue.frictionCoefficient) : null,
+        materialType: formValue.materialType?.trim() || null,
+        centerOfMassX: formValue.centerOfMassX ? Number(formValue.centerOfMassX) : null,
+        centerOfMassY: formValue.centerOfMassY ? Number(formValue.centerOfMassY) : null,
+        centerOfMassZ: formValue.centerOfMassZ ? Number(formValue.centerOfMassZ) : null,
+        geometryFileName: formValue.geometryFileName?.trim() || null,
+        geometrySize: formValue.geometrySize ? Number(formValue.geometrySize) : null,
+        geometryData: formValue.geometryData?.trim() || null,
+        geometryMimeType: formValue.geometryMimeType?.trim() || null,
+        geometryFileFormat: formValue.geometryFileFormat?.trim() || null,
+        geometryOriginalFileName: formValue.geometryOriginalFileName?.trim() || null,
+        boundingBoxMinX: formValue.boundingBoxMinX ? Number(formValue.boundingBoxMinX) : null,
+        boundingBoxMinY: formValue.boundingBoxMinY ? Number(formValue.boundingBoxMinY) : null,
+        boundingBoxMinZ: formValue.boundingBoxMinZ ? Number(formValue.boundingBoxMinZ) : null,
+        boundingBoxMaxX: formValue.boundingBoxMaxX ? Number(formValue.boundingBoxMaxX) : null,
+        boundingBoxMaxY: formValue.boundingBoxMaxY ? Number(formValue.boundingBoxMaxY) : null,
+        boundingBoxMaxZ: formValue.boundingBoxMaxZ ? Number(formValue.boundingBoxMaxZ) : null,
+        subFileCount: formValue.subFileCount ? Number(formValue.subFileCount) : null,
+        polygonCount: formValue.polygonCount ? Number(formValue.polygonCount) : null,
         toothCount: formValue.toothCount ? Number(formValue.toothCount) : null,
         gearRatio: formValue.gearRatio ? Number(formValue.gearRatio) : null,
+        lastModifiedDate: formValue.lastModifiedDate ? dateTimeLocalToIsoUtc(formValue.lastModifiedDate.trim()) : null,
         versionNumber: this.brickPartData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

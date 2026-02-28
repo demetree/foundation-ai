@@ -39,7 +39,7 @@ interface LegoThemeFormValues {
   name: string,
   description: string,
   legoThemeId: number | bigint | null,       // For FK link number
-  rebrickableThemeId: string | null,     // Stored as string for form input, converted to number on submit.
+  rebrickableThemeId: string,     // Stored as string for form input, converted to number on submit.
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -73,7 +73,7 @@ export class LegoThemeDetailComponent implements OnInit, CanComponentDeactivate 
         name: ['', Validators.required],
         description: ['', Validators.required],
         legoThemeId: [null],
-        rebrickableThemeId: [''],
+        rebrickableThemeId: ['', Validators.required],
         sequence: [''],
         active: [true],
         deleted: [false],
@@ -466,7 +466,7 @@ export class LegoThemeDetailComponent implements OnInit, CanComponentDeactivate 
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
         legoThemeId: formValue.legoThemeId ? Number(formValue.legoThemeId) : null,
-        rebrickableThemeId: formValue.rebrickableThemeId ? Number(formValue.rebrickableThemeId) : null,
+        rebrickableThemeId: Number(formValue.rebrickableThemeId),
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

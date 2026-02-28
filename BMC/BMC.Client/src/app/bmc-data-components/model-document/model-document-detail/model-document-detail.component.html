@@ -1,0 +1,147 @@
+<div class="container-fluid p-1 m-0 model-document-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="model-document-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Model Document</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Model Document' : 'Add Model Document'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCModelDocumentReader()">
+                <div class="col m-2 model-document-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="modelDocumentForm" (ngSubmit)="submitForm()" class="model-document-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="ModelDocument-projectId" id="label-ModelDocument-projectId">Project</label>
+                                <select id="ModelDocument-projectId" formControlName="projectId" class="form-select model-document-select" [disabled]="!userIsBMCModelDocumentWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ModelDocument-name" id="label-ModelDocument-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ModelDocument-name" formControlName="name" placeholder="Enter Name" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="modelDocumentForm.get('name')?.invalid && modelDocumentForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ModelDocument-description" id="label-ModelDocument-description">Description</label>
+                                <textarea id="ModelDocument-description" formControlName="description" placeholder="Enter Description" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceFormat')">
+                                <label for="ModelDocument-sourceFormat" id="label-ModelDocument-sourceFormat"><span class="text-danger">*</span>Source Format</label>
+                                <input type="text" id="ModelDocument-sourceFormat" formControlName="sourceFormat" placeholder="Enter Source Format" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-sourceFormat" />
+                                <div *ngIf="modelDocumentForm.get('sourceFormat')?.invalid && modelDocumentForm.get('sourceFormat')?.touched" class="text-danger">
+                                    Source Format is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceFileName')">
+                                <label for="ModelDocument-sourceFileName" id="label-ModelDocument-sourceFileName">Source File Name</label>
+                                <input type="text" id="ModelDocument-sourceFileName" formControlName="sourceFileName" placeholder="Enter Source File Name" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-sourceFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceFileFileName')">
+                                <label for="ModelDocument-sourceFileFileName" id="label-ModelDocument-sourceFileFileName">Source File File Name</label>
+                                <input type="text" id="ModelDocument-sourceFileFileName" formControlName="sourceFileFileName" placeholder="Enter Source File File Name" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-sourceFileFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceFileSize')">
+                                <label for="ModelDocument-sourceFileSize" id="label-ModelDocument-sourceFileSize">Source File Size</label>
+                                <input type="number" id="ModelDocument-sourceFileSize" formControlName="sourceFileSize" placeholder="Enter Source File Size" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-sourceFileSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceFileData')">
+                                <label for="ModelDocument-sourceFileData" id="label-ModelDocument-sourceFileData">Source File Data</label>
+                                <input type="text" id="ModelDocument-sourceFileData" formControlName="sourceFileData" placeholder="Enter Source File Data" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-sourceFileData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceFileMimeType')">
+                                <label for="ModelDocument-sourceFileMimeType" id="label-ModelDocument-sourceFileMimeType">Source File Mime Type</label>
+                                <input type="text" id="ModelDocument-sourceFileMimeType" formControlName="sourceFileMimeType" placeholder="Enter Source File Mime Type" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-sourceFileMimeType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('author')">
+                                <label for="ModelDocument-author" id="label-ModelDocument-author">Author</label>
+                                <input type="text" id="ModelDocument-author" formControlName="author" placeholder="Enter Author" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-author" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalPartCount')">
+                                <label for="ModelDocument-totalPartCount" id="label-ModelDocument-totalPartCount">Total Part Count</label>
+                                <input type="number" id="ModelDocument-totalPartCount" formControlName="totalPartCount" placeholder="Enter Total Part Count" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-totalPartCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalStepCount')">
+                                <label for="ModelDocument-totalStepCount" id="label-ModelDocument-totalStepCount">Total Step Count</label>
+                                <input type="number" id="ModelDocument-totalStepCount" formControlName="totalStepCount" placeholder="Enter Total Step Count" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-totalStepCount" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ModelDocument-versionNumber" id="label-ModelDocument-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ModelDocument-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control model-document-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ModelDocument-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCModelDocumentWriter()" />
+                                <label for="ModelDocument-active" class="form-check-label" id="label-ModelDocument-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ModelDocument-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCModelDocumentWriter()" />
+                                <label for="ModelDocument-deleted" class="form-check-label" id="label-ModelDocument-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="model-document-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="modelDocumentForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Model Document">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !modelDocumentForm.valid || !modelDocumentForm.dirty || modelDocumentForm.pristine  || userIsBMCModelDocumentWriter() == false " ngbTooltip="Save the Model Document changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Model Document' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCModelDocumentReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 model-document-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="modelDocumentChangeHistoryService.userIsBMCModelDocumentChangeHistoryReader()">
+                            <button ngbNavLink>Model Document Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (modelDocumentData?.ModelDocumentChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-model-document-change-history-table [queryParams]="{ modelDocumentId: modelDocumentData?.id }" [showAddButton]="true" [preSeededData]="{ modelDocumentId: modelDocumentData?.id }" [hiddenFields]="['modelDocumentId']"></app-model-document-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="modelSubFileService.userIsBMCModelSubFileReader()">
+                            <button ngbNavLink>Model Sub Files
+                                <span class="badge bg-primary ms-2">
+                                    {{ (modelDocumentData?.ModelSubFilesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-model-sub-file-table [queryParams]="{ modelDocumentId: modelDocumentData?.id }" [showAddButton]="true" [preSeededData]="{ modelDocumentId: modelDocumentData?.id }" [hiddenFields]="['modelDocumentId']"></app-model-sub-file-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

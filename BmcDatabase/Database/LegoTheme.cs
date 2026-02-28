@@ -15,7 +15,7 @@ public partial class LegoTheme
 
     public int? legoThemeId { get; set; }
 
-    public int? rebrickableThemeId { get; set; }
+    public int rebrickableThemeId { get; set; }
 
     public int? sequence { get; set; }
 

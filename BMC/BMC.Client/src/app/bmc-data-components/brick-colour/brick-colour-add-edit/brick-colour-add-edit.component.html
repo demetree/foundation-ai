@@ -27,12 +27,24 @@
                     Name is required
                 </div>
             </div>
-            <div class="form-group" *ngIf="!isFieldHidden('ldrawColourCode')">
-                <label for="BrickColour-ldrawColourCode" id="label-BrickColour-ldrawColourCode"><span class="text-danger">*</span>Ldraw Colour Code</label>
-                <input type="number" id="BrickColour-ldrawColourCode" formControlName="ldrawColourCode" placeholder="Enter Ldraw Colour Code" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-ldrawColourCode" />
-                <div *ngIf="brickColourForm.get('ldrawColourCode')?.invalid && brickColourForm.get('ldrawColourCode')?.touched" class="text-danger">
-                    Ldraw Colour Code is required
+            <div class="form-group" *ngIf="!isFieldHidden('rebrickableColorId')">
+                <label for="BrickColour-rebrickableColorId" id="label-BrickColour-rebrickableColorId"><span class="text-danger">*</span>Rebrickable Color Id</label>
+                <input type="number" id="BrickColour-rebrickableColorId" formControlName="rebrickableColorId" placeholder="Enter Rebrickable Color Id" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-rebrickableColorId" />
+                <div *ngIf="brickColourForm.get('rebrickableColorId')?.invalid && brickColourForm.get('rebrickableColorId')?.touched" class="text-danger">
+                    Rebrickable Color Id is required
                 </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('ldrawColourCode')">
+                <label for="BrickColour-ldrawColourCode" id="label-BrickColour-ldrawColourCode">Ldraw Colour Code</label>
+                <input type="number" id="BrickColour-ldrawColourCode" formControlName="ldrawColourCode" placeholder="Enter Ldraw Colour Code" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-ldrawColourCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bricklinkColorId')">
+                <label for="BrickColour-bricklinkColorId" id="label-BrickColour-bricklinkColorId">Bricklink Color Id</label>
+                <input type="number" id="BrickColour-bricklinkColorId" formControlName="bricklinkColorId" placeholder="Enter Bricklink Color Id" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-bricklinkColorId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickowlColorId')">
+                <label for="BrickColour-brickowlColorId" id="label-BrickColour-brickowlColorId">Brickowl Color Id</label>
+                <input type="number" id="BrickColour-brickowlColorId" formControlName="brickowlColorId" placeholder="Enter Brickowl Color Id" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-brickowlColorId" />
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('hexRgb')">
                 <label for="BrickColour-hexRgb" id="label-BrickColour-hexRgb">Hex Rgb</label>

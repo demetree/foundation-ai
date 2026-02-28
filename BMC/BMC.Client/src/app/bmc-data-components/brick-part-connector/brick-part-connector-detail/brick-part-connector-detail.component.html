@@ -61,6 +61,14 @@
                                 <label for="BrickPartConnector-orientationZ" id="label-BrickPartConnector-orientationZ">Orientation Z</label>
                                 <input type="number" id="BrickPartConnector-orientationZ" formControlName="orientationZ" placeholder="Enter Orientation Z" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-orientationZ" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('connectorGroupId')">
+                                <label for="BrickPartConnector-connectorGroupId" id="label-BrickPartConnector-connectorGroupId">Connector Group Id</label>
+                                <input type="number" id="BrickPartConnector-connectorGroupId" formControlName="connectorGroupId" placeholder="Enter Connector Group Id" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-connectorGroupId" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isAutoExtracted')">
+                                <input type="checkbox" id="BrickPartConnector-isAutoExtracted" formControlName="isAutoExtracted" class="form-check-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" />
+                                <label for="BrickPartConnector-isAutoExtracted" class="form-check-label" id="label-BrickPartConnector-isAutoExtracted"><span class="text-danger">*</span>Is Auto Extracted</label>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                                 <label for="BrickPartConnector-sequence" id="label-BrickPartConnector-sequence">Sequence</label>
                                 <input type="number" id="BrickPartConnector-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-sequence" />
@@ -88,6 +96,44 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCBrickPartConnectorReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 brick-part-connector-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="brickConnectionService.userIsBMCBrickConnectionReader()">
+                            <button ngbNavLink>Brick Connections Source Connectors
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartConnectorData?.BrickConnectionSourceConnectorsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-connection-table [queryParams]="{ sourceConnectorId: brickPartConnectorData?.id }" [showAddButton]="true" [preSeededData]="{ sourceConnectorId: brickPartConnectorData?.id }" [hiddenFields]="['sourceConnectorId']"></app-brick-connection-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="brickConnectionService.userIsBMCBrickConnectionReader()">
+                            <button ngbNavLink>Brick Connections Target Connectors
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartConnectorData?.BrickConnectionTargetConnectorsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-connection-table [queryParams]="{ targetConnectorId: brickPartConnectorData?.id }" [showAddButton]="true" [preSeededData]="{ targetConnectorId: brickPartConnectorData?.id }" [hiddenFields]="['targetConnectorId']"></app-brick-connection-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
                 </div>
             </div>
         </div>

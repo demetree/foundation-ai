@@ -1,0 +1,105 @@
+<div class="container-fluid p-1 m-0 user-set-list-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-set-list-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Set List</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Set List' : 'Add User Set List'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserSetListReader()">
+                <div class="col m-2 user-set-list-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userSetListForm" (ngSubmit)="submitForm()" class="user-set-list-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="UserSetList-name" id="label-UserSetList-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="UserSetList-name" formControlName="name" placeholder="Enter Name" class="form-control user-set-list-input" [disabled]="!userIsBMCUserSetListWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="userSetListForm.get('name')?.invalid && userSetListForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isBuildable')">
+                                <input type="checkbox" id="UserSetList-isBuildable" formControlName="isBuildable" class="form-check-input" [disabled]="!userIsBMCUserSetListWriter()" />
+                                <label for="UserSetList-isBuildable" class="form-check-label" id="label-UserSetList-isBuildable"><span class="text-danger">*</span>Is Buildable</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableListId')">
+                                <label for="UserSetList-rebrickableListId" id="label-UserSetList-rebrickableListId">Rebrickable List Id</label>
+                                <input type="number" id="UserSetList-rebrickableListId" formControlName="rebrickableListId" placeholder="Enter Rebrickable List Id" class="form-control user-set-list-input" [disabled]="!userIsBMCUserSetListWriter()" aria-labelledby="label-rebrickableListId" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="UserSetList-versionNumber" id="label-UserSetList-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="UserSetList-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-set-list-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserSetList-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserSetListWriter()" />
+                                <label for="UserSetList-active" class="form-check-label" id="label-UserSetList-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserSetList-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserSetListWriter()" />
+                                <label for="UserSetList-deleted" class="form-check-label" id="label-UserSetList-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-set-list-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userSetListForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Set List">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userSetListForm.valid || !userSetListForm.dirty || userSetListForm.pristine  || userIsBMCUserSetListWriter() == false " ngbTooltip="Save the User Set List changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Set List' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCUserSetListReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 user-set-list-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="userSetListChangeHistoryService.userIsBMCUserSetListChangeHistoryReader()">
+                            <button ngbNavLink>User Set List Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userSetListData?.UserSetListChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-set-list-change-history-table [queryParams]="{ userSetListId: userSetListData?.id }" [showAddButton]="true" [preSeededData]="{ userSetListId: userSetListData?.id }" [hiddenFields]="['userSetListId']"></app-user-set-list-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userSetListItemService.userIsBMCUserSetListItemReader()">
+                            <button ngbNavLink>User Set List Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userSetListData?.UserSetListItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-set-list-item-table [queryParams]="{ userSetListId: userSetListData?.id }" [showAddButton]="true" [preSeededData]="{ userSetListId: userSetListData?.id }" [hiddenFields]="['userSetListId']"></app-user-set-list-item-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

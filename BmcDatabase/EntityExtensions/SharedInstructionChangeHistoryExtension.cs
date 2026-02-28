@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = sharedInstructionChangeHistory.timeStamp,
 				userId = sharedInstructionChangeHistory.userId,
 				data = sharedInstructionChangeHistory.data,
-				sharedInstruction = SharedInstruction.CreateMinimalAnonymous(sharedInstructionChangeHistory.sharedInstruction),
+				sharedInstruction = SharedInstruction.CreateMinimalAnonymous(sharedInstructionChangeHistory.sharedInstruction)
 			 };
 		}
 

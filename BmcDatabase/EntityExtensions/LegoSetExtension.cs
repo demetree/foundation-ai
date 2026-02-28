@@ -33,6 +33,8 @@ namespace Foundation.BMC.Database
 			public String imageUrl { get; set; }
 			public String brickLinkUrl { get; set; }
 			public String rebrickableUrl { get; set; }
+			public String rebrickableSetNum { get; set; }
+			public DateTime? lastModifiedDate { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -71,6 +73,8 @@ namespace Foundation.BMC.Database
 				imageUrl = this.imageUrl,
 				brickLinkUrl = this.brickLinkUrl,
 				rebrickableUrl = this.rebrickableUrl,
+				rebrickableSetNum = this.rebrickableSetNum,
+				lastModifiedDate = this.lastModifiedDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -121,6 +125,8 @@ namespace Foundation.BMC.Database
 				imageUrl = this.imageUrl,
 				brickLinkUrl = this.brickLinkUrl,
 				rebrickableUrl = this.rebrickableUrl,
+				rebrickableSetNum = this.rebrickableSetNum,
+				lastModifiedDate = this.lastModifiedDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -172,6 +178,8 @@ namespace Foundation.BMC.Database
 				imageUrl = dto.imageUrl,
 				brickLinkUrl = dto.brickLinkUrl,
 				rebrickableUrl = dto.rebrickableUrl,
+				rebrickableSetNum = dto.rebrickableSetNum,
+				lastModifiedDate = dto.lastModifiedDate,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -199,6 +207,8 @@ namespace Foundation.BMC.Database
 			this.imageUrl = dto.imageUrl;
 			this.brickLinkUrl = dto.brickLinkUrl;
 			this.rebrickableUrl = dto.rebrickableUrl;
+			this.rebrickableSetNum = dto.rebrickableSetNum;
+			this.lastModifiedDate = dto.lastModifiedDate;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -231,6 +241,8 @@ namespace Foundation.BMC.Database
 				imageUrl = this.imageUrl,
 				brickLinkUrl = this.brickLinkUrl,
 				rebrickableUrl = this.rebrickableUrl,
+				rebrickableSetNum = this.rebrickableSetNum,
+				lastModifiedDate = this.lastModifiedDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -295,6 +307,8 @@ namespace Foundation.BMC.Database
 				imageUrl = legoSet.imageUrl,
 				brickLinkUrl = legoSet.brickLinkUrl,
 				rebrickableUrl = legoSet.rebrickableUrl,
+				rebrickableSetNum = legoSet.rebrickableSetNum,
+				lastModifiedDate = legoSet.lastModifiedDate,
 				objectGuid = legoSet.objectGuid,
 				active = legoSet.active,
 				deleted = legoSet.deleted,
@@ -326,6 +340,8 @@ namespace Foundation.BMC.Database
 				imageUrl = legoSet.imageUrl,
 				brickLinkUrl = legoSet.brickLinkUrl,
 				rebrickableUrl = legoSet.rebrickableUrl,
+				rebrickableSetNum = legoSet.rebrickableSetNum,
+				lastModifiedDate = legoSet.lastModifiedDate,
 				objectGuid = legoSet.objectGuid,
 				active = legoSet.active,
 				deleted = legoSet.deleted,

@@ -130,7 +130,7 @@ export class PartsUniverseComponent implements OnInit, OnDestroy {
     getPartThumbnailKey(rp: RankedPart): string {
         const hex = rp.colours?.length > 0 ? rp.colours[0].hex : undefined;
         return LDrawThumbnailService.cacheKey(
-            rp.geometryFilePath || rp.ldrawPartId,
+            rp.geometryOriginalFileName || rp.ldrawPartId,
             hex ? (hex.startsWith('#') ? hex.slice(1) : hex) : undefined
         );
     }
@@ -353,9 +353,9 @@ export class PartsUniverseComponent implements OnInit, OnDestroy {
                     //
                     const top50 = this.rankedParts.slice(0, 50);
                     const thumbnailRequests = top50
-                        .filter(r => r.geometryFilePath)
+                        .filter(r => r.geometryOriginalFileName)
                         .map(r => ({
-                            geometryFilePath: r.geometryFilePath,
+                            geometryOriginalFileName: r.geometryOriginalFileName,
                             colourHex: r.colours?.length > 0
                                 ? (r.colours[0].hex.startsWith('#') ? r.colours[0].hex.slice(1) : r.colours[0].hex)
                                 : undefined

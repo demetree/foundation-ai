@@ -43,6 +43,8 @@ interface LegoSetFormValues {
   imageUrl: string | null,
   brickLinkUrl: string | null,
   rebrickableUrl: string | null,
+  rebrickableSetNum: string | null,
+  lastModifiedDate: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -83,6 +85,8 @@ export class LegoSetAddEditComponent {
         imageUrl: [''],
         brickLinkUrl: [''],
         rebrickableUrl: [''],
+        rebrickableSetNum: [''],
+        lastModifiedDate: [''],
         active: [true],
         deleted: [false],
       });
@@ -228,6 +232,8 @@ export class LegoSetAddEditComponent {
         imageUrl: formValue.imageUrl?.trim() || null,
         brickLinkUrl: formValue.brickLinkUrl?.trim() || null,
         rebrickableUrl: formValue.rebrickableUrl?.trim() || null,
+        rebrickableSetNum: formValue.rebrickableSetNum?.trim() || null,
+        lastModifiedDate: formValue.lastModifiedDate ? dateTimeLocalToIsoUtc(formValue.lastModifiedDate.trim()) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -363,6 +369,8 @@ export class LegoSetAddEditComponent {
         imageUrl: '',
         brickLinkUrl: '',
         rebrickableUrl: '',
+        rebrickableSetNum: '',
+        lastModifiedDate: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -382,6 +390,8 @@ export class LegoSetAddEditComponent {
         imageUrl: legoSetData.imageUrl ?? '',
         brickLinkUrl: legoSetData.brickLinkUrl ?? '',
         rebrickableUrl: legoSetData.rebrickableUrl ?? '',
+        rebrickableSetNum: legoSetData.rebrickableSetNum ?? '',
+        lastModifiedDate: isoUtcStringToDateTimeLocal(legoSetData.lastModifiedDate) ?? '',
         active: legoSetData.active ?? true,
         deleted: legoSetData.deleted ?? false,
       }, { emitEvent: false});

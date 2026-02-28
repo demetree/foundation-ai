@@ -1,0 +1,86 @@
+<div class="container-fluid p-1 m-0 user-lost-part-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-lost-part-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Lost Part</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Lost Part' : 'Add User Lost Part'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserLostPartReader()">
+                <div class="col m-2 user-lost-part-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userLostPartForm" (ngSubmit)="submitForm()" class="user-lost-part-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                                <label for="UserLostPart-brickPartId" id="label-UserLostPart-brickPartId"><span class="text-danger">*</span>Brick Part</label>
+                                <select id="UserLostPart-brickPartId" formControlName="brickPartId" class="form-select user-lost-part-select" [disabled]="!userIsBMCUserLostPartWriter()">
+                                    <option [ngValue]="null">Select Brick Part</option>
+                                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                                </select>
+                                <div *ngIf="userLostPartForm.get('brickPartId')?.invalid && userLostPartForm.get('brickPartId')?.touched" class="text-danger">
+                                    Brick Part is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
+                                <label for="UserLostPart-brickColourId" id="label-UserLostPart-brickColourId"><span class="text-danger">*</span>Brick Colour</label>
+                                <select id="UserLostPart-brickColourId" formControlName="brickColourId" class="form-select user-lost-part-select" [disabled]="!userIsBMCUserLostPartWriter()">
+                                    <option [ngValue]="null">Select Brick Colour</option>
+                                    <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
+                                </select>
+                                <div *ngIf="userLostPartForm.get('brickColourId')?.invalid && userLostPartForm.get('brickColourId')?.touched" class="text-danger">
+                                    Brick Colour is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('legoSetId')">
+                                <label for="UserLostPart-legoSetId" id="label-UserLostPart-legoSetId">Lego Set</label>
+                                <select id="UserLostPart-legoSetId" formControlName="legoSetId" class="form-select user-lost-part-select" [disabled]="!userIsBMCUserLostPartWriter()">
+                                    <option [ngValue]="null">Select Lego Set</option>
+                                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lostQuantity')">
+                                <label for="UserLostPart-lostQuantity" id="label-UserLostPart-lostQuantity"><span class="text-danger">*</span>Lost Quantity</label>
+                                <input type="number" id="UserLostPart-lostQuantity" formControlName="lostQuantity" placeholder="Enter Lost Quantity" class="form-control user-lost-part-input" [disabled]="!userIsBMCUserLostPartWriter()" aria-labelledby="label-lostQuantity" />
+                                <div *ngIf="userLostPartForm.get('lostQuantity')?.invalid && userLostPartForm.get('lostQuantity')?.touched" class="text-danger">
+                                    Lost Quantity is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableInvPartId')">
+                                <label for="UserLostPart-rebrickableInvPartId" id="label-UserLostPart-rebrickableInvPartId">Rebrickable Inv Part Id</label>
+                                <input type="number" id="UserLostPart-rebrickableInvPartId" formControlName="rebrickableInvPartId" placeholder="Enter Rebrickable Inv Part Id" class="form-control user-lost-part-input" [disabled]="!userIsBMCUserLostPartWriter()" aria-labelledby="label-rebrickableInvPartId" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserLostPart-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserLostPartWriter()" />
+                                <label for="UserLostPart-active" class="form-check-label" id="label-UserLostPart-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserLostPart-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserLostPartWriter()" />
+                                <label for="UserLostPart-deleted" class="form-check-label" id="label-UserLostPart-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-lost-part-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userLostPartForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Lost Part">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userLostPartForm.valid || !userLostPartForm.dirty || userLostPartForm.pristine  || userIsBMCUserLostPartWriter() == false " ngbTooltip="Save the User Lost Part changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Lost Part' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

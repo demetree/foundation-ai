@@ -11,7 +11,13 @@ public partial class BrickColour
 
     public string name { get; set; }
 
-    public int ldrawColourCode { get; set; }
+    public int rebrickableColorId { get; set; }
+
+    public int? ldrawColourCode { get; set; }
+
+    public int? bricklinkColorId { get; set; }
+
+    public int? brickowlColorId { get; set; }
 
     public string hexRgb { get; set; }
 
@@ -43,9 +49,15 @@ public partial class BrickColour
 
     public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();
 
+    public virtual ICollection<ModelStepPart> ModelStepParts { get; set; } = new List<ModelStepPart>();
+
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
 
     public virtual ICollection<UserCollectionPart> UserCollectionParts { get; set; } = new List<UserCollectionPart>();
+
+    public virtual ICollection<UserLostPart> UserLostParts { get; set; } = new List<UserLostPart>();
+
+    public virtual ICollection<UserPartListItem> UserPartListItems { get; set; } = new List<UserPartListItem>();
 
     public virtual ICollection<UserWishlistItem> UserWishlistItems { get; set; } = new List<UserWishlistItem>();
 

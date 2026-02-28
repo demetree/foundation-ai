@@ -61,8 +61,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             // cache entry expired even though the data was available seconds later.
             //
             var sets = _setExplorerService.GetCachedSets();
-            if (sets == null)
+
+            if (sets == null || sets.Count == 0)
+            {
                 return StatusCode(503, new { message = "Data is still being computed. Please try again shortly." });
+            }
 
             var stats = _cache.GetOrCreate("public:stats", entry =>
             {

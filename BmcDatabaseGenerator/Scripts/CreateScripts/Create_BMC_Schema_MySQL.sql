@@ -54,6 +54,14 @@ USE `BMC`;
 -- DROP TABLE `BuildManualPage`
 -- DROP TABLE `BuildManualChangeHistory`
 -- DROP TABLE `BuildManual`
+-- DROP TABLE `UserLostPart`
+-- DROP TABLE `UserSetListItem`
+-- DROP TABLE `UserSetListChangeHistory`
+-- DROP TABLE `UserSetList`
+-- DROP TABLE `UserPartListItem`
+-- DROP TABLE `UserPartListChangeHistory`
+-- DROP TABLE `UserPartList`
+-- DROP TABLE `RebrickableUserLink`
 -- DROP TABLE `UserCollectionSetImport`
 -- DROP TABLE `UserWishlistItem`
 -- DROP TABLE `UserCollectionPart`
@@ -67,6 +75,11 @@ USE `BMC`;
 -- DROP TABLE `LegoSetPart`
 -- DROP TABLE `LegoSet`
 -- DROP TABLE `LegoTheme`
+-- DROP TABLE `ModelStepPart`
+-- DROP TABLE `ModelBuildStep`
+-- DROP TABLE `ModelSubFile`
+-- DROP TABLE `ModelDocumentChangeHistory`
+-- DROP TABLE `ModelDocument`
 -- DROP TABLE `ProjectReferenceImage`
 -- DROP TABLE `ProjectCameraPreset`
 -- DROP TABLE `ProjectTagAssignment`
@@ -79,6 +92,7 @@ USE `BMC`;
 -- DROP TABLE `PlacedBrick`
 -- DROP TABLE `ProjectChangeHistory`
 -- DROP TABLE `Project`
+-- DROP TABLE `PartSubFileReference`
 -- DROP TABLE `BrickPartColour`
 -- DROP TABLE `BrickPartConnector`
 -- DROP TABLE `BrickPartChangeHistory`
@@ -86,6 +100,7 @@ USE `BMC`;
 -- DROP TABLE `PartType`
 -- DROP TABLE `BrickColour`
 -- DROP TABLE `ColourFinish`
+-- DROP TABLE `ConnectorTypeCompatibility`
 -- DROP TABLE `ConnectorType`
 -- DROP TABLE `BrickCategory`
 
@@ -134,6 +149,14 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `BuildManualPage` DISABLE
 -- ALTER INDEX ALL ON `BuildManualChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `BuildManual` DISABLE
+-- ALTER INDEX ALL ON `UserLostPart` DISABLE
+-- ALTER INDEX ALL ON `UserSetListItem` DISABLE
+-- ALTER INDEX ALL ON `UserSetListChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `UserSetList` DISABLE
+-- ALTER INDEX ALL ON `UserPartListItem` DISABLE
+-- ALTER INDEX ALL ON `UserPartListChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `UserPartList` DISABLE
+-- ALTER INDEX ALL ON `RebrickableUserLink` DISABLE
 -- ALTER INDEX ALL ON `UserCollectionSetImport` DISABLE
 -- ALTER INDEX ALL ON `UserWishlistItem` DISABLE
 -- ALTER INDEX ALL ON `UserCollectionPart` DISABLE
@@ -147,6 +170,11 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `LegoSetPart` DISABLE
 -- ALTER INDEX ALL ON `LegoSet` DISABLE
 -- ALTER INDEX ALL ON `LegoTheme` DISABLE
+-- ALTER INDEX ALL ON `ModelStepPart` DISABLE
+-- ALTER INDEX ALL ON `ModelBuildStep` DISABLE
+-- ALTER INDEX ALL ON `ModelSubFile` DISABLE
+-- ALTER INDEX ALL ON `ModelDocumentChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `ModelDocument` DISABLE
 -- ALTER INDEX ALL ON `ProjectReferenceImage` DISABLE
 -- ALTER INDEX ALL ON `ProjectCameraPreset` DISABLE
 -- ALTER INDEX ALL ON `ProjectTagAssignment` DISABLE
@@ -159,6 +187,7 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `PlacedBrick` DISABLE
 -- ALTER INDEX ALL ON `ProjectChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `Project` DISABLE
+-- ALTER INDEX ALL ON `PartSubFileReference` DISABLE
 -- ALTER INDEX ALL ON `BrickPartColour` DISABLE
 -- ALTER INDEX ALL ON `BrickPartConnector` DISABLE
 -- ALTER INDEX ALL ON `BrickPartChangeHistory` DISABLE
@@ -166,6 +195,7 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `PartType` DISABLE
 -- ALTER INDEX ALL ON `BrickColour` DISABLE
 -- ALTER INDEX ALL ON `ColourFinish` DISABLE
+-- ALTER INDEX ALL ON `ConnectorTypeCompatibility` DISABLE
 -- ALTER INDEX ALL ON `ConnectorType` DISABLE
 -- ALTER INDEX ALL ON `BrickCategory` DISABLE
 
@@ -214,6 +244,14 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `BuildManualPage` REBUILD
 -- ALTER INDEX ALL ON `BuildManualChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `BuildManual` REBUILD
+-- ALTER INDEX ALL ON `UserLostPart` REBUILD
+-- ALTER INDEX ALL ON `UserSetListItem` REBUILD
+-- ALTER INDEX ALL ON `UserSetListChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `UserSetList` REBUILD
+-- ALTER INDEX ALL ON `UserPartListItem` REBUILD
+-- ALTER INDEX ALL ON `UserPartListChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `UserPartList` REBUILD
+-- ALTER INDEX ALL ON `RebrickableUserLink` REBUILD
 -- ALTER INDEX ALL ON `UserCollectionSetImport` REBUILD
 -- ALTER INDEX ALL ON `UserWishlistItem` REBUILD
 -- ALTER INDEX ALL ON `UserCollectionPart` REBUILD
@@ -227,6 +265,11 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `LegoSetPart` REBUILD
 -- ALTER INDEX ALL ON `LegoSet` REBUILD
 -- ALTER INDEX ALL ON `LegoTheme` REBUILD
+-- ALTER INDEX ALL ON `ModelStepPart` REBUILD
+-- ALTER INDEX ALL ON `ModelBuildStep` REBUILD
+-- ALTER INDEX ALL ON `ModelSubFile` REBUILD
+-- ALTER INDEX ALL ON `ModelDocumentChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `ModelDocument` REBUILD
 -- ALTER INDEX ALL ON `ProjectReferenceImage` REBUILD
 -- ALTER INDEX ALL ON `ProjectCameraPreset` REBUILD
 -- ALTER INDEX ALL ON `ProjectTagAssignment` REBUILD
@@ -239,6 +282,7 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `PlacedBrick` REBUILD
 -- ALTER INDEX ALL ON `ProjectChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `Project` REBUILD
+-- ALTER INDEX ALL ON `PartSubFileReference` REBUILD
 -- ALTER INDEX ALL ON `BrickPartColour` REBUILD
 -- ALTER INDEX ALL ON `BrickPartConnector` REBUILD
 -- ALTER INDEX ALL ON `BrickPartChangeHistory` REBUILD
@@ -246,6 +290,7 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `PartType` REBUILD
 -- ALTER INDEX ALL ON `BrickColour` REBUILD
 -- ALTER INDEX ALL ON `ColourFinish` REBUILD
+-- ALTER INDEX ALL ON `ConnectorTypeCompatibility` REBUILD
 -- ALTER INDEX ALL ON `ConnectorType` REBUILD
 -- ALTER INDEX ALL ON `BrickCategory` REBUILD
 
@@ -341,6 +386,11 @@ CREATE TABLE `ConnectorType`(
 	`degreesOfFreedom` INT NULL,		-- Number of degrees of freedom when connected (0=fixed, 1=rotation, 2=rotation+slide)
 	`allowsRotation` BIT NOT NULL DEFAULT 0,		-- Whether this connection allows rotation around its axis
 	`allowsSlide` BIT NOT NULL DEFAULT 0,		-- Whether this connection allows sliding along its axis
+	`minAngleDegrees` FLOAT NULL,		-- Minimum angle of rotation for hinge-type connectors (null = no minimum)
+	`maxAngleDegrees` FLOAT NULL,		-- Maximum angle of rotation for hinge-type connectors (null = no maximum)
+	`snapIncrementDegrees` FLOAT NULL,		-- Snap increment for click hinges (e.g. 22.5 degrees, null = continuous)
+	`clutchForceNewtons` FLOAT NULL,		-- Force needed to disconnect this connector type (null = unknown)
+	`maleOrFemale` VARCHAR(10) NULL,		-- Pairing role: Male, Female, or Both (for compatibility matching logic)
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -371,6 +421,40 @@ INSERT INTO `ConnectorType` ( `name`, `description`, `degreesOfFreedom`, `allows
 INSERT INTO `ConnectorType` ( `name`, `description`, `degreesOfFreedom`, `allowsRotation`, `allowsSlide`, `sequence`, `objectGuid` ) VALUES  ( 'BallJointSocket', 'Ball joint socket — accepts a ball joint for multi-axis rotation', 2, true, false, 20, 'c0110001-0001-4000-8000-000000000020' );
 
 INSERT INTO `ConnectorType` ( `name`, `description`, `degreesOfFreedom`, `allowsRotation`, `allowsSlide`, `sequence`, `objectGuid` ) VALUES  ( 'BallJoint', 'Ball joint — inserts into a ball joint socket', 2, true, false, 21, 'c0110001-0001-4000-8000-000000000021' );
+
+
+-- Defines which connector types can physically connect to each other (e.g. Stud↔AntiStud, Pin↔PinHole).
+CREATE TABLE `ConnectorTypeCompatibility`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`maleConnectorTypeId` INT NOT NULL,		-- The male/inserting connector type
+	`femaleConnectorTypeId` INT NOT NULL,		-- The female/receiving connector type
+	`connectionStrength` VARCHAR(50) NOT NULL,		-- Connection strength: Tight, Friction, Free
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`maleConnectorTypeId`) REFERENCES `ConnectorType`(`id`),		-- Foreign key to the ConnectorType table.
+	FOREIGN KEY (`femaleConnectorTypeId`) REFERENCES `ConnectorType`(`id`),		-- Foreign key to the ConnectorType table.
+	UNIQUE `UC_ConnectorTypeCompatibility_maleConnectorTypeId_femaleConnectorTypeId_Unique`( `maleConnectorTypeId`, `femaleConnectorTypeId` ) 		-- Uniqueness enforced on the ConnectorTypeCompatibility table's maleConnectorTypeId and femaleConnectorTypeId fields.
+);
+-- Index on the ConnectorTypeCompatibility table's maleConnectorTypeId field.
+CREATE INDEX `I_ConnectorTypeCompatibility_maleConnectorTypeId` ON `ConnectorTypeCompatibility` (`maleConnectorTypeId`);
+
+-- Index on the ConnectorTypeCompatibility table's femaleConnectorTypeId field.
+CREATE INDEX `I_ConnectorTypeCompatibility_femaleConnectorTypeId` ON `ConnectorTypeCompatibility` (`femaleConnectorTypeId`);
+
+-- Index on the ConnectorTypeCompatibility table's active field.
+CREATE INDEX `I_ConnectorTypeCompatibility_active` ON `ConnectorTypeCompatibility` (`active`);
+
+-- Index on the ConnectorTypeCompatibility table's deleted field.
+CREATE INDEX `I_ConnectorTypeCompatibility_deleted` ON `ConnectorTypeCompatibility` (`deleted`);
+
+INSERT INTO `ConnectorTypeCompatibility` ( `connectionStrength`, `maleConnectorTypeId`, `femaleConnectorTypeId`, `objectGuid` ) VALUES  ( 'Tight', ( SELECT id FROM `ConnectorType` WHERE `name` = 'Stud' LIMIT 1 ), ( SELECT id FROM `ConnectorType` WHERE `name` = 'AntiStud' LIMIT 1 ), 'cc100001-0001-4000-8000-000000000001' );
+
+INSERT INTO `ConnectorTypeCompatibility` ( `connectionStrength`, `maleConnectorTypeId`, `femaleConnectorTypeId`, `objectGuid` ) VALUES  ( 'Friction', ( SELECT id FROM `ConnectorType` WHERE `name` = 'Pin' LIMIT 1 ), ( SELECT id FROM `ConnectorType` WHERE `name` = 'PinHole' LIMIT 1 ), 'cc100001-0001-4000-8000-000000000002' );
+
+INSERT INTO `ConnectorTypeCompatibility` ( `connectionStrength`, `maleConnectorTypeId`, `femaleConnectorTypeId`, `objectGuid` ) VALUES  ( 'Tight', ( SELECT id FROM `ConnectorType` WHERE `name` = 'AxleEnd' LIMIT 1 ), ( SELECT id FROM `ConnectorType` WHERE `name` = 'AxleHole' LIMIT 1 ), 'cc100001-0001-4000-8000-000000000003' );
+
+INSERT INTO `ConnectorTypeCompatibility` ( `connectionStrength`, `maleConnectorTypeId`, `femaleConnectorTypeId`, `objectGuid` ) VALUES  ( 'Friction', ( SELECT id FROM `ConnectorType` WHERE `name` = 'BallJoint' LIMIT 1 ), ( SELECT id FROM `ConnectorType` WHERE `name` = 'BallJointSocket' LIMIT 1 ), 'cc100001-0001-4000-8000-000000000004' );
 
 
 -- Lookup table of material finish types that define how a colour is rendered (e.g. Solid, Chrome, Rubber).
@@ -421,7 +505,10 @@ INSERT INTO `ColourFinish` ( `name`, `description`, `requiresEnvironmentMap`, `i
 CREATE TABLE `BrickColour`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
-	`ldrawColourCode` INT NOT NULL,		-- LDraw standard colour code number
+	`rebrickableColorId` INT NOT NULL,		-- Rebrickable color ID — primary lookup key for API sync
+	`ldrawColourCode` INT NULL,		-- LDraw standard colour code number (nullable — some Rebrickable colors may not map to LDraw)
+	`bricklinkColorId` INT NULL,		-- BrickLink color ID for cross-referencing
+	`brickowlColorId` INT NULL,		-- BrickOwl color ID for cross-referencing
 	`hexRgb` VARCHAR(10) NULL,		-- Hex RGB colour value (e.g. #FF0000)
 	`hexEdgeColour` VARCHAR(10) NULL,		-- LDraw edge/contrast colour hex value for wireframe and outline rendering
 	`alpha` INT NULL,		-- Alpha transparency value (0-255, 255 = fully opaque)
@@ -435,7 +522,7 @@ CREATE TABLE `BrickColour`(
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`colourFinishId`) REFERENCES `ColourFinish`(`id`),		-- Foreign key to the ColourFinish table.
-	UNIQUE `UC_BrickColour_ldrawColourCode_Unique`( `ldrawColourCode` ) 		-- Uniqueness enforced on the BrickColour table's ldrawColourCode field.
+	UNIQUE `UC_BrickColour_rebrickableColorId_Unique`( `rebrickableColorId` ) 		-- Uniqueness enforced on the BrickColour table's rebrickableColorId field.
 );
 -- Index on the BrickColour table's name field.
 CREATE INDEX `I_BrickColour_name` ON `BrickColour` (`name`);
@@ -448,22 +535,6 @@ CREATE INDEX `I_BrickColour_active` ON `BrickColour` (`active`);
 
 -- Index on the BrickColour table's deleted field.
 CREATE INDEX `I_BrickColour_deleted` ON `BrickColour` (`deleted`);
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, false, false, 26, 1, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000001' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, false, false, 23, 2, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000002' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, false, false, 28, 3, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000003' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, false, false, 21, 4, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000004' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, false, false, 24, 5, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000005' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, false, false, 1, 6, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000006' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, false, false, 194, 7, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000007' );
-
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `legoColourId`, `sequence`, `colourFinishId`, `objectGuid` ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, false, false, 199, 8, ( SELECT id FROM `ColourFinish` WHERE `name` = 'Solid' LIMIT 1 ), 'c0100001-0001-4000-8000-000000000008' );
 
 
 -- Lookup table of LDraw part classification types (Part, Subpart, Primitive, etc.).
@@ -502,28 +573,55 @@ INSERT INTO `PartType` ( `name`, `description`, `isUserVisible`, `sequence`, `ob
 CREATE TABLE `BrickPart`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
-	`ldrawPartId` VARCHAR(100) NOT NULL,		-- LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library
+	`rebrickablePartNum` VARCHAR(100) NOT NULL,		-- Rebrickable part_num — primary lookup key for the parts catalog
+	`rebrickablePartUrl` VARCHAR(250) NULL,		-- URL to part page on Rebrickable
+	`rebrickableImgUrl` VARCHAR(250) NULL,		-- URL to part image on Rebrickable
+	`ldrawPartId` VARCHAR(100) NULL,		-- LDraw part ID (e.g. 3001, 32523) — nullable, some Rebrickable parts have no LDraw file
+	`bricklinkId` VARCHAR(100) NULL,		-- BrickLink part ID for cross-referencing
+	`brickowlId` VARCHAR(100) NULL,		-- BrickOwl part ID for cross-referencing
+	`legoDesignId` VARCHAR(100) NULL,		-- Official LEGO design number for cross-referencing
 	`ldrawTitle` VARCHAR(250) NULL,		-- Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')
 	`ldrawCategory` VARCHAR(100) NULL,		-- Part category from LDraw !CATEGORY meta or inferred from title first word
 	`partTypeId` INT NOT NULL,		-- LDraw part classification — FK to PartType lookup table
 	`keywords` TEXT NULL,		-- Comma-separated keywords from LDraw !KEYWORDS meta lines for search
 	`author` VARCHAR(100) NULL,		-- Part author from the LDraw Author: header line
 	`brickCategoryId` INT NOT NULL,		-- The category this part belongs to
-	`rebrickablePartNum` VARCHAR(100) NULL,		-- Rebrickable part_num when it differs from ldrawPartId (e.g. for prints, patterns, or alternate IDs)
 	`widthLdu` FLOAT NULL,		-- Part width in LDraw units (null if not yet computed)
 	`heightLdu` FLOAT NULL,		-- Part height in LDraw units (null if not yet computed)
 	`depthLdu` FLOAT NULL,		-- Part depth in LDraw units (null if not yet computed)
 	`massGrams` FLOAT NULL,		-- Part mass in grams (for physics simulation, null if unknown)
-	`geometryFilePath` VARCHAR(250) NULL,		-- Relative path to the LDraw .dat geometry file
+	`momentOfInertiaX` FLOAT NULL,		-- Rotational inertia about X axis (kg·m², null if unknown)
+	`momentOfInertiaY` FLOAT NULL,		-- Rotational inertia about Y axis (kg·m², null if unknown)
+	`momentOfInertiaZ` FLOAT NULL,		-- Rotational inertia about Z axis (kg·m², null if unknown)
+	`frictionCoefficient` FLOAT NULL,		-- Surface friction coefficient for physics (null if unknown)
+	`materialType` VARCHAR(50) NULL,		-- Material type: ABS, Rubber, Metal, Fabric, etc. (null if unknown)
+	`centerOfMassX` FLOAT NULL,		-- Center of mass X offset from part origin in LDU (null if unknown)
+	`centerOfMassY` FLOAT NULL,		-- Center of mass Y offset from part origin in LDU (null if unknown)
+	`centerOfMassZ` FLOAT NULL,		-- Center of mass Z offset from part origin in LDU (null if unknown)
+	`geometryFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
+	`geometrySize` BIGINT NULL,		-- Part of the binary data field setup
+	`geometryData` BLOB NULL,		-- Part of the binary data field setup
+	`geometryMimeType` VARCHAR(100) NULL,		-- Part of the binary data field setup
+	`geometryFileFormat` VARCHAR(50) NULL,		-- Format of stored geometry: LDraw, ProcessedBinary, etc.
+	`geometryOriginalFileName` VARCHAR(250) NULL,		-- Original LDraw filename for reference (e.g. '3001.dat')
+	`boundingBoxMinX` FLOAT NULL,		-- Axis-aligned bounding box minimum X in LDU
+	`boundingBoxMinY` FLOAT NULL,		-- Axis-aligned bounding box minimum Y in LDU
+	`boundingBoxMinZ` FLOAT NULL,		-- Axis-aligned bounding box minimum Z in LDU
+	`boundingBoxMaxX` FLOAT NULL,		-- Axis-aligned bounding box maximum X in LDU
+	`boundingBoxMaxY` FLOAT NULL,		-- Axis-aligned bounding box maximum Y in LDU
+	`boundingBoxMaxZ` FLOAT NULL,		-- Axis-aligned bounding box maximum Z in LDU
+	`subFileCount` INT NULL,		-- Number of LDraw sub-file references in this part (for instancing)
+	`polygonCount` INT NULL,		-- Total polygon count for LOD decisions and performance budgets
 	`toothCount` INT NULL,		-- For gears: number of teeth. Null for non-gear parts.
 	`gearRatio` FLOAT NULL,		-- For gears: effective gear ratio relative to a base gear. Null for non-gear parts.
+	`lastModifiedDate` DATETIME NULL,		-- Last modification date for incremental sync with Rebrickable
 	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`partTypeId`) REFERENCES `PartType`(`id`),		-- Foreign key to the PartType table.
 	FOREIGN KEY (`brickCategoryId`) REFERENCES `BrickCategory`(`id`),		-- Foreign key to the BrickCategory table.
-	UNIQUE `UC_BrickPart_ldrawPartId_Unique`( `ldrawPartId` ) 		-- Uniqueness enforced on the BrickPart table's ldrawPartId field.
+	UNIQUE `UC_BrickPart_rebrickablePartNum_Unique`( `rebrickablePartNum` ) 		-- Uniqueness enforced on the BrickPart table's rebrickablePartNum field.
 );
 -- Index on the BrickPart table's name field.
 CREATE INDEX `I_BrickPart_name` ON `BrickPart` (`name`);
@@ -575,6 +673,8 @@ CREATE TABLE `BrickPartConnector`(
 	`orientationX` FLOAT NULL,		-- X component of connector direction unit vector
 	`orientationY` FLOAT NULL,		-- Y component of connector direction unit vector
 	`orientationZ` FLOAT NULL,		-- Z component of connector direction unit vector
+	`connectorGroupId` INT NULL,		-- Groups connectors that act together (e.g. all studs on top of a 2x4 share a group ID)
+	`isAutoExtracted` BIT NOT NULL DEFAULT 0,		-- Whether this connector position was auto-extracted from LDraw geometry analysis
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -618,6 +718,34 @@ CREATE INDEX `I_BrickPartColour_active` ON `BrickPartColour` (`active`);
 
 -- Index on the BrickPartColour table's deleted field.
 CREATE INDEX `I_BrickPartColour_deleted` ON `BrickPartColour` (`deleted`);
+
+
+-- Models how LDraw parts reference sub-files hierarchically. Crucial for instanced rendering and understanding part decomposition.
+CREATE TABLE `PartSubFileReference`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`parentBrickPartId` INT NOT NULL,		-- The part containing the sub-file reference
+	`referencedBrickPartId` INT NULL,		-- The referenced sub-file as a BrickPart (null if sub-file is not cataloged)
+	`referencedFileName` VARCHAR(250) NOT NULL,		-- Original LDraw sub-file filename (e.g. 'stud.dat', 's/3001s01.dat')
+	`transformMatrix` VARCHAR(500) NOT NULL,		-- 4x3 transform matrix as space-delimited floats (x y z a b c d e f g h i)
+	`colorCode` INT NULL,		-- LDraw color code override (16=inherit parent, null=inherit parent)
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`parentBrickPartId`) REFERENCES `BrickPart`(`id`),		-- Foreign key to the BrickPart table.
+	FOREIGN KEY (`referencedBrickPartId`) REFERENCES `BrickPart`(`id`)		-- Foreign key to the BrickPart table.
+);
+-- Index on the PartSubFileReference table's parentBrickPartId field.
+CREATE INDEX `I_PartSubFileReference_parentBrickPartId` ON `PartSubFileReference` (`parentBrickPartId`);
+
+-- Index on the PartSubFileReference table's referencedBrickPartId field.
+CREATE INDEX `I_PartSubFileReference_referencedBrickPartId` ON `PartSubFileReference` (`referencedBrickPartId`);
+
+-- Index on the PartSubFileReference table's active field.
+CREATE INDEX `I_PartSubFileReference_active` ON `PartSubFileReference` (`active`);
+
+-- Index on the PartSubFileReference table's deleted field.
+CREATE INDEX `I_PartSubFileReference_deleted` ON `PartSubFileReference` (`deleted`);
 
 
 -- A user's building project. Contains placed bricks and their connections to form a model.
@@ -751,20 +879,39 @@ CREATE TABLE `BrickConnection`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`projectId` INT NOT NULL,		-- The project this connection belongs to
-	`sourcePlacedBrickId` BIGINT NULL,		-- FK to the source PlacedBrick
-	`sourceConnectorId` BIGINT NULL,		-- FK to the BrickPartConnector on the source brick
-	`targetPlacedBrickId` BIGINT NULL,		-- FK to the target PlacedBrick
-	`targetConnectorId` BIGINT NULL,		-- FK to the BrickPartConnector on the target brick
+	`sourcePlacedBrickId` INT NOT NULL,		-- FK to the source PlacedBrick
+	`sourceConnectorId` INT NOT NULL,		-- FK to the BrickPartConnector on the source brick
+	`targetPlacedBrickId` INT NOT NULL,		-- FK to the target PlacedBrick
+	`targetConnectorId` INT NOT NULL,		-- FK to the BrickPartConnector on the target brick
+	`connectionStrength` VARCHAR(50) NULL,		-- Connection strength: Snapped, Friction, Free (null = unknown)
+	`isLocked` BIT NOT NULL DEFAULT 0,		-- Whether the user has locked this connection from being broken in the editor
+	`angleDegrees` FLOAT NULL,		-- Current angle for rotational connections (null = default/fixed)
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`)		-- Foreign key to the Project table.
+	FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`),		-- Foreign key to the Project table.
+	FOREIGN KEY (`sourcePlacedBrickId`) REFERENCES `PlacedBrick`(`id`),		-- Foreign key to the PlacedBrick table.
+	FOREIGN KEY (`sourceConnectorId`) REFERENCES `BrickPartConnector`(`id`),		-- Foreign key to the BrickPartConnector table.
+	FOREIGN KEY (`targetPlacedBrickId`) REFERENCES `PlacedBrick`(`id`),		-- Foreign key to the PlacedBrick table.
+	FOREIGN KEY (`targetConnectorId`) REFERENCES `BrickPartConnector`(`id`)		-- Foreign key to the BrickPartConnector table.
 );
 -- Index on the BrickConnection table's tenantGuid field.
 CREATE INDEX `I_BrickConnection_tenantGuid` ON `BrickConnection` (`tenantGuid`);
 
 -- Index on the BrickConnection table's tenantGuid,projectId fields.
 CREATE INDEX `I_BrickConnection_tenantGuid_projectId` ON `BrickConnection` (`tenantGuid`, `projectId`);
+
+-- Index on the BrickConnection table's tenantGuid,sourcePlacedBrickId fields.
+CREATE INDEX `I_BrickConnection_tenantGuid_sourcePlacedBrickId` ON `BrickConnection` (`tenantGuid`, `sourcePlacedBrickId`);
+
+-- Index on the BrickConnection table's tenantGuid,sourceConnectorId fields.
+CREATE INDEX `I_BrickConnection_tenantGuid_sourceConnectorId` ON `BrickConnection` (`tenantGuid`, `sourceConnectorId`);
+
+-- Index on the BrickConnection table's tenantGuid,targetPlacedBrickId fields.
+CREATE INDEX `I_BrickConnection_tenantGuid_targetPlacedBrickId` ON `BrickConnection` (`tenantGuid`, `targetPlacedBrickId`);
+
+-- Index on the BrickConnection table's tenantGuid,targetConnectorId fields.
+CREATE INDEX `I_BrickConnection_tenantGuid_targetConnectorId` ON `BrickConnection` (`tenantGuid`, `targetConnectorId`);
 
 -- Index on the BrickConnection table's tenantGuid,active fields.
 CREATE INDEX `I_BrickConnection_tenantGuid_active` ON `BrickConnection` (`tenantGuid`, `active`);
@@ -991,13 +1138,179 @@ CREATE INDEX `I_ProjectReferenceImage_tenantGuid_active` ON `ProjectReferenceIma
 CREATE INDEX `I_ProjectReferenceImage_tenantGuid_deleted` ON `ProjectReferenceImage` (`tenantGuid`, `deleted`);
 
 
+-- Persistent representation of an imported or authored multi-part model document (MPD/LDR). Top-level container for complex models with build steps.
+CREATE TABLE `ModelDocument`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`projectId` INT NULL,		-- Optional link to a BMC project if authored in BMC (null for imported documents)
+	`name` VARCHAR(250) NOT NULL,		-- Document name or title
+	`description` TEXT NULL,		-- Description of the model document
+	`sourceFormat` VARCHAR(50) NOT NULL,		-- Source file format: MPD, LDR, StudioIO, BMCNative
+	`sourceFileName` VARCHAR(250) NULL,		-- Original filename if imported (e.g. 'crane_42131.mpd')
+	`sourceFileFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
+	`sourceFileSize` BIGINT NULL,		-- Part of the binary data field setup
+	`sourceFileData` BLOB NULL,		-- Part of the binary data field setup
+	`sourceFileMimeType` VARCHAR(100) NULL,		-- Part of the binary data field setup
+	`author` VARCHAR(100) NULL,		-- Model author from the file header
+	`totalPartCount` INT NULL,		-- Cached total part count across all sub-files
+	`totalStepCount` INT NULL,		-- Cached total build step count across all sub-files
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`)		-- Foreign key to the Project table.
+);
+-- Index on the ModelDocument table's tenantGuid field.
+CREATE INDEX `I_ModelDocument_tenantGuid` ON `ModelDocument` (`tenantGuid`);
+
+-- Index on the ModelDocument table's tenantGuid,projectId fields.
+CREATE INDEX `I_ModelDocument_tenantGuid_projectId` ON `ModelDocument` (`tenantGuid`, `projectId`);
+
+-- Index on the ModelDocument table's tenantGuid,name fields.
+CREATE INDEX `I_ModelDocument_tenantGuid_name` ON `ModelDocument` (`tenantGuid`, `name`);
+
+-- Index on the ModelDocument table's tenantGuid,active fields.
+CREATE INDEX `I_ModelDocument_tenantGuid_active` ON `ModelDocument` (`tenantGuid`, `active`);
+
+-- Index on the ModelDocument table's tenantGuid,deleted fields.
+CREATE INDEX `I_ModelDocument_tenantGuid_deleted` ON `ModelDocument` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the ModelDocument table.
+CREATE TABLE `ModelDocumentChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`modelDocumentId` INT NOT NULL,		-- Link to the ModelDocument table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`modelDocumentId`) REFERENCES `ModelDocument`(`id`)		-- Foreign key to the ModelDocument table.
+);
+-- Index on the ModelDocumentChangeHistory table's tenantGuid field.
+CREATE INDEX `I_ModelDocumentChangeHistory_tenantGuid` ON `ModelDocumentChangeHistory` (`tenantGuid`);
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_ModelDocumentChangeHistory_tenantGuid_versionNumber` ON `ModelDocumentChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_ModelDocumentChangeHistory_tenantGuid_timeStamp` ON `ModelDocumentChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_ModelDocumentChangeHistory_tenantGuid_userId` ON `ModelDocumentChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,modelDocumentId fields.
+CREATE INDEX `I_ModelDocumentChangeHistory_tenantGuid_modelDocumentId` ON `ModelDocumentChangeHistory` (`tenantGuid`, `modelDocumentId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Individual sub-files within a model document (MPD). Each represents a sub-assembly or the main model. Maps to LDraw '0 FILE' blocks.
+CREATE TABLE `ModelSubFile`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`modelDocumentId` INT NOT NULL,		-- The document this sub-file belongs to
+	`fileName` VARCHAR(250) NOT NULL,		-- Sub-file name as declared in '0 FILE' (e.g. 'main.ldr', 'wheel_assembly.ldr')
+	`isMainModel` BIT NOT NULL DEFAULT 0,		-- Whether this is the main (first) model in the MPD — only rendered sub-files are those referenced by this
+	`parentModelSubFileId` INT NULL,		-- Optional parent sub-file for nested sub-assemblies (null = top-level)
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`modelDocumentId`) REFERENCES `ModelDocument`(`id`),		-- Foreign key to the ModelDocument table.
+	FOREIGN KEY (`parentModelSubFileId`) REFERENCES `ModelSubFile`(`id`),		-- Foreign key to the ModelSubFile table.
+	UNIQUE `UC_ModelSubFile_tenantGuid_modelDocumentId_fileName_Unique`( `tenantGuid`, `modelDocumentId`, `fileName` ) 		-- Uniqueness enforced on the ModelSubFile table's tenantGuid and modelDocumentId and fileName fields.
+);
+-- Index on the ModelSubFile table's tenantGuid field.
+CREATE INDEX `I_ModelSubFile_tenantGuid` ON `ModelSubFile` (`tenantGuid`);
+
+-- Index on the ModelSubFile table's tenantGuid,modelDocumentId fields.
+CREATE INDEX `I_ModelSubFile_tenantGuid_modelDocumentId` ON `ModelSubFile` (`tenantGuid`, `modelDocumentId`);
+
+-- Index on the ModelSubFile table's tenantGuid,parentModelSubFileId fields.
+CREATE INDEX `I_ModelSubFile_tenantGuid_parentModelSubFileId` ON `ModelSubFile` (`tenantGuid`, `parentModelSubFileId`);
+
+-- Index on the ModelSubFile table's tenantGuid,active fields.
+CREATE INDEX `I_ModelSubFile_tenantGuid_active` ON `ModelSubFile` (`tenantGuid`, `active`);
+
+-- Index on the ModelSubFile table's tenantGuid,deleted fields.
+CREATE INDEX `I_ModelSubFile_tenantGuid_deleted` ON `ModelSubFile` (`tenantGuid`, `deleted`);
+
+
+-- Individual build steps within a model sub-file. Modeled from LDraw '0 STEP' and '0 ROTSTEP' meta-commands.
+CREATE TABLE `ModelBuildStep`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`modelSubFileId` INT NOT NULL,		-- The sub-file this step belongs to
+	`stepNumber` INT NOT NULL,		-- Sequential step number within this sub-file
+	`rotationType` VARCHAR(10) NULL,		-- ROTSTEP rotation type: REL (relative), ABS (absolute), ADD (additive). Null = no rotation.
+	`rotationX` FLOAT NULL,		-- ROTSTEP X rotation angle in degrees
+	`rotationY` FLOAT NULL,		-- ROTSTEP Y rotation angle in degrees
+	`rotationZ` FLOAT NULL,		-- ROTSTEP Z rotation angle in degrees
+	`description` TEXT NULL,		-- Optional step description or annotation
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`modelSubFileId`) REFERENCES `ModelSubFile`(`id`)		-- Foreign key to the ModelSubFile table.
+);
+-- Index on the ModelBuildStep table's tenantGuid field.
+CREATE INDEX `I_ModelBuildStep_tenantGuid` ON `ModelBuildStep` (`tenantGuid`);
+
+-- Index on the ModelBuildStep table's tenantGuid,modelSubFileId fields.
+CREATE INDEX `I_ModelBuildStep_tenantGuid_modelSubFileId` ON `ModelBuildStep` (`tenantGuid`, `modelSubFileId`);
+
+-- Index on the ModelBuildStep table's tenantGuid,active fields.
+CREATE INDEX `I_ModelBuildStep_tenantGuid_active` ON `ModelBuildStep` (`tenantGuid`, `active`);
+
+-- Index on the ModelBuildStep table's tenantGuid,deleted fields.
+CREATE INDEX `I_ModelBuildStep_tenantGuid_deleted` ON `ModelBuildStep` (`tenantGuid`, `deleted`);
+
+
+-- Parts placed during a specific build step. Represents LDraw type 1 sub-file reference lines between STEP commands.
+CREATE TABLE `ModelStepPart`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`modelBuildStepId` INT NOT NULL,		-- The build step this part placement belongs to
+	`brickPartId` INT NULL,		-- FK to BrickPart if this part is in the catalog (null if not yet cataloged)
+	`brickColourId` INT NULL,		-- FK to BrickColour if the color is mapped (null if unmapped)
+	`partFileName` VARCHAR(250) NOT NULL,		-- Original LDraw part filename from the type 1 line (e.g. '3001.dat')
+	`colorCode` INT NOT NULL,		-- LDraw color code used in the file
+	`positionX` FLOAT NULL,		-- X position from the LDraw type 1 reference line (LDU)
+	`positionY` FLOAT NULL,		-- Y position from the LDraw type 1 reference line (LDU)
+	`positionZ` FLOAT NULL,		-- Z position from the LDraw type 1 reference line (LDU)
+	`transformMatrix` VARCHAR(500) NOT NULL,		-- 3x3 rotation matrix as space-delimited floats (a b c d e f g h i)
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`modelBuildStepId`) REFERENCES `ModelBuildStep`(`id`),		-- Foreign key to the ModelBuildStep table.
+	FOREIGN KEY (`brickPartId`) REFERENCES `BrickPart`(`id`),		-- Foreign key to the BrickPart table.
+	FOREIGN KEY (`brickColourId`) REFERENCES `BrickColour`(`id`)		-- Foreign key to the BrickColour table.
+);
+-- Index on the ModelStepPart table's tenantGuid field.
+CREATE INDEX `I_ModelStepPart_tenantGuid` ON `ModelStepPart` (`tenantGuid`);
+
+-- Index on the ModelStepPart table's tenantGuid,modelBuildStepId fields.
+CREATE INDEX `I_ModelStepPart_tenantGuid_modelBuildStepId` ON `ModelStepPart` (`tenantGuid`, `modelBuildStepId`);
+
+-- Index on the ModelStepPart table's tenantGuid,brickPartId fields.
+CREATE INDEX `I_ModelStepPart_tenantGuid_brickPartId` ON `ModelStepPart` (`tenantGuid`, `brickPartId`);
+
+-- Index on the ModelStepPart table's tenantGuid,brickColourId fields.
+CREATE INDEX `I_ModelStepPart_tenantGuid_brickColourId` ON `ModelStepPart` (`tenantGuid`, `brickColourId`);
+
+-- Index on the ModelStepPart table's tenantGuid,active fields.
+CREATE INDEX `I_ModelStepPart_tenantGuid_active` ON `ModelStepPart` (`tenantGuid`, `active`);
+
+-- Index on the ModelStepPart table's tenantGuid,deleted fields.
+CREATE INDEX `I_ModelStepPart_tenantGuid_deleted` ON `ModelStepPart` (`tenantGuid`, `deleted`);
+
+
 -- Hierarchical tree of official LEGO themes (e.g. City → Police, Technic → Bionicle). Bulk-loaded from Rebrickable or similar sources.
 CREATE TABLE `LegoTheme`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`description` VARCHAR(500) NOT NULL,
 	`legoThemeId` INT NULL,		-- Parent theme for hierarchical nesting (self-referencing FK, null = top-level)
-	`rebrickableThemeId` INT NULL,		-- Rebrickable theme ID for cross-referencing during bulk import
+	`rebrickableThemeId` INT NOT NULL,		-- Rebrickable theme ID — source of truth for theme identity
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -1028,6 +1341,8 @@ CREATE TABLE `LegoSet`(
 	`imageUrl` VARCHAR(250) NULL,		-- URL to the set's official box art or primary image
 	`brickLinkUrl` VARCHAR(250) NULL,		-- URL to the set's BrickLink catalogue page
 	`rebrickableUrl` VARCHAR(250) NULL,		-- URL to the set's Rebrickable page
+	`rebrickableSetNum` VARCHAR(100) NULL,		-- Explicit Rebrickable set number if it differs from setNumber
+	`lastModifiedDate` DATETIME NULL,		-- Last modification date for incremental sync with Rebrickable
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -1352,6 +1667,237 @@ CREATE INDEX `I_UserCollectionSetImport_tenantGuid_active` ON `UserCollectionSet
 
 -- Index on the UserCollectionSetImport table's tenantGuid,deleted fields.
 CREATE INDEX `I_UserCollectionSetImport_tenantGuid_deleted` ON `UserCollectionSetImport` (`tenantGuid`, `deleted`);
+
+
+-- Stores each user's Rebrickable API token for bidirectional collection sync. One link per tenant.
+CREATE TABLE `RebrickableUserLink`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`rebrickableUsername` VARCHAR(100) NOT NULL,		-- User's Rebrickable username for display and reference
+	`encryptedApiToken` VARCHAR(500) NOT NULL,		-- Encrypted Rebrickable user token — used for API calls on behalf of the user
+	`lastSyncDate` DATETIME NULL,		-- Date/time of last successful sync with Rebrickable
+	`syncEnabled` BIT NOT NULL DEFAULT 1,		-- Whether automatic sync is enabled for this user
+	`syncDirectionFlags` VARCHAR(50) NOT NULL,		-- Sync direction: Both, ToRebrickable, FromRebrickable
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_RebrickableUserLink_tenantGuid_Unique`( `tenantGuid` ) 		-- Uniqueness enforced on the RebrickableUserLink table's tenantGuid field.
+);
+-- Index on the RebrickableUserLink table's tenantGuid field.
+CREATE INDEX `I_RebrickableUserLink_tenantGuid` ON `RebrickableUserLink` (`tenantGuid`);
+
+-- Index on the RebrickableUserLink table's tenantGuid,active fields.
+CREATE INDEX `I_RebrickableUserLink_tenantGuid_active` ON `RebrickableUserLink` (`tenantGuid`, `active`);
+
+-- Index on the RebrickableUserLink table's tenantGuid,deleted fields.
+CREATE INDEX `I_RebrickableUserLink_tenantGuid_deleted` ON `RebrickableUserLink` (`tenantGuid`, `deleted`);
+
+
+-- Named part lists, mirroring Rebrickable's partlists/ endpoint. Users can have multiple named lists for organizing parts.
+CREATE TABLE `UserPartList`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
+	`isBuildable` BIT NOT NULL DEFAULT 0,		-- Whether this list represents buildable parts (for build matching)
+	`rebrickableListId` INT NULL,		-- Rebrickable list ID for bidirectional sync (null = BMC-only list)
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_UserPartList_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the UserPartList table's tenantGuid and name fields.
+);
+-- Index on the UserPartList table's tenantGuid field.
+CREATE INDEX `I_UserPartList_tenantGuid` ON `UserPartList` (`tenantGuid`);
+
+-- Index on the UserPartList table's tenantGuid,name fields.
+CREATE INDEX `I_UserPartList_tenantGuid_name` ON `UserPartList` (`tenantGuid`, `name`);
+
+-- Index on the UserPartList table's tenantGuid,active fields.
+CREATE INDEX `I_UserPartList_tenantGuid_active` ON `UserPartList` (`tenantGuid`, `active`);
+
+-- Index on the UserPartList table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserPartList_tenantGuid_deleted` ON `UserPartList` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the UserPartList table.
+CREATE TABLE `UserPartListChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userPartListId` INT NOT NULL,		-- Link to the UserPartList table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`userPartListId`) REFERENCES `UserPartList`(`id`)		-- Foreign key to the UserPartList table.
+);
+-- Index on the UserPartListChangeHistory table's tenantGuid field.
+CREATE INDEX `I_UserPartListChangeHistory_tenantGuid` ON `UserPartListChangeHistory` (`tenantGuid`);
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_UserPartListChangeHistory_tenantGuid_versionNumber` ON `UserPartListChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_UserPartListChangeHistory_tenantGuid_timeStamp` ON `UserPartListChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_UserPartListChangeHistory_tenantGuid_userId` ON `UserPartListChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,userPartListId fields.
+CREATE INDEX `I_UserPartListChangeHistory_tenantGuid_userPartListId` ON `UserPartListChangeHistory` (`tenantGuid`, `userPartListId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Individual part+colour entries within a user's named part list. Mirrors Rebrickable's partlists/{id}/parts/ endpoint.
+CREATE TABLE `UserPartListItem`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userPartListId` INT NOT NULL,		-- The part list this item belongs to
+	`brickPartId` INT NOT NULL,		-- The part definition
+	`brickColourId` INT NOT NULL,		-- The specific colour of this part
+	`quantity` INT NOT NULL,		-- Number of this part+colour in the list
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`userPartListId`) REFERENCES `UserPartList`(`id`),		-- Foreign key to the UserPartList table.
+	FOREIGN KEY (`brickPartId`) REFERENCES `BrickPart`(`id`),		-- Foreign key to the BrickPart table.
+	FOREIGN KEY (`brickColourId`) REFERENCES `BrickColour`(`id`),		-- Foreign key to the BrickColour table.
+	UNIQUE `UC_UserPartListItem_tenantGuid_userPartListId_brickPartId_brickColourId_Unique`( `tenantGuid`, `userPartListId`, `brickPartId`, `brickColourId` ) 		-- Uniqueness enforced on the UserPartListItem table's tenantGuid and userPartListId and brickPartId and brickColourId fields.
+);
+-- Index on the UserPartListItem table's tenantGuid field.
+CREATE INDEX `I_UserPartListItem_tenantGuid` ON `UserPartListItem` (`tenantGuid`);
+
+-- Index on the UserPartListItem table's tenantGuid,userPartListId fields.
+CREATE INDEX `I_UserPartListItem_tenantGuid_userPartListId` ON `UserPartListItem` (`tenantGuid`, `userPartListId`);
+
+-- Index on the UserPartListItem table's tenantGuid,brickPartId fields.
+CREATE INDEX `I_UserPartListItem_tenantGuid_brickPartId` ON `UserPartListItem` (`tenantGuid`, `brickPartId`);
+
+-- Index on the UserPartListItem table's tenantGuid,brickColourId fields.
+CREATE INDEX `I_UserPartListItem_tenantGuid_brickColourId` ON `UserPartListItem` (`tenantGuid`, `brickColourId`);
+
+-- Index on the UserPartListItem table's tenantGuid,active fields.
+CREATE INDEX `I_UserPartListItem_tenantGuid_active` ON `UserPartListItem` (`tenantGuid`, `active`);
+
+-- Index on the UserPartListItem table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserPartListItem_tenantGuid_deleted` ON `UserPartListItem` (`tenantGuid`, `deleted`);
+
+
+-- Named set lists, mirroring Rebrickable's setlists/ endpoint. Users can have multiple named lists for organizing sets.
+CREATE TABLE `UserSetList`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
+	`isBuildable` BIT NOT NULL DEFAULT 0,		-- Whether this list represents buildable sets (for build matching)
+	`rebrickableListId` INT NULL,		-- Rebrickable list ID for bidirectional sync (null = BMC-only list)
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_UserSetList_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the UserSetList table's tenantGuid and name fields.
+);
+-- Index on the UserSetList table's tenantGuid field.
+CREATE INDEX `I_UserSetList_tenantGuid` ON `UserSetList` (`tenantGuid`);
+
+-- Index on the UserSetList table's tenantGuid,name fields.
+CREATE INDEX `I_UserSetList_tenantGuid_name` ON `UserSetList` (`tenantGuid`, `name`);
+
+-- Index on the UserSetList table's tenantGuid,active fields.
+CREATE INDEX `I_UserSetList_tenantGuid_active` ON `UserSetList` (`tenantGuid`, `active`);
+
+-- Index on the UserSetList table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserSetList_tenantGuid_deleted` ON `UserSetList` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the UserSetList table.
+CREATE TABLE `UserSetListChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userSetListId` INT NOT NULL,		-- Link to the UserSetList table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`userSetListId`) REFERENCES `UserSetList`(`id`)		-- Foreign key to the UserSetList table.
+);
+-- Index on the UserSetListChangeHistory table's tenantGuid field.
+CREATE INDEX `I_UserSetListChangeHistory_tenantGuid` ON `UserSetListChangeHistory` (`tenantGuid`);
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_UserSetListChangeHistory_tenantGuid_versionNumber` ON `UserSetListChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_UserSetListChangeHistory_tenantGuid_timeStamp` ON `UserSetListChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_UserSetListChangeHistory_tenantGuid_userId` ON `UserSetListChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,userSetListId fields.
+CREATE INDEX `I_UserSetListChangeHistory_tenantGuid_userSetListId` ON `UserSetListChangeHistory` (`tenantGuid`, `userSetListId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Individual set entries within a user's named set list. Mirrors Rebrickable's setlists/{id}/sets/ endpoint.
+CREATE TABLE `UserSetListItem`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userSetListId` INT NOT NULL,		-- The set list this item belongs to
+	`legoSetId` INT NOT NULL,		-- The set in this list
+	`quantity` INT NOT NULL DEFAULT 1,		-- Number of copies of this set in the list
+	`includeSpares` BIT NOT NULL DEFAULT 1,		-- Whether to include spare parts from this set in build matching
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`userSetListId`) REFERENCES `UserSetList`(`id`),		-- Foreign key to the UserSetList table.
+	FOREIGN KEY (`legoSetId`) REFERENCES `LegoSet`(`id`),		-- Foreign key to the LegoSet table.
+	UNIQUE `UC_UserSetListItem_tenantGuid_userSetListId_legoSetId_Unique`( `tenantGuid`, `userSetListId`, `legoSetId` ) 		-- Uniqueness enforced on the UserSetListItem table's tenantGuid and userSetListId and legoSetId fields.
+);
+-- Index on the UserSetListItem table's tenantGuid field.
+CREATE INDEX `I_UserSetListItem_tenantGuid` ON `UserSetListItem` (`tenantGuid`);
+
+-- Index on the UserSetListItem table's tenantGuid,userSetListId fields.
+CREATE INDEX `I_UserSetListItem_tenantGuid_userSetListId` ON `UserSetListItem` (`tenantGuid`, `userSetListId`);
+
+-- Index on the UserSetListItem table's tenantGuid,legoSetId fields.
+CREATE INDEX `I_UserSetListItem_tenantGuid_legoSetId` ON `UserSetListItem` (`tenantGuid`, `legoSetId`);
+
+-- Index on the UserSetListItem table's tenantGuid,active fields.
+CREATE INDEX `I_UserSetListItem_tenantGuid_active` ON `UserSetListItem` (`tenantGuid`, `active`);
+
+-- Index on the UserSetListItem table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserSetListItem_tenantGuid_deleted` ON `UserSetListItem` (`tenantGuid`, `deleted`);
+
+
+-- Parts lost from sets, mirroring Rebrickable's lost_parts/ endpoint. Tracks which parts are missing from a user's collection.
+CREATE TABLE `UserLostPart`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`brickPartId` INT NOT NULL,		-- The part that was lost
+	`brickColourId` INT NOT NULL,		-- The colour of the lost part
+	`legoSetId` INT NULL,		-- The set the part was lost from (null if unknown)
+	`lostQuantity` INT NOT NULL,		-- Number of this part+colour that were lost
+	`rebrickableInvPartId` INT NULL,		-- Rebrickable inventory_part ID for bidirectional sync (null = BMC-only entry)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`brickPartId`) REFERENCES `BrickPart`(`id`),		-- Foreign key to the BrickPart table.
+	FOREIGN KEY (`brickColourId`) REFERENCES `BrickColour`(`id`),		-- Foreign key to the BrickColour table.
+	FOREIGN KEY (`legoSetId`) REFERENCES `LegoSet`(`id`)		-- Foreign key to the LegoSet table.
+);
+-- Index on the UserLostPart table's tenantGuid field.
+CREATE INDEX `I_UserLostPart_tenantGuid` ON `UserLostPart` (`tenantGuid`);
+
+-- Index on the UserLostPart table's tenantGuid,brickPartId fields.
+CREATE INDEX `I_UserLostPart_tenantGuid_brickPartId` ON `UserLostPart` (`tenantGuid`, `brickPartId`);
+
+-- Index on the UserLostPart table's tenantGuid,brickColourId fields.
+CREATE INDEX `I_UserLostPart_tenantGuid_brickColourId` ON `UserLostPart` (`tenantGuid`, `brickColourId`);
+
+-- Index on the UserLostPart table's tenantGuid,legoSetId fields.
+CREATE INDEX `I_UserLostPart_tenantGuid_legoSetId` ON `UserLostPart` (`tenantGuid`, `legoSetId`);
+
+-- Index on the UserLostPart table's tenantGuid,active fields.
+CREATE INDEX `I_UserLostPart_tenantGuid_active` ON `UserLostPart` (`tenantGuid`, `active`);
+
+-- Index on the UserLostPart table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserLostPart_tenantGuid_deleted` ON `UserLostPart` (`tenantGuid`, `deleted`);
 
 
 -- A complete instruction booklet for a building project. A project can have multiple manuals (e.g. one per bag/booklet).

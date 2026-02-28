@@ -31,6 +31,9 @@ namespace Foundation.BMC.Database
 			public Single? orientationX { get; set; }
 			public Single? orientationY { get; set; }
 			public Single? orientationZ { get; set; }
+			public Int32? connectorGroupId { get; set; }
+			[Required]
+			public Boolean isAutoExtracted { get; set; }
 			public Int32? sequence { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -71,6 +74,8 @@ namespace Foundation.BMC.Database
 				orientationX = this.orientationX,
 				orientationY = this.orientationY,
 				orientationZ = this.orientationZ,
+				connectorGroupId = this.connectorGroupId,
+				isAutoExtracted = this.isAutoExtracted,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -122,6 +127,8 @@ namespace Foundation.BMC.Database
 				orientationX = this.orientationX,
 				orientationY = this.orientationY,
 				orientationZ = this.orientationZ,
+				connectorGroupId = this.connectorGroupId,
+				isAutoExtracted = this.isAutoExtracted,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -175,6 +182,8 @@ namespace Foundation.BMC.Database
 				orientationX = dto.orientationX,
 				orientationY = dto.orientationY,
 				orientationZ = dto.orientationZ,
+				connectorGroupId = dto.connectorGroupId,
+				isAutoExtracted = dto.isAutoExtracted,
 				sequence = dto.sequence,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -203,6 +212,8 @@ namespace Foundation.BMC.Database
 			this.orientationX = dto.orientationX;
 			this.orientationY = dto.orientationY;
 			this.orientationZ = dto.orientationZ;
+			this.connectorGroupId = dto.connectorGroupId;
+			this.isAutoExtracted = dto.isAutoExtracted;
 			this.sequence = dto.sequence;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -236,6 +247,8 @@ namespace Foundation.BMC.Database
 				orientationX = this.orientationX,
 				orientationY = this.orientationY,
 				orientationZ = this.orientationZ,
+				connectorGroupId = this.connectorGroupId,
+				isAutoExtracted = this.isAutoExtracted,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -301,6 +314,8 @@ namespace Foundation.BMC.Database
 				orientationX = brickPartConnector.orientationX,
 				orientationY = brickPartConnector.orientationY,
 				orientationZ = brickPartConnector.orientationZ,
+				connectorGroupId = brickPartConnector.connectorGroupId,
+				isAutoExtracted = brickPartConnector.isAutoExtracted,
 				sequence = brickPartConnector.sequence,
 				objectGuid = brickPartConnector.objectGuid,
 				active = brickPartConnector.active,
@@ -333,6 +348,8 @@ namespace Foundation.BMC.Database
 				orientationX = brickPartConnector.orientationX,
 				orientationY = brickPartConnector.orientationY,
 				orientationZ = brickPartConnector.orientationZ,
+				connectorGroupId = brickPartConnector.connectorGroupId,
+				isAutoExtracted = brickPartConnector.isAutoExtracted,
 				sequence = brickPartConnector.sequence,
 				objectGuid = brickPartConnector.objectGuid,
 				active = brickPartConnector.active,

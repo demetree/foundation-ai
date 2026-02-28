@@ -132,6 +132,34 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="brickConnectionService.userIsBMCBrickConnectionReader()">
+                            <button ngbNavLink>Brick Connections Source Placed Bricks
+                                <span class="badge bg-primary ms-2">
+                                    {{ (placedBrickData?.BrickConnectionSourcePlacedBricksCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-connection-table [queryParams]="{ sourcePlacedBrickId: placedBrickData?.id }" [showAddButton]="true" [preSeededData]="{ sourcePlacedBrickId: placedBrickData?.id }" [hiddenFields]="['sourcePlacedBrickId']"></app-brick-connection-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="brickConnectionService.userIsBMCBrickConnectionReader()">
+                            <button ngbNavLink>Brick Connections Target Placed Bricks
+                                <span class="badge bg-primary ms-2">
+                                    {{ (placedBrickData?.BrickConnectionTargetPlacedBricksCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-connection-table [queryParams]="{ targetPlacedBrickId: placedBrickData?.id }" [showAddButton]="true" [preSeededData]="{ targetPlacedBrickId: placedBrickData?.id }" [hiddenFields]="['targetPlacedBrickId']"></app-brick-connection-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="submodelPlacedBrickService.userIsBMCSubmodelPlacedBrickReader()">
                             <button ngbNavLink>Submodel Placed Bricks
                                 <span class="badge bg-primary ms-2">

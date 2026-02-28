@@ -31,7 +31,7 @@ export interface CollectionPart {
     ldrawPartId: string;
     ldrawTitle: string;
     categoryName: string;
-    geometryFilePath: string;
+    geometryOriginalFileName: string;
     brickColourId: number;
     colourName: string;
     colourHex: string;

@@ -59,6 +59,14 @@
                 Orientation  Z
                 <span *ngIf="sortColumn === 'orientationZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('connectorGroupId')">
+                Connector  Group  Id
+                <span *ngIf="sortColumn === 'connectorGroupId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isAutoExtracted')">
+                Is  Auto  Extracted
+                <span *ngIf="sortColumn === 'isAutoExtracted'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
                 <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -156,6 +164,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{brickPartConnector.orientationX | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPartConnector.orientationY | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPartConnector.orientationZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickPartConnector.connectorGroupId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="brickPartConnector.isAutoExtracted"/></td>
             <td class="text-truncate">{{brickPartConnector.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
@@ -335,6 +345,14 @@ End of commented block for alternate definition option -->
             <p class="brick-part-connector-info" *ngIf="brickPartConnector.orientationZ != null">
               <strong>Orientation Z: </strong>
               {{brickPartConnector.orientationZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-connector-info" *ngIf="brickPartConnector.connectorGroupId != null">
+              <strong>Connector Group Id: </strong>
+              {{brickPartConnector.connectorGroupId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-part-connector-info" *ngIf="brickPartConnector.isAutoExtracted != null">
+              <strong>Is Auto Extracted: </strong>
+              <boolean-icon [value]="brickPartConnector.isAutoExtracted"/>
             </p>
             <p class="brick-part-connector-info" *ngIf="brickPartConnector.sequence != null">
               <strong>Sequence: </strong>

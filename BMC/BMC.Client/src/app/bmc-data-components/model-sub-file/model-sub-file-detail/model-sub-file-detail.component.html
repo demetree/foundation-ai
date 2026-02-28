@@ -1,0 +1,104 @@
+<div class="container-fluid p-1 m-0 model-sub-file-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="model-sub-file-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Model Sub File</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Model Sub File' : 'Add Model Sub File'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCModelSubFileReader()">
+                <div class="col m-2 model-sub-file-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="modelSubFileForm" (ngSubmit)="submitForm()" class="model-sub-file-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('modelDocumentId')">
+                                <label for="ModelSubFile-modelDocumentId" id="label-ModelSubFile-modelDocumentId"><span class="text-danger">*</span>Model Document</label>
+                                <select id="ModelSubFile-modelDocumentId" formControlName="modelDocumentId" class="form-select model-sub-file-select" [disabled]="!userIsBMCModelSubFileWriter()">
+                                    <option [ngValue]="null">Select Model Document</option>
+                                    <option *ngFor="let modelDocument of modelDocuments$ | async" [ngValue]="modelDocument.id">{{modelDocument.name}}</option>
+                                </select>
+                                <div *ngIf="modelSubFileForm.get('modelDocumentId')?.invalid && modelSubFileForm.get('modelDocumentId')?.touched" class="text-danger">
+                                    Model Document is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fileName')">
+                                <label for="ModelSubFile-fileName" id="label-ModelSubFile-fileName"><span class="text-danger">*</span>File Name</label>
+                                <input type="text" id="ModelSubFile-fileName" formControlName="fileName" placeholder="Enter File Name" class="form-control model-sub-file-input" [disabled]="!userIsBMCModelSubFileWriter()" aria-labelledby="label-fileName" />
+                                <div *ngIf="modelSubFileForm.get('fileName')?.invalid && modelSubFileForm.get('fileName')?.touched" class="text-danger">
+                                    File Name is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isMainModel')">
+                                <input type="checkbox" id="ModelSubFile-isMainModel" formControlName="isMainModel" class="form-check-input" [disabled]="!userIsBMCModelSubFileWriter()" />
+                                <label for="ModelSubFile-isMainModel" class="form-check-label" id="label-ModelSubFile-isMainModel"><span class="text-danger">*</span>Is Main Model</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('parentModelSubFileId')">
+                                <label for="ModelSubFile-parentModelSubFileId" id="label-ModelSubFile-parentModelSubFileId">Parent Model Sub File</label>
+                                <select id="ModelSubFile-parentModelSubFileId" formControlName="parentModelSubFileId" class="form-select model-sub-file-select" [disabled]="!userIsBMCModelSubFileWriter()">
+                                    <option [ngValue]="null">Select Model Sub File</option>
+                                    <option *ngFor="let modelSubFile of modelSubFiles$ | async" [ngValue]="modelSubFile.id">{{modelSubFile.fileName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="ModelSubFile-sequence" id="label-ModelSubFile-sequence">Sequence</label>
+                                <input type="number" id="ModelSubFile-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control model-sub-file-input" [disabled]="!userIsBMCModelSubFileWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ModelSubFile-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCModelSubFileWriter()" />
+                                <label for="ModelSubFile-active" class="form-check-label" id="label-ModelSubFile-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ModelSubFile-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCModelSubFileWriter()" />
+                                <label for="ModelSubFile-deleted" class="form-check-label" id="label-ModelSubFile-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="model-sub-file-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="modelSubFileForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Model Sub File">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !modelSubFileForm.valid || !modelSubFileForm.dirty || modelSubFileForm.pristine  || userIsBMCModelSubFileWriter() == false " ngbTooltip="Save the Model Sub File changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Model Sub File' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCModelSubFileReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 model-sub-file-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="modelBuildStepService.userIsBMCModelBuildStepReader()">
+                            <button ngbNavLink>Model Build Steps
+                                <span class="badge bg-primary ms-2">
+                                    {{ (modelSubFileData?.ModelBuildStepsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-model-build-step-table [queryParams]="{ modelSubFileId: modelSubFileData?.id }" [showAddButton]="true" [preSeededData]="{ modelSubFileId: modelSubFileData?.id }" [hiddenFields]="['modelSubFileId']"></app-model-build-step-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -250,7 +250,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         // Kick off 3D thumbnails for visible parts (first ~100 items)
         const visibleBatch = this.filteredParts.slice(0, Math.min(100, this.filteredParts.length));
         const requests: ThumbnailRequest[] = visibleBatch.map(p => ({
-            geometryFilePath: p.geometryFilePath,
+            geometryOriginalFileName: p.geometryOriginalFileName,
             colourHex: this.getHexForPart(p)
         }));
         this.thumbnailService.renderBatch(requests);
@@ -504,7 +504,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
      */
     thumbnailKey(part: CatalogPartItem): string {
         const colour = this.getHexForPart(part);
-        return LDrawThumbnailService.cacheKey(part.geometryFilePath, colour);
+        return LDrawThumbnailService.cacheKey(part.geometryOriginalFileName, colour);
     }
 
 

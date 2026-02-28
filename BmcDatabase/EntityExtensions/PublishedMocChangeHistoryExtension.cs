@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = publishedMocChangeHistory.timeStamp,
 				userId = publishedMocChangeHistory.userId,
 				data = publishedMocChangeHistory.data,
-				publishedMoc = PublishedMoc.CreateMinimalAnonymous(publishedMocChangeHistory.publishedMoc),
+				publishedMoc = PublishedMoc.CreateMinimalAnonymous(publishedMocChangeHistory.publishedMoc)
 			 };
 		}
 

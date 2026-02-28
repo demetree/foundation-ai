@@ -19,10 +19,13 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ColourFinishData } from './colour-finish.service';
 import { BrickPartColourService, BrickPartColourData } from './brick-part-colour.service';
 import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
+import { ModelStepPartService, ModelStepPartData } from './model-step-part.service';
 import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
 import { BrickElementService, BrickElementData } from './brick-element.service';
 import { UserCollectionPartService, UserCollectionPartData } from './user-collection-part.service';
 import { UserWishlistItemService, UserWishlistItemData } from './user-wishlist-item.service';
+import { UserPartListItemService, UserPartListItemData } from './user-part-list-item.service';
+import { UserLostPartService, UserLostPartData } from './user-lost-part.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -35,7 +38,10 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class BrickColourQueryParameters {
     name: string | null | undefined = null;
+    rebrickableColorId: bigint | number | null | undefined = null;
     ldrawColourCode: bigint | number | null | undefined = null;
+    bricklinkColorId: bigint | number | null | undefined = null;
+    brickowlColorId: bigint | number | null | undefined = null;
     hexRgb: string | null | undefined = null;
     hexEdgeColour: string | null | undefined = null;
     alpha: bigint | number | null | undefined = null;
@@ -61,7 +67,10 @@ export class BrickColourQueryParameters {
 export class BrickColourSubmitData {
     id!: bigint | number;
     name!: string;
-    ldrawColourCode!: bigint | number;
+    rebrickableColorId!: bigint | number;
+    ldrawColourCode: bigint | number | null = null;
+    bricklinkColorId: bigint | number | null = null;
+    brickowlColorId: bigint | number | null = null;
     hexRgb: string | null = null;
     hexEdgeColour: string | null = null;
     alpha: bigint | number | null = null;
@@ -121,7 +130,10 @@ export class BrickColourBasicListData {
 export class BrickColourData {
     id!: bigint | number;
     name!: string;
+    rebrickableColorId!: bigint | number;
     ldrawColourCode!: bigint | number;
+    bricklinkColorId!: bigint | number;
+    brickowlColorId!: bigint | number;
     hexRgb!: string | null;
     hexEdgeColour!: string | null;
     alpha!: bigint | number;
@@ -149,6 +161,11 @@ export class BrickColourData {
     private _placedBricksSubject = new BehaviorSubject<PlacedBrickData[] | null>(null);
 
                 
+    private _modelStepParts: ModelStepPartData[] | null = null;
+    private _modelStepPartsPromise: Promise<ModelStepPartData[]> | null  = null;
+    private _modelStepPartsSubject = new BehaviorSubject<ModelStepPartData[] | null>(null);
+
+                
     private _legoSetParts: LegoSetPartData[] | null = null;
     private _legoSetPartsPromise: Promise<LegoSetPartData[]> | null  = null;
     private _legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
@@ -167,6 +184,16 @@ export class BrickColourData {
     private _userWishlistItems: UserWishlistItemData[] | null = null;
     private _userWishlistItemsPromise: Promise<UserWishlistItemData[]> | null  = null;
     private _userWishlistItemsSubject = new BehaviorSubject<UserWishlistItemData[] | null>(null);
+
+                
+    private _userPartListItems: UserPartListItemData[] | null = null;
+    private _userPartListItemsPromise: Promise<UserPartListItemData[]> | null  = null;
+    private _userPartListItemsSubject = new BehaviorSubject<UserPartListItemData[] | null>(null);
+
+                
+    private _userLostParts: UserLostPartData[] | null = null;
+    private _userLostPartsPromise: Promise<UserLostPartData[]> | null  = null;
+    private _userLostPartsSubject = new BehaviorSubject<UserLostPartData[] | null>(null);
 
                 
 
@@ -222,6 +249,31 @@ export class BrickColourData {
             });
         }
         return this._placedBricksCount$;
+    }
+
+
+
+    public ModelStepParts$ = this._modelStepPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._modelStepParts === null && this._modelStepPartsPromise === null) {
+            this.loadModelStepParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _modelStepPartsCount$: Observable<bigint | number> | null = null;
+    public get ModelStepPartsCount$(): Observable<bigint | number> {
+        if (this._modelStepPartsCount$ === null) {
+            this._modelStepPartsCount$ = ModelStepPartService.Instance.GetModelStepPartsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._modelStepPartsCount$;
     }
 
 
@@ -326,6 +378,56 @@ export class BrickColourData {
 
 
 
+    public UserPartListItems$ = this._userPartListItemsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userPartListItems === null && this._userPartListItemsPromise === null) {
+            this.loadUserPartListItems(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _userPartListItemsCount$: Observable<bigint | number> | null = null;
+    public get UserPartListItemsCount$(): Observable<bigint | number> {
+        if (this._userPartListItemsCount$ === null) {
+            this._userPartListItemsCount$ = UserPartListItemService.Instance.GetUserPartListItemsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userPartListItemsCount$;
+    }
+
+
+
+    public UserLostParts$ = this._userLostPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userLostParts === null && this._userLostPartsPromise === null) {
+            this.loadUserLostParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _userLostPartsCount$: Observable<bigint | number> | null = null;
+    public get UserLostPartsCount$(): Observable<bigint | number> {
+        if (this._userLostPartsCount$ === null) {
+            this._userLostPartsCount$ = UserLostPartService.Instance.GetUserLostPartsRowCount({brickColourId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._userLostPartsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -374,6 +476,11 @@ export class BrickColourData {
      this._placedBricksSubject.next(null);
      this._placedBricksCount$ = null;
 
+     this._modelStepParts = null;
+     this._modelStepPartsPromise = null;
+     this._modelStepPartsSubject.next(null);
+     this._modelStepPartsCount$ = null;
+
      this._legoSetParts = null;
      this._legoSetPartsPromise = null;
      this._legoSetPartsSubject.next(null);
@@ -393,6 +500,16 @@ export class BrickColourData {
      this._userWishlistItemsPromise = null;
      this._userWishlistItemsSubject.next(null);
      this._userWishlistItemsCount$ = null;
+
+     this._userPartListItems = null;
+     this._userPartListItemsPromise = null;
+     this._userPartListItemsSubject.next(null);
+     this._userPartListItemsCount$ = null;
+
+     this._userLostParts = null;
+     this._userLostPartsPromise = null;
+     this._userLostPartsSubject.next(null);
+     this._userLostPartsCount$ = null;
 
   }
 
@@ -527,6 +644,71 @@ export class BrickColourData {
 
     public get HasPlacedBricks(): Promise<boolean> {
         return this.PlacedBricks.then(placedBricks => placedBricks.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ModelStepParts for this BrickColour.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickColour.ModelStepParts.then(brickColours => { ... })
+     *   or
+     *   await this.brickColour.brickColours
+     *
+    */
+    public get ModelStepParts(): Promise<ModelStepPartData[]> {
+        if (this._modelStepParts !== null) {
+            return Promise.resolve(this._modelStepParts);
+        }
+
+        if (this._modelStepPartsPromise !== null) {
+            return this._modelStepPartsPromise;
+        }
+
+        // Start the load
+        this.loadModelStepParts();
+
+        return this._modelStepPartsPromise!;
+    }
+
+
+
+    private loadModelStepParts(): void {
+
+        this._modelStepPartsPromise = lastValueFrom(
+            BrickColourService.Instance.GetModelStepPartsForBrickColour(this.id)
+        )
+        .then(ModelStepParts => {
+            this._modelStepParts = ModelStepParts ?? [];
+            this._modelStepPartsSubject.next(this._modelStepParts);
+            return this._modelStepParts;
+         })
+        .catch(err => {
+            this._modelStepParts = [];
+            this._modelStepPartsSubject.next(this._modelStepParts);
+            throw err;
+        })
+        .finally(() => {
+            this._modelStepPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ModelStepPart. Call after mutations to force refresh.
+     */
+    public ClearModelStepPartsCache(): void {
+        this._modelStepParts = null;
+        this._modelStepPartsPromise = null;
+        this._modelStepPartsSubject.next(this._modelStepParts);      // Emit to observable
+    }
+
+    public get HasModelStepParts(): Promise<boolean> {
+        return this.ModelStepParts.then(modelStepParts => modelStepParts.length > 0);
     }
 
 
@@ -790,6 +972,136 @@ export class BrickColourData {
     }
 
 
+    /**
+     *
+     * Gets the UserPartListItems for this BrickColour.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickColour.UserPartListItems.then(brickColours => { ... })
+     *   or
+     *   await this.brickColour.brickColours
+     *
+    */
+    public get UserPartListItems(): Promise<UserPartListItemData[]> {
+        if (this._userPartListItems !== null) {
+            return Promise.resolve(this._userPartListItems);
+        }
+
+        if (this._userPartListItemsPromise !== null) {
+            return this._userPartListItemsPromise;
+        }
+
+        // Start the load
+        this.loadUserPartListItems();
+
+        return this._userPartListItemsPromise!;
+    }
+
+
+
+    private loadUserPartListItems(): void {
+
+        this._userPartListItemsPromise = lastValueFrom(
+            BrickColourService.Instance.GetUserPartListItemsForBrickColour(this.id)
+        )
+        .then(UserPartListItems => {
+            this._userPartListItems = UserPartListItems ?? [];
+            this._userPartListItemsSubject.next(this._userPartListItems);
+            return this._userPartListItems;
+         })
+        .catch(err => {
+            this._userPartListItems = [];
+            this._userPartListItemsSubject.next(this._userPartListItems);
+            throw err;
+        })
+        .finally(() => {
+            this._userPartListItemsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserPartListItem. Call after mutations to force refresh.
+     */
+    public ClearUserPartListItemsCache(): void {
+        this._userPartListItems = null;
+        this._userPartListItemsPromise = null;
+        this._userPartListItemsSubject.next(this._userPartListItems);      // Emit to observable
+    }
+
+    public get HasUserPartListItems(): Promise<boolean> {
+        return this.UserPartListItems.then(userPartListItems => userPartListItems.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the UserLostParts for this BrickColour.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickColour.UserLostParts.then(brickColours => { ... })
+     *   or
+     *   await this.brickColour.brickColours
+     *
+    */
+    public get UserLostParts(): Promise<UserLostPartData[]> {
+        if (this._userLostParts !== null) {
+            return Promise.resolve(this._userLostParts);
+        }
+
+        if (this._userLostPartsPromise !== null) {
+            return this._userLostPartsPromise;
+        }
+
+        // Start the load
+        this.loadUserLostParts();
+
+        return this._userLostPartsPromise!;
+    }
+
+
+
+    private loadUserLostParts(): void {
+
+        this._userLostPartsPromise = lastValueFrom(
+            BrickColourService.Instance.GetUserLostPartsForBrickColour(this.id)
+        )
+        .then(UserLostParts => {
+            this._userLostParts = UserLostParts ?? [];
+            this._userLostPartsSubject.next(this._userLostParts);
+            return this._userLostParts;
+         })
+        .catch(err => {
+            this._userLostParts = [];
+            this._userLostPartsSubject.next(this._userLostParts);
+            throw err;
+        })
+        .finally(() => {
+            this._userLostPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserLostPart. Call after mutations to force refresh.
+     */
+    public ClearUserLostPartsCache(): void {
+        this._userLostParts = null;
+        this._userLostPartsPromise = null;
+        this._userLostPartsSubject.next(this._userLostParts);      // Emit to observable
+    }
+
+    public get HasUserLostParts(): Promise<boolean> {
+        return this.UserLostParts.then(userLostParts => userLostParts.length > 0);
+    }
+
+
 
 
     /**
@@ -827,10 +1139,13 @@ export class BrickColourService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private brickPartColourService: BrickPartColourService,
         private placedBrickService: PlacedBrickService,
+        private modelStepPartService: ModelStepPartService,
         private legoSetPartService: LegoSetPartService,
         private brickElementService: BrickElementService,
         private userCollectionPartService: UserCollectionPartService,
         private userWishlistItemService: UserWishlistItemService,
+        private userPartListItemService: UserPartListItemService,
+        private userLostPartService: UserLostPartService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -889,7 +1204,10 @@ export class BrickColourService extends SecureEndpointBase {
 
         output.id = data.id;
         output.name = data.name;
+        output.rebrickableColorId = data.rebrickableColorId;
         output.ldrawColourCode = data.ldrawColourCode;
+        output.bricklinkColorId = data.bricklinkColorId;
+        output.brickowlColorId = data.brickowlColorId;
         output.hexRgb = data.hexRgb;
         output.hexEdgeColour = data.hexEdgeColour;
         output.alpha = data.alpha;
@@ -1217,6 +1535,16 @@ export class BrickColourService extends SecureEndpointBase {
     }
 
 
+    public GetModelStepPartsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ModelStepPartData[]> {
+        return this.modelStepPartService.GetModelStepPartList({
+            brickColourId: brickColourId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetLegoSetPartsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<LegoSetPartData[]> {
         return this.legoSetPartService.GetLegoSetPartList({
             brickColourId: brickColourId,
@@ -1249,6 +1577,26 @@ export class BrickColourService extends SecureEndpointBase {
 
     public GetUserWishlistItemsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserWishlistItemData[]> {
         return this.userWishlistItemService.GetUserWishlistItemList({
+            brickColourId: brickColourId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetUserPartListItemsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserPartListItemData[]> {
+        return this.userPartListItemService.GetUserPartListItemList({
+            brickColourId: brickColourId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetUserLostPartsForBrickColour(brickColourId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserLostPartData[]> {
+        return this.userLostPartService.GetUserLostPartList({
             brickColourId: brickColourId,
             active: active,
             deleted: deleted,
@@ -1300,6 +1648,10 @@ export class BrickColourService extends SecureEndpointBase {
     (revived as any)._placedBricksPromise = null;
     (revived as any)._placedBricksSubject = new BehaviorSubject<PlacedBrickData[] | null>(null);
 
+    (revived as any)._modelStepParts = null;
+    (revived as any)._modelStepPartsPromise = null;
+    (revived as any)._modelStepPartsSubject = new BehaviorSubject<ModelStepPartData[] | null>(null);
+
     (revived as any)._legoSetParts = null;
     (revived as any)._legoSetPartsPromise = null;
     (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
@@ -1315,6 +1667,14 @@ export class BrickColourService extends SecureEndpointBase {
     (revived as any)._userWishlistItems = null;
     (revived as any)._userWishlistItemsPromise = null;
     (revived as any)._userWishlistItemsSubject = new BehaviorSubject<UserWishlistItemData[] | null>(null);
+
+    (revived as any)._userPartListItems = null;
+    (revived as any)._userPartListItemsPromise = null;
+    (revived as any)._userPartListItemsSubject = new BehaviorSubject<UserPartListItemData[] | null>(null);
+
+    (revived as any)._userLostParts = null;
+    (revived as any)._userLostPartsPromise = null;
+    (revived as any)._userLostPartsSubject = new BehaviorSubject<UserLostPartData[] | null>(null);
 
 
     //
@@ -1350,6 +1710,18 @@ export class BrickColourService extends SecureEndpointBase {
       );
 
     (revived as any)._placedBricksCount$ = null;
+
+
+    (revived as any).ModelStepParts$ = (revived as any)._modelStepPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._modelStepParts === null && (revived as any)._modelStepPartsPromise === null) {
+                (revived as any).loadModelStepParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._modelStepPartsCount$ = null;
 
 
     (revived as any).LegoSetParts$ = (revived as any)._legoSetPartsSubject.asObservable().pipe(
@@ -1398,6 +1770,30 @@ export class BrickColourService extends SecureEndpointBase {
       );
 
     (revived as any)._userWishlistItemsCount$ = null;
+
+
+    (revived as any).UserPartListItems$ = (revived as any)._userPartListItemsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userPartListItems === null && (revived as any)._userPartListItemsPromise === null) {
+                (revived as any).loadUserPartListItems();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._userPartListItemsCount$ = null;
+
+
+    (revived as any).UserLostParts$ = (revived as any)._userLostPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userLostParts === null && (revived as any)._userLostPartsPromise === null) {
+                (revived as any).loadUserLostParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._userLostPartsCount$ = null;
 
 
 

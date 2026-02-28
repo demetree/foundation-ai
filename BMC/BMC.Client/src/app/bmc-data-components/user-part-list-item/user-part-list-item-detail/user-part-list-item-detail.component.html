@@ -1,0 +1,85 @@
+<div class="container-fluid p-1 m-0 user-part-list-item-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-part-list-item-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Part List Item</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Part List Item' : 'Add User Part List Item'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserPartListItemReader()">
+                <div class="col m-2 user-part-list-item-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userPartListItemForm" (ngSubmit)="submitForm()" class="user-part-list-item-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userPartListId')">
+                                <label for="UserPartListItem-userPartListId" id="label-UserPartListItem-userPartListId"><span class="text-danger">*</span>User Part List</label>
+                                <select id="UserPartListItem-userPartListId" formControlName="userPartListId" class="form-select user-part-list-item-select" [disabled]="!userIsBMCUserPartListItemWriter()">
+                                    <option [ngValue]="null">Select User Part List</option>
+                                    <option *ngFor="let userPartList of userPartLists$ | async" [ngValue]="userPartList.id">{{userPartList.name}}</option>
+                                </select>
+                                <div *ngIf="userPartListItemForm.get('userPartListId')?.invalid && userPartListItemForm.get('userPartListId')?.touched" class="text-danger">
+                                    User Part List is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                                <label for="UserPartListItem-brickPartId" id="label-UserPartListItem-brickPartId"><span class="text-danger">*</span>Brick Part</label>
+                                <select id="UserPartListItem-brickPartId" formControlName="brickPartId" class="form-select user-part-list-item-select" [disabled]="!userIsBMCUserPartListItemWriter()">
+                                    <option [ngValue]="null">Select Brick Part</option>
+                                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                                </select>
+                                <div *ngIf="userPartListItemForm.get('brickPartId')?.invalid && userPartListItemForm.get('brickPartId')?.touched" class="text-danger">
+                                    Brick Part is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
+                                <label for="UserPartListItem-brickColourId" id="label-UserPartListItem-brickColourId"><span class="text-danger">*</span>Brick Colour</label>
+                                <select id="UserPartListItem-brickColourId" formControlName="brickColourId" class="form-select user-part-list-item-select" [disabled]="!userIsBMCUserPartListItemWriter()">
+                                    <option [ngValue]="null">Select Brick Colour</option>
+                                    <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
+                                </select>
+                                <div *ngIf="userPartListItemForm.get('brickColourId')?.invalid && userPartListItemForm.get('brickColourId')?.touched" class="text-danger">
+                                    Brick Colour is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                                <label for="UserPartListItem-quantity" id="label-UserPartListItem-quantity"><span class="text-danger">*</span>Quantity</label>
+                                <input type="number" id="UserPartListItem-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control user-part-list-item-input" [disabled]="!userIsBMCUserPartListItemWriter()" aria-labelledby="label-quantity" />
+                                <div *ngIf="userPartListItemForm.get('quantity')?.invalid && userPartListItemForm.get('quantity')?.touched" class="text-danger">
+                                    Quantity is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserPartListItem-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserPartListItemWriter()" />
+                                <label for="UserPartListItem-active" class="form-check-label" id="label-UserPartListItem-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserPartListItem-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserPartListItemWriter()" />
+                                <label for="UserPartListItem-deleted" class="form-check-label" id="label-UserPartListItem-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-part-list-item-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userPartListItemForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Part List Item">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userPartListItemForm.valid || !userPartListItemForm.dirty || userPartListItemForm.pristine  || userIsBMCUserPartListItemWriter() == false " ngbTooltip="Save the User Part List Item changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Part List Item' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

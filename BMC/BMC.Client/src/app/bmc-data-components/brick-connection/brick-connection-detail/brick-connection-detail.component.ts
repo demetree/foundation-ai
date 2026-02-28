@@ -24,6 +24,8 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BrickConnectionService, BrickConnectionData, BrickConnectionSubmitData } from '../../../bmc-data-services/brick-connection.service';
 import { ProjectService } from '../../../bmc-data-services/project.service';
+import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
+import { BrickPartConnectorService } from '../../../bmc-data-services/brick-part-connector.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -36,10 +38,13 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 //
 interface BrickConnectionFormValues {
   projectId: number | bigint,       // For FK link number
-  sourcePlacedBrickId: string | null,     // Stored as string for form input, converted to number on submit.
-  sourceConnectorId: string | null,     // Stored as string for form input, converted to number on submit.
-  targetPlacedBrickId: string | null,     // Stored as string for form input, converted to number on submit.
-  targetConnectorId: string | null,     // Stored as string for form input, converted to number on submit.
+  sourcePlacedBrickId: number | bigint,       // For FK link number
+  sourceConnectorId: number | bigint,       // For FK link number
+  targetPlacedBrickId: number | bigint,       // For FK link number
+  targetConnectorId: number | bigint,       // For FK link number
+  connectionStrength: string | null,
+  isLocked: boolean,
+  angleDegrees: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -70,10 +75,13 @@ export class BrickConnectionDetailComponent implements OnInit, CanComponentDeact
 
   public brickConnectionForm: FormGroup = this.fb.group({
         projectId: [null, Validators.required],
-        sourcePlacedBrickId: [''],
-        sourceConnectorId: [''],
-        targetPlacedBrickId: [''],
-        targetConnectorId: [''],
+        sourcePlacedBrickId: [null, Validators.required],
+        sourceConnectorId: [null, Validators.required],
+        targetPlacedBrickId: [null, Validators.required],
+        targetConnectorId: [null, Validators.required],
+        connectionStrength: [''],
+        isLocked: [false],
+        angleDegrees: [''],
         active: [true],
         deleted: [false],
       });
@@ -91,12 +99,16 @@ export class BrickConnectionDetailComponent implements OnInit, CanComponentDeact
 
   brickConnections$ = this.brickConnectionService.GetBrickConnectionList();
   public projects$ = this.projectService.GetProjectList();
+  public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
+  public brickPartConnectors$ = this.brickPartConnectorService.GetBrickPartConnectorList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public brickConnectionService: BrickConnectionService,
     public projectService: ProjectService,
+    public placedBrickService: PlacedBrickService,
+    public brickPartConnectorService: BrickPartConnectorService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -379,10 +391,13 @@ export class BrickConnectionDetailComponent implements OnInit, CanComponentDeact
       //
       this.brickConnectionForm.reset({
         projectId: null,
-        sourcePlacedBrickId: '',
-        sourceConnectorId: '',
-        targetPlacedBrickId: '',
-        targetConnectorId: '',
+        sourcePlacedBrickId: null,
+        sourceConnectorId: null,
+        targetPlacedBrickId: null,
+        targetConnectorId: null,
+        connectionStrength: '',
+        isLocked: false,
+        angleDegrees: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -395,10 +410,13 @@ export class BrickConnectionDetailComponent implements OnInit, CanComponentDeact
         //
         this.brickConnectionForm.reset({
         projectId: brickConnectionData.projectId,
-        sourcePlacedBrickId: brickConnectionData.sourcePlacedBrickId?.toString() ?? '',
-        sourceConnectorId: brickConnectionData.sourceConnectorId?.toString() ?? '',
-        targetPlacedBrickId: brickConnectionData.targetPlacedBrickId?.toString() ?? '',
-        targetConnectorId: brickConnectionData.targetConnectorId?.toString() ?? '',
+        sourcePlacedBrickId: brickConnectionData.sourcePlacedBrickId,
+        sourceConnectorId: brickConnectionData.sourceConnectorId,
+        targetPlacedBrickId: brickConnectionData.targetPlacedBrickId,
+        targetConnectorId: brickConnectionData.targetConnectorId,
+        connectionStrength: brickConnectionData.connectionStrength ?? '',
+        isLocked: brickConnectionData.isLocked ?? false,
+        angleDegrees: brickConnectionData.angleDegrees?.toString() ?? '',
         active: brickConnectionData.active ?? true,
         deleted: brickConnectionData.deleted ?? false,
       }, { emitEvent: false});
@@ -461,10 +479,13 @@ export class BrickConnectionDetailComponent implements OnInit, CanComponentDeact
     const brickConnectionSubmitData: BrickConnectionSubmitData = {
         id: this.brickConnectionData?.id || 0,
         projectId: Number(formValue.projectId),
-        sourcePlacedBrickId: formValue.sourcePlacedBrickId ? Number(formValue.sourcePlacedBrickId) : null,
-        sourceConnectorId: formValue.sourceConnectorId ? Number(formValue.sourceConnectorId) : null,
-        targetPlacedBrickId: formValue.targetPlacedBrickId ? Number(formValue.targetPlacedBrickId) : null,
-        targetConnectorId: formValue.targetConnectorId ? Number(formValue.targetConnectorId) : null,
+        sourcePlacedBrickId: Number(formValue.sourcePlacedBrickId),
+        sourceConnectorId: Number(formValue.sourceConnectorId),
+        targetPlacedBrickId: Number(formValue.targetPlacedBrickId),
+        targetConnectorId: Number(formValue.targetConnectorId),
+        connectionStrength: formValue.connectionStrength?.trim() || null,
+        isLocked: !!formValue.isLocked,
+        angleDegrees: formValue.angleDegrees ? Number(formValue.angleDegrees) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

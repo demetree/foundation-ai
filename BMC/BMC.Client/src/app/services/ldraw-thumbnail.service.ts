@@ -15,13 +15,13 @@ import { LDrawFileCacheService } from './ldraw-file-cache.service';
  * Consumers pass geometry path and optional colour override.
  */
 export interface ThumbnailRequest {
-    geometryFilePath: string;
+    geometryOriginalFileName: string;
     colourHex?: string;  // e.g. 'A0A5A9' (no # prefix)
 }
 
 /**
  * Thumbnail result emitted for each successfully rendered part.
- * The cacheKey is the composite key: 'geometryFilePath' or 'geometryFilePath:colourHex'
+ * The cacheKey is the composite key: 'geometryOriginalFileName' or 'geometryOriginalFileName:colourHex'
  */
 export interface ThumbnailResult {
     cacheKey: string;
@@ -133,8 +133,8 @@ export class LDrawThumbnailService {
     /**
      * Build a composite cache key from geometry path and optional colour.
      */
-    static cacheKey(geometryFilePath: string, colourHex?: string): string {
-        return colourHex ? `${geometryFilePath}:${colourHex}` : geometryFilePath;
+    static cacheKey(geometryOriginalFileName: string, colourHex?: string): string {
+        return colourHex ? `${geometryOriginalFileName}:${colourHex}` : geometryOriginalFileName;
     }
 
 
@@ -160,8 +160,8 @@ export class LDrawThumbnailService {
         // Filter to parts that have a geometry file and aren't already cached
         //
         const needed = parts.filter(p => {
-            const key = LDrawThumbnailService.cacheKey(p.geometryFilePath, p.colourHex);
-            return p.geometryFilePath && !this.cache.has(key);
+            const key = LDrawThumbnailService.cacheKey(p.geometryOriginalFileName, p.colourHex);
+            return p.geometryOriginalFileName && !this.cache.has(key);
         });
 
         if (needed.length === 0) {
@@ -169,8 +169,8 @@ export class LDrawThumbnailService {
             // Emit cached results immediately for cards that already have thumbnails
             //
             for (const part of parts) {
-                const key = LDrawThumbnailService.cacheKey(part.geometryFilePath, part.colourHex);
-                if (part.geometryFilePath && this.cache.has(key)) {
+                const key = LDrawThumbnailService.cacheKey(part.geometryOriginalFileName, part.colourHex);
+                if (part.geometryOriginalFileName && this.cache.has(key)) {
                     this.thumbnailSubject.next({
                         cacheKey: key,
                         dataUrl: this.cache.get(key)!
@@ -360,9 +360,9 @@ export class LDrawThumbnailService {
             }
 
             const part = this.queue.shift()!;
-            const key = LDrawThumbnailService.cacheKey(part.geometryFilePath, part.colourHex);
+            const key = LDrawThumbnailService.cacheKey(part.geometryOriginalFileName, part.colourHex);
 
-            if (!part.geometryFilePath || this.cache.has(key)) {
+            if (!part.geometryOriginalFileName || this.cache.has(key)) {
                 continue;
             }
 
@@ -383,7 +383,7 @@ export class LDrawThumbnailService {
                 // non-abort failures.
                 //
                 if (generation === this.queueGeneration) {
-                    console.warn(`[LDrawThumbnail] Failed to render ${part.geometryFilePath}:`, err);
+                    console.warn(`[LDrawThumbnail] Failed to render ${part.geometryOriginalFileName}:`, err);
                 }
             }
 
@@ -419,13 +419,13 @@ export class LDrawThumbnailService {
             //
             this.updateAuthHeaders(loader);
 
-            const modelUrl = this.baseUrl + 'api/ldraw/file/' + part.geometryFilePath;
+            const modelUrl = this.baseUrl + 'api/ldraw/file/' + part.geometryOriginalFileName;
 
             //
             // Safety timeout — skip parts that take too long
             //
             const timeoutId = setTimeout(() => {
-                console.warn(`[LDrawThumbnail] Timed out loading ${part.geometryFilePath}`);
+                console.warn(`[LDrawThumbnail] Timed out loading ${part.geometryOriginalFileName}`);
                 resolve(null);
             }, 15000);
 
@@ -475,14 +475,14 @@ export class LDrawThumbnailService {
                         resolve(dataUrl);
 
                     } catch (err) {
-                        console.warn(`[LDrawThumbnail] Render error for ${part.geometryFilePath}:`, err);
+                        console.warn(`[LDrawThumbnail] Render error for ${part.geometryOriginalFileName}:`, err);
                         resolve(null);
                     }
                 },
                 undefined, // onProgress
                 (err: unknown) => {
                     clearTimeout(timeoutId);
-                    console.warn(`[LDrawThumbnail] Load error for ${part.geometryFilePath}:`, err);
+                    console.warn(`[LDrawThumbnail] Load error for ${part.geometryOriginalFileName}:`, err);
                     resolve(null);
                 }
             );

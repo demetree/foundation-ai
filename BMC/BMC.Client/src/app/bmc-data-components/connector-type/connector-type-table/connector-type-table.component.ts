@@ -180,6 +180,11 @@ export class ConnectorTypeTableComponent implements OnInit, OnChanges, AfterView
     { key: 'degreesOfFreedom', label: 'Degrees Of Freedom', width: undefined },
     { key: 'allowsRotation', label: 'Allows Rotation', width: '120px', template: 'boolean' },
     { key: 'allowsSlide', label: 'Allows Slide', width: '120px', template: 'boolean' },
+    { key: 'minAngleDegrees', label: 'Min Angle Degrees', width: undefined },
+    { key: 'maxAngleDegrees', label: 'Max Angle Degrees', width: undefined },
+    { key: 'snapIncrementDegrees', label: 'Snap Increment Degrees', width: undefined },
+    { key: 'clutchForceNewtons', label: 'Clutch Force Newtons', width: undefined },
+    { key: 'maleOrFemale', label: 'Male Or Female', width: undefined },
     { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
@@ -331,6 +336,11 @@ export class ConnectorTypeTableComponent implements OnInit, OnChanges, AfterView
                       'degreesOfFreedom',
                       'allowsRotation',
                       'allowsSlide',
+                      'minAngleDegrees',
+                      'maxAngleDegrees',
+                      'snapIncrementDegrees',
+                      'clutchForceNewtons',
+                      'maleOrFemale',
                       'sequence',
         ];
 

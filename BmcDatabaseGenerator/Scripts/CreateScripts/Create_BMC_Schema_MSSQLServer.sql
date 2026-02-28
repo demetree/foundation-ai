@@ -62,6 +62,14 @@ GO
 -- DROP TABLE [BMC].[BuildManualPage]
 -- DROP TABLE [BMC].[BuildManualChangeHistory]
 -- DROP TABLE [BMC].[BuildManual]
+-- DROP TABLE [BMC].[UserLostPart]
+-- DROP TABLE [BMC].[UserSetListItem]
+-- DROP TABLE [BMC].[UserSetListChangeHistory]
+-- DROP TABLE [BMC].[UserSetList]
+-- DROP TABLE [BMC].[UserPartListItem]
+-- DROP TABLE [BMC].[UserPartListChangeHistory]
+-- DROP TABLE [BMC].[UserPartList]
+-- DROP TABLE [BMC].[RebrickableUserLink]
 -- DROP TABLE [BMC].[UserCollectionSetImport]
 -- DROP TABLE [BMC].[UserWishlistItem]
 -- DROP TABLE [BMC].[UserCollectionPart]
@@ -75,6 +83,11 @@ GO
 -- DROP TABLE [BMC].[LegoSetPart]
 -- DROP TABLE [BMC].[LegoSet]
 -- DROP TABLE [BMC].[LegoTheme]
+-- DROP TABLE [BMC].[ModelStepPart]
+-- DROP TABLE [BMC].[ModelBuildStep]
+-- DROP TABLE [BMC].[ModelSubFile]
+-- DROP TABLE [BMC].[ModelDocumentChangeHistory]
+-- DROP TABLE [BMC].[ModelDocument]
 -- DROP TABLE [BMC].[ProjectReferenceImage]
 -- DROP TABLE [BMC].[ProjectCameraPreset]
 -- DROP TABLE [BMC].[ProjectTagAssignment]
@@ -87,6 +100,7 @@ GO
 -- DROP TABLE [BMC].[PlacedBrick]
 -- DROP TABLE [BMC].[ProjectChangeHistory]
 -- DROP TABLE [BMC].[Project]
+-- DROP TABLE [BMC].[PartSubFileReference]
 -- DROP TABLE [BMC].[BrickPartColour]
 -- DROP TABLE [BMC].[BrickPartConnector]
 -- DROP TABLE [BMC].[BrickPartChangeHistory]
@@ -94,6 +108,7 @@ GO
 -- DROP TABLE [BMC].[PartType]
 -- DROP TABLE [BMC].[BrickColour]
 -- DROP TABLE [BMC].[ColourFinish]
+-- DROP TABLE [BMC].[ConnectorTypeCompatibility]
 -- DROP TABLE [BMC].[ConnectorType]
 -- DROP TABLE [BMC].[BrickCategory]
 
@@ -142,6 +157,14 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BuildManualPage] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildManualChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildManual] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserLostPart] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserSetListItem] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserSetListChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserSetList] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserPartListItem] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserPartListChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [BMC].[UserPartList] DISABLE
+-- ALTER INDEX ALL ON [BMC].[RebrickableUserLink] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserCollectionSetImport] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserWishlistItem] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserCollectionPart] DISABLE
@@ -155,6 +178,11 @@ GO
 -- ALTER INDEX ALL ON [BMC].[LegoSetPart] DISABLE
 -- ALTER INDEX ALL ON [BMC].[LegoSet] DISABLE
 -- ALTER INDEX ALL ON [BMC].[LegoTheme] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ModelStepPart] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ModelBuildStep] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ModelSubFile] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ModelDocumentChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ModelDocument] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ProjectReferenceImage] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ProjectCameraPreset] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ProjectTagAssignment] DISABLE
@@ -167,6 +195,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[PlacedBrick] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ProjectChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[Project] DISABLE
+-- ALTER INDEX ALL ON [BMC].[PartSubFileReference] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickPartColour] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickPartConnector] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickPartChangeHistory] DISABLE
@@ -174,6 +203,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[PartType] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickColour] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ColourFinish] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ConnectorTypeCompatibility] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ConnectorType] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] DISABLE
 
@@ -222,6 +252,14 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BuildManualPage] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildManualChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildManual] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserLostPart] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserSetListItem] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserSetListChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserSetList] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserPartListItem] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserPartListChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [BMC].[UserPartList] REBUILD
+-- ALTER INDEX ALL ON [BMC].[RebrickableUserLink] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserCollectionSetImport] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserWishlistItem] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserCollectionPart] REBUILD
@@ -235,6 +273,11 @@ GO
 -- ALTER INDEX ALL ON [BMC].[LegoSetPart] REBUILD
 -- ALTER INDEX ALL ON [BMC].[LegoSet] REBUILD
 -- ALTER INDEX ALL ON [BMC].[LegoTheme] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ModelStepPart] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ModelBuildStep] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ModelSubFile] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ModelDocumentChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ModelDocument] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ProjectReferenceImage] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ProjectCameraPreset] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ProjectTagAssignment] REBUILD
@@ -247,6 +290,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[PlacedBrick] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ProjectChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[Project] REBUILD
+-- ALTER INDEX ALL ON [BMC].[PartSubFileReference] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickPartColour] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickPartConnector] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickPartChangeHistory] REBUILD
@@ -254,6 +298,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[PartType] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickColour] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ColourFinish] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ConnectorTypeCompatibility] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ConnectorType] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] REBUILD
 
@@ -387,6 +432,11 @@ CREATE TABLE [BMC].[ConnectorType]
 	[degreesOfFreedom] INT NULL,		-- Number of degrees of freedom when connected (0=fixed, 1=rotation, 2=rotation+slide)
 	[allowsRotation] BIT NOT NULL DEFAULT 0,		-- Whether this connection allows rotation around its axis
 	[allowsSlide] BIT NOT NULL DEFAULT 0,		-- Whether this connection allows sliding along its axis
+	[minAngleDegrees] REAL NULL,		-- Minimum angle of rotation for hinge-type connectors (null = no minimum)
+	[maxAngleDegrees] REAL NULL,		-- Maximum angle of rotation for hinge-type connectors (null = no maximum)
+	[snapIncrementDegrees] REAL NULL,		-- Snap increment for click hinges (e.g. 22.5 degrees, null = continuous)
+	[clutchForceNewtons] REAL NULL,		-- Force needed to disconnect this connector type (null = unknown)
+	[maleOrFemale] NVARCHAR(10) NULL,		-- Pairing role: Male, Female, or Both (for compatibility matching logic)
 	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -429,6 +479,52 @@ INSERT INTO [BMC].[ConnectorType] ( [name], [description], [degreesOfFreedom], [
 GO
 
 INSERT INTO [BMC].[ConnectorType] ( [name], [description], [degreesOfFreedom], [allowsRotation], [allowsSlide], [sequence], [objectGuid] ) VALUES  ( 'BallJoint', 'Ball joint — inserts into a ball joint socket', 2, 1, 0, 21, 'c0110001-0001-4000-8000-000000000021' )
+GO
+
+
+-- Defines which connector types can physically connect to each other (e.g. Stud↔AntiStud, Pin↔PinHole).
+CREATE TABLE [BMC].[ConnectorTypeCompatibility]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[maleConnectorTypeId] INT NOT NULL,		-- The male/inserting connector type
+	[femaleConnectorTypeId] INT NOT NULL,		-- The female/receiving connector type
+	[connectionStrength] NVARCHAR(50) NOT NULL,		-- Connection strength: Tight, Friction, Free
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConnectorTypeCompatibility_ConnectorType_maleConnectorTypeId] FOREIGN KEY ([maleConnectorTypeId]) REFERENCES [BMC].[ConnectorType] ([id]),		-- Foreign key to the ConnectorType table.
+	CONSTRAINT [FK_ConnectorTypeCompatibility_ConnectorType_femaleConnectorTypeId] FOREIGN KEY ([femaleConnectorTypeId]) REFERENCES [BMC].[ConnectorType] ([id]),		-- Foreign key to the ConnectorType table.
+	CONSTRAINT [UC_ConnectorTypeCompatibility_maleConnectorTypeId_femaleConnectorTypeId] UNIQUE ( [maleConnectorTypeId], [femaleConnectorTypeId]) 		-- Uniqueness enforced on the ConnectorTypeCompatibility table's maleConnectorTypeId and femaleConnectorTypeId fields.
+)
+GO
+
+-- Index on the ConnectorTypeCompatibility table's maleConnectorTypeId field.
+CREATE INDEX [I_ConnectorTypeCompatibility_maleConnectorTypeId] ON [BMC].[ConnectorTypeCompatibility] ([maleConnectorTypeId])
+GO
+
+-- Index on the ConnectorTypeCompatibility table's femaleConnectorTypeId field.
+CREATE INDEX [I_ConnectorTypeCompatibility_femaleConnectorTypeId] ON [BMC].[ConnectorTypeCompatibility] ([femaleConnectorTypeId])
+GO
+
+-- Index on the ConnectorTypeCompatibility table's active field.
+CREATE INDEX [I_ConnectorTypeCompatibility_active] ON [BMC].[ConnectorTypeCompatibility] ([active])
+GO
+
+-- Index on the ConnectorTypeCompatibility table's deleted field.
+CREATE INDEX [I_ConnectorTypeCompatibility_deleted] ON [BMC].[ConnectorTypeCompatibility] ([deleted])
+GO
+
+INSERT INTO [BMC].[ConnectorTypeCompatibility] ( [connectionStrength], [maleConnectorTypeId], [femaleConnectorTypeId], [objectGuid] ) VALUES  ( 'Tight', ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'Stud' ), ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'AntiStud' ), 'cc100001-0001-4000-8000-000000000001' )
+GO
+
+INSERT INTO [BMC].[ConnectorTypeCompatibility] ( [connectionStrength], [maleConnectorTypeId], [femaleConnectorTypeId], [objectGuid] ) VALUES  ( 'Friction', ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'Pin' ), ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'PinHole' ), 'cc100001-0001-4000-8000-000000000002' )
+GO
+
+INSERT INTO [BMC].[ConnectorTypeCompatibility] ( [connectionStrength], [maleConnectorTypeId], [femaleConnectorTypeId], [objectGuid] ) VALUES  ( 'Tight', ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'AxleEnd' ), ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'AxleHole' ), 'cc100001-0001-4000-8000-000000000003' )
+GO
+
+INSERT INTO [BMC].[ConnectorTypeCompatibility] ( [connectionStrength], [maleConnectorTypeId], [femaleConnectorTypeId], [objectGuid] ) VALUES  ( 'Friction', ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'BallJoint' ), ( SELECT TOP 1 id FROM [BMC].[ConnectorType] WHERE [name] = 'BallJointSocket' ), 'cc100001-0001-4000-8000-000000000004' )
 GO
 
 
@@ -497,7 +593,10 @@ CREATE TABLE [BMC].[BrickColour]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
-	[ldrawColourCode] INT NOT NULL,		-- LDraw standard colour code number
+	[rebrickableColorId] INT NOT NULL,		-- Rebrickable color ID — primary lookup key for API sync
+	[ldrawColourCode] INT NULL,		-- LDraw standard colour code number (nullable — some Rebrickable colors may not map to LDraw)
+	[bricklinkColorId] INT NULL,		-- BrickLink color ID for cross-referencing
+	[brickowlColorId] INT NULL,		-- BrickOwl color ID for cross-referencing
 	[hexRgb] NVARCHAR(10) NULL,		-- Hex RGB colour value (e.g. #FF0000)
 	[hexEdgeColour] NVARCHAR(10) NULL,		-- LDraw edge/contrast colour hex value for wireframe and outline rendering
 	[alpha] INT NULL,		-- Alpha transparency value (0-255, 255 = fully opaque)
@@ -512,7 +611,7 @@ CREATE TABLE [BMC].[BrickColour]
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 	CONSTRAINT [FK_BrickColour_ColourFinish_colourFinishId] FOREIGN KEY ([colourFinishId]) REFERENCES [BMC].[ColourFinish] ([id]),		-- Foreign key to the ColourFinish table.
-	CONSTRAINT [UC_BrickColour_ldrawColourCode] UNIQUE ( [ldrawColourCode]) 		-- Uniqueness enforced on the BrickColour table's ldrawColourCode field.
+	CONSTRAINT [UC_BrickColour_rebrickableColorId] UNIQUE ( [rebrickableColorId]) 		-- Uniqueness enforced on the BrickColour table's rebrickableColorId field.
 )
 GO
 
@@ -530,30 +629,6 @@ GO
 
 -- Index on the BrickColour table's deleted field.
 CREATE INDEX [I_BrickColour_deleted] ON [BMC].[BrickColour] ([deleted])
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, 0, 0, 26, 1, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000001' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, 0, 0, 23, 2, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000002' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, 0, 0, 28, 3, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000003' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, 0, 0, 21, 4, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000004' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, 0, 0, 24, 5, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000005' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, 0, 0, 1, 6, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000006' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, 0, 0, 194, 7, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000007' )
-GO
-
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [colourFinishId], [objectGuid] ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, 0, 0, 199, 8, ( SELECT TOP 1 id FROM [BMC].[ColourFinish] WHERE [name] = 'Solid' ), 'c0100001-0001-4000-8000-000000000008' )
 GO
 
 
@@ -605,21 +680,48 @@ CREATE TABLE [BMC].[BrickPart]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
-	[ldrawPartId] NVARCHAR(100) NOT NULL,		-- LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library
+	[rebrickablePartNum] NVARCHAR(100) NOT NULL,		-- Rebrickable part_num — primary lookup key for the parts catalog
+	[rebrickablePartUrl] NVARCHAR(250) NULL,		-- URL to part page on Rebrickable
+	[rebrickableImgUrl] NVARCHAR(250) NULL,		-- URL to part image on Rebrickable
+	[ldrawPartId] NVARCHAR(100) NULL,		-- LDraw part ID (e.g. 3001, 32523) — nullable, some Rebrickable parts have no LDraw file
+	[bricklinkId] NVARCHAR(100) NULL,		-- BrickLink part ID for cross-referencing
+	[brickowlId] NVARCHAR(100) NULL,		-- BrickOwl part ID for cross-referencing
+	[legoDesignId] NVARCHAR(100) NULL,		-- Official LEGO design number for cross-referencing
 	[ldrawTitle] NVARCHAR(250) NULL,		-- Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')
 	[ldrawCategory] NVARCHAR(100) NULL,		-- Part category from LDraw !CATEGORY meta or inferred from title first word
 	[partTypeId] INT NOT NULL,		-- LDraw part classification — FK to PartType lookup table
 	[keywords] NVARCHAR(MAX) NULL,		-- Comma-separated keywords from LDraw !KEYWORDS meta lines for search
 	[author] NVARCHAR(100) NULL,		-- Part author from the LDraw Author: header line
 	[brickCategoryId] INT NOT NULL,		-- The category this part belongs to
-	[rebrickablePartNum] NVARCHAR(100) NULL,		-- Rebrickable part_num when it differs from ldrawPartId (e.g. for prints, patterns, or alternate IDs)
 	[widthLdu] REAL NULL,		-- Part width in LDraw units (null if not yet computed)
 	[heightLdu] REAL NULL,		-- Part height in LDraw units (null if not yet computed)
 	[depthLdu] REAL NULL,		-- Part depth in LDraw units (null if not yet computed)
 	[massGrams] REAL NULL,		-- Part mass in grams (for physics simulation, null if unknown)
-	[geometryFilePath] NVARCHAR(250) NULL,		-- Relative path to the LDraw .dat geometry file
+	[momentOfInertiaX] REAL NULL,		-- Rotational inertia about X axis (kg·m², null if unknown)
+	[momentOfInertiaY] REAL NULL,		-- Rotational inertia about Y axis (kg·m², null if unknown)
+	[momentOfInertiaZ] REAL NULL,		-- Rotational inertia about Z axis (kg·m², null if unknown)
+	[frictionCoefficient] REAL NULL,		-- Surface friction coefficient for physics (null if unknown)
+	[materialType] NVARCHAR(50) NULL,		-- Material type: ABS, Rubber, Metal, Fabric, etc. (null if unknown)
+	[centerOfMassX] REAL NULL,		-- Center of mass X offset from part origin in LDU (null if unknown)
+	[centerOfMassY] REAL NULL,		-- Center of mass Y offset from part origin in LDU (null if unknown)
+	[centerOfMassZ] REAL NULL,		-- Center of mass Z offset from part origin in LDU (null if unknown)
+	[geometryFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
+	[geometrySize] BIGINT NULL,		-- Part of the binary data field setup
+	[geometryData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
+	[geometryMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[geometryFileFormat] NVARCHAR(50) NULL,		-- Format of stored geometry: LDraw, ProcessedBinary, etc.
+	[geometryOriginalFileName] NVARCHAR(250) NULL,		-- Original LDraw filename for reference (e.g. '3001.dat')
+	[boundingBoxMinX] REAL NULL,		-- Axis-aligned bounding box minimum X in LDU
+	[boundingBoxMinY] REAL NULL,		-- Axis-aligned bounding box minimum Y in LDU
+	[boundingBoxMinZ] REAL NULL,		-- Axis-aligned bounding box minimum Z in LDU
+	[boundingBoxMaxX] REAL NULL,		-- Axis-aligned bounding box maximum X in LDU
+	[boundingBoxMaxY] REAL NULL,		-- Axis-aligned bounding box maximum Y in LDU
+	[boundingBoxMaxZ] REAL NULL,		-- Axis-aligned bounding box maximum Z in LDU
+	[subFileCount] INT NULL,		-- Number of LDraw sub-file references in this part (for instancing)
+	[polygonCount] INT NULL,		-- Total polygon count for LOD decisions and performance budgets
 	[toothCount] INT NULL,		-- For gears: number of teeth. Null for non-gear parts.
 	[gearRatio] REAL NULL,		-- For gears: effective gear ratio relative to a base gear. Null for non-gear parts.
+	[lastModifiedDate] DATETIME2(7) NULL,		-- Last modification date for incremental sync with Rebrickable
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -627,7 +729,7 @@ CREATE TABLE [BMC].[BrickPart]
 
 	CONSTRAINT [FK_BrickPart_PartType_partTypeId] FOREIGN KEY ([partTypeId]) REFERENCES [BMC].[PartType] ([id]),		-- Foreign key to the PartType table.
 	CONSTRAINT [FK_BrickPart_BrickCategory_brickCategoryId] FOREIGN KEY ([brickCategoryId]) REFERENCES [BMC].[BrickCategory] ([id]),		-- Foreign key to the BrickCategory table.
-	CONSTRAINT [UC_BrickPart_ldrawPartId] UNIQUE ( [ldrawPartId]) 		-- Uniqueness enforced on the BrickPart table's ldrawPartId field.
+	CONSTRAINT [UC_BrickPart_rebrickablePartNum] UNIQUE ( [rebrickablePartNum]) 		-- Uniqueness enforced on the BrickPart table's rebrickablePartNum field.
 )
 GO
 
@@ -695,6 +797,8 @@ CREATE TABLE [BMC].[BrickPartConnector]
 	[orientationX] REAL NULL,		-- X component of connector direction unit vector
 	[orientationY] REAL NULL,		-- Y component of connector direction unit vector
 	[orientationZ] REAL NULL,		-- Z component of connector direction unit vector
+	[connectorGroupId] INT NULL,		-- Groups connectors that act together (e.g. all studs on top of a 2x4 share a group ID)
+	[isAutoExtracted] BIT NOT NULL DEFAULT 0,		-- Whether this connector position was auto-extracted from LDraw geometry analysis
 	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -752,6 +856,42 @@ GO
 
 -- Index on the BrickPartColour table's deleted field.
 CREATE INDEX [I_BrickPartColour_deleted] ON [BMC].[BrickPartColour] ([deleted])
+GO
+
+
+-- Models how LDraw parts reference sub-files hierarchically. Crucial for instanced rendering and understanding part decomposition.
+CREATE TABLE [BMC].[PartSubFileReference]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[parentBrickPartId] INT NOT NULL,		-- The part containing the sub-file reference
+	[referencedBrickPartId] INT NULL,		-- The referenced sub-file as a BrickPart (null if sub-file is not cataloged)
+	[referencedFileName] NVARCHAR(250) NOT NULL,		-- Original LDraw sub-file filename (e.g. 'stud.dat', 's/3001s01.dat')
+	[transformMatrix] NVARCHAR(500) NOT NULL,		-- 4x3 transform matrix as space-delimited floats (x y z a b c d e f g h i)
+	[colorCode] INT NULL,		-- LDraw color code override (16=inherit parent, null=inherit parent)
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_PartSubFileReference_BrickPart_parentBrickPartId] FOREIGN KEY ([parentBrickPartId]) REFERENCES [BMC].[BrickPart] ([id]),		-- Foreign key to the BrickPart table.
+	CONSTRAINT [FK_PartSubFileReference_BrickPart_referencedBrickPartId] FOREIGN KEY ([referencedBrickPartId]) REFERENCES [BMC].[BrickPart] ([id])		-- Foreign key to the BrickPart table.
+)
+GO
+
+-- Index on the PartSubFileReference table's parentBrickPartId field.
+CREATE INDEX [I_PartSubFileReference_parentBrickPartId] ON [BMC].[PartSubFileReference] ([parentBrickPartId])
+GO
+
+-- Index on the PartSubFileReference table's referencedBrickPartId field.
+CREATE INDEX [I_PartSubFileReference_referencedBrickPartId] ON [BMC].[PartSubFileReference] ([referencedBrickPartId])
+GO
+
+-- Index on the PartSubFileReference table's active field.
+CREATE INDEX [I_PartSubFileReference_active] ON [BMC].[PartSubFileReference] ([active])
+GO
+
+-- Index on the PartSubFileReference table's deleted field.
+CREATE INDEX [I_PartSubFileReference_deleted] ON [BMC].[PartSubFileReference] ([deleted])
 GO
 
 
@@ -923,15 +1063,22 @@ CREATE TABLE [BMC].[BrickConnection]
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[projectId] INT NOT NULL,		-- The project this connection belongs to
-	[sourcePlacedBrickId] BIGINT NULL,		-- FK to the source PlacedBrick
-	[sourceConnectorId] BIGINT NULL,		-- FK to the BrickPartConnector on the source brick
-	[targetPlacedBrickId] BIGINT NULL,		-- FK to the target PlacedBrick
-	[targetConnectorId] BIGINT NULL,		-- FK to the BrickPartConnector on the target brick
+	[sourcePlacedBrickId] INT NOT NULL,		-- FK to the source PlacedBrick
+	[sourceConnectorId] INT NOT NULL,		-- FK to the BrickPartConnector on the source brick
+	[targetPlacedBrickId] INT NOT NULL,		-- FK to the target PlacedBrick
+	[targetConnectorId] INT NOT NULL,		-- FK to the BrickPartConnector on the target brick
+	[connectionStrength] NVARCHAR(50) NULL,		-- Connection strength: Snapped, Friction, Free (null = unknown)
+	[isLocked] BIT NOT NULL DEFAULT 0,		-- Whether the user has locked this connection from being broken in the editor
+	[angleDegrees] REAL NULL,		-- Current angle for rotational connections (null = default/fixed)
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
-	CONSTRAINT [FK_BrickConnection_Project_projectId] FOREIGN KEY ([projectId]) REFERENCES [BMC].[Project] ([id])		-- Foreign key to the Project table.
+	CONSTRAINT [FK_BrickConnection_Project_projectId] FOREIGN KEY ([projectId]) REFERENCES [BMC].[Project] ([id]),		-- Foreign key to the Project table.
+	CONSTRAINT [FK_BrickConnection_PlacedBrick_sourcePlacedBrickId] FOREIGN KEY ([sourcePlacedBrickId]) REFERENCES [BMC].[PlacedBrick] ([id]),		-- Foreign key to the PlacedBrick table.
+	CONSTRAINT [FK_BrickConnection_BrickPartConnector_sourceConnectorId] FOREIGN KEY ([sourceConnectorId]) REFERENCES [BMC].[BrickPartConnector] ([id]),		-- Foreign key to the BrickPartConnector table.
+	CONSTRAINT [FK_BrickConnection_PlacedBrick_targetPlacedBrickId] FOREIGN KEY ([targetPlacedBrickId]) REFERENCES [BMC].[PlacedBrick] ([id]),		-- Foreign key to the PlacedBrick table.
+	CONSTRAINT [FK_BrickConnection_BrickPartConnector_targetConnectorId] FOREIGN KEY ([targetConnectorId]) REFERENCES [BMC].[BrickPartConnector] ([id])		-- Foreign key to the BrickPartConnector table.
 )
 GO
 
@@ -941,6 +1088,22 @@ GO
 
 -- Index on the BrickConnection table's tenantGuid,projectId fields.
 CREATE INDEX [I_BrickConnection_tenantGuid_projectId] ON [BMC].[BrickConnection] ([tenantGuid], [projectId])
+GO
+
+-- Index on the BrickConnection table's tenantGuid,sourcePlacedBrickId fields.
+CREATE INDEX [I_BrickConnection_tenantGuid_sourcePlacedBrickId] ON [BMC].[BrickConnection] ([tenantGuid], [sourcePlacedBrickId])
+GO
+
+-- Index on the BrickConnection table's tenantGuid,sourceConnectorId fields.
+CREATE INDEX [I_BrickConnection_tenantGuid_sourceConnectorId] ON [BMC].[BrickConnection] ([tenantGuid], [sourceConnectorId])
+GO
+
+-- Index on the BrickConnection table's tenantGuid,targetPlacedBrickId fields.
+CREATE INDEX [I_BrickConnection_tenantGuid_targetPlacedBrickId] ON [BMC].[BrickConnection] ([tenantGuid], [targetPlacedBrickId])
+GO
+
+-- Index on the BrickConnection table's tenantGuid,targetConnectorId fields.
+CREATE INDEX [I_BrickConnection_tenantGuid_targetConnectorId] ON [BMC].[BrickConnection] ([tenantGuid], [targetConnectorId])
 GO
 
 -- Index on the BrickConnection table's tenantGuid,active fields.
@@ -1233,6 +1396,217 @@ CREATE INDEX [I_ProjectReferenceImage_tenantGuid_deleted] ON [BMC].[ProjectRefer
 GO
 
 
+-- Persistent representation of an imported or authored multi-part model document (MPD/LDR). Top-level container for complex models with build steps.
+CREATE TABLE [BMC].[ModelDocument]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[projectId] INT NULL,		-- Optional link to a BMC project if authored in BMC (null for imported documents)
+	[name] NVARCHAR(250) NOT NULL,		-- Document name or title
+	[description] NVARCHAR(MAX) NULL,		-- Description of the model document
+	[sourceFormat] NVARCHAR(50) NOT NULL,		-- Source file format: MPD, LDR, StudioIO, BMCNative
+	[sourceFileName] NVARCHAR(250) NULL,		-- Original filename if imported (e.g. 'crane_42131.mpd')
+	[sourceFileFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
+	[sourceFileSize] BIGINT NULL,		-- Part of the binary data field setup
+	[sourceFileData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
+	[sourceFileMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[author] NVARCHAR(100) NULL,		-- Model author from the file header
+	[totalPartCount] INT NULL,		-- Cached total part count across all sub-files
+	[totalStepCount] INT NULL,		-- Cached total build step count across all sub-files
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ModelDocument_Project_projectId] FOREIGN KEY ([projectId]) REFERENCES [BMC].[Project] ([id])		-- Foreign key to the Project table.
+)
+GO
+
+-- Index on the ModelDocument table's tenantGuid field.
+CREATE INDEX [I_ModelDocument_tenantGuid] ON [BMC].[ModelDocument] ([tenantGuid])
+GO
+
+-- Index on the ModelDocument table's tenantGuid,projectId fields.
+CREATE INDEX [I_ModelDocument_tenantGuid_projectId] ON [BMC].[ModelDocument] ([tenantGuid], [projectId])
+GO
+
+-- Index on the ModelDocument table's tenantGuid,name fields.
+CREATE INDEX [I_ModelDocument_tenantGuid_name] ON [BMC].[ModelDocument] ([tenantGuid], [name])
+GO
+
+-- Index on the ModelDocument table's tenantGuid,active fields.
+CREATE INDEX [I_ModelDocument_tenantGuid_active] ON [BMC].[ModelDocument] ([tenantGuid], [active])
+GO
+
+-- Index on the ModelDocument table's tenantGuid,deleted fields.
+CREATE INDEX [I_ModelDocument_tenantGuid_deleted] ON [BMC].[ModelDocument] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the ModelDocument table.
+CREATE TABLE [BMC].[ModelDocumentChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[modelDocumentId] INT NOT NULL,		-- Link to the ModelDocument table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ModelDocumentChangeHistory_ModelDocument_modelDocumentId] FOREIGN KEY ([modelDocumentId]) REFERENCES [BMC].[ModelDocument] ([id])		-- Foreign key to the ModelDocument table.
+)
+GO
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ModelDocumentChangeHistory_tenantGuid] ON [BMC].[ModelDocumentChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ModelDocumentChangeHistory_tenantGuid_versionNumber] ON [BMC].[ModelDocumentChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ModelDocumentChangeHistory_tenantGuid_timeStamp] ON [BMC].[ModelDocumentChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ModelDocumentChangeHistory_tenantGuid_userId] ON [BMC].[ModelDocumentChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ModelDocumentChangeHistory table's tenantGuid,modelDocumentId fields.
+CREATE INDEX [I_ModelDocumentChangeHistory_tenantGuid_modelDocumentId] ON [BMC].[ModelDocumentChangeHistory] ([tenantGuid], [modelDocumentId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Individual sub-files within a model document (MPD). Each represents a sub-assembly or the main model. Maps to LDraw '0 FILE' blocks.
+CREATE TABLE [BMC].[ModelSubFile]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[modelDocumentId] INT NOT NULL,		-- The document this sub-file belongs to
+	[fileName] NVARCHAR(250) NOT NULL,		-- Sub-file name as declared in '0 FILE' (e.g. 'main.ldr', 'wheel_assembly.ldr')
+	[isMainModel] BIT NOT NULL DEFAULT 0,		-- Whether this is the main (first) model in the MPD — only rendered sub-files are those referenced by this
+	[parentModelSubFileId] INT NULL,		-- Optional parent sub-file for nested sub-assemblies (null = top-level)
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ModelSubFile_ModelDocument_modelDocumentId] FOREIGN KEY ([modelDocumentId]) REFERENCES [BMC].[ModelDocument] ([id]),		-- Foreign key to the ModelDocument table.
+	CONSTRAINT [FK_ModelSubFile_ModelSubFile_parentModelSubFileId] FOREIGN KEY ([parentModelSubFileId]) REFERENCES [BMC].[ModelSubFile] ([id]),		-- Foreign key to the ModelSubFile table.
+	CONSTRAINT [UC_ModelSubFile_tenantGuid_modelDocumentId_fileName] UNIQUE ( [tenantGuid], [modelDocumentId], [fileName]) 		-- Uniqueness enforced on the ModelSubFile table's tenantGuid and modelDocumentId and fileName fields.
+)
+GO
+
+-- Index on the ModelSubFile table's tenantGuid field.
+CREATE INDEX [I_ModelSubFile_tenantGuid] ON [BMC].[ModelSubFile] ([tenantGuid])
+GO
+
+-- Index on the ModelSubFile table's tenantGuid,modelDocumentId fields.
+CREATE INDEX [I_ModelSubFile_tenantGuid_modelDocumentId] ON [BMC].[ModelSubFile] ([tenantGuid], [modelDocumentId])
+GO
+
+-- Index on the ModelSubFile table's tenantGuid,parentModelSubFileId fields.
+CREATE INDEX [I_ModelSubFile_tenantGuid_parentModelSubFileId] ON [BMC].[ModelSubFile] ([tenantGuid], [parentModelSubFileId])
+GO
+
+-- Index on the ModelSubFile table's tenantGuid,active fields.
+CREATE INDEX [I_ModelSubFile_tenantGuid_active] ON [BMC].[ModelSubFile] ([tenantGuid], [active])
+GO
+
+-- Index on the ModelSubFile table's tenantGuid,deleted fields.
+CREATE INDEX [I_ModelSubFile_tenantGuid_deleted] ON [BMC].[ModelSubFile] ([tenantGuid], [deleted])
+GO
+
+
+-- Individual build steps within a model sub-file. Modeled from LDraw '0 STEP' and '0 ROTSTEP' meta-commands.
+CREATE TABLE [BMC].[ModelBuildStep]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[modelSubFileId] INT NOT NULL,		-- The sub-file this step belongs to
+	[stepNumber] INT NOT NULL,		-- Sequential step number within this sub-file
+	[rotationType] NVARCHAR(10) NULL,		-- ROTSTEP rotation type: REL (relative), ABS (absolute), ADD (additive). Null = no rotation.
+	[rotationX] REAL NULL,		-- ROTSTEP X rotation angle in degrees
+	[rotationY] REAL NULL,		-- ROTSTEP Y rotation angle in degrees
+	[rotationZ] REAL NULL,		-- ROTSTEP Z rotation angle in degrees
+	[description] NVARCHAR(MAX) NULL,		-- Optional step description or annotation
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ModelBuildStep_ModelSubFile_modelSubFileId] FOREIGN KEY ([modelSubFileId]) REFERENCES [BMC].[ModelSubFile] ([id])		-- Foreign key to the ModelSubFile table.
+)
+GO
+
+-- Index on the ModelBuildStep table's tenantGuid field.
+CREATE INDEX [I_ModelBuildStep_tenantGuid] ON [BMC].[ModelBuildStep] ([tenantGuid])
+GO
+
+-- Index on the ModelBuildStep table's tenantGuid,modelSubFileId fields.
+CREATE INDEX [I_ModelBuildStep_tenantGuid_modelSubFileId] ON [BMC].[ModelBuildStep] ([tenantGuid], [modelSubFileId])
+GO
+
+-- Index on the ModelBuildStep table's tenantGuid,active fields.
+CREATE INDEX [I_ModelBuildStep_tenantGuid_active] ON [BMC].[ModelBuildStep] ([tenantGuid], [active])
+GO
+
+-- Index on the ModelBuildStep table's tenantGuid,deleted fields.
+CREATE INDEX [I_ModelBuildStep_tenantGuid_deleted] ON [BMC].[ModelBuildStep] ([tenantGuid], [deleted])
+GO
+
+
+-- Parts placed during a specific build step. Represents LDraw type 1 sub-file reference lines between STEP commands.
+CREATE TABLE [BMC].[ModelStepPart]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[modelBuildStepId] INT NOT NULL,		-- The build step this part placement belongs to
+	[brickPartId] INT NULL,		-- FK to BrickPart if this part is in the catalog (null if not yet cataloged)
+	[brickColourId] INT NULL,		-- FK to BrickColour if the color is mapped (null if unmapped)
+	[partFileName] NVARCHAR(250) NOT NULL,		-- Original LDraw part filename from the type 1 line (e.g. '3001.dat')
+	[colorCode] INT NOT NULL,		-- LDraw color code used in the file
+	[positionX] REAL NULL,		-- X position from the LDraw type 1 reference line (LDU)
+	[positionY] REAL NULL,		-- Y position from the LDraw type 1 reference line (LDU)
+	[positionZ] REAL NULL,		-- Z position from the LDraw type 1 reference line (LDU)
+	[transformMatrix] NVARCHAR(500) NOT NULL,		-- 3x3 rotation matrix as space-delimited floats (a b c d e f g h i)
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ModelStepPart_ModelBuildStep_modelBuildStepId] FOREIGN KEY ([modelBuildStepId]) REFERENCES [BMC].[ModelBuildStep] ([id]),		-- Foreign key to the ModelBuildStep table.
+	CONSTRAINT [FK_ModelStepPart_BrickPart_brickPartId] FOREIGN KEY ([brickPartId]) REFERENCES [BMC].[BrickPart] ([id]),		-- Foreign key to the BrickPart table.
+	CONSTRAINT [FK_ModelStepPart_BrickColour_brickColourId] FOREIGN KEY ([brickColourId]) REFERENCES [BMC].[BrickColour] ([id])		-- Foreign key to the BrickColour table.
+)
+GO
+
+-- Index on the ModelStepPart table's tenantGuid field.
+CREATE INDEX [I_ModelStepPart_tenantGuid] ON [BMC].[ModelStepPart] ([tenantGuid])
+GO
+
+-- Index on the ModelStepPart table's tenantGuid,modelBuildStepId fields.
+CREATE INDEX [I_ModelStepPart_tenantGuid_modelBuildStepId] ON [BMC].[ModelStepPart] ([tenantGuid], [modelBuildStepId])
+GO
+
+-- Index on the ModelStepPart table's tenantGuid,brickPartId fields.
+CREATE INDEX [I_ModelStepPart_tenantGuid_brickPartId] ON [BMC].[ModelStepPart] ([tenantGuid], [brickPartId])
+GO
+
+-- Index on the ModelStepPart table's tenantGuid,brickColourId fields.
+CREATE INDEX [I_ModelStepPart_tenantGuid_brickColourId] ON [BMC].[ModelStepPart] ([tenantGuid], [brickColourId])
+GO
+
+-- Index on the ModelStepPart table's tenantGuid,active fields.
+CREATE INDEX [I_ModelStepPart_tenantGuid_active] ON [BMC].[ModelStepPart] ([tenantGuid], [active])
+GO
+
+-- Index on the ModelStepPart table's tenantGuid,deleted fields.
+CREATE INDEX [I_ModelStepPart_tenantGuid_deleted] ON [BMC].[ModelStepPart] ([tenantGuid], [deleted])
+GO
+
+
 -- Hierarchical tree of official LEGO themes (e.g. City → Police, Technic → Bionicle). Bulk-loaded from Rebrickable or similar sources.
 CREATE TABLE [BMC].[LegoTheme]
 (
@@ -1240,7 +1614,7 @@ CREATE TABLE [BMC].[LegoTheme]
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
 	[description] NVARCHAR(500) NOT NULL,
 	[legoThemeId] INT NULL,		-- Parent theme for hierarchical nesting (self-referencing FK, null = top-level)
-	[rebrickableThemeId] INT NULL,		-- Rebrickable theme ID for cross-referencing during bulk import
+	[rebrickableThemeId] INT NOT NULL,		-- Rebrickable theme ID — source of truth for theme identity
 	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -1279,6 +1653,8 @@ CREATE TABLE [BMC].[LegoSet]
 	[imageUrl] NVARCHAR(250) NULL,		-- URL to the set's official box art or primary image
 	[brickLinkUrl] NVARCHAR(250) NULL,		-- URL to the set's BrickLink catalogue page
 	[rebrickableUrl] NVARCHAR(250) NULL,		-- URL to the set's Rebrickable page
+	[rebrickableSetNum] NVARCHAR(100) NULL,		-- Explicit Rebrickable set number if it differs from setNumber
+	[lastModifiedDate] DATETIME2(7) NULL,		-- Last modification date for incremental sync with Rebrickable
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -1702,6 +2078,307 @@ GO
 
 -- Index on the UserCollectionSetImport table's tenantGuid,deleted fields.
 CREATE INDEX [I_UserCollectionSetImport_tenantGuid_deleted] ON [BMC].[UserCollectionSetImport] ([tenantGuid], [deleted])
+GO
+
+
+-- Stores each user's Rebrickable API token for bidirectional collection sync. One link per tenant.
+CREATE TABLE [BMC].[RebrickableUserLink]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[rebrickableUsername] NVARCHAR(100) NOT NULL,		-- User's Rebrickable username for display and reference
+	[encryptedApiToken] NVARCHAR(500) NOT NULL,		-- Encrypted Rebrickable user token — used for API calls on behalf of the user
+	[lastSyncDate] DATETIME2(7) NULL,		-- Date/time of last successful sync with Rebrickable
+	[syncEnabled] BIT NOT NULL DEFAULT 1,		-- Whether automatic sync is enabled for this user
+	[syncDirectionFlags] NVARCHAR(50) NOT NULL,		-- Sync direction: Both, ToRebrickable, FromRebrickable
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_RebrickableUserLink_tenantGuid] UNIQUE ( [tenantGuid]) 		-- Uniqueness enforced on the RebrickableUserLink table's tenantGuid field.
+)
+GO
+
+-- Index on the RebrickableUserLink table's tenantGuid field.
+CREATE INDEX [I_RebrickableUserLink_tenantGuid] ON [BMC].[RebrickableUserLink] ([tenantGuid])
+GO
+
+-- Index on the RebrickableUserLink table's tenantGuid,active fields.
+CREATE INDEX [I_RebrickableUserLink_tenantGuid_active] ON [BMC].[RebrickableUserLink] ([tenantGuid], [active])
+GO
+
+-- Index on the RebrickableUserLink table's tenantGuid,deleted fields.
+CREATE INDEX [I_RebrickableUserLink_tenantGuid_deleted] ON [BMC].[RebrickableUserLink] ([tenantGuid], [deleted])
+GO
+
+
+-- Named part lists, mirroring Rebrickable's partlists/ endpoint. Users can have multiple named lists for organizing parts.
+CREATE TABLE [BMC].[UserPartList]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[isBuildable] BIT NOT NULL DEFAULT 0,		-- Whether this list represents buildable parts (for build matching)
+	[rebrickableListId] INT NULL,		-- Rebrickable list ID for bidirectional sync (null = BMC-only list)
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_UserPartList_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the UserPartList table's tenantGuid and name fields.
+)
+GO
+
+-- Index on the UserPartList table's tenantGuid field.
+CREATE INDEX [I_UserPartList_tenantGuid] ON [BMC].[UserPartList] ([tenantGuid])
+GO
+
+-- Index on the UserPartList table's tenantGuid,name fields.
+CREATE INDEX [I_UserPartList_tenantGuid_name] ON [BMC].[UserPartList] ([tenantGuid], [name])
+GO
+
+-- Index on the UserPartList table's tenantGuid,active fields.
+CREATE INDEX [I_UserPartList_tenantGuid_active] ON [BMC].[UserPartList] ([tenantGuid], [active])
+GO
+
+-- Index on the UserPartList table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserPartList_tenantGuid_deleted] ON [BMC].[UserPartList] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the UserPartList table.
+CREATE TABLE [BMC].[UserPartListChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userPartListId] INT NOT NULL,		-- Link to the UserPartList table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_UserPartListChangeHistory_UserPartList_userPartListId] FOREIGN KEY ([userPartListId]) REFERENCES [BMC].[UserPartList] ([id])		-- Foreign key to the UserPartList table.
+)
+GO
+
+-- Index on the UserPartListChangeHistory table's tenantGuid field.
+CREATE INDEX [I_UserPartListChangeHistory_tenantGuid] ON [BMC].[UserPartListChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_UserPartListChangeHistory_tenantGuid_versionNumber] ON [BMC].[UserPartListChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_UserPartListChangeHistory_tenantGuid_timeStamp] ON [BMC].[UserPartListChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_UserPartListChangeHistory_tenantGuid_userId] ON [BMC].[UserPartListChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the UserPartListChangeHistory table's tenantGuid,userPartListId fields.
+CREATE INDEX [I_UserPartListChangeHistory_tenantGuid_userPartListId] ON [BMC].[UserPartListChangeHistory] ([tenantGuid], [userPartListId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Individual part+colour entries within a user's named part list. Mirrors Rebrickable's partlists/{id}/parts/ endpoint.
+CREATE TABLE [BMC].[UserPartListItem]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userPartListId] INT NOT NULL,		-- The part list this item belongs to
+	[brickPartId] INT NOT NULL,		-- The part definition
+	[brickColourId] INT NOT NULL,		-- The specific colour of this part
+	[quantity] INT NOT NULL,		-- Number of this part+colour in the list
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_UserPartListItem_UserPartList_userPartListId] FOREIGN KEY ([userPartListId]) REFERENCES [BMC].[UserPartList] ([id]),		-- Foreign key to the UserPartList table.
+	CONSTRAINT [FK_UserPartListItem_BrickPart_brickPartId] FOREIGN KEY ([brickPartId]) REFERENCES [BMC].[BrickPart] ([id]),		-- Foreign key to the BrickPart table.
+	CONSTRAINT [FK_UserPartListItem_BrickColour_brickColourId] FOREIGN KEY ([brickColourId]) REFERENCES [BMC].[BrickColour] ([id]),		-- Foreign key to the BrickColour table.
+	CONSTRAINT [UC_UserPartListItem_tenantGuid_userPartListId_brickPartId_brickColourId] UNIQUE ( [tenantGuid], [userPartListId], [brickPartId], [brickColourId]) 		-- Uniqueness enforced on the UserPartListItem table's tenantGuid and userPartListId and brickPartId and brickColourId fields.
+)
+GO
+
+-- Index on the UserPartListItem table's tenantGuid field.
+CREATE INDEX [I_UserPartListItem_tenantGuid] ON [BMC].[UserPartListItem] ([tenantGuid])
+GO
+
+-- Index on the UserPartListItem table's tenantGuid,userPartListId fields.
+CREATE INDEX [I_UserPartListItem_tenantGuid_userPartListId] ON [BMC].[UserPartListItem] ([tenantGuid], [userPartListId])
+GO
+
+-- Index on the UserPartListItem table's tenantGuid,brickPartId fields.
+CREATE INDEX [I_UserPartListItem_tenantGuid_brickPartId] ON [BMC].[UserPartListItem] ([tenantGuid], [brickPartId])
+GO
+
+-- Index on the UserPartListItem table's tenantGuid,brickColourId fields.
+CREATE INDEX [I_UserPartListItem_tenantGuid_brickColourId] ON [BMC].[UserPartListItem] ([tenantGuid], [brickColourId])
+GO
+
+-- Index on the UserPartListItem table's tenantGuid,active fields.
+CREATE INDEX [I_UserPartListItem_tenantGuid_active] ON [BMC].[UserPartListItem] ([tenantGuid], [active])
+GO
+
+-- Index on the UserPartListItem table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserPartListItem_tenantGuid_deleted] ON [BMC].[UserPartListItem] ([tenantGuid], [deleted])
+GO
+
+
+-- Named set lists, mirroring Rebrickable's setlists/ endpoint. Users can have multiple named lists for organizing sets.
+CREATE TABLE [BMC].[UserSetList]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[isBuildable] BIT NOT NULL DEFAULT 0,		-- Whether this list represents buildable sets (for build matching)
+	[rebrickableListId] INT NULL,		-- Rebrickable list ID for bidirectional sync (null = BMC-only list)
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_UserSetList_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the UserSetList table's tenantGuid and name fields.
+)
+GO
+
+-- Index on the UserSetList table's tenantGuid field.
+CREATE INDEX [I_UserSetList_tenantGuid] ON [BMC].[UserSetList] ([tenantGuid])
+GO
+
+-- Index on the UserSetList table's tenantGuid,name fields.
+CREATE INDEX [I_UserSetList_tenantGuid_name] ON [BMC].[UserSetList] ([tenantGuid], [name])
+GO
+
+-- Index on the UserSetList table's tenantGuid,active fields.
+CREATE INDEX [I_UserSetList_tenantGuid_active] ON [BMC].[UserSetList] ([tenantGuid], [active])
+GO
+
+-- Index on the UserSetList table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserSetList_tenantGuid_deleted] ON [BMC].[UserSetList] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the UserSetList table.
+CREATE TABLE [BMC].[UserSetListChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userSetListId] INT NOT NULL,		-- Link to the UserSetList table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_UserSetListChangeHistory_UserSetList_userSetListId] FOREIGN KEY ([userSetListId]) REFERENCES [BMC].[UserSetList] ([id])		-- Foreign key to the UserSetList table.
+)
+GO
+
+-- Index on the UserSetListChangeHistory table's tenantGuid field.
+CREATE INDEX [I_UserSetListChangeHistory_tenantGuid] ON [BMC].[UserSetListChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_UserSetListChangeHistory_tenantGuid_versionNumber] ON [BMC].[UserSetListChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_UserSetListChangeHistory_tenantGuid_timeStamp] ON [BMC].[UserSetListChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_UserSetListChangeHistory_tenantGuid_userId] ON [BMC].[UserSetListChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the UserSetListChangeHistory table's tenantGuid,userSetListId fields.
+CREATE INDEX [I_UserSetListChangeHistory_tenantGuid_userSetListId] ON [BMC].[UserSetListChangeHistory] ([tenantGuid], [userSetListId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Individual set entries within a user's named set list. Mirrors Rebrickable's setlists/{id}/sets/ endpoint.
+CREATE TABLE [BMC].[UserSetListItem]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userSetListId] INT NOT NULL,		-- The set list this item belongs to
+	[legoSetId] INT NOT NULL,		-- The set in this list
+	[quantity] INT NOT NULL DEFAULT 1,		-- Number of copies of this set in the list
+	[includeSpares] BIT NOT NULL DEFAULT 1,		-- Whether to include spare parts from this set in build matching
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_UserSetListItem_UserSetList_userSetListId] FOREIGN KEY ([userSetListId]) REFERENCES [BMC].[UserSetList] ([id]),		-- Foreign key to the UserSetList table.
+	CONSTRAINT [FK_UserSetListItem_LegoSet_legoSetId] FOREIGN KEY ([legoSetId]) REFERENCES [BMC].[LegoSet] ([id]),		-- Foreign key to the LegoSet table.
+	CONSTRAINT [UC_UserSetListItem_tenantGuid_userSetListId_legoSetId] UNIQUE ( [tenantGuid], [userSetListId], [legoSetId]) 		-- Uniqueness enforced on the UserSetListItem table's tenantGuid and userSetListId and legoSetId fields.
+)
+GO
+
+-- Index on the UserSetListItem table's tenantGuid field.
+CREATE INDEX [I_UserSetListItem_tenantGuid] ON [BMC].[UserSetListItem] ([tenantGuid])
+GO
+
+-- Index on the UserSetListItem table's tenantGuid,userSetListId fields.
+CREATE INDEX [I_UserSetListItem_tenantGuid_userSetListId] ON [BMC].[UserSetListItem] ([tenantGuid], [userSetListId])
+GO
+
+-- Index on the UserSetListItem table's tenantGuid,legoSetId fields.
+CREATE INDEX [I_UserSetListItem_tenantGuid_legoSetId] ON [BMC].[UserSetListItem] ([tenantGuid], [legoSetId])
+GO
+
+-- Index on the UserSetListItem table's tenantGuid,active fields.
+CREATE INDEX [I_UserSetListItem_tenantGuid_active] ON [BMC].[UserSetListItem] ([tenantGuid], [active])
+GO
+
+-- Index on the UserSetListItem table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserSetListItem_tenantGuid_deleted] ON [BMC].[UserSetListItem] ([tenantGuid], [deleted])
+GO
+
+
+-- Parts lost from sets, mirroring Rebrickable's lost_parts/ endpoint. Tracks which parts are missing from a user's collection.
+CREATE TABLE [BMC].[UserLostPart]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[brickPartId] INT NOT NULL,		-- The part that was lost
+	[brickColourId] INT NOT NULL,		-- The colour of the lost part
+	[legoSetId] INT NULL,		-- The set the part was lost from (null if unknown)
+	[lostQuantity] INT NOT NULL,		-- Number of this part+colour that were lost
+	[rebrickableInvPartId] INT NULL,		-- Rebrickable inventory_part ID for bidirectional sync (null = BMC-only entry)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_UserLostPart_BrickPart_brickPartId] FOREIGN KEY ([brickPartId]) REFERENCES [BMC].[BrickPart] ([id]),		-- Foreign key to the BrickPart table.
+	CONSTRAINT [FK_UserLostPart_BrickColour_brickColourId] FOREIGN KEY ([brickColourId]) REFERENCES [BMC].[BrickColour] ([id]),		-- Foreign key to the BrickColour table.
+	CONSTRAINT [FK_UserLostPart_LegoSet_legoSetId] FOREIGN KEY ([legoSetId]) REFERENCES [BMC].[LegoSet] ([id])		-- Foreign key to the LegoSet table.
+)
+GO
+
+-- Index on the UserLostPart table's tenantGuid field.
+CREATE INDEX [I_UserLostPart_tenantGuid] ON [BMC].[UserLostPart] ([tenantGuid])
+GO
+
+-- Index on the UserLostPart table's tenantGuid,brickPartId fields.
+CREATE INDEX [I_UserLostPart_tenantGuid_brickPartId] ON [BMC].[UserLostPart] ([tenantGuid], [brickPartId])
+GO
+
+-- Index on the UserLostPart table's tenantGuid,brickColourId fields.
+CREATE INDEX [I_UserLostPart_tenantGuid_brickColourId] ON [BMC].[UserLostPart] ([tenantGuid], [brickColourId])
+GO
+
+-- Index on the UserLostPart table's tenantGuid,legoSetId fields.
+CREATE INDEX [I_UserLostPart_tenantGuid_legoSetId] ON [BMC].[UserLostPart] ([tenantGuid], [legoSetId])
+GO
+
+-- Index on the UserLostPart table's tenantGuid,active fields.
+CREATE INDEX [I_UserLostPart_tenantGuid_active] ON [BMC].[UserLostPart] ([tenantGuid], [active])
+GO
+
+-- Index on the UserLostPart table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserLostPart_tenantGuid_deleted] ON [BMC].[UserLostPart] ([tenantGuid], [deleted])
 GO
 
 

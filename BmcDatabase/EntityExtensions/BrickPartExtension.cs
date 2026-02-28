@@ -284,7 +284,13 @@ namespace Foundation.BMC.Database
 			[Required]
 			public String name { get; set; }
 			[Required]
+			public String rebrickablePartNum { get; set; }
+			public String rebrickablePartUrl { get; set; }
+			public String rebrickableImgUrl { get; set; }
 			public String ldrawPartId { get; set; }
+			public String bricklinkId { get; set; }
+			public String brickowlId { get; set; }
+			public String legoDesignId { get; set; }
 			public String ldrawTitle { get; set; }
 			public String ldrawCategory { get; set; }
 			[Required]
@@ -293,14 +299,35 @@ namespace Foundation.BMC.Database
 			public String author { get; set; }
 			[Required]
 			public Int32 brickCategoryId { get; set; }
-			public String rebrickablePartNum { get; set; }
 			public Single? widthLdu { get; set; }
 			public Single? heightLdu { get; set; }
 			public Single? depthLdu { get; set; }
 			public Single? massGrams { get; set; }
-			public String geometryFilePath { get; set; }
+			public Single? momentOfInertiaX { get; set; }
+			public Single? momentOfInertiaY { get; set; }
+			public Single? momentOfInertiaZ { get; set; }
+			public Single? frictionCoefficient { get; set; }
+			public String materialType { get; set; }
+			public Single? centerOfMassX { get; set; }
+			public Single? centerOfMassY { get; set; }
+			public Single? centerOfMassZ { get; set; }
+			public String geometryFileName { get; set; }
+			public Int64? geometrySize { get; set; }
+			public Byte[] geometryData { get; set; }
+			public String geometryMimeType { get; set; }
+			public String geometryFileFormat { get; set; }
+			public String geometryOriginalFileName { get; set; }
+			public Single? boundingBoxMinX { get; set; }
+			public Single? boundingBoxMinY { get; set; }
+			public Single? boundingBoxMinZ { get; set; }
+			public Single? boundingBoxMaxX { get; set; }
+			public Single? boundingBoxMaxY { get; set; }
+			public Single? boundingBoxMaxZ { get; set; }
+			public Int32? subFileCount { get; set; }
+			public Int32? polygonCount { get; set; }
 			public Int32? toothCount { get; set; }
 			public Single? gearRatio { get; set; }
+			public DateTime? lastModifiedDate { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -334,21 +361,48 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				name = this.name,
+				rebrickablePartNum = this.rebrickablePartNum,
+				rebrickablePartUrl = this.rebrickablePartUrl,
+				rebrickableImgUrl = this.rebrickableImgUrl,
 				ldrawPartId = this.ldrawPartId,
+				bricklinkId = this.bricklinkId,
+				brickowlId = this.brickowlId,
+				legoDesignId = this.legoDesignId,
 				ldrawTitle = this.ldrawTitle,
 				ldrawCategory = this.ldrawCategory,
 				partTypeId = this.partTypeId,
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
-				rebrickablePartNum = this.rebrickablePartNum,
 				widthLdu = this.widthLdu,
 				heightLdu = this.heightLdu,
 				depthLdu = this.depthLdu,
 				massGrams = this.massGrams,
-				geometryFilePath = this.geometryFilePath,
+				momentOfInertiaX = this.momentOfInertiaX,
+				momentOfInertiaY = this.momentOfInertiaY,
+				momentOfInertiaZ = this.momentOfInertiaZ,
+				frictionCoefficient = this.frictionCoefficient,
+				materialType = this.materialType,
+				centerOfMassX = this.centerOfMassX,
+				centerOfMassY = this.centerOfMassY,
+				centerOfMassZ = this.centerOfMassZ,
+				geometryFileName = this.geometryFileName,
+				geometrySize = this.geometrySize,
+				geometryData = this.geometryData,
+				geometryMimeType = this.geometryMimeType,
+				geometryFileFormat = this.geometryFileFormat,
+				geometryOriginalFileName = this.geometryOriginalFileName,
+				boundingBoxMinX = this.boundingBoxMinX,
+				boundingBoxMinY = this.boundingBoxMinY,
+				boundingBoxMinZ = this.boundingBoxMinZ,
+				boundingBoxMaxX = this.boundingBoxMaxX,
+				boundingBoxMaxY = this.boundingBoxMaxY,
+				boundingBoxMaxZ = this.boundingBoxMaxZ,
+				subFileCount = this.subFileCount,
+				polygonCount = this.polygonCount,
 				toothCount = this.toothCount,
 				gearRatio = this.gearRatio,
+				lastModifiedDate = this.lastModifiedDate,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -393,21 +447,48 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				name = this.name,
+				rebrickablePartNum = this.rebrickablePartNum,
+				rebrickablePartUrl = this.rebrickablePartUrl,
+				rebrickableImgUrl = this.rebrickableImgUrl,
 				ldrawPartId = this.ldrawPartId,
+				bricklinkId = this.bricklinkId,
+				brickowlId = this.brickowlId,
+				legoDesignId = this.legoDesignId,
 				ldrawTitle = this.ldrawTitle,
 				ldrawCategory = this.ldrawCategory,
 				partTypeId = this.partTypeId,
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
-				rebrickablePartNum = this.rebrickablePartNum,
 				widthLdu = this.widthLdu,
 				heightLdu = this.heightLdu,
 				depthLdu = this.depthLdu,
 				massGrams = this.massGrams,
-				geometryFilePath = this.geometryFilePath,
+				momentOfInertiaX = this.momentOfInertiaX,
+				momentOfInertiaY = this.momentOfInertiaY,
+				momentOfInertiaZ = this.momentOfInertiaZ,
+				frictionCoefficient = this.frictionCoefficient,
+				materialType = this.materialType,
+				centerOfMassX = this.centerOfMassX,
+				centerOfMassY = this.centerOfMassY,
+				centerOfMassZ = this.centerOfMassZ,
+				geometryFileName = this.geometryFileName,
+				geometrySize = this.geometrySize,
+				geometryData = this.geometryData,
+				geometryMimeType = this.geometryMimeType,
+				geometryFileFormat = this.geometryFileFormat,
+				geometryOriginalFileName = this.geometryOriginalFileName,
+				boundingBoxMinX = this.boundingBoxMinX,
+				boundingBoxMinY = this.boundingBoxMinY,
+				boundingBoxMinZ = this.boundingBoxMinZ,
+				boundingBoxMaxX = this.boundingBoxMaxX,
+				boundingBoxMaxY = this.boundingBoxMaxY,
+				boundingBoxMaxZ = this.boundingBoxMaxZ,
+				subFileCount = this.subFileCount,
+				polygonCount = this.polygonCount,
 				toothCount = this.toothCount,
 				gearRatio = this.gearRatio,
+				lastModifiedDate = this.lastModifiedDate,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -454,21 +535,48 @@ namespace Foundation.BMC.Database
 			{
 				id = dto.id,
 				name = dto.name,
+				rebrickablePartNum = dto.rebrickablePartNum,
+				rebrickablePartUrl = dto.rebrickablePartUrl,
+				rebrickableImgUrl = dto.rebrickableImgUrl,
 				ldrawPartId = dto.ldrawPartId,
+				bricklinkId = dto.bricklinkId,
+				brickowlId = dto.brickowlId,
+				legoDesignId = dto.legoDesignId,
 				ldrawTitle = dto.ldrawTitle,
 				ldrawCategory = dto.ldrawCategory,
 				partTypeId = dto.partTypeId,
 				keywords = dto.keywords,
 				author = dto.author,
 				brickCategoryId = dto.brickCategoryId,
-				rebrickablePartNum = dto.rebrickablePartNum,
 				widthLdu = dto.widthLdu,
 				heightLdu = dto.heightLdu,
 				depthLdu = dto.depthLdu,
 				massGrams = dto.massGrams,
-				geometryFilePath = dto.geometryFilePath,
+				momentOfInertiaX = dto.momentOfInertiaX,
+				momentOfInertiaY = dto.momentOfInertiaY,
+				momentOfInertiaZ = dto.momentOfInertiaZ,
+				frictionCoefficient = dto.frictionCoefficient,
+				materialType = dto.materialType,
+				centerOfMassX = dto.centerOfMassX,
+				centerOfMassY = dto.centerOfMassY,
+				centerOfMassZ = dto.centerOfMassZ,
+				geometryFileName = dto.geometryFileName,
+				geometrySize = dto.geometrySize,
+				geometryData = dto.geometryData,
+				geometryMimeType = dto.geometryMimeType,
+				geometryFileFormat = dto.geometryFileFormat,
+				geometryOriginalFileName = dto.geometryOriginalFileName,
+				boundingBoxMinX = dto.boundingBoxMinX,
+				boundingBoxMinY = dto.boundingBoxMinY,
+				boundingBoxMinZ = dto.boundingBoxMinZ,
+				boundingBoxMaxX = dto.boundingBoxMaxX,
+				boundingBoxMaxY = dto.boundingBoxMaxY,
+				boundingBoxMaxZ = dto.boundingBoxMaxZ,
+				subFileCount = dto.subFileCount,
+				polygonCount = dto.polygonCount,
 				toothCount = dto.toothCount,
 				gearRatio = dto.gearRatio,
+				lastModifiedDate = dto.lastModifiedDate,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -490,21 +598,48 @@ namespace Foundation.BMC.Database
 			}
 
 			this.name = dto.name;
+			this.rebrickablePartNum = dto.rebrickablePartNum;
+			this.rebrickablePartUrl = dto.rebrickablePartUrl;
+			this.rebrickableImgUrl = dto.rebrickableImgUrl;
 			this.ldrawPartId = dto.ldrawPartId;
+			this.bricklinkId = dto.bricklinkId;
+			this.brickowlId = dto.brickowlId;
+			this.legoDesignId = dto.legoDesignId;
 			this.ldrawTitle = dto.ldrawTitle;
 			this.ldrawCategory = dto.ldrawCategory;
 			this.partTypeId = dto.partTypeId;
 			this.keywords = dto.keywords;
 			this.author = dto.author;
 			this.brickCategoryId = dto.brickCategoryId;
-			this.rebrickablePartNum = dto.rebrickablePartNum;
 			this.widthLdu = dto.widthLdu;
 			this.heightLdu = dto.heightLdu;
 			this.depthLdu = dto.depthLdu;
 			this.massGrams = dto.massGrams;
-			this.geometryFilePath = dto.geometryFilePath;
+			this.momentOfInertiaX = dto.momentOfInertiaX;
+			this.momentOfInertiaY = dto.momentOfInertiaY;
+			this.momentOfInertiaZ = dto.momentOfInertiaZ;
+			this.frictionCoefficient = dto.frictionCoefficient;
+			this.materialType = dto.materialType;
+			this.centerOfMassX = dto.centerOfMassX;
+			this.centerOfMassY = dto.centerOfMassY;
+			this.centerOfMassZ = dto.centerOfMassZ;
+			this.geometryFileName = dto.geometryFileName;
+			this.geometrySize = dto.geometrySize;
+			this.geometryData = dto.geometryData;
+			this.geometryMimeType = dto.geometryMimeType;
+			this.geometryFileFormat = dto.geometryFileFormat;
+			this.geometryOriginalFileName = dto.geometryOriginalFileName;
+			this.boundingBoxMinX = dto.boundingBoxMinX;
+			this.boundingBoxMinY = dto.boundingBoxMinY;
+			this.boundingBoxMinZ = dto.boundingBoxMinZ;
+			this.boundingBoxMaxX = dto.boundingBoxMaxX;
+			this.boundingBoxMaxY = dto.boundingBoxMaxY;
+			this.boundingBoxMaxZ = dto.boundingBoxMaxZ;
+			this.subFileCount = dto.subFileCount;
+			this.polygonCount = dto.polygonCount;
 			this.toothCount = dto.toothCount;
 			this.gearRatio = dto.gearRatio;
+			this.lastModifiedDate = dto.lastModifiedDate;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -531,21 +666,48 @@ namespace Foundation.BMC.Database
 			return new BrickPart{
 				id = this.id,
 				name = this.name,
+				rebrickablePartNum = this.rebrickablePartNum,
+				rebrickablePartUrl = this.rebrickablePartUrl,
+				rebrickableImgUrl = this.rebrickableImgUrl,
 				ldrawPartId = this.ldrawPartId,
+				bricklinkId = this.bricklinkId,
+				brickowlId = this.brickowlId,
+				legoDesignId = this.legoDesignId,
 				ldrawTitle = this.ldrawTitle,
 				ldrawCategory = this.ldrawCategory,
 				partTypeId = this.partTypeId,
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
-				rebrickablePartNum = this.rebrickablePartNum,
 				widthLdu = this.widthLdu,
 				heightLdu = this.heightLdu,
 				depthLdu = this.depthLdu,
 				massGrams = this.massGrams,
-				geometryFilePath = this.geometryFilePath,
+				momentOfInertiaX = this.momentOfInertiaX,
+				momentOfInertiaY = this.momentOfInertiaY,
+				momentOfInertiaZ = this.momentOfInertiaZ,
+				frictionCoefficient = this.frictionCoefficient,
+				materialType = this.materialType,
+				centerOfMassX = this.centerOfMassX,
+				centerOfMassY = this.centerOfMassY,
+				centerOfMassZ = this.centerOfMassZ,
+				geometryFileName = this.geometryFileName,
+				geometrySize = this.geometrySize,
+				geometryData = this.geometryData,
+				geometryMimeType = this.geometryMimeType,
+				geometryFileFormat = this.geometryFileFormat,
+				geometryOriginalFileName = this.geometryOriginalFileName,
+				boundingBoxMinX = this.boundingBoxMinX,
+				boundingBoxMinY = this.boundingBoxMinY,
+				boundingBoxMinZ = this.boundingBoxMinZ,
+				boundingBoxMaxX = this.boundingBoxMaxX,
+				boundingBoxMaxY = this.boundingBoxMaxY,
+				boundingBoxMaxZ = this.boundingBoxMaxZ,
+				subFileCount = this.subFileCount,
+				polygonCount = this.polygonCount,
 				toothCount = this.toothCount,
 				gearRatio = this.gearRatio,
+				lastModifiedDate = this.lastModifiedDate,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -604,21 +766,48 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickPart.id,
 				name = brickPart.name,
+				rebrickablePartNum = brickPart.rebrickablePartNum,
+				rebrickablePartUrl = brickPart.rebrickablePartUrl,
+				rebrickableImgUrl = brickPart.rebrickableImgUrl,
 				ldrawPartId = brickPart.ldrawPartId,
+				bricklinkId = brickPart.bricklinkId,
+				brickowlId = brickPart.brickowlId,
+				legoDesignId = brickPart.legoDesignId,
 				ldrawTitle = brickPart.ldrawTitle,
 				ldrawCategory = brickPart.ldrawCategory,
 				partTypeId = brickPart.partTypeId,
 				keywords = brickPart.keywords,
 				author = brickPart.author,
 				brickCategoryId = brickPart.brickCategoryId,
-				rebrickablePartNum = brickPart.rebrickablePartNum,
 				widthLdu = brickPart.widthLdu,
 				heightLdu = brickPart.heightLdu,
 				depthLdu = brickPart.depthLdu,
 				massGrams = brickPart.massGrams,
-				geometryFilePath = brickPart.geometryFilePath,
+				momentOfInertiaX = brickPart.momentOfInertiaX,
+				momentOfInertiaY = brickPart.momentOfInertiaY,
+				momentOfInertiaZ = brickPart.momentOfInertiaZ,
+				frictionCoefficient = brickPart.frictionCoefficient,
+				materialType = brickPart.materialType,
+				centerOfMassX = brickPart.centerOfMassX,
+				centerOfMassY = brickPart.centerOfMassY,
+				centerOfMassZ = brickPart.centerOfMassZ,
+				geometryFileName = brickPart.geometryFileName,
+				geometrySize = brickPart.geometrySize,
+				geometryData = brickPart.geometryData,
+				geometryMimeType = brickPart.geometryMimeType,
+				geometryFileFormat = brickPart.geometryFileFormat,
+				geometryOriginalFileName = brickPart.geometryOriginalFileName,
+				boundingBoxMinX = brickPart.boundingBoxMinX,
+				boundingBoxMinY = brickPart.boundingBoxMinY,
+				boundingBoxMinZ = brickPart.boundingBoxMinZ,
+				boundingBoxMaxX = brickPart.boundingBoxMaxX,
+				boundingBoxMaxY = brickPart.boundingBoxMaxY,
+				boundingBoxMaxZ = brickPart.boundingBoxMaxZ,
+				subFileCount = brickPart.subFileCount,
+				polygonCount = brickPart.polygonCount,
 				toothCount = brickPart.toothCount,
 				gearRatio = brickPart.gearRatio,
+				lastModifiedDate = brickPart.lastModifiedDate,
 				versionNumber = brickPart.versionNumber,
 				objectGuid = brickPart.objectGuid,
 				active = brickPart.active,
@@ -644,21 +833,48 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickPart.id,
 				name = brickPart.name,
+				rebrickablePartNum = brickPart.rebrickablePartNum,
+				rebrickablePartUrl = brickPart.rebrickablePartUrl,
+				rebrickableImgUrl = brickPart.rebrickableImgUrl,
 				ldrawPartId = brickPart.ldrawPartId,
+				bricklinkId = brickPart.bricklinkId,
+				brickowlId = brickPart.brickowlId,
+				legoDesignId = brickPart.legoDesignId,
 				ldrawTitle = brickPart.ldrawTitle,
 				ldrawCategory = brickPart.ldrawCategory,
 				partTypeId = brickPart.partTypeId,
 				keywords = brickPart.keywords,
 				author = brickPart.author,
 				brickCategoryId = brickPart.brickCategoryId,
-				rebrickablePartNum = brickPart.rebrickablePartNum,
 				widthLdu = brickPart.widthLdu,
 				heightLdu = brickPart.heightLdu,
 				depthLdu = brickPart.depthLdu,
 				massGrams = brickPart.massGrams,
-				geometryFilePath = brickPart.geometryFilePath,
+				momentOfInertiaX = brickPart.momentOfInertiaX,
+				momentOfInertiaY = brickPart.momentOfInertiaY,
+				momentOfInertiaZ = brickPart.momentOfInertiaZ,
+				frictionCoefficient = brickPart.frictionCoefficient,
+				materialType = brickPart.materialType,
+				centerOfMassX = brickPart.centerOfMassX,
+				centerOfMassY = brickPart.centerOfMassY,
+				centerOfMassZ = brickPart.centerOfMassZ,
+				geometryFileName = brickPart.geometryFileName,
+				geometrySize = brickPart.geometrySize,
+				geometryData = brickPart.geometryData,
+				geometryMimeType = brickPart.geometryMimeType,
+				geometryFileFormat = brickPart.geometryFileFormat,
+				geometryOriginalFileName = brickPart.geometryOriginalFileName,
+				boundingBoxMinX = brickPart.boundingBoxMinX,
+				boundingBoxMinY = brickPart.boundingBoxMinY,
+				boundingBoxMinZ = brickPart.boundingBoxMinZ,
+				boundingBoxMaxX = brickPart.boundingBoxMaxX,
+				boundingBoxMaxY = brickPart.boundingBoxMaxY,
+				boundingBoxMaxZ = brickPart.boundingBoxMaxZ,
+				subFileCount = brickPart.subFileCount,
+				polygonCount = brickPart.polygonCount,
 				toothCount = brickPart.toothCount,
 				gearRatio = brickPart.gearRatio,
+				lastModifiedDate = brickPart.lastModifiedDate,
 				versionNumber = brickPart.versionNumber,
 				objectGuid = brickPart.objectGuid,
 				active = brickPart.active,
@@ -686,7 +902,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickPart.id,
 				name = brickPart.name,
-				description = string.Join(", ", new[] { brickPart.name, brickPart.ldrawPartId, brickPart.ldrawTitle}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = string.Join(", ", new[] { brickPart.name, brickPart.rebrickablePartNum, brickPart.rebrickablePartUrl}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}

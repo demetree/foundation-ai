@@ -24,7 +24,7 @@ export interface CatalogPart {
     categoryName: string | null;
     partTypeId: number;
     partTypeName: string | null;
-    geometryFilePath: string;
+    geometryOriginalFileName: string;
     keywords: string | null;
     author: string | null;
     widthLdu: number | null;

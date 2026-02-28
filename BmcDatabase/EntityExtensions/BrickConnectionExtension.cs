@@ -23,10 +23,18 @@ namespace Foundation.BMC.Database
 			public Int32 id { get; set; }
 			[Required]
 			public Int32 projectId { get; set; }
-			public Int64? sourcePlacedBrickId { get; set; }
-			public Int64? sourceConnectorId { get; set; }
-			public Int64? targetPlacedBrickId { get; set; }
-			public Int64? targetConnectorId { get; set; }
+			[Required]
+			public Int32 sourcePlacedBrickId { get; set; }
+			[Required]
+			public Int32 sourceConnectorId { get; set; }
+			[Required]
+			public Int32 targetPlacedBrickId { get; set; }
+			[Required]
+			public Int32 targetConnectorId { get; set; }
+			public String connectionStrength { get; set; }
+			[Required]
+			public Boolean isLocked { get; set; }
+			public Single? angleDegrees { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -42,6 +50,10 @@ namespace Foundation.BMC.Database
 		public class BrickConnectionOutputDTO : BrickConnectionDTO
 		{
 			public Project.ProjectDTO project { get; set; }
+			public BrickPartConnector.BrickPartConnectorDTO sourceConnector { get; set; }
+			public PlacedBrick.PlacedBrickDTO sourcePlacedBrick { get; set; }
+			public BrickPartConnector.BrickPartConnectorDTO targetConnector { get; set; }
+			public PlacedBrick.PlacedBrickDTO targetPlacedBrick { get; set; }
 		}
 
 
@@ -62,6 +74,9 @@ namespace Foundation.BMC.Database
 				sourceConnectorId = this.sourceConnectorId,
 				targetPlacedBrickId = this.targetPlacedBrickId,
 				targetConnectorId = this.targetConnectorId,
+				connectionStrength = this.connectionStrength,
+				isLocked = this.isLocked,
+				angleDegrees = this.angleDegrees,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -109,10 +124,17 @@ namespace Foundation.BMC.Database
 				sourceConnectorId = this.sourceConnectorId,
 				targetPlacedBrickId = this.targetPlacedBrickId,
 				targetConnectorId = this.targetConnectorId,
+				connectionStrength = this.connectionStrength,
+				isLocked = this.isLocked,
+				angleDegrees = this.angleDegrees,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
-				project = this.project?.ToDTO()
+				project = this.project?.ToDTO(),
+				sourceConnector = this.sourceConnector?.ToDTO(),
+				sourcePlacedBrick = this.sourcePlacedBrick?.ToDTO(),
+				targetConnector = this.targetConnector?.ToDTO(),
+				targetPlacedBrick = this.targetPlacedBrick?.ToDTO()
 			};
 		}
 
@@ -157,6 +179,9 @@ namespace Foundation.BMC.Database
 				sourceConnectorId = dto.sourceConnectorId,
 				targetPlacedBrickId = dto.targetPlacedBrickId,
 				targetConnectorId = dto.targetConnectorId,
+				connectionStrength = dto.connectionStrength,
+				isLocked = dto.isLocked,
+				angleDegrees = dto.angleDegrees,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -181,6 +206,9 @@ namespace Foundation.BMC.Database
 			this.sourceConnectorId = dto.sourceConnectorId;
 			this.targetPlacedBrickId = dto.targetPlacedBrickId;
 			this.targetConnectorId = dto.targetConnectorId;
+			this.connectionStrength = dto.connectionStrength;
+			this.isLocked = dto.isLocked;
+			this.angleDegrees = dto.angleDegrees;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -211,6 +239,9 @@ namespace Foundation.BMC.Database
 				sourceConnectorId = this.sourceConnectorId,
 				targetPlacedBrickId = this.targetPlacedBrickId,
 				targetConnectorId = this.targetConnectorId,
+				connectionStrength = this.connectionStrength,
+				isLocked = this.isLocked,
+				angleDegrees = this.angleDegrees,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -272,6 +303,9 @@ namespace Foundation.BMC.Database
 				sourceConnectorId = brickConnection.sourceConnectorId,
 				targetPlacedBrickId = brickConnection.targetPlacedBrickId,
 				targetConnectorId = brickConnection.targetConnectorId,
+				connectionStrength = brickConnection.connectionStrength,
+				isLocked = brickConnection.isLocked,
+				angleDegrees = brickConnection.angleDegrees,
 				objectGuid = brickConnection.objectGuid,
 				active = brickConnection.active,
 				deleted = brickConnection.deleted,
@@ -300,10 +334,17 @@ namespace Foundation.BMC.Database
 				sourceConnectorId = brickConnection.sourceConnectorId,
 				targetPlacedBrickId = brickConnection.targetPlacedBrickId,
 				targetConnectorId = brickConnection.targetConnectorId,
+				connectionStrength = brickConnection.connectionStrength,
+				isLocked = brickConnection.isLocked,
+				angleDegrees = brickConnection.angleDegrees,
 				objectGuid = brickConnection.objectGuid,
 				active = brickConnection.active,
 				deleted = brickConnection.deleted,
-				project = Project.CreateMinimalAnonymous(brickConnection.project)
+				project = Project.CreateMinimalAnonymous(brickConnection.project),
+				sourceConnector = BrickPartConnector.CreateMinimalAnonymous(brickConnection.sourceConnector),
+				sourcePlacedBrick = PlacedBrick.CreateMinimalAnonymous(brickConnection.sourcePlacedBrick),
+				targetConnector = BrickPartConnector.CreateMinimalAnonymous(brickConnection.targetConnector),
+				targetPlacedBrick = PlacedBrick.CreateMinimalAnonymous(brickConnection.targetPlacedBrick)
 			 };
 		}
 
@@ -324,8 +365,8 @@ namespace Foundation.BMC.Database
 
 			return new {
 				id = brickConnection.id,
-				name = brickConnection.id,
-				description = brickConnection.id
+				name = brickConnection.connectionStrength,
+				description = string.Join(", ", new[] { brickConnection.connectionStrength}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}

@@ -183,6 +183,8 @@ export class LegoSetTableComponent implements OnInit, OnChanges, AfterViewInit {
     { key: 'imageUrl', label: 'Image Url', width: undefined },
     { key: 'brickLinkUrl', label: 'Brick Link Url', width: undefined },
     { key: 'rebrickableUrl', label: 'Rebrickable Url', width: undefined },
+    { key: 'rebrickableSetNum', label: 'Rebrickable Set Num', width: undefined },
+    { key: 'lastModifiedDate', label: 'Last Modified Date', width: undefined, template: 'date' },
 
     ];
 
@@ -336,6 +338,8 @@ export class LegoSetTableComponent implements OnInit, OnChanges, AfterViewInit {
                       'imageUrl',
                       'brickLinkUrl',
                       'rebrickableUrl',
+                      'rebrickableSetNum',
+                      'lastModifiedDate',
         ];
 
         result = result.filter((legoSet) =>

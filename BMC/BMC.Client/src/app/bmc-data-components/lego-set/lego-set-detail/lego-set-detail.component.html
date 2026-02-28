@@ -64,6 +64,14 @@
                                 <label for="LegoSet-rebrickableUrl" id="label-LegoSet-rebrickableUrl">Rebrickable Url</label>
                                 <input type="text" id="LegoSet-rebrickableUrl" formControlName="rebrickableUrl" placeholder="Enter Rebrickable Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-rebrickableUrl" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableSetNum')">
+                                <label for="LegoSet-rebrickableSetNum" id="label-LegoSet-rebrickableSetNum">Rebrickable Set Num</label>
+                                <input type="text" id="LegoSet-rebrickableSetNum" formControlName="rebrickableSetNum" placeholder="Enter Rebrickable Set Num" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-rebrickableSetNum" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastModifiedDate')">
+                                <label for="LegoSet-lastModifiedDate" id="label-LegoSet-lastModifiedDate">Last Modified Date</label>
+                                <input type="datetime-local" id="LegoSet-lastModifiedDate" formControlName="lastModifiedDate" placeholder="Enter Last Modified Date" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-lastModifiedDate" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="LegoSet-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoSetWriter()" />
                                 <label for="LegoSet-active" class="form-check-label" id="label-LegoSet-active"><span class="text-danger">*</span>Active</label>
@@ -161,6 +169,34 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-user-collection-set-import-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-collection-set-import-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userSetListItemService.userIsBMCUserSetListItemReader()">
+                            <button ngbNavLink>User Set List Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.UserSetListItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-set-list-item-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-set-list-item-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userLostPartService.userIsBMCUserLostPartReader()">
+                            <button ngbNavLink>User Lost Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.UserLostPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-lost-part-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-lost-part-table>
                                 </div>
                             </div>
                             </ng-template>

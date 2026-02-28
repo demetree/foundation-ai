@@ -30,6 +30,11 @@ namespace Foundation.BMC.Database
 			public Boolean allowsRotation { get; set; }
 			[Required]
 			public Boolean allowsSlide { get; set; }
+			public Single? minAngleDegrees { get; set; }
+			public Single? maxAngleDegrees { get; set; }
+			public Single? snapIncrementDegrees { get; set; }
+			public Single? clutchForceNewtons { get; set; }
+			public String maleOrFemale { get; set; }
 			public Int32? sequence { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -65,6 +70,11 @@ namespace Foundation.BMC.Database
 				degreesOfFreedom = this.degreesOfFreedom,
 				allowsRotation = this.allowsRotation,
 				allowsSlide = this.allowsSlide,
+				minAngleDegrees = this.minAngleDegrees,
+				maxAngleDegrees = this.maxAngleDegrees,
+				snapIncrementDegrees = this.snapIncrementDegrees,
+				clutchForceNewtons = this.clutchForceNewtons,
+				maleOrFemale = this.maleOrFemale,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -113,6 +123,11 @@ namespace Foundation.BMC.Database
 				degreesOfFreedom = this.degreesOfFreedom,
 				allowsRotation = this.allowsRotation,
 				allowsSlide = this.allowsSlide,
+				minAngleDegrees = this.minAngleDegrees,
+				maxAngleDegrees = this.maxAngleDegrees,
+				snapIncrementDegrees = this.snapIncrementDegrees,
+				clutchForceNewtons = this.clutchForceNewtons,
+				maleOrFemale = this.maleOrFemale,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -161,6 +176,11 @@ namespace Foundation.BMC.Database
 				degreesOfFreedom = dto.degreesOfFreedom,
 				allowsRotation = dto.allowsRotation,
 				allowsSlide = dto.allowsSlide,
+				minAngleDegrees = dto.minAngleDegrees,
+				maxAngleDegrees = dto.maxAngleDegrees,
+				snapIncrementDegrees = dto.snapIncrementDegrees,
+				clutchForceNewtons = dto.clutchForceNewtons,
+				maleOrFemale = dto.maleOrFemale,
 				sequence = dto.sequence,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -186,6 +206,11 @@ namespace Foundation.BMC.Database
 			this.degreesOfFreedom = dto.degreesOfFreedom;
 			this.allowsRotation = dto.allowsRotation;
 			this.allowsSlide = dto.allowsSlide;
+			this.minAngleDegrees = dto.minAngleDegrees;
+			this.maxAngleDegrees = dto.maxAngleDegrees;
+			this.snapIncrementDegrees = dto.snapIncrementDegrees;
+			this.clutchForceNewtons = dto.clutchForceNewtons;
+			this.maleOrFemale = dto.maleOrFemale;
 			this.sequence = dto.sequence;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -216,6 +241,11 @@ namespace Foundation.BMC.Database
 				degreesOfFreedom = this.degreesOfFreedom,
 				allowsRotation = this.allowsRotation,
 				allowsSlide = this.allowsSlide,
+				minAngleDegrees = this.minAngleDegrees,
+				maxAngleDegrees = this.maxAngleDegrees,
+				snapIncrementDegrees = this.snapIncrementDegrees,
+				clutchForceNewtons = this.clutchForceNewtons,
+				maleOrFemale = this.maleOrFemale,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -278,6 +308,11 @@ namespace Foundation.BMC.Database
 				degreesOfFreedom = connectorType.degreesOfFreedom,
 				allowsRotation = connectorType.allowsRotation,
 				allowsSlide = connectorType.allowsSlide,
+				minAngleDegrees = connectorType.minAngleDegrees,
+				maxAngleDegrees = connectorType.maxAngleDegrees,
+				snapIncrementDegrees = connectorType.snapIncrementDegrees,
+				clutchForceNewtons = connectorType.clutchForceNewtons,
+				maleOrFemale = connectorType.maleOrFemale,
 				sequence = connectorType.sequence,
 				objectGuid = connectorType.objectGuid,
 				active = connectorType.active,
@@ -307,6 +342,11 @@ namespace Foundation.BMC.Database
 				degreesOfFreedom = connectorType.degreesOfFreedom,
 				allowsRotation = connectorType.allowsRotation,
 				allowsSlide = connectorType.allowsSlide,
+				minAngleDegrees = connectorType.minAngleDegrees,
+				maxAngleDegrees = connectorType.maxAngleDegrees,
+				snapIncrementDegrees = connectorType.snapIncrementDegrees,
+				clutchForceNewtons = connectorType.clutchForceNewtons,
+				maleOrFemale = connectorType.maleOrFemale,
 				sequence = connectorType.sequence,
 				objectGuid = connectorType.objectGuid,
 				active = connectorType.active,

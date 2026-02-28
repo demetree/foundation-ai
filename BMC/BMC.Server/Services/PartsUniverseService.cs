@@ -259,7 +259,7 @@ namespace Foundation.BMC.Services
                     Name = a.Part.name ?? a.Part.ldrawTitle ?? "Unknown",
                     LdrawPartId = a.Part.ldrawPartId ?? "",
                     LdrawTitle = a.Part.ldrawTitle ?? "",
-                    GeometryFilePath = a.Part.geometryFilePath ?? "",
+                    GeometryFilePath = a.Part.geometryOriginalFileName ?? "",
                     CategoryName = a.Part.brickCategory?.name ?? a.Part.ldrawCategory ?? "Other",
                     PartTypeName = a.Part.partType?.name ?? "Unknown",
                     TotalQty = a.TotalQty,

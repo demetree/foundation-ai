@@ -68,7 +68,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string ldrawPartId { get; set; }
             public string ldrawTitle { get; set; }
             public string categoryName { get; set; }
-            public string geometryFilePath { get; set; }
+            public string geometryOriginalFileName { get; set; }
             public int brickColourId { get; set; }
             public string colourName { get; set; }
             public string colourHex { get; set; }
@@ -289,7 +289,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                     ldrawPartId = cp.brickPart.ldrawPartId,
                     ldrawTitle = cp.brickPart.ldrawTitle,
                     categoryName = cp.brickPart.brickCategory != null ? cp.brickPart.brickCategory.name : null,
-                    geometryFilePath = cp.brickPart.geometryFilePath,
+                    geometryOriginalFileName = cp.brickPart.geometryOriginalFileName,
                     brickColourId = cp.brickColourId,
                     colourName = cp.brickColour.name,
                     colourHex = cp.brickColour.hexRgb,

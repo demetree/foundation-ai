@@ -1,0 +1,164 @@
+:host {
+  color: var(--bmc-text-primary);
+}
+
+.page-container {
+  background-color: transparent;
+  min-height: 100%;
+  padding: 1rem;
+}
+
+
+/* Header Card */
+.header-card {
+  background-color: var(--bmc-panel-bg);
+  border-radius: 16px;
+  box-shadow: var(--bmc-shadow-sm);
+
+  .card-header {
+    background-color: transparent;
+    border: none;
+    padding: 1rem 1.5rem;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .text-muted {
+      font-size: 0.875rem;
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+  }
+
+  .back-button {
+    padding: 0.25rem 0.5rem;
+  }
+
+
+  .search-bar {
+    position: relative;
+    min-width: 0;     // To help fix overflow
+    flex: 1 1 250px;  // Allows shrinking but prefers 250px+
+    max-width: 400px;
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      color: var(--bmc-text-muted);
+    }
+
+
+    .search-input {
+      border: 1px solid var(--bmc-border);
+      border-radius: 50px;
+      padding-left: 40px;
+      width: 100%;
+      height: 38px;
+
+      &:focus {
+        border-color: var(--bmc-primary);
+        box-shadow: 0 0 0 0.2rem var(--bmc-accent-glow-soft);
+      }
+    }
+
+    .clear-search {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--bmc-text-muted);
+      padding: 0;
+    }
+  }
+}
+
+
+/* Glassmorphism header card */
+.header-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bmc-panel-border);
+}
+
+.header-card .page-title {
+  color: var(--bmc-text-primary);
+}
+
+.header-card .text-muted {
+  color: var(--bmc-text-muted) !important;
+}
+
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
+.btn-light {
+  --bs-btn-bg: var(--bmc-panel-bg);
+  --bs-btn-color: var(--bmc-text-primary);
+  --bs-btn-border-color: var(--bmc-border);
+  --bs-btn-hover-bg: var(--bmc-bg-hover);
+  --bs-btn-hover-color: var(--bmc-text-primary);
+  --bs-btn-hover-border-color: var(--bmc-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--bmc-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--bmc-primary);
+  --bs-btn-hover-bg: var(--bmc-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--bmc-primary);
+  --bs-btn-active-bg: var(--bmc-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--bmc-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--bmc-bg-elevated);
+  --bs-btn-color: var(--bmc-text-primary);
+  --bs-btn-border-color: var(--bmc-border);
+  --bs-btn-hover-bg: var(--bmc-bg-hover);
+  --bs-btn-hover-color: var(--bmc-text-primary);
+  --bs-btn-hover-border-color: var(--bmc-border);
+  --bs-btn-active-bg: var(--bmc-bg-hover);
+  --bs-btn-active-color: var(--bmc-text-primary);
+}
+
+/* Theme-aware form controls */
+.form-control, .form-select {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-border);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--bmc-bg-elevated);
+  color: var(--bmc-text-primary);
+  border-color: var(--bmc-primary);
+  box-shadow: 0 0 0 0.2rem var(--bmc-accent-glow-soft);
+}
+
+.form-control::placeholder {
+  color: var(--bmc-text-muted);
+}

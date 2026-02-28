@@ -176,7 +176,10 @@ export class BrickColourTableComponent implements OnInit, OnChanges, AfterViewIn
     //
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickcolour', 'id']  },
+    { key: 'rebrickableColorId', label: 'Rebrickable Color Id', width: undefined },
     { key: 'ldrawColourCode', label: 'Ldraw Colour Code', width: undefined },
+    { key: 'bricklinkColorId', label: 'Bricklink Color Id', width: undefined },
+    { key: 'brickowlColorId', label: 'Brickowl Color Id', width: undefined },
     { key: 'hexRgb', label: 'Hex Rgb', width: "50px", template: 'color' },
     { key: 'hexEdgeColour', label: 'Hex Edge Colour', width: "50px", template: 'color' },
     { key: 'alpha', label: 'Alpha', width: undefined },
@@ -332,7 +335,10 @@ export class BrickColourTableComponent implements OnInit, OnChanges, AfterViewIn
         // Define fields to filter on, including nested properties
         const filterFields = [
                       'name',
+                      'rebrickableColorId',
                       'ldrawColourCode',
+                      'bricklinkColorId',
+                      'brickowlColorId',
                       'hexRgb',
                       'hexEdgeColour',
                       'alpha',

@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 user-set-list-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-set-list-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Set List Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Set List Change History' : 'Add User Set List Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCUserSetListChangeHistoryReader()">
+                <div class="col m-2 user-set-list-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userSetListChangeHistoryForm" (ngSubmit)="submitForm()" class="user-set-list-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userSetListId')">
+                                <label for="UserSetListChangeHistory-userSetListId" id="label-UserSetListChangeHistory-userSetListId"><span class="text-danger">*</span>User Set List</label>
+                                <select id="UserSetListChangeHistory-userSetListId" formControlName="userSetListId" class="form-select user-set-list-change-history-select" [disabled]="!userIsBMCUserSetListChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select User Set List</option>
+                                    <option *ngFor="let userSetList of userSetLists$ | async" [ngValue]="userSetList.id">{{userSetList.name}}</option>
+                                </select>
+                                <div *ngIf="userSetListChangeHistoryForm.get('userSetListId')?.invalid && userSetListChangeHistoryForm.get('userSetListId')?.touched" class="text-danger">
+                                    User Set List is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="UserSetListChangeHistory-versionNumber" id="label-UserSetListChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="UserSetListChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-set-list-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="UserSetListChangeHistory-timeStamp" id="label-UserSetListChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="UserSetListChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control user-set-list-change-history-input" [disabled]="!userIsBMCUserSetListChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="userSetListChangeHistoryForm.get('timeStamp')?.invalid && userSetListChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="UserSetListChangeHistory-userId" id="label-UserSetListChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="UserSetListChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control user-set-list-change-history-input" [disabled]="!userIsBMCUserSetListChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="userSetListChangeHistoryForm.get('userId')?.invalid && userSetListChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="UserSetListChangeHistory-data" id="label-UserSetListChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="UserSetListChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control user-set-list-change-history-input" [disabled]="!userIsBMCUserSetListChangeHistoryWriter()"></textarea>
+                                <div *ngIf="userSetListChangeHistoryForm.get('data')?.invalid && userSetListChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="user-set-list-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userSetListChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Set List Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userSetListChangeHistoryForm.valid || !userSetListChangeHistoryForm.dirty || userSetListChangeHistoryForm.pristine  || userIsBMCUserSetListChangeHistoryWriter() == false " ngbTooltip="Save the User Set List Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Set List Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

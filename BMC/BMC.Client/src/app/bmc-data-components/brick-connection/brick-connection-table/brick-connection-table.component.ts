@@ -176,10 +176,13 @@ export class BrickConnectionTableComponent implements OnInit, OnChanges, AfterVi
     //
     const defaultColumns: TableColumn[] = [
     { key: 'project.name', label: 'Project', width: undefined, template: 'link', linkPath: ['/project', 'projectId'] },
-    { key: 'sourcePlacedBrickId', label: 'Source Placed Brick Id', width: undefined },
-    { key: 'sourceConnectorId', label: 'Source Connector Id', width: undefined },
-    { key: 'targetPlacedBrickId', label: 'Target Placed Brick Id', width: undefined },
-    { key: 'targetConnectorId', label: 'Target Connector Id', width: undefined },
+    { key: 'sourcePlacedBrick.name', label: 'Placed Brick', width: undefined, template: 'link', linkPath: ['/placedbrick', 'sourcePlacedBrickId'] },
+    { key: 'sourceConnector.name', label: 'Brick Part Connector', width: undefined, template: 'link', linkPath: ['/brickpartconnector', 'sourceConnectorId'] },
+    { key: 'targetPlacedBrick.name', label: 'Placed Brick', width: undefined, template: 'link', linkPath: ['/placedbrick', 'targetPlacedBrickId'] },
+    { key: 'targetConnector.name', label: 'Brick Part Connector', width: undefined, template: 'link', linkPath: ['/brickpartconnector', 'targetConnectorId'] },
+    { key: 'connectionStrength', label: 'Connection Strength', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickconnection', 'id']  },
+    { key: 'isLocked', label: 'Is Locked', width: '120px', template: 'boolean' },
+    { key: 'angleDegrees', label: 'Angle Degrees', width: undefined },
 
     ];
 
@@ -326,10 +329,13 @@ export class BrickConnectionTableComponent implements OnInit, OnChanges, AfterVi
         // Define fields to filter on, including nested properties
         const filterFields = [
                       'project.name',
-                      'sourcePlacedBrickId',
-                      'sourceConnectorId',
-                      'targetPlacedBrickId',
-                      'targetConnectorId',
+                      'sourcePlacedBrick.name',
+                      'sourceConnector.name',
+                      'targetPlacedBrick.name',
+                      'targetConnector.name',
+                      'connectionStrength',
+                      'isLocked',
+                      'angleDegrees',
         ];
 
         result = result.filter((brickConnection) =>

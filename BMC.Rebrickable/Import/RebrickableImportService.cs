@@ -45,8 +45,7 @@ namespace BMC.Rebrickable.Import
 
             // Load existing themes by rebrickableThemeId
             Dictionary<int, LegoTheme> existing = await _context.LegoThemes
-                .Where(t => t.rebrickableThemeId != null)
-                .ToDictionaryAsync(t => t.rebrickableThemeId.Value, t => t);
+                .ToDictionaryAsync(t => t.rebrickableThemeId, t => t);
 
             // Build parent lookup and detect duplicate names
             Dictionary<int, string> idToName = new Dictionary<int, string>();
@@ -68,7 +67,6 @@ namespace BMC.Rebrickable.Import
             // Also load existing theme names from DB to avoid collisions with pre-existing data
             HashSet<string> existingNames = new HashSet<string>(
                 await _context.LegoThemes
-                    .Where(t => t.rebrickableThemeId == null)
                     .Select(t => t.name)
                     .ToListAsync(),
                 StringComparer.OrdinalIgnoreCase);
@@ -170,7 +168,10 @@ namespace BMC.Rebrickable.Import
 
             // Load existing colours by ldrawColourCode (Rebrickable color_id = LDraw colour code)
             HashSet<int> existingCodes = new HashSet<int>(
-                await _context.BrickColours.Select(c => c.ldrawColourCode).ToListAsync());
+                await _context.BrickColours
+                    .Where(c => c.ldrawColourCode.HasValue)
+                    .Select(c => c.ldrawColourCode.Value)
+                    .ToListAsync());
 
             // Resolve ColourFinish FK for "Solid" as default
             int solidFinishId = await _context.ColourFinishes
@@ -216,6 +217,7 @@ namespace BMC.Rebrickable.Import
                 BrickColour newColour = new BrickColour
                 {
                     name = name,
+                    rebrickableColorId = colourCode,
                     ldrawColourCode = colourCode,
                     hexRgb = hexRgb,
                     hexEdgeColour = "#333333",
@@ -331,6 +333,7 @@ namespace BMC.Rebrickable.Import
 
             // Load existing parts by ldrawPartId
             Dictionary<string, BrickPart> existingByLdraw = await _context.BrickParts
+                .Where(bp => bp.ldrawPartId != null)
                 .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp);
 
             // Load category mapping: rebrickablePartCategoryId → BrickCategory.id
@@ -427,6 +430,7 @@ namespace BMC.Rebrickable.Import
             // Load part lookup: ldrawPartId → id
             Dictionary<string, int> partLookup = await _context.BrickParts
                 .AsNoTracking()
+                .Where(bp => bp.ldrawPartId != null)
                 .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp.id);
 
             // Map Rebrickable relationship type codes to display names
@@ -505,11 +509,13 @@ namespace BMC.Rebrickable.Import
             // Load lookups
             Dictionary<string, int> partLookup = await _context.BrickParts
                 .AsNoTracking()
+                .Where(bp => bp.ldrawPartId != null)
                 .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp.id);
 
             Dictionary<int, int> colourLookup = await _context.BrickColours
                 .AsNoTracking()
-                .ToDictionaryAsync(bc => bc.ldrawColourCode, bc => bc.id);
+                .Where(bc => bc.ldrawColourCode.HasValue)
+                .ToDictionaryAsync(bc => bc.ldrawColourCode.Value, bc => bc.id);
 
             //
             // AI-developed: Build moved part resolution map so elements referencing moved parts
@@ -607,9 +613,8 @@ namespace BMC.Rebrickable.Import
 
             // Load theme mapping: rebrickableThemeId → LegoTheme.id
             Dictionary<int, int> themeLookup = await _context.LegoThemes
-                .Where(t => t.rebrickableThemeId != null)
                 .AsNoTracking()
-                .ToDictionaryAsync(t => t.rebrickableThemeId.Value, t => t.id);
+                .ToDictionaryAsync(t => t.rebrickableThemeId, t => t.id);
 
             // Load existing sets by setNumber
             Dictionary<string, LegoSet> existing = await _context.LegoSets
@@ -799,11 +804,13 @@ namespace BMC.Rebrickable.Import
 
             Dictionary<string, int> partLookup = await _context.BrickParts
                 .AsNoTracking()
+                .Where(bp => bp.ldrawPartId != null)
                 .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp.id);
 
             Dictionary<int, int> colourLookup = await _context.BrickColours
                 .AsNoTracking()
-                .ToDictionaryAsync(bc => bc.ldrawColourCode, bc => bc.id);
+                .Where(bc => bc.ldrawColourCode.HasValue)
+                .ToDictionaryAsync(bc => bc.ldrawColourCode.Value, bc => bc.id);
 
             _log($"  FK lookups: {setLookup.Count} sets, {partLookup.Count} parts, {colourLookup.Count} colours");
 

@@ -28,6 +28,8 @@ import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.ser
 import { LegoSetMinifigService } from '../../../bmc-data-services/lego-set-minifig.service';
 import { LegoSetSubsetService } from '../../../bmc-data-services/lego-set-subset.service';
 import { UserCollectionSetImportService } from '../../../bmc-data-services/user-collection-set-import.service';
+import { UserSetListItemService } from '../../../bmc-data-services/user-set-list-item.service';
+import { UserLostPartService } from '../../../bmc-data-services/user-lost-part.service';
 import { UserSetOwnershipService } from '../../../bmc-data-services/user-set-ownership.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -48,6 +50,8 @@ interface LegoSetFormValues {
   imageUrl: string | null,
   brickLinkUrl: string | null,
   rebrickableUrl: string | null,
+  rebrickableSetNum: string | null,
+  lastModifiedDate: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -85,6 +89,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         imageUrl: [''],
         brickLinkUrl: [''],
         rebrickableUrl: [''],
+        rebrickableSetNum: [''],
+        lastModifiedDate: [''],
         active: [true],
         deleted: [false],
       });
@@ -106,6 +112,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
   public legoSetMinifigs$ = this.legoSetMinifigService.GetLegoSetMinifigList();
   public legoSetSubsets$ = this.legoSetSubsetService.GetLegoSetSubsetList();
   public userCollectionSetImports$ = this.userCollectionSetImportService.GetUserCollectionSetImportList();
+  public userSetListItems$ = this.userSetListItemService.GetUserSetListItemList();
+  public userLostParts$ = this.userLostPartService.GetUserLostPartList();
   public userSetOwnerships$ = this.userSetOwnershipService.GetUserSetOwnershipList();
 
   private destroy$ = new Subject<void>();
@@ -117,6 +125,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
     public legoSetMinifigService: LegoSetMinifigService,
     public legoSetSubsetService: LegoSetSubsetService,
     public userCollectionSetImportService: UserCollectionSetImportService,
+    public userSetListItemService: UserSetListItemService,
+    public userLostPartService: UserLostPartService,
     public userSetOwnershipService: UserSetOwnershipService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -407,6 +417,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         imageUrl: '',
         brickLinkUrl: '',
         rebrickableUrl: '',
+        rebrickableSetNum: '',
+        lastModifiedDate: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -426,6 +438,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         imageUrl: legoSetData.imageUrl ?? '',
         brickLinkUrl: legoSetData.brickLinkUrl ?? '',
         rebrickableUrl: legoSetData.rebrickableUrl ?? '',
+        rebrickableSetNum: legoSetData.rebrickableSetNum ?? '',
+        lastModifiedDate: isoUtcStringToDateTimeLocal(legoSetData.lastModifiedDate) ?? '',
         active: legoSetData.active ?? true,
         deleted: legoSetData.deleted ?? false,
       }, { emitEvent: false});
@@ -495,6 +509,8 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         imageUrl: formValue.imageUrl?.trim() || null,
         brickLinkUrl: formValue.brickLinkUrl?.trim() || null,
         rebrickableUrl: formValue.rebrickableUrl?.trim() || null,
+        rebrickableSetNum: formValue.rebrickableSetNum?.trim() || null,
+        lastModifiedDate: formValue.lastModifiedDate ? dateTimeLocalToIsoUtc(formValue.lastModifiedDate.trim()) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

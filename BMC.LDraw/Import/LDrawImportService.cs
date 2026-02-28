@@ -47,8 +47,14 @@ namespace BMC.LDraw.Import
 
             // Load existing colours for upsert
             Dictionary<int, BrickColour> existing = await _context.BrickColours
-                .ToDictionaryAsync(bc => bc.ldrawColourCode, bc => bc);
+                .Where(bc => bc.ldrawColourCode.HasValue)
+                .ToDictionaryAsync(bc => bc.ldrawColourCode.Value, bc => bc);
             _log($"  Loaded {existing.Count} existing BrickColour rows");
+
+            // Track existing names to avoid unique constraint violations
+            HashSet<string> existingNames = new HashSet<string>(
+                await _context.BrickColours.Select(c => c.name).ToListAsync(),
+                StringComparer.OrdinalIgnoreCase);
 
             int sequence = 1;
             foreach (LDrawColour parsed_colour in parsed)
@@ -59,8 +65,12 @@ namespace BMC.LDraw.Import
 
                 if (existing.TryGetValue(parsed_colour.Code, out BrickColour entity))
                 {
-                    // Update existing
-                    entity.name = parsed_colour.Name.Replace('_', ' ');
+                    // Update existing — don't rename if name is already taken by a different colour
+                    string proposedName = parsed_colour.Name.Replace('_', ' ');
+                    if (!existingNames.Contains(proposedName) || entity.name.Equals(proposedName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        entity.name = proposedName;
+                    }
                     entity.hexRgb = parsed_colour.HexValue;
                     entity.hexEdgeColour = parsed_colour.HexEdge;
                     entity.alpha = parsed_colour.Alpha;
@@ -74,10 +84,18 @@ namespace BMC.LDraw.Import
                 }
                 else
                 {
-                    // Create new
+                    // Create new — disambiguate name if it already exists
+                    string name = parsed_colour.Name.Replace('_', ' ');
+                    if (existingNames.Contains(name))
+                    {
+                        name = $"{name} (LDraw {parsed_colour.Code})";
+                    }
+                    existingNames.Add(name);
+
                     BrickColour newColour = new BrickColour
                     {
-                        name = parsed_colour.Name.Replace('_', ' '),
+                        name = name,
+                        rebrickableColorId = -parsed_colour.Code - 1,  // Negative placeholder — LDraw-only colours don't have Rebrickable IDs
                         ldrawColourCode = parsed_colour.Code,
                         hexRgb = parsed_colour.HexValue,
                         hexEdgeColour = parsed_colour.HexEdge,
@@ -128,6 +146,7 @@ namespace BMC.LDraw.Import
 
             // Load existing parts for upsert
             Dictionary<string, BrickPart> existing = await _context.BrickParts
+                .Where(bp => bp.ldrawPartId != null)
                 .ToDictionaryAsync(bp => bp.ldrawPartId, bp => bp);
             _log($"  Loaded {existing.Count} existing BrickPart rows");
 
@@ -184,7 +203,7 @@ namespace BMC.LDraw.Import
                     entity.keywords = keywords;
                     entity.author = header.Author;
                     entity.brickCategoryId = brickCategoryId;
-                    entity.geometryFilePath = "parts/" + Path.GetFileName(datFile);
+                    entity.geometryOriginalFileName = Path.GetFileName(datFile);
                     result.Updated++;
                     updateBatchCount++;
 
@@ -201,6 +220,7 @@ namespace BMC.LDraw.Import
                     BrickPart newPart = new BrickPart
                     {
                         name = partId,
+                        rebrickablePartNum = partId,  // use ldraw ID as placeholder until Rebrickable sync
                         ldrawPartId = partId,
                         ldrawTitle = header.Title,
                         ldrawCategory = header.Category,
@@ -212,7 +232,7 @@ namespace BMC.LDraw.Import
                         heightLdu = 0,
                         depthLdu = 0,
                         massGrams = 0,
-                        geometryFilePath = "parts/" + Path.GetFileName(datFile),
+                        geometryOriginalFileName = Path.GetFileName(datFile),
                         versionNumber = 0,
                         objectGuid = Guid.NewGuid(),
                         active = true,

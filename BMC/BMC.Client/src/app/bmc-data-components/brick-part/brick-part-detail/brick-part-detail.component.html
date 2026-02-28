@@ -24,12 +24,36 @@
                                     Name is required
                                 </div>
                             </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('ldrawPartId')">
-                                <label for="BrickPart-ldrawPartId" id="label-BrickPart-ldrawPartId"><span class="text-danger">*</span>Ldraw Part Id</label>
-                                <input type="text" id="BrickPart-ldrawPartId" formControlName="ldrawPartId" placeholder="Enter Ldraw Part Id" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawPartId" />
-                                <div *ngIf="brickPartForm.get('ldrawPartId')?.invalid && brickPartForm.get('ldrawPartId')?.touched" class="text-danger">
-                                    Ldraw Part Id is required
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickablePartNum')">
+                                <label for="BrickPart-rebrickablePartNum" id="label-BrickPart-rebrickablePartNum"><span class="text-danger">*</span>Rebrickable Part Num</label>
+                                <input type="text" id="BrickPart-rebrickablePartNum" formControlName="rebrickablePartNum" placeholder="Enter Rebrickable Part Num" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-rebrickablePartNum" />
+                                <div *ngIf="brickPartForm.get('rebrickablePartNum')?.invalid && brickPartForm.get('rebrickablePartNum')?.touched" class="text-danger">
+                                    Rebrickable Part Num is required
                                 </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickablePartUrl')">
+                                <label for="BrickPart-rebrickablePartUrl" id="label-BrickPart-rebrickablePartUrl">Rebrickable Part Url</label>
+                                <input type="text" id="BrickPart-rebrickablePartUrl" formControlName="rebrickablePartUrl" placeholder="Enter Rebrickable Part Url" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-rebrickablePartUrl" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableImgUrl')">
+                                <label for="BrickPart-rebrickableImgUrl" id="label-BrickPart-rebrickableImgUrl">Rebrickable Img Url</label>
+                                <input type="text" id="BrickPart-rebrickableImgUrl" formControlName="rebrickableImgUrl" placeholder="Enter Rebrickable Img Url" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-rebrickableImgUrl" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ldrawPartId')">
+                                <label for="BrickPart-ldrawPartId" id="label-BrickPart-ldrawPartId">Ldraw Part Id</label>
+                                <input type="text" id="BrickPart-ldrawPartId" formControlName="ldrawPartId" placeholder="Enter Ldraw Part Id" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawPartId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bricklinkId')">
+                                <label for="BrickPart-bricklinkId" id="label-BrickPart-bricklinkId">Bricklink Id</label>
+                                <input type="text" id="BrickPart-bricklinkId" formControlName="bricklinkId" placeholder="Enter Bricklink Id" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-bricklinkId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickowlId')">
+                                <label for="BrickPart-brickowlId" id="label-BrickPart-brickowlId">Brickowl Id</label>
+                                <input type="text" id="BrickPart-brickowlId" formControlName="brickowlId" placeholder="Enter Brickowl Id" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-brickowlId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('legoDesignId')">
+                                <label for="BrickPart-legoDesignId" id="label-BrickPart-legoDesignId">Lego Design Id</label>
+                                <input type="text" id="BrickPart-legoDesignId" formControlName="legoDesignId" placeholder="Enter Lego Design Id" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-legoDesignId" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('ldrawTitle')">
                                 <label for="BrickPart-ldrawTitle" id="label-BrickPart-ldrawTitle">Ldraw Title</label>
@@ -67,10 +91,6 @@
                                     Brick Category is required
                                 </div>
                             </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('rebrickablePartNum')">
-                                <label for="BrickPart-rebrickablePartNum" id="label-BrickPart-rebrickablePartNum">Rebrickable Part Num</label>
-                                <input type="text" id="BrickPart-rebrickablePartNum" formControlName="rebrickablePartNum" placeholder="Enter Rebrickable Part Num" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-rebrickablePartNum" />
-                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('widthLdu')">
                                 <label for="BrickPart-widthLdu" id="label-BrickPart-widthLdu">Width Ldu</label>
                                 <input type="number" id="BrickPart-widthLdu" formControlName="widthLdu" placeholder="Enter Width Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-widthLdu" />
@@ -87,9 +107,93 @@
                                 <label for="BrickPart-massGrams" id="label-BrickPart-massGrams">Mass Grams</label>
                                 <input type="number" id="BrickPart-massGrams" formControlName="massGrams" placeholder="Enter Mass Grams" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-massGrams" />
                             </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('geometryFilePath')">
-                                <label for="BrickPart-geometryFilePath" id="label-BrickPart-geometryFilePath">Geometry File Path</label>
-                                <input type="text" id="BrickPart-geometryFilePath" formControlName="geometryFilePath" placeholder="Enter Geometry File Path" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryFilePath" />
+                            <div class="form-group" *ngIf="!isFieldHidden('momentOfInertiaX')">
+                                <label for="BrickPart-momentOfInertiaX" id="label-BrickPart-momentOfInertiaX">Moment Of Inertia X</label>
+                                <input type="number" id="BrickPart-momentOfInertiaX" formControlName="momentOfInertiaX" placeholder="Enter Moment Of Inertia X" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-momentOfInertiaX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('momentOfInertiaY')">
+                                <label for="BrickPart-momentOfInertiaY" id="label-BrickPart-momentOfInertiaY">Moment Of Inertia Y</label>
+                                <input type="number" id="BrickPart-momentOfInertiaY" formControlName="momentOfInertiaY" placeholder="Enter Moment Of Inertia Y" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-momentOfInertiaY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('momentOfInertiaZ')">
+                                <label for="BrickPart-momentOfInertiaZ" id="label-BrickPart-momentOfInertiaZ">Moment Of Inertia Z</label>
+                                <input type="number" id="BrickPart-momentOfInertiaZ" formControlName="momentOfInertiaZ" placeholder="Enter Moment Of Inertia Z" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-momentOfInertiaZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('frictionCoefficient')">
+                                <label for="BrickPart-frictionCoefficient" id="label-BrickPart-frictionCoefficient">Friction Coefficient</label>
+                                <input type="number" id="BrickPart-frictionCoefficient" formControlName="frictionCoefficient" placeholder="Enter Friction Coefficient" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-frictionCoefficient" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('materialType')">
+                                <label for="BrickPart-materialType" id="label-BrickPart-materialType">Material Type</label>
+                                <input type="text" id="BrickPart-materialType" formControlName="materialType" placeholder="Enter Material Type" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-materialType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('centerOfMassX')">
+                                <label for="BrickPart-centerOfMassX" id="label-BrickPart-centerOfMassX">Center Of Mass X</label>
+                                <input type="number" id="BrickPart-centerOfMassX" formControlName="centerOfMassX" placeholder="Enter Center Of Mass X" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-centerOfMassX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('centerOfMassY')">
+                                <label for="BrickPart-centerOfMassY" id="label-BrickPart-centerOfMassY">Center Of Mass Y</label>
+                                <input type="number" id="BrickPart-centerOfMassY" formControlName="centerOfMassY" placeholder="Enter Center Of Mass Y" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-centerOfMassY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('centerOfMassZ')">
+                                <label for="BrickPart-centerOfMassZ" id="label-BrickPart-centerOfMassZ">Center Of Mass Z</label>
+                                <input type="number" id="BrickPart-centerOfMassZ" formControlName="centerOfMassZ" placeholder="Enter Center Of Mass Z" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-centerOfMassZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('geometryFileName')">
+                                <label for="BrickPart-geometryFileName" id="label-BrickPart-geometryFileName">Geometry File Name</label>
+                                <input type="text" id="BrickPart-geometryFileName" formControlName="geometryFileName" placeholder="Enter Geometry File Name" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('geometrySize')">
+                                <label for="BrickPart-geometrySize" id="label-BrickPart-geometrySize">Geometry Size</label>
+                                <input type="number" id="BrickPart-geometrySize" formControlName="geometrySize" placeholder="Enter Geometry Size" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometrySize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('geometryData')">
+                                <label for="BrickPart-geometryData" id="label-BrickPart-geometryData">Geometry Data</label>
+                                <input type="text" id="BrickPart-geometryData" formControlName="geometryData" placeholder="Enter Geometry Data" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('geometryMimeType')">
+                                <label for="BrickPart-geometryMimeType" id="label-BrickPart-geometryMimeType">Geometry Mime Type</label>
+                                <input type="text" id="BrickPart-geometryMimeType" formControlName="geometryMimeType" placeholder="Enter Geometry Mime Type" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryMimeType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('geometryFileFormat')">
+                                <label for="BrickPart-geometryFileFormat" id="label-BrickPart-geometryFileFormat">Geometry File Format</label>
+                                <input type="text" id="BrickPart-geometryFileFormat" formControlName="geometryFileFormat" placeholder="Enter Geometry File Format" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryFileFormat" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('geometryOriginalFileName')">
+                                <label for="BrickPart-geometryOriginalFileName" id="label-BrickPart-geometryOriginalFileName">Geometry Original File Name</label>
+                                <input type="text" id="BrickPart-geometryOriginalFileName" formControlName="geometryOriginalFileName" placeholder="Enter Geometry Original File Name" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryOriginalFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('boundingBoxMinX')">
+                                <label for="BrickPart-boundingBoxMinX" id="label-BrickPart-boundingBoxMinX">Bounding Box Min X</label>
+                                <input type="number" id="BrickPart-boundingBoxMinX" formControlName="boundingBoxMinX" placeholder="Enter Bounding Box Min X" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-boundingBoxMinX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('boundingBoxMinY')">
+                                <label for="BrickPart-boundingBoxMinY" id="label-BrickPart-boundingBoxMinY">Bounding Box Min Y</label>
+                                <input type="number" id="BrickPart-boundingBoxMinY" formControlName="boundingBoxMinY" placeholder="Enter Bounding Box Min Y" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-boundingBoxMinY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('boundingBoxMinZ')">
+                                <label for="BrickPart-boundingBoxMinZ" id="label-BrickPart-boundingBoxMinZ">Bounding Box Min Z</label>
+                                <input type="number" id="BrickPart-boundingBoxMinZ" formControlName="boundingBoxMinZ" placeholder="Enter Bounding Box Min Z" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-boundingBoxMinZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('boundingBoxMaxX')">
+                                <label for="BrickPart-boundingBoxMaxX" id="label-BrickPart-boundingBoxMaxX">Bounding Box Max X</label>
+                                <input type="number" id="BrickPart-boundingBoxMaxX" formControlName="boundingBoxMaxX" placeholder="Enter Bounding Box Max X" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-boundingBoxMaxX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('boundingBoxMaxY')">
+                                <label for="BrickPart-boundingBoxMaxY" id="label-BrickPart-boundingBoxMaxY">Bounding Box Max Y</label>
+                                <input type="number" id="BrickPart-boundingBoxMaxY" formControlName="boundingBoxMaxY" placeholder="Enter Bounding Box Max Y" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-boundingBoxMaxY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('boundingBoxMaxZ')">
+                                <label for="BrickPart-boundingBoxMaxZ" id="label-BrickPart-boundingBoxMaxZ">Bounding Box Max Z</label>
+                                <input type="number" id="BrickPart-boundingBoxMaxZ" formControlName="boundingBoxMaxZ" placeholder="Enter Bounding Box Max Z" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-boundingBoxMaxZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('subFileCount')">
+                                <label for="BrickPart-subFileCount" id="label-BrickPart-subFileCount">Sub File Count</label>
+                                <input type="number" id="BrickPart-subFileCount" formControlName="subFileCount" placeholder="Enter Sub File Count" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-subFileCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('polygonCount')">
+                                <label for="BrickPart-polygonCount" id="label-BrickPart-polygonCount">Polygon Count</label>
+                                <input type="number" id="BrickPart-polygonCount" formControlName="polygonCount" placeholder="Enter Polygon Count" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-polygonCount" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('toothCount')">
                                 <label for="BrickPart-toothCount" id="label-BrickPart-toothCount">Tooth Count</label>
@@ -98,6 +202,10 @@
                             <div class="form-group" *ngIf="!isFieldHidden('gearRatio')">
                                 <label for="BrickPart-gearRatio" id="label-BrickPart-gearRatio">Gear Ratio</label>
                                 <input type="number" id="BrickPart-gearRatio" formControlName="gearRatio" placeholder="Enter Gear Ratio" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-gearRatio" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastModifiedDate')">
+                                <label for="BrickPart-lastModifiedDate" id="label-BrickPart-lastModifiedDate">Last Modified Date</label>
+                                <input type="datetime-local" id="BrickPart-lastModifiedDate" formControlName="lastModifiedDate" placeholder="Enter Last Modified Date" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-lastModifiedDate" />
                             </div>
                             <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <label for="BrickPart-versionNumber" id="label-BrickPart-versionNumber"><span class="text-danger">*</span>Version Number</label>
@@ -176,6 +284,34 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="partSubFileReferenceService.userIsBMCPartSubFileReferenceReader()">
+                            <button ngbNavLink>Part Sub File References Parent Brick Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.PartSubFileReferenceParentBrickPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-part-sub-file-reference-table [queryParams]="{ parentBrickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ parentBrickPartId: brickPartData?.id }" [hiddenFields]="['parentBrickPartId']"></app-part-sub-file-reference-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="partSubFileReferenceService.userIsBMCPartSubFileReferenceReader()">
+                            <button ngbNavLink>Part Sub File References Referenced Brick Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.PartSubFileReferenceReferencedBrickPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-part-sub-file-reference-table [queryParams]="{ referencedBrickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ referencedBrickPartId: brickPartData?.id }" [hiddenFields]="['referencedBrickPartId']"></app-part-sub-file-reference-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="placedBrickService.userIsBMCPlacedBrickReader()">
                             <button ngbNavLink>Placed Bricks
                                 <span class="badge bg-primary ms-2">
@@ -186,6 +322,20 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-placed-brick-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-placed-brick-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="modelStepPartService.userIsBMCModelStepPartReader()">
+                            <button ngbNavLink>Model Step Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.ModelStepPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-model-step-part-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-model-step-part-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -270,6 +420,34 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-user-wishlist-item-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-wishlist-item-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userPartListItemService.userIsBMCUserPartListItemReader()">
+                            <button ngbNavLink>User Part List Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.UserPartListItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-part-list-item-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-part-list-item-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userLostPartService.userIsBMCUserLostPartReader()">
+                            <button ngbNavLink>User Lost Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.UserLostPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-lost-part-table [queryParams]="{ brickPartId: brickPartData?.id }" [showAddButton]="true" [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-lost-part-table>
                                 </div>
                             </div>
                             </ng-template>

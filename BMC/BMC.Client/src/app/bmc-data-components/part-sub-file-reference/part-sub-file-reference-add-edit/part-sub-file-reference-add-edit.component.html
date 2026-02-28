@@ -1,0 +1,85 @@
+<div class="add-part-sub-file-reference" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-part-sub-file-reference me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Part Sub File Reference" 
+        *ngIf="userIsBMCPartSubFileReferenceWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #partSubFileReferenceModal let-modal>
+   <div class="modal-header part-sub-file-reference-modal-header">
+      <h5 class="modal-title mb-0" id="partSubFileReferenceModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Part Sub File Reference' : 'Add Part Sub File Reference' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body part-sub-file-reference-modal-body">
+      <form [formGroup]="partSubFileReferenceForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('parentBrickPartId')">
+                <label for="PartSubFileReference-parentBrickPartId" id="label-PartSubFileReference-parentBrickPartId"><span class="text-danger">*</span>Parent Brick Part</label>
+                <select id="PartSubFileReference-parentBrickPartId" formControlName="parentBrickPartId" class="form-select part-sub-file-reference-select" [disabled]="!userIsBMCPartSubFileReferenceWriter()">
+                    <option [ngValue]="null">Select Brick Part</option>
+                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                </select>
+                <div *ngIf="partSubFileReferenceForm.get('parentBrickPartId')?.invalid && partSubFileReferenceForm.get('parentBrickPartId')?.touched" class="text-danger">
+                    Parent Brick Part is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('referencedBrickPartId')">
+                <label for="PartSubFileReference-referencedBrickPartId" id="label-PartSubFileReference-referencedBrickPartId">Referenced Brick Part</label>
+                <select id="PartSubFileReference-referencedBrickPartId" formControlName="referencedBrickPartId" class="form-select part-sub-file-reference-select" [disabled]="!userIsBMCPartSubFileReferenceWriter()">
+                    <option [ngValue]="null">Select Brick Part</option>
+                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('referencedFileName')">
+                <label for="PartSubFileReference-referencedFileName" id="label-PartSubFileReference-referencedFileName"><span class="text-danger">*</span>Referenced File Name</label>
+                <input type="text" id="PartSubFileReference-referencedFileName" formControlName="referencedFileName" placeholder="Enter Referenced File Name" class="form-control part-sub-file-reference-input" [disabled]="!userIsBMCPartSubFileReferenceWriter()" aria-labelledby="label-referencedFileName" />
+                <div *ngIf="partSubFileReferenceForm.get('referencedFileName')?.invalid && partSubFileReferenceForm.get('referencedFileName')?.touched" class="text-danger">
+                    Referenced File Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('transformMatrix')">
+                <label for="PartSubFileReference-transformMatrix" id="label-PartSubFileReference-transformMatrix"><span class="text-danger">*</span>Transform Matrix</label>
+                <textarea id="PartSubFileReference-transformMatrix" formControlName="transformMatrix" placeholder="Enter Transform Matrix" class="form-control part-sub-file-reference-input" [disabled]="!userIsBMCPartSubFileReferenceWriter()"></textarea>
+                <div *ngIf="partSubFileReferenceForm.get('transformMatrix')?.invalid && partSubFileReferenceForm.get('transformMatrix')?.touched" class="text-danger">
+                    Transform Matrix is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('colorCode')">
+                <label for="PartSubFileReference-colorCode" id="label-PartSubFileReference-colorCode">Color Code</label>
+                <input type="number" id="PartSubFileReference-colorCode" formControlName="colorCode" placeholder="Enter Color Code" class="form-control part-sub-file-reference-input" [disabled]="!userIsBMCPartSubFileReferenceWriter()" aria-labelledby="label-colorCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="PartSubFileReference-sequence" id="label-PartSubFileReference-sequence">Sequence</label>
+                <input type="number" id="PartSubFileReference-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control part-sub-file-reference-input" [disabled]="!userIsBMCPartSubFileReferenceWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PartSubFileReference-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPartSubFileReferenceWriter()" />
+                <label for="PartSubFileReference-active" class="form-check-label" id="label-PartSubFileReference-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PartSubFileReference-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPartSubFileReferenceWriter()" />
+                <label for="PartSubFileReference-deleted" class="form-check-label" id="label-PartSubFileReference-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer part-sub-file-reference-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Part Sub File Reference changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !partSubFileReferenceForm.valid || partSubFileReferenceForm.pristine  || userIsBMCPartSubFileReferenceWriter() == false " ngbTooltip="Save the Part Sub File Reference changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Part Sub File Reference' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

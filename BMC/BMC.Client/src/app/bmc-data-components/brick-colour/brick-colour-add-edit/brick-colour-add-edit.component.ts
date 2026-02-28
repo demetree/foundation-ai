@@ -36,7 +36,10 @@ import { AuthService } from '../../../services/auth.service';
 //
 interface BrickColourFormValues {
   name: string,
-  ldrawColourCode: string,     // Stored as string for form input, converted to number on submit.
+  rebrickableColorId: string,     // Stored as string for form input, converted to number on submit.
+  ldrawColourCode: string | null,     // Stored as string for form input, converted to number on submit.
+  bricklinkColorId: string | null,     // Stored as string for form input, converted to number on submit.
+  brickowlColorId: string | null,     // Stored as string for form input, converted to number on submit.
   hexRgb: string | null,
   hexEdgeColour: string | null,
   alpha: string | null,     // Stored as string for form input, converted to number on submit.
@@ -79,7 +82,10 @@ export class BrickColourAddEditComponent {
 
   public brickColourForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
-        ldrawColourCode: ['', Validators.required],
+        rebrickableColorId: ['', Validators.required],
+        ldrawColourCode: [''],
+        bricklinkColorId: [''],
+        brickowlColorId: [''],
         hexRgb: [''],
         hexEdgeColour: [''],
         alpha: [''],
@@ -227,7 +233,10 @@ export class BrickColourAddEditComponent {
     const brickColourSubmitData: BrickColourSubmitData = {
         id: this.brickColourSubmitData?.id || 0,
         name: formValue.name!.trim(),
-        ldrawColourCode: Number(formValue.ldrawColourCode),
+        rebrickableColorId: Number(formValue.rebrickableColorId),
+        ldrawColourCode: formValue.ldrawColourCode ? Number(formValue.ldrawColourCode) : null,
+        bricklinkColorId: formValue.bricklinkColorId ? Number(formValue.bricklinkColorId) : null,
+        brickowlColorId: formValue.brickowlColorId ? Number(formValue.brickowlColorId) : null,
         hexRgb: formValue.hexRgb?.trim() || null,
         hexEdgeColour: formValue.hexEdgeColour?.trim() || null,
         alpha: formValue.alpha ? Number(formValue.alpha) : null,
@@ -365,7 +374,10 @@ export class BrickColourAddEditComponent {
       //
       this.brickColourForm.reset({
         name: '',
+        rebrickableColorId: '',
         ldrawColourCode: '',
+        bricklinkColorId: '',
+        brickowlColorId: '',
         hexRgb: '',
         hexEdgeColour: '',
         alpha: '',
@@ -387,7 +399,10 @@ export class BrickColourAddEditComponent {
         //
         this.brickColourForm.reset({
         name: brickColourData.name ?? '',
+        rebrickableColorId: brickColourData.rebrickableColorId?.toString() ?? '',
         ldrawColourCode: brickColourData.ldrawColourCode?.toString() ?? '',
+        bricklinkColorId: brickColourData.bricklinkColorId?.toString() ?? '',
+        brickowlColorId: brickColourData.brickowlColorId?.toString() ?? '',
         hexRgb: brickColourData.hexRgb ?? '',
         hexEdgeColour: brickColourData.hexEdgeColour ?? '',
         alpha: brickColourData.alpha?.toString() ?? '',

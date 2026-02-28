@@ -43,6 +43,10 @@ public partial class PlacedBrick
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<BrickConnection> BrickConnectionsourcePlacedBricks { get; set; } = new List<BrickConnection>();
+
+    public virtual ICollection<BrickConnection> BrickConnectiontargetPlacedBricks { get; set; } = new List<BrickConnection>();
+
     public virtual ICollection<BuildStepAnnotation> BuildStepAnnotations { get; set; } = new List<BuildStepAnnotation>();
 
     public virtual ICollection<BuildStepPart> BuildStepParts { get; set; } = new List<BuildStepPart>();

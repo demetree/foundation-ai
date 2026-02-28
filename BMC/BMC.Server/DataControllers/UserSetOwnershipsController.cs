@@ -205,6 +205,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || (includeRelations == true && x.legoSet.imageUrl.Contains(anyStringContains))
 			       || (includeRelations == true && x.legoSet.brickLinkUrl.Contains(anyStringContains))
 			       || (includeRelations == true && x.legoSet.rebrickableUrl.Contains(anyStringContains))
+			       || (includeRelations == true && x.legoSet.rebrickableSetNum.Contains(anyStringContains))
 			   );
 			}
 
@@ -379,6 +380,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.legoSet.imageUrl.Contains(anyStringContains)
 			       || x.legoSet.brickLinkUrl.Contains(anyStringContains)
 			       || x.legoSet.rebrickableUrl.Contains(anyStringContains)
+			       || x.legoSet.rebrickableSetNum.Contains(anyStringContains)
 			   );
 			}
 
@@ -974,6 +976,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.legoSet.imageUrl.Contains(anyStringContains)
 			       || x.legoSet.brickLinkUrl.Contains(anyStringContains)
 			       || x.legoSet.rebrickableUrl.Contains(anyStringContains)
+			       || x.legoSet.rebrickableSetNum.Contains(anyStringContains)
 			   );
 			}
 
