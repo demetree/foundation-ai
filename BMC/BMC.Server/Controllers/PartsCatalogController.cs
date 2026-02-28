@@ -588,5 +588,86 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             return Ok(result);
         }
+
+
+        /// <summary>
+        /// GET /api/parts-catalog/part-colours
+        ///
+        /// Returns a dictionary mapping each renderable part's ID to its top N
+        /// most common colour hex values (sorted by frequency across set appearances).
+        /// Used by the catalog grid to render thumbnails in realistic colours
+        /// rather than an arbitrary fixed palette.
+        /// Cached server-side for 10 minutes.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/parts-catalog/part-colours")]
+        public async Task<IActionResult> GetPartColours(int top = 10, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (top <= 0) top = 10;
+            if (top > 20) top = 20;
+
+            string cacheKey = $"catalog:part-colours:{top}";
+
+            if (_cache.TryGetValue(cacheKey, out Dictionary<int, string[]> cached))
+            {
+                return Ok(cached);
+            }
+
+            //
+            // Get the set of renderable part IDs
+            //
+            HashSet<int> renderablePartIds = (await _context.BrickParts
+                .Where(bp => bp.geometryFilePath != null && bp.active == true && bp.deleted == false)
+                .Select(bp => bp.id)
+                .ToListAsync(cancellationToken))
+                .ToHashSet();
+
+            //
+            // Query BrickPartColours for renderable parts, join to BrickColour
+            // to get hexRgb, and count how many sets each part-colour appears in.
+            //
+            // Frequency is approximated by counting set-part rows per colour for each part.
+            //
+            var partColourCounts = await _context.LegoSetParts
+                .Where(sp => sp.active == true && sp.deleted == false
+                          && sp.brickColour != null
+                          && sp.brickColour.hexRgb != null)
+                .GroupBy(sp => new { sp.brickPartId, sp.brickColour.hexRgb })
+                .Select(g => new
+                {
+                    PartId = g.Key.brickPartId,
+                    HexRgb = g.Key.hexRgb,
+                    Count = g.Count()
+                })
+                .ToListAsync(cancellationToken);
+
+            //
+            // Build the dictionary: partId → top N hex values by frequency
+            //
+            Dictionary<int, string[]> result = partColourCounts
+                .Where(x => renderablePartIds.Contains(x.PartId))
+                .GroupBy(x => x.PartId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(x => x.Count)
+                          .Take(top)
+                          .Select(x => x.HexRgb)
+                          .ToArray()
+                );
+
+            _cache.Set(cacheKey, result, SidebarCacheDuration);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, $"Part colours loaded — {result.Count} parts with colour data");
+
+            return Ok(result);
+        }
     }
 }

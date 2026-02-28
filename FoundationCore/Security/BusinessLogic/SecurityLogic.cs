@@ -665,7 +665,6 @@ namespace Foundation.Security
                 //
                 if (Foundation.Configuration.GetBooleanConfigurationSetting("EnableAccountCooldownAndLockout", false) == true)
                 {
-
                     //
                     // Wait increasingly longer times before allowing another login attempt.
                     //

@@ -492,11 +492,30 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     openInCatalog(part: LegoSetPartData): void {
         if (part.brickPartId) {
-            const navigationExtras: any = {};
-            if (part.brickColourId) {
-                navigationExtras.queryParams = { colourId: part.brickColourId };
+            const queryParams: any = {};
+
+            //
+            // Pass the colour ID if it's a real value (not 0 / unset).
+            // brickColourId is bigint|number — use Number() so 0n is caught too.
+            //
+            if (Number(part.brickColourId) > 0) {
+                queryParams.colourId = part.brickColourId;
             }
-            this.router.navigate(['/parts', part.brickPartId], navigationExtras);
+
+            //
+            // Also pass the hex from the navigation property as a fallback.
+            // The detail page will match by hex if colourId doesn't match.
+            //
+            if (part.brickColour?.hexRgb) {
+                const raw = part.brickColour.hexRgb.replace('#', '');
+                if (raw.length >= 3) {
+                    queryParams.hex = raw;
+                }
+            }
+
+            this.router.navigate(['/parts', part.brickPartId],
+                Object.keys(queryParams).length > 0 ? { queryParams } : {}
+            );
         }
     }
 

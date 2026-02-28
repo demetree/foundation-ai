@@ -107,13 +107,12 @@
 
 
 /* ----------------------------------------------------------------
-   Main Layout — Viewer + Info
+   Main Layout — stacked single-column flow
    ---------------------------------------------------------------- */
 .detail-body {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 24px;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 
@@ -168,7 +167,7 @@
 .viewer-container {
     position: relative;
     width: 100%;
-    height: 500px;
+    height: 600px;
 
     //
     // Background is transparent so the Three.js canvas alpha channel shows through
@@ -267,9 +266,23 @@
 
 
 /* ----------------------------------------------------------------
-   Info Panel Cards
+   Secondary Panels — two-column grid below colour strip
    ---------------------------------------------------------------- */
-.info-panels {
+.secondary-panels {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    align-items: start;
+}
+
+.secondary-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.secondary-right {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -422,13 +435,13 @@
 }
 
 .skeleton-body {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .skeleton-viewer {
-    height: 500px;
+    height: 600px;
     border-radius: var(--radius-md);
     background: linear-gradient(90deg,
             var(--bmc-bg-elevated) 25%,
@@ -438,10 +451,21 @@
     animation: shimmer 1.5s ease-in-out infinite;
 }
 
-.skeleton-panels {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+.skeleton-colour-strip {
+    height: 80px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(90deg,
+            var(--bmc-bg-elevated) 25%,
+            var(--bmc-bg-hover) 50%,
+            var(--bmc-bg-elevated) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-secondary {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
 }
 
 .skeleton-card {
@@ -453,6 +477,10 @@
             var(--bmc-bg-elevated) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
+
+    &.wide {
+        height: 300px;
+    }
 }
 
 .skeleton-text {
@@ -518,7 +546,6 @@
     overflow: hidden;
     animation: fadeInUp 0.35s ease-out both;
     animation-delay: 0.2s;
-    margin-top: 16px;
 
     &.loading-card {
         opacity: 0.7;
@@ -725,10 +752,52 @@
 
 
 /* ----------------------------------------------------------------
-   Colour Picker Card
+   Colour Picker Strip — full-width section below viewer
    ---------------------------------------------------------------- */
+.colour-picker-strip {
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease-out both;
+}
 
-/* .colour-picker-card inherits .info-card base styles — no overrides needed */
+.colour-strip-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bmc-border);
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+.colour-strip-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--bmc-text-primary);
+    white-space: nowrap;
+
+    i {
+        color: var(--bmc-primary);
+        font-size: 0.9rem;
+    }
+}
+
+.colour-selected-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 10px;
+    border-radius: var(--radius-md);
+    background: var(--bmc-surface-subtle);
+    border: 1px solid var(--bmc-border);
+    font-size: 0.8rem;
+    margin-left: auto;
+}
 
 .sets-cap-hint {
     font-size: 0.7rem;
@@ -738,17 +807,7 @@
     margin-left: 4px;
 }
 
-.colour-picker-header {
-    //
-    // Override the default info-card-header to accommodate the mode toggle on the right
-    //
-    flex-wrap: wrap;
-    gap: 8px;
-    row-gap: 8px;
-}
-
 .colour-mode-toggle {
-    margin-left: auto;
     display: flex;
     border: 1px solid var(--bmc-border);
     border-radius: var(--radius-md);
@@ -784,7 +843,7 @@
     }
 }
 
-.colour-picker-body {
+.colour-strip-body {
     padding: 12px 16px;
     display: flex;
     flex-direction: column;
@@ -1146,10 +1205,13 @@
 .render-config {
     display: flex;
     flex-direction: column;
-    gap: 0;
     border-right: 1px solid var(--bmc-border);
-    overflow-y: auto;
     max-height: 700px;
+}
+
+.render-config-scroll {
+    flex: 1;
+    overflow-y: auto;
     overscroll-behavior: contain;
 
     &::-webkit-scrollbar {
@@ -1435,6 +1497,9 @@
 
 .render-actions {
     padding: 12px 16px;
+    border-top: 1px solid var(--bmc-border);
+    background: var(--bmc-bg-card);
+    flex-shrink: 0;
 }
 
 .render-btn {
@@ -1660,11 +1725,11 @@
    Responsive
    ---------------------------------------------------------------- */
 @media (max-width: 1024px) {
-    .detail-body {
+    .secondary-panels {
         grid-template-columns: 1fr;
     }
 
-    .skeleton-body {
+    .skeleton-secondary {
         grid-template-columns: 1fr;
     }
 
@@ -1718,6 +1783,15 @@
 
     .viewer-controls-hint {
         display: none;
+    }
+
+    .colour-strip-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .colour-selected-inline {
+        margin-left: 0;
     }
 
     .sets-header-row,

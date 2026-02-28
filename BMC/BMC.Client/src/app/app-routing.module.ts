@@ -25,6 +25,7 @@ import { ThemeDetailComponent } from './components/theme-detail/theme-detail.com
 import { SetComparisonComponent } from './components/set-comparison/set-comparison.component';
 import { PartRendererComponent } from './components/part-renderer/part-renderer.component';
 import { ManualGeneratorComponent } from './components/manual-generator/manual-generator.component';
+import { WelcomeComponent } from './components/welcome/welcome.component';
 
 
 import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
@@ -201,6 +202,7 @@ import { PublicProfileComponent } from './components/public-profile/public-profi
 const routes: Routes = [
     { path: '', component: PublicLandingComponent, canActivate: [PublicOrRedirectGuard], title: 'BMC — Brick Machine Construction' },
     { path: 'login', component: LoginComponent, canActivate: [LoginRedirectGuard], title: 'Login' },
+    { path: 'welcome', component: WelcomeComponent, canActivate: [AuthGuard], title: 'Welcome' },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], title: 'Dashboard' },
 
     // Premium custom UI routes

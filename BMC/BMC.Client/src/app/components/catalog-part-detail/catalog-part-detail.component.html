@@ -29,10 +29,12 @@
     </div>
 
 
-    <!-- Main Content -->
+    <!-- Main Content — single-column stacked flow -->
     <div class="detail-body">
 
-        <!-- Viewer Panel -->
+        <!-- ═══════════════════════════════════════════════════════
+             Section 1: VIEWER — Full-width hero
+             ═══════════════════════════════════════════════════════ -->
         <div class="viewer-panel">
 
             <!-- Tab Bar -->
@@ -122,187 +124,194 @@
                 <!-- Config Column -->
                 <div class="render-config">
 
-                    <!-- Colour Section -->
-                    <div class="render-section">
-                        <div class="render-section-title"><i class="bi bi-palette"></i> Colour</div>
-                        <div class="colour-selected-label" *ngIf="selectedColour != null">
-                            <span class="colour-selected-swatch"
-                                [style.backgroundColor]="getSwatchHex(selectedColour)"></span>
-                            <span>{{ selectedColour.name }} · LDraw {{ selectedColour.ldrawColourCode }}</span>
-                        </div>
-                        <div class="colour-selected-label" *ngIf="selectedColour == null">
-                            <span class="colour-selected-swatch" style="background-color: #C4C8CB;"></span>
-                            <span>Light Bluish Gray · default</span>
-                        </div>
-                        <div class="render-hint">Select a colour from the Colour Preview panel →</div>
-                    </div>
+                    <!-- Scrollable sections area -->
+                    <div class="render-config-scroll">
 
-                    <!-- View Section -->
-                    <div class="render-section">
-                        <div class="render-section-title"><i class="bi bi-camera-video"></i> View Angle</div>
-                        <div class="render-presets">
-                            <button *ngFor="let a of anglePresets" class="render-preset-btn"
-                                [class.active]="isSelectedAngle(a)" (click)="selectRenderAngle(a)"
-                                [title]="'Elevation ' + a.elevation + '° / Azimuth ' + a.azimuth + '°'">
-                                <i class="bi" [ngClass]="a.icon"></i> {{ a.label }}
-                            </button>
-                        </div>
-                        <div class="size-info">{{ renderElevation }}° elev · {{ renderAzimuth }}° azim</div>
-                        <label class="render-checkbox">
-                            <input type="checkbox" [checked]="flipView" (change)="flipView = !flipView" />
-                            <i class="bi bi-arrow-repeat"></i> Flip 180°
-                        </label>
-                    </div>
-
-                    <!-- Output Section -->
-                    <div class="render-section">
-                        <div class="render-section-title"><i class="bi bi-file-image"></i> Output</div>
-
-                        <div class="render-subsection">
-                            <span class="render-sublabel">Format</span>
-                            <div class="render-presets">
-                                <button class="render-preset-btn" [class.active]="outputFormat === 'png'"
-                                    (click)="outputFormat = 'png'">PNG</button>
-                                <button class="render-preset-btn" [class.active]="outputFormat === 'webp'"
-                                    (click)="outputFormat = 'webp'">WebP</button>
-                                <button class="render-preset-btn" [class.active]="outputFormat === 'svg'"
-                                    (click)="outputFormat = 'svg'">SVG</button>
-                                <button class="render-preset-btn" [class.active]="outputFormat === 'gif'"
-                                    (click)="outputFormat = 'gif'">
-                                    GIF <span class="format-tag">360°</span>
-                                </button>
+                        <!-- Colour Section -->
+                        <div class="render-section">
+                            <div class="render-section-title"><i class="bi bi-palette"></i> Colour</div>
+                            <div class="colour-selected-label" *ngIf="selectedColour != null">
+                                <span class="colour-selected-swatch"
+                                    [style.backgroundColor]="getSwatchHex(selectedColour)"></span>
+                                <span>{{ selectedColour.name }} · LDraw {{ selectedColour.ldrawColourCode }}</span>
                             </div>
-                            <div class="quality-slider" *ngIf="outputFormat === 'webp'">
-                                <span class="render-sublabel">Quality</span>
-                                <div class="slider-row">
-                                    <input type="range" min="1" max="100" step="1" [value]="webpQuality"
-                                        (input)="webpQuality = +$any($event.target).value" />
-                                    <span class="slider-value">{{ webpQuality }}</span>
+                            <div class="colour-selected-label" *ngIf="selectedColour == null">
+                                <span class="colour-selected-swatch" style="background-color: #C4C8CB;"></span>
+                                <span>Light Bluish Gray · default</span>
+                            </div>
+                            <div class="render-hint">Select a colour from the Colour Preview panel below</div>
+                        </div>
+
+                        <!-- Appearance Section -->
+                        <div class="render-section">
+                            <div class="render-section-title"><i class="bi bi-sliders"></i> Appearance</div>
+
+                            <label class="render-checkbox">
+                                <input type="checkbox" [checked]="renderEdges" (change)="renderEdges = !renderEdges" />
+                                Edge lines
+                            </label>
+                            <label class="render-checkbox">
+                                <input type="checkbox" [checked]="smoothShading"
+                                    (change)="smoothShading = !smoothShading" />
+                                Smooth shading
+                            </label>
+
+                            <div class="render-subsection">
+                                <span class="render-sublabel">Renderer</span>
+                                <div class="render-presets">
+                                    <button class="render-preset-btn" [class.active]="rendererType === 'rasterizer'"
+                                        (click)="rendererType = 'rasterizer'">
+                                        <i class="bi bi-cpu"></i> Rasterizer
+                                    </button>
+                                    <button class="render-preset-btn" [class.active]="rendererType === 'raytrace'"
+                                        (click)="rendererType = 'raytrace'">
+                                        <i class="bi bi-brightness-high"></i> Ray Tracer
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Ray Trace Options (shown only when Ray Tracer is selected) -->
+                            <div class="render-subsection" *ngIf="rendererType === 'raytrace'">
+                                <span class="render-sublabel"><i class="bi bi-brightness-high"></i> Ray Trace
+                                    Options</span>
+                                <label class="render-checkbox">
+                                    <input type="checkbox" [checked]="enablePbr" (change)="enablePbr = !enablePbr" />
+                                    PBR Shading
+                                </label>
+                                <div class="slider-row" style="margin-top: 6px;">
+                                    <span class="render-sublabel"
+                                        style="font-size: 0.75rem; min-width: auto;">Exposure</span>
+                                    <input type="range" min="0.5" max="3.0" step="0.1" [value]="exposure"
+                                        (input)="exposure = +$any($event.target).value" />
+                                    <span class="slider-value">{{ exposure.toFixed(1) }}</span>
+                                </div>
+                                <div class="slider-row" style="margin-top: 6px;">
+                                    <span class="render-sublabel" style="font-size: 0.75rem; min-width: auto;">Depth of
+                                        Field</span>
+                                    <input type="range" min="0" max="5.0" step="0.1" [value]="aperture"
+                                        (input)="aperture = +$any($event.target).value" />
+                                    <span class="slider-value">{{ aperture > 0 ? aperture.toFixed(1) : 'Off' }}</span>
+                                </div>
+                            </div>
+
+                            <div class="render-subsection">
+                                <span class="render-sublabel">Background</span>
+                                <div class="bg-presets">
+                                    <button *ngFor="let p of bgPresets" class="bg-preset-btn"
+                                        [class.active]="isActiveBgPreset(p)" [title]="p.label"
+                                        (click)="applyBgPreset(p)">
+                                        <span class="bg-swatch"
+                                            [style.background]="p.top ? 'linear-gradient(180deg, ' + p.top + ', ' + p.bottom + ')' : 'repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 8px 8px'">
+                                        </span>
+                                        <span class="bg-preset-label">{{ p.label }}</span>
+                                    </button>
+                                </div>
+                                <div class="hex-row">
+                                    <input type="text" class="hex-input" placeholder="Top #hex" [value]="gradientTopHex"
+                                        (input)="gradientTopHex = $any($event.target).value" />
+                                    <input type="text" class="hex-input" placeholder="Bottom #hex"
+                                        [value]="gradientBottomHex"
+                                        (input)="gradientBottomHex = $any($event.target).value" />
+                                </div>
+                            </div>
+
+                            <div class="render-subsection">
+                                <label class="render-checkbox">
+                                    <input type="checkbox" [checked]="explodedView"
+                                        (change)="explodedView = !explodedView" />
+                                    Exploded View
+                                </label>
+                                <div class="slider-row" *ngIf="explodedView">
+                                    <input type="range" min="0.1" max="3.0" step="0.1" [value]="explosionFactor"
+                                        (input)="explosionFactor = +$any($event.target).value" />
+                                    <span class="slider-value">{{ explosionFactor.toFixed(1) }}×</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="render-subsection">
-                            <span class="render-sublabel">Size</span>
-                            <div class="size-category-tabs">
-                                <button *ngFor="let cat of sizeCategories" class="size-cat-btn"
-                                    [class.active]="sizeCategory === cat.key" (click)="sizeCategory = cat.key">
-                                    <i class="bi" [ngClass]="cat.icon"></i> {{ cat.label }}
-                                </button>
-                            </div>
+                        <!-- View Section -->
+                        <div class="render-section">
+                            <div class="render-section-title"><i class="bi bi-camera-video"></i> View Angle</div>
                             <div class="render-presets">
-                                <button *ngFor="let p of activeSizePresets" class="render-preset-btn"
-                                    [class.active]="isSelectedSize(p)" (click)="selectRenderSize(p)"
-                                    [title]="p.w + ' × ' + p.h">
-                                    {{ p.label }}
+                                <button *ngFor="let a of anglePresets" class="render-preset-btn"
+                                    [class.active]="isSelectedAngle(a)" (click)="selectRenderAngle(a)"
+                                    [title]="'Elevation ' + a.elevation + '° / Azimuth ' + a.azimuth + '°'">
+                                    <i class="bi" [ngClass]="a.icon"></i> {{ a.label }}
                                 </button>
                             </div>
-                            <div class="size-info">{{ sizeDisplayLabel }}</div>
-                        </div>
-
-                        <div class="render-subsection">
-                            <span class="render-sublabel">Anti-Aliasing</span>
-                            <div class="render-presets">
-                                <button class="render-preset-btn" [class.active]="antiAliasMode === 'none'"
-                                    (click)="antiAliasMode = 'none'">Off</button>
-                                <button class="render-preset-btn" [class.active]="antiAliasMode === '2x'"
-                                    (click)="antiAliasMode = '2x'">2× SSAA</button>
-                                <button class="render-preset-btn" [class.active]="antiAliasMode === '4x'"
-                                    (click)="antiAliasMode = '4x'">4× SSAA</button>
-                            </div>
-                            <div class="render-warning"
-                                *ngIf="antiAliasMode === '4x' && (renderWidth > 2560 || renderHeight > 2560)">
-                                <i class="bi bi-exclamation-triangle"></i> Auto-downgraded to 2× at this resolution
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Appearance Section -->
-                    <div class="render-section">
-                        <div class="render-section-title"><i class="bi bi-sliders"></i> Appearance</div>
-
-                        <label class="render-checkbox">
-                            <input type="checkbox" [checked]="renderEdges" (change)="renderEdges = !renderEdges" />
-                            Edge lines
-                        </label>
-                        <label class="render-checkbox">
-                            <input type="checkbox" [checked]="smoothShading"
-                                (change)="smoothShading = !smoothShading" />
-                            Smooth shading
-                        </label>
-
-                        <div class="render-subsection">
-                            <span class="render-sublabel">Renderer</span>
-                            <div class="render-presets">
-                                <button class="render-preset-btn" [class.active]="rendererType === 'rasterizer'"
-                                    (click)="rendererType = 'rasterizer'">
-                                    <i class="bi bi-cpu"></i> Rasterizer
-                                </button>
-                                <button class="render-preset-btn" [class.active]="rendererType === 'raytrace'"
-                                    (click)="rendererType = 'raytrace'">
-                                    <i class="bi bi-brightness-high"></i> Ray Tracer
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Ray Trace Options (shown only when Ray Tracer is selected) -->
-                        <div class="render-subsection" *ngIf="rendererType === 'raytrace'">
-                            <span class="render-sublabel"><i class="bi bi-brightness-high"></i> Ray Trace Options</span>
+                            <div class="size-info">{{ renderElevation }}° elev · {{ renderAzimuth }}° azim</div>
                             <label class="render-checkbox">
-                                <input type="checkbox" [checked]="enablePbr" (change)="enablePbr = !enablePbr" />
-                                PBR Shading
+                                <input type="checkbox" [checked]="flipView" (change)="flipView = !flipView" />
+                                <i class="bi bi-arrow-repeat"></i> Flip 180°
                             </label>
-                            <div class="slider-row" style="margin-top: 6px;">
-                                <span class="render-sublabel"
-                                    style="font-size: 0.75rem; min-width: auto;">Exposure</span>
-                                <input type="range" min="0.5" max="3.0" step="0.1" [value]="exposure"
-                                    (input)="exposure = +$any($event.target).value" />
-                                <span class="slider-value">{{ exposure.toFixed(1) }}</span>
+                        </div>
+
+                        <!-- Output Section -->
+                        <div class="render-section">
+                            <div class="render-section-title"><i class="bi bi-file-image"></i> Output</div>
+
+                            <div class="render-subsection">
+                                <span class="render-sublabel">Format</span>
+                                <div class="render-presets">
+                                    <button class="render-preset-btn" [class.active]="outputFormat === 'png'"
+                                        (click)="outputFormat = 'png'">PNG</button>
+                                    <button class="render-preset-btn" [class.active]="outputFormat === 'webp'"
+                                        (click)="outputFormat = 'webp'">WebP</button>
+                                    <button class="render-preset-btn" [class.active]="outputFormat === 'svg'"
+                                        (click)="outputFormat = 'svg'">SVG</button>
+                                    <button class="render-preset-btn" [class.active]="outputFormat === 'gif'"
+                                        (click)="outputFormat = 'gif'">
+                                        GIF <span class="format-tag">360°</span>
+                                    </button>
+                                </div>
+                                <div class="quality-slider" *ngIf="outputFormat === 'webp'">
+                                    <span class="render-sublabel">Quality</span>
+                                    <div class="slider-row">
+                                        <input type="range" min="1" max="100" step="1" [value]="webpQuality"
+                                            (input)="webpQuality = +$any($event.target).value" />
+                                        <span class="slider-value">{{ webpQuality }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="slider-row" style="margin-top: 6px;">
-                                <span class="render-sublabel" style="font-size: 0.75rem; min-width: auto;">Depth of
-                                    Field</span>
-                                <input type="range" min="0" max="5.0" step="0.1" [value]="aperture"
-                                    (input)="aperture = +$any($event.target).value" />
-                                <span class="slider-value">{{ aperture > 0 ? aperture.toFixed(1) : 'Off' }}</span>
+
+                            <div class="render-subsection">
+                                <span class="render-sublabel">Size</span>
+                                <div class="size-category-tabs">
+                                    <button *ngFor="let cat of sizeCategories" class="size-cat-btn"
+                                        [class.active]="sizeCategory === cat.key" (click)="sizeCategory = cat.key">
+                                        <i class="bi" [ngClass]="cat.icon"></i> {{ cat.label }}
+                                    </button>
+                                </div>
+                                <div class="render-presets">
+                                    <button *ngFor="let p of activeSizePresets" class="render-preset-btn"
+                                        [class.active]="isSelectedSize(p)" (click)="selectRenderSize(p)"
+                                        [title]="p.w + ' × ' + p.h">
+                                        {{ p.label }}
+                                    </button>
+                                </div>
+                                <div class="size-info">{{ sizeDisplayLabel }}</div>
+                            </div>
+
+                            <div class="render-subsection">
+                                <span class="render-sublabel">Anti-Aliasing</span>
+                                <div class="render-presets">
+                                    <button class="render-preset-btn" [class.active]="antiAliasMode === 'none'"
+                                        (click)="antiAliasMode = 'none'">Off</button>
+                                    <button class="render-preset-btn" [class.active]="antiAliasMode === '2x'"
+                                        (click)="antiAliasMode = '2x'">2× SSAA</button>
+                                    <button class="render-preset-btn" [class.active]="antiAliasMode === '4x'"
+                                        (click)="antiAliasMode = '4x'">4× SSAA</button>
+                                </div>
+                                <div class="render-warning"
+                                    *ngIf="antiAliasMode === '4x' && (renderWidth > 2560 || renderHeight > 2560)">
+                                    <i class="bi bi-exclamation-triangle"></i> Auto-downgraded to 2× at this resolution
+                                </div>
                             </div>
                         </div>
 
-                        <div class="render-subsection">
-                            <span class="render-sublabel">Background</span>
-                            <div class="bg-presets">
-                                <button *ngFor="let p of bgPresets" class="bg-preset-btn"
-                                    [class.active]="isActiveBgPreset(p)" [title]="p.label" (click)="applyBgPreset(p)">
-                                    <span class="bg-swatch"
-                                        [style.background]="p.top ? 'linear-gradient(180deg, ' + p.top + ', ' + p.bottom + ')' : 'repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 8px 8px'">
-                                    </span>
-                                    <span class="bg-preset-label">{{ p.label }}</span>
-                                </button>
-                            </div>
-                            <div class="hex-row">
-                                <input type="text" class="hex-input" placeholder="Top #hex" [value]="gradientTopHex"
-                                    (input)="gradientTopHex = $any($event.target).value" />
-                                <input type="text" class="hex-input" placeholder="Bottom #hex"
-                                    [value]="gradientBottomHex"
-                                    (input)="gradientBottomHex = $any($event.target).value" />
-                            </div>
-                        </div>
+                    </div><!-- /.render-config-scroll -->
 
-                        <div class="render-subsection">
-                            <label class="render-checkbox">
-                                <input type="checkbox" [checked]="explodedView"
-                                    (change)="explodedView = !explodedView" />
-                                Exploded View
-                            </label>
-                            <div class="slider-row" *ngIf="explodedView">
-                                <input type="range" min="0.1" max="3.0" step="0.1" [value]="explosionFactor"
-                                    (input)="explosionFactor = +$any($event.target).value" />
-                                <span class="slider-value">{{ explosionFactor.toFixed(1) }}×</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Render Button -->
+                    <!-- Render Button — always visible, pinned at bottom -->
                     <div class="render-actions">
                         <button class="render-btn" [disabled]="rendering" (click)="renderPart()">
                             <i class="bi" [ngClass]="rendering ? 'bi-arrow-repeat spin' : 'bi-camera'"></i>
@@ -367,293 +376,306 @@
                 </div>
             </div>
 
-            <!-- Appears In Sets Panel -->
-            <div class="sets-panel" *ngIf="!isLoadingSetParts">
-                <div class="sets-panel-header">
-                    <div class="sets-panel-title">
-                        <i class="bi bi-box-seam"></i>
-                        Appears In Sets
-                        <span class="count-badge" *ngIf="totalSetPartsCount > 0">{{ totalSetPartsCount }}</span>
-                        <span class="sets-cap-hint" *ngIf="totalSetPartsCount > 100">showing 100 newest sets</span>
-                    </div>
-                    <div class="sets-search" *ngIf="setParts.length > 0">
-                        <i class="bi bi-search"></i>
-                        <input type="text" placeholder="Search sets or colours…" [(ngModel)]="setPartsSearch" />
-                    </div>
-                </div>
-
-                <div class="sets-panel-body" *ngIf="setParts.length > 0">
-                    <!-- Results count -->
-                    <div class="sets-results-count" *ngIf="setPartsSearch">
-                        Showing {{ filteredSetParts.length }} of {{ setParts.length }}
-                    </div>
-
-                    <div class="sets-table-wrapper">
-                        <div class="sets-table">
-                            <!-- Header -->
-                            <div class="sets-header-row">
-                                <span class="sets-col-set" (click)="sortSetParts('set')">
-                                    Set <i class="bi" [ngClass]="getSortIcon('set')"></i>
-                                </span>
-                                <span class="sets-col-setnum" (click)="sortSetParts('setNum')">
-                                    Set # <i class="bi" [ngClass]="getSortIcon('setNum')"></i>
-                                </span>
-                                <span class="sets-col-colour" (click)="sortSetParts('colour')">
-                                    Colour <i class="bi" [ngClass]="getSortIcon('colour')"></i>
-                                </span>
-                                <span class="sets-col-qty" (click)="sortSetParts('qty')">
-                                    Qty <i class="bi" [ngClass]="getSortIcon('qty')"></i>
-                                </span>
-                            </div>
-
-                            <!-- Rows -->
-                            <div class="sets-row" *ngFor="let sp of sortedSetParts" (click)="navigateToSet(sp)">
-                                <span class="sets-col-set">
-                                    {{ sp.setName || '—' }}
-                                </span>
-                                <span class="sets-col-setnum mono">
-                                    {{ sp.setNumber || '—' }}
-                                </span>
-                                <span class="sets-col-colour">
-                                    <span class="colour-swatch" [style.backgroundColor]="getSwatchColor(sp)">
-                                    </span>
-                                    {{ sp.colourName || '—' }}
-                                </span>
-                                <span class="sets-col-qty">{{ sp.quantity ?? '—' }}</span>
-                            </div>
-
-                            <!-- Empty search results -->
-                            <div class="sets-empty" *ngIf="filteredSetParts.length === 0 && setPartsSearch">
-                                <i class="bi bi-search"></i>
-                                No sets match "{{ setPartsSearch }}"
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-card-body" *ngIf="setParts.length === 0">
-                    <div class="empty-section">
-                        <i class="bi bi-dash-circle"></i>
-                        This part does not appear in any sets
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading set parts -->
-            <div class="sets-panel loading-card" *ngIf="isLoadingSetParts">
-                <div class="sets-panel-header">
-                    <div class="sets-panel-title">
-                        <i class="bi bi-box-seam"></i>
-                        Appears In Sets
-                    </div>
-                </div>
-                <div class="info-card-body">
-                    <div class="empty-section">
-                        <div class="loading-spinner small"></div>
-                        Loading set data…
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Info Panels -->
-        <div class="info-panels">
 
-            <!-- Colour Picker Card — placed first so it is at the top of the right column -->
-            <div class="info-card colour-picker-card" *ngIf="!isLoadingColours">
+        <!-- ═══════════════════════════════════════════════════════
+             Section 2: COLOUR PICKER — Full-width strip
+             ═══════════════════════════════════════════════════════ -->
+        <div class="colour-picker-strip" *ngIf="!isLoadingColours">
 
-                <!-- Card Header with mode toggle -->
-                <div class="info-card-header colour-picker-header">
+            <!-- Header with mode toggle -->
+            <div class="colour-strip-header">
+                <div class="colour-strip-title">
                     <i class="bi bi-palette"></i>
                     Colour Preview
                     <span class="count-badge" *ngIf="visibleColourCount > 0">{{ visibleColourCount }}</span>
-
-                    <div class="colour-mode-toggle">
-                        <button class="colour-mode-btn" [class.active]="colourMode === 'part'"
-                            (click)="setColourMode('part')" title="Show only colours this part is known to exist in">
-                            Part Colours
-                        </button>
-                        <button class="colour-mode-btn" [class.active]="colourMode === 'all'"
-                            (click)="setColourMode('all')" title="Show all available colours">
-                            All Colours
-                        </button>
-                    </div>
                 </div>
 
-                <!-- Card Body -->
-                <div class="info-card-body colour-picker-body">
+                <div class="colour-mode-toggle">
+                    <button class="colour-mode-btn" [class.active]="colourMode === 'part'"
+                        (click)="setColourMode('part')" title="Show only colours this part is known to exist in">
+                        Part Colours
+                    </button>
+                    <button class="colour-mode-btn" [class.active]="colourMode === 'all'" (click)="setColourMode('all')"
+                        title="Show all available colours">
+                        All Colours
+                    </button>
+                </div>
 
-                    <!-- Search box — visible in All Colours mode only -->
-                    <div class="colour-search" *ngIf="colourMode === 'all'">
-                        <i class="bi bi-search"></i>
-                        <input type="text" placeholder="Search colours…" [(ngModel)]="allColoursSearch" />
-                    </div>
-
-                    <!-- Loading spinner for All Colours fetch -->
-                    <div class="colour-loading" *ngIf="colourMode === 'all' && isLoadingAllColours">
-                        <div class="loading-spinner small"></div>
-                        Loading colours…
-                    </div>
-
-                    <!-- Part Colours mode — swatch grid (merged from BrickPartColours + LegoSetParts) -->
-                    <div class="colour-swatch-grid" *ngIf="colourMode === 'part' && partColours.length > 0">
-                        <button class="colour-swatch-dot" *ngFor="let c of partColours"
-                            [class.selected]="selectedColour != null && selectedColour.id === c.id"
-                            [class.transparent]="c.isTransparent" [class.metallic]="c.isMetallic"
-                            [style.backgroundColor]="getSwatchHex(c)" [title]="c.name || 'Unknown'"
-                            (click)="selectColour(c)">
-                        </button>
-                    </div>
-
-                    <!-- Part Colours mode — empty state (shown while loading or if truly no data) -->
-                    <div class="empty-section"
-                        *ngIf="colourMode === 'part' && partColours.length === 0 && isLoadingColours === false && isLoadingSetParts === false">
-                        <i class="bi bi-dash-circle"></i>
-                        No colour variants found for this part
-                    </div>
-
-                    <!-- All Colours mode — swatch grid from full BrickColour table -->
-                    <div class="colour-swatch-grid"
-                        *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length > 0">
-                        <button class="colour-swatch-dot" *ngFor="let c of filteredAllColours"
-                            [class.selected]="selectedColour != null && selectedColour.id === c.id"
-                            [class.transparent]="c.isTransparent" [class.metallic]="c.isMetallic"
-                            [style.backgroundColor]="getSwatchHex(c)" [title]="c.name" (click)="selectColour(c)">
-                        </button>
-                    </div>
-
-                    <!-- All Colours mode — no search results -->
-                    <div class="empty-section"
-                        *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length === 0 && allColoursSearch">
-                        <i class="bi bi-search"></i>
-                        No colours match "{{ allColoursSearch }}"
-                    </div>
-
-                    <!-- Selected colour label -->
-                    <div class="colour-selected-label" *ngIf="selectedColour != null">
-                        <span class="colour-selected-swatch" [style.backgroundColor]="getSwatchHex(selectedColour)">
-                        </span>
-                        <span class="colour-selected-name">{{ selectedColour.name }}</span>
-                        <button class="colour-clear-btn" (click)="selectColour(selectedColour)"
-                            title="Clear colour selection">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-
-                    <!-- No selection hint -->
-                    <div class="colour-hint"
-                        *ngIf="selectedColour == null && (partColours.length > 0 || allColours.length > 0)">
-                        <i class="bi bi-cursor"></i>
-                        Click a swatch to preview the part in that colour
-                    </div>
-
+                <!-- Selected colour label (inline in header on desktop) -->
+                <div class="colour-selected-inline" *ngIf="selectedColour != null">
+                    <span class="colour-selected-swatch" [style.backgroundColor]="getSwatchHex(selectedColour)">
+                    </span>
+                    <span class="colour-selected-name">{{ selectedColour.name }}</span>
+                    <button class="colour-clear-btn" (click)="selectColour(selectedColour)"
+                        title="Clear colour selection">
+                        <i class="bi bi-x"></i>
+                    </button>
                 </div>
             </div>
 
+            <!-- Body -->
+            <div class="colour-strip-body">
 
-            <!-- Metadata Card -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <i class="bi bi-info-circle"></i>
-                    Part Information
+                <!-- Search box — visible in All Colours mode only -->
+                <div class="colour-search" *ngIf="colourMode === 'all'">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Search colours…" [(ngModel)]="allColoursSearch" />
                 </div>
-                <div class="info-card-body">
-                    <div class="info-row" *ngIf="part?.name">
-                        <span class="info-label">Name</span>
-                        <span class="info-value">{{ part?.name }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.ldrawTitle">
-                        <span class="info-label">LDraw Title</span>
-                        <span class="info-value">{{ part?.ldrawTitle }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.ldrawPartId">
-                        <span class="info-label">LDraw Part ID</span>
-                        <span class="info-value mono">{{ part?.ldrawPartId }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Category</span>
-                        <span class="info-value highlight">{{ getCategoryName() }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Part Type</span>
-                        <span class="info-value">{{ getPartTypeName() }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.author">
-                        <span class="info-label">Author</span>
-                        <span class="info-value">{{ part?.author }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.keywords">
-                        <span class="info-label">Keywords</span>
-                        <span class="info-value keywords">{{ part?.keywords }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.description">
-                        <span class="info-label">Description</span>
-                        <span class="info-value">{{ part?.description }}</span>
-                    </div>
+
+                <!-- Loading spinner for All Colours fetch -->
+                <div class="colour-loading" *ngIf="colourMode === 'all' && isLoadingAllColours">
+                    <div class="loading-spinner small"></div>
+                    Loading colours…
                 </div>
+
+                <!-- Part Colours mode — swatch grid (merged from BrickPartColours + LegoSetParts) -->
+                <div class="colour-swatch-grid" *ngIf="colourMode === 'part' && partColours.length > 0">
+                    <button class="colour-swatch-dot" *ngFor="let c of partColours"
+                        [class.selected]="selectedColour != null && selectedColour.id === c.id"
+                        [class.transparent]="c.isTransparent" [class.metallic]="c.isMetallic"
+                        [style.backgroundColor]="getSwatchHex(c)" [title]="c.name || 'Unknown'"
+                        (click)="selectColour(c)">
+                    </button>
+                </div>
+
+                <!-- Part Colours mode — empty state (shown while loading or if truly no data) -->
+                <div class="empty-section"
+                    *ngIf="colourMode === 'part' && partColours.length === 0 && isLoadingColours === false && isLoadingSetParts === false">
+                    <i class="bi bi-dash-circle"></i>
+                    No colour variants found for this part
+                </div>
+
+                <!-- All Colours mode — swatch grid from full BrickColour table -->
+                <div class="colour-swatch-grid"
+                    *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length > 0">
+                    <button class="colour-swatch-dot" *ngFor="let c of filteredAllColours"
+                        [class.selected]="selectedColour != null && selectedColour.id === c.id"
+                        [class.transparent]="c.isTransparent" [class.metallic]="c.isMetallic"
+                        [style.backgroundColor]="getSwatchHex(c)" [title]="c.name" (click)="selectColour(c)">
+                    </button>
+                </div>
+
+                <!-- All Colours mode — no search results -->
+                <div class="empty-section"
+                    *ngIf="colourMode === 'all' && isLoadingAllColours === false && filteredAllColours.length === 0 && allColoursSearch">
+                    <i class="bi bi-search"></i>
+                    No colours match "{{ allColoursSearch }}"
+                </div>
+
+                <!-- No selection hint -->
+                <div class="colour-hint"
+                    *ngIf="selectedColour == null && (partColours.length > 0 || allColours.length > 0)">
+                    <i class="bi bi-cursor"></i>
+                    Click a swatch to preview the part in that colour
+                </div>
+
             </div>
-
-
-            <!-- Dimensions Card -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <i class="bi bi-rulers"></i>
-                    Dimensions & Properties
-                </div>
-                <div class="info-card-body">
-                    <div class="info-row">
-                        <span class="info-label">Dimensions</span>
-                        <span class="info-value mono">{{ getDimensionsText() }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Mass</span>
-                        <span class="info-value mono">{{ getMassText() }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.toothCount && part?.toothCount > 0">
-                        <span class="info-label">Tooth Count</span>
-                        <span class="info-value mono">{{ part?.toothCount }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.gearRatio && part?.gearRatio > 0">
-                        <span class="info-label">Gear Ratio</span>
-                        <span class="info-value mono">{{ part?.gearRatio }}</span>
-                    </div>
-                    <div class="info-row" *ngIf="part?.geometryFilePath">
-                        <span class="info-label">Geometry File</span>
-                        <span class="info-value mono file-path">{{ part?.geometryFilePath }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Version</span>
-                        <span class="info-value mono">v{{ part?.versionNumber }}</span>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Connectors Card -->
-            <div class="info-card" *ngIf="!isLoadingConnectors">
-                <div class="info-card-header">
-                    <i class="bi bi-plug"></i>
-                    Connectors
-                    <span class="count-badge" *ngIf="connectors.length > 0">{{ connectors.length }}</span>
-                </div>
-                <div class="info-card-body">
-                    <div class="empty-section" *ngIf="connectors.length === 0">
-                        <i class="bi bi-dash-circle"></i>
-                        No connectors defined
-                    </div>
-                    <div class="connector-list" *ngIf="connectors.length > 0">
-                        <div class="connector-item" *ngFor="let c of connectors">
-                            <span class="connector-name">{{ c.name || 'Connector' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
 
+        <!-- ═══════════════════════════════════════════════════════
+             Section 3: SECONDARY PANELS — Two-column grid
+             ═══════════════════════════════════════════════════════ -->
+        <div class="secondary-panels">
 
+            <!-- Left column: Appears In Sets -->
+            <div class="secondary-left">
+
+                <!-- Appears In Sets Panel -->
+                <div class="sets-panel" *ngIf="!isLoadingSetParts">
+                    <div class="sets-panel-header">
+                        <div class="sets-panel-title">
+                            <i class="bi bi-box-seam"></i>
+                            Appears In Sets
+                            <span class="count-badge" *ngIf="totalSetPartsCount > 0">{{ totalSetPartsCount }}</span>
+                            <span class="sets-cap-hint" *ngIf="totalSetPartsCount > 100">showing 100 newest sets</span>
+                        </div>
+                        <div class="sets-search" *ngIf="setParts.length > 0">
+                            <i class="bi bi-search"></i>
+                            <input type="text" placeholder="Search sets or colours…" [(ngModel)]="setPartsSearch" />
+                        </div>
+                    </div>
+
+                    <div class="sets-panel-body" *ngIf="setParts.length > 0">
+                        <!-- Results count -->
+                        <div class="sets-results-count" *ngIf="setPartsSearch">
+                            Showing {{ filteredSetParts.length }} of {{ setParts.length }}
+                        </div>
+
+                        <div class="sets-table-wrapper">
+                            <div class="sets-table">
+                                <!-- Header -->
+                                <div class="sets-header-row">
+                                    <span class="sets-col-set" (click)="sortSetParts('set')">
+                                        Set <i class="bi" [ngClass]="getSortIcon('set')"></i>
+                                    </span>
+                                    <span class="sets-col-setnum" (click)="sortSetParts('setNum')">
+                                        Set # <i class="bi" [ngClass]="getSortIcon('setNum')"></i>
+                                    </span>
+                                    <span class="sets-col-colour" (click)="sortSetParts('colour')">
+                                        Colour <i class="bi" [ngClass]="getSortIcon('colour')"></i>
+                                    </span>
+                                    <span class="sets-col-qty" (click)="sortSetParts('qty')">
+                                        Qty <i class="bi" [ngClass]="getSortIcon('qty')"></i>
+                                    </span>
+                                </div>
+
+                                <!-- Rows -->
+                                <div class="sets-row" *ngFor="let sp of sortedSetParts" (click)="navigateToSet(sp)">
+                                    <span class="sets-col-set">
+                                        {{ sp.setName || '—' }}
+                                    </span>
+                                    <span class="sets-col-setnum mono">
+                                        {{ sp.setNumber || '—' }}
+                                    </span>
+                                    <span class="sets-col-colour">
+                                        <span class="colour-swatch" [style.backgroundColor]="getSwatchColor(sp)">
+                                        </span>
+                                        {{ sp.colourName || '—' }}
+                                    </span>
+                                    <span class="sets-col-qty">{{ sp.quantity ?? '—' }}</span>
+                                </div>
+
+                                <!-- Empty search results -->
+                                <div class="sets-empty" *ngIf="filteredSetParts.length === 0 && setPartsSearch">
+                                    <i class="bi bi-search"></i>
+                                    No sets match "{{ setPartsSearch }}"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card-body" *ngIf="setParts.length === 0">
+                        <div class="empty-section">
+                            <i class="bi bi-dash-circle"></i>
+                            This part does not appear in any sets
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading set parts -->
+                <div class="sets-panel loading-card" *ngIf="isLoadingSetParts">
+                    <div class="sets-panel-header">
+                        <div class="sets-panel-title">
+                            <i class="bi bi-box-seam"></i>
+                            Appears In Sets
+                        </div>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="empty-section">
+                            <div class="loading-spinner small"></div>
+                            Loading set data…
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right column: Metadata cards -->
+            <div class="secondary-right">
+
+                <!-- Metadata Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-info-circle"></i>
+                        Part Information
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row" *ngIf="part?.name">
+                            <span class="info-label">Name</span>
+                            <span class="info-value">{{ part?.name }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.ldrawTitle">
+                            <span class="info-label">LDraw Title</span>
+                            <span class="info-value">{{ part?.ldrawTitle }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.ldrawPartId">
+                            <span class="info-label">LDraw Part ID</span>
+                            <span class="info-value mono">{{ part?.ldrawPartId }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Category</span>
+                            <span class="info-value highlight">{{ getCategoryName() }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Part Type</span>
+                            <span class="info-value">{{ getPartTypeName() }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.author">
+                            <span class="info-label">Author</span>
+                            <span class="info-value">{{ part?.author }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.keywords">
+                            <span class="info-label">Keywords</span>
+                            <span class="info-value keywords">{{ part?.keywords }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.description">
+                            <span class="info-label">Description</span>
+                            <span class="info-value">{{ part?.description }}</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Dimensions Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-rulers"></i>
+                        Dimensions & Properties
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <span class="info-label">Dimensions</span>
+                            <span class="info-value mono">{{ getDimensionsText() }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Mass</span>
+                            <span class="info-value mono">{{ getMassText() }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.toothCount && part?.toothCount > 0">
+                            <span class="info-label">Tooth Count</span>
+                            <span class="info-value mono">{{ part?.toothCount }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.gearRatio && part?.gearRatio > 0">
+                            <span class="info-label">Gear Ratio</span>
+                            <span class="info-value mono">{{ part?.gearRatio }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="part?.geometryFilePath">
+                            <span class="info-label">Geometry File</span>
+                            <span class="info-value mono file-path">{{ part?.geometryFilePath }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Version</span>
+                            <span class="info-value mono">v{{ part?.versionNumber }}</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Connectors Card -->
+                <div class="info-card" *ngIf="!isLoadingConnectors">
+                    <div class="info-card-header">
+                        <i class="bi bi-plug"></i>
+                        Connectors
+                        <span class="count-badge" *ngIf="connectors.length > 0">{{ connectors.length }}</span>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="empty-section" *ngIf="connectors.length === 0">
+                            <i class="bi bi-dash-circle"></i>
+                            No connectors defined
+                        </div>
+                        <div class="connector-list" *ngIf="connectors.length > 0">
+                            <div class="connector-item" *ngFor="let c of connectors">
+                                <span class="connector-name">{{ c.name || 'Connector' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
 
     </div>
 
@@ -666,9 +688,11 @@
         </div>
         <div class="skeleton-body">
             <div class="skeleton-viewer"></div>
-            <div class="skeleton-panels">
-                <div class="skeleton-card"></div>
+            <div class="skeleton-colour-strip"></div>
+            <div class="skeleton-secondary">
+                <div class="skeleton-card wide"></div>
                 <div class="skeleton-card"></div>
             </div>
         </div>
     </div>
+</div>

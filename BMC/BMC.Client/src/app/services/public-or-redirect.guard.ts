@@ -14,7 +14,7 @@ export const PublicOrRedirectGuard: CanActivateFn = () => {
     const router = inject(Router);
 
     if (authService.isLoggedIn && !authService.isSessionExpired) {
-        router.navigate(['/dashboard']);
+        router.navigate(['/welcome']);
         return false;
     }
 

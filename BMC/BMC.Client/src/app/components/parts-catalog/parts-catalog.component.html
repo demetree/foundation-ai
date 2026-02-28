@@ -32,11 +32,49 @@
                 <input type="text" class="search-input" placeholder="Search parts by name, LDraw ID, keywords..."
                     [value]="searchTerm" (input)="onSearch($event)" id="parts-search">
             </div>
-            <button class="sidebar-toggle-btn" (click)="toggleSidebar()"
-                [title]="sidebarCollapsed ? 'Show filters' : 'Hide filters'">
-                <i class="fas" [class.fa-filter]="sidebarCollapsed" [class.fa-times]="!sidebarCollapsed"></i>
-                <span *ngIf="sidebarCollapsed">Filters</span>
-            </button>
+
+            <!-- Category Dropdown -->
+            <div class="filter-dropdown" [class.open]="categoryDropdownOpen">
+                <button class="filter-dropdown-trigger" (click)="toggleCategoryDropdown($event)"
+                    [class.has-value]="selectedCategoryId !== null">
+                    <i class="fas fa-layer-group"></i>
+                    <span class="filter-label">{{ selectedCategoryName || 'Category' }}</span>
+                    <i class="fas fa-chevron-down filter-chevron"></i>
+                </button>
+                <div class="filter-dropdown-panel" *ngIf="categoryDropdownOpen">
+                    <button class="filter-dropdown-item" [class.active]="selectedCategoryId === null"
+                        (click)="selectCategory(null)">
+                        <span class="item-name">All Categories</span>
+                        <span class="item-count">{{ totalCount }}</span>
+                    </button>
+                    <button *ngFor="let cat of sortedCategories" class="filter-dropdown-item"
+                        [class.active]="selectedCategoryId === cat.id" (click)="selectCategory(cat.id)">
+                        <span class="item-name">{{ cat.name }}</span>
+                        <span class="item-count">{{ cat.partCount }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Part Type Dropdown -->
+            <div class="filter-dropdown" [class.open]="partTypeDropdownOpen" *ngIf="partTypes.length > 0">
+                <button class="filter-dropdown-trigger" (click)="togglePartTypeDropdown($event)"
+                    [class.has-value]="selectedPartTypeId !== null">
+                    <i class="fas fa-shapes"></i>
+                    <span class="filter-label">{{ selectedPartTypeName || 'Part Type' }}</span>
+                    <i class="fas fa-chevron-down filter-chevron"></i>
+                </button>
+                <div class="filter-dropdown-panel" *ngIf="partTypeDropdownOpen">
+                    <button class="filter-dropdown-item" [class.active]="selectedPartTypeId === null"
+                        (click)="selectPartType(null)">
+                        <span class="item-name">All Types</span>
+                    </button>
+                    <button *ngFor="let type of partTypes" class="filter-dropdown-item"
+                        [class.active]="selectedPartTypeId === type.id" (click)="selectPartType(type.id)">
+                        <span class="item-name">{{ type.name }}</span>
+                    </button>
+                </div>
+            </div>
+
             <button *ngIf="hasActiveFilters()" class="clear-btn" (click)="clearFilters()">
                 <i class="fas fa-undo me-1"></i>Clear
             </button>
@@ -61,44 +99,8 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="catalog-body" [class.sidebar-hidden]="sidebarCollapsed">
-
-        <!-- Category Sidebar -->
-        <aside class="filter-sidebar" [class.collapsed]="sidebarCollapsed">
-            <div class="sidebar-section">
-                <h4 class="sidebar-title">
-                    <i class="fas fa-layer-group me-2"></i>Categories
-                </h4>
-
-                <div class="category-list">
-                    <button class="category-item" [class.active]="selectedCategoryId === null"
-                        (click)="selectCategory(null)">
-                        <span class="cat-name">All Categories</span>
-                        <span class="cat-count">{{ totalCount }}</span>
-                    </button>
-                    <button *ngFor="let cat of sortedCategories" class="category-item"
-                        [class.active]="selectedCategoryId === cat.id" (click)="selectCategory(cat.id)">
-                        <span class="cat-name">{{ cat.name }}</span>
-                        <span class="cat-count">{{ cat.partCount }}</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="sidebar-section" *ngIf="partTypes.length > 0">
-                <h4 class="sidebar-title">
-                    <i class="fas fa-shapes me-2"></i>Part Types
-                </h4>
-                <div class="type-chips">
-                    <button *ngFor="let type of partTypes" class="type-chip"
-                        [class.active]="selectedPartTypeId === type.id" (click)="selectPartType(type.id)">
-                        {{ type.name }}
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Parts Content -->
+    <!-- Main Content (full-width, no sidebar) -->
+    <div class="catalog-body">
         <main class="parts-content">
 
             <!-- Loading Skeleton -->
@@ -160,15 +162,6 @@
                                     <i class="fas fa-tag me-1"></i>{{ part.categoryName }}
                                 </span>
                             </div>
-                        </div>
-
-                        <div class="card-footer">
-                            <span class="dim-badge" title="Dimensions (LDU)">
-                                <i class="fas fa-ruler-combined me-1"></i>{{ formatDimensions(part) }}
-                            </span>
-                            <span class="mass-badge" *ngIf="part.massGrams > 0" title="Mass">
-                                {{ part.massGrams }}g
-                            </span>
                         </div>
                     </div>
                 </div>

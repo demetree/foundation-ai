@@ -15,6 +15,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { WelcomeComponent } from './components/welcome/welcome.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 
 import { AuthService } from './services/auth.service';
@@ -489,6 +490,7 @@ import { PublicLandingComponent } from './components/public-landing/public-landi
         SidebarComponent,
         LoginComponent,
         DashboardComponent,
+        WelcomeComponent,
         NotFoundComponent,
 
 

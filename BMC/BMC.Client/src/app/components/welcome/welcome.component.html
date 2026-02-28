@@ -1,0 +1,100 @@
+<!-- AI-Generated: Welcome page — persona-driven post-login landing -->
+<div class="welcome-page" @fadeInUp>
+
+    <!-- ═══════════════════════════ Hero Section ═══════════════════════════ -->
+    <section class="welcome-hero">
+
+        <!-- Floating brick particles -->
+        <div class="floating-bricks">
+            <i class="fas fa-cube brick brick-1"></i>
+            <i class="fas fa-cube brick brick-2"></i>
+            <i class="fas fa-puzzle-piece brick brick-3"></i>
+            <i class="fas fa-cube brick brick-4"></i>
+            <i class="fas fa-puzzle-piece brick brick-5"></i>
+            <i class="fas fa-cube brick brick-6"></i>
+        </div>
+
+        <div class="hero-content">
+            <h1 class="hero-greeting" *ngIf="displayName">
+                {{ greeting }}, <span class="hero-name">{{ displayName }}</span>
+            </h1>
+            <h1 class="hero-greeting" *ngIf="!displayName">
+                Welcome to <span class="hero-name">BMC</span>
+            </h1>
+
+            <p class="hero-tagline" [class.visible]="taglineVisible">
+                {{ taglines[activeTaglineIndex] }}
+            </p>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Pathway Selection ═══════════════════════════ -->
+    <section class="pathways-section">
+        <h2 class="section-prompt">How would you like to use BMC today?</h2>
+
+        <div class="pathway-grid">
+            <div class="pathway-card" *ngFor="let p of pathways; let i = index" [class]="p.gradient"
+                [style.animation-delay]="(i * 120) + 'ms'" (click)="selectPathway(p)">
+
+                <!-- Icon -->
+                <div class="pathway-icon-wrapper">
+                    <i [class]="p.icon" class="pathway-icon"></i>
+                </div>
+
+                <!-- Copy -->
+                <div class="pathway-body">
+                    <h3 class="pathway-title">{{ p.title }}</h3>
+                    <span class="pathway-subtitle">{{ p.subtitle }}</span>
+                    <p class="pathway-description">{{ p.description }}</p>
+
+                    <!-- Feature pills -->
+                    <div class="pathway-features">
+                        <button class="feature-pill" *ngFor="let f of p.features"
+                            (click)="goToFeaturePill($event, f.route)">{{ f.name }}</button>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <button class="pathway-cta">
+                    {{ p.ctaLabel }} <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Quick Feature Strip ═══════════════════════════ -->
+    <section class="features-section">
+        <h2 class="section-label"><i class="fas fa-bolt me-2"></i>Everything at a Glance</h2>
+
+        <div class="feature-strip">
+            <a class="feature-card" *ngFor="let f of featureLinks; let i = index"
+                [style.animation-delay]="(i * 40) + 'ms'" (click)="goToFeature(f)">
+
+                <div class="feature-icon" [ngClass]="f.gradient">
+                    <i [class]="f.icon"></i>
+                </div>
+                <div class="feature-info">
+                    <span class="feature-title">{{ f.title }}</span>
+                    <span class="feature-desc">{{ f.description }}</span>
+                </div>
+                <i class="fas fa-chevron-right feature-arrow"></i>
+            </a>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════ Live Stats ═══════════════════════════ -->
+    <section class="stats-section">
+        <div class="stats-bar">
+            <div class="stat-item" *ngFor="let s of stats; let i = index" [style.animation-delay]="(i * 80) + 'ms'">
+                <i [class]="s.icon" class="stat-icon"></i>
+                <span class="stat-value" *ngIf="s.loaded">{{ s.value | number }}</span>
+                <span class="stat-value skeleton-pulse" *ngIf="!s.loaded">&nbsp;</span>
+                <span class="stat-label">{{ s.label }}</span>
+            </div>
+        </div>
+    </section>
+
+</div>

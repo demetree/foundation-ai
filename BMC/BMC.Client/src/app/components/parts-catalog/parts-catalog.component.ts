@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, Subscription, forkJoin } from 'rxjs';
@@ -32,22 +32,19 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     thumbnails = new Map<string, string>();
 
     //
-    // Curated vibrant LEGO colour palette — assigned per part via id % length.
-    // Creates a playful, varied look across the catalog grid.
+    // Per-part colour map: partId → hex[] sorted by frequency.
+    // Loaded from the server to assign realistic colours to each part.
+    // Falls back to a small neutral palette if no data is available.
     //
-    private readonly LEGO_PALETTE = [
+    private partColoursMap: { [partId: number]: string[] } = {};
+
+    private readonly FALLBACK_PALETTE = [
+        '05131D',  // Black
         'C91A09',  // Red
         '0055BF',  // Blue
         'F2CD37',  // Yellow
         '237841',  // Green
-        'FE8A18',  // Orange
-        '008F9B',  // Dark Turquoise
-        'E4ADC8',  // Bright Pink
-        '36AEBF',  // Medium Azure
-        'A0BC00',  // Lime
-        '078BC9',  // Dark Azure
-        'FF698F',  // Coral
-        'F8BB3D',  // Bright Light Orange
+        'FFFFFF',  // White
     ];
 
     //
@@ -74,7 +71,10 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     selectedCategoryId: number | null = null;
     selectedPartTypeId: number | null = null;
     viewMode: 'grid' | 'list' = 'grid';
-    sidebarCollapsed = false;
+
+    // Filter dropdown open/closed state
+    categoryDropdownOpen = false;
+    partTypeDropdownOpen = false;
 
     totalCount = 0;
 
@@ -94,7 +94,8 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         private thumbnailService: LDrawThumbnailService,
         private http: HttpClient,
         private authService: AuthService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private elementRef: ElementRef
     ) { }
 
     ngOnInit(): void {
@@ -175,11 +176,12 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
             }
         });
 
-        // Load all data in parallel
+        // Load all data in parallel (including per-part colours)
         this.loadSub = forkJoin({
             parts: this.catalogApi.getAllParts(),
             categories: this.catalogApi.getCategories(),
-            partTypes: this.catalogApi.getPartTypes()
+            partTypes: this.catalogApi.getPartTypes(),
+            partColours: this.catalogApi.getPartColours()
         }).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
@@ -187,6 +189,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
                 this.allParts = data.parts;
                 this.categories = data.categories;
                 this.partTypes = data.partTypes;
+                this.partColoursMap = data.partColours || {};
                 this.totalCount = data.parts.length;
                 this.applyPipeline();
                 this.loading = false;
@@ -195,6 +198,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
                 this.allParts = [];
                 this.categories = [];
                 this.partTypes = [];
+                this.partColoursMap = {};
                 this.loading = false;
             }
         });
@@ -247,7 +251,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         const visibleBatch = this.filteredParts.slice(0, Math.min(100, this.filteredParts.length));
         const requests: ThumbnailRequest[] = visibleBatch.map(p => ({
             geometryFilePath: p.geometryFilePath,
-            colourHex: this.LEGO_PALETTE[p.id % this.LEGO_PALETTE.length]
+            colourHex: this.getHexForPart(p)
         }));
         this.thumbnailService.renderBatch(requests);
     }
@@ -294,8 +298,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
 
     private calculateColumns(): void {
         const width = window.innerWidth;
-        const sidebarWidth = this.sidebarCollapsed ? 0 : 260;
-        const available = width - sidebarWidth - 40;  // account for sidebar + padding
+        const available = width - 40;  // just padding, sidebar is gone
 
         let cols: number;
         if (available >= 1400) {
@@ -330,11 +333,13 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
 
     selectCategory(catId: number | null): void {
         this.selectedCategoryId = this.selectedCategoryId === catId ? null : catId;
+        this.categoryDropdownOpen = false;
         this.applyPipeline();
     }
 
     selectPartType(typeId: number | null): void {
         this.selectedPartTypeId = this.selectedPartTypeId === typeId ? null : typeId;
+        this.partTypeDropdownOpen = false;
         this.applyPipeline();
     }
 
@@ -388,17 +393,49 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     // ----------------------------------------------------------------
 
     navigateToDetail(part: CatalogPartItem): void {
-        this.router.navigate(['/parts', part.id]);
+        const hex = this.getHexForPart(part);
+        this.router.navigate(['/parts', part.id], {
+            queryParams: { hex: hex ? hex.replace('#', '') : null }
+        });
     }
 
     navigateBack(): void {
         this.router.navigate(['/lego']);
     }
 
-    toggleSidebar(): void {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-        // Recalculate after sidebar toggle
-        setTimeout(() => this.calculateColumns(), 50);
+    toggleCategoryDropdown(event: Event): void {
+        event.stopPropagation();
+        this.categoryDropdownOpen = !this.categoryDropdownOpen;
+        this.partTypeDropdownOpen = false;
+    }
+
+    togglePartTypeDropdown(event: Event): void {
+        event.stopPropagation();
+        this.partTypeDropdownOpen = !this.partTypeDropdownOpen;
+        this.categoryDropdownOpen = false;
+    }
+
+    /** Close dropdowns when clicking outside */
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: Event): void {
+        if (!this.elementRef.nativeElement.contains(event.target)) {
+            this.categoryDropdownOpen = false;
+            this.partTypeDropdownOpen = false;
+        }
+    }
+
+    /** Display name for the currently selected category */
+    get selectedCategoryName(): string | null {
+        if (this.selectedCategoryId === null) return null;
+        const cat = this.categories.find(c => c.id === this.selectedCategoryId);
+        return cat ? cat.name : null;
+    }
+
+    /** Display name for the currently selected part type */
+    get selectedPartTypeName(): string | null {
+        if (this.selectedPartTypeId === null) return null;
+        const pt = this.partTypes.find(t => t.id === this.selectedPartTypeId);
+        return pt ? pt.name : null;
     }
 
 
@@ -450,11 +487,23 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     /**
+     * Get the hex colour for a part — round-robin from its real top colours,
+     * falling back to a small neutral palette if no colour data is available.
+     */
+    getHexForPart(part: CatalogPartItem): string {
+        const colours = this.partColoursMap[part.id];
+        if (colours && colours.length > 0) {
+            return colours[part.id % colours.length];
+        }
+        return this.FALLBACK_PALETTE[part.id % this.FALLBACK_PALETTE.length];
+    }
+
+    /**
      * Compute the thumbnail cache key for a part, matching the service's
-     * composite key format: 'path:colourHex' using the palette colour.
+     * composite key format: 'path:colourHex' using the part's real colour.
      */
     thumbnailKey(part: CatalogPartItem): string {
-        const colour = this.LEGO_PALETTE[part.id % this.LEGO_PALETTE.length];
+        const colour = this.getHexForPart(part);
         return LDrawThumbnailService.cacheKey(part.geometryFilePath, colour);
     }
 
@@ -527,30 +576,27 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         return { w: 20, h: 20, d: 20 };
     }
 
-    /** Get colour palette based on brick category */
+    /** Get colour shading for the SVG fallback brick — derived from the part's real hex */
     getPartColour(part: CatalogPartItem): { top: string; front: string; side: string; stud: string; outline: string } {
-        const typeName = part.categoryName?.toLowerCase() || part.ldrawCategory?.toLowerCase() || '';
+        const hex = this.getHexForPart(part);
+        // Parse the hex into RGB components and generate shading variations
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
 
-        if (typeName.includes('brick')) return { top: '#ffb74d', front: '#f09030', side: '#c06a20', stud: '#ffd180', outline: '#a05010' };
-        if (typeName.includes('plate')) return { top: '#64b5f6', front: '#4090d0', side: '#2a6ca0', stud: '#90caf9', outline: '#1a5080' };
-        if (typeName.includes('tile')) return { top: '#81c784', front: '#56a05a', side: '#3a7a3e', stud: '#a5d6a7', outline: '#2a5a2e' };
-        if (typeName.includes('slope')) return { top: '#e57373', front: '#c04040', side: '#8a2a2a', stud: '#ef9a9a', outline: '#6a1a1a' };
-        if (typeName.includes('technic')) return { top: '#ba68c8', front: '#8a40a0', side: '#6a2a7a', stud: '#ce93d8', outline: '#4a1a5a' };
-        if (typeName.includes('axle')) return { top: '#ba68c8', front: '#8a40a0', side: '#6a2a7a', stud: '#ce93d8', outline: '#4a1a5a' };
-        if (typeName.includes('gear')) return { top: '#ffd54f', front: '#d0a020', side: '#a07a10', stud: '#ffe082', outline: '#806010' };
-        if (typeName.includes('cone')) return { top: '#f48fb1', front: '#d06080', side: '#a04060', stud: '#f8bbd0', outline: '#802040' };
-        if (typeName.includes('cylinder')) return { top: '#90caf9', front: '#5090c0', side: '#306a90', stud: '#bbdefb', outline: '#204a70' };
-        if (typeName.includes('arch')) return { top: '#ffcc80', front: '#d09040', side: '#a07020', stud: '#ffe0b2', outline: '#805020' };
-        if (typeName.includes('door')) return { top: '#a1887f', front: '#7a6058', side: '#5a4038', stud: '#bcaaa4', outline: '#3a2018' };
-        if (typeName.includes('window')) return { top: '#80cbc4', front: '#509a94', side: '#307a74', stud: '#b2dfdb', outline: '#205a54' };
-        if (typeName.includes('fence')) return { top: '#c5e1a5', front: '#90b070', side: '#608040', stud: '#dcedc8', outline: '#405020' };
-        if (typeName.includes('bar')) return { top: '#b0bec5', front: '#808e95', side: '#5a6a72', stud: '#cfd8dc', outline: '#404a50' };
-        if (typeName.includes('bracket')) return { top: '#ffab91', front: '#d07050', side: '#a05030', stud: '#ffccbc', outline: '#803020' };
-        if (typeName.includes('wedge')) return { top: '#ef9a9a', front: '#c06060', side: '#904040', stud: '#ffcdd2', outline: '#602020' };
-        if (typeName.includes('hinge')) return { top: '#b39ddb', front: '#806ab0', side: '#604a90', stud: '#d1c4e9', outline: '#402a70' };
-        if (typeName.includes('container')) return { top: '#a5d6a7', front: '#70a074', side: '#4a7a4e', stud: '#c8e6c9', outline: '#2a5a2e' };
-        if (typeName.includes('electric')) return { top: '#fff59d', front: '#c0b050', side: '#908030', stud: '#fff9c4', outline: '#605020' };
-        return { top: '#b0bec5', front: '#808e95', side: '#5a6a72', stud: '#cfd8dc', outline: '#404a50' };
+        const lighten = (v: number, pct: number) => Math.min(255, Math.round(v + (255 - v) * pct));
+        const darken = (v: number, pct: number) => Math.max(0, Math.round(v * (1 - pct)));
+
+        const toHex = (rv: number, gv: number, bv: number) =>
+            '#' + [rv, gv, bv].map(c => c.toString(16).padStart(2, '0')).join('');
+
+        return {
+            top: toHex(lighten(r, 0.20), lighten(g, 0.20), lighten(b, 0.20)),
+            front: toHex(r, g, b),
+            side: toHex(darken(r, 0.25), darken(g, 0.25), darken(b, 0.25)),
+            stud: toHex(lighten(r, 0.35), lighten(g, 0.35), lighten(b, 0.35)),
+            outline: toHex(darken(r, 0.50), darken(g, 0.50), darken(b, 0.50)),
+        };
     }
 
     /** Compute isometric polygon points for 3 faces of the brick */

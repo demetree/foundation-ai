@@ -72,9 +72,10 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     colourMode: 'part' | 'all' = 'part';
 
     //
-    // Initial colour ID from query params (when navigating from set detail)
+    // Initial colour from query params (colour ID from set detail, or hex from catalog)
     //
     private initialColourId: bigint | number | null = null;
+    private initialHex: string | null = null;
 
     //
     // partColours — the merged, deduplicated list of colours for this part.
@@ -237,7 +238,19 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         //
         const colourId = this.route.snapshot.queryParamMap.get('colourId');
         if (colourId) {
-            this.initialColourId = parseInt(colourId, 10);
+            const parsed = parseInt(colourId, 10);
+            if (parsed > 0) {
+                this.initialColourId = parsed;
+            }
+        }
+
+        //
+        // Read optional hex query parameter for pre-selecting a colour
+        // when navigating from the parts catalog.
+        //
+        const hex = this.route.snapshot.queryParamMap.get('hex');
+        if (hex) {
+            this.initialHex = hex.startsWith('#') ? hex : '#' + hex;
         }
 
         if (partId) {
@@ -448,24 +461,53 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
         //
-        // If we have an initial colour ID from query params, try to find and select it
+        // Resolve the initial colour to apply.
         //
+        // Priority cascade:
+        //   1. colourId match by id (BrickColour PK)
+        //   2. colourId match by ldrawColourCode (synthetic entries use this as id)
+        //   3. hex match against known part colours
+        //   4. hex applied directly to the scene (no matching swatch)
+        //   5. first available colour
+        //   6. default Light Bluish Gray
+        //
+        let resolved = false;
+
         if (this.initialColourId != null) {
-            const matchingColour = this.partColours.find(c => c.id === this.initialColourId);
+            // Try matching by BrickColour PK
+            let matchingColour = this.partColours.find(c => c.id === this.initialColourId);
+
+            // Try matching by ldrawColourCode (synthetic entries from set appearances)
+            if (matchingColour == null) {
+                matchingColour = this.partColours.find(c => c.ldrawColourCode === this.initialColourId);
+            }
+
             if (matchingColour != null) {
                 this.selectColour(matchingColour);
-            } else if (this.partColours.length > 0) {
-                // Requested colour not found in part's colours — fall back to first available
-                this.selectColour(this.partColours[0]);
-            } else {
-                // No colours at all — apply Light Bluish Gray as the default
-                this.applyDefaultGray();
+                resolved = true;
             }
         }
-        else {
-            //
-            // No initial colour ID — only apply Light Bluish Gray if no colours are known.
-            //
+
+        // Try hex matching (from catalog or set detail fallback)
+        if (!resolved && this.initialHex != null) {
+            const normHex = this.initialHex.replace('#', '').toUpperCase();
+            const matchingColour = this.partColours.find(c => {
+                const cHex = (c.hexRgb ?? '').replace('#', '').toUpperCase();
+                return cHex === normHex;
+            });
+
+            if (matchingColour != null) {
+                this.selectColour(matchingColour);
+                resolved = true;
+            } else {
+                // Hex doesn't match any known part colour — apply it directly to the scene
+                this.applyColourToScene(this.initialHex);
+                resolved = true;
+            }
+        }
+
+        // Generic fallback — no initial colour provided or nothing matched
+        if (!resolved) {
             if (this.partColours.length === 0) {
                 this.applyDefaultGray();
             }

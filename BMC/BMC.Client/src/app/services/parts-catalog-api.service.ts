@@ -117,6 +117,20 @@ export class PartsCatalogApiService extends SecureEndpointBase {
         );
     }
 
+    /**
+     * Returns a map of partId → top-N most common colour hex values.
+     * Used for realistic colour assignment in the catalog grid.
+     * Cached in IndexedDB for 24 hours.
+     */
+    getPartColours(): Observable<{ [partId: number]: string[] }> {
+        return this.cacheService.getOrFetch<{ [partId: number]: string[] }>(
+            'parts-catalog-part-colours',
+            {},
+            () => this.fetchPartColoursFromServer(),
+            1440
+        );
+    }
+
 
     private fetchFromServer(): Observable<CatalogPartItem[]> {
         const url = this.baseUrl + 'api/parts-catalog/all';
@@ -153,6 +167,19 @@ export class PartsCatalogApiService extends SecureEndpointBase {
         return this.http.get<CatalogPartType[]>(url, { headers }).pipe(
             catchError(error => {
                 return this.handleError(error, () => this.fetchPartTypesFromServer());
+            })
+        );
+    }
+
+    private fetchPartColoursFromServer(): Observable<{ [partId: number]: string[] }> {
+        const url = this.baseUrl + 'api/parts-catalog/part-colours?top=10';
+        const headers = new HttpHeaders({
+            Authorization: 'Bearer ' + this.authService.accessToken
+        });
+
+        return this.http.get<{ [partId: number]: string[] }>(url, { headers }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.fetchPartColoursFromServer());
             })
         );
     }

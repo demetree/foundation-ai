@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ConfigurationService {
 
-    public static readonly defaultHomeUrl = '/dashboard';
+    public static readonly defaultHomeUrl = '/welcome';
     public static readonly defaultLoginUrl = '/login';
 
     constructor(@Inject('BASE_URL') private baseUrl: string) { }

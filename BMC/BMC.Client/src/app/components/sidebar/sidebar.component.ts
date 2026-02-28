@@ -8,6 +8,11 @@ interface NavItem {
     badge?: string;
 }
 
+interface NavGroup {
+    label: string;
+    items: NavItem[];
+}
+
 @Component({
     selector: 'app-sidebar',
     templateUrl: './sidebar.component.html',
@@ -17,19 +22,50 @@ export class SidebarComponent {
     @Input() isCollapsed = false;
     @Output() toggleCollapse = new EventEmitter<boolean>();
 
-    navItems: NavItem[] = [
-        { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
-        { icon: 'fas fa-globe', label: 'Universe', route: '/lego' },
-        { icon: 'fas fa-user-circle', label: 'My Profile', route: '/profile' },
-        { icon: 'fas fa-cubes', label: 'Parts Catalog', route: '/parts' },
-        { icon: 'fas fa-camera', label: 'Part Renderer', route: '/part-renderer' },
-        { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
-        { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' },
-        { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
-        { icon: 'fas fa-palette', label: 'Colours', route: '/colours' },
-        { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
-        { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' },
+
+    //
+    // Grouped navigation items — organized by persona / function
+    //
+    navGroups: NavGroup[] = [
+        {
+            label: '',
+            items: [
+                { icon: 'fas fa-home', label: 'Welcome', route: '/welcome' }
+            ]
+        },
+        {
+            label: 'EXPLORE',
+            items: [
+                { icon: 'fas fa-globe', label: 'Universe', route: '/lego' },
+                { icon: 'fas fa-cubes', label: 'Parts Catalog', route: '/parts' },
+                { icon: 'fas fa-palette', label: 'Colours', route: '/colours' }
+            ]
+        },
+        {
+            label: 'CREATE & BUILD',
+            items: [
+                { icon: 'fas fa-camera', label: 'Part Renderer', route: '/part-renderer' },
+                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
+                { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' }
+            ]
+        },
+        {
+            label: 'MY STUFF',
+            items: [
+                { icon: 'fas fa-user-circle', label: 'My Profile', route: '/profile' },
+                { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' }
+            ]
+        },
+        {
+            label: 'TOOLS',
+            items: [
+                { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
+                { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
+                { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' }
+            ]
+        }
     ];
+
 
     constructor(public router: Router) { }
 
