@@ -165,6 +165,20 @@
     z-index: 2;
 }
 
+.tap-explore-hint {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--bmc-text-muted);
+    margin: 4px 0 0;
+    animation: fadeInUp 0.5s ease-out 0.3s both;
+
+    i {
+        margin-right: 4px;
+        color: var(--bmc-primary);
+    }
+}
+
 .stat-card {
     @include glass-effect-lg;
     padding: 24px;
@@ -173,23 +187,40 @@
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
+    // Ensure instant taps on touch devices
+    -webkit-tap-highlight-color: transparent;
 
-    &:hover {
-        transform: translateY(-4px);
-        border-color: var(--bmc-border-strong);
-        box-shadow: var(--bmc-shadow-lg);
+    // Only apply transform hover on devices that support hover (not touch)
+    @media (hover: hover) {
+        &:hover {
+            transform: translateY(-4px);
+            border-color: var(--bmc-border-strong);
+            box-shadow: var(--bmc-shadow-lg);
 
-        .stat-glow {
-            opacity: 0.15;
+            .stat-glow {
+                opacity: 0.15;
+            }
+
+            .stat-icon i {
+                transform: scale(1.15);
+            }
         }
+    }
 
-        .stat-icon i {
-            transform: scale(1.15);
-        }
+    // Touch-only: active state provides instant feedback
+    &:active {
+        transform: scale(0.97);
+        transition-duration: 0.1s;
+    }
+
+    // First-session tap hint animation
+    &.tap-hint {
+        animation: tapHintPulse 2s ease-in-out 3;
     }
 
     &.skeleton {
         cursor: default;
+        animation: none;
 
         &:hover {
             transform: none;
@@ -737,15 +768,23 @@
     position: relative;
     overflow: hidden;
     animation: fadeInUp 0.4s ease-out both;
+    -webkit-tap-highlight-color: transparent;
 
-    &:hover {
-        transform: translateY(-4px);
-        border-color: var(--bmc-border-strong);
-        box-shadow: var(--bmc-shadow-md);
+    @media (hover: hover) {
+        &:hover {
+            transform: translateY(-4px);
+            border-color: var(--bmc-border-strong);
+            box-shadow: var(--bmc-shadow-md);
 
-        .discovery-image img {
-            transform: scale(1.05);
+            .discovery-image img {
+                transform: scale(1.05);
+            }
         }
+    }
+
+    &:active {
+        transform: scale(0.97);
+        transition-duration: 0.1s;
     }
 }
 
@@ -1485,5 +1524,24 @@
         border-color: var(--bmc-primary);
         transform: translateY(-3px);
         box-shadow: 0 6px 20px var(--bmc-accent-glow);
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Tap Hint Pulse — draws attention to clickable stat cards
+   on first session load to improve discoverability.
+   ---------------------------------------------------------------- */
+@keyframes tapHintPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+        border-color: var(--bmc-glass-border);
+    }
+
+    50% {
+        box-shadow: 0 0 12px 2px rgba(102, 126, 234, 0.3);
+        border-color: rgba(102, 126, 234, 0.6);
     }
 }

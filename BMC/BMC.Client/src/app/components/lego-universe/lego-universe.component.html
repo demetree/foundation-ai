@@ -26,30 +26,33 @@
 
         <!-- Animated Stats -->
         <div class="hero-stats" *ngIf="!loading">
-            <div class="stat-card sets-card" (click)="navigateToSets()">
+            <div class="stat-card sets-card" [class.tap-hint]="showTapHint" (click)="navigateToSets()">
                 <div class="stat-icon"><i class="fas fa-box-open"></i></div>
                 <div class="stat-value">{{ displaySets | number }}</div>
                 <div class="stat-label">Sets</div>
                 <div class="stat-glow"></div>
             </div>
-            <div class="stat-card minifigs-card" (click)="navigateToMinifigs()">
+            <div class="stat-card minifigs-card" [class.tap-hint]="showTapHint" (click)="navigateToMinifigs()">
                 <div class="stat-icon"><i class="fas fa-child"></i></div>
                 <div class="stat-value">{{ displayMinifigs | number }}</div>
                 <div class="stat-label">Minifigs</div>
                 <div class="stat-glow"></div>
             </div>
-            <div class="stat-card themes-card" (click)="navigateToThemes()">
+            <div class="stat-card themes-card" [class.tap-hint]="showTapHint" (click)="navigateToThemes()">
                 <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
                 <div class="stat-value">{{ displayThemes | number }}</div>
                 <div class="stat-label">Themes</div>
                 <div class="stat-glow"></div>
             </div>
-            <div class="stat-card parts-card" (click)="navigateToPartsUniverse()">
+            <div class="stat-card parts-card" [class.tap-hint]="showTapHint" (click)="navigateToPartsUniverse()">
                 <div class="stat-icon"><i class="fas fa-puzzle-piece"></i></div>
                 <div class="stat-value">{{ displayParts | number }}</div>
                 <div class="stat-label">Unique Parts</div>
                 <div class="stat-glow"></div>
             </div>
+            <p class="tap-explore-hint" *ngIf="showTapHint">
+                <i class="fas fa-hand-pointer"></i> Tap any card to explore
+            </p>
         </div>
 
         <!-- Loading state for stats -->

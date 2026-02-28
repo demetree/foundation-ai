@@ -106,7 +106,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             subtitle: 'Discover the LEGO Universe',
             description: 'Browse thousands of sets, themes, and minifigures. Explore by decade, discover fun facts, and get lost in the world of LEGO.',
             features: [
-                { name: 'Sets & Themes', route: '/lego/sets' },
+                { name: 'Sets', route: '/lego/sets' },
+                { name: 'Themes', route: '/lego/themes' },
                 { name: 'Minifigures', route: '/lego/minifigs' },
                 { name: 'Colour Library', route: '/colours' },
                 { name: 'Set Comparison', route: '/lego/compare' },

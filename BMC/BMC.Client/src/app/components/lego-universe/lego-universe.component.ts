@@ -157,6 +157,11 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     wantedCount = 0;
     collectionPct = 0;
 
+    //
+    // Tap hint — show pulse animation on stat cards for first visit per session
+    //
+    showTapHint = false;
+
     constructor(
         public router: Router,
         private minifigService: LegoMinifigService,
@@ -181,6 +186,17 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
     ngOnInit(): void {
         this.loadData();
         this.startTaglineRotation();
+
+        //
+        // Show tap hint pulse on first visit per session
+        //
+        const hintKey = 'bmc-universe-tap-hint-shown';
+        if (!sessionStorage.getItem(hintKey)) {
+            this.showTapHint = true;
+            sessionStorage.setItem(hintKey, '1');
+            // Auto-dismiss after the CSS animation plays 3 times (2s × 3 = 6s)
+            setTimeout(() => this.showTapHint = false, 6000);
+        }
     }
 
     ngAfterViewInit(): void {
