@@ -385,3 +385,10 @@ environment.development.ts
 
 /BMC/BMC.Server/ai-data/vectors/bmc-parts/docs
 /BMC/BMC.Server/ai-data/vectors/bmc-parts
+
+# Data import cache (LDraw + Rebrickable downloads)
+import-cache/
+*.csv
+*.csv.gz
+ldraw-official/
+ldraw-unofficial/
