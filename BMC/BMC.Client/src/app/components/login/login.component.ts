@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
@@ -8,7 +8,9 @@ import { AlertService, MessageSeverity } from '../../services/alert.service';
     templateUrl: './login.component.html',
     styleUrl: './login.component.scss'
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
+
+    @ViewChild('usernameInput') usernameInput: ElementRef;
 
     userName = '';
     password = '';
@@ -24,6 +26,19 @@ export class LoginComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute
     ) { }
+
+
+    ngAfterViewInit(): void {
+
+        //
+        // Programmatically focus the username input after the view renders.
+        // The HTML 'autofocus' attribute only works on full page loads, not on Angular route navigations,
+        // so this ensures focus works when arriving from the landing page or any other in-app navigation.
+        //
+        if (this.usernameInput) {
+            this.usernameInput.nativeElement.focus();
+        }
+    }
 
 
     ngOnInit(): void {

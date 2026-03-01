@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BMC.Rebrickable.TestHarness": {
+      "commandName": "Project",
+      "commandLineArgs": "--key 13df52cacedc73ed1e679aa25ffd5a1c"
+    }
+  }
+}
