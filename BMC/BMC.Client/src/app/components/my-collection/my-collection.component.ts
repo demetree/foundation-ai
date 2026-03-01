@@ -7,9 +7,10 @@ import { CollectionService, CollectionSummary, CollectionPart, ImportedSetRecord
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
+import { RebrickableSyncService, SyncStatus, SyncTransaction } from '../../services/rebrickable-sync.service';
 import { ImportSetModalComponent } from '../import-set-modal/import-set-modal.component';
 
-type TabId = 'parts' | 'imported-sets' | 'wishlist';
+type TabId = 'parts' | 'imported-sets' | 'wishlist' | 'rebrickable';
 
 @Component({
     selector: 'app-my-collection',
@@ -52,7 +53,30 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
     // Wishlist tab
     wishlistItems: WishlistItem[] = [];
 
-    // Import set modal state removed — now handled by ImportSetModalComponent via NgbModal
+    // Rebrickable tab
+    loadingSync = false;
+    syncStatus: SyncStatus | null = null;
+    transactions: SyncTransaction[] = [];
+    transactionsTotalCount = 0;
+    transactionsPage = 1;
+    transactionsPageSize = 20;
+    transactionDirectionFilter: string | null = null;
+    transactionSuccessFilter: boolean | null = null;
+    showTokenInput = false;
+    apiTokenInput = '';
+    usernameInput = '';
+    passwordInput = '';
+    selectedMode = 'RealTime';
+    pulling = false;
+    connecting = false;
+
+    // Integration mode options
+    integrationModes = [
+        { value: 'None', label: 'No Integration', icon: 'fas fa-ban', desc: 'Rebrickable sync disabled' },
+        { value: 'RealTime', label: 'Real-Time Sync', icon: 'fas fa-bolt', desc: 'Push & pull on every change' },
+        { value: 'PushOnly', label: 'Push Only', icon: 'fas fa-upload', desc: 'BMC → Rebrickable only' },
+        { value: 'ImportOnly', label: 'Import Only', icon: 'fas fa-download', desc: 'Rebrickable → BMC only' }
+    ];
 
     constructor(
         private router: Router,
@@ -60,6 +84,7 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
         private alertService: AlertService,
         private confirmationService: ConfirmationService,
         private thumbnailService: LDrawThumbnailService,
+        private syncService: RebrickableSyncService,
         private modalService: NgbModal
     ) { }
 
@@ -120,6 +145,11 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
 
 
     loadTabData(): void {
+        if (this.activeTab === 'rebrickable') {
+            this.loadRebrickableData();
+            return;
+        }
+
         if (!this.activeCollection) return;
 
         switch (this.activeTab) {
@@ -322,6 +352,198 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
             },
             () => { /* dismissed */ }
         );
+    }
+
+
+    // ───────────────────── Rebrickable Integration ─────────────────────
+
+    loadRebrickableData(): void {
+        this.loadingSync = true;
+        this.syncService.getStatus().pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.loadingSync = false)
+        ).subscribe({
+            next: (status) => {
+                this.syncStatus = status;
+                this.selectedMode = status.integrationMode || 'None';
+                this.loadTransactions();
+            },
+            error: () => {
+                this.syncStatus = null;
+                this.loadTransactions();
+            }
+        });
+    }
+
+
+    loadTransactions(): void {
+        this.syncService.getTransactions(
+            this.transactionsPageSize,
+            this.transactionsPage,
+            this.transactionDirectionFilter || undefined,
+            this.transactionSuccessFilter !== null ? this.transactionSuccessFilter : undefined
+        ).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (page) => {
+                this.transactions = page.results;
+                this.transactionsTotalCount = page.totalCount;
+            },
+            error: () => {
+                this.transactions = [];
+                this.transactionsTotalCount = 0;
+            }
+        });
+    }
+
+
+    connectToRebrickable(): void {
+        if (!this.apiTokenInput.trim() || !this.usernameInput.trim() || !this.passwordInput.trim()) return;
+
+        this.connecting = true;
+        this.syncService.connect({
+            apiToken: this.apiTokenInput.trim(),
+            username: this.usernameInput.trim(),
+            password: this.passwordInput,
+            integrationMode: this.selectedMode
+        }).pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.connecting = false)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Connected', 'Successfully connected to Rebrickable!', MessageSeverity.success);
+                this.apiTokenInput = '';
+                this.usernameInput = '';
+                this.passwordInput = '';
+                this.showTokenInput = false;
+                this.loadRebrickableData();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Connection failed. Check your credentials.';
+                this.alertService.showMessage('Connection Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    async disconnectFromRebrickable(): Promise<void> {
+        const confirmed = await this.confirmationService.confirm(
+            'Disconnect Rebrickable',
+            'This will remove your API token and stop sync. Your BMC data will not be affected.'
+        );
+
+        if (!confirmed) return;
+
+        this.syncService.disconnect().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Disconnected', 'Rebrickable integration disabled.', MessageSeverity.success);
+                this.loadRebrickableData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to disconnect.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    updateSyncSettings(): void {
+        this.syncService.updateSettings({
+            integrationMode: this.selectedMode
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Settings Updated', `Integration mode set to ${this.selectedMode}`, MessageSeverity.success);
+                this.loadRebrickableData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to update settings.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    triggerFullPull(): void {
+        this.pulling = true;
+        this.syncService.pullFull().pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.pulling = false)
+        ).subscribe({
+            next: (result) => {
+                this.alertService.showMessage(
+                    'Import Complete',
+                    `Created ${result.totalCreated}, updated ${result.totalUpdated}` +
+                    (result.errorCount > 0 ? `, ${result.errorCount} errors` : ''),
+                    result.errorCount > 0 ? MessageSeverity.warn : MessageSeverity.success
+                );
+                this.loadRebrickableData();
+                this.loadCollections();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Pull failed. Check the communications log.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    setTransactionFilter(direction: string | null, success: boolean | null): void {
+        this.transactionDirectionFilter = direction;
+        this.transactionSuccessFilter = success;
+        this.transactionsPage = 1;
+        this.loadTransactions();
+    }
+
+
+    nextTransactionsPage(): void {
+        const maxPage = Math.ceil(this.transactionsTotalCount / this.transactionsPageSize);
+        if (this.transactionsPage < maxPage) {
+            this.transactionsPage++;
+            this.loadTransactions();
+        }
+    }
+
+
+    prevTransactionsPage(): void {
+        if (this.transactionsPage > 1) {
+            this.transactionsPage--;
+            this.loadTransactions();
+        }
+    }
+
+
+    getStatusCodeClass(code: number): string {
+        if (code >= 200 && code < 300) return 'status-success';
+        if (code >= 400 && code < 500) return 'status-client-error';
+        if (code >= 500) return 'status-server-error';
+        return 'status-unknown';
+    }
+
+
+    getDirectionIcon(direction: string): string {
+        return direction === 'Push' ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
+    }
+
+
+    getDirectionClass(direction: string): string {
+        return direction === 'Push' ? 'direction-push' : 'direction-pull';
+    }
+
+
+    formatRelativeTime(dateStr: string): string {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
     }
 
 

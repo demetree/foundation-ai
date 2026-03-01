@@ -44,6 +44,7 @@ interface RebrickableTransactionFormValues {
   success: boolean,
   errorMessage: string | null,
   triggeredBy: string,
+  recordCount: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -83,6 +84,7 @@ export class RebrickableTransactionDetailComponent implements OnInit, CanCompone
         success: [false],
         errorMessage: [''],
         triggeredBy: ['', Validators.required],
+        recordCount: [''],
         active: [true],
         deleted: [false],
       });
@@ -395,6 +397,7 @@ export class RebrickableTransactionDetailComponent implements OnInit, CanCompone
         success: false,
         errorMessage: '',
         triggeredBy: '',
+        recordCount: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -416,6 +419,7 @@ export class RebrickableTransactionDetailComponent implements OnInit, CanCompone
         success: rebrickableTransactionData.success ?? false,
         errorMessage: rebrickableTransactionData.errorMessage ?? '',
         triggeredBy: rebrickableTransactionData.triggeredBy ?? '',
+        recordCount: rebrickableTransactionData.recordCount?.toString() ?? '',
         active: rebrickableTransactionData.active ?? true,
         deleted: rebrickableTransactionData.deleted ?? false,
       }, { emitEvent: false});
@@ -487,6 +491,7 @@ export class RebrickableTransactionDetailComponent implements OnInit, CanCompone
         success: !!formValue.success,
         errorMessage: formValue.errorMessage?.trim() || null,
         triggeredBy: formValue.triggeredBy!.trim(),
+        recordCount: formValue.recordCount ? Number(formValue.recordCount) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

@@ -973,12 +973,12 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // -------------------------------------------------
-            // RebrickableTransaction — Audit log for all Rebrickable API calls
+            // RebrickableTransaction — Audit log for all Rebrickable API calls - Not writeable through standard data controllers.  Fully system managed data.
             // -------------------------------------------------
             Database.Table rebrickableTransactionTable = database.AddTable("RebrickableTransaction");
             rebrickableTransactionTable.comment = "Full audit log of every Rebrickable API call BMC makes on behalf of a user. Enables the Communications Panel for total transparency. Every push, pull, login, and error is recorded.";
-            rebrickableTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
-            rebrickableTransactionTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            rebrickableTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            rebrickableTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes();
             rebrickableTransactionTable.AddIdField();
             rebrickableTransactionTable.AddMultiTenantSupport();
 
@@ -992,6 +992,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             rebrickableTransactionTable.AddBoolField("success", false, true).AddScriptComments("Whether the API call completed successfully");
             rebrickableTransactionTable.AddTextField("errorMessage").AddScriptComments("Error details if the call failed (null on success)");
             rebrickableTransactionTable.AddString100Field("triggeredBy", false).AddScriptComments("What initiated this call: UserAction, PeriodicSync, ManualPull, SessionLogin");
+            rebrickableTransactionTable.AddIntField("recordCount", true).AddScriptComments("Number of rows retrieved or affected by this API call");
 
             rebrickableTransactionTable.AddControlFields();
 

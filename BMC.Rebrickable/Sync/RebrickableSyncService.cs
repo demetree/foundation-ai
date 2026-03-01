@@ -122,27 +122,62 @@ namespace BMC.Rebrickable.Sync
 
 
         /// <summary>
-        /// Connect to Rebrickable with an API token. Validates by calling the profile endpoint.
+        /// Connect to Rebrickable with API key + Rebrickable username/password.
+        /// Validates the API key, then obtains a user_token for user-level API access.
         /// </summary>
         public async Task<(bool success, string error)> ConnectWithTokenAsync(
-            Guid tenantGuid, string apiToken, string integrationMode, CancellationToken ct = default)
+            Guid tenantGuid, string apiToken, string username, string password,
+            string integrationMode, CancellationToken ct = default)
         {
-            // Validate the token by attempting to get the user profile
             var client = new RebrickableApiClient(apiToken);
-            RebrickableUserProfile profile;
 
+            // Step 1: Validate the API key with a lightweight catalog call
             try
             {
-                profile = await client.GetUserProfileAsync(apiToken);
+                await client.GetColorsAsync(1, 1);
             }
             catch (RebrickableApiException ex)
             {
                 await LogTransactionAsync(tenantGuid, "Push", "GET",
-                    "api/v3/users/_token/profile/",
-                    "Validate API token",
+                    "api/v3/lego/colors/",
+                    "Validate API key",
                     (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
 
-                return (false, $"Invalid token: {ex.Message}");
+                return (false, $"Invalid API key: {ex.Message}");
+            }
+
+            // Step 2: Obtain a user_token via username/password
+            RebrickableUserToken tokenResult;
+            try
+            {
+                tokenResult = await client.GetUserTokenAsync(username, password);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "POST",
+                    "api/v3/users/_token/",
+                    "Obtain user token",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Invalid Rebrickable credentials: {ex.Message}");
+            }
+
+            string userToken = tokenResult.UserToken;
+
+            // Step 3: Validate the user_token by getting the user profile
+            RebrickableUserProfile profile;
+            try
+            {
+                profile = await client.GetUserProfileAsync(userToken);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "GET",
+                    $"api/v3/users/{{token}}/profile/",
+                    "Validate user profile",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Could not retrieve user profile: {ex.Message}");
             }
 
             // Create or update the user link
@@ -161,7 +196,8 @@ namespace BMC.Rebrickable.Sync
             }
 
             link.rebrickableUsername = profile.Username;
-            link.encryptedApiToken = apiToken; // TODO: encrypt at rest
+            link.encryptedApiToken = apiToken;       // TODO: encrypt at rest
+            link.encryptedPassword = userToken;       // Store user_token (TODO: encrypt at rest)
             link.authMode = AUTH_API_TOKEN;
             link.syncEnabled = integrationMode != MODE_NONE;
             link.syncDirectionFlags = integrationMode;
@@ -169,12 +205,13 @@ namespace BMC.Rebrickable.Sync
 
             await _context.SaveChangesAsync(ct);
 
-            await LogTransactionAsync(tenantGuid, "Push", "GET",
-                "api/v3/users/_token/profile/",
+            await LogTransactionAsync(tenantGuid, "Push", "POST",
+                "api/v3/users/_token/",
                 $"Connected as {profile.Username}",
                 200, null, true, null, TRIGGER_USER_ACTION, ct);
 
-            _logger.LogInformation("Rebrickable connected for tenant {TenantGuid} as {Username}", tenantGuid, profile.Username);
+            _logger.LogInformation("Rebrickable connected for tenant {TenantGuid} as {Username}",
+                tenantGuid, profile.Username);
 
             return (true, null);
         }
@@ -188,9 +225,9 @@ namespace BMC.Rebrickable.Sync
             var link = await GetUserLinkAsync(tenantGuid, ct);
             if (link == null) return;
 
-            link.encryptedApiToken = null;
-            link.encryptedPassword = null;
-            link.authMode = null;
+            link.encryptedApiToken = string.Empty;
+            link.encryptedPassword = string.Empty;
+            link.authMode = string.Empty;
             link.syncEnabled = false;
             link.syncDirectionFlags = MODE_NONE;
             link.lastSyncError = null;
@@ -470,7 +507,8 @@ namespace BMC.Rebrickable.Sync
                 "api/v3/users/_token/sets/",
                 "Pull all user sets",
                 TRIGGER_MANUAL_PULL,
-                () => client.GetAllUserSetsAsync(token));
+                () => client.GetAllUserSetsAsync(token),
+                r => r?.Count ?? 0);
 
             if (remoteSets == null) return;
 
@@ -538,7 +576,8 @@ namespace BMC.Rebrickable.Sync
                 "api/v3/users/_token/setlists/",
                 "Pull all user set lists",
                 TRIGGER_MANUAL_PULL,
-                () => client.GetAllUserSetListsAsync(token));
+                () => client.GetAllUserSetListsAsync(token),
+                r => r?.Count ?? 0);
 
             if (remoteLists == null) return;
 
@@ -582,7 +621,8 @@ namespace BMC.Rebrickable.Sync
                     $"api/v3/users/_token/setlists/{remoteList.Id}/sets/",
                     $"Pull sets in list '{remoteList.Name}'",
                     TRIGGER_MANUAL_PULL,
-                    () => client.GetAllUserSetListSetsAsync(token, remoteList.Id));
+                    () => client.GetAllUserSetListSetsAsync(token, remoteList.Id),
+                r => r?.Count ?? 0);
 
                 if (remoteSets == null) continue;
 
@@ -638,7 +678,8 @@ namespace BMC.Rebrickable.Sync
                 "api/v3/users/_token/partlists/",
                 "Pull all user part lists",
                 TRIGGER_MANUAL_PULL,
-                () => client.GetAllUserPartListsAsync(token));
+                () => client.GetAllUserPartListsAsync(token),
+                r => r?.Count ?? 0);
 
             if (remoteLists == null) return;
 
@@ -682,7 +723,8 @@ namespace BMC.Rebrickable.Sync
                     $"api/v3/users/_token/partlists/{remoteList.Id}/parts/",
                     $"Pull parts in list '{remoteList.Name}'",
                     TRIGGER_MANUAL_PULL,
-                    () => client.GetAllUserPartListPartsAsync(token, remoteList.Id));
+                    () => client.GetAllUserPartListPartsAsync(token, remoteList.Id),
+                r => r?.Count ?? 0);
 
                 if (remoteParts == null) continue;
 
@@ -702,8 +744,9 @@ namespace BMC.Rebrickable.Sync
                     if (brickPart == null) continue;
 
                     // Look up the BMC colour by Rebrickable colour ID
+                    int remoteColorId = remotePart.Color?.Id ?? 0;
                     var brickColour = await _context.BrickColours
-                        .FirstOrDefaultAsync(c => c.rebrickableColorId == (remotePart.Color?.Id ?? 0)
+                        .FirstOrDefaultAsync(c => c.rebrickableColorId == remoteColorId
                             && c.active == true && c.deleted == false, ct);
 
                     if (brickColour == null) continue;
@@ -749,7 +792,8 @@ namespace BMC.Rebrickable.Sync
                 "api/v3/users/_token/lost_parts/",
                 "Pull all lost parts",
                 TRIGGER_MANUAL_PULL,
-                () => client.GetAllUserLostPartsAsync(token));
+                () => client.GetAllUserLostPartsAsync(token),
+                r => r?.Count ?? 0);
 
             if (remoteLostParts == null) return;
 
@@ -767,8 +811,9 @@ namespace BMC.Rebrickable.Sync
 
                 if (brickPart == null) continue;
 
+                int lostColorId = remoteLp.Color?.Id ?? 0;
                 var brickColour = await _context.BrickColours
-                    .FirstOrDefaultAsync(c => c.rebrickableColorId == (remoteLp.Color?.Id ?? 0)
+                    .FirstOrDefaultAsync(c => c.rebrickableColorId == lostColorId
                         && c.active == true && c.deleted == false, ct);
 
                 if (brickColour == null) continue;
@@ -834,9 +879,16 @@ namespace BMC.Rebrickable.Sync
                 return (null, null);
             }
 
-            string apiToken = link.encryptedApiToken; // TODO: decrypt
-            var client = new RebrickableApiClient(apiToken);
-            return (client, apiToken);
+            if (string.IsNullOrEmpty(link.encryptedPassword))
+            {
+                _logger.LogWarning("No Rebrickable user_token stored for tenant {TenantGuid} — reconnect required", tenantGuid);
+                return (null, null);
+            }
+
+            string apiKey = link.encryptedApiToken;   // TODO: decrypt
+            string userToken = link.encryptedPassword; // TODO: decrypt
+            var client = new RebrickableApiClient(apiKey);
+            return (client, userToken);
         }
 
 
@@ -878,14 +930,20 @@ namespace BMC.Rebrickable.Sync
         private async Task<T> ExecuteWithAuditAsync<T>(
             Guid tenantGuid, string direction, string httpMethod,
             string endpoint, string summary, string triggeredBy,
-            Func<Task<T>> apiCall)
+            Func<Task<T>> apiCall,
+            Func<T, int> countExtractor = null)
         {
             try
             {
                 T result = await apiCall();
 
+                int? rowCount = countExtractor != null ? countExtractor(result) : null;
+                string logSummary = rowCount.HasValue
+                    ? $"{summary} — {rowCount.Value} rows"
+                    : summary;
+
                 await LogTransactionAsync(tenantGuid, direction, httpMethod,
-                    endpoint, summary, 200, null, true, null, triggeredBy);
+                    endpoint, logSummary, 200, null, true, null, triggeredBy, recordCount: rowCount);
 
                 // Update last push/pull date
                 var link = await GetUserLinkAsync(tenantGuid);
@@ -926,13 +984,15 @@ namespace BMC.Rebrickable.Sync
             int responseStatusCode, string responseBody,
             bool success, string errorMessage,
             string triggeredBy,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            int? recordCount = null)
         {
             try
             {
                 var transaction = new RebrickableTransaction
                 {
                     tenantGuid = tenantGuid,
+                    objectGuid = Guid.NewGuid(),
                     transactionDate = DateTime.UtcNow,
                     direction = direction,
                     httpMethod = httpMethod,
@@ -943,6 +1003,7 @@ namespace BMC.Rebrickable.Sync
                     success = success,
                     errorMessage = errorMessage,
                     triggeredBy = triggeredBy,
+                    recordCount = recordCount,
                     active = true,
                     deleted = false
                 };

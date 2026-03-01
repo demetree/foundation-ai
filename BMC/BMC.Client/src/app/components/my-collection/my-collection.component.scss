@@ -1318,6 +1318,590 @@
 
 
 /* ----------------------------------------------------------------
+   Tab Status Dot (connected indicator on Rebrickable tab)
+   ---------------------------------------------------------------- */
+.tab-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #66bb6a;
+    box-shadow: 0 0 6px rgba(102, 187, 106, 0.6);
+    margin-left: 4px;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable Tab — Layout
+   ---------------------------------------------------------------- */
+.rebrickable-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Panel Shared
+   ---------------------------------------------------------------- */
+.rb-settings-panel,
+.rb-comms-panel {
+    background: var(--bmc-panel-bg);
+    border: 1px solid var(--bmc-panel-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: var(--bmc-panel-backdrop);
+    -webkit-backdrop-filter: var(--bmc-panel-backdrop);
+    overflow: hidden;
+}
+
+.rb-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bmc-border);
+
+    h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--bmc-text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+            color: var(--bmc-primary);
+        }
+    }
+}
+
+.rb-comms-count {
+    font-size: 0.72rem;
+    color: var(--bmc-text-muted);
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Connection Card
+   ---------------------------------------------------------------- */
+.rb-connection-card {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bmc-border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rb-connection-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rb-status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.connected {
+        background: #66bb6a;
+        box-shadow: 0 0 8px rgba(102, 187, 106, 0.5);
+    }
+
+    &.disconnected {
+        background: #78909c;
+        opacity: 0.5;
+    }
+}
+
+.rb-status-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+        font-size: 0.88rem;
+        color: var(--bmc-text-primary);
+    }
+}
+
+.rb-username {
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+
+    i {
+        margin-right: 4px;
+        font-size: 0.68rem;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Token Input
+   ---------------------------------------------------------------- */
+.rb-token-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rb-token-help {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+    padding: 8px 12px;
+    background: var(--bmc-glass-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bmc-glass-border);
+
+    i {
+        color: #42a5f5;
+        flex-shrink: 0;
+    }
+
+    a {
+        color: var(--bmc-primary);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.rb-token-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.rb-input {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bmc-glass-bg);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--bmc-text-primary);
+    font-size: 0.82rem;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    letter-spacing: 1px;
+
+    &::placeholder {
+        color: var(--bmc-text-muted);
+        font-family: 'Inter', sans-serif;
+        letter-spacing: 0;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: var(--bmc-primary);
+        box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Button Helpers
+   ---------------------------------------------------------------- */
+.btn-sm {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+}
+
+.btn-danger-text {
+    color: #ef5350 !important;
+
+    &:hover {
+        border-color: rgba(239, 83, 80, 0.4) !important;
+        background: rgba(239, 83, 80, 0.08) !important;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Mode Selector
+   ---------------------------------------------------------------- */
+.rb-mode-section,
+.rb-actions-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bmc-border);
+
+    h4 {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--bmc-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 12px;
+    }
+}
+
+.rb-mode-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rb-mode-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--bmc-bg-hover);
+    }
+
+    &.selected {
+        background: var(--bmc-surface-hover);
+        border-color: var(--bmc-primary);
+    }
+}
+
+.rb-mode-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--bmc-glass-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: var(--bmc-text-secondary);
+
+    .selected & {
+        background: var(--bmc-primary);
+        color: #000;
+    }
+}
+
+.rb-mode-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    strong {
+        font-size: 0.82rem;
+        color: var(--bmc-text-primary);
+        font-weight: 500;
+    }
+
+    span {
+        font-size: 0.7rem;
+        color: var(--bmc-text-muted);
+    }
+}
+
+.rb-mode-check {
+    color: var(--bmc-primary);
+    font-size: 0.85rem;
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Sync Actions & Dates
+   ---------------------------------------------------------------- */
+.rb-actions-row {
+    display: flex;
+    gap: 10px;
+}
+
+.rb-sync-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.rb-sync-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+
+    i {
+        font-size: 0.68rem;
+        width: 14px;
+        text-align: center;
+        color: var(--bmc-text-muted);
+    }
+}
+
+.rb-sync-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: #ef5350;
+    padding: 6px 10px;
+    background: rgba(239, 83, 80, 0.08);
+    border-radius: var(--radius-sm);
+
+    i {
+        flex-shrink: 0;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Communications Filters
+   ---------------------------------------------------------------- */
+.rb-comms-filters {
+    display: flex;
+    gap: 4px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bmc-border);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.rb-filter-btn {
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bmc-text-muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover:not(.active) {
+        color: var(--bmc-text-primary);
+        background: var(--bmc-bg-hover);
+    }
+
+    &.active {
+        background: var(--bmc-primary);
+        color: #000;
+        font-weight: 600;
+    }
+}
+
+.rb-filter-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--bmc-border);
+    margin: 0 4px;
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Transaction Timeline
+   ---------------------------------------------------------------- */
+.rb-timeline {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.rb-tx-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bmc-border);
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: var(--bmc-bg-hover);
+    }
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &.tx-failed {
+        border-left: 3px solid #ef5350;
+
+        .rb-tx-summary {
+            color: #ef5350;
+        }
+    }
+}
+
+.rb-tx-direction {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    margin-top: 2px;
+
+    &.direction-push {
+        background: rgba(66, 165, 245, 0.12);
+        color: #42a5f5;
+    }
+
+    &.direction-pull {
+        background: rgba(102, 187, 106, 0.12);
+        color: #66bb6a;
+    }
+}
+
+.rb-tx-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.rb-tx-summary {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--bmc-text-primary);
+    margin-bottom: 4px;
+}
+
+.rb-tx-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.rb-tx-method {
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    color: var(--bmc-text-muted);
+    background: var(--bmc-glass-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+}
+
+.rb-tx-endpoint {
+    font-size: 0.68rem;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    color: var(--bmc-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.rb-tx-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    padding: 1px 6px;
+    border-radius: 3px;
+
+    &.status-success {
+        background: rgba(102, 187, 106, 0.12);
+        color: #66bb6a;
+    }
+
+    &.status-client-error {
+        background: rgba(255, 167, 38, 0.12);
+        color: #ffa726;
+    }
+
+    &.status-server-error {
+        background: rgba(239, 83, 80, 0.12);
+        color: #ef5350;
+    }
+
+    &.status-unknown {
+        background: var(--bmc-glass-bg);
+        color: var(--bmc-text-muted);
+    }
+}
+
+.rb-tx-trigger {
+    font-size: 0.65rem;
+    color: var(--bmc-text-muted);
+}
+
+.rb-tx-error {
+    margin-top: 4px;
+    font-size: 0.72rem;
+    color: #ef5350;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    i {
+        font-size: 0.65rem;
+    }
+}
+
+.rb-tx-time {
+    font-size: 0.68rem;
+    color: var(--bmc-text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+
+/* ----------------------------------------------------------------
+   Rebrickable — Empty & Pagination
+   ---------------------------------------------------------------- */
+.rb-comms-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--bmc-text-muted);
+
+    i {
+        font-size: 2.5rem;
+        opacity: 0.3;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    p {
+        font-size: 0.82rem;
+        margin: 0;
+    }
+}
+
+.rb-comms-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-top: 1px solid var(--bmc-border);
+}
+
+.rb-page-info {
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+}
+
+
+/* ----------------------------------------------------------------
    Responsive
    ---------------------------------------------------------------- */
 @media (max-width: 900px) {
@@ -1332,6 +1916,10 @@
     .parts-table th:nth-child(3),
     .parts-table td:nth-child(3) {
         display: none;
+    }
+
+    .rebrickable-layout {
+        grid-template-columns: 1fr;
     }
 }
 

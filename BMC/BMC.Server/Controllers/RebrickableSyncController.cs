@@ -53,6 +53,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         public class ConnectRequest
         {
             public string apiToken { get; set; }
+            public string username { get; set; }
+            public string password { get; set; }
             public string integrationMode { get; set; } = "RealTime";
         }
 
@@ -74,6 +76,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             public bool success { get; set; }
             public string errorMessage { get; set; }
             public string triggeredBy { get; set; }
+            public int? recordCount { get; set; }
         }
 
         #endregion
@@ -91,9 +94,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         {
             StartAuditEventClock();
 
-            if (request == null || string.IsNullOrWhiteSpace(request.apiToken))
+            if (request == null || string.IsNullOrWhiteSpace(request.apiToken)
+                || string.IsNullOrWhiteSpace(request.username) || string.IsNullOrWhiteSpace(request.password))
             {
-                return BadRequest("API token is required.");
+                return BadRequest("API token, username, and password are required.");
             }
 
             if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
@@ -115,7 +119,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             var (success, error) = await _syncService.ConnectWithTokenAsync(
-                userTenantGuid, request.apiToken, request.integrationMode, cancellationToken);
+                userTenantGuid, request.apiToken, request.username, request.password,
+                request.integrationMode, cancellationToken);
 
             if (!success)
             {
@@ -210,7 +215,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// Trigger a full pull from Rebrickable — imports sets, set lists, part lists, and lost parts.
         /// </summary>
         [HttpPost]
-        [RateLimit(RateLimitOption.OnePerFiveSeconds, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/rebrickable-sync/pull")]
         public async Task<IActionResult> PullFull(CancellationToken cancellationToken = default)
         {
@@ -249,7 +254,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// Pull only sets from Rebrickable.
         /// </summary>
         [HttpPost]
-        [RateLimit(RateLimitOption.OnePerFiveSeconds, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/rebrickable-sync/pull-sets")]
         public async Task<IActionResult> PullSets(CancellationToken cancellationToken = default)
         {
@@ -320,15 +325,16 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .Select(t => new TransactionDto
                 {
                     id = t.id,
-                    transactionDate = t.transactionDate,
+                    transactionDate = t.transactionDate ?? DateTime.MinValue,
                     direction = t.direction,
                     httpMethod = t.httpMethod,
                     endpoint = t.endpoint,
                     requestSummary = t.requestSummary,
-                    responseStatusCode = t.responseStatusCode,
+                    responseStatusCode = t.responseStatusCode ?? 0,
                     success = t.success,
                     errorMessage = t.errorMessage,
-                    triggeredBy = t.triggeredBy
+                    triggeredBy = t.triggeredBy,
+                    recordCount = t.recordCount
                 });
 
             // Filter by direction (Push/Pull)

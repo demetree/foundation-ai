@@ -1960,6 +1960,7 @@ CREATE TABLE "BMC"."RebrickableTransaction"
 	"success" BOOLEAN NOT NULL DEFAULT true,		-- Whether the API call completed successfully
 	"errorMessage" TEXT NULL,		-- Error details if the call failed (null on success)
 	"triggeredBy" VARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, PeriodicSync, ManualPull, SessionLogin
+	"recordCount" INT NULL,		-- Number of rows retrieved or affected by this API call
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.

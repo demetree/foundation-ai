@@ -37,6 +37,7 @@ export class RebrickableTransactionQueryParameters {
     success: boolean | null | undefined = null;
     errorMessage: string | null | undefined = null;
     triggeredBy: string | null | undefined = null;
+    recordCount: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -62,6 +63,7 @@ export class RebrickableTransactionSubmitData {
     success!: boolean;
     errorMessage: string | null = null;
     triggeredBy!: string;
+    recordCount: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -121,6 +123,7 @@ export class RebrickableTransactionData {
     success!: boolean;
     errorMessage!: string | null;
     triggeredBy!: string;
+    recordCount!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -281,6 +284,7 @@ export class RebrickableTransactionService extends SecureEndpointBase {
         output.success = data.success;
         output.errorMessage = data.errorMessage;
         output.triggeredBy = data.triggeredBy;
+        output.recordCount = data.recordCount;
         output.active = data.active;
         output.deleted = data.deleted;
 

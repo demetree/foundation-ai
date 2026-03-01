@@ -67,6 +67,10 @@
                 Triggered  By
                 <span *ngIf="sortColumn === 'triggeredBy'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('recordCount')">
+                Record  Count
+                <span *ngIf="sortColumn === 'recordCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -162,6 +166,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><boolean-icon [value]="rebrickableTransaction.success"/></td>
             <td class="text-truncate">{{rebrickableTransaction.errorMessage}}</td>
             <td class="text-truncate">{{rebrickableTransaction.triggeredBy}}</td>
+            <td class="text-truncate">{{rebrickableTransaction.recordCount | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -347,6 +352,10 @@ End of commented block for alternate definition option -->
             <p class="rebrickable-transaction-info" *ngIf="rebrickableTransaction.triggeredBy != null">
               <strong>Triggered By: </strong>
               {{rebrickableTransaction.triggeredBy}}
+            </p>
+            <p class="rebrickable-transaction-info" *ngIf="rebrickableTransaction.recordCount != null">
+              <strong>Record Count: </strong>
+              {{rebrickableTransaction.recordCount | bigNumberFormat : '1.0-2'}}
             </p>
             </div>
          </div>

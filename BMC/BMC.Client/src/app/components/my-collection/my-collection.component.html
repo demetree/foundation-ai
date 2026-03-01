@@ -73,6 +73,10 @@
         <button class="tab-btn" [class.active]="activeTab === 'wishlist'" (click)="setTab('wishlist')">
             <i class="fas fa-star"></i> Wishlist
         </button>
+        <button class="tab-btn" [class.active]="activeTab === 'rebrickable'" (click)="setTab('rebrickable')">
+            <i class="fas fa-plug"></i> Rebrickable
+            <span class="tab-status-dot" *ngIf="syncStatus?.isConnected"></span>
+        </button>
     </div>
 
 
@@ -297,6 +301,215 @@
                     <span class="qty-label">wanted</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+
+    <!-- ===== REBRICKABLE TAB ===== -->
+    <div class="tab-content" *ngIf="activeTab === 'rebrickable' && !loading">
+
+        <div class="loading-inline" *ngIf="loadingSync">
+            <i class="fas fa-spinner fa-spin"></i> Loading Rebrickable status…
+        </div>
+
+        <div class="rebrickable-layout" *ngIf="!loadingSync">
+
+            <!-- ──── Settings Panel ──── -->
+            <div class="rb-settings-panel">
+                <div class="rb-panel-header">
+                    <h3><i class="fas fa-cog"></i> Integration Settings</h3>
+                </div>
+
+                <!-- Connection Status -->
+                <div class="rb-connection-card">
+                    <div class="rb-connection-status">
+                        <span class="rb-status-indicator" [class.connected]="syncStatus?.isConnected"
+                            [class.disconnected]="!syncStatus?.isConnected"></span>
+                        <div class="rb-status-text">
+                            <strong *ngIf="syncStatus?.isConnected">Connected</strong>
+                            <strong *ngIf="!syncStatus?.isConnected">Not Connected</strong>
+                            <span *ngIf="syncStatus?.rebrickableUsername" class="rb-username">
+                                <i class="fas fa-user"></i> {{ syncStatus.rebrickableUsername }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Connect Button / Token Input -->
+                    <div *ngIf="!syncStatus?.isConnected">
+                        <button class="btn btn-primary btn-sm" *ngIf="!showTokenInput" (click)="showTokenInput = true">
+                            <i class="fas fa-plug"></i> Connect to Rebrickable
+                        </button>
+
+                        <div class="rb-token-form" *ngIf="showTokenInput">
+                            <div class="rb-token-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Generate an API key at <a href="https://rebrickable.com/api/" target="_blank"
+                                        rel="noopener">rebrickable.com/api</a></span>
+                            </div>
+                            <div class="rb-token-input-row">
+                                <input type="password" class="rb-input" placeholder="Paste your API key…"
+                                    [(ngModel)]="apiTokenInput" />
+                            </div>
+                            <div class="rb-token-input-row">
+                                <input type="text" class="rb-input" placeholder="Rebrickable username or email"
+                                    [(ngModel)]="usernameInput" />
+                            </div>
+                            <div class="rb-token-input-row">
+                                <input type="password" class="rb-input" placeholder="Rebrickable password"
+                                    [(ngModel)]="passwordInput" (keyup.enter)="connectToRebrickable()" />
+                            </div>
+                            <div class="rb-token-input-row">
+                                <button class="btn btn-primary btn-sm" (click)="connectToRebrickable()"
+                                    [disabled]="connecting || !apiTokenInput.trim() || !usernameInput.trim() || !passwordInput.trim()">
+                                    <i class="fas fa-spinner fa-spin" *ngIf="connecting"></i>
+                                    <i class="fas fa-check" *ngIf="!connecting"></i>
+                                    {{ connecting ? 'Validating…' : 'Connect' }}
+                                </button>
+                                <button class="btn btn-secondary btn-sm"
+                                    (click)="showTokenInput = false; apiTokenInput = ''; usernameInput = ''; passwordInput = ''">
+                                    Cancel
+                                </button>
+                            </div>
+                            <div class="rb-token-help" style="margin-top: 8px;">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Your credentials are used once to generate a session token and are not
+                                    stored.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disconnect Button -->
+                    <button class="btn btn-secondary btn-sm btn-danger-text" *ngIf="syncStatus?.isConnected"
+                        (click)="disconnectFromRebrickable()">
+                        <i class="fas fa-unlink"></i> Disconnect
+                    </button>
+                </div>
+
+                <!-- Integration Mode -->
+                <div class="rb-mode-section" *ngIf="syncStatus?.isConnected">
+                    <h4>Sync Mode</h4>
+                    <div class="rb-mode-grid">
+                        <div class="rb-mode-option" *ngFor="let mode of integrationModes"
+                            [class.selected]="selectedMode === mode.value" (click)="selectedMode = mode.value">
+                            <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                            <div class="rb-mode-info">
+                                <strong>{{ mode.label }}</strong>
+                                <span>{{ mode.desc }}</span>
+                            </div>
+                            <i class="fas fa-check rb-mode-check" *ngIf="selectedMode === mode.value"></i>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" (click)="updateSyncSettings()"
+                        *ngIf="selectedMode !== syncStatus?.integrationMode" style="margin-top: 12px;">
+                        <i class="fas fa-save"></i> Save Mode
+                    </button>
+                </div>
+
+                <!-- Sync Actions -->
+                <div class="rb-actions-section" *ngIf="syncStatus?.isConnected">
+                    <h4>Actions</h4>
+                    <div class="rb-actions-row">
+                        <button class="btn btn-import btn-sm" (click)="triggerFullPull()" [disabled]="pulling">
+                            <i class="fas fa-spinner fa-spin" *ngIf="pulling"></i>
+                            <i class="fas fa-cloud-download-alt" *ngIf="!pulling"></i>
+                            {{ pulling ? 'Importing…' : 'Pull Full Collection' }}
+                        </button>
+                    </div>
+
+                    <!-- Last Sync Info -->
+                    <div class="rb-sync-dates" *ngIf="syncStatus?.lastPullDate || syncStatus?.lastPushDate">
+                        <div class="rb-sync-date" *ngIf="syncStatus?.lastPullDate">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>Last pull: {{ syncStatus.lastPullDate | date:'medium' }}</span>
+                        </div>
+                        <div class="rb-sync-date" *ngIf="syncStatus?.lastPushDate">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Last push: {{ syncStatus.lastPushDate | date:'medium' }}</span>
+                        </div>
+                        <div class="rb-sync-error" *ngIf="syncStatus?.lastSyncError">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>{{ syncStatus.lastSyncError }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ──── Communications Panel ──── -->
+            <div class="rb-comms-panel">
+                <div class="rb-panel-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Communications Log</h3>
+                    <span class="rb-comms-count" *ngIf="transactionsTotalCount">{{ transactionsTotalCount }}
+                        total</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="rb-comms-filters">
+                    <button class="rb-filter-btn"
+                        [class.active]="!transactionDirectionFilter && transactionSuccessFilter === null"
+                        (click)="setTransactionFilter(null, null)">All</button>
+                    <button class="rb-filter-btn" [class.active]="transactionDirectionFilter === 'Push'"
+                        (click)="setTransactionFilter('Push', null)">
+                        <i class="fas fa-arrow-up"></i> Push
+                    </button>
+                    <button class="rb-filter-btn" [class.active]="transactionDirectionFilter === 'Pull'"
+                        (click)="setTransactionFilter('Pull', null)">
+                        <i class="fas fa-arrow-down"></i> Pull
+                    </button>
+                    <span class="rb-filter-sep"></span>
+                    <button class="rb-filter-btn" [class.active]="transactionSuccessFilter === true"
+                        (click)="setTransactionFilter(transactionDirectionFilter, true)">
+                        <i class="fas fa-check-circle"></i> Success
+                    </button>
+                    <button class="rb-filter-btn" [class.active]="transactionSuccessFilter === false"
+                        (click)="setTransactionFilter(transactionDirectionFilter, false)">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </button>
+                </div>
+
+                <!-- Transaction Timeline -->
+                <div class="rb-timeline" *ngIf="transactions.length > 0">
+                    <div class="rb-tx-row" *ngFor="let tx of transactions" [class.tx-failed]="!tx.success">
+                        <div class="rb-tx-direction" [ngClass]="getDirectionClass(tx.direction)">
+                            <i [class]="getDirectionIcon(tx.direction)"></i>
+                        </div>
+                        <div class="rb-tx-body">
+                            <div class="rb-tx-summary">{{ tx.requestSummary }}</div>
+                            <div class="rb-tx-meta">
+                                <span class="rb-tx-method">{{ tx.httpMethod }}</span>
+                                <span class="rb-tx-endpoint">{{ tx.endpoint }}</span>
+                                <span class="rb-tx-status" [ngClass]="getStatusCodeClass(tx.responseStatusCode)">{{
+                                    tx.responseStatusCode }}</span>
+                                <span class="rb-tx-trigger">{{ tx.triggeredBy }}</span>
+                            </div>
+                            <div class="rb-tx-error" *ngIf="tx.errorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> {{ tx.errorMessage }}
+                            </div>
+                        </div>
+                        <div class="rb-tx-time">{{ formatRelativeTime(tx.transactionDate) }}</div>
+                    </div>
+                </div>
+
+                <!-- Empty transaction state -->
+                <div class="rb-comms-empty" *ngIf="transactions.length === 0">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No communications recorded yet.</p>
+                </div>
+
+                <!-- Transaction Pagination -->
+                <div class="rb-comms-pagination" *ngIf="transactionsTotalCount > transactionsPageSize">
+                    <button class="page-btn" (click)="prevTransactionsPage()" [disabled]="transactionsPage <= 1">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="rb-page-info">Page {{ transactionsPage }} of {{ (transactionsTotalCount /
+                        transactionsPageSize | number:'1.0-0') }}</span>
+                    <button class="page-btn" (click)="nextTransactionsPage()"
+                        [disabled]="transactionsPage >= (transactionsTotalCount / transactionsPageSize)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

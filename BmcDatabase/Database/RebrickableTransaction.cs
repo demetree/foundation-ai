@@ -31,6 +31,8 @@ public partial class RebrickableTransaction
 
     public string triggeredBy { get; set; }
 
+    public int? recordCount { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }

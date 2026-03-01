@@ -36,6 +36,7 @@ namespace Foundation.BMC.Database
 			public String errorMessage { get; set; }
 			[Required]
 			public String triggeredBy { get; set; }
+			public Int32? recordCount { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -75,6 +76,7 @@ namespace Foundation.BMC.Database
 				success = this.success,
 				errorMessage = this.errorMessage,
 				triggeredBy = this.triggeredBy,
+				recordCount = this.recordCount,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -127,6 +129,7 @@ namespace Foundation.BMC.Database
 				success = this.success,
 				errorMessage = this.errorMessage,
 				triggeredBy = this.triggeredBy,
+				recordCount = this.recordCount,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -179,6 +182,7 @@ namespace Foundation.BMC.Database
 				success = dto.success,
 				errorMessage = dto.errorMessage,
 				triggeredBy = dto.triggeredBy,
+				recordCount = dto.recordCount,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -208,6 +212,7 @@ namespace Foundation.BMC.Database
 			this.success = dto.success;
 			this.errorMessage = dto.errorMessage;
 			this.triggeredBy = dto.triggeredBy;
+			this.recordCount = dto.recordCount;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -243,6 +248,7 @@ namespace Foundation.BMC.Database
 				success = this.success,
 				errorMessage = this.errorMessage,
 				triggeredBy = this.triggeredBy,
+				recordCount = this.recordCount,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -309,6 +315,7 @@ namespace Foundation.BMC.Database
 				success = rebrickableTransaction.success,
 				errorMessage = rebrickableTransaction.errorMessage,
 				triggeredBy = rebrickableTransaction.triggeredBy,
+				recordCount = rebrickableTransaction.recordCount,
 				objectGuid = rebrickableTransaction.objectGuid,
 				active = rebrickableTransaction.active,
 				deleted = rebrickableTransaction.deleted
@@ -342,6 +349,7 @@ namespace Foundation.BMC.Database
 				success = rebrickableTransaction.success,
 				errorMessage = rebrickableTransaction.errorMessage,
 				triggeredBy = rebrickableTransaction.triggeredBy,
+				recordCount = rebrickableTransaction.recordCount,
 				objectGuid = rebrickableTransaction.objectGuid,
 				active = rebrickableTransaction.active,
 				deleted = rebrickableTransaction.deleted

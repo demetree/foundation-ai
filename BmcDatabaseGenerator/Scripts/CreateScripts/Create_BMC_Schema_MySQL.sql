@@ -1716,6 +1716,7 @@ CREATE TABLE `RebrickableTransaction`(
 	`success` BIT NOT NULL DEFAULT 1,		-- Whether the API call completed successfully
 	`errorMessage` TEXT NULL,		-- Error details if the call failed (null on success)
 	`triggeredBy` VARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, PeriodicSync, ManualPull, SessionLogin
+	`recordCount` INT NULL,		-- Number of rows retrieved or affected by this API call
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.

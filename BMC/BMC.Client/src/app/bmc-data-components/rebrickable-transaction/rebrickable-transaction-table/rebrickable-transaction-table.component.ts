@@ -185,6 +185,7 @@ export class RebrickableTransactionTableComponent implements OnInit, OnChanges, 
     { key: 'success', label: 'Success', width: '120px', template: 'boolean' },
     { key: 'errorMessage', label: 'Error Message', width: undefined },
     { key: 'triggeredBy', label: 'Triggered By', width: undefined },
+    { key: 'recordCount', label: 'Record Count', width: undefined },
 
     ];
 
@@ -340,6 +341,7 @@ export class RebrickableTransactionTableComponent implements OnInit, OnChanges, 
                       'success',
                       'errorMessage',
                       'triggeredBy',
+                      'recordCount',
         ];
 
         result = result.filter((rebrickableTransaction) =>

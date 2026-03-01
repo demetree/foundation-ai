@@ -69,6 +69,10 @@
                                     Triggered By is required
                                 </div>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recordCount')">
+                                <label for="RebrickableTransaction-recordCount" id="label-RebrickableTransaction-recordCount">Record Count</label>
+                                <input type="number" id="RebrickableTransaction-recordCount" formControlName="recordCount" placeholder="Enter Record Count" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" aria-labelledby="label-recordCount" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="RebrickableTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" />
                                 <label for="RebrickableTransaction-active" class="form-check-label" id="label-RebrickableTransaction-active"><span class="text-danger">*</span>Active</label>

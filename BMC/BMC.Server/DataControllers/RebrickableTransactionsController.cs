@@ -72,6 +72,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? success = null,
 			string errorMessage = null,
 			string triggeredBy = null,
+			int? recordCount = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -172,6 +173,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(triggeredBy) == false)
 			{
 				query = query.Where(rt => rt.triggeredBy == triggeredBy);
+			}
+			if (recordCount.HasValue == true)
+			{
+				query = query.Where(rt => rt.recordCount == recordCount.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -283,6 +288,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? success = null,
 			string errorMessage = null,
 			string triggeredBy = null,
+			int? recordCount = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -363,6 +369,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (triggeredBy != null)
 			{
 				query = query.Where(rt => rt.triggeredBy == triggeredBy);
+			}
+			if (recordCount.HasValue == true)
+			{
+				query = query.Where(rt => rt.recordCount == recordCount.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -902,6 +912,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? success = null,
 			string errorMessage = null,
 			string triggeredBy = null,
+			int? recordCount = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -1001,6 +1012,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(triggeredBy) == false)
 			{
 				query = query.Where(rt => rt.triggeredBy == triggeredBy);
+			}
+			if (recordCount.HasValue == true)
+			{
+				query = query.Where(rt => rt.recordCount == recordCount.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
