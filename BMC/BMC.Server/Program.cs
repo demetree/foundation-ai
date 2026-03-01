@@ -144,6 +144,7 @@ namespace Foundation.BMC
                 //
                 builder.Services.AddSingleton<global::BMC.Rebrickable.Sync.IRebrickableActivityBroadcaster, RebrickableActivityBroadcaster>();
                 builder.Services.AddScoped<RebrickableSyncService>();
+                builder.Services.AddHostedService<Foundation.BMC.Services.RebrickablePeriodicPullService>();
 
 
                 //

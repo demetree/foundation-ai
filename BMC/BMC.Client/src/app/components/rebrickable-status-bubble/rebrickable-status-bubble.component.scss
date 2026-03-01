@@ -13,6 +13,44 @@
     gap: 8px;
 }
 
+.rb-reauth-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: 16px;
+    background: rgba(255, 152, 0, 0.12);
+    color: #ffb74d;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: rb-reauth-fadeIn 0.3s ease;
+
+    &:hover {
+        background: rgba(255, 152, 0, 0.2);
+        border-color: rgba(255, 152, 0, 0.5);
+        transform: translateY(-1px);
+    }
+
+    i {
+        font-size: 0.7rem;
+    }
+}
+
+@keyframes rb-reauth-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .rb-bubble {
     display: flex;
     align-items: center;
@@ -60,6 +98,12 @@
     &.warning {
         background: linear-gradient(135deg, #e65100, #f57c00);
         color: #fff3e0;
+    }
+
+    // ── Rate Limited (amber) ──
+    &.rate-limited {
+        background: linear-gradient(135deg, #ff6f00, #ffa000);
+        color: #fff8e1;
     }
 }
 
@@ -146,6 +190,58 @@
 }
 
 
+/* ── Rate Limit Bar ── */
+.rb-rate-limit {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rb-rate-limit-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    font-weight: 600;
+}
+
+.rb-rate-limit-count {
+    color: #b0bec5;
+    font-variant-numeric: tabular-nums;
+}
+
+.rb-rate-limit-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.rb-rate-limit-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease, background 0.3s ease;
+
+    &.healthy {
+        background: linear-gradient(90deg, #43a047, #66bb6a);
+    }
+
+    &.warning {
+        background: linear-gradient(90deg, #ff8f00, #ffb300);
+    }
+
+    &.critical {
+        background: linear-gradient(90deg, #e53935, #ef5350);
+        animation: rb-rate-pulse 1s ease-in-out infinite;
+    }
+}
+
+
 /* ── Animations ── */
 @keyframes rb-pulse {
 
@@ -166,5 +262,17 @@
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes rb-rate-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
     }
 }

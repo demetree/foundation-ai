@@ -1,0 +1,73 @@
+<!-- Rebrickable Re-Authentication Modal -->
+<div class="rb-reauth-backdrop" (click)="dismiss()">
+    <div class="rb-reauth-modal" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="rb-reauth-header">
+            <div class="rb-reauth-icon">
+                <i class="fas fa-key"></i>
+            </div>
+            <h3>Re-authenticate Rebrickable</h3>
+            <button class="rb-reauth-close" (click)="dismiss()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Warning -->
+        <div class="rb-reauth-warning" *ngIf="warningMessage">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ warningMessage }}</span>
+        </div>
+
+        <!-- Auth Mode Badge -->
+        <div class="rb-reauth-mode">
+            <span class="rb-reauth-mode-label">Auth Mode</span>
+            <span class="rb-reauth-mode-value">{{ authModeLabel }}</span>
+        </div>
+
+        <!-- Success State -->
+        <div class="rb-reauth-success" *ngIf="success">
+            <i class="fas fa-check-circle"></i>
+            <span>Re-authenticated successfully!</span>
+        </div>
+
+        <!-- Form -->
+        <div class="rb-reauth-form" *ngIf="!success">
+            <!-- API Key (always required) -->
+            <div class="rb-reauth-field">
+                <label for="rb-reauth-api-key">
+                    <i class="fas fa-key"></i> API Key
+                </label>
+                <input id="rb-reauth-api-key" type="password" [(ngModel)]="apiToken"
+                    placeholder="Enter your Rebrickable API key" [disabled]="submitting" (keyup.enter)="submit()" />
+            </div>
+
+            <!-- User Token (TokenOnly / SessionOnly) -->
+            <div class="rb-reauth-field" *ngIf="showUserToken">
+                <label for="rb-reauth-user-token">
+                    <i class="fas fa-user-shield"></i> User Token
+                </label>
+                <input id="rb-reauth-user-token" type="password" [(ngModel)]="userToken"
+                    placeholder="Enter your Rebrickable user token" [disabled]="submitting" (keyup.enter)="submit()" />
+            </div>
+
+            <!-- Error -->
+            <div class="rb-reauth-error" *ngIf="error">
+                <i class="fas fa-times-circle"></i>
+                {{ error }}
+            </div>
+
+            <!-- Actions -->
+            <div class="rb-reauth-actions">
+                <button class="rb-reauth-btn rb-reauth-btn-cancel" (click)="dismiss()" [disabled]="submitting">
+                    Cancel
+                </button>
+                <button class="rb-reauth-btn rb-reauth-btn-submit" (click)="submit()" [disabled]="submitting">
+                    <i class="fas fa-spinner fa-spin" *ngIf="submitting"></i>
+                    <span *ngIf="!submitting">Re-authenticate</span>
+                    <span *ngIf="submitting">Verifying...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

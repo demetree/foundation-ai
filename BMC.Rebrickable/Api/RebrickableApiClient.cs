@@ -38,6 +38,12 @@ namespace BMC.Rebrickable.Api
 
 
         /// <summary>
+        /// Current Rebrickable API rate limit state, updated after every request.
+        /// </summary>
+        public RateLimitInfo RateLimit { get; private set; } = new RateLimitInfo();
+
+
+        /// <summary>
         /// Creates a new RebrickableApiClient.
         /// </summary>
         /// <param name="apiKey">Rebrickable API key (the key itself, without the 'key ' prefix).</param>
@@ -833,6 +839,8 @@ namespace BMC.Rebrickable.Api
             {
                 using (HttpResponseMessage response = await _httpClient.GetAsync(url))
                 {
+                    UpdateRateLimitInfo(response);
+
                     if (response.StatusCode == (HttpStatusCode)429)
                     {
                         int waitSeconds = GetRetryAfterSeconds(response, retries);
@@ -867,6 +875,7 @@ namespace BMC.Rebrickable.Api
 
             using (HttpResponseMessage response = await _httpClient.PostAsync(url, content))
             {
+                UpdateRateLimitInfo(response);
                 string body = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
@@ -891,6 +900,8 @@ namespace BMC.Rebrickable.Api
 
             using (HttpResponseMessage response = await _httpClient.PostAsync(url, content))
             {
+                UpdateRateLimitInfo(response);
+
                 if (!response.IsSuccessStatusCode)
                 {
                     string body = await response.Content.ReadAsStringAsync();
@@ -912,6 +923,7 @@ namespace BMC.Rebrickable.Api
 
             using (HttpResponseMessage response = await _httpClient.PutAsync(url, content))
             {
+                UpdateRateLimitInfo(response);
                 string body = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
@@ -941,6 +953,7 @@ namespace BMC.Rebrickable.Api
 
             using (HttpResponseMessage response = await _httpClient.SendAsync(request))
             {
+                UpdateRateLimitInfo(response);
                 string body = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
@@ -965,6 +978,8 @@ namespace BMC.Rebrickable.Api
 
             using (HttpResponseMessage response = await _httpClient.DeleteAsync(url))
             {
+                UpdateRateLimitInfo(response);
+
                 if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NoContent)
                 {
                     string body = await response.Content.ReadAsStringAsync();
@@ -1044,6 +1059,39 @@ namespace BMC.Rebrickable.Api
             return (int)Math.Pow(2, retryCount + 1);
         }
 
+        /// <summary>
+        /// Reads X-RateLimit-* headers from the response and updates the public RateLimit property.
+        /// </summary>
+        private void UpdateRateLimitInfo(HttpResponseMessage response)
+        {
+            try
+            {
+                if (response.Headers.TryGetValues("X-RateLimit-Remaining", out var remainingValues))
+                {
+                    if (int.TryParse(System.Linq.Enumerable.FirstOrDefault(remainingValues), out int remaining))
+                        RateLimit.Remaining = remaining;
+                }
+
+                if (response.Headers.TryGetValues("X-RateLimit-Limit", out var limitValues))
+                {
+                    if (int.TryParse(System.Linq.Enumerable.FirstOrDefault(limitValues), out int limit))
+                        RateLimit.Limit = limit;
+                }
+
+                if (response.Headers.TryGetValues("X-RateLimit-Reset", out var resetValues))
+                {
+                    if (int.TryParse(System.Linq.Enumerable.FirstOrDefault(resetValues), out int reset))
+                        RateLimit.ResetSeconds = reset;
+                }
+
+                RateLimit.LastUpdated = DateTime.UtcNow;
+            }
+            catch
+            {
+                // Never let rate-limit parsing break actual API calls
+            }
+        }
+
         #endregion
 
 
@@ -1052,5 +1100,23 @@ namespace BMC.Rebrickable.Api
             if (_ownsHttpClient)
                 _httpClient?.Dispose();
         }
+    }
+
+
+    /// <summary>
+    /// Tracks Rebrickable API rate limit state from response headers.
+    /// </summary>
+    public class RateLimitInfo
+    {
+        public int Remaining { get; set; } = -1;
+        public int Limit { get; set; } = -1;
+        public int ResetSeconds { get; set; }
+        public DateTime LastUpdated { get; set; }
+
+        /// <summary>True if we've received at least one rate limit header.</summary>
+        public bool HasData => Remaining >= 0 && Limit > 0;
+
+        /// <summary>Percentage of rate limit remaining (0-100).</summary>
+        public int PercentRemaining => Limit > 0 ? (int)((Remaining / (double)Limit) * 100) : 100;
     }
 }

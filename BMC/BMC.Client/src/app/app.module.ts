@@ -563,6 +563,7 @@ import { CollectionService } from './services/collection.service';
 import { PublicLandingComponent } from './components/public-landing/public-landing.component';
 import { RebrickableStatusBubbleComponent } from './components/rebrickable-status-bubble/rebrickable-status-bubble.component';
 import { RebrickableActivityPanelComponent } from './components/rebrickable-activity-panel/rebrickable-activity-panel.component';
+import { RebrickableReauthModalComponent } from './components/rebrickable-reauth-modal/rebrickable-reauth-modal.component';
 
 
 @NgModule({
@@ -610,6 +611,7 @@ import { RebrickableActivityPanelComponent } from './components/rebrickable-acti
         PublicLandingComponent,
         RebrickableStatusBubbleComponent,
         RebrickableActivityPanelComponent,
+        RebrickableReauthModalComponent,
 
 
         //

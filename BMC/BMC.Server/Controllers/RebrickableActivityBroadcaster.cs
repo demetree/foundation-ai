@@ -59,5 +59,17 @@ namespace Foundation.BMC.Controllers.WebAPI
                 timestamp = DateTime.UtcNow
             });
         }
+
+
+        public async Task BroadcastRateLimitAsync(Guid tenantGuid, int remaining, int limit, int resetSeconds)
+        {
+            await _hub.Clients.Group($"rebrickable_{tenantGuid}").SendAsync("RateLimitUpdate", new
+            {
+                remaining,
+                limit,
+                resetSeconds,
+                timestamp = DateTime.UtcNow
+            });
+        }
     }
 }

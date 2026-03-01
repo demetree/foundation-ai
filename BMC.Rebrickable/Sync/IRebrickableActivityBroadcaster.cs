@@ -27,6 +27,11 @@ namespace BMC.Rebrickable.Sync
         /// Broadcast a token warning (expired, health-check failure).
         /// </summary>
         Task BroadcastTokenWarningAsync(Guid tenantGuid, string message);
+
+        /// <summary>
+        /// Broadcast current API rate limit state.
+        /// </summary>
+        Task BroadcastRateLimitAsync(Guid tenantGuid, int remaining, int limit, int resetSeconds);
     }
 
 
@@ -43,5 +48,7 @@ namespace BMC.Rebrickable.Sync
             string authMode, string username) => Task.CompletedTask;
 
         public Task BroadcastTokenWarningAsync(Guid tenantGuid, string message) => Task.CompletedTask;
+
+        public Task BroadcastRateLimitAsync(Guid tenantGuid, int remaining, int limit, int resetSeconds) => Task.CompletedTask;
     }
 }

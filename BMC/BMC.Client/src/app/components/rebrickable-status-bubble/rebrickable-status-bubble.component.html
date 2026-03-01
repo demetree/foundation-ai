@@ -9,9 +9,25 @@
         <span class="rb-bubble-dot" *ngIf="isActive"></span>
     </div>
 
+    <!-- Re-auth Button (shown on warning) -->
+    <button class="rb-reauth-trigger" *ngIf="hasWarning && !showPanel" (click)="openReauth()">
+        <i class="fas fa-redo"></i> Re-authenticate
+    </button>
+
     <!-- Recent Activity Tooltip -->
-    <div class="rb-tooltip" *ngIf="showTooltip && recentEvents.length > 0 && !showPanel">
-        <div class="rb-tooltip-header">Recent Activity</div>
+    <div class="rb-tooltip" *ngIf="showTooltip && !showPanel && (recentEvents.length > 0 || rateLimitLimit > 0)">
+        <!-- Rate Limit Bar -->
+        <div class="rb-rate-limit" *ngIf="rateLimitLimit > 0">
+            <div class="rb-rate-limit-label">
+                <span>API Quota</span>
+                <span class="rb-rate-limit-count">{{ rateLimitRemaining }} / {{ rateLimitLimit }}</span>
+            </div>
+            <div class="rb-rate-limit-track">
+                <div class="rb-rate-limit-fill" [ngClass]="rateLimitClass" [style.width.%]="rateLimitPercent"></div>
+            </div>
+        </div>
+
+        <div class="rb-tooltip-header" *ngIf="recentEvents.length > 0">Recent Activity</div>
         <div class="rb-tooltip-item" *ngFor="let event of recentEvents">
             <i class="fas fa-check-circle rb-tooltip-ok" *ngIf="event.success"></i>
             <i class="fas fa-times-circle rb-tooltip-err" *ngIf="!event.success"></i>
@@ -23,4 +39,9 @@
     <!-- Activity Panel Overlay -->
     <app-rebrickable-activity-panel *ngIf="showPanel" (close)="closePanel()">
     </app-rebrickable-activity-panel>
+
+    <!-- Re-auth Modal -->
+    <app-rebrickable-reauth-modal *ngIf="showReauth" [warningMessage]="warningMessage" (close)="closeReauth()"
+        (reauthSuccess)="onReauthSuccess()">
+    </app-rebrickable-reauth-modal>
 </div>

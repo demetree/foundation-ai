@@ -34,6 +34,13 @@ export interface TokenWarningEvent {
     timestamp: string;
 }
 
+export interface RateLimitEvent {
+    remaining: number;
+    limit: number;
+    resetSeconds: number;
+    timestamp: string;
+}
+
 
 @Injectable({
     providedIn: 'root'
@@ -50,6 +57,9 @@ export class RebrickableSignalrService implements OnDestroy {
 
     /** Token warnings (expired, health-check failure). */
     readonly onTokenWarning$ = new Subject<TokenWarningEvent>();
+
+    /** Rate limit state updates. */
+    readonly onRateLimitUpdate$ = new Subject<RateLimitEvent>();
 
     /** Hub connection state. */
     readonly onHubConnectionChange$ = new Subject<boolean>();
@@ -82,6 +92,10 @@ export class RebrickableSignalrService implements OnDestroy {
 
         this.connection.on('TokenWarning', (event: TokenWarningEvent) => {
             this.onTokenWarning$.next(event);
+        });
+
+        this.connection.on('RateLimitUpdate', (event: RateLimitEvent) => {
+            this.onRateLimitUpdate$.next(event);
         });
 
         this.connection.onreconnecting(() => {

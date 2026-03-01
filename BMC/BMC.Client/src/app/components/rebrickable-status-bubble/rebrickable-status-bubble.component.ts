@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { RebrickableSignalrService, SyncActivityEvent, ConnectionChangedEvent } from '../../services/rebrickable-signalr.service';
+import { RebrickableSignalrService, SyncActivityEvent, ConnectionChangedEvent, RateLimitEvent } from '../../services/rebrickable-signalr.service';
 import { RebrickableSyncService, SyncStatus } from '../../services/rebrickable-sync.service';
 
 @Component({
@@ -20,11 +20,18 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     lastActivityText = '';
     showPanel = false;
     showTooltip = false;
+    showReauth = false;
     visible = false;
 
     // Recent activity feed (last 5 for tooltip)
     recentEvents: SyncActivityEvent[] = [];
     private activityTimeout: any;
+
+    // Rate limit
+    rateLimitRemaining = -1;
+    rateLimitLimit = -1;
+    rateLimitPercent = 100;
+    rateLimitResetSeconds = 0;
 
     constructor(
         private authService: AuthService,
@@ -57,6 +64,11 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
         this.signalr.onTokenWarning$.pipe(takeUntil(this.destroy$)).subscribe(event => {
             this.hasWarning = true;
             this.warningMessage = event.message;
+        });
+
+        // Listen for rate limit updates
+        this.signalr.onRateLimitUpdate$.pipe(takeUntil(this.destroy$)).subscribe(event => {
+            this.onRateLimitUpdate(event);
         });
 
         // Listen for login/logout
@@ -128,11 +140,45 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     }
 
 
+    openReauth(): void {
+        this.showReauth = true;
+    }
+
+
+    closeReauth(): void {
+        this.showReauth = false;
+    }
+
+
+    onReauthSuccess(): void {
+        this.hasWarning = false;
+        this.warningMessage = '';
+        this.isConnected = true;
+        this.loadStatus();
+    }
+
+
     get bubbleClass(): string {
         if (this.hasWarning) return 'warning';
         if (this.isActive) return 'active';
+        if (this.isConnected && this.rateLimitPercent >= 0 && this.rateLimitPercent < 20) return 'rate-limited';
         if (this.isConnected) return 'connected';
         return 'disconnected';
+    }
+
+
+    get rateLimitClass(): string {
+        if (this.rateLimitPercent < 20) return 'critical';
+        if (this.rateLimitPercent < 50) return 'warning';
+        return 'healthy';
+    }
+
+
+    private onRateLimitUpdate(event: RateLimitEvent): void {
+        this.rateLimitRemaining = event.remaining;
+        this.rateLimitLimit = event.limit;
+        this.rateLimitResetSeconds = event.resetSeconds;
+        this.rateLimitPercent = event.limit > 0 ? Math.round((event.remaining / event.limit) * 100) : 100;
     }
 
 

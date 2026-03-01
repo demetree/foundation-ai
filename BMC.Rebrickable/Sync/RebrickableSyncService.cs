@@ -33,6 +33,9 @@ namespace BMC.Rebrickable.Sync
         private readonly IMemoryCache _cache;
         private readonly IRebrickableActivityBroadcaster _broadcaster;
 
+        /// <summary>Tracks the last-used API client per tenant for rate limit reads.</summary>
+        private readonly Dictionary<Guid, RebrickableApiClient> _lastClientByTenant = new();
+
 
         // ───────────────────────── Integration mode constants ─────────────────────────
 
@@ -1217,6 +1220,7 @@ namespace BMC.Rebrickable.Sync
                     _logger.LogWarning("Session-only credentials expired for tenant {TenantGuid} — reconnect required", tenantGuid);
                     link.lastSyncError = "Session expired — please reconnect.";
                     await _context.SaveChangesAsync();
+                    _ = _broadcaster.BroadcastTokenWarningAsync(tenantGuid, "Session expired — please reconnect to Rebrickable.");
                     return (null, null);
                 }
             }
@@ -1245,6 +1249,7 @@ namespace BMC.Rebrickable.Sync
                             tenantGuid, link.tokenStoredDate.Value, link.tokenExpiryDays.Value);
                         link.lastSyncError = "Token expired — please reconnect or re-authenticate.";
                         await _context.SaveChangesAsync();
+                        _ = _broadcaster.BroadcastTokenWarningAsync(tenantGuid, "API token has expired — please re-authenticate.");
                         return (null, null);
                     }
                 }
@@ -1255,11 +1260,13 @@ namespace BMC.Rebrickable.Sync
                 if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(userToken))
                 {
                     _logger.LogWarning("Failed to decrypt Rebrickable tokens for tenant {TenantGuid} — reconnect required", tenantGuid);
+                    _ = _broadcaster.BroadcastTokenWarningAsync(tenantGuid, "Stored credentials could not be read — please reconnect.");
                     return (null, null);
                 }
             }
 
             var client = new RebrickableApiClient(apiKey);
+            _lastClientByTenant[tenantGuid] = client;
             return (client, userToken);
         }
 
@@ -1386,6 +1393,16 @@ namespace BMC.Rebrickable.Sync
                 // Broadcast to connected SignalR clients
                 await _broadcaster.BroadcastActivityAsync(tenantGuid, direction, httpMethod,
                     endpoint, requestSummary, responseStatusCode, success, errorMessage, recordCount);
+
+                // Broadcast rate limit state if available
+                if (_lastClientByTenant.TryGetValue(tenantGuid, out var lastClient)
+                    && lastClient.RateLimit.HasData)
+                {
+                    await _broadcaster.BroadcastRateLimitAsync(tenantGuid,
+                        lastClient.RateLimit.Remaining,
+                        lastClient.RateLimit.Limit,
+                        lastClient.RateLimit.ResetSeconds);
+                }
             }
             catch (Exception ex)
             {
