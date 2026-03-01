@@ -66,9 +66,19 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
     apiTokenInput = '';
     usernameInput = '';
     passwordInput = '';
+    userTokenInput = '';
     selectedMode = 'RealTime';
+    selectedAuthMode = 'ApiToken';
     pulling = false;
     connecting = false;
+    showSyncModeEdit = false;
+
+    // Auth mode options
+    authModes = [
+        { value: 'ApiToken', label: 'Login Once', icon: 'fas fa-key', desc: 'API key + username/password — encrypted token stored in database' },
+        { value: 'TokenOnly', label: 'Token Only', icon: 'fas fa-shield-alt', desc: 'Paste API key + user token directly — your password never touches BMC' },
+        { value: 'SessionOnly', label: 'Session Only', icon: 'fas fa-lock', desc: 'API key + username/password — nothing saved to database, re-enter each session' }
+    ];
 
     // Integration mode options
     integrationModes = [
@@ -77,6 +87,10 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
         { value: 'PushOnly', label: 'Push Only', icon: 'fas fa-upload', desc: 'BMC → Rebrickable only' },
         { value: 'ImportOnly', label: 'Import Only', icon: 'fas fa-download', desc: 'Rebrickable → BMC only' }
     ];
+
+    getCurrentModeOption() {
+        return this.integrationModes.find(m => m.value === this.selectedMode);
+    }
 
     constructor(
         private router: Router,
@@ -398,13 +412,22 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
 
 
     connectToRebrickable(): void {
-        if (!this.apiTokenInput.trim() || !this.usernameInput.trim() || !this.passwordInput.trim()) return;
+        if (!this.apiTokenInput.trim()) return;
+
+        // Validate required fields based on auth mode
+        if (this.selectedAuthMode === 'TokenOnly') {
+            if (!this.userTokenInput.trim()) return;
+        } else {
+            if (!this.usernameInput.trim() || !this.passwordInput.trim()) return;
+        }
 
         this.connecting = true;
         this.syncService.connect({
             apiToken: this.apiTokenInput.trim(),
-            username: this.usernameInput.trim(),
-            password: this.passwordInput,
+            username: this.selectedAuthMode !== 'TokenOnly' ? this.usernameInput.trim() : undefined,
+            password: this.selectedAuthMode !== 'TokenOnly' ? this.passwordInput : undefined,
+            userToken: this.selectedAuthMode === 'TokenOnly' ? this.userTokenInput.trim() : undefined,
+            authMode: this.selectedAuthMode,
             integrationMode: this.selectedMode
         }).pipe(
             takeUntil(this.destroy$),
@@ -415,12 +438,64 @@ export class MyCollectionComponent implements OnInit, OnDestroy {
                 this.apiTokenInput = '';
                 this.usernameInput = '';
                 this.passwordInput = '';
+                this.userTokenInput = '';
                 this.showTokenInput = false;
                 this.loadRebrickableData();
             },
             error: (err) => {
                 const msg = err?.error?.error || 'Connection failed. Check your credentials.';
                 this.alertService.showMessage('Connection Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    reauthenticateRebrickable(): void {
+        if (!this.apiTokenInput.trim()) return;
+
+        this.connecting = true;
+        this.syncService.reauthenticate({
+            apiToken: this.apiTokenInput.trim(),
+            username: this.selectedAuthMode !== 'TokenOnly' ? this.usernameInput.trim() : undefined,
+            password: this.selectedAuthMode !== 'TokenOnly' ? this.passwordInput : undefined,
+            userToken: this.selectedAuthMode === 'TokenOnly' ? this.userTokenInput.trim() : undefined,
+            authMode: this.selectedAuthMode,
+            integrationMode: this.selectedMode
+        }).pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.connecting = false)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Re-authenticated', 'Token refreshed successfully!', MessageSeverity.success);
+                this.apiTokenInput = '';
+                this.usernameInput = '';
+                this.passwordInput = '';
+                this.userTokenInput = '';
+                this.showTokenInput = false;
+                this.loadRebrickableData();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Re-authentication failed.';
+                this.alertService.showMessage('Re-auth Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    checkTokenHealth(): void {
+        this.syncService.checkTokenHealth().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (result) => {
+                if (result.valid) {
+                    this.alertService.showMessage('Token Valid', 'Your Rebrickable token is healthy.', MessageSeverity.success);
+                } else {
+                    this.alertService.showMessage('Token Invalid', result.error || 'Token validation failed.', MessageSeverity.warn);
+                }
+                this.loadRebrickableData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Could not check token health.', MessageSeverity.error);
             }
         });
     }

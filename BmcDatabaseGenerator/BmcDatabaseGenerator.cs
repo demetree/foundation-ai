@@ -966,6 +966,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             rebrickableUserLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("Date/time of last successful pull from Rebrickable");
             rebrickableUserLinkTable.AddDateTimeField("lastPushDate", true).AddScriptComments("Date/time of last successful push to Rebrickable");
             rebrickableUserLinkTable.AddTextField("lastSyncError").AddScriptComments("Last sync error message for display to the user (null = no error)");
+            rebrickableUserLinkTable.AddIntField("tokenExpiryDays", true).AddScriptComments("User-configurable auto-clear interval in days (null = never auto-clear)");
+            rebrickableUserLinkTable.AddDateTimeField("tokenStoredDate", true).AddScriptComments("When the token was last stored or refreshed — used with tokenExpiryDays for auto-expiry");
 
             rebrickableUserLinkTable.AddControlFields();
 

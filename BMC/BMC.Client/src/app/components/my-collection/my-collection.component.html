@@ -341,6 +341,23 @@
                         </button>
 
                         <div class="rb-token-form" *ngIf="showTokenInput">
+                            <!-- Auth Mode Selector -->
+                            <div class="rb-auth-mode-section">
+                                <label class="rb-form-label">Trust Level</label>
+                                <div class="rb-mode-grid rb-auth-mode-grid">
+                                    <div class="rb-mode-option" *ngFor="let mode of authModes"
+                                        [class.selected]="selectedAuthMode === mode.value"
+                                        (click)="selectedAuthMode = mode.value">
+                                        <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                                        <div class="rb-mode-info">
+                                            <strong>{{ mode.label }}</strong>
+                                            <span>{{ mode.desc }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- API Key (always required) -->
                             <div class="rb-token-help">
                                 <i class="fas fa-info-circle"></i>
                                 <span>Generate an API key at <a href="https://rebrickable.com/api/" target="_blank"
@@ -350,59 +367,166 @@
                                 <input type="password" class="rb-input" placeholder="Paste your API key…"
                                     [(ngModel)]="apiTokenInput" />
                             </div>
-                            <div class="rb-token-input-row">
-                                <input type="text" class="rb-input" placeholder="Rebrickable username or email"
-                                    [(ngModel)]="usernameInput" />
+
+                            <!-- Token Only: User Token field -->
+                            <div *ngIf="selectedAuthMode === 'TokenOnly'">
+                                <div class="rb-token-input-row">
+                                    <input type="password" class="rb-input"
+                                        placeholder="Paste your user token (from /users/_token/ endpoint)"
+                                        [(ngModel)]="userTokenInput" (keyup.enter)="connectToRebrickable()" />
+                                </div>
                             </div>
-                            <div class="rb-token-input-row">
-                                <input type="password" class="rb-input" placeholder="Rebrickable password"
-                                    [(ngModel)]="passwordInput" (keyup.enter)="connectToRebrickable()" />
+
+                            <!-- LoginOnce / SessionOnly: Username + Password fields -->
+                            <div *ngIf="selectedAuthMode !== 'TokenOnly'">
+                                <div class="rb-token-input-row">
+                                    <input type="text" class="rb-input" placeholder="Rebrickable username or email"
+                                        [(ngModel)]="usernameInput" />
+                                </div>
+                                <div class="rb-token-input-row">
+                                    <input type="password" class="rb-input" placeholder="Rebrickable password"
+                                        [(ngModel)]="passwordInput" (keyup.enter)="connectToRebrickable()" />
+                                </div>
                             </div>
+
+                            <!-- Connect / Cancel buttons -->
                             <div class="rb-token-input-row">
                                 <button class="btn btn-primary btn-sm" (click)="connectToRebrickable()"
-                                    [disabled]="connecting || !apiTokenInput.trim() || !usernameInput.trim() || !passwordInput.trim()">
+                                    [disabled]="connecting || !apiTokenInput.trim()
+                                        || (selectedAuthMode === 'TokenOnly' && !userTokenInput.trim())
+                                        || (selectedAuthMode !== 'TokenOnly' && (!usernameInput.trim() || !passwordInput.trim()))">
                                     <i class="fas fa-spinner fa-spin" *ngIf="connecting"></i>
                                     <i class="fas fa-check" *ngIf="!connecting"></i>
                                     {{ connecting ? 'Validating…' : 'Connect' }}
                                 </button>
                                 <button class="btn btn-secondary btn-sm"
-                                    (click)="showTokenInput = false; apiTokenInput = ''; usernameInput = ''; passwordInput = ''">
+                                    (click)="showTokenInput = false; apiTokenInput = ''; usernameInput = ''; passwordInput = ''; userTokenInput = ''">
                                     Cancel
                                 </button>
                             </div>
+
+                            <!-- Trust description per mode -->
                             <div class="rb-token-help" style="margin-top: 8px;">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>Your credentials are used once to generate a session token and are not
-                                    stored.</span>
+                                <i class="fas fa-shield-alt" *ngIf="selectedAuthMode === 'TokenOnly'"></i>
+                                <i class="fas fa-key" *ngIf="selectedAuthMode === 'ApiToken'"></i>
+                                <i class="fas fa-lock" *ngIf="selectedAuthMode === 'SessionOnly'"></i>
+                                <span *ngIf="selectedAuthMode === 'ApiToken'">
+                                    Your password is used once to obtain a session token, then discarded.
+                                    The API key and session token are encrypted and stored in the database.
+                                </span>
+                                <span *ngIf="selectedAuthMode === 'TokenOnly'">
+                                    Your password never touches this server. Both values are encrypted
+                                    and stored in the database.
+                                </span>
+                                <span *ngIf="selectedAuthMode === 'SessionOnly'">
+                                    Your password is used once to obtain a session token, then discarded.
+                                    Nothing is saved to the database — you'll need to re-connect each session.
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Disconnect Button -->
-                    <button class="btn btn-secondary btn-sm btn-danger-text" *ngIf="syncStatus?.isConnected"
-                        (click)="disconnectFromRebrickable()">
-                        <i class="fas fa-unlink"></i> Disconnect
-                    </button>
+                    <!-- Connected Actions: Disconnect / Re-authenticate / Token Health -->
+                    <div class="rb-connected-actions" *ngIf="syncStatus?.isConnected">
+                        <button class="btn btn-sm btn-outline" (click)="checkTokenHealth()"
+                            title="Validate stored token">
+                            <i class="fas fa-heartbeat"></i> Check Token
+                        </button>
+                        <button class="btn btn-sm btn-outline" (click)="showTokenInput = !showTokenInput"
+                            title="Re-authenticate with new credentials">
+                            <i class="fas fa-redo"></i> Re-authenticate
+                        </button>
+                        <button class="btn btn-secondary btn-sm btn-danger-text" (click)="disconnectFromRebrickable()">
+                            <i class="fas fa-unlink"></i> Disconnect
+                        </button>
+                    </div>
+
+                    <!-- Re-authenticate form (when connected) -->
+                    <div class="rb-token-form" *ngIf="syncStatus?.isConnected && showTokenInput">
+                        <div class="rb-auth-mode-section">
+                            <label class="rb-form-label">Auth Mode</label>
+                            <div class="rb-mode-grid rb-auth-mode-grid">
+                                <div class="rb-mode-option" *ngFor="let mode of authModes"
+                                    [class.selected]="selectedAuthMode === mode.value"
+                                    (click)="selectedAuthMode = mode.value">
+                                    <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                                    <div class="rb-mode-info">
+                                        <strong>{{ mode.label }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rb-token-input-row">
+                            <input type="password" class="rb-input" placeholder="API key" [(ngModel)]="apiTokenInput" />
+                        </div>
+                        <div *ngIf="selectedAuthMode === 'TokenOnly'">
+                            <div class="rb-token-input-row">
+                                <input type="password" class="rb-input" placeholder="User token"
+                                    [(ngModel)]="userTokenInput" (keyup.enter)="reauthenticateRebrickable()" />
+                            </div>
+                        </div>
+                        <div *ngIf="selectedAuthMode !== 'TokenOnly'">
+                            <div class="rb-token-input-row">
+                                <input type="text" class="rb-input" placeholder="Username"
+                                    [(ngModel)]="usernameInput" />
+                            </div>
+                            <div class="rb-token-input-row">
+                                <input type="password" class="rb-input" placeholder="Password"
+                                    [(ngModel)]="passwordInput" (keyup.enter)="reauthenticateRebrickable()" />
+                            </div>
+                        </div>
+                        <div class="rb-token-input-row">
+                            <button class="btn btn-primary btn-sm" (click)="reauthenticateRebrickable()"
+                                [disabled]="connecting || !apiTokenInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="connecting"></i>
+                                <i class="fas fa-redo" *ngIf="!connecting"></i>
+                                {{ connecting ? 'Validating…' : 'Re-authenticate' }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm"
+                                (click)="showTokenInput = false; apiTokenInput = ''; usernameInput = ''; passwordInput = ''; userTokenInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Integration Mode -->
+                <!-- Integration Mode (compact when connected) -->
                 <div class="rb-mode-section" *ngIf="syncStatus?.isConnected">
                     <h4>Sync Mode</h4>
-                    <div class="rb-mode-grid">
-                        <div class="rb-mode-option" *ngFor="let mode of integrationModes"
-                            [class.selected]="selectedMode === mode.value" (click)="selectedMode = mode.value">
-                            <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
-                            <div class="rb-mode-info">
-                                <strong>{{ mode.label }}</strong>
-                                <span>{{ mode.desc }}</span>
+
+                    <!-- Compact display -->
+                    <div class="rb-mode-compact" *ngIf="!showSyncModeEdit" (click)="showSyncModeEdit = true">
+                        <i class="{{ getCurrentModeOption()?.icon || 'fas fa-bolt' }}"></i>
+                        <strong>{{ getCurrentModeOption()?.label || selectedMode }}</strong>
+                        <span class="rb-mode-compact-desc">{{ getCurrentModeOption()?.desc }}</span>
+                        <i class="fas fa-pencil-alt rb-mode-edit-icon" title="Change sync mode"></i>
+                    </div>
+
+                    <!-- Expanded grid (editable) -->
+                    <div *ngIf="showSyncModeEdit">
+                        <div class="rb-mode-grid">
+                            <div class="rb-mode-option" *ngFor="let mode of integrationModes"
+                                [class.selected]="selectedMode === mode.value" (click)="selectedMode = mode.value">
+                                <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                                <div class="rb-mode-info">
+                                    <strong>{{ mode.label }}</strong>
+                                    <span>{{ mode.desc }}</span>
+                                </div>
+                                <i class="fas fa-check rb-mode-check" *ngIf="selectedMode === mode.value"></i>
                             </div>
-                            <i class="fas fa-check rb-mode-check" *ngIf="selectedMode === mode.value"></i>
+                        </div>
+                        <div style="margin-top: 10px; display: flex; gap: 8px;">
+                            <button class="btn btn-primary btn-sm"
+                                (click)="updateSyncSettings(); showSyncModeEdit = false"
+                                *ngIf="selectedMode !== syncStatus?.integrationMode">
+                                <i class="fas fa-save"></i> Save Mode
+                            </button>
+                            <button class="btn btn-secondary btn-sm"
+                                (click)="showSyncModeEdit = false; selectedMode = syncStatus?.integrationMode">
+                                Cancel
+                            </button>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-sm" (click)="updateSyncSettings()"
-                        *ngIf="selectedMode !== syncStatus?.integrationMode" style="margin-top: 12px;">
-                        <i class="fas fa-save"></i> Save Mode
-                    </button>
                 </div>
 
                 <!-- Sync Actions -->

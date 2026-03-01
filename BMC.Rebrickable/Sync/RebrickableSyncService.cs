@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using BMC.Rebrickable.Api;
 using BMC.Rebrickable.Api.Models.Responses;
@@ -20,16 +22,15 @@ namespace BMC.Rebrickable.Sync
     ///  2. Mode-aware — checks user's integration mode before firing API calls
     ///  3. Non-blocking — push failures don't block BMC operations; errors are logged
     ///  4. Tenant-scoped — all operations are scoped to the caller's tenant
-    ///
-    /// Responsibilities:
-    ///  - PUSH: After BMC writes, conditionally call the Rebrickable equivalent
-    ///  - PULL: Import Rebrickable data into BMC tables
-    ///  - AUDIT: Log every API call to the RebrickableTransaction table
+    ///  5. Encryption at rest — API key and user_token are encrypted via Data Protection API
+    ///  6. Three auth modes — LoginOnce (encrypted DB), TokenOnly (no password), SessionOnly (memory only)
     /// </summary>
     public class RebrickableSyncService
     {
         private readonly BMCContext _context;
         private readonly ILogger<RebrickableSyncService> _logger;
+        private readonly IDataProtector _protector;
+        private readonly IMemoryCache _cache;
 
 
         // ───────────────────────── Integration mode constants ─────────────────────────
@@ -49,8 +50,13 @@ namespace BMC.Rebrickable.Sync
 
         // ───────────────────────── Auth mode constants ─────────────────────────
 
+        /// <summary>Login once — API key + user_token encrypted in database.</summary>
         public const string AUTH_API_TOKEN = "ApiToken";
-        public const string AUTH_ENCRYPTED_CREDENTIALS = "EncryptedCredentials";
+
+        /// <summary>Token only — user pastes API key + user_token directly, no password ever sent.</summary>
+        public const string AUTH_TOKEN_ONLY = "TokenOnly";
+
+        /// <summary>Session only — credentials stored in memory only, cleared on server restart.</summary>
         public const string AUTH_SESSION_ONLY = "SessionOnly";
 
 
@@ -62,10 +68,45 @@ namespace BMC.Rebrickable.Sync
         public const string TRIGGER_SESSION_LOGIN = "SessionLogin";
 
 
-        public RebrickableSyncService(BMCContext context, ILogger<RebrickableSyncService> logger)
+        // ───────────────────────── Session cache constants ─────────────────────────
+
+        private const string SESSION_CACHE_PREFIX = "RebrickableSession_";
+        private static readonly TimeSpan SESSION_CACHE_DURATION = TimeSpan.FromHours(8);
+
+
+        public RebrickableSyncService(
+            BMCContext context,
+            ILogger<RebrickableSyncService> logger,
+            IDataProtectionProvider dataProtectionProvider,
+            IMemoryCache cache)
         {
             _context = context;
             _logger = logger;
+            _protector = dataProtectionProvider.CreateProtector("BMC.Rebrickable.TokenProtection");
+            _cache = cache;
+        }
+
+
+        // ───────────────────────── Encryption helpers ─────────────────────────
+
+        private string Encrypt(string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText)) return string.Empty;
+            return _protector.Protect(plainText);
+        }
+
+        private string Decrypt(string cipherText)
+        {
+            if (string.IsNullOrEmpty(cipherText)) return string.Empty;
+            try
+            {
+                return _protector.Unprotect(cipherText);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to decrypt stored token — may need re-authentication");
+                return string.Empty;
+            }
         }
 
 
@@ -107,7 +148,7 @@ namespace BMC.Rebrickable.Sync
 
             return new SyncStatus
             {
-                IsConnected = !string.IsNullOrEmpty(link.encryptedApiToken),
+                IsConnected = !string.IsNullOrEmpty(link.authMode),
                 AuthMode = link.authMode,
                 IntegrationMode = link.syncDirectionFlags,
                 RebrickableUsername = link.rebrickableUsername,
@@ -122,8 +163,9 @@ namespace BMC.Rebrickable.Sync
 
 
         /// <summary>
-        /// Connect to Rebrickable with API key + Rebrickable username/password.
-        /// Validates the API key, then obtains a user_token for user-level API access.
+        /// Connect via Login Once mode — API key + Rebrickable username/password.
+        /// Obtains user_token, encrypts both tokens, stores in database.
+        /// Password is used once and never stored.
         /// </summary>
         public async Task<(bool success, string error)> ConnectWithTokenAsync(
             Guid tenantGuid, string apiToken, string username, string password,
@@ -180,7 +222,313 @@ namespace BMC.Rebrickable.Sync
                 return (false, $"Could not retrieve user profile: {ex.Message}");
             }
 
-            // Create or update the user link
+            // Create or update the user link — encrypt tokens before storing
+            var link = await GetOrCreateLinkAsync(tenantGuid, ct);
+
+            link.rebrickableUsername = profile.Username;
+            link.encryptedApiToken = Encrypt(apiToken);
+            link.encryptedPassword = Encrypt(userToken);
+            link.authMode = AUTH_API_TOKEN;
+            link.syncEnabled = integrationMode != MODE_NONE;
+            link.syncDirectionFlags = integrationMode;
+            link.lastSyncError = null;
+            link.tokenStoredDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync(ct);
+
+            await LogTransactionAsync(tenantGuid, "Push", "POST",
+                "api/v3/users/_token/",
+                $"Connected as {profile.Username}",
+                200, null, true, null, TRIGGER_USER_ACTION, ct);
+
+            _logger.LogInformation("Rebrickable connected (LoginOnce) for tenant {TenantGuid} as {Username}",
+                tenantGuid, profile.Username);
+
+            return (true, null);
+        }
+
+
+        /// <summary>
+        /// Connect via Token Only mode — user pastes API key + user_token directly.
+        /// No username or password ever reaches the server.
+        /// Validates the user_token by calling the profile endpoint.
+        /// </summary>
+        public async Task<(bool success, string error)> ConnectWithDirectTokenAsync(
+            Guid tenantGuid, string apiToken, string userToken,
+            string integrationMode, CancellationToken ct = default)
+        {
+            var client = new RebrickableApiClient(apiToken);
+
+            // Validate the API key
+            try
+            {
+                await client.GetColorsAsync(1, 1);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "GET",
+                    "api/v3/lego/colors/",
+                    "Validate API key (TokenOnly)",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Invalid API key: {ex.Message}");
+            }
+
+            // Validate the user_token by getting the profile
+            RebrickableUserProfile profile;
+            try
+            {
+                profile = await client.GetUserProfileAsync(userToken);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "GET",
+                    $"api/v3/users/{{token}}/profile/",
+                    "Validate user token (TokenOnly)",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Invalid user token: {ex.Message}");
+            }
+
+            // Encrypt and store
+            var link = await GetOrCreateLinkAsync(tenantGuid, ct);
+
+            link.rebrickableUsername = profile.Username;
+            link.encryptedApiToken = Encrypt(apiToken);
+            link.encryptedPassword = Encrypt(userToken);
+            link.authMode = AUTH_TOKEN_ONLY;
+            link.syncEnabled = integrationMode != MODE_NONE;
+            link.syncDirectionFlags = integrationMode;
+            link.lastSyncError = null;
+            link.tokenStoredDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync(ct);
+
+            await LogTransactionAsync(tenantGuid, "Push", "GET",
+                $"api/v3/users/{{token}}/profile/",
+                $"Connected as {profile.Username} (TokenOnly)",
+                200, null, true, null, TRIGGER_USER_ACTION, ct);
+
+            _logger.LogInformation("Rebrickable connected (TokenOnly) for tenant {TenantGuid} as {Username}",
+                tenantGuid, profile.Username);
+
+            return (true, null);
+        }
+
+
+        /// <summary>
+        /// Connect via Session Only mode — same login flow as LoginOnce, but
+        /// tokens are stored in memory cache only, never persisted to the database.
+        /// The database link records the connection state and username, but no secrets.
+        /// </summary>
+        public async Task<(bool success, string error)> ConnectSessionOnlyAsync(
+            Guid tenantGuid, string apiToken, string username, string password,
+            string integrationMode, CancellationToken ct = default)
+        {
+            var client = new RebrickableApiClient(apiToken);
+
+            // Validate API key
+            try
+            {
+                await client.GetColorsAsync(1, 1);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "GET",
+                    "api/v3/lego/colors/",
+                    "Validate API key (SessionOnly)",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Invalid API key: {ex.Message}");
+            }
+
+            // Obtain user_token
+            RebrickableUserToken tokenResult;
+            try
+            {
+                tokenResult = await client.GetUserTokenAsync(username, password);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "POST",
+                    "api/v3/users/_token/",
+                    "Obtain user token (SessionOnly)",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Invalid Rebrickable credentials: {ex.Message}");
+            }
+
+            string userToken = tokenResult.UserToken;
+
+            // Validate user_token
+            RebrickableUserProfile profile;
+            try
+            {
+                profile = await client.GetUserProfileAsync(userToken);
+            }
+            catch (RebrickableApiException ex)
+            {
+                await LogTransactionAsync(tenantGuid, "Push", "GET",
+                    $"api/v3/users/{{token}}/profile/",
+                    "Validate user profile (SessionOnly)",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Could not retrieve user profile: {ex.Message}");
+            }
+
+            // Store tokens in memory cache ONLY — never in the database
+            string cacheKey = $"{SESSION_CACHE_PREFIX}{tenantGuid}";
+            var sessionData = new SessionOnlyCredentials
+            {
+                ApiKey = apiToken,
+                UserToken = userToken
+            };
+            _cache.Set(cacheKey, sessionData, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = SESSION_CACHE_DURATION,
+                Priority = CacheItemPriority.High
+            });
+
+            // Update the link record — store auth mode and username but NO tokens
+            var link = await GetOrCreateLinkAsync(tenantGuid, ct);
+
+            link.rebrickableUsername = profile.Username;
+            link.encryptedApiToken = string.Empty;   // No tokens in DB for SessionOnly
+            link.encryptedPassword = string.Empty;
+            link.authMode = AUTH_SESSION_ONLY;
+            link.syncEnabled = integrationMode != MODE_NONE;
+            link.syncDirectionFlags = integrationMode;
+            link.lastSyncError = null;
+            link.tokenStoredDate = null;  // Not persisted
+
+            await _context.SaveChangesAsync(ct);
+
+            await LogTransactionAsync(tenantGuid, "Push", "POST",
+                "api/v3/users/_token/",
+                $"Connected as {profile.Username} (SessionOnly — not persisted)",
+                200, null, true, null, TRIGGER_USER_ACTION, ct);
+
+            _logger.LogInformation("Rebrickable connected (SessionOnly) for tenant {TenantGuid} as {Username}",
+                tenantGuid, profile.Username);
+
+            return (true, null);
+        }
+
+
+        /// <summary>
+        /// Re-authenticate — refresh the stored token without losing sync settings.
+        /// Works for LoginOnce and TokenOnly modes.
+        /// </summary>
+        public async Task<(bool success, string error)> ReauthenticateAsync(
+            Guid tenantGuid, string apiToken, string username, string password,
+            string userToken, string authMode, CancellationToken ct = default)
+        {
+            var link = await GetUserLinkAsync(tenantGuid, ct);
+            if (link == null)
+                return (false, "No existing Rebrickable connection found.");
+
+            // Preserve current integration mode
+            string currentMode = link.syncDirectionFlags ?? MODE_NONE;
+
+            if (authMode == AUTH_TOKEN_ONLY)
+            {
+                return await ConnectWithDirectTokenAsync(tenantGuid, apiToken, userToken, currentMode, ct);
+            }
+            else if (authMode == AUTH_SESSION_ONLY)
+            {
+                return await ConnectSessionOnlyAsync(tenantGuid, apiToken, username, password, currentMode, ct);
+            }
+            else
+            {
+                return await ConnectWithTokenAsync(tenantGuid, apiToken, username, password, currentMode, ct);
+            }
+        }
+
+
+        /// <summary>
+        /// Validate the currently stored token by calling the Rebrickable profile endpoint.
+        /// Returns whether the token is still valid.
+        /// </summary>
+        public async Task<(bool valid, string error)> ValidateStoredTokenAsync(
+            Guid tenantGuid, CancellationToken ct = default)
+        {
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null || string.IsNullOrEmpty(token))
+            {
+                return (false, "No stored credentials — please reconnect.");
+            }
+
+            try
+            {
+                var profile = await client.GetUserProfileAsync(token);
+
+                await LogTransactionAsync(tenantGuid, "Pull", "GET",
+                    $"api/v3/users/{{token}}/profile/",
+                    $"Token health check — valid ({profile.Username})",
+                    200, null, true, null, TRIGGER_USER_ACTION, ct);
+
+                return (true, null);
+            }
+            catch (RebrickableApiException ex)
+            {
+                // Mark the link as having an error
+                var link = await GetUserLinkAsync(tenantGuid, ct);
+                if (link != null)
+                {
+                    link.lastSyncError = $"Token health check failed: {ex.Message}";
+                    await _context.SaveChangesAsync(ct);
+                }
+
+                await LogTransactionAsync(tenantGuid, "Pull", "GET",
+                    $"api/v3/users/{{token}}/profile/",
+                    "Token health check — FAILED",
+                    (int)ex.StatusCode, ex.Message, false, ex.Message, TRIGGER_USER_ACTION, ct);
+
+                return (false, $"Stored token is no longer valid: {ex.Message}");
+            }
+        }
+
+
+        /// <summary>
+        /// Disconnect from Rebrickable — clear stored credentials and session cache.
+        /// </summary>
+        public async Task DisconnectAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            var link = await GetUserLinkAsync(tenantGuid, ct);
+            if (link == null) return;
+
+            link.encryptedApiToken = string.Empty;
+            link.encryptedPassword = string.Empty;
+            link.authMode = string.Empty;
+            link.syncEnabled = false;
+            link.syncDirectionFlags = MODE_NONE;
+            link.lastSyncError = null;
+            link.tokenStoredDate = null;
+
+            await _context.SaveChangesAsync(ct);
+
+            // Also clear any session-only cache
+            _cache.Remove($"{SESSION_CACHE_PREFIX}{tenantGuid}");
+
+            _logger.LogInformation("Rebrickable disconnected for tenant {TenantGuid}", tenantGuid);
+        }
+
+
+        /// <summary>
+        /// Helper class to hold session-only credentials in memory cache.
+        /// </summary>
+        private class SessionOnlyCredentials
+        {
+            public string ApiKey { get; set; }
+            public string UserToken { get; set; }
+        }
+
+
+        /// <summary>
+        /// Get or create a RebrickableUserLink for the given tenant.
+        /// </summary>
+        private async Task<RebrickableUserLink> GetOrCreateLinkAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
             var link = await GetUserLinkAsync(tenantGuid, ct);
 
             if (link == null)
@@ -195,46 +543,7 @@ namespace BMC.Rebrickable.Sync
                 _context.RebrickableUserLinks.Add(link);
             }
 
-            link.rebrickableUsername = profile.Username;
-            link.encryptedApiToken = apiToken;       // TODO: encrypt at rest
-            link.encryptedPassword = userToken;       // Store user_token (TODO: encrypt at rest)
-            link.authMode = AUTH_API_TOKEN;
-            link.syncEnabled = integrationMode != MODE_NONE;
-            link.syncDirectionFlags = integrationMode;
-            link.lastSyncError = null;
-
-            await _context.SaveChangesAsync(ct);
-
-            await LogTransactionAsync(tenantGuid, "Push", "POST",
-                "api/v3/users/_token/",
-                $"Connected as {profile.Username}",
-                200, null, true, null, TRIGGER_USER_ACTION, ct);
-
-            _logger.LogInformation("Rebrickable connected for tenant {TenantGuid} as {Username}",
-                tenantGuid, profile.Username);
-
-            return (true, null);
-        }
-
-
-        /// <summary>
-        /// Disconnect from Rebrickable — clear stored credentials and set mode to None.
-        /// </summary>
-        public async Task DisconnectAsync(Guid tenantGuid, CancellationToken ct = default)
-        {
-            var link = await GetUserLinkAsync(tenantGuid, ct);
-            if (link == null) return;
-
-            link.encryptedApiToken = string.Empty;
-            link.encryptedPassword = string.Empty;
-            link.authMode = string.Empty;
-            link.syncEnabled = false;
-            link.syncDirectionFlags = MODE_NONE;
-            link.lastSyncError = null;
-
-            await _context.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Rebrickable disconnected for tenant {TenantGuid}", tenantGuid);
+            return link;
         }
 
 
@@ -868,25 +1177,77 @@ namespace BMC.Rebrickable.Sync
 
         /// <summary>
         /// Get a RebrickableApiClient and user token for the given tenant.
-        /// Returns (null, null) if not connected.
+        /// Handles all three auth modes: reads from encrypted DB or from session cache.
+        /// Returns (null, null) if not connected or if tokens are expired/missing.
         /// </summary>
         private async Task<(RebrickableApiClient client, string token)> GetClientAndTokenAsync(Guid tenantGuid)
         {
             var link = await GetUserLinkAsync(tenantGuid);
-            if (link == null || string.IsNullOrEmpty(link.encryptedApiToken))
+            if (link == null)
             {
-                _logger.LogWarning("No Rebrickable link/token for tenant {TenantGuid}", tenantGuid);
+                _logger.LogWarning("No Rebrickable link for tenant {TenantGuid}", tenantGuid);
                 return (null, null);
             }
 
-            if (string.IsNullOrEmpty(link.encryptedPassword))
+            string apiKey;
+            string userToken;
+
+            // Session-only mode: read from memory cache
+            if (link.authMode == AUTH_SESSION_ONLY)
             {
-                _logger.LogWarning("No Rebrickable user_token stored for tenant {TenantGuid} — reconnect required", tenantGuid);
-                return (null, null);
+                string cacheKey = $"{SESSION_CACHE_PREFIX}{tenantGuid}";
+                if (_cache.TryGetValue(cacheKey, out SessionOnlyCredentials sessionCreds) && sessionCreds != null)
+                {
+                    apiKey = sessionCreds.ApiKey;
+                    userToken = sessionCreds.UserToken;
+                }
+                else
+                {
+                    _logger.LogWarning("Session-only credentials expired for tenant {TenantGuid} — reconnect required", tenantGuid);
+                    link.lastSyncError = "Session expired — please reconnect.";
+                    await _context.SaveChangesAsync();
+                    return (null, null);
+                }
+            }
+            else
+            {
+                // DB-backed modes (ApiToken / TokenOnly): decrypt from stored values
+                if (string.IsNullOrEmpty(link.encryptedApiToken))
+                {
+                    _logger.LogWarning("No Rebrickable API key stored for tenant {TenantGuid}", tenantGuid);
+                    return (null, null);
+                }
+
+                if (string.IsNullOrEmpty(link.encryptedPassword))
+                {
+                    _logger.LogWarning("No Rebrickable user_token stored for tenant {TenantGuid} — reconnect required", tenantGuid);
+                    return (null, null);
+                }
+
+                // Check token expiry if configured
+                if (link.tokenExpiryDays.HasValue && link.tokenStoredDate.HasValue)
+                {
+                    var expiresAt = link.tokenStoredDate.Value.AddDays(link.tokenExpiryDays.Value);
+                    if (DateTime.UtcNow > expiresAt)
+                    {
+                        _logger.LogWarning("Rebrickable token expired for tenant {TenantGuid} — stored {StoredDate}, expires after {ExpiryDays} days",
+                            tenantGuid, link.tokenStoredDate.Value, link.tokenExpiryDays.Value);
+                        link.lastSyncError = "Token expired — please reconnect or re-authenticate.";
+                        await _context.SaveChangesAsync();
+                        return (null, null);
+                    }
+                }
+
+                apiKey = Decrypt(link.encryptedApiToken);
+                userToken = Decrypt(link.encryptedPassword);
+
+                if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(userToken))
+                {
+                    _logger.LogWarning("Failed to decrypt Rebrickable tokens for tenant {TenantGuid} — reconnect required", tenantGuid);
+                    return (null, null);
+                }
             }
 
-            string apiKey = link.encryptedApiToken;   // TODO: decrypt
-            string userToken = link.encryptedPassword; // TODO: decrypt
             var client = new RebrickableApiClient(apiKey);
             return (client, userToken);
         }

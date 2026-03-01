@@ -55,6 +55,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string apiToken { get; set; }
             public string username { get; set; }
             public string password { get; set; }
+            public string userToken { get; set; }
+            public string authMode { get; set; } = "ApiToken";
             public string integrationMode { get; set; } = "RealTime";
         }
 
@@ -94,10 +96,23 @@ namespace Foundation.BMC.Controllers.WebAPI
         {
             StartAuditEventClock();
 
-            if (request == null || string.IsNullOrWhiteSpace(request.apiToken)
-                || string.IsNullOrWhiteSpace(request.username) || string.IsNullOrWhiteSpace(request.password))
+            if (request == null || string.IsNullOrWhiteSpace(request.apiToken))
             {
-                return BadRequest("API token, username, and password are required.");
+                return BadRequest("API token is required.");
+            }
+
+            // Validate required fields based on auth mode
+            string authMode = request.authMode ?? RebrickableSyncService.AUTH_API_TOKEN;
+
+            if (authMode == RebrickableSyncService.AUTH_TOKEN_ONLY)
+            {
+                if (string.IsNullOrWhiteSpace(request.userToken))
+                    return BadRequest("User token is required for Token Only mode.");
+            }
+            else // LoginOnce or SessionOnly both need username + password
+            {
+                if (string.IsNullOrWhiteSpace(request.username) || string.IsNullOrWhiteSpace(request.password))
+                    return BadRequest("Username and password are required for this auth mode.");
             }
 
             if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
@@ -118,18 +133,36 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            var (success, error) = await _syncService.ConnectWithTokenAsync(
-                userTenantGuid, request.apiToken, request.username, request.password,
-                request.integrationMode, cancellationToken);
+            // Route to the correct service method based on auth mode
+            (bool success, string error) result;
 
-            if (!success)
+            if (authMode == RebrickableSyncService.AUTH_TOKEN_ONLY)
             {
-                return BadRequest(new { error = error });
+                result = await _syncService.ConnectWithDirectTokenAsync(
+                    userTenantGuid, request.apiToken, request.userToken,
+                    request.integrationMode, cancellationToken);
+            }
+            else if (authMode == RebrickableSyncService.AUTH_SESSION_ONLY)
+            {
+                result = await _syncService.ConnectSessionOnlyAsync(
+                    userTenantGuid, request.apiToken, request.username, request.password,
+                    request.integrationMode, cancellationToken);
+            }
+            else
+            {
+                result = await _syncService.ConnectWithTokenAsync(
+                    userTenantGuid, request.apiToken, request.username, request.password,
+                    request.integrationMode, cancellationToken);
             }
 
-            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Rebrickable connected");
+            if (!result.success)
+            {
+                return BadRequest(new { error = result.error });
+            }
 
-            return Ok(new { connected = true });
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Rebrickable connected ({authMode})");
+
+            return Ok(new { connected = true, authMode = authMode });
         }
 
 
@@ -168,6 +201,91 @@ namespace Foundation.BMC.Controllers.WebAPI
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Rebrickable disconnected");
 
             return Ok(new { connected = false });
+        }
+
+
+        /// <summary>
+        /// POST /api/rebrickable-sync/reauthenticate
+        ///
+        /// Refresh the stored token without losing sync settings.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/rebrickable-sync/reauthenticate")]
+        public async Task<IActionResult> Reauthenticate([FromBody] ConnectRequest request, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (request == null || string.IsNullOrWhiteSpace(request.apiToken))
+            {
+                return BadRequest("API token is required.");
+            }
+
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
+                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var (success, error) = await _syncService.ReauthenticateAsync(
+                userTenantGuid, request.apiToken, request.username, request.password,
+                request.userToken, request.authMode ?? RebrickableSyncService.AUTH_API_TOKEN,
+                cancellationToken);
+
+            if (!success)
+            {
+                return BadRequest(new { error = error });
+            }
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Rebrickable re-authenticated");
+
+            return Ok(new { reauthenticated = true });
+        }
+
+
+        /// <summary>
+        /// GET /api/rebrickable-sync/token-health
+        ///
+        /// Validate the currently stored token by calling the Rebrickable profile endpoint.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/rebrickable-sync/token-health")]
+        public async Task<IActionResult> TokenHealth(CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
+                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var (valid, error) = await _syncService.ValidateStoredTokenAsync(userTenantGuid, cancellationToken);
+
+            return Ok(new { valid = valid, error = error });
         }
 
 

@@ -64,8 +64,10 @@ export interface SyncImportResult {
 
 export interface ConnectRequest {
     apiToken: string;
-    username: string;
-    password: string;
+    username?: string;
+    password?: string;
+    userToken?: string;
+    authMode: string;
     integrationMode: string;
 }
 
@@ -94,10 +96,29 @@ export class RebrickableSyncService {
 
 
     /** POST /api/rebrickable-sync/connect — validate token + store credentials */
-    connect(request: ConnectRequest): Observable<{ connected: boolean }> {
-        return this.http.post<{ connected: boolean }>(
+    connect(request: ConnectRequest): Observable<{ connected: boolean; authMode: string }> {
+        return this.http.post<{ connected: boolean; authMode: string }>(
             `${this.baseUrl}/connect`,
             request,
+            { headers: this.headers }
+        );
+    }
+
+
+    /** POST /api/rebrickable-sync/reauthenticate — refresh token without losing settings */
+    reauthenticate(request: ConnectRequest): Observable<{ reauthenticated: boolean }> {
+        return this.http.post<{ reauthenticated: boolean }>(
+            `${this.baseUrl}/reauthenticate`,
+            request,
+            { headers: this.headers }
+        );
+    }
+
+
+    /** GET /api/rebrickable-sync/token-health — validate stored token */
+    checkTokenHealth(): Observable<{ valid: boolean; error: string | null }> {
+        return this.http.get<{ valid: boolean; error: string | null }>(
+            `${this.baseUrl}/token-health`,
             { headers: this.headers }
         );
     }

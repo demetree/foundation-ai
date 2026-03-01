@@ -33,6 +33,10 @@ public partial class RebrickableUserLink
 
     public string lastSyncError { get; set; }
 
+    public int? tokenExpiryDays { get; set; }
+
+    public DateTime? tokenStoredDate { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }

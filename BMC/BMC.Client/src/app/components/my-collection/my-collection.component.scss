@@ -1621,6 +1621,97 @@
     font-size: 0.85rem;
 }
 
+/* ----------------------------------------------------------------
+   Rebrickable — Auth Mode Selector & Connected Actions
+   ---------------------------------------------------------------- */
+.rb-auth-mode-section {
+    margin-bottom: 12px;
+}
+
+.rb-form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary, #999);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rb-auth-mode-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+
+    .rb-mode-option {
+        padding: 8px 10px !important;
+        min-height: auto !important;
+    }
+
+    .rb-mode-info span {
+        font-size: 0.7rem !important;
+    }
+}
+
+.rb-connected-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--bmc-primary, #2196f3);
+    color: var(--bmc-primary, #2196f3);
+    transition: all 0.2s;
+
+    &:hover {
+        background: var(--bmc-primary, #2196f3);
+        color: #fff;
+    }
+}
+
+.rb-mode-compact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--input-bg, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:hover {
+        border-color: var(--bmc-primary, #2196f3);
+
+        .rb-mode-edit-icon {
+            opacity: 1;
+        }
+    }
+
+    strong {
+        font-size: 0.9rem;
+    }
+
+    >i:first-child {
+        color: var(--bmc-primary, #2196f3);
+        font-size: 1rem;
+    }
+}
+
+.rb-mode-compact-desc {
+    color: var(--text-secondary, #999);
+    font-size: 0.8rem;
+    flex: 1;
+}
+
+.rb-mode-edit-icon {
+    opacity: 0.4;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #999);
+    transition: opacity 0.2s;
+}
+
 
 /* ----------------------------------------------------------------
    Rebrickable — Sync Actions & Dates

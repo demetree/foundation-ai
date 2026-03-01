@@ -253,7 +253,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             '/api/BrickParts/RowCount',
             '/api/BrickColours/RowCount',
             '/api/LegoThemes/RowCount',
-            '/api/Minifigs/RowCount'
+            '/api/LegoMinifigs/RowCount'
         ];
 
         //

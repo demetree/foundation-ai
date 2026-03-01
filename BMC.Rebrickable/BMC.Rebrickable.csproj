@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.3" />
     <ProjectReference Include="..\BmcDatabase\BmcDatabase.csproj" />
     <PackageReference Include="EFCore.BulkExtensions.MIT" Version="10.*" />
   </ItemGroup>
