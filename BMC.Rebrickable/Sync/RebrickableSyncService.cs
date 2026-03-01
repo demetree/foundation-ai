@@ -31,6 +31,7 @@ namespace BMC.Rebrickable.Sync
         private readonly ILogger<RebrickableSyncService> _logger;
         private readonly IDataProtector _protector;
         private readonly IMemoryCache _cache;
+        private readonly IRebrickableActivityBroadcaster _broadcaster;
 
 
         // ───────────────────────── Integration mode constants ─────────────────────────
@@ -78,12 +79,14 @@ namespace BMC.Rebrickable.Sync
             BMCContext context,
             ILogger<RebrickableSyncService> logger,
             IDataProtectionProvider dataProtectionProvider,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            IRebrickableActivityBroadcaster broadcaster = null)
         {
             _context = context;
             _logger = logger;
             _protector = dataProtectionProvider.CreateProtector("BMC.Rebrickable.TokenProtection");
             _cache = cache;
+            _broadcaster = broadcaster ?? new NullActivityBroadcaster();
         }
 
 
@@ -241,6 +244,8 @@ namespace BMC.Rebrickable.Sync
                 $"Connected as {profile.Username}",
                 200, null, true, null, TRIGGER_USER_ACTION, ct);
 
+            await _broadcaster.BroadcastConnectionChangedAsync(tenantGuid, true, AUTH_API_TOKEN, profile.Username);
+
             _logger.LogInformation("Rebrickable connected (LoginOnce) for tenant {TenantGuid} as {Username}",
                 tenantGuid, profile.Username);
 
@@ -308,6 +313,8 @@ namespace BMC.Rebrickable.Sync
                 $"api/v3/users/{{token}}/profile/",
                 $"Connected as {profile.Username} (TokenOnly)",
                 200, null, true, null, TRIGGER_USER_ACTION, ct);
+
+            await _broadcaster.BroadcastConnectionChangedAsync(tenantGuid, true, AUTH_TOKEN_ONLY, profile.Username);
 
             _logger.LogInformation("Rebrickable connected (TokenOnly) for tenant {TenantGuid} as {Username}",
                 tenantGuid, profile.Username);
@@ -407,6 +414,8 @@ namespace BMC.Rebrickable.Sync
                 "api/v3/users/_token/",
                 $"Connected as {profile.Username} (SessionOnly — not persisted)",
                 200, null, true, null, TRIGGER_USER_ACTION, ct);
+
+            await _broadcaster.BroadcastConnectionChangedAsync(tenantGuid, true, AUTH_SESSION_ONLY, profile.Username);
 
             _logger.LogInformation("Rebrickable connected (SessionOnly) for tenant {TenantGuid} as {Username}",
                 tenantGuid, profile.Username);
@@ -509,6 +518,8 @@ namespace BMC.Rebrickable.Sync
 
             // Also clear any session-only cache
             _cache.Remove($"{SESSION_CACHE_PREFIX}{tenantGuid}");
+
+            await _broadcaster.BroadcastConnectionChangedAsync(tenantGuid, false, null, null);
 
             _logger.LogInformation("Rebrickable disconnected for tenant {TenantGuid}", tenantGuid);
         }
@@ -1371,6 +1382,10 @@ namespace BMC.Rebrickable.Sync
 
                 _context.RebrickableTransactions.Add(transaction);
                 await _context.SaveChangesAsync(ct);
+
+                // Broadcast to connected SignalR clients
+                await _broadcaster.BroadcastActivityAsync(tenantGuid, direction, httpMethod,
+                    endpoint, requestSummary, responseStatusCode, success, errorMessage, recordCount);
             }
             catch (Exception ex)
             {

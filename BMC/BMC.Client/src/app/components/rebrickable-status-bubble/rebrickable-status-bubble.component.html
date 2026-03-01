@@ -1,0 +1,26 @@
+<!-- Floating Rebrickable Status Bubble -->
+<div class="rb-bubble-wrapper" *ngIf="visible">
+
+    <!-- Status Pill -->
+    <div class="rb-bubble" [ngClass]="bubbleClass" (click)="togglePanel()" (mouseenter)="showTooltip = true"
+        (mouseleave)="showTooltip = false">
+        <i [class]="bubbleIcon"></i>
+        <span class="rb-bubble-text">{{ bubbleText }}</span>
+        <span class="rb-bubble-dot" *ngIf="isActive"></span>
+    </div>
+
+    <!-- Recent Activity Tooltip -->
+    <div class="rb-tooltip" *ngIf="showTooltip && recentEvents.length > 0 && !showPanel">
+        <div class="rb-tooltip-header">Recent Activity</div>
+        <div class="rb-tooltip-item" *ngFor="let event of recentEvents">
+            <i class="fas fa-check-circle rb-tooltip-ok" *ngIf="event.success"></i>
+            <i class="fas fa-times-circle rb-tooltip-err" *ngIf="!event.success"></i>
+            <span class="rb-tooltip-text">{{ event.summary || event.endpoint }}</span>
+            <span class="rb-tooltip-count" *ngIf="event.recordCount">{{ event.recordCount }}</span>
+        </div>
+    </div>
+
+    <!-- Activity Panel Overlay -->
+    <app-rebrickable-activity-panel *ngIf="showPanel" (close)="closePanel()">
+    </app-rebrickable-activity-panel>
+</div>

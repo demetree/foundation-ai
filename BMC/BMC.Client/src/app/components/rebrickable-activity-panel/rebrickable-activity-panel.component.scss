@@ -1,0 +1,461 @@
+/* ═══════════════════════════════════════════════════════════════
+   Rebrickable Activity Panel — Slide-in Overlay
+   ═══════════════════════════════════════════════════════════════ */
+
+.rb-panel-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    animation: rb-fade-in 0.2s ease;
+}
+
+.rb-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 480px;
+    max-width: 90vw;
+    background: var(--panel-bg, #1a1a2e);
+    color: var(--text-primary, #e0e0e0);
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+    animation: rb-slide-in 0.25s ease;
+    overflow-y: auto;
+}
+
+
+/* ── Header ── */
+.rb-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.rb-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05rem;
+    font-weight: 700;
+
+    i {
+        color: #f44336;
+        font-size: 1.1rem;
+    }
+}
+
+.rb-panel-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+}
+
+
+/* ── Stats Banner ── */
+.rb-panel-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 0;
+}
+
+.rb-stat {
+    padding: 14px 12px;
+    text-align: center;
+    background: var(--panel-bg, #1a1a2e);
+}
+
+.rb-stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.rb-stat-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.rb-stat-good {
+    color: #4caf50;
+}
+
+.rb-stat-warn {
+    color: #ff9800;
+}
+
+.rb-stat-bad {
+    color: #ef5350;
+}
+
+.rb-stat-mode {
+    font-size: 0.85rem;
+}
+
+
+/* ── Sections ── */
+.rb-panel-section {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    h4 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #888;
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i {
+            font-size: 0.75rem;
+        }
+    }
+}
+
+.rb-count-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    color: #aaa;
+}
+
+
+/* ── Live Feed ── */
+.rb-live-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rb-live-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.78rem;
+    animation: rb-fade-in 0.3s ease;
+
+    &.rb-live-error {
+        background: rgba(239, 83, 80, 0.08);
+    }
+}
+
+.rb-live-ok {
+    color: #4caf50;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.rb-live-err {
+    color: #ef5350;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.rb-live-dir {
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #90caf9;
+    min-width: 30px;
+}
+
+.rb-live-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rb-live-count {
+    font-size: 0.7rem;
+    color: #81c784;
+    background: rgba(129, 199, 132, 0.1);
+    padding: 1px 6px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+
+/* ── Filters ── */
+.rb-panel-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+.rb-filter-group {
+    display: flex;
+    gap: 4px;
+}
+
+.rb-filter-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #aaa;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    &.active {
+        background: #f44336;
+        border-color: #f44336;
+        color: #fff;
+    }
+
+    i {
+        font-size: 0.65rem;
+    }
+}
+
+.rb-export-btn {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #90caf9;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+        background: rgba(144, 202, 249, 0.1);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+
+/* ── Transaction List ── */
+.rb-tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.rb-tx-item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid transparent;
+    transition: background 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.rb-tx-error {
+        border-left-color: #ef5350;
+    }
+}
+
+.rb-tx-main {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+}
+
+.rb-tx-push {
+    color: #64b5f6;
+    font-size: 0.7rem;
+}
+
+.rb-tx-pull {
+    color: #81c784;
+    font-size: 0.7rem;
+}
+
+.rb-tx-method {
+    font-weight: 700;
+    font-size: 0.68rem;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    min-width: 32px;
+    text-align: center;
+}
+
+.rb-tx-endpoint {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #ccc;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.72rem;
+}
+
+.rb-tx-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 8px;
+
+    &.rb-tx-status-ok {
+        color: #4caf50;
+        background: rgba(76, 175, 80, 0.1);
+    }
+
+    &.rb-tx-status-err {
+        color: #ef5350;
+        background: rgba(239, 83, 80, 0.1);
+    }
+}
+
+.rb-tx-count {
+    font-size: 0.68rem;
+    color: #81c784;
+    background: rgba(129, 199, 132, 0.08);
+    padding: 1px 5px;
+    border-radius: 6px;
+}
+
+.rb-tx-detail {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    color: #888;
+}
+
+.rb-tx-summary {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rb-tx-date {
+    flex-shrink: 0;
+    margin-left: 8px;
+    font-size: 0.68rem;
+}
+
+.rb-tx-error-msg {
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: #ef9a9a;
+    padding: 4px 8px;
+    background: rgba(239, 83, 80, 0.06);
+    border-radius: 4px;
+}
+
+.rb-tx-empty {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 0.82rem;
+}
+
+
+/* ── Pagination ── */
+.rb-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+.rb-page-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    i {
+        font-size: 0.7rem;
+    }
+}
+
+.rb-page-info {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+
+/* ── Animations ── */
+@keyframes rb-slide-in {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes rb-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

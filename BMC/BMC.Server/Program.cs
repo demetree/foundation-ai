@@ -142,6 +142,7 @@ namespace Foundation.BMC
                 //
                 // Rebrickable sync service — manages bidirectional sync with Rebrickable API
                 //
+                builder.Services.AddSingleton<global::BMC.Rebrickable.Sync.IRebrickableActivityBroadcaster, RebrickableActivityBroadcaster>();
                 builder.Services.AddScoped<RebrickableSyncService>();
 
 
@@ -587,6 +588,7 @@ namespace Foundation.BMC
 
                 app.MapHub<AiChatHub>("/AiChatSignal");
                 app.MapHub<ManualGeneratorHub>("/ManualGeneratorSignal");
+                app.MapHub<RebrickableHub>("/RebrickableSyncSignal");
 
                 app.MapFallbackToFile("/index.html");
 

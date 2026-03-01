@@ -25,6 +25,7 @@ export interface SyncStatus {
     pullIntervalMinutes: number | null;
     totalTransactions: number;
     failedTransactions: number;
+    recentErrorCount: number;
     recentPushCount: number;
     recentPullCount: number;
 }

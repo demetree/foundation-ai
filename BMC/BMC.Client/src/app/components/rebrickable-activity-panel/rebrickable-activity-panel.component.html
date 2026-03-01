@@ -1,0 +1,122 @@
+<!-- Activity Panel — Slide-in Overlay -->
+<div class="rb-panel-backdrop" (click)="closePanel()"></div>
+
+<div class="rb-panel">
+    <!-- Header -->
+    <div class="rb-panel-header">
+        <div class="rb-panel-title">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Rebrickable Activity</span>
+        </div>
+        <button class="rb-panel-close" (click)="closePanel()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Stats Banner -->
+    <div class="rb-panel-stats">
+        <div class="rb-stat">
+            <div class="rb-stat-value">{{ totalCalls }}</div>
+            <div class="rb-stat-label">Total Calls</div>
+        </div>
+        <div class="rb-stat">
+            <div class="rb-stat-value" [class.rb-stat-good]="successRate >= 95"
+                [class.rb-stat-warn]="successRate < 95 && successRate >= 80" [class.rb-stat-bad]="successRate < 80">
+                {{ successRate }}%
+            </div>
+            <div class="rb-stat-label">Success Rate</div>
+        </div>
+        <div class="rb-stat">
+            <div class="rb-stat-value" [class.rb-stat-bad]="last24hCount > 0">{{ last24hCount }}</div>
+            <div class="rb-stat-label">Errors (24h)</div>
+        </div>
+        <div class="rb-stat" *ngIf="status">
+            <div class="rb-stat-value rb-stat-mode">{{ status.authMode || '—' }}</div>
+            <div class="rb-stat-label">Auth Mode</div>
+        </div>
+    </div>
+
+    <!-- Live Feed -->
+    <div class="rb-panel-section" *ngIf="liveEvents.length > 0">
+        <h4><i class="fas fa-bolt"></i> Live</h4>
+        <div class="rb-live-feed">
+            <div class="rb-live-item" *ngFor="let event of liveEvents | slice:0:8"
+                [class.rb-live-error]="!event.success">
+                <i class="fas fa-check-circle rb-live-ok" *ngIf="event.success"></i>
+                <i class="fas fa-times-circle rb-live-err" *ngIf="!event.success"></i>
+                <span class="rb-live-dir">{{ event.direction }}</span>
+                <span class="rb-live-text">{{ event.summary || event.endpoint }}</span>
+                <span class="rb-live-count" *ngIf="event.recordCount">{{ event.recordCount }} rows</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="rb-panel-filters">
+        <div class="rb-filter-group">
+            <button class="rb-filter-btn" [class.active]="!directionFilter"
+                (click)="setDirectionFilter(null)">All</button>
+            <button class="rb-filter-btn" [class.active]="directionFilter === 'Push'"
+                (click)="setDirectionFilter('Push')">
+                <i class="fas fa-arrow-up"></i> Push
+            </button>
+            <button class="rb-filter-btn" [class.active]="directionFilter === 'Pull'"
+                (click)="setDirectionFilter('Pull')">
+                <i class="fas fa-arrow-down"></i> Pull
+            </button>
+        </div>
+        <div class="rb-filter-group">
+            <button class="rb-filter-btn" [class.active]="successFilter === true" (click)="setSuccessFilter(true)">
+                <i class="fas fa-check"></i> Success
+            </button>
+            <button class="rb-filter-btn" [class.active]="successFilter === false" (click)="setSuccessFilter(false)">
+                <i class="fas fa-times"></i> Failed
+            </button>
+        </div>
+        <button class="rb-export-btn" (click)="exportCsv()" [disabled]="exporting">
+            <i class="fas fa-download"></i> {{ exporting ? 'Exporting…' : 'Export CSV' }}
+        </button>
+    </div>
+
+    <!-- Transaction Log -->
+    <div class="rb-panel-section">
+        <h4><i class="fas fa-history"></i> History <span class="rb-count-badge">{{ totalCount }}</span></h4>
+        <div class="rb-tx-list">
+            <div class="rb-tx-item" *ngFor="let tx of transactions" [class.rb-tx-error]="!tx.success">
+                <div class="rb-tx-main">
+                    <i class="fas fa-arrow-up rb-tx-push" *ngIf="tx.direction === 'Push'"></i>
+                    <i class="fas fa-arrow-down rb-tx-pull" *ngIf="tx.direction === 'Pull'"></i>
+                    <span class="rb-tx-method">{{ tx.httpMethod }}</span>
+                    <span class="rb-tx-endpoint">{{ tx.endpoint }}</span>
+                    <span class="rb-tx-status" [class.rb-tx-status-ok]="tx.success"
+                        [class.rb-tx-status-err]="!tx.success">
+                        {{ tx.responseStatusCode }}
+                    </span>
+                    <span class="rb-tx-count" *ngIf="tx.recordCount">{{ tx.recordCount }}</span>
+                </div>
+                <div class="rb-tx-detail">
+                    <span class="rb-tx-summary">{{ tx.requestSummary }}</span>
+                    <span class="rb-tx-date">{{ tx.transactionDate | date:'short' }}</span>
+                </div>
+                <div class="rb-tx-error-msg" *ngIf="tx.errorMessage">
+                    {{ tx.errorMessage }}
+                </div>
+            </div>
+
+            <div class="rb-tx-empty" *ngIf="transactions.length === 0">
+                No transactions found.
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="rb-pagination" *ngIf="totalPages > 1">
+            <button class="rb-page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="rb-page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <button class="rb-page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
