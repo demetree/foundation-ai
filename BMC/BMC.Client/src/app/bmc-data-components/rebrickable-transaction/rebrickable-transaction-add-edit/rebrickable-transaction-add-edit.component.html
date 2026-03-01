@@ -1,0 +1,98 @@
+<div class="add-rebrickable-transaction" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-rebrickable-transaction me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Rebrickable Transaction" 
+        *ngIf="userIsBMCRebrickableTransactionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #rebrickableTransactionModal let-modal>
+   <div class="modal-header rebrickable-transaction-modal-header">
+      <h5 class="modal-title mb-0" id="rebrickableTransactionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Rebrickable Transaction' : 'Add Rebrickable Transaction' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body rebrickable-transaction-modal-body">
+      <form [formGroup]="rebrickableTransactionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                <label for="RebrickableTransaction-transactionDate" id="label-RebrickableTransaction-transactionDate">Transaction Date</label>
+                <input type="datetime-local" id="RebrickableTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" aria-labelledby="label-transactionDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('direction')">
+                <label for="RebrickableTransaction-direction" id="label-RebrickableTransaction-direction"><span class="text-danger">*</span>Direction</label>
+                <input type="text" id="RebrickableTransaction-direction" formControlName="direction" placeholder="Enter Direction" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" aria-labelledby="label-direction" />
+                <div *ngIf="rebrickableTransactionForm.get('direction')?.invalid && rebrickableTransactionForm.get('direction')?.touched" class="text-danger">
+                    Direction is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('httpMethod')">
+                <label for="RebrickableTransaction-httpMethod" id="label-RebrickableTransaction-httpMethod"><span class="text-danger">*</span>Http Method</label>
+                <input type="text" id="RebrickableTransaction-httpMethod" formControlName="httpMethod" placeholder="Enter Http Method" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" aria-labelledby="label-httpMethod" />
+                <div *ngIf="rebrickableTransactionForm.get('httpMethod')?.invalid && rebrickableTransactionForm.get('httpMethod')?.touched" class="text-danger">
+                    Http Method is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('endpoint')">
+                <label for="RebrickableTransaction-endpoint" id="label-RebrickableTransaction-endpoint"><span class="text-danger">*</span>Endpoint</label>
+                <textarea id="RebrickableTransaction-endpoint" formControlName="endpoint" placeholder="Enter Endpoint" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()"></textarea>
+                <div *ngIf="rebrickableTransactionForm.get('endpoint')?.invalid && rebrickableTransactionForm.get('endpoint')?.touched" class="text-danger">
+                    Endpoint is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('requestSummary')">
+                <label for="RebrickableTransaction-requestSummary" id="label-RebrickableTransaction-requestSummary">Request Summary</label>
+                <textarea id="RebrickableTransaction-requestSummary" formControlName="requestSummary" placeholder="Enter Request Summary" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('responseStatusCode')">
+                <label for="RebrickableTransaction-responseStatusCode" id="label-RebrickableTransaction-responseStatusCode">Response Status Code</label>
+                <input type="number" id="RebrickableTransaction-responseStatusCode" formControlName="responseStatusCode" placeholder="Enter Response Status Code" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" aria-labelledby="label-responseStatusCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('responseBody')">
+                <label for="RebrickableTransaction-responseBody" id="label-RebrickableTransaction-responseBody">Response Body</label>
+                <textarea id="RebrickableTransaction-responseBody" formControlName="responseBody" placeholder="Enter Response Body" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                <input type="checkbox" id="RebrickableTransaction-success" formControlName="success" class="form-check-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" />
+                <label for="RebrickableTransaction-success" class="form-check-label" id="label-RebrickableTransaction-success"><span class="text-danger">*</span>Success</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                <label for="RebrickableTransaction-errorMessage" id="label-RebrickableTransaction-errorMessage">Error Message</label>
+                <textarea id="RebrickableTransaction-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('triggeredBy')">
+                <label for="RebrickableTransaction-triggeredBy" id="label-RebrickableTransaction-triggeredBy"><span class="text-danger">*</span>Triggered By</label>
+                <input type="text" id="RebrickableTransaction-triggeredBy" formControlName="triggeredBy" placeholder="Enter Triggered By" class="form-control rebrickable-transaction-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" aria-labelledby="label-triggeredBy" />
+                <div *ngIf="rebrickableTransactionForm.get('triggeredBy')?.invalid && rebrickableTransactionForm.get('triggeredBy')?.touched" class="text-danger">
+                    Triggered By is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RebrickableTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" />
+                <label for="RebrickableTransaction-active" class="form-check-label" id="label-RebrickableTransaction-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RebrickableTransaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCRebrickableTransactionWriter()" />
+                <label for="RebrickableTransaction-deleted" class="form-check-label" id="label-RebrickableTransaction-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer rebrickable-transaction-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Rebrickable Transaction changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !rebrickableTransactionForm.valid || rebrickableTransactionForm.pristine  || userIsBMCRebrickableTransactionWriter() == false " ngbTooltip="Save the Rebrickable Transaction changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Rebrickable Transaction' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

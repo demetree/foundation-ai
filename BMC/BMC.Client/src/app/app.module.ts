@@ -119,6 +119,7 @@ import { ProjectTagAssignmentService } from './bmc-data-services/project-tag-ass
 import { PublishedMocService } from './bmc-data-services/published-moc.service';
 import { PublishedMocChangeHistoryService } from './bmc-data-services/published-moc-change-history.service';
 import { PublishedMocImageService } from './bmc-data-services/published-moc-image.service';
+import { RebrickableTransactionService } from './bmc-data-services/rebrickable-transaction.service';
 import { RebrickableUserLinkService } from './bmc-data-services/rebrickable-user-link.service';
 import { RenderPresetService } from './bmc-data-services/render-preset.service';
 import { SharedInstructionService } from './bmc-data-services/shared-instruction.service';
@@ -408,6 +409,10 @@ import { PublishedMocImageListingComponent } from './bmc-data-components/publish
 import { PublishedMocImageAddEditComponent } from './bmc-data-components/published-moc-image/published-moc-image-add-edit/published-moc-image-add-edit.component';
 import { PublishedMocImageDetailComponent } from './bmc-data-components/published-moc-image/published-moc-image-detail/published-moc-image-detail.component';
 import { PublishedMocImageTableComponent } from './bmc-data-components/published-moc-image/published-moc-image-table/published-moc-image-table.component';
+import { RebrickableTransactionListingComponent } from './bmc-data-components/rebrickable-transaction/rebrickable-transaction-listing/rebrickable-transaction-listing.component';
+import { RebrickableTransactionAddEditComponent } from './bmc-data-components/rebrickable-transaction/rebrickable-transaction-add-edit/rebrickable-transaction-add-edit.component';
+import { RebrickableTransactionDetailComponent } from './bmc-data-components/rebrickable-transaction/rebrickable-transaction-detail/rebrickable-transaction-detail.component';
+import { RebrickableTransactionTableComponent } from './bmc-data-components/rebrickable-transaction/rebrickable-transaction-table/rebrickable-transaction-table.component';
 import { RebrickableUserLinkListingComponent } from './bmc-data-components/rebrickable-user-link/rebrickable-user-link-listing/rebrickable-user-link-listing.component';
 import { RebrickableUserLinkAddEditComponent } from './bmc-data-components/rebrickable-user-link/rebrickable-user-link-add-edit/rebrickable-user-link-add-edit.component';
 import { RebrickableUserLinkDetailComponent } from './bmc-data-components/rebrickable-user-link/rebrickable-user-link-detail/rebrickable-user-link-detail.component';
@@ -858,6 +863,10 @@ PublishedMocImageListingComponent,
 PublishedMocImageAddEditComponent,
 PublishedMocImageDetailComponent,
 PublishedMocImageTableComponent,
+RebrickableTransactionListingComponent,
+RebrickableTransactionAddEditComponent,
+RebrickableTransactionDetailComponent,
+RebrickableTransactionTableComponent,
 RebrickableUserLinkListingComponent,
 RebrickableUserLinkAddEditComponent,
 RebrickableUserLinkDetailComponent,
@@ -1081,6 +1090,7 @@ ProjectTagAssignmentService,
 PublishedMocService,
 PublishedMocChangeHistoryService,
 PublishedMocImageService,
+RebrickableTransactionService,
 RebrickableUserLinkService,
 RenderPresetService,
 SharedInstructionService,

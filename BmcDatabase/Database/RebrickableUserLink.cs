@@ -15,11 +15,23 @@ public partial class RebrickableUserLink
 
     public string encryptedApiToken { get; set; }
 
-    public DateTime? lastSyncDate { get; set; }
+    public string authMode { get; set; }
+
+    public string encryptedPassword { get; set; }
 
     public bool syncEnabled { get; set; }
 
     public string syncDirectionFlags { get; set; }
+
+    public int? pullIntervalMinutes { get; set; }
+
+    public DateTime? lastSyncDate { get; set; }
+
+    public DateTime? lastPullDate { get; set; }
+
+    public DateTime? lastPushDate { get; set; }
+
+    public string lastSyncError { get; set; }
 
     public Guid objectGuid { get; set; }
 

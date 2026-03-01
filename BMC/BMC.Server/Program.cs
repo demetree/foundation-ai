@@ -32,6 +32,7 @@ using Foundation.AI.VectorStore;
 using Foundation.AI.VectorStore.Zvec;
 using BMC.AI;
 using Foundation.BMC.Services;
+using BMC.Rebrickable.Sync;
 
 
 namespace Foundation.BMC
@@ -136,6 +137,12 @@ namespace Foundation.BMC
                 // then checks LDraw + Rebrickable for upstream changes on an hourly basis.
                 //
                 builder.Services.AddHostedService<DataImportWorker>();
+
+
+                //
+                // Rebrickable sync service — manages bidirectional sync with Rebrickable API
+                //
+                builder.Services.AddScoped<RebrickableSyncService>();
 
 
                 //
@@ -280,6 +287,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(PartRendererController));
                 controllers.Add(typeof(ManualGeneratorController));
                 controllers.Add(typeof(PublicShowcaseController));
+                controllers.Add(typeof(RebrickableSyncController));
                     
 
                 //

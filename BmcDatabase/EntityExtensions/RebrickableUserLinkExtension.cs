@@ -25,11 +25,18 @@ namespace Foundation.BMC.Database
 			public String rebrickableUsername { get; set; }
 			[Required]
 			public String encryptedApiToken { get; set; }
-			public DateTime? lastSyncDate { get; set; }
+			[Required]
+			public String authMode { get; set; }
+			public String encryptedPassword { get; set; }
 			[Required]
 			public Boolean syncEnabled { get; set; }
 			[Required]
 			public String syncDirectionFlags { get; set; }
+			public Int32? pullIntervalMinutes { get; set; }
+			public DateTime? lastSyncDate { get; set; }
+			public DateTime? lastPullDate { get; set; }
+			public DateTime? lastPushDate { get; set; }
+			public String lastSyncError { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -61,9 +68,15 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				rebrickableUsername = this.rebrickableUsername,
 				encryptedApiToken = this.encryptedApiToken,
-				lastSyncDate = this.lastSyncDate,
+				authMode = this.authMode,
+				encryptedPassword = this.encryptedPassword,
 				syncEnabled = this.syncEnabled,
 				syncDirectionFlags = this.syncDirectionFlags,
+				pullIntervalMinutes = this.pullIntervalMinutes,
+				lastSyncDate = this.lastSyncDate,
+				lastPullDate = this.lastPullDate,
+				lastPushDate = this.lastPushDate,
+				lastSyncError = this.lastSyncError,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -108,9 +121,15 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				rebrickableUsername = this.rebrickableUsername,
 				encryptedApiToken = this.encryptedApiToken,
-				lastSyncDate = this.lastSyncDate,
+				authMode = this.authMode,
+				encryptedPassword = this.encryptedPassword,
 				syncEnabled = this.syncEnabled,
 				syncDirectionFlags = this.syncDirectionFlags,
+				pullIntervalMinutes = this.pullIntervalMinutes,
+				lastSyncDate = this.lastSyncDate,
+				lastPullDate = this.lastPullDate,
+				lastPushDate = this.lastPushDate,
+				lastSyncError = this.lastSyncError,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -155,9 +174,15 @@ namespace Foundation.BMC.Database
 				id = dto.id,
 				rebrickableUsername = dto.rebrickableUsername,
 				encryptedApiToken = dto.encryptedApiToken,
-				lastSyncDate = dto.lastSyncDate,
+				authMode = dto.authMode,
+				encryptedPassword = dto.encryptedPassword,
 				syncEnabled = dto.syncEnabled,
 				syncDirectionFlags = dto.syncDirectionFlags,
+				pullIntervalMinutes = dto.pullIntervalMinutes,
+				lastSyncDate = dto.lastSyncDate,
+				lastPullDate = dto.lastPullDate,
+				lastPushDate = dto.lastPushDate,
+				lastSyncError = dto.lastSyncError,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -179,9 +204,15 @@ namespace Foundation.BMC.Database
 
 			this.rebrickableUsername = dto.rebrickableUsername;
 			this.encryptedApiToken = dto.encryptedApiToken;
-			this.lastSyncDate = dto.lastSyncDate;
+			this.authMode = dto.authMode;
+			this.encryptedPassword = dto.encryptedPassword;
 			this.syncEnabled = dto.syncEnabled;
 			this.syncDirectionFlags = dto.syncDirectionFlags;
+			this.pullIntervalMinutes = dto.pullIntervalMinutes;
+			this.lastSyncDate = dto.lastSyncDate;
+			this.lastPullDate = dto.lastPullDate;
+			this.lastPushDate = dto.lastPushDate;
+			this.lastSyncError = dto.lastSyncError;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -209,9 +240,15 @@ namespace Foundation.BMC.Database
 				tenantGuid = this.tenantGuid,
 				rebrickableUsername = this.rebrickableUsername,
 				encryptedApiToken = this.encryptedApiToken,
-				lastSyncDate = this.lastSyncDate,
+				authMode = this.authMode,
+				encryptedPassword = this.encryptedPassword,
 				syncEnabled = this.syncEnabled,
 				syncDirectionFlags = this.syncDirectionFlags,
+				pullIntervalMinutes = this.pullIntervalMinutes,
+				lastSyncDate = this.lastSyncDate,
+				lastPullDate = this.lastPullDate,
+				lastPushDate = this.lastPushDate,
+				lastSyncError = this.lastSyncError,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -270,9 +307,15 @@ namespace Foundation.BMC.Database
 				id = rebrickableUserLink.id,
 				rebrickableUsername = rebrickableUserLink.rebrickableUsername,
 				encryptedApiToken = rebrickableUserLink.encryptedApiToken,
-				lastSyncDate = rebrickableUserLink.lastSyncDate,
+				authMode = rebrickableUserLink.authMode,
+				encryptedPassword = rebrickableUserLink.encryptedPassword,
 				syncEnabled = rebrickableUserLink.syncEnabled,
 				syncDirectionFlags = rebrickableUserLink.syncDirectionFlags,
+				pullIntervalMinutes = rebrickableUserLink.pullIntervalMinutes,
+				lastSyncDate = rebrickableUserLink.lastSyncDate,
+				lastPullDate = rebrickableUserLink.lastPullDate,
+				lastPushDate = rebrickableUserLink.lastPushDate,
+				lastSyncError = rebrickableUserLink.lastSyncError,
 				objectGuid = rebrickableUserLink.objectGuid,
 				active = rebrickableUserLink.active,
 				deleted = rebrickableUserLink.deleted
@@ -298,9 +341,15 @@ namespace Foundation.BMC.Database
 				id = rebrickableUserLink.id,
 				rebrickableUsername = rebrickableUserLink.rebrickableUsername,
 				encryptedApiToken = rebrickableUserLink.encryptedApiToken,
-				lastSyncDate = rebrickableUserLink.lastSyncDate,
+				authMode = rebrickableUserLink.authMode,
+				encryptedPassword = rebrickableUserLink.encryptedPassword,
 				syncEnabled = rebrickableUserLink.syncEnabled,
 				syncDirectionFlags = rebrickableUserLink.syncDirectionFlags,
+				pullIntervalMinutes = rebrickableUserLink.pullIntervalMinutes,
+				lastSyncDate = rebrickableUserLink.lastSyncDate,
+				lastPullDate = rebrickableUserLink.lastPullDate,
+				lastPushDate = rebrickableUserLink.lastPushDate,
+				lastSyncError = rebrickableUserLink.lastSyncError,
 				objectGuid = rebrickableUserLink.objectGuid,
 				active = rebrickableUserLink.active,
 				deleted = rebrickableUserLink.deleted
@@ -325,7 +374,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = rebrickableUserLink.id,
 				name = rebrickableUserLink.rebrickableUsername,
-				description = string.Join(", ", new[] { rebrickableUserLink.rebrickableUsername, rebrickableUserLink.encryptedApiToken, rebrickableUserLink.syncDirectionFlags}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = string.Join(", ", new[] { rebrickableUserLink.rebrickableUsername, rebrickableUserLink.encryptedApiToken, rebrickableUserLink.authMode}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}

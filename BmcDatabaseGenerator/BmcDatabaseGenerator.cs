@@ -946,10 +946,10 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // -------------------------------------------------
-            // RebrickableUserLink — User's Rebrickable API token for sync
+            // RebrickableUserLink — User's Rebrickable credentials and sync configuration
             // -------------------------------------------------
             Database.Table rebrickableUserLinkTable = database.AddTable("RebrickableUserLink");
-            rebrickableUserLinkTable.comment = "Stores each user's Rebrickable API token for bidirectional collection sync. One link per tenant.";
+            rebrickableUserLinkTable.comment = "Stores each user's Rebrickable credentials/token and sync configuration. One link per tenant. Supports three auth modes: ApiToken, EncryptedCredentials, SessionOnly.";
             rebrickableUserLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
             rebrickableUserLinkTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
             rebrickableUserLinkTable.AddIdField();
@@ -957,13 +957,43 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             rebrickableUserLinkTable.AddString100Field("rebrickableUsername", false).AddScriptComments("User's Rebrickable username for display and reference");
             rebrickableUserLinkTable.AddString500Field("encryptedApiToken", false).AddScriptComments("Encrypted Rebrickable user token — used for API calls on behalf of the user");
-            rebrickableUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of last successful sync with Rebrickable");
+            rebrickableUserLinkTable.AddString50Field("authMode", false).AddScriptComments("Auth trust level: ApiToken, EncryptedCredentials, SessionOnly");
+            rebrickableUserLinkTable.AddString500Field("encryptedPassword", true).AddScriptComments("Encrypted Rebrickable password — only used in EncryptedCredentials auth mode (null otherwise)");
             rebrickableUserLinkTable.AddBoolField("syncEnabled", false, true).AddScriptComments("Whether automatic sync is enabled for this user");
-            rebrickableUserLinkTable.AddString50Field("syncDirectionFlags", false).AddScriptComments("Sync direction: Both, ToRebrickable, FromRebrickable");
+            rebrickableUserLinkTable.AddString50Field("syncDirectionFlags", false).AddScriptComments("Integration mode: None, RealTime, PushOnly, ImportOnly");
+            rebrickableUserLinkTable.AddIntField("pullIntervalMinutes", true).AddScriptComments("Periodic pull interval in minutes for RealTime mode (null = manual only)");
+            rebrickableUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of last successful sync with Rebrickable (legacy — kept for compatibility)");
+            rebrickableUserLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("Date/time of last successful pull from Rebrickable");
+            rebrickableUserLinkTable.AddDateTimeField("lastPushDate", true).AddScriptComments("Date/time of last successful push to Rebrickable");
+            rebrickableUserLinkTable.AddTextField("lastSyncError").AddScriptComments("Last sync error message for display to the user (null = no error)");
 
             rebrickableUserLinkTable.AddControlFields();
 
             rebrickableUserLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // RebrickableTransaction — Audit log for all Rebrickable API calls
+            // -------------------------------------------------
+            Database.Table rebrickableTransactionTable = database.AddTable("RebrickableTransaction");
+            rebrickableTransactionTable.comment = "Full audit log of every Rebrickable API call BMC makes on behalf of a user. Enables the Communications Panel for total transparency. Every push, pull, login, and error is recorded.";
+            rebrickableTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            rebrickableTransactionTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            rebrickableTransactionTable.AddIdField();
+            rebrickableTransactionTable.AddMultiTenantSupport();
+
+            rebrickableTransactionTable.AddDateTimeField("transactionDate").AddScriptComments("Date/time the API call was made");
+            rebrickableTransactionTable.AddString50Field("direction", false).AddScriptComments("Direction of data flow: Push, Pull");
+            rebrickableTransactionTable.AddString50Field("httpMethod", false).AddScriptComments("HTTP method used: GET, POST, PUT, PATCH, DELETE");
+            rebrickableTransactionTable.AddString500Field("endpoint", false).AddScriptComments("The Rebrickable API URL that was called");
+            rebrickableTransactionTable.AddTextField("requestSummary").AddScriptComments("Human-readable description of the operation, e.g. 'Added set 42131-1 x1'");
+            rebrickableTransactionTable.AddIntField("responseStatusCode").AddScriptComments("HTTP status code returned by Rebrickable");
+            rebrickableTransactionTable.AddTextField("responseBody").AddScriptComments("Raw response body from Rebrickable (for debugging — may be null for large responses)");
+            rebrickableTransactionTable.AddBoolField("success", false, true).AddScriptComments("Whether the API call completed successfully");
+            rebrickableTransactionTable.AddTextField("errorMessage").AddScriptComments("Error details if the call failed (null on success)");
+            rebrickableTransactionTable.AddString100Field("triggeredBy", false).AddScriptComments("What initiated this call: UserAction, PeriodicSync, ManualPull, SessionLogin");
+
+            rebrickableTransactionTable.AddControlFields();
 
 
             // -------------------------------------------------

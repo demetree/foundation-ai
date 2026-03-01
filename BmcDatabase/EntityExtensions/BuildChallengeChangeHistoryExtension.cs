@@ -283,7 +283,7 @@ namespace Foundation.BMC.Database
 				timeStamp = buildChallengeChangeHistory.timeStamp,
 				userId = buildChallengeChangeHistory.userId,
 				data = buildChallengeChangeHistory.data,
-				buildChallenge = BuildChallenge.CreateMinimalAnonymous(buildChallengeChangeHistory.buildChallenge)
+				buildChallenge = BuildChallenge.CreateMinimalAnonymous(buildChallengeChangeHistory.buildChallenge),
 			 };
 		}
 

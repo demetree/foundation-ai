@@ -34,9 +34,16 @@
                     Encrypted Api Token is required
                 </div>
             </div>
-            <div class="form-group" *ngIf="!isFieldHidden('lastSyncDate')">
-                <label for="RebrickableUserLink-lastSyncDate" id="label-RebrickableUserLink-lastSyncDate">Last Sync Date</label>
-                <input type="datetime-local" id="RebrickableUserLink-lastSyncDate" formControlName="lastSyncDate" placeholder="Enter Last Sync Date" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-lastSyncDate" />
+            <div class="form-group" *ngIf="!isFieldHidden('authMode')">
+                <label for="RebrickableUserLink-authMode" id="label-RebrickableUserLink-authMode"><span class="text-danger">*</span>Auth Mode</label>
+                <input type="text" id="RebrickableUserLink-authMode" formControlName="authMode" placeholder="Enter Auth Mode" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-authMode" />
+                <div *ngIf="rebrickableUserLinkForm.get('authMode')?.invalid && rebrickableUserLinkForm.get('authMode')?.touched" class="text-danger">
+                    Auth Mode is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('encryptedPassword')">
+                <label for="RebrickableUserLink-encryptedPassword" id="label-RebrickableUserLink-encryptedPassword">Encrypted Password</label>
+                <textarea id="RebrickableUserLink-encryptedPassword" formControlName="encryptedPassword" placeholder="Enter Encrypted Password" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()"></textarea>
             </div>
             <div class="form-check my-2" *ngIf="!isFieldHidden('syncEnabled')">
                 <input type="checkbox" id="RebrickableUserLink-syncEnabled" formControlName="syncEnabled" class="form-check-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" />
@@ -48,6 +55,26 @@
                 <div *ngIf="rebrickableUserLinkForm.get('syncDirectionFlags')?.invalid && rebrickableUserLinkForm.get('syncDirectionFlags')?.touched" class="text-danger">
                     Sync Direction Flags is required
                 </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('pullIntervalMinutes')">
+                <label for="RebrickableUserLink-pullIntervalMinutes" id="label-RebrickableUserLink-pullIntervalMinutes">Pull Interval Minutes</label>
+                <input type="number" id="RebrickableUserLink-pullIntervalMinutes" formControlName="pullIntervalMinutes" placeholder="Enter Pull Interval Minutes" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-pullIntervalMinutes" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSyncDate')">
+                <label for="RebrickableUserLink-lastSyncDate" id="label-RebrickableUserLink-lastSyncDate">Last Sync Date</label>
+                <input type="datetime-local" id="RebrickableUserLink-lastSyncDate" formControlName="lastSyncDate" placeholder="Enter Last Sync Date" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-lastSyncDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPullDate')">
+                <label for="RebrickableUserLink-lastPullDate" id="label-RebrickableUserLink-lastPullDate">Last Pull Date</label>
+                <input type="datetime-local" id="RebrickableUserLink-lastPullDate" formControlName="lastPullDate" placeholder="Enter Last Pull Date" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-lastPullDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPushDate')">
+                <label for="RebrickableUserLink-lastPushDate" id="label-RebrickableUserLink-lastPushDate">Last Push Date</label>
+                <input type="datetime-local" id="RebrickableUserLink-lastPushDate" formControlName="lastPushDate" placeholder="Enter Last Push Date" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-lastPushDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSyncError')">
+                <label for="RebrickableUserLink-lastSyncError" id="label-RebrickableUserLink-lastSyncError">Last Sync Error</label>
+                <textarea id="RebrickableUserLink-lastSyncError" formControlName="lastSyncError" placeholder="Enter Last Sync Error" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()"></textarea>
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="RebrickableUserLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" />

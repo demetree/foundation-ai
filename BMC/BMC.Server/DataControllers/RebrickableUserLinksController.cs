@@ -64,9 +64,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetRebrickableUserLinks(
 			string rebrickableUsername = null,
 			string encryptedApiToken = null,
-			DateTime? lastSyncDate = null,
+			string authMode = null,
+			string encryptedPassword = null,
 			bool? syncEnabled = null,
 			string syncDirectionFlags = null,
+			int? pullIntervalMinutes = null,
+			DateTime? lastSyncDate = null,
+			DateTime? lastPullDate = null,
+			DateTime? lastPushDate = null,
+			string lastSyncError = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -124,6 +130,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastSyncDate = lastSyncDate.Value.ToUniversalTime();
 			}
 
+			if (lastPullDate.HasValue == true && lastPullDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastPullDate = lastPullDate.Value.ToUniversalTime();
+			}
+
+			if (lastPushDate.HasValue == true && lastPushDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastPushDate = lastPushDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.RebrickableUserLink> query = (from rul in _context.RebrickableUserLinks select rul);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -136,9 +152,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(rul => rul.encryptedApiToken == encryptedApiToken);
 			}
-			if (lastSyncDate.HasValue == true)
+			if (string.IsNullOrEmpty(authMode) == false)
 			{
-				query = query.Where(rul => rul.lastSyncDate == lastSyncDate.Value);
+				query = query.Where(rul => rul.authMode == authMode);
+			}
+			if (string.IsNullOrEmpty(encryptedPassword) == false)
+			{
+				query = query.Where(rul => rul.encryptedPassword == encryptedPassword);
 			}
 			if (syncEnabled.HasValue == true)
 			{
@@ -147,6 +167,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(syncDirectionFlags) == false)
 			{
 				query = query.Where(rul => rul.syncDirectionFlags == syncDirectionFlags);
+			}
+			if (pullIntervalMinutes.HasValue == true)
+			{
+				query = query.Where(rul => rul.pullIntervalMinutes == pullIntervalMinutes.Value);
+			}
+			if (lastSyncDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastSyncDate == lastSyncDate.Value);
+			}
+			if (lastPullDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastPullDate == lastPullDate.Value);
+			}
+			if (lastPushDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastPushDate == lastPushDate.Value);
+			}
+			if (string.IsNullOrEmpty(lastSyncError) == false)
+			{
+				query = query.Where(rul => rul.lastSyncError == lastSyncError);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -177,7 +217,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(rul => rul.deleted == false);
 			}
 
-			query = query.OrderBy(rul => rul.rebrickableUsername).ThenBy(rul => rul.encryptedApiToken).ThenBy(rul => rul.syncDirectionFlags);
+			query = query.OrderBy(rul => rul.rebrickableUsername).ThenBy(rul => rul.encryptedApiToken).ThenBy(rul => rul.authMode);
 
 
 			//
@@ -190,7 +230,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.rebrickableUsername.Contains(anyStringContains)
 			       || x.encryptedApiToken.Contains(anyStringContains)
+			       || x.authMode.Contains(anyStringContains)
+			       || x.encryptedPassword.Contains(anyStringContains)
 			       || x.syncDirectionFlags.Contains(anyStringContains)
+			       || x.lastSyncError.Contains(anyStringContains)
 			   );
 			}
 
@@ -246,9 +289,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string rebrickableUsername = null,
 			string encryptedApiToken = null,
-			DateTime? lastSyncDate = null,
+			string authMode = null,
+			string encryptedPassword = null,
 			bool? syncEnabled = null,
 			string syncDirectionFlags = null,
+			int? pullIntervalMinutes = null,
+			DateTime? lastSyncDate = null,
+			DateTime? lastPullDate = null,
+			DateTime? lastPushDate = null,
+			string lastSyncError = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -288,6 +337,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastSyncDate = lastSyncDate.Value.ToUniversalTime();
 			}
 
+			if (lastPullDate.HasValue == true && lastPullDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastPullDate = lastPullDate.Value.ToUniversalTime();
+			}
+
+			if (lastPushDate.HasValue == true && lastPushDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastPushDate = lastPushDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.RebrickableUserLink> query = (from rul in _context.RebrickableUserLinks select rul);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 			if (rebrickableUsername != null)
@@ -298,9 +357,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(rul => rul.encryptedApiToken == encryptedApiToken);
 			}
-			if (lastSyncDate.HasValue == true)
+			if (authMode != null)
 			{
-				query = query.Where(rul => rul.lastSyncDate == lastSyncDate.Value);
+				query = query.Where(rul => rul.authMode == authMode);
+			}
+			if (encryptedPassword != null)
+			{
+				query = query.Where(rul => rul.encryptedPassword == encryptedPassword);
 			}
 			if (syncEnabled.HasValue == true)
 			{
@@ -309,6 +372,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (syncDirectionFlags != null)
 			{
 				query = query.Where(rul => rul.syncDirectionFlags == syncDirectionFlags);
+			}
+			if (pullIntervalMinutes.HasValue == true)
+			{
+				query = query.Where(rul => rul.pullIntervalMinutes == pullIntervalMinutes.Value);
+			}
+			if (lastSyncDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastSyncDate == lastSyncDate.Value);
+			}
+			if (lastPullDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastPullDate == lastPullDate.Value);
+			}
+			if (lastPushDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastPushDate == lastPushDate.Value);
+			}
+			if (lastSyncError != null)
+			{
+				query = query.Where(rul => rul.lastSyncError == lastSyncError);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -349,7 +432,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.rebrickableUsername.Contains(anyStringContains)
 			       || x.encryptedApiToken.Contains(anyStringContains)
+			       || x.authMode.Contains(anyStringContains)
+			       || x.encryptedPassword.Contains(anyStringContains)
 			       || x.syncDirectionFlags.Contains(anyStringContains)
+			       || x.lastSyncError.Contains(anyStringContains)
 			   );
 			}
 
@@ -577,14 +663,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 				rebrickableUserLink.encryptedApiToken = rebrickableUserLink.encryptedApiToken.Substring(0, 500);
 			}
 
-			if (rebrickableUserLink.lastSyncDate.HasValue == true && rebrickableUserLink.lastSyncDate.Value.Kind != DateTimeKind.Utc)
+			if (rebrickableUserLink.authMode != null && rebrickableUserLink.authMode.Length > 50)
 			{
-				rebrickableUserLink.lastSyncDate = rebrickableUserLink.lastSyncDate.Value.ToUniversalTime();
+				rebrickableUserLink.authMode = rebrickableUserLink.authMode.Substring(0, 50);
+			}
+
+			if (rebrickableUserLink.encryptedPassword != null && rebrickableUserLink.encryptedPassword.Length > 500)
+			{
+				rebrickableUserLink.encryptedPassword = rebrickableUserLink.encryptedPassword.Substring(0, 500);
 			}
 
 			if (rebrickableUserLink.syncDirectionFlags != null && rebrickableUserLink.syncDirectionFlags.Length > 50)
 			{
 				rebrickableUserLink.syncDirectionFlags = rebrickableUserLink.syncDirectionFlags.Substring(0, 50);
+			}
+
+			if (rebrickableUserLink.lastSyncDate.HasValue == true && rebrickableUserLink.lastSyncDate.Value.Kind != DateTimeKind.Utc)
+			{
+				rebrickableUserLink.lastSyncDate = rebrickableUserLink.lastSyncDate.Value.ToUniversalTime();
+			}
+
+			if (rebrickableUserLink.lastPullDate.HasValue == true && rebrickableUserLink.lastPullDate.Value.Kind != DateTimeKind.Utc)
+			{
+				rebrickableUserLink.lastPullDate = rebrickableUserLink.lastPullDate.Value.ToUniversalTime();
+			}
+
+			if (rebrickableUserLink.lastPushDate.HasValue == true && rebrickableUserLink.lastPushDate.Value.Kind != DateTimeKind.Utc)
+			{
+				rebrickableUserLink.lastPushDate = rebrickableUserLink.lastPushDate.Value.ToUniversalTime();
 			}
 
 			EntityEntry<Database.RebrickableUserLink> attached = _context.Entry(existing);
@@ -686,14 +792,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 					rebrickableUserLink.encryptedApiToken = rebrickableUserLink.encryptedApiToken.Substring(0, 500);
 				}
 
-				if (rebrickableUserLink.lastSyncDate.HasValue == true && rebrickableUserLink.lastSyncDate.Value.Kind != DateTimeKind.Utc)
+				if (rebrickableUserLink.authMode != null && rebrickableUserLink.authMode.Length > 50)
 				{
-					rebrickableUserLink.lastSyncDate = rebrickableUserLink.lastSyncDate.Value.ToUniversalTime();
+					rebrickableUserLink.authMode = rebrickableUserLink.authMode.Substring(0, 50);
+				}
+
+				if (rebrickableUserLink.encryptedPassword != null && rebrickableUserLink.encryptedPassword.Length > 500)
+				{
+					rebrickableUserLink.encryptedPassword = rebrickableUserLink.encryptedPassword.Substring(0, 500);
 				}
 
 				if (rebrickableUserLink.syncDirectionFlags != null && rebrickableUserLink.syncDirectionFlags.Length > 50)
 				{
 					rebrickableUserLink.syncDirectionFlags = rebrickableUserLink.syncDirectionFlags.Substring(0, 50);
+				}
+
+				if (rebrickableUserLink.lastSyncDate.HasValue == true && rebrickableUserLink.lastSyncDate.Value.Kind != DateTimeKind.Utc)
+				{
+					rebrickableUserLink.lastSyncDate = rebrickableUserLink.lastSyncDate.Value.ToUniversalTime();
+				}
+
+				if (rebrickableUserLink.lastPullDate.HasValue == true && rebrickableUserLink.lastPullDate.Value.Kind != DateTimeKind.Utc)
+				{
+					rebrickableUserLink.lastPullDate = rebrickableUserLink.lastPullDate.Value.ToUniversalTime();
+				}
+
+				if (rebrickableUserLink.lastPushDate.HasValue == true && rebrickableUserLink.lastPushDate.Value.Kind != DateTimeKind.Utc)
+				{
+					rebrickableUserLink.lastPushDate = rebrickableUserLink.lastPushDate.Value.ToUniversalTime();
 				}
 
 				rebrickableUserLink.objectGuid = Guid.NewGuid();
@@ -826,9 +952,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string rebrickableUsername = null,
 			string encryptedApiToken = null,
-			DateTime? lastSyncDate = null,
+			string authMode = null,
+			string encryptedPassword = null,
 			bool? syncEnabled = null,
 			string syncDirectionFlags = null,
+			int? pullIntervalMinutes = null,
+			DateTime? lastSyncDate = null,
+			DateTime? lastPullDate = null,
+			DateTime? lastPushDate = null,
+			string lastSyncError = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -885,6 +1017,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastSyncDate = lastSyncDate.Value.ToUniversalTime();
 			}
 
+			if (lastPullDate.HasValue == true && lastPullDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastPullDate = lastPullDate.Value.ToUniversalTime();
+			}
+
+			if (lastPushDate.HasValue == true && lastPushDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastPushDate = lastPushDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.RebrickableUserLink> query = (from rul in _context.RebrickableUserLinks select rul);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -897,9 +1039,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(rul => rul.encryptedApiToken == encryptedApiToken);
 			}
-			if (lastSyncDate.HasValue == true)
+			if (string.IsNullOrEmpty(authMode) == false)
 			{
-				query = query.Where(rul => rul.lastSyncDate == lastSyncDate.Value);
+				query = query.Where(rul => rul.authMode == authMode);
+			}
+			if (string.IsNullOrEmpty(encryptedPassword) == false)
+			{
+				query = query.Where(rul => rul.encryptedPassword == encryptedPassword);
 			}
 			if (syncEnabled.HasValue == true)
 			{
@@ -908,6 +1054,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(syncDirectionFlags) == false)
 			{
 				query = query.Where(rul => rul.syncDirectionFlags == syncDirectionFlags);
+			}
+			if (pullIntervalMinutes.HasValue == true)
+			{
+				query = query.Where(rul => rul.pullIntervalMinutes == pullIntervalMinutes.Value);
+			}
+			if (lastSyncDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastSyncDate == lastSyncDate.Value);
+			}
+			if (lastPullDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastPullDate == lastPullDate.Value);
+			}
+			if (lastPushDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.lastPushDate == lastPushDate.Value);
+			}
+			if (string.IsNullOrEmpty(lastSyncError) == false)
+			{
+				query = query.Where(rul => rul.lastSyncError == lastSyncError);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -949,7 +1115,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.rebrickableUsername.Contains(anyStringContains)
 			       || x.encryptedApiToken.Contains(anyStringContains)
+			       || x.authMode.Contains(anyStringContains)
+			       || x.encryptedPassword.Contains(anyStringContains)
 			       || x.syncDirectionFlags.Contains(anyStringContains)
+			       || x.lastSyncError.Contains(anyStringContains)
 			   );
 			}
 
@@ -957,7 +1126,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.rebrickableUsername).ThenBy(x => x.encryptedApiToken).ThenBy(x => x.syncDirectionFlags);
+			query = query.OrderBy(x => x.rebrickableUsername).ThenBy(x => x.encryptedApiToken).ThenBy(x => x.authMode);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

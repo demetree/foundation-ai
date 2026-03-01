@@ -11,6 +11,7 @@ using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.BMC.Database;
+using BMC.Rebrickable.Sync;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -28,12 +29,14 @@ namespace Foundation.BMC.Controllers.WebAPI
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 
         private readonly BMCContext _context;
+        private readonly RebrickableSyncService _syncService;
         private readonly ILogger<CollectionController> _logger;
 
 
-        public CollectionController(BMCContext context, ILogger<CollectionController> logger) : base("BMC", "Collection")
+        public CollectionController(BMCContext context, RebrickableSyncService syncService, ILogger<CollectionController> logger) : base("BMC", "Collection")
         {
             _context = context;
+            _syncService = syncService;
             _logger = logger;
 
             _context.Database.SetCommandTimeout(60);
@@ -623,6 +626,20 @@ namespace Foundation.BMC.Controllers.WebAPI
                 partsAdded = partsAdded,
                 partsUpdated = partsUpdated,
                 totalQuantityAdded = totalQtyAdded
+            });
+
+            // Fire-and-forget push to Rebrickable (non-blocking — errors logged, never thrown)
+            // This runs AFTER the response has been returned to the client
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _syncService.PushSetAddedAsync(userTenantGuid, setNumber, Math.Max(quantity, 1));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Rebrickable push failed for set import {SetNumber}", setNumber);
+                }
             });
         }
 

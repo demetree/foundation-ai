@@ -1,8 +1,8 @@
 /*
-   GENERATED FORM FOR THE REBRICKABLEUSERLINK TABLE - DO NOT MODIFY DIRECTLY
+   GENERATED FORM FOR THE REBRICKABLETRANSACTION TABLE - DO NOT MODIFY DIRECTLY
    =================================================================================
 
-   This is the default form generated from RebrickableUserLink table metadata.
+   This is the default form generated from RebrickableTransaction table metadata.
 
    It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
    because it's form layout and validation is too simple.
@@ -10,7 +10,7 @@
    For building better looking and/or versions with custom logic, create a custom version of this:
 
    1. Copy this component
-   2. Rename to rebrickable-user-link-custom (or similar)
+   2. Rename to rebrickable-transaction-custom (or similar)
    3. Modify layout, grouping, field types, add workflow logic
    
    This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
@@ -22,7 +22,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { RebrickableUserLinkService, RebrickableUserLinkData, RebrickableUserLinkSubmitData } from '../../../bmc-data-services/rebrickable-user-link.service';
+import { RebrickableTransactionService, RebrickableTransactionData, RebrickableTransactionSubmitData } from '../../../bmc-data-services/rebrickable-transaction.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -33,30 +33,29 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Allows null for optional fields.
 // - Does not include navigation properties or methods from domain models.
 //
-interface RebrickableUserLinkFormValues {
-  rebrickableUsername: string,
-  encryptedApiToken: string,
-  authMode: string,
-  encryptedPassword: string | null,
-  syncEnabled: boolean,
-  syncDirectionFlags: string,
-  pullIntervalMinutes: string | null,     // Stored as string for form input, converted to number on submit.
-  lastSyncDate: string | null,
-  lastPullDate: string | null,
-  lastPushDate: string | null,
-  lastSyncError: string | null,
+interface RebrickableTransactionFormValues {
+  transactionDate: string | null,
+  direction: string,
+  httpMethod: string,
+  endpoint: string,
+  requestSummary: string | null,
+  responseStatusCode: string | null,     // Stored as string for form input, converted to number on submit.
+  responseBody: string | null,
+  success: boolean,
+  errorMessage: string | null,
+  triggeredBy: string,
   active: boolean,
   deleted: boolean,
 };
 
 
 @Component({
-  selector: 'app-rebrickable-user-link-detail',
-  templateUrl: './rebrickable-user-link-detail.component.html',
-  styleUrls: ['./rebrickable-user-link-detail.component.scss']
+  selector: 'app-rebrickable-transaction-detail',
+  templateUrl: './rebrickable-transaction-detail.component.html',
+  styleUrls: ['./rebrickable-transaction-detail.component.scss']
 })
 
-export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentDeactivate {
+export class RebrickableTransactionDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   //
@@ -64,7 +63,7 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
   // initial values for one or more fields. Use Partial to allow selective seeding.
   // Only applied in add mode (not edit mode, where existing data takes precedence).
   //
-  @Input() preSeededData: Partial<RebrickableUserLinkFormValues> | null = null;
+  @Input() preSeededData: Partial<RebrickableTransactionFormValues> | null = null;
 
   //
   // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
@@ -73,25 +72,24 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
   @Input() hiddenFields: string[] = [];
 
 
-  public rebrickableUserLinkForm: FormGroup = this.fb.group({
-        rebrickableUsername: ['', Validators.required],
-        encryptedApiToken: ['', Validators.required],
-        authMode: ['', Validators.required],
-        encryptedPassword: [''],
-        syncEnabled: [false],
-        syncDirectionFlags: ['', Validators.required],
-        pullIntervalMinutes: [''],
-        lastSyncDate: [''],
-        lastPullDate: [''],
-        lastPushDate: [''],
-        lastSyncError: [''],
+  public rebrickableTransactionForm: FormGroup = this.fb.group({
+        transactionDate: [''],
+        direction: ['', Validators.required],
+        httpMethod: ['', Validators.required],
+        endpoint: ['', Validators.required],
+        requestSummary: [''],
+        responseStatusCode: [''],
+        responseBody: [''],
+        success: [false],
+        errorMessage: [''],
+        triggeredBy: ['', Validators.required],
         active: [true],
         deleted: [false],
       });
 
 
-  public rebrickableUserLinkId: string | null = null;
-  public rebrickableUserLinkData: RebrickableUserLinkData | null = null;
+  public rebrickableTransactionId: string | null = null;
+  public rebrickableTransactionData: RebrickableTransactionData | null = null;
 
   private isLoadingSubject = new BehaviorSubject<boolean>(true);
   public isLoading$ = this.isLoadingSubject.asObservable();
@@ -100,12 +98,12 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
-  rebrickableUserLinks$ = this.rebrickableUserLinkService.GetRebrickableUserLinkList();
+  rebrickableTransactions$ = this.rebrickableTransactionService.GetRebrickableTransactionList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    public rebrickableUserLinkService: RebrickableUserLinkService,
+    public rebrickableTransactionService: RebrickableTransactionService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -117,16 +115,16 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
   ngOnInit(): void {
 
-    // Get the rebrickableUserLinkId from the route parameters
-    this.rebrickableUserLinkId = this.route.snapshot.paramMap.get('rebrickableUserLinkId');
+    // Get the rebrickableTransactionId from the route parameters
+    this.rebrickableTransactionId = this.route.snapshot.paramMap.get('rebrickableTransactionId');
 
-    if (this.rebrickableUserLinkId === 'new' ||
-        this.rebrickableUserLinkId == null) {
+    if (this.rebrickableTransactionId === 'new' ||
+        this.rebrickableTransactionId == null) {
       //
       // Add mode
       //
       this.isEditMode = false;
-      this.rebrickableUserLinkData = null;
+      this.rebrickableTransactionData = null;
 
       this.buildFormValues(null);
 
@@ -136,7 +134,7 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
       // Check explicitly for null/undefined to avoid errors.
       //
       if (this.preSeededData !== null && this.preSeededData !== undefined) {
-        this.rebrickableUserLinkForm.patchValue(this.preSeededData);
+        this.rebrickableTransactionForm.patchValue(this.preSeededData);
       }
 
 
@@ -148,7 +146,7 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
     for (index = 0; index < this.hiddenFields.length; index++) {
       const fieldName = this.hiddenFields[index];
-      const control = this.rebrickableUserLinkForm.get(fieldName);
+      const control = this.rebrickableTransactionForm.get(fieldName);
       if (control !== null) {
         control.clearValidators();
         control.updateValueAndValidity(); // Refresh validation state.
@@ -158,14 +156,14 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
       this.isLoadingSubject.next(false); // No load needed for add mode
 
-      document.title = 'Add New Rebrickable User Link';
+      document.title = 'Add New Rebrickable Transaction';
 
     } else {
 
       // Edit mode
       this.isEditMode = true;
 
-      document.title = 'Edit Rebrickable User Link';
+      document.title = 'Edit Rebrickable Transaction';
 
       // Load the data from the server
       this.loadData(false);
@@ -181,8 +179,8 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
 
   public canDeactivate(): boolean {
-    if (this.rebrickableUserLinkForm.dirty) {
-      return confirm('You have unsaved Rebrickable User Link changes. Are you sure you want to leave this page?');
+    if (this.rebrickableTransactionForm.dirty) {
+      return confirm('You have unsaved Rebrickable Transaction changes. Are you sure you want to leave this page?');
     }
     return true;
   }
@@ -190,12 +188,12 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
  public GetQueryParameters(): any {
 
-    if (this.rebrickableUserLinkId != null && this.rebrickableUserLinkId !== 'new') {
+    if (this.rebrickableTransactionId != null && this.rebrickableTransactionId !== 'new') {
 
-      const id = parseInt(this.rebrickableUserLinkId, 10);
+      const id = parseInt(this.rebrickableTransactionId, 10);
 
       if (!isNaN(id)) {
-        return { rebrickableUserLinkId: id };
+        return { rebrickableTransactionId: id };
       }
     }
 
@@ -204,9 +202,9 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
 
 
 /*
-  * Loads the RebrickableUserLink data for the current rebrickableUserLinkId.
+  * Loads the RebrickableTransaction data for the current rebrickableTransactionId.
   *
-  * Fully respects the RebrickableUserLinkService caching strategy and error handling strategy.
+  * Fully respects the RebrickableTransactionService caching strategy and error handling strategy.
   *
   * @param forceLoadAndDisplaySuccessAlert
   *   - true  will bypass cache entirely and show success alert message
@@ -223,10 +221,10 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
     //
     // Permission Check
     //
-    if (!this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkReader()) {
+    if (!this.rebrickableTransactionService.userIsBMCRebrickableTransactionReader()) {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
-      this.alertService.showMessage(`${userName} does not have permission to read RebrickableUserLinks.`,
+      this.alertService.showMessage(`${userName} does not have permission to read RebrickableTransactions.`,
                                     'Access Denied',
                                      MessageSeverity.warn
       );
@@ -237,21 +235,21 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
     }
 
     //
-    // Validate rebrickableUserLinkId
+    // Validate rebrickableTransactionId
     //
-    if (!this.rebrickableUserLinkId) {
+    if (!this.rebrickableTransactionId) {
 
-      this.alertService.showMessage('No RebrickableUserLink ID provided.', 'Missing ID', MessageSeverity.error);
+      this.alertService.showMessage('No RebrickableTransaction ID provided.', 'Missing ID', MessageSeverity.error);
       this.isLoadingSubject.next(false);
 
       return;
     }
 
-    const rebrickableUserLinkId = Number(this.rebrickableUserLinkId);
+    const rebrickableTransactionId = Number(this.rebrickableTransactionId);
 
-    if (isNaN(rebrickableUserLinkId) || rebrickableUserLinkId <= 0) {
+    if (isNaN(rebrickableTransactionId) || rebrickableTransactionId <= 0) {
 
-      this.alertService.showMessage(`Invalid Rebrickable User Link ID: "${this.rebrickableUserLinkId}"`,
+      this.alertService.showMessage(`Invalid Rebrickable Transaction ID: "${this.rebrickableTransactionId}"`,
                                     'Invalid ID',
                                     MessageSeverity.error
       );
@@ -265,35 +263,35 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
     // Force refresh: clear specific record cache only
     //
     if (forceLoadAndDisplaySuccessAlert === true) {
-      // This is the most targeted way: clear only this RebrickableUserLink + relations
+      // This is the most targeted way: clear only this RebrickableTransaction + relations
 
-      this.rebrickableUserLinkService.ClearRecordCache(rebrickableUserLinkId, true);
+      this.rebrickableTransactionService.ClearRecordCache(rebrickableTransactionId, true);
     }
 
     //
     // Subscribe with full next/error handling
     //
-    this.rebrickableUserLinkService.GetRebrickableUserLink(rebrickableUserLinkId, true).pipe(
+    this.rebrickableTransactionService.GetRebrickableTransaction(rebrickableTransactionId, true).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
 
-      next: (rebrickableUserLinkData) => {
+      next: (rebrickableTransactionData) => {
 
         //
-        // Success path — rebrickableUserLinkData can legitimately be null if 404'd but request succeeded
+        // Success path — rebrickableTransactionData can legitimately be null if 404'd but request succeeded
         //
-        if (!rebrickableUserLinkData) {
+        if (!rebrickableTransactionData) {
 
-          this.handleRebrickableUserLinkNotFound(rebrickableUserLinkId);
+          this.handleRebrickableTransactionNotFound(rebrickableTransactionId);
 
         } else {
 
-          this.rebrickableUserLinkData = rebrickableUserLinkData;
-          this.buildFormValues(this.rebrickableUserLinkData);
+          this.rebrickableTransactionData = rebrickableTransactionData;
+          this.buildFormValues(this.rebrickableTransactionData);
 
           if (forceLoadAndDisplaySuccessAlert === true) {
             this.alertService.showMessage(
-              'RebrickableUserLink loaded successfully',
+              'RebrickableTransaction loaded successfully',
               '',
               MessageSeverity.success
             );
@@ -308,29 +306,29 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
         // All HTTP/network/parsing errors flow here
         // The service already stripped sensitive info and re-threw cleanly
         //
-        this.handleRebrickableUserLinkLoadError(error, rebrickableUserLinkId);
+        this.handleRebrickableTransactionLoadError(error, rebrickableTransactionId);
         this.isLoadingSubject.next(false);
       }
     });
   }
 
 
-  private handleRebrickableUserLinkNotFound(rebrickableUserLinkId: number): void {
+  private handleRebrickableTransactionNotFound(rebrickableTransactionId: number): void {
 
-    this.rebrickableUserLinkData = null;
+    this.rebrickableTransactionData = null;
     this.buildFormValues(null);
 
     this.alertService.showMessage(
-      `RebrickableUserLink #${rebrickableUserLinkId} was not found or has been deleted.`,
+      `RebrickableTransaction #${rebrickableTransactionId} was not found or has been deleted.`,
       'Not Found',
       MessageSeverity.warn
     );
   }
 
 
-  private handleRebrickableUserLinkLoadError(error: any, rebrickableUserLinkId: number): void {
+  private handleRebrickableTransactionLoadError(error: any, rebrickableTransactionId: number): void {
 
-    let message = 'Failed to load Rebrickable User Link.';
+    let message = 'Failed to load Rebrickable Transaction.';
     let title = 'Load Error';
     let severity = MessageSeverity.error;
 
@@ -344,11 +342,11 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
           title = 'Unauthorized';
           break;
         case 403:
-          message = 'You do not have permission to view this Rebrickable User Link.';
+          message = 'You do not have permission to view this Rebrickable Transaction.';
           title = 'Forbidden';
           break;
         case 404:
-          message = `Rebrickable User Link #${rebrickableUserLinkId} was not found.`;
+          message = `Rebrickable Transaction #${rebrickableTransactionId} was not found.`;
           title = 'Not Found';
           severity = MessageSeverity.warn;
           break;
@@ -367,37 +365,36 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
       message = error?.message || message;
     }
 
-    console.error(`Rebrickable User Link load failed (ID: ${rebrickableUserLinkId})`, error);
+    console.error(`Rebrickable Transaction load failed (ID: ${rebrickableTransactionId})`, error);
 
     //
     // Reset UI to safe state
     //
-    this.rebrickableUserLinkData = null;
+    this.rebrickableTransactionData = null;
     this.buildFormValues(null);
 
     this.alertService.showMessage(message, title, severity);
   }
 
 
-  private buildFormValues(rebrickableUserLinkData: RebrickableUserLinkData | null) {
+  private buildFormValues(rebrickableTransactionData: RebrickableTransactionData | null) {
 
-    if (rebrickableUserLinkData == null) {
+    if (rebrickableTransactionData == null) {
       
       //
       // Reset the form group to null state, but don't change the form instance.
       //
-      this.rebrickableUserLinkForm.reset({
-        rebrickableUsername: '',
-        encryptedApiToken: '',
-        authMode: '',
-        encryptedPassword: '',
-        syncEnabled: false,
-        syncDirectionFlags: '',
-        pullIntervalMinutes: '',
-        lastSyncDate: '',
-        lastPullDate: '',
-        lastPushDate: '',
-        lastSyncError: '',
+      this.rebrickableTransactionForm.reset({
+        transactionDate: '',
+        direction: '',
+        httpMethod: '',
+        endpoint: '',
+        requestSummary: '',
+        responseStatusCode: '',
+        responseBody: '',
+        success: false,
+        errorMessage: '',
+        triggeredBy: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -408,25 +405,24 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
         //
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
-        this.rebrickableUserLinkForm.reset({
-        rebrickableUsername: rebrickableUserLinkData.rebrickableUsername ?? '',
-        encryptedApiToken: rebrickableUserLinkData.encryptedApiToken ?? '',
-        authMode: rebrickableUserLinkData.authMode ?? '',
-        encryptedPassword: rebrickableUserLinkData.encryptedPassword ?? '',
-        syncEnabled: rebrickableUserLinkData.syncEnabled ?? false,
-        syncDirectionFlags: rebrickableUserLinkData.syncDirectionFlags ?? '',
-        pullIntervalMinutes: rebrickableUserLinkData.pullIntervalMinutes?.toString() ?? '',
-        lastSyncDate: isoUtcStringToDateTimeLocal(rebrickableUserLinkData.lastSyncDate) ?? '',
-        lastPullDate: isoUtcStringToDateTimeLocal(rebrickableUserLinkData.lastPullDate) ?? '',
-        lastPushDate: isoUtcStringToDateTimeLocal(rebrickableUserLinkData.lastPushDate) ?? '',
-        lastSyncError: rebrickableUserLinkData.lastSyncError ?? '',
-        active: rebrickableUserLinkData.active ?? true,
-        deleted: rebrickableUserLinkData.deleted ?? false,
+        this.rebrickableTransactionForm.reset({
+        transactionDate: isoUtcStringToDateTimeLocal(rebrickableTransactionData.transactionDate) ?? '',
+        direction: rebrickableTransactionData.direction ?? '',
+        httpMethod: rebrickableTransactionData.httpMethod ?? '',
+        endpoint: rebrickableTransactionData.endpoint ?? '',
+        requestSummary: rebrickableTransactionData.requestSummary ?? '',
+        responseStatusCode: rebrickableTransactionData.responseStatusCode?.toString() ?? '',
+        responseBody: rebrickableTransactionData.responseBody ?? '',
+        success: rebrickableTransactionData.success ?? false,
+        errorMessage: rebrickableTransactionData.errorMessage ?? '',
+        triggeredBy: rebrickableTransactionData.triggeredBy ?? '',
+        active: rebrickableTransactionData.active ?? true,
+        deleted: rebrickableTransactionData.deleted ?? false,
       }, { emitEvent: false});
     }
 
-    this.rebrickableUserLinkForm.markAsPristine();
-    this.rebrickableUserLinkForm.markAsUntouched();
+    this.rebrickableTransactionForm.markAsPristine();
+    this.rebrickableTransactionForm.markAsUntouched();
   }
 
   public goBack(): void {
@@ -459,39 +455,38 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
       return;
     }
 
-    if (this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkWriter() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Rebrickable User Links", 'Access Denied', MessageSeverity.info);
+    if (this.rebrickableTransactionService.userIsBMCRebrickableTransactionWriter() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Rebrickable Transactions", 'Access Denied', MessageSeverity.info);
       return;
     }
 
-    if (!this.rebrickableUserLinkForm.valid) {
+    if (!this.rebrickableTransactionForm.valid) {
       this.alertService.showMessage('Please fix form errors before saving.', 'Invalid Data', MessageSeverity.warn);
-      this.rebrickableUserLinkForm.markAllAsTouched();
+      this.rebrickableTransactionForm.markAllAsTouched();
       return;
     }
 
     this.isSaving = true;
 
-    const formValue = this.rebrickableUserLinkForm.getRawValue();
+    const formValue = this.rebrickableTransactionForm.getRawValue();
 
 
 
     //
     // Build clean submit object from form + fallback to current data if needed
     //
-    const rebrickableUserLinkSubmitData: RebrickableUserLinkSubmitData = {
-        id: this.rebrickableUserLinkData?.id || 0,
-        rebrickableUsername: formValue.rebrickableUsername!.trim(),
-        encryptedApiToken: formValue.encryptedApiToken!.trim(),
-        authMode: formValue.authMode!.trim(),
-        encryptedPassword: formValue.encryptedPassword?.trim() || null,
-        syncEnabled: !!formValue.syncEnabled,
-        syncDirectionFlags: formValue.syncDirectionFlags!.trim(),
-        pullIntervalMinutes: formValue.pullIntervalMinutes ? Number(formValue.pullIntervalMinutes) : null,
-        lastSyncDate: formValue.lastSyncDate ? dateTimeLocalToIsoUtc(formValue.lastSyncDate.trim()) : null,
-        lastPullDate: formValue.lastPullDate ? dateTimeLocalToIsoUtc(formValue.lastPullDate.trim()) : null,
-        lastPushDate: formValue.lastPushDate ? dateTimeLocalToIsoUtc(formValue.lastPushDate.trim()) : null,
-        lastSyncError: formValue.lastSyncError?.trim() || null,
+    const rebrickableTransactionSubmitData: RebrickableTransactionSubmitData = {
+        id: this.rebrickableTransactionData?.id || 0,
+        transactionDate: formValue.transactionDate ? dateTimeLocalToIsoUtc(formValue.transactionDate.trim()) : null,
+        direction: formValue.direction!.trim(),
+        httpMethod: formValue.httpMethod!.trim(),
+        endpoint: formValue.endpoint!.trim(),
+        requestSummary: formValue.requestSummary?.trim() || null,
+        responseStatusCode: formValue.responseStatusCode ? Number(formValue.responseStatusCode) : null,
+        responseBody: formValue.responseBody?.trim() || null,
+        success: !!formValue.success,
+        errorMessage: formValue.errorMessage?.trim() || null,
+        triggeredBy: formValue.triggeredBy!.trim(),
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -501,35 +496,35 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
     // Choose the save method we want
     //
     const saveObservable = this.isEditMode
-      ? this.rebrickableUserLinkService.PutRebrickableUserLink(rebrickableUserLinkSubmitData.id, rebrickableUserLinkSubmitData)
-      : this.rebrickableUserLinkService.PostRebrickableUserLink(rebrickableUserLinkSubmitData);
+      ? this.rebrickableTransactionService.PutRebrickableTransaction(rebrickableTransactionSubmitData.id, rebrickableTransactionSubmitData)
+      : this.rebrickableTransactionService.PostRebrickableTransaction(rebrickableTransactionSubmitData);
 
 
     saveObservable.pipe(
       finalize(() => this.isSaving = false)
     ).subscribe({
-      next: (savedRebrickableUserLinkData) => {
+      next: (savedRebrickableTransactionData) => {
 
-        this.rebrickableUserLinkService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+        this.rebrickableTransactionService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
 
         if (!this.isEditMode) {
           //
-          // Navigate to the newly created Rebrickable User Link's detail page
+          // Navigate to the newly created Rebrickable Transaction's detail page
           //
-          this.rebrickableUserLinkForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
-          this.rebrickableUserLinkForm.markAsUntouched();
+          this.rebrickableTransactionForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
+          this.rebrickableTransactionForm.markAsUntouched();
 
-          this.router.navigate(['/rebrickableuserlinks', savedRebrickableUserLinkData.id]);
-          this.alertService.showMessage('Rebrickable User Link added successfully', '', MessageSeverity.success);
+          this.router.navigate(['/rebrickabletransactions', savedRebrickableTransactionData.id]);
+          this.alertService.showMessage('Rebrickable Transaction added successfully', '', MessageSeverity.success);
         } else {
 
           //
           // Rebuild the form with the new data
           //
-          this.rebrickableUserLinkData = savedRebrickableUserLinkData;
-          this.buildFormValues(this.rebrickableUserLinkData);
+          this.rebrickableTransactionData = savedRebrickableTransactionData;
+          this.buildFormValues(this.rebrickableTransactionData);
 
-          this.alertService.showMessage("Rebrickable User Link saved successfully", '', MessageSeverity.success);
+          this.alertService.showMessage("Rebrickable Transaction saved successfully", '', MessageSeverity.success);
         }
       },
       error: (err) => {
@@ -546,14 +541,14 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
                 if (err.status === 403)
                 {
                     errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Rebrickable User Link.';
+                                   'You do not have permission to save this Rebrickable Transaction.';
                 }
                 else
                 {
                     errorMessage = err.error?.message ||
                                    err.error?.error_description ||
                                    err.error?.detail ||
-                                   'An error occurred while saving the Rebrickable User Link.';
+                                   'An error occurred while saving the Rebrickable Transaction.';
                 }
             }
             // Fallback for unexpected error formats
@@ -561,18 +556,18 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
                 errorMessage = 'An unexpected error occurred.';
             }
 
-            this.alertService.showMessage('Rebrickable User Link could not be saved',
+            this.alertService.showMessage('Rebrickable Transaction could not be saved',
                                           errorMessage,
                                           MessageSeverity.error);
       }
     });
   }
 
-  public userIsBMCRebrickableUserLinkReader(): boolean {
-    return this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkReader();
+  public userIsBMCRebrickableTransactionReader(): boolean {
+    return this.rebrickableTransactionService.userIsBMCRebrickableTransactionReader();
   }
 
-  public userIsBMCRebrickableUserLinkWriter(): boolean {
-    return this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkWriter();
+  public userIsBMCRebrickableTransactionWriter(): boolean {
+    return this.rebrickableTransactionService.userIsBMCRebrickableTransactionWriter();
   }
 }

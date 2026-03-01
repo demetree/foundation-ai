@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = userProfileChangeHistory.timeStamp,
 				userId = userProfileChangeHistory.userId,
 				data = userProfileChangeHistory.data,
-				userProfile = UserProfile.CreateMinimalAnonymous(userProfileChangeHistory.userProfile)
+				userProfile = UserProfile.CreateMinimalAnonymous(userProfileChangeHistory.userProfile),
 			 };
 		}
 

@@ -159,6 +159,8 @@ import { PublishedMocChangeHistoryListingComponent } from './bmc-data-components
 import { PublishedMocChangeHistoryDetailComponent } from './bmc-data-components/published-moc-change-history/published-moc-change-history-detail/published-moc-change-history-detail.component';
 import { PublishedMocImageListingComponent } from './bmc-data-components/published-moc-image/published-moc-image-listing/published-moc-image-listing.component';
 import { PublishedMocImageDetailComponent } from './bmc-data-components/published-moc-image/published-moc-image-detail/published-moc-image-detail.component';
+import { RebrickableTransactionListingComponent } from './bmc-data-components/rebrickable-transaction/rebrickable-transaction-listing/rebrickable-transaction-listing.component';
+import { RebrickableTransactionDetailComponent } from './bmc-data-components/rebrickable-transaction/rebrickable-transaction-detail/rebrickable-transaction-detail.component';
 import { RebrickableUserLinkListingComponent } from './bmc-data-components/rebrickable-user-link/rebrickable-user-link-listing/rebrickable-user-link-listing.component';
 import { RebrickableUserLinkDetailComponent } from './bmc-data-components/rebrickable-user-link/rebrickable-user-link-detail/rebrickable-user-link-detail.component';
 import { RenderPresetListingComponent } from './bmc-data-components/render-preset/render-preset-listing/render-preset-listing.component';
@@ -578,6 +580,11 @@ const routes: Routes = [
   {path: 'publishedmocimages/:publishedMocImageId', component: PublishedMocImageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc Image' },
   {path: 'publishedmocimage/:publishedMocImageId', component: PublishedMocImageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Published Moc Image' },
   {path: 'publishedmocimage',  redirectTo: 'publishedmocimages'},
+  {path: 'rebrickabletransactions', component: RebrickableTransactionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Rebrickable Transactions' },
+  {path: 'rebrickabletransactions/new', component: RebrickableTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Rebrickable Transaction' },
+  {path: 'rebrickabletransactions/:rebrickableTransactionId', component: RebrickableTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Rebrickable Transaction' },
+  {path: 'rebrickabletransaction/:rebrickableTransactionId', component: RebrickableTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Rebrickable Transaction' },
+  {path: 'rebrickabletransaction',  redirectTo: 'rebrickabletransactions'},
   {path: 'rebrickableuserlinks', component: RebrickableUserLinkListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Rebrickable User Links' },
   {path: 'rebrickableuserlinks/new', component: RebrickableUserLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Rebrickable User Link' },
   {path: 'rebrickableuserlinks/:rebrickableUserLinkId', component: RebrickableUserLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Rebrickable User Link' },

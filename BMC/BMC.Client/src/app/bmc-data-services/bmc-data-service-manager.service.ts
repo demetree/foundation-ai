@@ -72,6 +72,7 @@ import {ProjectTagAssignmentService} from  './project-tag-assignment.service';
 import {PublishedMocService} from  './published-moc.service';
 import {PublishedMocChangeHistoryService} from  './published-moc-change-history.service';
 import {PublishedMocImageService} from  './published-moc-image.service';
+import {RebrickableTransactionService} from  './rebrickable-transaction.service';
 import {RebrickableUserLinkService} from  './rebrickable-user-link.service';
 import {RenderPresetService} from  './render-preset.service';
 import {SharedInstructionService} from  './shared-instruction.service';
@@ -172,6 +173,7 @@ export class BMCDataServiceManagerService  {
               , public publishedMocService: PublishedMocService
               , public publishedMocChangeHistoryService: PublishedMocChangeHistoryService
               , public publishedMocImageService: PublishedMocImageService
+              , public rebrickableTransactionService: RebrickableTransactionService
               , public rebrickableUserLinkService: RebrickableUserLinkService
               , public renderPresetService: RenderPresetService
               , public sharedInstructionService: SharedInstructionService
@@ -270,6 +272,7 @@ export class BMCDataServiceManagerService  {
         this.publishedMocService.ClearAllCaches();
         this.publishedMocChangeHistoryService.ClearAllCaches();
         this.publishedMocImageService.ClearAllCaches();
+        this.rebrickableTransactionService.ClearAllCaches();
         this.rebrickableUserLinkService.ClearAllCaches();
         this.renderPresetService.ClearAllCaches();
         this.sharedInstructionService.ClearAllCaches();

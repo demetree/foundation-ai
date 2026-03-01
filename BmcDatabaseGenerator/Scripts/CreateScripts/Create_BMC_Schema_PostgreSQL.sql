@@ -73,6 +73,7 @@ CREATE SCHEMA "BMC"
 -- DROP TABLE "BMC"."UserPartListItem"
 -- DROP TABLE "BMC"."UserPartListChangeHistory"
 -- DROP TABLE "BMC"."UserPartList"
+-- DROP TABLE "BMC"."RebrickableTransaction"
 -- DROP TABLE "BMC"."RebrickableUserLink"
 -- DROP TABLE "BMC"."UserCollectionSetImport"
 -- DROP TABLE "BMC"."UserWishlistItem"
@@ -168,6 +169,7 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "UserPartListItem" DISABLE
 -- ALTER INDEX ALL ON "UserPartListChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "UserPartList" DISABLE
+-- ALTER INDEX ALL ON "RebrickableTransaction" DISABLE
 -- ALTER INDEX ALL ON "RebrickableUserLink" DISABLE
 -- ALTER INDEX ALL ON "UserCollectionSetImport" DISABLE
 -- ALTER INDEX ALL ON "UserWishlistItem" DISABLE
@@ -263,6 +265,7 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "UserPartListItem" REBUILD
 -- ALTER INDEX ALL ON "UserPartListChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "UserPartList" REBUILD
+-- ALTER INDEX ALL ON "RebrickableTransaction" REBUILD
 -- ALTER INDEX ALL ON "RebrickableUserLink" REBUILD
 -- ALTER INDEX ALL ON "UserCollectionSetImport" REBUILD
 -- ALTER INDEX ALL ON "UserWishlistItem" REBUILD
@@ -1908,16 +1911,22 @@ CREATE INDEX "I_UserCollectionSetImport_tenantGuid_deleted" ON "BMC"."UserCollec
 ;
 
 
--- Stores each user's Rebrickable API token for bidirectional collection sync. One link per tenant.
+-- Stores each user's Rebrickable credentials/token and sync configuration. One link per tenant. Supports three auth modes: ApiToken, EncryptedCredentials, SessionOnly.
 CREATE TABLE "BMC"."RebrickableUserLink"
 (
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	"rebrickableUsername" VARCHAR(100) NOT NULL,		-- User's Rebrickable username for display and reference
 	"encryptedApiToken" VARCHAR(500) NOT NULL,		-- Encrypted Rebrickable user token — used for API calls on behalf of the user
-	"lastSyncDate" TIMESTAMP NULL,		-- Date/time of last successful sync with Rebrickable
+	"authMode" VARCHAR(50) NOT NULL,		-- Auth trust level: ApiToken, EncryptedCredentials, SessionOnly
+	"encryptedPassword" VARCHAR(500) NULL,		-- Encrypted Rebrickable password — only used in EncryptedCredentials auth mode (null otherwise)
 	"syncEnabled" BOOLEAN NOT NULL DEFAULT true,		-- Whether automatic sync is enabled for this user
-	"syncDirectionFlags" VARCHAR(50) NOT NULL,		-- Sync direction: Both, ToRebrickable, FromRebrickable
+	"syncDirectionFlags" VARCHAR(50) NOT NULL,		-- Integration mode: None, RealTime, PushOnly, ImportOnly
+	"pullIntervalMinutes" INT NULL,		-- Periodic pull interval in minutes for RealTime mode (null = manual only)
+	"lastSyncDate" TIMESTAMP NULL,		-- Date/time of last successful sync with Rebrickable (legacy — kept for compatibility)
+	"lastPullDate" TIMESTAMP NULL,		-- Date/time of last successful pull from Rebrickable
+	"lastPushDate" TIMESTAMP NULL,		-- Date/time of last successful push to Rebrickable
+	"lastSyncError" TEXT NULL,		-- Last sync error message for display to the user (null = no error)
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
@@ -1933,6 +1942,39 @@ CREATE INDEX "I_RebrickableUserLink_tenantGuid_active" ON "BMC"."RebrickableUser
 
 -- Index on the RebrickableUserLink table's tenantGuid,deleted fields.
 CREATE INDEX "I_RebrickableUserLink_tenantGuid_deleted" ON "BMC"."RebrickableUserLink" ("tenantGuid", "deleted")
+;
+
+
+-- Full audit log of every Rebrickable API call BMC makes on behalf of a user. Enables the Communications Panel for total transparency. Every push, pull, login, and error is recorded.
+CREATE TABLE "BMC"."RebrickableTransaction"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"transactionDate" TIMESTAMP NULL,		-- Date/time the API call was made
+	"direction" VARCHAR(50) NOT NULL,		-- Direction of data flow: Push, Pull
+	"httpMethod" VARCHAR(50) NOT NULL,		-- HTTP method used: GET, POST, PUT, PATCH, DELETE
+	"endpoint" VARCHAR(500) NOT NULL,		-- The Rebrickable API URL that was called
+	"requestSummary" TEXT NULL,		-- Human-readable description of the operation, e.g. 'Added set 42131-1 x1'
+	"responseStatusCode" INT NULL,		-- HTTP status code returned by Rebrickable
+	"responseBody" TEXT NULL,		-- Raw response body from Rebrickable (for debugging — may be null for large responses)
+	"success" BOOLEAN NOT NULL DEFAULT true,		-- Whether the API call completed successfully
+	"errorMessage" TEXT NULL,		-- Error details if the call failed (null on success)
+	"triggeredBy" VARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, PeriodicSync, ManualPull, SessionLogin
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
+
+);
+-- Index on the RebrickableTransaction table's tenantGuid field.
+CREATE INDEX "I_RebrickableTransaction_tenantGuid" ON "BMC"."RebrickableTransaction" ("tenantGuid")
+;
+
+-- Index on the RebrickableTransaction table's tenantGuid,active fields.
+CREATE INDEX "I_RebrickableTransaction_tenantGuid_active" ON "BMC"."RebrickableTransaction" ("tenantGuid", "active")
+;
+
+-- Index on the RebrickableTransaction table's tenantGuid,deleted fields.
+CREATE INDEX "I_RebrickableTransaction_tenantGuid_deleted" ON "BMC"."RebrickableTransaction" ("tenantGuid", "deleted")
 ;
 
 

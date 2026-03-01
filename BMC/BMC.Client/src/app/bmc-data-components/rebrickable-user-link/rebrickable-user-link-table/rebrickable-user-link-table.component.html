@@ -35,9 +35,13 @@
                 Encrypted  Api  Token
                 <span *ngIf="sortColumn === 'encryptedApiToken'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('lastSyncDate')">
-                Last  Sync  Date
-                <span *ngIf="sortColumn === 'lastSyncDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('authMode')">
+                Auth  Mode
+                <span *ngIf="sortColumn === 'authMode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('encryptedPassword')">
+                Encrypted  Password
+                <span *ngIf="sortColumn === 'encryptedPassword'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('syncEnabled')">
                 Sync  Enabled
@@ -46,6 +50,26 @@
             <th class="sortable" scope="col" (click)="sortBy('syncDirectionFlags')">
                 Sync  Direction  Flags
                 <span *ngIf="sortColumn === 'syncDirectionFlags'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('pullIntervalMinutes')">
+                Pull  Interval  Minutes
+                <span *ngIf="sortColumn === 'pullIntervalMinutes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastSyncDate')">
+                Last  Sync  Date
+                <span *ngIf="sortColumn === 'lastSyncDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastPullDate')">
+                Last  Pull  Date
+                <span *ngIf="sortColumn === 'lastPullDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastPushDate')">
+                Last  Push  Date
+                <span *ngIf="sortColumn === 'lastPushDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastSyncError')">
+                Last  Sync  Error
+                <span *ngIf="sortColumn === 'lastSyncError'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
 End of commented block for alternate definition option -->
           </tr>
@@ -134,9 +158,15 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/rebrickableuserlink', rebrickableUserLink.id]" class="btn btn-link text-left" ngbTooltip="Open Rebrickable User Link details">{{rebrickableUserLink.rebrickableUsername}}</a></td>
             <td class="text-truncate">{{rebrickableUserLink.encryptedApiToken}}</td>
-            <td class="text-truncate">{{rebrickableUserLink.lastSyncDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.authMode}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.encryptedPassword}}</td>
             <td class="text-truncate"><boolean-icon [value]="rebrickableUserLink.syncEnabled"/></td>
             <td class="text-truncate">{{rebrickableUserLink.syncDirectionFlags}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.pullIntervalMinutes | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.lastSyncDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.lastPullDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.lastPushDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.lastSyncError}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -291,9 +321,13 @@ End of commented block for alternate definition option -->
               <strong>Encrypted Api Token: </strong>
               {{rebrickableUserLink.encryptedApiToken}}
             </p>
-            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.lastSyncDate != null">
-              <strong>Last Sync Date: </strong>
-              {{rebrickableUserLink.lastSyncDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.authMode != null">
+              <strong>Auth Mode: </strong>
+              {{rebrickableUserLink.authMode}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.encryptedPassword != null">
+              <strong>Encrypted Password: </strong>
+              {{rebrickableUserLink.encryptedPassword}}
             </p>
             <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.syncEnabled != null">
               <strong>Sync Enabled: </strong>
@@ -302,6 +336,26 @@ End of commented block for alternate definition option -->
             <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.syncDirectionFlags != null">
               <strong>Sync Direction Flags: </strong>
               {{rebrickableUserLink.syncDirectionFlags}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.pullIntervalMinutes != null">
+              <strong>Pull Interval Minutes: </strong>
+              {{rebrickableUserLink.pullIntervalMinutes | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.lastSyncDate != null">
+              <strong>Last Sync Date: </strong>
+              {{rebrickableUserLink.lastSyncDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.lastPullDate != null">
+              <strong>Last Pull Date: </strong>
+              {{rebrickableUserLink.lastPullDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.lastPushDate != null">
+              <strong>Last Push Date: </strong>
+              {{rebrickableUserLink.lastPushDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.lastSyncError != null">
+              <strong>Last Sync Error: </strong>
+              {{rebrickableUserLink.lastSyncError}}
             </p>
             </div>
          </div>

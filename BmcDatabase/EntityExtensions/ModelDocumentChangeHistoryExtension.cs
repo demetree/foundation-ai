@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = modelDocumentChangeHistory.timeStamp,
 				userId = modelDocumentChangeHistory.userId,
 				data = modelDocumentChangeHistory.data,
-				modelDocument = ModelDocument.CreateMinimalAnonymous(modelDocumentChangeHistory.modelDocument)
+				modelDocument = ModelDocument.CreateMinimalAnonymous(modelDocumentChangeHistory.modelDocument),
 			 };
 		}
 

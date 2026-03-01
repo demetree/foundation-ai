@@ -554,6 +554,13 @@ namespace BMC.Rebrickable.Api
             return DeleteAsync($"{BaseUrl}/users/{userToken}/setlists/{listId}/sets/{Uri.EscapeDataString(setNum)}/");
         }
 
+
+        /// <summary>Get all sets in a set list across all pages.</summary>
+        public Task<List<RebrickableUserSet>> GetAllUserSetListSetsAsync(string userToken, int listId)
+        {
+            return GetAllPagesAsync<RebrickableUserSet>($"/users/{userToken}/setlists/{listId}/sets/");
+        }
+
         #endregion
 
 
@@ -659,6 +666,13 @@ namespace BMC.Rebrickable.Api
             return DeleteAsync($"{BaseUrl}/users/{userToken}/partlists/{listId}/parts/{Uri.EscapeDataString(partNum)}/{colorId}/");
         }
 
+
+        /// <summary>Get all parts in a part list across all pages.</summary>
+        public Task<List<RebrickableUserPartListPart>> GetAllUserPartListPartsAsync(string userToken, int listId)
+        {
+            return GetAllPagesAsync<RebrickableUserPartListPart>($"/users/{userToken}/partlists/{listId}/parts/");
+        }
+
         #endregion
 
 
@@ -690,6 +704,13 @@ namespace BMC.Rebrickable.Api
         public Task DeleteUserLostPartAsync(string userToken, int id)
         {
             return DeleteAsync($"{BaseUrl}/users/{userToken}/lost_parts/{id}/");
+        }
+
+
+        /// <summary>Get all lost parts across all pages.</summary>
+        public Task<List<RebrickableUserLostPart>> GetAllUserLostPartsAsync(string userToken)
+        {
+            return GetAllPagesAsync<RebrickableUserLostPart>($"/users/{userToken}/lost_parts/");
         }
 
         #endregion
