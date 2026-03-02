@@ -399,6 +399,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+		// ========================================================================================
+		// Write methods commented out — custom implementation with Rebrickable sync logic
+		// is in UserSetListItemsController.Sync.cs partial class.
+		// ========================================================================================
+		/*
 		/// <summary>
 		/// 
 		/// This updates an existing UserSetListItem record
@@ -545,8 +550,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 		}
+		*/
 
-        /// <summary>
+		/* <summary>
         /// 
         /// This creates a new UserSetListItem record
         ///
@@ -627,9 +633,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			return CreatedAtRoute("UserSetListItem", new { id = userSetListItem.id }, Database.UserSetListItem.CreateAnonymousWithFirstLevelSubObjects(userSetListItem));
 		}
+		*/
 
-
-
+		/*
         /// <summary>
         /// 
         /// This deletes a UserSetListItem record
@@ -715,6 +721,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 			return Ok();
 		}
+		*/
 
 
         /// <summary>

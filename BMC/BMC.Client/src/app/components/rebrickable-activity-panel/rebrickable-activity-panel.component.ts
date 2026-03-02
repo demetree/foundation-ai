@@ -1,4 +1,5 @@
 import { Component, EventEmitter, OnInit, OnDestroy, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { RebrickableSignalrService, SyncActivityEvent } from '../../services/rebrickable-signalr.service';
 import { RebrickableSyncService, SyncTransaction, SyncTransactionsPage, SyncStatus } from '../../services/rebrickable-sync.service';
@@ -39,7 +40,8 @@ export class RebrickableActivityPanelComponent implements OnInit, OnDestroy {
 
     constructor(
         private signalr: RebrickableSignalrService,
-        private syncService: RebrickableSyncService
+        private syncService: RebrickableSyncService,
+        private router: Router
     ) { }
 
 
@@ -64,7 +66,7 @@ export class RebrickableActivityPanelComponent implements OnInit, OnDestroy {
                 this.totalCalls = s.totalTransactions;
                 this.last24hCount = s.recentErrorCount ?? 0;
                 this.successRate = this.totalCalls > 0
-                    ? Math.round(((this.totalCalls - (s.failedTransactions ?? 0)) / this.totalCalls) * 100)
+                    ? Math.round(((this.totalCalls - (s.recentErrorCount ?? 0)) / this.totalCalls) * 100)
                     : 100;
             }
         });
@@ -170,6 +172,12 @@ export class RebrickableActivityPanelComponent implements OnInit, OnDestroy {
 
     closePanel(): void {
         this.close.emit();
+    }
+
+
+    navigateToIntegrations(): void {
+        this.close.emit();
+        this.router.navigate(['/integrations']);
     }
 
 

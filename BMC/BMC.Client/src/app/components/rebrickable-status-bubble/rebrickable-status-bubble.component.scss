@@ -87,6 +87,13 @@
         color: #c8e6c9;
     }
 
+    // ── Connected but Sync Disabled (amber) ──
+    &.sync-disabled {
+        background: linear-gradient(135deg, #e65100, #ef6c00);
+        color: #fff3e0;
+        animation: rb-sync-disabled-pulse 3s ease-in-out infinite;
+    }
+
     // ── Active (syncing) ──
     &.active {
         background: linear-gradient(135deg, #0d47a1, #1565c0);
@@ -190,6 +197,39 @@
 }
 
 
+/* ── Sync Mode Status (in tooltip) ── */
+.rb-sync-mode-status {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rb-sync-mode-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    font-weight: 600;
+}
+
+.rb-sync-mode-value {
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+
+    &.rb-sync-mode-active {
+        color: #66bb6a;
+    }
+
+    &.rb-sync-mode-none {
+        color: #ffb74d;
+    }
+}
+
+
 /* ── Rate Limit Bar ── */
 .rb-rate-limit {
     margin-bottom: 8px;
@@ -274,5 +314,17 @@
 
     50% {
         opacity: 0.6;
+    }
+}
+
+@keyframes rb-sync-disabled-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 20px rgba(230, 81, 0, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 4px 28px rgba(239, 108, 0, 0.5);
     }
 }

@@ -8,9 +8,14 @@
             <i class="fas fa-exchange-alt"></i>
             <span>Rebrickable Activity</span>
         </div>
-        <button class="rb-panel-close" (click)="closePanel()">
-            <i class="fas fa-times"></i>
-        </button>
+        <div class="rb-panel-header-actions">
+            <button class="rb-manage-btn" (click)="navigateToIntegrations()" title="Manage Integration">
+                <i class="fas fa-cog"></i> Manage
+            </button>
+            <button class="rb-panel-close" (click)="closePanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     </div>
 
     <!-- Stats Banner -->

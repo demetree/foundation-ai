@@ -427,6 +427,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+		// ========================================================================================
+		// PUT/POST method commented out — custom implementation with Rebrickable sync logic
+		// is in UserSetListsController.Sync.cs partial class.
+		// This will be auto-commented by the code generator on next regeneration via
+		// SetTableToBeReadonlyForControllerCreationPurposes().
+		// ========================================================================================
+		/*
 		/// <summary>
 		/// 
 		/// This updates an existing UserSetList record
@@ -614,7 +621,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			}
 		}
+		*/
 
+		/*
         /// <summary>
         /// 
         /// This creates a new UserSetList record
@@ -736,7 +745,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			return CreatedAtRoute("UserSetList", new { id = userSetList.id }, Database.UserSetList.CreateAnonymousWithFirstLevelSubObjects(userSetList));
 		}
-
+		*/
 
 
         /// <summary>
@@ -1169,6 +1178,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 		}
 
+        /*
         /// <summary>
         /// 
         /// This deletes a UserSetList record
@@ -1273,6 +1283,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    return Ok();
 			}
 		}
+		*/
 
 
         /// <summary>

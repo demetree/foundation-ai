@@ -17,17 +17,15 @@ export interface SyncStatus {
     isConnected: boolean;
     rebrickableUsername: string | null;
     integrationMode: string;
-    syncEnabled: boolean;
     authMode: string | null;
     lastPullDate: string | null;
     lastPushDate: string | null;
     lastSyncError: string | null;
     pullIntervalMinutes: number | null;
     totalTransactions: number;
-    failedTransactions: number;
     recentErrorCount: number;
-    recentPushCount: number;
-    recentPullCount: number;
+    // Note: syncEnabled is NOT sent by the server.
+    // Derive client-side via: integrationMode !== 'None'
 }
 
 export interface SyncTransaction {

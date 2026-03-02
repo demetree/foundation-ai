@@ -621,15 +621,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Import set to collection — id={id}, set='{setNumber}', added={partsAdded}, updated={partsUpdated}, totalQty={totalQtyAdded}", setNumber);
 
-            return Ok(new ImportSetResult
-            {
-                partsAdded = partsAdded,
-                partsUpdated = partsUpdated,
-                totalQuantityAdded = totalQtyAdded
-            });
-
             // Fire-and-forget push to Rebrickable (non-blocking — errors logged, never thrown)
-            // This runs AFTER the response has been returned to the client
             _ = Task.Run(async () =>
             {
                 try
@@ -640,6 +632,13 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     _logger.LogWarning(ex, "Rebrickable push failed for set import {SetNumber}", setNumber);
                 }
+            });
+
+            return Ok(new ImportSetResult
+            {
+                partsAdded = partsAdded,
+                partsUpdated = partsUpdated,
+                totalQuantityAdded = totalQtyAdded
             });
         }
 

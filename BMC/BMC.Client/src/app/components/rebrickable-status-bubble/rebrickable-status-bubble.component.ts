@@ -23,6 +23,10 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     showReauth = false;
     visible = false;
 
+    // Sync mode awareness
+    integrationMode = 'None';
+    syncEnabled = false;
+
     // Recent activity feed (last 5 for tooltip)
     recentEvents: SyncActivityEvent[] = [];
     private activityTimeout: any;
@@ -96,6 +100,10 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
         this.syncService.getStatus().pipe(takeUntil(this.destroy$)).subscribe({
             next: (status: SyncStatus) => {
                 this.isConnected = status.isConnected;
+                this.integrationMode = status.integrationMode || 'None';
+                // Server DTO does not include syncEnabled — derive it from integrationMode.
+                // Sync is enabled when integration mode is anything other than 'None'.
+                this.syncEnabled = this.integrationMode !== 'None';
                 this.visible = true; // Show bubble once status is loaded
             },
             error: () => {
@@ -184,6 +192,7 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
         if (this.hasWarning) return 'warning';
         if (this.isActive) return 'active';
         if (this.isConnected && this.rateLimitPercent >= 0 && this.rateLimitPercent < 20) return 'rate-limited';
+        if (this.isConnected && !this.syncEnabled) return 'sync-disabled';
         if (this.isConnected) return 'connected';
         return 'disconnected';
     }
@@ -207,6 +216,7 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     get bubbleIcon(): string {
         if (this.hasWarning) return 'fas fa-exclamation-triangle';
         if (this.isActive) return 'fas fa-bolt';
+        if (this.isConnected && !this.syncEnabled) return 'fas fa-pause-circle';
         if (this.isConnected) return 'fas fa-link';
         return 'fas fa-unlink';
     }
@@ -215,7 +225,18 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     get bubbleText(): string {
         if (this.isActive && this.lastActivityText) return this.lastActivityText;
         if (this.hasWarning) return this.warningMessage || 'Token warning';
+        if (this.isConnected && !this.syncEnabled) return 'Sync Disabled';
         return 'Rebrickable';
+    }
+
+
+    get syncModeLabel(): string {
+        switch (this.integrationMode) {
+            case 'RealTime': return 'Real-Time';
+            case 'PushOnly': return 'Push Only';
+            case 'ImportOnly': return 'Import Only';
+            default: return 'None';
+        }
     }
 
 

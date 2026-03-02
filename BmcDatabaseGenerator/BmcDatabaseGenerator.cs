@@ -1041,6 +1041,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             userPartListTable.AddVersionControl();
             userPartListTable.AddControlFields();
+            userPartListTable.SetTableToBeReadonlyForControllerCreationPurposes();   // custom partial controller implements write methods with Rebrickable sync push logic
 
 
             // -------------------------------------------------
@@ -1059,6 +1060,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             userPartListItemTable.AddIntField("quantity", false).AddScriptComments("Number of this part+colour in the list");
 
             userPartListItemTable.AddControlFields();
+            userPartListItemTable.SetTableToBeReadonlyForControllerCreationPurposes();   // custom partial controller implements write methods with Rebrickable sync push logic
 
             userPartListItemTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userPartListId", "brickPartId", "brickColourId" }, false);
 
@@ -1079,6 +1081,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             userSetListTable.AddVersionControl();
             userSetListTable.AddControlFields();
+            userSetListTable.SetTableToBeReadonlyForControllerCreationPurposes();   // custom partial controller implements write methods with Rebrickable sync push logic
 
 
             // -------------------------------------------------
@@ -1097,6 +1100,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             userSetListItemTable.AddBoolField("includeSpares", false, true).AddScriptComments("Whether to include spare parts from this set in build matching");
 
             userSetListItemTable.AddControlFields();
+            userSetListItemTable.SetTableToBeReadonlyForControllerCreationPurposes();   // custom partial controller implements write methods with Rebrickable sync push logic
 
             userSetListItemTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "userSetListId", "legoSetId" }, false);
 
@@ -1118,6 +1122,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             userLostPartTable.AddIntField("rebrickableInvPartId", true).AddScriptComments("Rebrickable inventory_part ID for bidirectional sync (null = BMC-only entry)");
 
             userLostPartTable.AddControlFields();
+            userLostPartTable.SetTableToBeReadonlyForControllerCreationPurposes();   // custom partial controller implements write methods with Rebrickable sync push logic
 
             #endregion
 
