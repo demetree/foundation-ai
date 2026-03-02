@@ -31,7 +31,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 	public partial class RebrickableTransactionsController : SecureWebAPIController
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 10;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 255;
 
 		private BMCContext _context;
 
@@ -95,7 +95,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
@@ -305,7 +305,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			Guid userTenantGuid;
 
@@ -453,7 +453,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			
 			Guid userTenantGuid;
@@ -521,6 +521,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing RebrickableTransaction record
@@ -542,9 +543,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// BMC Collection Writer role needed to write to this table, or BMC Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// BMC Writer role needed to write to this table, as well as the minimum write permission level.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -558,7 +559,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			Guid userTenantGuid;
 
@@ -692,7 +693,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new RebrickableTransaction record
@@ -713,9 +716,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// BMC Collection Writer role needed to write to this table, or BMC Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// BMC Writer role needed to write to this table, as well as the minimum write permission level.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -800,8 +803,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			return CreatedAtRoute("RebrickableTransaction", new { id = rebrickableTransaction.id }, Database.RebrickableTransaction.CreateAnonymousWithFirstLevelSubObjects(rebrickableTransaction));
 		}
 
+*/
 
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a RebrickableTransaction record
@@ -818,9 +823,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// BMC Collection Writer role needed to write to this table, or BMC Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// BMC Writer role needed to write to this table, as well as the minimum write permission level.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -889,6 +894,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of RebrickableTransaction records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
@@ -933,7 +939,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 
 
 			Guid userTenantGuid;
@@ -1095,9 +1101,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 		{
 
 			//
-			// BMC Collection Writer role needed to write to this table, or BMC Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// BMC Writer role needed to write to this table, as well as the minimum write permission level.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}

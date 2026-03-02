@@ -45,6 +45,8 @@ interface RebrickableUserLinkFormValues {
   lastPullDate: string | null,
   lastPushDate: string | null,
   lastSyncError: string | null,
+  tokenExpiryDays: string | null,     // Stored as string for form input, converted to number on submit.
+  tokenStoredDate: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -85,6 +87,8 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
         lastPullDate: [''],
         lastPushDate: [''],
         lastSyncError: [''],
+        tokenExpiryDays: [''],
+        tokenStoredDate: [''],
         active: [true],
         deleted: [false],
       });
@@ -398,6 +402,8 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
         lastPullDate: '',
         lastPushDate: '',
         lastSyncError: '',
+        tokenExpiryDays: '',
+        tokenStoredDate: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -420,6 +426,8 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
         lastPullDate: isoUtcStringToDateTimeLocal(rebrickableUserLinkData.lastPullDate) ?? '',
         lastPushDate: isoUtcStringToDateTimeLocal(rebrickableUserLinkData.lastPushDate) ?? '',
         lastSyncError: rebrickableUserLinkData.lastSyncError ?? '',
+        tokenExpiryDays: rebrickableUserLinkData.tokenExpiryDays?.toString() ?? '',
+        tokenStoredDate: isoUtcStringToDateTimeLocal(rebrickableUserLinkData.tokenStoredDate) ?? '',
         active: rebrickableUserLinkData.active ?? true,
         deleted: rebrickableUserLinkData.deleted ?? false,
       }, { emitEvent: false});
@@ -492,6 +500,8 @@ export class RebrickableUserLinkDetailComponent implements OnInit, CanComponentD
         lastPullDate: formValue.lastPullDate ? dateTimeLocalToIsoUtc(formValue.lastPullDate.trim()) : null,
         lastPushDate: formValue.lastPushDate ? dateTimeLocalToIsoUtc(formValue.lastPushDate.trim()) : null,
         lastSyncError: formValue.lastSyncError?.trim() || null,
+        tokenExpiryDays: formValue.tokenExpiryDays ? Number(formValue.tokenExpiryDays) : null,
+        tokenStoredDate: formValue.tokenStoredDate ? dateTimeLocalToIsoUtc(formValue.tokenStoredDate.trim()) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

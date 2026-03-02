@@ -1,0 +1,408 @@
+<app-rebrickable-sync-queue-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-rebrickable-sync-queue-add-edit>
+<div class="row" *ngIf="userIsBMCRebrickableSyncQueueReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCRebrickableSyncQueueWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Rebrickable Sync Queue">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCRebrickableSyncQueueWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('operationType')">
+                Operation  Type
+                <span *ngIf="sortColumn === 'operationType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('entityType')">
+                Entity  Type
+                <span *ngIf="sortColumn === 'entityType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('entityId')">
+                Entity  Id
+                <span *ngIf="sortColumn === 'entityId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('payload')">
+                Payload
+                <span *ngIf="sortColumn === 'payload'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('status')">
+                Status
+                <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('createdDate')">
+                Created  Date
+                <span *ngIf="sortColumn === 'createdDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastAttemptDate')">
+                Last  Attempt  Date
+                <span *ngIf="sortColumn === 'lastAttemptDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('completedDate')">
+                Completed  Date
+                <span *ngIf="sortColumn === 'completedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attemptCount')">
+                Attempt  Count
+                <span *ngIf="sortColumn === 'attemptCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('maxAttempts')">
+                Max  Attempts
+                <span *ngIf="sortColumn === 'maxAttempts'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('errorMessage')">
+                Error  Message
+                <span *ngIf="sortColumn === 'errorMessage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('responseBody')">
+                Response  Body
+                <span *ngIf="sortColumn === 'responseBody'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let rebrickableSyncQueue of filteredRebrickableSyncQueues; trackBy: getRebrickableSyncQueueId"
+              [ngClass]="{
+                 'row-inactive': rebrickableSyncQueue.active == false,
+                 'row-deleted': rebrickableSyncQueue.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCRebrickableSyncQueueWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(rebrickableSyncQueue)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCRebrickableSyncQueueWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(rebrickableSyncQueue)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="rebrickableSyncQueue.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(rebrickableSyncQueue)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="rebrickableSyncQueue.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(rebrickableSyncQueue, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(rebrickableSyncQueue, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(rebrickableSyncQueue, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(rebrickableSyncQueue, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(rebrickableSyncQueue, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(rebrickableSyncQueue, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(rebrickableSyncQueue, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(rebrickableSyncQueue, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/rebrickablesyncqueue', rebrickableSyncQueue.id]" class="btn btn-link text-left" ngbTooltip="Open Rebrickable Sync Queue details">{{rebrickableSyncQueue.operationType}}</a></td>
+            <td class="text-truncate">{{rebrickableSyncQueue.entityType}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.entityId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.payload}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.status}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.createdDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.lastAttemptDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.completedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.attemptCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.maxAttempts | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.errorMessage}}</td>
+            <td class="text-truncate">{{rebrickableSyncQueue.responseBody}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let rebrickableSyncQueue of filteredRebrickableSyncQueues; trackBy: getRebrickableSyncQueueId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': rebrickableSyncQueue.active == false,
+                 'row-deleted': rebrickableSyncQueue.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(rebrickableSyncQueue, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(rebrickableSyncQueue, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(rebrickableSyncQueue, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(rebrickableSyncQueue, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(rebrickableSyncQueue, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(rebrickableSyncQueue, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(rebrickableSyncQueue, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(rebrickableSyncQueue, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(rebrickableSyncQueue, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(rebrickableSyncQueue, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(rebrickableSyncQueue, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(rebrickableSyncQueue, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(rebrickableSyncQueue, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/rebrickablesyncqueue', rebrickableSyncQueue.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(rebrickableSyncQueue)" *ngIf="userIsBMCRebrickableSyncQueueWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(rebrickableSyncQueue)" *ngIf="userIsBMCRebrickableSyncQueueWriter() && rebrickableSyncQueue.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(rebrickableSyncQueue)" *ngIf="userIsBMCRebrickableSyncQueueWriter() && rebrickableSyncQueue.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{rebrickableSyncQueue.id}}</strong>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/rebrickablesyncqueue', rebrickableSyncQueue.id]"
+                        ngbTooltip="Rebrickable Sync Queue Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(rebrickableSyncQueue)"
+                        ngbTooltip="Edit Rebrickable Sync Queue">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(rebrickableSyncQueue)"
+                      ngbTooltip="Delete Rebrickable Sync Queue" 
+                      placement="top"
+                      *ngIf="rebrickableSyncQueue.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(rebrickableSyncQueue)"
+                      ngbTooltip="Undelete Rebrickable Sync Queue" 
+                      placement="top"
+                      *ngIf="rebrickableSyncQueue.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.operationType != null">
+              <strong>Operation Type: </strong>
+              {{rebrickableSyncQueue.operationType}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.entityType != null">
+              <strong>Entity Type: </strong>
+              {{rebrickableSyncQueue.entityType}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.entityId != null">
+              <strong>Entity Id: </strong>
+              {{rebrickableSyncQueue.entityId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.payload != null">
+              <strong>Payload: </strong>
+              {{rebrickableSyncQueue.payload}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.status != null">
+              <strong>Status: </strong>
+              {{rebrickableSyncQueue.status}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.createdDate != null">
+              <strong>Created Date: </strong>
+              {{rebrickableSyncQueue.createdDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.lastAttemptDate != null">
+              <strong>Last Attempt Date: </strong>
+              {{rebrickableSyncQueue.lastAttemptDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.completedDate != null">
+              <strong>Completed Date: </strong>
+              {{rebrickableSyncQueue.completedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.attemptCount != null">
+              <strong>Attempt Count: </strong>
+              {{rebrickableSyncQueue.attemptCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.maxAttempts != null">
+              <strong>Max Attempts: </strong>
+              {{rebrickableSyncQueue.maxAttempts | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.errorMessage != null">
+              <strong>Error Message: </strong>
+              {{rebrickableSyncQueue.errorMessage}}
+            </p>
+            <p class="rebrickable-sync-queue-info" *ngIf="rebrickableSyncQueue.responseBody != null">
+              <strong>Response Body: </strong>
+              {{rebrickableSyncQueue.responseBody}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

@@ -71,6 +71,14 @@
                 Last  Sync  Error
                 <span *ngIf="sortColumn === 'lastSyncError'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('tokenExpiryDays')">
+                Token  Expiry  Days
+                <span *ngIf="sortColumn === 'tokenExpiryDays'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('tokenStoredDate')">
+                Token  Stored  Date
+                <span *ngIf="sortColumn === 'tokenStoredDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -167,6 +175,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{rebrickableUserLink.lastPullDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{rebrickableUserLink.lastPushDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{rebrickableUserLink.lastSyncError}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.tokenExpiryDays | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rebrickableUserLink.tokenStoredDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -356,6 +366,14 @@ End of commented block for alternate definition option -->
             <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.lastSyncError != null">
               <strong>Last Sync Error: </strong>
               {{rebrickableUserLink.lastSyncError}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.tokenExpiryDays != null">
+              <strong>Token Expiry Days: </strong>
+              {{rebrickableUserLink.tokenExpiryDays | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rebrickable-user-link-info" *ngIf="rebrickableUserLink.tokenStoredDate != null">
+              <strong>Token Stored Date: </strong>
+              {{rebrickableUserLink.tokenStoredDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             </div>
          </div>

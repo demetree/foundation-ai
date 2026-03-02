@@ -76,6 +76,14 @@
                 <label for="RebrickableUserLink-lastSyncError" id="label-RebrickableUserLink-lastSyncError">Last Sync Error</label>
                 <textarea id="RebrickableUserLink-lastSyncError" formControlName="lastSyncError" placeholder="Enter Last Sync Error" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('tokenExpiryDays')">
+                <label for="RebrickableUserLink-tokenExpiryDays" id="label-RebrickableUserLink-tokenExpiryDays">Token Expiry Days</label>
+                <input type="number" id="RebrickableUserLink-tokenExpiryDays" formControlName="tokenExpiryDays" placeholder="Enter Token Expiry Days" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-tokenExpiryDays" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('tokenStoredDate')">
+                <label for="RebrickableUserLink-tokenStoredDate" id="label-RebrickableUserLink-tokenStoredDate">Token Stored Date</label>
+                <input type="datetime-local" id="RebrickableUserLink-tokenStoredDate" formControlName="tokenStoredDate" placeholder="Enter Token Stored Date" class="form-control rebrickable-user-link-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" aria-labelledby="label-tokenStoredDate" />
+            </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="RebrickableUserLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCRebrickableUserLinkWriter()" />
                 <label for="RebrickableUserLink-active" class="form-check-label" id="label-RebrickableUserLink-active"><span class="text-danger">*</span>Active</label>

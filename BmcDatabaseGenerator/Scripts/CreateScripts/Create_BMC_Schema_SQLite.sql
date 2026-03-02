@@ -57,6 +57,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "UserPartListItem"
 -- DROP TABLE "UserPartListChangeHistory"
 -- DROP TABLE "UserPartList"
+-- DROP TABLE "RebrickableSyncQueue"
 -- DROP TABLE "RebrickableTransaction"
 -- DROP TABLE "RebrickableUserLink"
 -- DROP TABLE "UserCollectionSetImport"
@@ -153,6 +154,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "UserPartListItem" DISABLE
 -- ALTER INDEX ALL ON "UserPartListChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "UserPartList" DISABLE
+-- ALTER INDEX ALL ON "RebrickableSyncQueue" DISABLE
 -- ALTER INDEX ALL ON "RebrickableTransaction" DISABLE
 -- ALTER INDEX ALL ON "RebrickableUserLink" DISABLE
 -- ALTER INDEX ALL ON "UserCollectionSetImport" DISABLE
@@ -249,6 +251,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "UserPartListItem" REBUILD
 -- ALTER INDEX ALL ON "UserPartListChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "UserPartList" REBUILD
+-- ALTER INDEX ALL ON "RebrickableSyncQueue" REBUILD
 -- ALTER INDEX ALL ON "RebrickableTransaction" REBUILD
 -- ALTER INDEX ALL ON "RebrickableUserLink" REBUILD
 -- ALTER INDEX ALL ON "UserCollectionSetImport" REBUILD
@@ -1911,6 +1914,8 @@ CREATE TABLE "RebrickableUserLink"
 	"lastPullDate" DATETIME NULL,		-- Date/time of last successful pull from Rebrickable
 	"lastPushDate" DATETIME NULL,		-- Date/time of last successful push to Rebrickable
 	"lastSyncError" TEXT NULL COLLATE NOCASE,		-- Last sync error message for display to the user (null = no error)
+	"tokenExpiryDays" INTEGER NULL,		-- User-configurable auto-clear interval in days (null = never auto-clear)
+	"tokenStoredDate" DATETIME NULL,		-- When the token was last stored or refreshed — used with tokenExpiryDays for auto-expiry
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -1960,6 +1965,41 @@ CREATE INDEX "I_RebrickableTransaction_tenantGuid_active" ON "RebrickableTransac
 
 -- Index on the RebrickableTransaction table's tenantGuid,deleted fields.
 CREATE INDEX "I_RebrickableTransaction_tenantGuid_deleted" ON "RebrickableTransaction" ("tenantGuid", "deleted")
+;
+
+
+-- Outbound sync queue for resilient Rebrickable API writes. When a user modifies collection data locally, a queue entry is created. A background service picks up pending items and pushes them to Rebrickable. Retries on failure with exponential backoff.
+CREATE TABLE "RebrickableSyncQueue"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"operationType" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Sync operation: Create, Update, Delete
+	"entityType" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Entity being synced: SetList, SetListItem, PartList, PartListItem, LostPart
+	"entityId" BIGINT NOT NULL,		-- Database ID of the entity being synced
+	"payload" TEXT NULL COLLATE NOCASE,		-- JSON-serialized data needed by the Rebrickable API call
+	"status" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Queue status: Pending, InProgress, Completed, Failed, Abandoned
+	"createdDate" DATETIME NULL,		-- When this queue entry was created
+	"lastAttemptDate" DATETIME NULL,		-- When the last processing attempt occurred (null = never attempted)
+	"completedDate" DATETIME NULL,		-- When processing completed successfully (null = not yet completed)
+	"attemptCount" INTEGER NOT NULL,		-- Number of processing attempts so far
+	"maxAttempts" INTEGER NOT NULL,		-- Maximum retry attempts before marking as Abandoned (default: 5)
+	"errorMessage" TEXT NULL COLLATE NOCASE,		-- Last error message from a failed attempt (null on success)
+	"responseBody" TEXT NULL COLLATE NOCASE,		-- Last response body from Rebrickable for debugging (null on success)
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the RebrickableSyncQueue table's tenantGuid field.
+CREATE INDEX "I_RebrickableSyncQueue_tenantGuid" ON "RebrickableSyncQueue" ("tenantGuid")
+;
+
+-- Index on the RebrickableSyncQueue table's tenantGuid,active fields.
+CREATE INDEX "I_RebrickableSyncQueue_tenantGuid_active" ON "RebrickableSyncQueue" ("tenantGuid", "active")
+;
+
+-- Index on the RebrickableSyncQueue table's tenantGuid,deleted fields.
+CREATE INDEX "I_RebrickableSyncQueue_tenantGuid_deleted" ON "RebrickableSyncQueue" ("tenantGuid", "deleted")
 ;
 
 

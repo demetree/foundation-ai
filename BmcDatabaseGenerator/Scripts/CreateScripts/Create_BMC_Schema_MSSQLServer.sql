@@ -69,6 +69,7 @@ GO
 -- DROP TABLE [BMC].[UserPartListItem]
 -- DROP TABLE [BMC].[UserPartListChangeHistory]
 -- DROP TABLE [BMC].[UserPartList]
+-- DROP TABLE [BMC].[RebrickableSyncQueue]
 -- DROP TABLE [BMC].[RebrickableTransaction]
 -- DROP TABLE [BMC].[RebrickableUserLink]
 -- DROP TABLE [BMC].[UserCollectionSetImport]
@@ -165,6 +166,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[UserPartListItem] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserPartListChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserPartList] DISABLE
+-- ALTER INDEX ALL ON [BMC].[RebrickableSyncQueue] DISABLE
 -- ALTER INDEX ALL ON [BMC].[RebrickableTransaction] DISABLE
 -- ALTER INDEX ALL ON [BMC].[RebrickableUserLink] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserCollectionSetImport] DISABLE
@@ -261,6 +263,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[UserPartListItem] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserPartListChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserPartList] REBUILD
+-- ALTER INDEX ALL ON [BMC].[RebrickableSyncQueue] REBUILD
 -- ALTER INDEX ALL ON [BMC].[RebrickableTransaction] REBUILD
 -- ALTER INDEX ALL ON [BMC].[RebrickableUserLink] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserCollectionSetImport] REBUILD
@@ -2100,6 +2103,8 @@ CREATE TABLE [BMC].[RebrickableUserLink]
 	[lastPullDate] DATETIME2(7) NULL,		-- Date/time of last successful pull from Rebrickable
 	[lastPushDate] DATETIME2(7) NULL,		-- Date/time of last successful push to Rebrickable
 	[lastSyncError] NVARCHAR(MAX) NULL,		-- Last sync error message for display to the user (null = no error)
+	[tokenExpiryDays] INT NULL,		-- User-configurable auto-clear interval in days (null = never auto-clear)
+	[tokenStoredDate] DATETIME2(7) NULL,		-- When the token was last stored or refreshed — used with tokenExpiryDays for auto-expiry
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -2154,6 +2159,43 @@ GO
 
 -- Index on the RebrickableTransaction table's tenantGuid,deleted fields.
 CREATE INDEX [I_RebrickableTransaction_tenantGuid_deleted] ON [BMC].[RebrickableTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- Outbound sync queue for resilient Rebrickable API writes. When a user modifies collection data locally, a queue entry is created. A background service picks up pending items and pushes them to Rebrickable. Retries on failure with exponential backoff.
+CREATE TABLE [BMC].[RebrickableSyncQueue]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[operationType] NVARCHAR(50) NOT NULL,		-- Sync operation: Create, Update, Delete
+	[entityType] NVARCHAR(50) NOT NULL,		-- Entity being synced: SetList, SetListItem, PartList, PartListItem, LostPart
+	[entityId] BIGINT NOT NULL,		-- Database ID of the entity being synced
+	[payload] NVARCHAR(MAX) NULL,		-- JSON-serialized data needed by the Rebrickable API call
+	[status] NVARCHAR(50) NOT NULL,		-- Queue status: Pending, InProgress, Completed, Failed, Abandoned
+	[createdDate] DATETIME2(7) NULL,		-- When this queue entry was created
+	[lastAttemptDate] DATETIME2(7) NULL,		-- When the last processing attempt occurred (null = never attempted)
+	[completedDate] DATETIME2(7) NULL,		-- When processing completed successfully (null = not yet completed)
+	[attemptCount] INT NOT NULL,		-- Number of processing attempts so far
+	[maxAttempts] INT NOT NULL,		-- Maximum retry attempts before marking as Abandoned (default: 5)
+	[errorMessage] NVARCHAR(MAX) NULL,		-- Last error message from a failed attempt (null on success)
+	[responseBody] NVARCHAR(MAX) NULL,		-- Last response body from Rebrickable for debugging (null on success)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the RebrickableSyncQueue table's tenantGuid field.
+CREATE INDEX [I_RebrickableSyncQueue_tenantGuid] ON [BMC].[RebrickableSyncQueue] ([tenantGuid])
+GO
+
+-- Index on the RebrickableSyncQueue table's tenantGuid,active fields.
+CREATE INDEX [I_RebrickableSyncQueue_tenantGuid_active] ON [BMC].[RebrickableSyncQueue] ([tenantGuid], [active])
+GO
+
+-- Index on the RebrickableSyncQueue table's tenantGuid,deleted fields.
+CREATE INDEX [I_RebrickableSyncQueue_tenantGuid_deleted] ON [BMC].[RebrickableSyncQueue] ([tenantGuid], [deleted])
 GO
 
 

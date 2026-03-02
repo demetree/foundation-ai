@@ -1,8 +1,8 @@
 /*
-   GENERATED FORM FOR THE REBRICKABLEUSERLINK TABLE - DO NOT MODIFY DIRECTLY
+   GENERATED FORM FOR THE REBRICKABLESYNCQUEUE TABLE - DO NOT MODIFY DIRECTLY
    =================================================================================
 
-   This is the default form generated from RebrickableUserLink table metadata.
+   This is the default form generated from RebrickableSyncQueue table metadata.
 
    It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
    because it's form layout and validation is too simple.
@@ -10,7 +10,7 @@
    For building better looking and/or versions with custom logic, create a custom version of this:
 
    1. Copy this component
-   2. Rename to rebrickable-user-link-custom (or similar)
+   2. Rename to rebrickable-sync-queue-custom (or similar)
    3. Modify layout, grouping, field types, add workflow logic
    
    This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
@@ -18,26 +18,26 @@
 */
 import { Component, OnInit, AfterViewInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { RebrickableUserLinkService, RebrickableUserLinkData, RebrickableUserLinkQueryParameters } from '../../../bmc-data-services/rebrickable-user-link.service';
-import { RebrickableUserLinkAddEditComponent } from '../rebrickable-user-link-add-edit/rebrickable-user-link-add-edit.component';
+import { RebrickableSyncQueueService, RebrickableSyncQueueData, RebrickableSyncQueueQueryParameters } from '../../../bmc-data-services/rebrickable-sync-queue.service';
+import { RebrickableSyncQueueAddEditComponent } from '../rebrickable-sync-queue-add-edit/rebrickable-sync-queue-add-edit.component';
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ConfirmationService } from '../../../services/confirmation-service';
 import { TableColumn } from '../../../utility/foundation.utility';
 
 @Component({
-  selector: 'app-rebrickable-user-link-table',
-  templateUrl: './rebrickable-user-link-table.component.html',
-  styleUrls: ['./rebrickable-user-link-table.component.scss'],
+  selector: 'app-rebrickable-sync-queue-table',
+  templateUrl: './rebrickable-sync-queue-table.component.html',
+  styleUrls: ['./rebrickable-sync-queue-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, AfterViewInit {
-  @ViewChild(RebrickableUserLinkAddEditComponent) addEditRebrickableUserLinkComponent!: RebrickableUserLinkAddEditComponent;
+export class RebrickableSyncQueueTableComponent implements OnInit, OnChanges, AfterViewInit {
+  @ViewChild(RebrickableSyncQueueAddEditComponent) addEditRebrickableSyncQueueComponent!: RebrickableSyncQueueAddEditComponent;
 
-  @Input() RebrickableUserLinks: RebrickableUserLinkData[] | null = null; // Optional prefiltered data
+  @Input() RebrickableSyncQueues: RebrickableSyncQueueData[] | null = null; // Optional prefiltered data
   @Input() isSmallScreen: boolean = false;
   @Input() filterText: string | null = null; // Optional filter text 
-  @Input() queryParams: Partial<RebrickableUserLinkQueryParameters> = { } // Optional query parameters
+  @Input() queryParams: Partial<RebrickableSyncQueueQueryParameters> = { } // Optional query parameters
 
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
@@ -47,13 +47,13 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
   @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
   @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
 
-  @Output() edit = new EventEmitter<RebrickableUserLinkData>(); // Emitted for custom edit handling
-  @Output() delete = new EventEmitter<RebrickableUserLinkData>(); // Emitted for custom delete handling
-  @Output() undelete = new EventEmitter<RebrickableUserLinkData>(); // Emitted for custom undelete handling
+  @Output() edit = new EventEmitter<RebrickableSyncQueueData>(); // Emitted for custom edit handling
+  @Output() delete = new EventEmitter<RebrickableSyncQueueData>(); // Emitted for custom delete handling
+  @Output() undelete = new EventEmitter<RebrickableSyncQueueData>(); // Emitted for custom undelete handling
 
   @Input() columns: TableColumn[] = [];     // Default set built in ngOnInit
 
-  public filteredRebrickableUserLinks: RebrickableUserLinkData[] | null = null;        // Stores the filtered/sorted data
+  public filteredRebrickableSyncQueues: RebrickableSyncQueueData[] | null = null;        // Stores the filtered/sorted data
 
   // Sorting properties
   public sortColumn: string | null = null;
@@ -80,7 +80,7 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
   private errorResetTimeout: any;
 
 
-  constructor(private rebrickableUserLinkService: RebrickableUserLinkService,
+  constructor(private rebrickableSyncQueueService: RebrickableSyncQueueService,
               private authService: AuthService,
               private alertService: AlertService,
               private confirmationService: ConfirmationService) { }
@@ -92,7 +92,7 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
       this.buildDefaultColumns();
     }
 
-    if (!this.RebrickableUserLinks) {
+    if (!this.RebrickableSyncQueues) {
 
         this.isManagingData = true; // Component is managing data loading
         this.loadData(); // Load data on initialization
@@ -108,15 +108,15 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
   ngAfterViewInit(): void {
 
     //
-    // Subscribe to the rebrickableUserLinkChanged observable on the add/edit component so that when a RebrickableUserLink changes we can reload the list, if component is available and not disabled..
+    // Subscribe to the rebrickableSyncQueueChanged observable on the add/edit component so that when a RebrickableSyncQueue changes we can reload the list, if component is available and not disabled..
     //
-    if (this.addEditRebrickableUserLinkComponent && !this.disableDefaultEdit) {
-        this.addEditRebrickableUserLinkComponent.rebrickableUserLinkChanged.subscribe({
-        next: (result: RebrickableUserLinkData[] | null) => {
+    if (this.addEditRebrickableSyncQueueComponent && !this.disableDefaultEdit) {
+        this.addEditRebrickableSyncQueueComponent.rebrickableSyncQueueChanged.subscribe({
+        next: (result: RebrickableSyncQueueData[] | null) => {
             this.loadData();
         },
         error: (err: any) => {
-             this.alertService.showMessage("Error during Rebrickable User Link changed notification", JSON.stringify(err), MessageSeverity.error);
+             this.alertService.showMessage("Error during Rebrickable Sync Queue changed notification", JSON.stringify(err), MessageSeverity.error);
         }
         });
      }
@@ -175,19 +175,18 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
-    { key: 'rebrickableUsername', label: 'Rebrickable Username', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/rebrickableuserlink', 'id']  },
-    { key: 'encryptedApiToken', label: 'Encrypted Api Token', width: undefined },
-    { key: 'authMode', label: 'Auth Mode', width: undefined },
-    { key: 'encryptedPassword', label: 'Encrypted Password', width: undefined },
-    { key: 'syncEnabled', label: 'Sync Enabled', width: '120px', template: 'boolean' },
-    { key: 'syncDirectionFlags', label: 'Sync Direction Flags', width: undefined },
-    { key: 'pullIntervalMinutes', label: 'Pull Interval Minutes', width: undefined },
-    { key: 'lastSyncDate', label: 'Last Sync Date', width: undefined, template: 'date' },
-    { key: 'lastPullDate', label: 'Last Pull Date', width: undefined, template: 'date' },
-    { key: 'lastPushDate', label: 'Last Push Date', width: undefined, template: 'date' },
-    { key: 'lastSyncError', label: 'Last Sync Error', width: undefined },
-    { key: 'tokenExpiryDays', label: 'Token Expiry Days', width: undefined },
-    { key: 'tokenStoredDate', label: 'Token Stored Date', width: undefined, template: 'date' },
+    { key: 'operationType', label: 'Operation Type', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/rebrickablesyncqueue', 'id']  },
+    { key: 'entityType', label: 'Entity Type', width: undefined },
+    { key: 'entityId', label: 'Entity Id', width: undefined },
+    { key: 'payload', label: 'Payload', width: undefined },
+    { key: 'status', label: 'Status', width: undefined },
+    { key: 'createdDate', label: 'Created Date', width: undefined, template: 'date' },
+    { key: 'lastAttemptDate', label: 'Last Attempt Date', width: undefined, template: 'date' },
+    { key: 'completedDate', label: 'Completed Date', width: undefined, template: 'date' },
+    { key: 'attemptCount', label: 'Attempt Count', width: undefined },
+    { key: 'maxAttempts', label: 'Max Attempts', width: undefined },
+    { key: 'errorMessage', label: 'Error Message', width: undefined },
+    { key: 'responseBody', label: 'Response Body', width: undefined },
 
     ];
 
@@ -195,7 +194,7 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
     //
     // Note that CSS stylng shows deleted rows with a strike through, and inactive as italicized, both with transparency so they stand out, regardless of if there are active/deleted columns
     //
-    const isWriter = this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkWriter();
+    const isWriter = this.rebrickableSyncQueueService.userIsBMCRebrickableSyncQueueWriter();
     const isAdmin = this.authService.isBMCAdministrator; 
 
     if (isAdmin) {
@@ -231,15 +230,15 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
       return; // Skip if parent is providing data
     }
 
-    if (this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkReader() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Rebrickable User Links", '', MessageSeverity.info);
+    if (this.rebrickableSyncQueueService.userIsBMCRebrickableSyncQueueReader() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Rebrickable Sync Queues", '', MessageSeverity.info);
       return;
     }
 
     //
     // Server side filtering using the any string contains parameter
     //
-    const rebrickableUserLinkQueryParams = {
+    const rebrickableSyncQueueQueryParams = {
         ...this.queryParams,
         anyStringContains: this.filterText || undefined,
         pageSize: this.pageSize,
@@ -249,12 +248,12 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
     //
     // Note that we are not clearing the data service cache here.  Fresh data will be loaded if necessary, or cached data will be returned if no changes to it have been detected.
     //
-    this.rebrickableUserLinkService.GetRebrickableUserLinkList(rebrickableUserLinkQueryParams).subscribe({
-      next: (RebrickableUserLinkList) => {
-        if (RebrickableUserLinkList) {
-          this.RebrickableUserLinks = RebrickableUserLinkList;
+    this.rebrickableSyncQueueService.GetRebrickableSyncQueueList(rebrickableSyncQueueQueryParams).subscribe({
+      next: (RebrickableSyncQueueList) => {
+        if (RebrickableSyncQueueList) {
+          this.RebrickableSyncQueues = RebrickableSyncQueueList;
         } else {
-          this.RebrickableUserLinks = [];
+          this.RebrickableSyncQueues = [];
         }
 
         //
@@ -285,7 +284,7 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
         //
         this.setErrorState();
 
-         this.alertService.showMessage("Error getting Rebrickable User Link data", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error getting Rebrickable Sync Queue data", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
@@ -310,8 +309,8 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
 
    private applyFiltersAndSort(): void {
 
-    if (!this.RebrickableUserLinks) {
-      this.filteredRebrickableUserLinks = null;
+    if (!this.RebrickableSyncQueues) {
+      this.filteredRebrickableSyncQueues = null;
       return;
     }
 
@@ -323,7 +322,7 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
     };
 
 
-    let result = [...this.RebrickableUserLinks];
+    let result = [...this.RebrickableSyncQueues];
 
     if (this.filterText) {
 
@@ -333,25 +332,24 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
 
         // Define fields to filter on, including nested properties
         const filterFields = [
-                      'rebrickableUsername',
-                      'encryptedApiToken',
-                      'authMode',
-                      'encryptedPassword',
-                      'syncEnabled',
-                      'syncDirectionFlags',
-                      'pullIntervalMinutes',
-                      'lastSyncDate',
-                      'lastPullDate',
-                      'lastPushDate',
-                      'lastSyncError',
-                      'tokenExpiryDays',
-                      'tokenStoredDate',
+                      'operationType',
+                      'entityType',
+                      'entityId',
+                      'payload',
+                      'status',
+                      'createdDate',
+                      'lastAttemptDate',
+                      'completedDate',
+                      'attemptCount',
+                      'maxAttempts',
+                      'errorMessage',
+                      'responseBody',
         ];
 
-        result = result.filter((rebrickableUserLink) =>
+        result = result.filter((rebrickableSyncQueue) =>
 
         filterFields.some((field) => {
-        const value = getNestedValue(rebrickableUserLink, field);
+        const value = getNestedValue(rebrickableSyncQueue, field);
             return value && value.toString().toLowerCase().includes(searchText);
           })
           );
@@ -376,18 +374,18 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
       });
     }
 
-    this.filteredRebrickableUserLinks = result;
+    this.filteredRebrickableSyncQueues = result;
   }
 
 
-  public handleEdit(rebrickableUserLink: RebrickableUserLinkData): void {
+  public handleEdit(rebrickableSyncQueue: RebrickableSyncQueueData): void {
     if (this.disableDefaultEdit)
     {
-        this.edit.emit(rebrickableUserLink); // Let parent handle edit
+        this.edit.emit(rebrickableSyncQueue); // Let parent handle edit
     }
-    else if (this.addEditRebrickableUserLinkComponent)
+    else if (this.addEditRebrickableSyncQueueComponent)
     {
-        this.addEditRebrickableUserLinkComponent.openModal(rebrickableUserLink); // Default edit behavior
+        this.addEditRebrickableSyncQueueComponent.openModal(rebrickableSyncQueue); // Default edit behavior
     }
     else
     {
@@ -401,26 +399,26 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
 
 
   public handleAdd(): void {
-    if (this.addEditRebrickableUserLinkComponent)
+    if (this.addEditRebrickableSyncQueueComponent)
     {
-        this.addEditRebrickableUserLinkComponent.openModal(); // Open in add mode (no data)
+        this.addEditRebrickableSyncQueueComponent.openModal(); // Open in add mode (no data)
     }
 }
 
 
-  public handleDelete(rebrickableUserLink: RebrickableUserLinkData): void {
+  public handleDelete(rebrickableSyncQueue: RebrickableSyncQueueData): void {
     if (this.disableDefaultDelete)
     {
-        this.delete.emit(rebrickableUserLink); // Let parent handle delete
+        this.delete.emit(rebrickableSyncQueue); // Let parent handle delete
     }
     else
     {
         this.confirmationService
-          .confirm('Delete RebrickableUserLink', 'Are you sure you want to delete this Rebrickable User Link?')
+          .confirm('Delete RebrickableSyncQueue', 'Are you sure you want to delete this Rebrickable Sync Queue?')
           .then((result) => {
               if (result)
               {
-                  this.deleteRebrickableUserLink(rebrickableUserLink);
+                  this.deleteRebrickableSyncQueue(rebrickableSyncQueue);
               }
           })
           .catch(() => { });
@@ -428,32 +426,32 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
   }
 
 
-  private deleteRebrickableUserLink(rebrickableUserLinkData: RebrickableUserLinkData): void {
-    this.rebrickableUserLinkService.DeleteRebrickableUserLink(rebrickableUserLinkData.id).subscribe({
+  private deleteRebrickableSyncQueue(rebrickableSyncQueueData: RebrickableSyncQueueData): void {
+    this.rebrickableSyncQueueService.DeleteRebrickableSyncQueue(rebrickableSyncQueueData.id).subscribe({
       next: () => {
-       this.rebrickableUserLinkService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+       this.rebrickableSyncQueueService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after deletion
       },
       error: (err) => {
-         this.alertService.showMessage("Error deleting Rebrickable User Link", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error deleting Rebrickable Sync Queue", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
 
 
-  public handleUndelete(rebrickableUserLink: RebrickableUserLinkData): void {
+  public handleUndelete(rebrickableSyncQueue: RebrickableSyncQueueData): void {
     if (this.disableDefaultUndelete)
     {
-        this.undelete.emit(rebrickableUserLink); // Let parent handle undelete
+        this.undelete.emit(rebrickableSyncQueue); // Let parent handle undelete
     }
     else
     {
         this.confirmationService
-          .confirm('Undelete RebrickableUserLink', 'Are you sure you want to undelete this Rebrickable User Link?')
+          .confirm('Undelete RebrickableSyncQueue', 'Are you sure you want to undelete this Rebrickable Sync Queue?')
           .then((result) => {
               if (result)
               {
-                  this.undeleteRebrickableUserLink(rebrickableUserLink);
+                  this.undeleteRebrickableSyncQueue(rebrickableSyncQueue);
               }
           })
           .catch(() => { });
@@ -461,34 +459,34 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
 }
 
 
-  private undeleteRebrickableUserLink(rebrickableUserLinkData: RebrickableUserLinkData): void {
+  private undeleteRebrickableSyncQueue(rebrickableSyncQueueData: RebrickableSyncQueueData): void {
 
-      var rebrickableUserLinkToSubmit = this.rebrickableUserLinkService.ConvertToRebrickableUserLinkSubmitData(rebrickableUserLinkData); // Convert RebrickableUserLink data to post object for undeleting
-      rebrickableUserLinkToSubmit.deleted = false;
+      var rebrickableSyncQueueToSubmit = this.rebrickableSyncQueueService.ConvertToRebrickableSyncQueueSubmitData(rebrickableSyncQueueData); // Convert RebrickableSyncQueue data to post object for undeleting
+      rebrickableSyncQueueToSubmit.deleted = false;
 
-      this.rebrickableUserLinkService.PutRebrickableUserLink(rebrickableUserLinkToSubmit.id, rebrickableUserLinkToSubmit).subscribe({
+      this.rebrickableSyncQueueService.PutRebrickableSyncQueue(rebrickableSyncQueueToSubmit.id, rebrickableSyncQueueToSubmit).subscribe({
       next: () => {
-       this.rebrickableUserLinkService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+       this.rebrickableSyncQueueService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after un-deletion
       },
       error: (err) => {
-         this.alertService.showMessage("Error undeleting Rebrickable User Link", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error undeleting Rebrickable Sync Queue", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
 
 
-  public getRebrickableUserLinkId(index: number, rebrickableUserLink: any): number {
-    return rebrickableUserLink.id;
+  public getRebrickableSyncQueueId(index: number, rebrickableSyncQueue: any): number {
+    return rebrickableSyncQueue.id;
   }
 
 
-  public userIsBMCRebrickableUserLinkReader(): boolean {
-    return this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkReader();
+  public userIsBMCRebrickableSyncQueueReader(): boolean {
+    return this.rebrickableSyncQueueService.userIsBMCRebrickableSyncQueueReader();
   }
 
-  public userIsBMCRebrickableUserLinkWriter(): boolean {
-    return this.rebrickableUserLinkService.userIsBMCRebrickableUserLinkWriter();
+  public userIsBMCRebrickableSyncQueueWriter(): boolean {
+    return this.rebrickableSyncQueueService.userIsBMCRebrickableSyncQueueWriter();
   }
 
 
@@ -500,7 +498,7 @@ export class RebrickableUserLinkTableComponent implements OnInit, OnChanges, Aft
   }
 
 
-  // Build routerLink arrays like ['/rebrickableUserLink', rebrickableUserLinkId]
+  // Build routerLink arrays like ['/rebrickableSyncQueue', rebrickableSyncQueueId]
   public buildLink(item: any, path: string[]): any[] {
     //
     // Expect a starting item in the path array with a slash to indicate the route.  After that, the other items in path are expected to be properties of the item.  Tyically one, but more are technically supported.

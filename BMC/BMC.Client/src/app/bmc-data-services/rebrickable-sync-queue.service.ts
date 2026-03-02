@@ -1,8 +1,8 @@
 /*
 
-   GENERATED SERVICE FOR THE REBRICKABLEUSERLINK TABLE - DO NOT MODIFY DIRECTLY
+   GENERATED SERVICE FOR THE REBRICKABLESYNCQUEUE TABLE - DO NOT MODIFY DIRECTLY
    =======================================================================================
-   This is the default data interaction service for the RebrickableUserLink table.
+   This is the default data interaction service for the RebrickableSyncQueue table.
 
    It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
    custom version or add an additional targeted helper service.
@@ -26,20 +26,19 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Avoid passing nested objects or arrays, as they may not serialize correctly.
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
-export class RebrickableUserLinkQueryParameters {
-    rebrickableUsername: string | null | undefined = null;
-    encryptedApiToken: string | null | undefined = null;
-    authMode: string | null | undefined = null;
-    encryptedPassword: string | null | undefined = null;
-    syncEnabled: boolean | null | undefined = null;
-    syncDirectionFlags: string | null | undefined = null;
-    pullIntervalMinutes: bigint | number | null | undefined = null;
-    lastSyncDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    lastPullDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    lastPushDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    lastSyncError: string | null | undefined = null;
-    tokenExpiryDays: bigint | number | null | undefined = null;
-    tokenStoredDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+export class RebrickableSyncQueueQueryParameters {
+    operationType: string | null | undefined = null;
+    entityType: string | null | undefined = null;
+    entityId: bigint | number | null | undefined = null;
+    payload: string | null | undefined = null;
+    status: string | null | undefined = null;
+    createdDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    lastAttemptDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    completedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    attemptCount: bigint | number | null | undefined = null;
+    maxAttempts: bigint | number | null | undefined = null;
+    errorMessage: string | null | undefined = null;
+    responseBody: string | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -53,27 +52,26 @@ export class RebrickableUserLinkQueryParameters {
 //
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
-export class RebrickableUserLinkSubmitData {
+export class RebrickableSyncQueueSubmitData {
     id!: bigint | number;
-    rebrickableUsername!: string;
-    encryptedApiToken!: string;
-    authMode!: string;
-    encryptedPassword: string | null = null;
-    syncEnabled!: boolean;
-    syncDirectionFlags!: string;
-    pullIntervalMinutes: bigint | number | null = null;
-    lastSyncDate: string | null = null;     // ISO 8601 (full datetime)
-    lastPullDate: string | null = null;     // ISO 8601 (full datetime)
-    lastPushDate: string | null = null;     // ISO 8601 (full datetime)
-    lastSyncError: string | null = null;
-    tokenExpiryDays: bigint | number | null = null;
-    tokenStoredDate: string | null = null;     // ISO 8601 (full datetime)
+    operationType!: string;
+    entityType!: string;
+    entityId!: bigint | number;
+    payload: string | null = null;
+    status!: string;
+    createdDate: string | null = null;     // ISO 8601 (full datetime)
+    lastAttemptDate: string | null = null;     // ISO 8601 (full datetime)
+    completedDate: string | null = null;     // ISO 8601 (full datetime)
+    attemptCount!: bigint | number;
+    maxAttempts!: bigint | number;
+    errorMessage: string | null = null;
+    responseBody: string | null = null;
     active!: boolean;
     deleted!: boolean;
 }
 
 
-export class RebrickableUserLinkBasicListData {
+export class RebrickableSyncQueueBasicListData {
   id!: bigint | number;
   name!: string;
 }
@@ -87,10 +85,10 @@ export class RebrickableUserLinkBasicListData {
 // Key design notes:
 //
 // 1. **Lazy loading of related collections**:
-//    - Each related collection (e.g. RebrickableUserLinkChildren) is loaded on-demand.
+//    - Each related collection (e.g. RebrickableSyncQueueChildren) is loaded on-demand.
 //    - Two access patterns are provided:
-//        • Observable: `rebrickableUserLink.RebrickableUserLinkChildren$` — use with `| async` in templates
-//        • Promise:    `rebrickableUserLink.RebrickableUserLinkChildren`  — use with `await` or `.then()` in code
+//        • Observable: `rebrickableSyncQueue.RebrickableSyncQueueChildren$` — use with `| async` in templates
+//        • Promise:    `rebrickableSyncQueue.RebrickableSyncQueueChildren`  — use with `await` or `.then()` in code
 //
 // 2. **How lazy loading works**:
 //    - The observable has a `tap()` that checks if data is already loaded.
@@ -99,12 +97,12 @@ export class RebrickableUserLinkBasicListData {
 //
 // 3. **Important usage rule**:
 //    - To trigger loading, you must either:
-//        • Subscribe to the `$` observable (e.g., via `*ngIf="rebrickableUserLink.RebrickableUserLinkChildren$ | async"`), or
-//        • Access the promise getter (`rebrickableUserLink.RebrickableUserLinkChildren` or `await rebrickableUserLink.RebrickableUserLinkChildren`)
-//    - Simply reading `rebrickableUserLink.RebrickableUserLinkChildren` without awaiting does **not** trigger load.
+//        • Subscribe to the `$` observable (e.g., via `*ngIf="rebrickableSyncQueue.RebrickableSyncQueueChildren$ | async"`), or
+//        • Access the promise getter (`rebrickableSyncQueue.RebrickableSyncQueueChildren` or `await rebrickableSyncQueue.RebrickableSyncQueueChildren`)
+//    - Simply reading `rebrickableSyncQueue.RebrickableSyncQueueChildren` without awaiting does **not** trigger load.
 //
 // 4. **Reload()**:
-//    - Call `await rebrickableUserLink.Reload()` to refresh the entire object and clear all lazy caches.
+//    - Call `await rebrickableSyncQueue.Reload()` to refresh the entire object and clear all lazy caches.
 //    - Useful after mutations or when navigating into a navigation property.
 //
 // 5. **Cache clearing**:
@@ -115,21 +113,20 @@ export class RebrickableUserLinkBasicListData {
 //
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
-export class RebrickableUserLinkData {
+export class RebrickableSyncQueueData {
     id!: bigint | number;
-    rebrickableUsername!: string;
-    encryptedApiToken!: string;
-    authMode!: string;
-    encryptedPassword!: string | null;
-    syncEnabled!: boolean;
-    syncDirectionFlags!: string;
-    pullIntervalMinutes!: bigint | number;
-    lastSyncDate!: string | null;   // ISO 8601 (full datetime)
-    lastPullDate!: string | null;   // ISO 8601 (full datetime)
-    lastPushDate!: string | null;   // ISO 8601 (full datetime)
-    lastSyncError!: string | null;
-    tokenExpiryDays!: bigint | number;
-    tokenStoredDate!: string | null;   // ISO 8601 (full datetime)
+    operationType!: string;
+    entityType!: string;
+    entityId!: bigint | number;
+    payload!: string | null;
+    status!: string;
+    createdDate!: string | null;   // ISO 8601 (full datetime)
+    lastAttemptDate!: string | null;   // ISO 8601 (full datetime)
+    completedDate!: string | null;   // ISO 8601 (full datetime)
+    attemptCount!: bigint | number;
+    maxAttempts!: bigint | number;
+    errorMessage!: string | null;
+    responseBody!: string | null;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -148,24 +145,24 @@ export class RebrickableUserLinkData {
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
   //
-  // Promise based reload method to allow rebuilding of any RebrickableUserLinkData object with all of it's relations on demand.  Useful for navigating into nav property
+  // Promise based reload method to allow rebuilding of any RebrickableSyncQueueData object with all of it's relations on demand.  Useful for navigating into nav property
   // objects and getting full state after put or post that may not have returned all nav properties.
   //
   // Usage examples:;
   //
   //  Async:
-  //   await this.rebrickableUserLink.Reload();
+  //   await this.rebrickableSyncQueue.Reload();
   //
   //  Non Async:
   //
-  //     rebrickableUserLink[0].Reload().then(x => {
-  //        this.rebrickableUserLink = x;
+  //     rebrickableSyncQueue[0].Reload().then(x => {
+  //        this.rebrickableSyncQueue = x;
   //    });
   //
   public async Reload(includeRelations: boolean = true): Promise<this> {
 
     const fresh = await lastValueFrom(
-      RebrickableUserLinkService.Instance.GetRebrickableUserLink(this.id, includeRelations)
+      RebrickableSyncQueueService.Instance.GetRebrickableSyncQueue(this.id, includeRelations)
     );
 
     // Merge fresh data into this instance (preserves reference)
@@ -191,7 +188,7 @@ export class RebrickableUserLinkData {
 
 
     /**
-     * Updates the state of this RebrickableUserLinkData object using values from another object that has some or all of the fields needed.
+     * Updates the state of this RebrickableSyncQueueData object using values from another object that has some or all of the fields needed.
      */
     public UpdateFrom(other: Partial<this>): void {
         Object.assign(this, other);
@@ -199,10 +196,10 @@ export class RebrickableUserLinkData {
 
 
     /**
-     * Converts this RebrickableUserLinkData object to a submission object for sending to the server.
+     * Converts this RebrickableSyncQueueData object to a submission object for sending to the server.
      */
-    public ConvertToSubmitData(): RebrickableUserLinkSubmitData {
-        return RebrickableUserLinkService.Instance.ConvertToRebrickableUserLinkSubmitData(this);
+    public ConvertToSubmitData(): RebrickableSyncQueueSubmitData {
+        return RebrickableSyncQueueService.Instance.ConvertToRebrickableSyncQueueSubmitData(this);
     }
 }
 
@@ -210,13 +207,13 @@ export class RebrickableUserLinkData {
 @Injectable({
   providedIn: 'root'
 })
-export class RebrickableUserLinkService extends SecureEndpointBase {
+export class RebrickableSyncQueueService extends SecureEndpointBase {
 
-    private static _instance: RebrickableUserLinkService;
-    private listCache: Map<string, Observable<Array<RebrickableUserLinkData>>>;
+    private static _instance: RebrickableSyncQueueService;
+    private listCache: Map<string, Observable<Array<RebrickableSyncQueueData>>>;
     private rowCountCache: Map<string, Observable<bigint | number>>;
-    private basicListDataCache: Map<string, Observable<Array<RebrickableUserLinkBasicListData>>>;
-    private recordCache: Map<string, Observable<RebrickableUserLinkData>>;
+    private basicListDataCache: Map<string, Observable<Array<RebrickableSyncQueueBasicListData>>>;
+    private recordCache: Map<string, Observable<RebrickableSyncQueueData>>;
 
 
     constructor(http: HttpClient,
@@ -226,20 +223,20 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
-        this.listCache = new Map<string, Observable<Array<RebrickableUserLinkData>>>();
+        this.listCache = new Map<string, Observable<Array<RebrickableSyncQueueData>>>();
         this.rowCountCache = new Map<string, Observable<bigint | number>>();
-        this.basicListDataCache = new Map<string, Observable<Array<RebrickableUserLinkBasicListData>>>();
-        this.recordCache = new Map<string, Observable<RebrickableUserLinkData>>();
+        this.basicListDataCache = new Map<string, Observable<Array<RebrickableSyncQueueBasicListData>>>();
+        this.recordCache = new Map<string, Observable<RebrickableSyncQueueData>>();
 
-        RebrickableUserLinkService._instance = this;
+        RebrickableSyncQueueService._instance = this;
     }
 
-    public static get Instance(): RebrickableUserLinkService {
-      return RebrickableUserLinkService._instance;
+    public static get Instance(): RebrickableSyncQueueService {
+      return RebrickableSyncQueueService._instance;
     }
 
 
-    public ClearListCaches(config: RebrickableUserLinkQueryParameters | null = null) {
+    public ClearListCaches(config: RebrickableSyncQueueQueryParameters | null = null) {
 
         const configHash = this.getConfigHash(config);
 
@@ -275,56 +272,55 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
     }
 
 
-    public ConvertToRebrickableUserLinkSubmitData(data: RebrickableUserLinkData): RebrickableUserLinkSubmitData {
+    public ConvertToRebrickableSyncQueueSubmitData(data: RebrickableSyncQueueData): RebrickableSyncQueueSubmitData {
 
-        let output = new RebrickableUserLinkSubmitData();
+        let output = new RebrickableSyncQueueSubmitData();
 
         output.id = data.id;
-        output.rebrickableUsername = data.rebrickableUsername;
-        output.encryptedApiToken = data.encryptedApiToken;
-        output.authMode = data.authMode;
-        output.encryptedPassword = data.encryptedPassword;
-        output.syncEnabled = data.syncEnabled;
-        output.syncDirectionFlags = data.syncDirectionFlags;
-        output.pullIntervalMinutes = data.pullIntervalMinutes;
-        output.lastSyncDate = data.lastSyncDate;
-        output.lastPullDate = data.lastPullDate;
-        output.lastPushDate = data.lastPushDate;
-        output.lastSyncError = data.lastSyncError;
-        output.tokenExpiryDays = data.tokenExpiryDays;
-        output.tokenStoredDate = data.tokenStoredDate;
+        output.operationType = data.operationType;
+        output.entityType = data.entityType;
+        output.entityId = data.entityId;
+        output.payload = data.payload;
+        output.status = data.status;
+        output.createdDate = data.createdDate;
+        output.lastAttemptDate = data.lastAttemptDate;
+        output.completedDate = data.completedDate;
+        output.attemptCount = data.attemptCount;
+        output.maxAttempts = data.maxAttempts;
+        output.errorMessage = data.errorMessage;
+        output.responseBody = data.responseBody;
         output.active = data.active;
         output.deleted = data.deleted;
 
         return output;
     }
 
-    public GetRebrickableUserLink(id: bigint | number, includeRelations: boolean = true) : Observable<RebrickableUserLinkData> {
+    public GetRebrickableSyncQueue(id: bigint | number, includeRelations: boolean = true) : Observable<RebrickableSyncQueueData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
         if (this.recordCache.has(configHash) == false) {
 
-            const rebrickableUserLink$ = this.requestRebrickableUserLink(id, includeRelations).pipe(
+            const rebrickableSyncQueue$ = this.requestRebrickableSyncQueue(id, includeRelations).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
           
-                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableUserLink", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableSyncQueue", error);
 
                     return throwError(() => error);
                 })
             );
 
-            this.recordCache.set(configHash, rebrickableUserLink$);
+            this.recordCache.set(configHash, rebrickableSyncQueue$);
 
-            return rebrickableUserLink$;
+            return rebrickableSyncQueue$;
         }
 
-        return this.recordCache.get(configHash) as Observable<RebrickableUserLinkData>;
+        return this.recordCache.get(configHash) as Observable<RebrickableSyncQueueData>;
     }
 
-    private requestRebrickableUserLink(id: bigint | number, includeRelations: boolean = true) : Observable<RebrickableUserLinkData> {
+    private requestRebrickableSyncQueue(id: bigint | number, includeRelations: boolean = true) : Observable<RebrickableSyncQueueData> {
 
         let queryParams = new HttpParams();
 
@@ -332,41 +328,41 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<RebrickableUserLinkData>(this.baseUrl + 'api/RebrickableUserLink/' + id.toString(), { 
+        return this.http.get<RebrickableSyncQueueData>(this.baseUrl + 'api/RebrickableSyncQueue/' + id.toString(), { 
             params: queryParams, 
             headers: authenticationHeaders }).pipe(
-            map(raw => this.ReviveRebrickableUserLink(raw)),
+            map(raw => this.ReviveRebrickableSyncQueue(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.requestRebrickableUserLink(id, includeRelations));
+                return this.handleError(error, () => this.requestRebrickableSyncQueue(id, includeRelations));
             }));
     }
 
-    public GetRebrickableUserLinkList(config: RebrickableUserLinkQueryParameters | any = null) : Observable<Array<RebrickableUserLinkData>> {
+    public GetRebrickableSyncQueueList(config: RebrickableSyncQueueQueryParameters | any = null) : Observable<Array<RebrickableSyncQueueData>> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.listCache.has(configHash)) {
-            const rebrickableUserLinkList$ = this.requestRebrickableUserLinkList(config).pipe(
+            const rebrickableSyncQueueList$ = this.requestRebrickableSyncQueueList(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.listCache.delete(configHash);
 
-                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableUserLink list", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableSyncQueue list", error);
 
                     return throwError(() => error);
                 })
             );
 
-            this.listCache.set(configHash, rebrickableUserLinkList$);
+            this.listCache.set(configHash, rebrickableSyncQueueList$);
 
-            return rebrickableUserLinkList$;
+            return rebrickableSyncQueueList$;
         }
 
-        return this.listCache.get(configHash) as Observable<Array<RebrickableUserLinkData>>;
+        return this.listCache.get(configHash) as Observable<Array<RebrickableSyncQueueData>>;
     }
 
 
-    private requestRebrickableUserLinkList(config: RebrickableUserLinkQueryParameters | any) : Observable <Array<RebrickableUserLinkData>> {
+    private requestRebrickableSyncQueueList(config: RebrickableSyncQueueQueryParameters | any) : Observable <Array<RebrickableSyncQueueData>> {
 
         let queryParams = new HttpParams();
 
@@ -381,40 +377,40 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<RebrickableUserLinkData>>(this.baseUrl + 'api/RebrickableUserLinks', { 
+        return this.http.get<Array<RebrickableSyncQueueData>>(this.baseUrl + 'api/RebrickableSyncQueues', { 
             params: queryParams, 
             headers: authenticationHeaders }).pipe(
-            map(rawList => this.ReviveRebrickableUserLinkList(rawList)),
+            map(rawList => this.ReviveRebrickableSyncQueueList(rawList)),
             catchError(error => {
-                return this.handleError(error, () => this.requestRebrickableUserLinkList(config));
+                return this.handleError(error, () => this.requestRebrickableSyncQueueList(config));
             }));
     }
 
-    public GetRebrickableUserLinksRowCount(config: RebrickableUserLinkQueryParameters | any = null) : Observable<bigint | number> {
+    public GetRebrickableSyncQueuesRowCount(config: RebrickableSyncQueueQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.rowCountCache.has(configHash)) {
-            const rebrickableUserLinksRowCount$ = this.requestRebrickableUserLinksRowCount(config).pipe(
+            const rebrickableSyncQueuesRowCount$ = this.requestRebrickableSyncQueuesRowCount(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
           
-                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableUserLinks row count", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableSyncQueues row count", error);
 
                     return throwError(() => error);
                 })
             )
 
-            this.rowCountCache.set(configHash, rebrickableUserLinksRowCount$);
+            this.rowCountCache.set(configHash, rebrickableSyncQueuesRowCount$);
 
-            return rebrickableUserLinksRowCount$;
+            return rebrickableSyncQueuesRowCount$;
         }
 
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestRebrickableUserLinksRowCount(config: RebrickableUserLinkQueryParameters | any) : Observable<bigint | number> {
+    private requestRebrickableSyncQueuesRowCount(config: RebrickableSyncQueueQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -429,38 +425,38 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<bigint | number>(this.baseUrl + 'api/RebrickableUserLinks/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
+        return this.http.get<bigint | number>(this.baseUrl + 'api/RebrickableSyncQueues/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
             catchError(error => {
-                return this.handleError(error, () => this.requestRebrickableUserLinksRowCount(config));
+                return this.handleError(error, () => this.requestRebrickableSyncQueuesRowCount(config));
             }));
     }
 
-    public GetRebrickableUserLinksBasicListData(config: RebrickableUserLinkQueryParameters | any = null) : Observable<Array<RebrickableUserLinkBasicListData>> {
+    public GetRebrickableSyncQueuesBasicListData(config: RebrickableSyncQueueQueryParameters | any = null) : Observable<Array<RebrickableSyncQueueBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.basicListDataCache.has(configHash)) {
-            const rebrickableUserLinksBasicListData$ = this.requestRebrickableUserLinksBasicListData(config).pipe(
+            const rebrickableSyncQueuesBasicListData$ = this.requestRebrickableSyncQueuesBasicListData(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.basicListDataCache.delete(configHash);
 
-                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableUserLinks basic list data", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get RebrickableSyncQueues basic list data", error);
 
                     return throwError(() => error);
                 })
             );
       
-            this.basicListDataCache.set(configHash, rebrickableUserLinksBasicListData$);
+            this.basicListDataCache.set(configHash, rebrickableSyncQueuesBasicListData$);
 
-            return rebrickableUserLinksBasicListData$;
+            return rebrickableSyncQueuesBasicListData$;
         }
 
-        return this.basicListDataCache.get(configHash) as Observable<Array<RebrickableUserLinkBasicListData>>;
+        return this.basicListDataCache.get(configHash) as Observable<Array<RebrickableSyncQueueBasicListData>>;
     }
 
 
-    private requestRebrickableUserLinksBasicListData(config: RebrickableUserLinkQueryParameters | any) : Observable<Array<RebrickableUserLinkBasicListData>> {
+    private requestRebrickableSyncQueuesBasicListData(config: RebrickableSyncQueueQueryParameters | any) : Observable<Array<RebrickableSyncQueueBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -475,53 +471,53 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<RebrickableUserLinkBasicListData>>(this.baseUrl + 'api/RebrickableUserLinks/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
+        return this.http.get<Array<RebrickableSyncQueueBasicListData>>(this.baseUrl + 'api/RebrickableSyncQueues/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
             catchError(error => {
-                return this.handleError(error, () => this.requestRebrickableUserLinksBasicListData(config));
+                return this.handleError(error, () => this.requestRebrickableSyncQueuesBasicListData(config));
             }));
 
     }
 
 
-    public PutRebrickableUserLink(id: bigint | number, rebrickableUserLink: RebrickableUserLinkSubmitData) : Observable<RebrickableUserLinkData> {
+    public PutRebrickableSyncQueue(id: bigint | number, rebrickableSyncQueue: RebrickableSyncQueueSubmitData) : Observable<RebrickableSyncQueueData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<RebrickableUserLinkData>(this.baseUrl + 'api/RebrickableUserLink/' + id.toString(), rebrickableUserLink, { headers: authenticationHeaders } ).pipe(
+        return this.http.put<RebrickableSyncQueueData>(this.baseUrl + 'api/RebrickableSyncQueue/' + id.toString(), rebrickableSyncQueue, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
-            map(raw => this.ReviveRebrickableUserLink(raw)),
+            map(raw => this.ReviveRebrickableSyncQueue(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PutRebrickableUserLink(id, rebrickableUserLink));
+                return this.handleError(error, () => this.PutRebrickableSyncQueue(id, rebrickableSyncQueue));
             }));
     }
 
 
-    public PostRebrickableUserLink(rebrickableUserLink: RebrickableUserLinkSubmitData) : Observable<RebrickableUserLinkData> {
+    public PostRebrickableSyncQueue(rebrickableSyncQueue: RebrickableSyncQueueSubmitData) : Observable<RebrickableSyncQueueData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<RebrickableUserLinkData>(this.baseUrl + 'api/RebrickableUserLink', rebrickableUserLink, { headers: authenticationHeaders } ).pipe(
+        return this.http.post<RebrickableSyncQueueData>(this.baseUrl + 'api/RebrickableSyncQueue', rebrickableSyncQueue, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
-            map(raw => this.ReviveRebrickableUserLink(raw)),
+            map(raw => this.ReviveRebrickableSyncQueue(raw)),
             catchError(error => {
-              return this.handleError(error, () => this.PostRebrickableUserLink(rebrickableUserLink));
+              return this.handleError(error, () => this.PostRebrickableSyncQueue(rebrickableSyncQueue));
             }));
     }
 
   
-    public DeleteRebrickableUserLink(id: bigint | number) : Observable<any> {
+    public DeleteRebrickableSyncQueue(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/RebrickableUserLink/' + id.toString(), { headers: authenticationHeaders } ).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/RebrickableSyncQueue/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
-                return this.handleError(error, () => this.DeleteRebrickableUserLink(id));
+                return this.handleError(error, () => this.DeleteRebrickableSyncQueue(id));
             }));
     }
 
 
-    private getConfigHash(config: RebrickableUserLinkQueryParameters | any): string {
+    private getConfigHash(config: RebrickableSyncQueueQueryParameters | any): string {
 
         if (!config) {
             return '_';
@@ -544,78 +540,78 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
         return '_';
     }
 
-    public userIsBMCRebrickableUserLinkReader(): boolean {
+    public userIsBMCRebrickableSyncQueueReader(): boolean {
 
         //
         // First get the overall module reading privilege
         //
-        let userIsBMCRebrickableUserLinkReader = this.authService.isBMCReader;
+        let userIsBMCRebrickableSyncQueueReader = this.authService.isBMCReader;
 
         //
-        // Next test to see if the user has a high enough read permission level to read from BMC.RebrickableUserLinks
+        // Next test to see if the user has a high enough read permission level to read from BMC.RebrickableSyncQueues
         //
-        if (userIsBMCRebrickableUserLinkReader == true) {
+        if (userIsBMCRebrickableSyncQueueReader == true) {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsBMCRebrickableUserLinkReader = user.readPermission >= 1;
+                userIsBMCRebrickableSyncQueueReader = user.readPermission >= 1;
             } else {
-                userIsBMCRebrickableUserLinkReader = false;
+                userIsBMCRebrickableSyncQueueReader = false;
             }
         }
 
-        return userIsBMCRebrickableUserLinkReader;
+        return userIsBMCRebrickableSyncQueueReader;
     }
 
 
-    public userIsBMCRebrickableUserLinkWriter(): boolean {
+    public userIsBMCRebrickableSyncQueueWriter(): boolean {
 
         //
         // First get the overall module writing privilege
         //
-        let userIsBMCRebrickableUserLinkWriter = this.authService.isBMCReaderWriter;
+        let userIsBMCRebrickableSyncQueueWriter = this.authService.isBMCReaderWriter;
 
         //
-        // Next test to see if the user has a high enough write permission level to write to BMC.RebrickableUserLinks
+        // Next test to see if the user has a high enough write permission level to write to BMC.RebrickableSyncQueues
         //
-        if (userIsBMCRebrickableUserLinkWriter == true) {
+        if (userIsBMCRebrickableSyncQueueWriter == true) {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsBMCRebrickableUserLinkWriter = user.writePermission >= 10;
+            userIsBMCRebrickableSyncQueueWriter = user.writePermission >= 255;
           } else {
-            userIsBMCRebrickableUserLinkWriter = false;
+            userIsBMCRebrickableSyncQueueWriter = false;
           }      
         }
 
-        return userIsBMCRebrickableUserLinkWriter;
+        return userIsBMCRebrickableSyncQueueWriter;
     }
 
  /**
    *
-   * Revives a plain object from the server into a full RebrickableUserLinkData instance.
+   * Revives a plain object from the server into a full RebrickableSyncQueueData instance.
    *
    * This is critical for the lazy-loading pattern to work correctly.
    *
    * When the server returns JSON, it is a plain object with no prototype methods
    * or observable properties. This method:
-   * 1. Re-attaches the RebrickableUserLinkData prototype
+   * 1. Re-attaches the RebrickableSyncQueueData prototype
    * 2. Copies all properties from the raw object
    * 3. Re-initializes all private caches and BehaviorSubjects
    * 4. Re-creates all public observable properties ($ suffixed) with their
    *    original tap() triggers that initiate lazy loading on first subscription
    *
-   * Without this, revived objects would not trigger loads when RebrickableUserLinkTags$ etc.
+   * Without this, revived objects would not trigger loads when RebrickableSyncQueueTags$ etc.
    * are subscribed to in templates.
    *
    */
-  public ReviveRebrickableUserLink(raw: any): RebrickableUserLinkData {
+  public ReviveRebrickableSyncQueue(raw: any): RebrickableSyncQueueData {
     if (!raw) return raw;
 
     //
-    // Create a RebrickableUserLinkData object instance with correct prototype
+    // Create a RebrickableSyncQueueData object instance with correct prototype
     //
-    const revived = Object.create(RebrickableUserLinkData.prototype) as RebrickableUserLinkData;
+    const revived = Object.create(RebrickableSyncQueueData.prototype) as RebrickableSyncQueueData;
 
     //
     // Copy all raw properties
@@ -635,20 +631,20 @@ export class RebrickableUserLinkService extends SecureEndpointBase {
     // Re-create all public observables with their lazy-load triggers
     // We use 'as any' because:
     // 1. The revived object has the correct prototype
-    // 2. But private methods (loadRebrickableUserLinkXYZ, etc.) are not accessible via the typed variable
+    // 2. But private methods (loadRebrickableSyncQueueXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
 
     return revived;
   }
 
-  private ReviveRebrickableUserLinkList(rawList: any[]): RebrickableUserLinkData[] {
+  private ReviveRebrickableSyncQueueList(rawList: any[]): RebrickableSyncQueueData[] {
 
     if (!rawList) {
         return [];
     }
 
-    return rawList.map(raw => this.ReviveRebrickableUserLink(raw));
+    return rawList.map(raw => this.ReviveRebrickableSyncQueue(raw));
   }
 
 }

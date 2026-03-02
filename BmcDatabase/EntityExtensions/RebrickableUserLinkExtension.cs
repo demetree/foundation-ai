@@ -37,6 +37,8 @@ namespace Foundation.BMC.Database
 			public DateTime? lastPullDate { get; set; }
 			public DateTime? lastPushDate { get; set; }
 			public String lastSyncError { get; set; }
+			public Int32? tokenExpiryDays { get; set; }
+			public DateTime? tokenStoredDate { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -77,6 +79,8 @@ namespace Foundation.BMC.Database
 				lastPullDate = this.lastPullDate,
 				lastPushDate = this.lastPushDate,
 				lastSyncError = this.lastSyncError,
+				tokenExpiryDays = this.tokenExpiryDays,
+				tokenStoredDate = this.tokenStoredDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -130,6 +134,8 @@ namespace Foundation.BMC.Database
 				lastPullDate = this.lastPullDate,
 				lastPushDate = this.lastPushDate,
 				lastSyncError = this.lastSyncError,
+				tokenExpiryDays = this.tokenExpiryDays,
+				tokenStoredDate = this.tokenStoredDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -183,6 +189,8 @@ namespace Foundation.BMC.Database
 				lastPullDate = dto.lastPullDate,
 				lastPushDate = dto.lastPushDate,
 				lastSyncError = dto.lastSyncError,
+				tokenExpiryDays = dto.tokenExpiryDays,
+				tokenStoredDate = dto.tokenStoredDate,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -213,6 +221,8 @@ namespace Foundation.BMC.Database
 			this.lastPullDate = dto.lastPullDate;
 			this.lastPushDate = dto.lastPushDate;
 			this.lastSyncError = dto.lastSyncError;
+			this.tokenExpiryDays = dto.tokenExpiryDays;
+			this.tokenStoredDate = dto.tokenStoredDate;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -249,6 +259,8 @@ namespace Foundation.BMC.Database
 				lastPullDate = this.lastPullDate,
 				lastPushDate = this.lastPushDate,
 				lastSyncError = this.lastSyncError,
+				tokenExpiryDays = this.tokenExpiryDays,
+				tokenStoredDate = this.tokenStoredDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -316,6 +328,8 @@ namespace Foundation.BMC.Database
 				lastPullDate = rebrickableUserLink.lastPullDate,
 				lastPushDate = rebrickableUserLink.lastPushDate,
 				lastSyncError = rebrickableUserLink.lastSyncError,
+				tokenExpiryDays = rebrickableUserLink.tokenExpiryDays,
+				tokenStoredDate = rebrickableUserLink.tokenStoredDate,
 				objectGuid = rebrickableUserLink.objectGuid,
 				active = rebrickableUserLink.active,
 				deleted = rebrickableUserLink.deleted
@@ -350,6 +364,8 @@ namespace Foundation.BMC.Database
 				lastPullDate = rebrickableUserLink.lastPullDate,
 				lastPushDate = rebrickableUserLink.lastPushDate,
 				lastSyncError = rebrickableUserLink.lastSyncError,
+				tokenExpiryDays = rebrickableUserLink.tokenExpiryDays,
+				tokenStoredDate = rebrickableUserLink.tokenStoredDate,
 				objectGuid = rebrickableUserLink.objectGuid,
 				active = rebrickableUserLink.active,
 				deleted = rebrickableUserLink.deleted

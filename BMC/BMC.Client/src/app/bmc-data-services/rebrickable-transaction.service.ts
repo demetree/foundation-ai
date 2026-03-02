@@ -574,7 +574,7 @@ export class RebrickableTransactionService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsBMCRebrickableTransactionWriter = user.writePermission >= 10;
+            userIsBMCRebrickableTransactionWriter = user.writePermission >= 255;
           } else {
             userIsBMCRebrickableTransactionWriter = false;
           }      

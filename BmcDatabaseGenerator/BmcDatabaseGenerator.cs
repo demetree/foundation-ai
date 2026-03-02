@@ -1000,6 +1000,32 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // -------------------------------------------------
+            // RebrickableSyncQueue — Outbound sync message queue for resilient Rebrickable API writes
+            // -------------------------------------------------
+            Database.Table rebrickableSyncQueueTable = database.AddTable("RebrickableSyncQueue");
+            rebrickableSyncQueueTable.comment = "Outbound sync queue for resilient Rebrickable API writes. When a user modifies collection data locally, a queue entry is created. A background service picks up pending items and pushes them to Rebrickable. Retries on failure with exponential backoff.";
+            rebrickableSyncQueueTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            rebrickableSyncQueueTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            rebrickableSyncQueueTable.AddIdField();
+            rebrickableSyncQueueTable.AddMultiTenantSupport();
+
+            rebrickableSyncQueueTable.AddString50Field("operationType", false).AddScriptComments("Sync operation: Create, Update, Delete");
+            rebrickableSyncQueueTable.AddString50Field("entityType", false).AddScriptComments("Entity being synced: SetList, SetListItem, PartList, PartListItem, LostPart");
+            rebrickableSyncQueueTable.AddLongField("entityId", false).AddScriptComments("Database ID of the entity being synced");
+            rebrickableSyncQueueTable.AddTextField("payload").AddScriptComments("JSON-serialized data needed by the Rebrickable API call");
+            rebrickableSyncQueueTable.AddString50Field("status", false).AddScriptComments("Queue status: Pending, InProgress, Completed, Failed, Abandoned");
+            rebrickableSyncQueueTable.AddDateTimeField("createdDate").AddScriptComments("When this queue entry was created");
+            rebrickableSyncQueueTable.AddDateTimeField("lastAttemptDate", true).AddScriptComments("When the last processing attempt occurred (null = never attempted)");
+            rebrickableSyncQueueTable.AddDateTimeField("completedDate", true).AddScriptComments("When processing completed successfully (null = not yet completed)");
+            rebrickableSyncQueueTable.AddIntField("attemptCount", false).AddScriptComments("Number of processing attempts so far");
+            rebrickableSyncQueueTable.AddIntField("maxAttempts", false).AddScriptComments("Maximum retry attempts before marking as Abandoned (default: 5)");
+            rebrickableSyncQueueTable.AddTextField("errorMessage").AddScriptComments("Last error message from a failed attempt (null on success)");
+            rebrickableSyncQueueTable.AddTextField("responseBody").AddScriptComments("Last response body from Rebrickable for debugging (null on success)");
+
+            rebrickableSyncQueueTable.AddControlFields();
+
+
+            // -------------------------------------------------
             // UserPartList — Named part lists (Rebrickable partlists mirror)
             // -------------------------------------------------
             Database.Table userPartListTable = database.AddTable("UserPartList");

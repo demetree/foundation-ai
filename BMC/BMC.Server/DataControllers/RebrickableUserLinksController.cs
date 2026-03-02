@@ -73,6 +73,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? lastPullDate = null,
 			DateTime? lastPushDate = null,
 			string lastSyncError = null,
+			int? tokenExpiryDays = null,
+			DateTime? tokenStoredDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -140,6 +142,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastPushDate = lastPushDate.Value.ToUniversalTime();
 			}
 
+			if (tokenStoredDate.HasValue == true && tokenStoredDate.Value.Kind != DateTimeKind.Utc)
+			{
+				tokenStoredDate = tokenStoredDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.RebrickableUserLink> query = (from rul in _context.RebrickableUserLinks select rul);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -187,6 +194,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(lastSyncError) == false)
 			{
 				query = query.Where(rul => rul.lastSyncError == lastSyncError);
+			}
+			if (tokenExpiryDays.HasValue == true)
+			{
+				query = query.Where(rul => rul.tokenExpiryDays == tokenExpiryDays.Value);
+			}
+			if (tokenStoredDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.tokenStoredDate == tokenStoredDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -298,6 +313,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? lastPullDate = null,
 			DateTime? lastPushDate = null,
 			string lastSyncError = null,
+			int? tokenExpiryDays = null,
+			DateTime? tokenStoredDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -347,6 +364,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastPushDate = lastPushDate.Value.ToUniversalTime();
 			}
 
+			if (tokenStoredDate.HasValue == true && tokenStoredDate.Value.Kind != DateTimeKind.Utc)
+			{
+				tokenStoredDate = tokenStoredDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.RebrickableUserLink> query = (from rul in _context.RebrickableUserLinks select rul);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 			if (rebrickableUsername != null)
@@ -392,6 +414,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (lastSyncError != null)
 			{
 				query = query.Where(rul => rul.lastSyncError == lastSyncError);
+			}
+			if (tokenExpiryDays.HasValue == true)
+			{
+				query = query.Where(rul => rul.tokenExpiryDays == tokenExpiryDays.Value);
+			}
+			if (tokenStoredDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.tokenStoredDate == tokenStoredDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -693,6 +723,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				rebrickableUserLink.lastPushDate = rebrickableUserLink.lastPushDate.Value.ToUniversalTime();
 			}
 
+			if (rebrickableUserLink.tokenStoredDate.HasValue == true && rebrickableUserLink.tokenStoredDate.Value.Kind != DateTimeKind.Utc)
+			{
+				rebrickableUserLink.tokenStoredDate = rebrickableUserLink.tokenStoredDate.Value.ToUniversalTime();
+			}
+
 			EntityEntry<Database.RebrickableUserLink> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(rebrickableUserLink);
 
@@ -820,6 +855,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (rebrickableUserLink.lastPushDate.HasValue == true && rebrickableUserLink.lastPushDate.Value.Kind != DateTimeKind.Utc)
 				{
 					rebrickableUserLink.lastPushDate = rebrickableUserLink.lastPushDate.Value.ToUniversalTime();
+				}
+
+				if (rebrickableUserLink.tokenStoredDate.HasValue == true && rebrickableUserLink.tokenStoredDate.Value.Kind != DateTimeKind.Utc)
+				{
+					rebrickableUserLink.tokenStoredDate = rebrickableUserLink.tokenStoredDate.Value.ToUniversalTime();
 				}
 
 				rebrickableUserLink.objectGuid = Guid.NewGuid();
@@ -961,6 +1001,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? lastPullDate = null,
 			DateTime? lastPushDate = null,
 			string lastSyncError = null,
+			int? tokenExpiryDays = null,
+			DateTime? tokenStoredDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -1027,6 +1069,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastPushDate = lastPushDate.Value.ToUniversalTime();
 			}
 
+			if (tokenStoredDate.HasValue == true && tokenStoredDate.Value.Kind != DateTimeKind.Utc)
+			{
+				tokenStoredDate = tokenStoredDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.RebrickableUserLink> query = (from rul in _context.RebrickableUserLinks select rul);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -1074,6 +1121,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(lastSyncError) == false)
 			{
 				query = query.Where(rul => rul.lastSyncError == lastSyncError);
+			}
+			if (tokenExpiryDays.HasValue == true)
+			{
+				query = query.Where(rul => rul.tokenExpiryDays == tokenExpiryDays.Value);
+			}
+			if (tokenStoredDate.HasValue == true)
+			{
+				query = query.Where(rul => rul.tokenStoredDate == tokenStoredDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
