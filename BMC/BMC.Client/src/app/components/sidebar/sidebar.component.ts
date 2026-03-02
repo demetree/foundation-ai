@@ -61,6 +61,7 @@ export class SidebarComponent {
             label: 'TOOLS',
             items: [
                 { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
+                { icon: 'fas fa-plug', label: 'Integrations', route: '/integrations' },
                 { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
                 { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' }
             ]

@@ -1,0 +1,385 @@
+<!-- Integration Management — Extensible card-based integration hub -->
+<div class="integration-management-container">
+
+    <!-- Page Header -->
+    <header class="integration-header">
+        <div class="header-left">
+            <h1 class="page-title">
+                <i class="fas fa-plug"></i>
+                Integration Management
+            </h1>
+            <p class="page-subtitle">Connect BMC to external platforms for automatic sync and data import</p>
+        </div>
+    </header>
+
+
+    <!-- ════════════════════ Integration Cards ════════════════════ -->
+    <div class="integration-cards">
+
+        <!-- ──── Rebrickable Integration Card ──── -->
+        <div class="integration-card" [class.connected]="syncStatus?.isConnected">
+
+            <!-- Card Header -->
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon rebrickable">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="card-title-group">
+                        <h2>Rebrickable</h2>
+                        <span class="card-tagline">LEGO set & part database sync</span>
+                    </div>
+                </div>
+                <div class="card-status-badge" [class.connected]="syncStatus?.isConnected"
+                    [class.disconnected]="!syncStatus?.isConnected">
+                    <span class="status-dot"></span>
+                    <span *ngIf="syncStatus?.isConnected">Connected</span>
+                    <span *ngIf="!syncStatus?.isConnected">Not Connected</span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="card-loading" *ngIf="loadingSync">
+                <i class="fas fa-spinner fa-spin"></i> Loading status…
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body" *ngIf="!loadingSync">
+
+                <!-- Connection Info (when connected) -->
+                <div class="rb-connection-info" *ngIf="syncStatus?.isConnected">
+                    <div class="rb-user-badge" *ngIf="syncStatus?.rebrickableUsername">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ syncStatus.rebrickableUsername }}</span>
+                    </div>
+                    <div class="rb-auth-badge" *ngIf="syncStatus?.authMode">
+                        <i class="fas" [class.fa-key]="syncStatus.authMode === 'ApiToken'"
+                            [class.fa-shield-alt]="syncStatus.authMode === 'TokenOnly'"
+                            [class.fa-lock]="syncStatus.authMode === 'SessionOnly'"></i>
+                        <span>{{ syncStatus.authMode === 'ApiToken' ? 'Login Once' : syncStatus.authMode === 'TokenOnly'
+                            ? 'Token Only' : 'Session Only' }}</span>
+                    </div>
+                </div>
+
+
+                <!-- ── Connect Form (when not connected) ── -->
+                <div class="rb-connect-section" *ngIf="!syncStatus?.isConnected">
+                    <button class="btn btn-primary" *ngIf="!showTokenInput" (click)="showTokenInput = true">
+                        <i class="fas fa-plug"></i> Connect to Rebrickable
+                    </button>
+
+                    <div class="rb-token-form" *ngIf="showTokenInput">
+
+                        <!-- Auth Mode Selector -->
+                        <div class="rb-form-section">
+                            <label class="rb-form-label">Trust Level</label>
+                            <div class="rb-mode-grid rb-auth-grid">
+                                <div class="rb-mode-option" *ngFor="let mode of authModes"
+                                    [class.selected]="selectedAuthMode === mode.value"
+                                    (click)="selectedAuthMode = mode.value">
+                                    <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                                    <div class="rb-mode-info">
+                                        <strong>{{ mode.label }}</strong>
+                                        <span>{{ mode.desc }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Key -->
+                        <div class="rb-form-section">
+                            <div class="rb-token-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Generate an API key at <a href="https://rebrickable.com/api/" target="_blank"
+                                        rel="noopener">rebrickable.com/api</a></span>
+                            </div>
+                            <input type="password" class="rb-input" placeholder="Paste your API key…"
+                                [(ngModel)]="apiTokenInput" />
+                        </div>
+
+                        <!-- Token Only: User Token -->
+                        <div class="rb-form-section" *ngIf="selectedAuthMode === 'TokenOnly'">
+                            <input type="password" class="rb-input"
+                                placeholder="Paste your user token (from /users/_token/ endpoint)"
+                                [(ngModel)]="userTokenInput" (keyup.enter)="connectToRebrickable()" />
+                        </div>
+
+                        <!-- LoginOnce / SessionOnly: Username + Password -->
+                        <div class="rb-form-section" *ngIf="selectedAuthMode !== 'TokenOnly'">
+                            <input type="text" class="rb-input" placeholder="Rebrickable username or email"
+                                [(ngModel)]="usernameInput" />
+                            <input type="password" class="rb-input" placeholder="Rebrickable password"
+                                [(ngModel)]="passwordInput" (keyup.enter)="connectToRebrickable()" />
+                        </div>
+
+                        <!-- Connect / Cancel -->
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary" (click)="connectToRebrickable()"
+                                [disabled]="connecting || !apiTokenInput.trim()
+                                    || (selectedAuthMode === 'TokenOnly' && !userTokenInput.trim())
+                                    || (selectedAuthMode !== 'TokenOnly' && (!usernameInput.trim() || !passwordInput.trim()))">
+                                <i class="fas fa-spinner fa-spin" *ngIf="connecting"></i>
+                                <i class="fas fa-check" *ngIf="!connecting"></i>
+                                {{ connecting ? 'Validating…' : 'Connect' }}
+                            </button>
+                            <button class="btn btn-secondary"
+                                (click)="showTokenInput = false; apiTokenInput = ''; usernameInput = ''; passwordInput = ''; userTokenInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <!-- Trust explanation -->
+                        <div class="rb-trust-note">
+                            <i class="fas" [class.fa-shield-alt]="selectedAuthMode === 'TokenOnly'"
+                                [class.fa-key]="selectedAuthMode === 'ApiToken'"
+                                [class.fa-lock]="selectedAuthMode === 'SessionOnly'"></i>
+                            <span *ngIf="selectedAuthMode === 'ApiToken'">
+                                Your password is used once to obtain a session token, then discarded.
+                                The API key and session token are encrypted and stored in the database.
+                            </span>
+                            <span *ngIf="selectedAuthMode === 'TokenOnly'">
+                                Your password never touches this server. Both values are encrypted
+                                and stored in the database.
+                            </span>
+                            <span *ngIf="selectedAuthMode === 'SessionOnly'">
+                                Your password is used once to obtain a session token, then discarded.
+                                Nothing is saved to the database — you'll need to re-connect each session.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ── Connected: Actions ── -->
+                <div class="rb-connected-controls" *ngIf="syncStatus?.isConnected">
+
+                    <!-- Action Buttons -->
+                    <div class="rb-action-row">
+                        <button class="btn btn-sm btn-outline" (click)="checkTokenHealth()"
+                            title="Validate stored token">
+                            <i class="fas fa-heartbeat"></i> Check Token
+                        </button>
+                        <button class="btn btn-sm btn-outline" (click)="showTokenInput = !showTokenInput"
+                            title="Re-authenticate with new credentials">
+                            <i class="fas fa-redo"></i> Re-authenticate
+                        </button>
+                        <button class="btn btn-sm btn-outline btn-danger-text" (click)="disconnectFromRebrickable()">
+                            <i class="fas fa-unlink"></i> Disconnect
+                        </button>
+                    </div>
+
+                    <!-- Re-auth Form (inline) -->
+                    <div class="rb-token-form" *ngIf="showTokenInput">
+                        <div class="rb-form-section">
+                            <label class="rb-form-label">Auth Mode</label>
+                            <div class="rb-mode-grid rb-auth-grid">
+                                <div class="rb-mode-option" *ngFor="let mode of authModes"
+                                    [class.selected]="selectedAuthMode === mode.value"
+                                    (click)="selectedAuthMode = mode.value">
+                                    <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                                    <div class="rb-mode-info">
+                                        <strong>{{ mode.label }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rb-form-section">
+                            <input type="password" class="rb-input" placeholder="API key" [(ngModel)]="apiTokenInput" />
+                        </div>
+                        <div class="rb-form-section" *ngIf="selectedAuthMode === 'TokenOnly'">
+                            <input type="password" class="rb-input" placeholder="User token"
+                                [(ngModel)]="userTokenInput" (keyup.enter)="reauthenticateRebrickable()" />
+                        </div>
+                        <div class="rb-form-section" *ngIf="selectedAuthMode !== 'TokenOnly'">
+                            <input type="text" class="rb-input" placeholder="Username" [(ngModel)]="usernameInput" />
+                            <input type="password" class="rb-input" placeholder="Password" [(ngModel)]="passwordInput"
+                                (keyup.enter)="reauthenticateRebrickable()" />
+                        </div>
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary btn-sm" (click)="reauthenticateRebrickable()"
+                                [disabled]="connecting || !apiTokenInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="connecting"></i>
+                                <i class="fas fa-redo" *ngIf="!connecting"></i>
+                                {{ connecting ? 'Validating…' : 'Re-authenticate' }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm"
+                                (click)="showTokenInput = false; apiTokenInput = ''; usernameInput = ''; passwordInput = ''; userTokenInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sync Mode -->
+                    <div class="rb-mode-section">
+                        <h4>Sync Mode</h4>
+
+                        <!-- Compact display -->
+                        <div class="rb-mode-compact" *ngIf="!showSyncModeEdit" (click)="showSyncModeEdit = true">
+                            <i class="{{ getCurrentModeOption()?.icon || 'fas fa-bolt' }}"></i>
+                            <strong>{{ getCurrentModeOption()?.label || selectedMode }}</strong>
+                            <span class="rb-mode-compact-desc">{{ getCurrentModeOption()?.desc }}</span>
+                            <i class="fas fa-pencil-alt rb-mode-edit-icon" title="Change sync mode"></i>
+                        </div>
+
+                        <!-- Expanded grid -->
+                        <div *ngIf="showSyncModeEdit">
+                            <div class="rb-mode-grid">
+                                <div class="rb-mode-option" *ngFor="let mode of integrationModes"
+                                    [class.selected]="selectedMode === mode.value" (click)="selectedMode = mode.value">
+                                    <div class="rb-mode-icon"><i [class]="mode.icon"></i></div>
+                                    <div class="rb-mode-info">
+                                        <strong>{{ mode.label }}</strong>
+                                        <span>{{ mode.desc }}</span>
+                                    </div>
+                                    <i class="fas fa-check rb-mode-check" *ngIf="selectedMode === mode.value"></i>
+                                </div>
+                            </div>
+                            <div class="rb-mode-edit-actions">
+                                <button class="btn btn-primary btn-sm"
+                                    (click)="updateSyncSettings(); showSyncModeEdit = false"
+                                    *ngIf="selectedMode !== syncStatus?.integrationMode">
+                                    <i class="fas fa-save"></i> Save Mode
+                                </button>
+                                <button class="btn btn-secondary btn-sm"
+                                    (click)="showSyncModeEdit = false; selectedMode = syncStatus?.integrationMode">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pull Actions -->
+                    <div class="rb-actions-section">
+                        <h4>Actions</h4>
+                        <div class="rb-actions-row">
+                            <button class="btn btn-import btn-sm" (click)="triggerFullPull()" [disabled]="pulling">
+                                <i class="fas fa-spinner fa-spin" *ngIf="pulling"></i>
+                                <i class="fas fa-cloud-download-alt" *ngIf="!pulling"></i>
+                                {{ pulling ? 'Importing…' : 'Pull Full Collection' }}
+                            </button>
+                        </div>
+
+                        <!-- Last Sync -->
+                        <div class="rb-sync-dates" *ngIf="syncStatus?.lastPullDate || syncStatus?.lastPushDate">
+                            <div class="rb-sync-date" *ngIf="syncStatus?.lastPullDate">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>Last pull: {{ syncStatus.lastPullDate | date:'medium' }}</span>
+                            </div>
+                            <div class="rb-sync-date" *ngIf="syncStatus?.lastPushDate">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Last push: {{ syncStatus.lastPushDate | date:'medium' }}</span>
+                            </div>
+                            <div class="rb-sync-error" *ngIf="syncStatus?.lastSyncError">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>{{ syncStatus.lastSyncError }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── Communications Log (inside card, always visible) ──── -->
+            <div class="card-comms" *ngIf="!loadingSync">
+                <div class="comms-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Communications Log</h3>
+                    <span class="comms-count" *ngIf="transactionsTotalCount">{{ transactionsTotalCount }} total</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="comms-filters">
+                    <button class="filter-btn"
+                        [class.active]="!transactionDirectionFilter && transactionSuccessFilter === null"
+                        (click)="setTransactionFilter(null, null)">All</button>
+                    <button class="filter-btn" [class.active]="transactionDirectionFilter === 'Push'"
+                        (click)="setTransactionFilter('Push', null)">
+                        <i class="fas fa-arrow-up"></i> Push
+                    </button>
+                    <button class="filter-btn" [class.active]="transactionDirectionFilter === 'Pull'"
+                        (click)="setTransactionFilter('Pull', null)">
+                        <i class="fas fa-arrow-down"></i> Pull
+                    </button>
+                    <span class="filter-sep"></span>
+                    <button class="filter-btn" [class.active]="transactionSuccessFilter === true"
+                        (click)="setTransactionFilter(transactionDirectionFilter, true)">
+                        <i class="fas fa-check-circle"></i> Success
+                    </button>
+                    <button class="filter-btn" [class.active]="transactionSuccessFilter === false"
+                        (click)="setTransactionFilter(transactionDirectionFilter, false)">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </button>
+                </div>
+
+                <!-- Transaction Timeline -->
+                <div class="comms-timeline" *ngIf="transactions.length > 0">
+                    <div class="tx-row" *ngFor="let tx of transactions" [class.tx-failed]="!tx.success">
+                        <div class="tx-direction" [ngClass]="getDirectionClass(tx.direction)">
+                            <i [class]="getDirectionIcon(tx.direction)"></i>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-summary">{{ tx.requestSummary }}</div>
+                            <div class="tx-meta">
+                                <span class="tx-method">{{ tx.httpMethod }}</span>
+                                <span class="tx-endpoint">{{ tx.endpoint }}</span>
+                                <span class="tx-status" [ngClass]="getStatusCodeClass(tx.responseStatusCode)">{{
+                                    tx.responseStatusCode }}</span>
+                                <span class="tx-trigger">{{ tx.triggeredBy }}</span>
+                            </div>
+                            <div class="tx-error" *ngIf="tx.errorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> {{ tx.errorMessage }}
+                            </div>
+                        </div>
+                        <div class="tx-time">{{ formatRelativeTime(tx.transactionDate) }}</div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="comms-empty" *ngIf="transactions.length === 0">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No communications recorded yet.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="comms-pagination" *ngIf="transactionsTotalCount > transactionsPageSize">
+                    <button class="page-btn" (click)="prevTransactionsPage()" [disabled]="transactionsPage <= 1">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">Page {{ transactionsPage }} of {{ (transactionsTotalCount /
+                        transactionsPageSize | number:'1.0-0') }}</span>
+                    <button class="page-btn" (click)="nextTransactionsPage()"
+                        [disabled]="transactionsPage >= (transactionsTotalCount / transactionsPageSize)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ──── BMC Public API Card (Coming Soon) ──── -->
+        <div class="integration-card disabled">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon bmc-api">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="card-title-group">
+                        <h2>BMC Public API</h2>
+                        <span class="card-tagline">Expose your collection data via REST API</span>
+                    </div>
+                </div>
+                <div class="card-status-badge coming-soon">
+                    <i class="fas fa-clock"></i>
+                    <span>Coming Soon</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="coming-soon-content">
+                    <i class="fas fa-code"></i>
+                    <p>Provide a Rebrickable-compatible API for third-party tools to query your collection, wishlists,
+                        and set lists. Full REST + WebSocket support.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

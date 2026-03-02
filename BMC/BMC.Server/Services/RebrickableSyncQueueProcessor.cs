@@ -160,18 +160,22 @@ namespace Foundation.BMC.Services
             // marked as "Completed".
             //
             bool tokenValid = false;
+            string tokenError = null;
             try
             {
-                tokenValid = await syncService.ValidateStoredTokenAsync(queueItem.tenantGuid, ct);
+                var (valid, error) = await syncService.ValidateStoredTokenAsync(queueItem.tenantGuid, ct);
+                tokenValid = valid;
+                tokenError = error;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Token validation failed for tenant {TenantGuid}", queueItem.tenantGuid);
+                tokenError = ex.Message;
             }
 
             if (!tokenValid)
             {
-                queueItem.errorMessage = "Rebrickable token is invalid or expired — reconnect required";
+                queueItem.errorMessage = tokenError ?? "Rebrickable token is invalid or expired — reconnect required";
                 queueItem.lastAttemptDate = DateTime.UtcNow;
                 queueItem.attemptCount++;
 

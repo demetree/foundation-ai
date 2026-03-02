@@ -227,6 +227,7 @@ import { UserWishlistItemDetailComponent } from './bmc-data-components/user-wish
 // End of imports for BMC Data Components
 //
 import { MyCollectionComponent } from './components/my-collection/my-collection.component';
+import { IntegrationManagementComponent } from './components/integration-management/integration-management.component';
 import { MySetListsComponent } from './components/my-set-lists/my-set-lists.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
@@ -246,6 +247,7 @@ const routes: Routes = [
     { path: 'ai', component: AiAssistantComponent, canActivate: [AuthGuard], title: 'AI Assistant' },
     { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
     { path: 'my-collection', component: MyCollectionComponent, canActivate: [AuthGuard], title: 'My Collection' },
+    { path: 'integrations', component: IntegrationManagementComponent, canActivate: [AuthGuard], title: 'Integrations' },
     { path: 'my-set-lists', component: MySetListsComponent, canActivate: [AuthGuard], title: 'My Set Lists' },
     { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], title: 'My Profile' },
     { path: 'profile/settings', component: ProfileSettingsComponent, canActivate: [AuthGuard], title: 'Profile Settings' },

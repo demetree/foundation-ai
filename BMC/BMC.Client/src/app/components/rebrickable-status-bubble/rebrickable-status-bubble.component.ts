@@ -71,6 +71,14 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
             this.onRateLimitUpdate(event);
         });
 
+        // Re-fetch status when the SignalR hub itself connects/reconnects
+        // (covers race where initial loadStatus ran before the hub was ready)
+        this.signalr.onHubConnectionChange$.pipe(takeUntil(this.destroy$)).subscribe(connected => {
+            if (connected) {
+                this.loadStatus();
+            }
+        });
+
         // Listen for login/logout
         this.authService.getLoginStatusEvent().pipe(takeUntil(this.destroy$)).subscribe(isLoggedIn => {
             if (!isLoggedIn) {
@@ -126,6 +134,20 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
         if (!event.isConnected) {
             this.hasWarning = false;
             this.warningMessage = '';
+        }
+
+        //
+        // When the server reports connected via SignalR, trust it directly.
+        // Delay the status re-fetch slightly to allow the server to finalize
+        // any pending writes (e.g. cache population for SessionOnly mode)
+        // before we poll.  This prevents a race where the HTTP status response
+        // arrives before the server-side state is consistent, overwriting
+        // the authoritative SignalR value.
+        //
+        if (event.isConnected) {
+            setTimeout(() => this.loadStatus(), 1000);
+        } else {
+            this.loadStatus();
         }
     }
 

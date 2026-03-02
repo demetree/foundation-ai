@@ -143,6 +143,11 @@ namespace BMC.Rebrickable.Sync
                 return new SyncStatus { IsConnected = false };
             }
 
+            // Actually verify credentials are resolvable — not just that authMode is set.
+            // This catches expired sessions, missing encrypted fields, and expired tokens.
+            bool credentialsResolvable = !string.IsNullOrEmpty(link.authMode)
+                && await HasResolvableCredentialsAsync(tenantGuid, link);
+
             // Count total transactions and recent errors
             int totalTx = await _context.RebrickableTransactions
                 .CountAsync(t => t.tenantGuid == tenantGuid && t.active == true && t.deleted == false, ct);
@@ -155,7 +160,7 @@ namespace BMC.Rebrickable.Sync
 
             return new SyncStatus
             {
-                IsConnected = !string.IsNullOrEmpty(link.authMode),
+                IsConnected = credentialsResolvable,
                 AuthMode = link.authMode,
                 IntegrationMode = link.syncDirectionFlags,
                 RebrickableUsername = link.rebrickableUsername,
@@ -400,6 +405,9 @@ namespace BMC.Rebrickable.Sync
                 Priority = CacheItemPriority.High
             });
 
+            _logger.LogInformation("ConnectSessionOnly: cached session credentials for tenant {TenantGuid}, cacheKey={CacheKey}",
+                tenantGuid, cacheKey);
+
             // Update the link record — store auth mode and username but NO tokens
             var link = await GetOrCreateLinkAsync(tenantGuid, ct);
 
@@ -536,6 +544,86 @@ namespace BMC.Rebrickable.Sync
         {
             public string ApiKey { get; set; }
             public string UserToken { get; set; }
+        }
+
+
+        /// <summary>
+        /// Lightweight check: can we resolve credentials for this tenant right now?
+        /// Does NOT call the Rebrickable API, does NOT broadcast warnings or log errors.
+        /// Used by GetSyncStatusAsync to determine if IsConnected should be true.
+        /// </summary>
+        private Task<bool> HasResolvableCredentialsAsync(Guid tenantGuid, RebrickableUserLink link)
+        {
+            if (string.IsNullOrEmpty(link.authMode))
+            {
+                _logger.LogInformation("HasResolvableCredentials: authMode is empty for tenant {TenantGuid} — returning false", tenantGuid);
+                return Task.FromResult(false);
+            }
+
+            _logger.LogInformation("HasResolvableCredentials: checking tenant {TenantGuid}, authMode={AuthMode}", tenantGuid, link.authMode);
+
+            if (link.authMode == AUTH_SESSION_ONLY)
+            {
+                //
+                // Session-only: check memory cache
+                //
+                string cacheKey = $"{SESSION_CACHE_PREFIX}{tenantGuid}";
+                bool hasCachedCreds = _cache.TryGetValue(cacheKey, out SessionOnlyCredentials creds) && creds != null;
+
+                _logger.LogInformation("HasResolvableCredentials: SessionOnly — cacheKey={CacheKey}, hasCachedCreds={HasCachedCreds}",
+                    cacheKey, hasCachedCreds);
+
+                return Task.FromResult(hasCachedCreds);
+            }
+
+            //
+            // DB-backed modes: check encrypted fields exist
+            //
+            if (string.IsNullOrEmpty(link.encryptedApiToken) || string.IsNullOrEmpty(link.encryptedPassword))
+            {
+                _logger.LogInformation("HasResolvableCredentials: DB-backed ({AuthMode}) — encrypted fields missing. " +
+                    "encryptedApiToken empty={ApiEmpty}, encryptedPassword empty={PwdEmpty}",
+                    link.authMode,
+                    string.IsNullOrEmpty(link.encryptedApiToken),
+                    string.IsNullOrEmpty(link.encryptedPassword));
+                return Task.FromResult(false);
+            }
+
+            //
+            // Check token expiry
+            //
+            if (link.tokenExpiryDays.HasValue && link.tokenStoredDate.HasValue)
+            {
+                var expiresAt = link.tokenStoredDate.Value.AddDays(link.tokenExpiryDays.Value);
+                if (DateTime.UtcNow > expiresAt)
+                {
+                    _logger.LogInformation("HasResolvableCredentials: DB-backed ({AuthMode}) — token expired. " +
+                        "storedDate={StoredDate}, expiryDays={ExpiryDays}, expiresAt={ExpiresAt}",
+                        link.authMode, link.tokenStoredDate.Value, link.tokenExpiryDays.Value, expiresAt);
+                    return Task.FromResult(false);
+                }
+            }
+
+            //
+            // Try to decrypt — if this fails, credentials are unresolvable
+            //
+            try
+            {
+                var apiKey = Decrypt(link.encryptedApiToken);
+                var userToken = Decrypt(link.encryptedPassword);
+                bool decryptOk = !string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(userToken);
+
+                _logger.LogInformation("HasResolvableCredentials: DB-backed ({AuthMode}) — decrypt result={DecryptOk}",
+                    link.authMode, decryptOk);
+
+                return Task.FromResult(decryptOk);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("HasResolvableCredentials: DB-backed ({AuthMode}) — decrypt threw exception: {ErrorMessage}",
+                    link.authMode, ex.Message);
+                return Task.FromResult(false);
+            }
         }
 
 

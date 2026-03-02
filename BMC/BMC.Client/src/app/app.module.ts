@@ -548,6 +548,7 @@ import { CatalogPartDetailComponent } from './components/catalog-part-detail/cat
 import { ColourLibraryComponent } from './components/colour-library/colour-library.component';
 import { SystemHealthComponent } from './components/system-health/system-health.component';
 import { MyCollectionComponent } from './components/my-collection/my-collection.component';
+import { IntegrationManagementComponent } from './components/integration-management/integration-management.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
 import { PublicProfileComponent } from './components/public-profile/public-profile.component';
@@ -598,6 +599,7 @@ import { MySetListsComponent } from './components/my-set-lists/my-set-lists.comp
         ColourLibraryComponent,
         SystemHealthComponent,
         MyCollectionComponent,
+        IntegrationManagementComponent,
         ProfileComponent,
         ProfileSettingsComponent,
         PublicProfileComponent,
