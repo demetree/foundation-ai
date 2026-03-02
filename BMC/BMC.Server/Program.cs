@@ -292,7 +292,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(PublicShowcaseController));
                 controllers.Add(typeof(RebrickableSyncController));
                 controllers.Add(typeof(UserSetListController));
-                    
+                
 
                 //
                 // Start of code generated controller list for BMC module
@@ -324,6 +324,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BuildStepPartsController));
                 controllers.Add(typeof(ColourFinishesController));
                 controllers.Add(typeof(ConnectorTypesController));
+                controllers.Add(typeof(ConnectorTypeCompatibilitiesController));
                 controllers.Add(typeof(ContentReportsController));
                 controllers.Add(typeof(ContentReportReasonsController));
                 controllers.Add(typeof(ExportFormatsController));
@@ -336,7 +337,13 @@ namespace Foundation.BMC
                 controllers.Add(typeof(MocCommentsController));
                 controllers.Add(typeof(MocFavouritesController));
                 controllers.Add(typeof(MocLikesController));
+                controllers.Add(typeof(ModelBuildStepsController));
+                controllers.Add(typeof(ModelDocumentsController));
+                controllers.Add(typeof(ModelDocumentChangeHistoriesController));
+                controllers.Add(typeof(ModelStepPartsController));
+                controllers.Add(typeof(ModelSubFilesController));
                 controllers.Add(typeof(ModerationActionsController));
+                controllers.Add(typeof(PartSubFileReferencesController));
                 controllers.Add(typeof(PartTypesController));
                 controllers.Add(typeof(PendingRegistrationsController));
                 controllers.Add(typeof(PlacedBricksController));
@@ -353,6 +360,9 @@ namespace Foundation.BMC
                 controllers.Add(typeof(PublishedMocsController));
                 controllers.Add(typeof(PublishedMocChangeHistoriesController));
                 controllers.Add(typeof(PublishedMocImagesController));
+                controllers.Add(typeof(RebrickableSyncQueuesController));
+                controllers.Add(typeof(RebrickableTransactionsController));
+                controllers.Add(typeof(RebrickableUserLinksController));
                 controllers.Add(typeof(RenderPresetsController));
                 controllers.Add(typeof(SharedInstructionsController));
                 controllers.Add(typeof(SharedInstructionChangeHistoriesController));
@@ -367,11 +377,19 @@ namespace Foundation.BMC
                 controllers.Add(typeof(UserCollectionPartsController));
                 controllers.Add(typeof(UserCollectionSetImportsController));
                 controllers.Add(typeof(UserFollowsController));
+                controllers.Add(typeof(UserLostPartsController));
+                controllers.Add(typeof(UserPartListsController));
+                controllers.Add(typeof(UserPartListChangeHistoriesController));
+                controllers.Add(typeof(UserPartListItemsController));
                 controllers.Add(typeof(UserProfilesController));
                 controllers.Add(typeof(UserProfileChangeHistoriesController));
                 controllers.Add(typeof(UserProfileLinksController));
                 controllers.Add(typeof(UserProfileLinkTypesController));
+                controllers.Add(typeof(UserProfilePreferredThemesController));
                 controllers.Add(typeof(UserProfileStatsController));
+                controllers.Add(typeof(UserSetListsController));
+                controllers.Add(typeof(UserSetListChangeHistoriesController));
+                controllers.Add(typeof(UserSetListItemsController));
                 controllers.Add(typeof(UserSetOwnershipsController));
                 controllers.Add(typeof(UserWishlistItemsController));
                 //

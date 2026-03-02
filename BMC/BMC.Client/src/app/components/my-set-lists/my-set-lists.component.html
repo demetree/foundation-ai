@@ -1,0 +1,362 @@
+<!-- My Set Lists — Rebrickable Set List Management -->
+<div class="set-lists-container">
+
+    <!-- Loading -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner-wrap">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading set lists…</span>
+        </div>
+    </div>
+
+    <!-- Feedback Messages -->
+    <div class="feedback-bar success" *ngIf="successMessage">
+        <i class="fas fa-check-circle"></i> {{ successMessage }}
+    </div>
+    <div class="feedback-bar error" *ngIf="errorMessage">
+        <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+    </div>
+
+
+    <!-- ═══════════════════ LISTS VIEW ═══════════════════ -->
+    <div *ngIf="activeView === 'lists' && !loading">
+
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-left">
+                <h1 class="page-title">
+                    <i class="fas fa-list-ul"></i>
+                    My Set Lists
+                </h1>
+                <p class="page-subtitle">Organize your LEGO sets into themed collections</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-create" (click)="showCreateForm = !showCreateForm">
+                    <i class="fas fa-plus"></i>
+                    <span>New List</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Create Form (inline) -->
+        <div class="create-form-card" *ngIf="showCreateForm">
+            <div class="create-form-body">
+                <div class="form-group">
+                    <label>List Name</label>
+                    <input type="text" class="form-input" placeholder="e.g. Star Wars Collection"
+                        [(ngModel)]="newListName" (keyup.enter)="createList()" autofocus />
+                </div>
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="newListBuildable" />
+                        <span class="checkmark"></span>
+                        Buildable list
+                    </label>
+                    <span class="form-hint">Mark if you intend to build every set in this list</span>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" (click)="createList()" [disabled]="!newListName.trim()">
+                        <i class="fas fa-check"></i> Create
+                    </button>
+                    <button class="btn btn-secondary" (click)="showCreateForm = false; newListName = ''">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row" *ngIf="setLists.length > 0">
+            <div class="stat-card">
+                <div class="stat-icon lists"><i class="fas fa-list-ul"></i></div>
+                <div class="stat-body">
+                    <span class="stat-value">{{ setLists.length }}</span>
+                    <span class="stat-label">Lists</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sets"><i class="fas fa-box-open"></i></div>
+                <div class="stat-body">
+                    <span class="stat-value">{{ getTotalSets() | number }}</span>
+                    <span class="stat-label">Total Sets</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon synced"><i class="fas fa-cloud"></i></div>
+                <div class="stat-body">
+                    <span class="stat-value">{{ getSyncedCount() }}</span>
+                    <span class="stat-label">Synced</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!loading && setLists.length === 0 && !showCreateForm">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No set lists yet</h3>
+            <p>Create your first list to start organizing your LEGO sets.</p>
+            <button class="btn btn-create" (click)="showCreateForm = true">
+                <i class="fas fa-plus"></i> Create Your First List
+            </button>
+        </div>
+
+        <!-- Set Lists Grid -->
+        <div class="lists-grid" *ngIf="setLists.length > 0">
+            <div class="list-card" *ngFor="let list of setLists"
+                (click)="editingList?.id !== list.id && openListDetail(list)">
+
+                <!-- Edit Mode -->
+                <div class="list-card-edit" *ngIf="editingList?.id === list.id">
+                    <input type="text" class="form-input" [(ngModel)]="editName" (keyup.enter)="saveEditList()"
+                        autofocus />
+                    <label class="checkbox-label small">
+                        <input type="checkbox" [(ngModel)]="editBuildable" />
+                        <span class="checkmark"></span> Buildable
+                    </label>
+                    <div class="edit-actions">
+                        <button class="btn btn-primary btn-sm" (click)="saveEditList()">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" (click)="cancelEditList()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Display Mode -->
+                <div class="list-card-display" *ngIf="editingList?.id !== list.id">
+                    <div class="list-card-header">
+                        <h3 class="list-name">{{ list.name }}</h3>
+                        <div class="list-badges">
+                            <span class="badge version-badge">
+                                <i class="fas fa-code-branch"></i> v{{ list.versionNumber }}
+                            </span>
+                            <span class="badge buildable-badge" *ngIf="list.isBuildable">
+                                <i class="fas fa-hammer"></i> Buildable
+                            </span>
+                            <span class="badge sync-badge" [ngClass]="getSyncStatusClass(list)">
+                                <i class="fas"
+                                    [ngClass]="{'fa-cloud': list.rebrickableListId, 'fa-spinner fa-spin': list.pendingSyncCount > 0, 'fa-hdd': !list.rebrickableListId}"></i>
+                                {{ getSyncStatusLabel(list) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="list-card-stats">
+                        <div class="mini-stat">
+                            <span class="mini-stat-value">{{ list.itemCount }}</span>
+                            <span class="mini-stat-label">sets</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value">{{ list.totalSets }}</span>
+                            <span class="mini-stat-label">total qty</span>
+                        </div>
+                    </div>
+
+                    <div class="list-card-actions">
+                        <button class="btn-icon" title="Edit" (click)="startEditList(list, $event)">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn-icon danger" title="Delete" (click)="deleteList(list, $event)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════ DETAIL VIEW ═══════════════════ -->
+    <div *ngIf="activeView === 'detail'">
+
+        <!-- Detail Header -->
+        <header class="detail-header">
+            <button class="btn btn-back" (click)="goBackToLists()">
+                <i class="fas fa-arrow-left"></i> All Lists
+            </button>
+
+            <div class="detail-title-row" *ngIf="selectedList">
+                <h2 class="detail-name">{{ selectedList.name }}</h2>
+                <div class="detail-badges">
+                    <span class="badge version-badge clickable" (click)="setTab('history')">
+                        <i class="fas fa-clock-rotate-left"></i> v{{ selectedList.versionNumber }}
+                    </span>
+                    <span class="badge buildable-badge" *ngIf="selectedList.isBuildable">
+                        <i class="fas fa-hammer"></i> Buildable
+                    </span>
+                    <span class="badge sync-badge" [ngClass]="getSyncStatusClass(selectedList)">
+                        <i class="fas"
+                            [ngClass]="{'fa-cloud': selectedList.rebrickableListId, 'fa-spinner fa-spin': selectedList.pendingSyncCount > 0, 'fa-hdd': !selectedList.rebrickableListId}"></i>
+                        {{ getSyncStatusLabel(selectedList) }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-actions" *ngIf="selectedList">
+                <button class="btn btn-import" (click)="openAddSetModal()">
+                    <i class="fas fa-plus"></i> Add Set
+                </button>
+            </div>
+        </header>
+
+        <!-- Loading detail -->
+        <div class="loading-inline" *ngIf="!selectedList">
+            <i class="fas fa-spinner fa-spin"></i> Loading list…
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar" *ngIf="selectedList">
+            <button class="tab-btn" [class.active]="activeTab === 'items'" (click)="setTab('items')">
+                <i class="fas fa-box-open"></i> Sets
+                <span class="tab-count" *ngIf="selectedList.items.length > 0">{{ selectedList.items.length }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="setTab('history')">
+                <i class="fas fa-clock-rotate-left"></i> History
+            </button>
+        </div>
+
+        <!-- ═══ Items Tab ═══ -->
+        <div class="tab-content" *ngIf="selectedList && activeTab === 'items'">
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="selectedList.items.length === 0">
+                <i class="fas fa-box-open"></i>
+                <h3>No sets in this list</h3>
+                <p>Add LEGO sets to start building your collection list.</p>
+                <button class="btn btn-create" (click)="openAddSetModal()">
+                    <i class="fas fa-plus"></i> Add Your First Set
+                </button>
+            </div>
+
+            <!-- Sets Grid -->
+            <div class="sets-grid" *ngIf="selectedList.items.length > 0">
+                <div class="set-card" *ngFor="let item of selectedList.items">
+                    <!-- Set Image -->
+                    <div class="set-image-wrap" (click)="router.navigate(['/lego/sets', item.legoSetId])">
+                        <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.setName" class="set-image" />
+                        <div class="set-image-placeholder" *ngIf="!item.imageUrl">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    </div>
+
+                    <!-- Set Info -->
+                    <div class="set-info">
+                        <h4 class="set-name" [title]="item.setName"
+                            (click)="router.navigate(['/lego/sets', item.legoSetId])">
+                            {{ item.setName || 'Unknown Set' }}
+                        </h4>
+                        <span class="set-number">{{ item.setNumber }}</span>
+                        <div class="set-badges">
+                            <span class="badge badge-year" *ngIf="item.year">
+                                <i class="fas fa-calendar-alt"></i> {{ item.year }}
+                            </span>
+                            <span class="badge badge-parts" *ngIf="item.partCount">
+                                <i class="fas fa-puzzle-piece"></i> {{ item.partCount | number }}
+                            </span>
+                            <span class="badge badge-theme" *ngIf="item.themeName">{{ item.themeName }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Quantity Controls -->
+                    <div class="set-quantity">
+                        <button class="qty-btn" (click)="updateItemQuantity(item, -1)"
+                            [disabled]="item.quantity <= 1 || savingItem">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="qty-value">{{ item.quantity }}</span>
+                        <button class="qty-btn" (click)="updateItemQuantity(item, 1)" [disabled]="savingItem">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="set-actions">
+                        <a *ngIf="item.rebrickableUrl" [href]="item.rebrickableUrl" target="_blank" rel="noopener"
+                            class="btn-icon external" title="View on Rebrickable" (click)="$event.stopPropagation()">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        <button class="btn-icon danger" title="Remove from list" (click)="removeItem(item)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ History Tab ═══ -->
+        <div class="tab-content" *ngIf="selectedList && activeTab === 'history'">
+            <div class="loading-inline" *ngIf="loadingHistory">
+                <i class="fas fa-spinner fa-spin"></i> Loading history…
+            </div>
+
+            <div class="empty-state" *ngIf="!loadingHistory && historyEntries.length === 0">
+                <i class="fas fa-clock-rotate-left"></i>
+                <h3>No history yet</h3>
+                <p>Version history will appear here as changes are made.</p>
+            </div>
+
+            <div class="history-timeline" *ngIf="!loadingHistory && historyEntries.length > 0">
+                <div class="history-entry" *ngFor="let entry of historyEntries">
+                    <div class="history-version">
+                        <span class="version-number">v{{ entry.versionNumber }}</span>
+                    </div>
+                    <div class="history-body">
+                        <div class="history-description">{{ entry.changeDescription || 'Change recorded' }}</div>
+                        <div class="history-date">{{ formatDate(entry.changeDate) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════ ADD SET MODAL ═══════════════════ -->
+    <div class="modal-overlay" *ngIf="showAddSetModal" (click)="closeAddSetModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3><i class="fas fa-search"></i> Add Set to List</h3>
+                <button class="btn-icon" (click)="closeAddSetModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search by name or set number…" [(ngModel)]="setSearchQuery"
+                        (input)="searchSets()" autofocus />
+                </div>
+
+                <div class="loading-inline" *ngIf="searching">
+                    <i class="fas fa-spinner fa-spin"></i> Searching…
+                </div>
+
+                <div class="search-results" *ngIf="!searching && setSearchResults.length > 0">
+                    <div class="search-result" *ngFor="let result of setSearchResults" (click)="addSetToList(result)"
+                        [class.disabled]="addingSet">
+                        <img *ngIf="result.imageUrl" [src]="result.imageUrl" class="result-thumb" />
+                        <div class="result-placeholder" *ngIf="!result.imageUrl">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="result-info">
+                            <strong>{{ result.name }}</strong>
+                            <span class="result-meta">
+                                {{ result.setNumber }}
+                                <span *ngIf="result.year"> · {{ result.year }}</span>
+                                <span *ngIf="result.partCount"> · {{ result.partCount }} parts</span>
+                                <span *ngIf="result.themeName"> · {{ result.themeName }}</span>
+                            </span>
+                        </div>
+                        <i class="fas fa-plus-circle add-icon"></i>
+                    </div>
+                </div>
+
+                <div class="search-empty"
+                    *ngIf="!searching && setSearchQuery.length >= 2 && setSearchResults.length === 0">
+                    <p>No sets found for "{{ setSearchQuery }}"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -154,6 +154,47 @@ namespace Foundation.BMC.Services
             }
 
             //
+            // Pre-validate that the sync service can actually reach Rebrickable.
+            // Without this check, push methods silently return null when tokens
+            // are expired/missing, and the queue item would be incorrectly
+            // marked as "Completed".
+            //
+            bool tokenValid = false;
+            try
+            {
+                tokenValid = await syncService.ValidateStoredTokenAsync(queueItem.tenantGuid, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Token validation failed for tenant {TenantGuid}", queueItem.tenantGuid);
+            }
+
+            if (!tokenValid)
+            {
+                queueItem.errorMessage = "Rebrickable token is invalid or expired — reconnect required";
+                queueItem.lastAttemptDate = DateTime.UtcNow;
+                queueItem.attemptCount++;
+
+                if (queueItem.attemptCount >= queueItem.maxAttempts)
+                {
+                    queueItem.status = "Abandoned";
+                    _logger.LogWarning(
+                        "Sync queue item {Id} abandoned — token invalid after {Attempts} attempts",
+                        queueItem.id, queueItem.attemptCount);
+                }
+                else
+                {
+                    queueItem.status = "Failed";
+                    _logger.LogWarning(
+                        "Sync queue item {Id} failed — token invalid (attempt {Attempt}/{Max})",
+                        queueItem.id, queueItem.attemptCount, queueItem.maxAttempts);
+                }
+
+                await db.SaveChangesAsync(ct);
+                return;
+            }
+
+            //
             // Mark as InProgress
             //
             queueItem.status = "InProgress";
@@ -253,19 +294,21 @@ namespace Foundation.BMC.Services
                 {
                     string name = payload.GetValueOrDefault("name").GetString() ?? "Unnamed";
                     bool isBuildable = payload.TryGetValue("isBuildable", out var b) && b.GetBoolean();
-                    var rebrickableId = await syncService.PushSetListCreatedAsync(item.tenantGuid, name, isBuildable);
+                    var rebrickableId = await syncService.PushSetListCreatedAsync(item.tenantGuid, name, isBuildable, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
 
-                    // If we got a Rebrickable ID back, update the local entity
-                    if (rebrickableId.HasValue)
+                    if (!rebrickableId.HasValue)
+                        throw new InvalidOperationException(
+                            $"PushSetListCreatedAsync returned null for '{name}' — " +
+                            "the Rebrickable API call may have been silently skipped (token issue or API failure)");
+
+                    // Update the local entity with the Rebrickable ID
+                    using var innerScope = _scopeFactory.CreateScope();
+                    var innerDb = innerScope.ServiceProvider.GetRequiredService<BMCContext>();
+                    var setList = await innerDb.UserSetLists.FindAsync((int)item.entityId);
+                    if (setList != null)
                     {
-                        using var scope = _scopeFactory.CreateScope();
-                        var db = scope.ServiceProvider.GetRequiredService<BMCContext>();
-                        var setList = await db.UserSetLists.FindAsync((int)item.entityId);
-                        if (setList != null)
-                        {
-                            setList.rebrickableListId = rebrickableId.Value;
-                            await db.SaveChangesAsync();
-                        }
+                        setList.rebrickableListId = rebrickableId.Value;
+                        await innerDb.SaveChangesAsync();
                     }
                     break;
                 }
@@ -275,14 +318,14 @@ namespace Foundation.BMC.Services
                     int rebrickableListId = payload.GetValueOrDefault("rebrickableListId").GetInt32();
                     string name = payload.TryGetValue("name", out var n) ? n.GetString() : null;
                     bool? isBuildable = payload.TryGetValue("isBuildable", out var b2) ? b2.GetBoolean() : null;
-                    await syncService.PushSetListUpdatedAsync(item.tenantGuid, rebrickableListId, name, isBuildable);
+                    await syncService.PushSetListUpdatedAsync(item.tenantGuid, rebrickableListId, name, isBuildable, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
                     break;
                 }
 
                 case "Delete":
                 {
                     int rebrickableListId = payload.GetValueOrDefault("rebrickableListId").GetInt32();
-                    await syncService.PushSetListDeletedAsync(item.tenantGuid, rebrickableListId);
+                    await syncService.PushSetListDeletedAsync(item.tenantGuid, rebrickableListId, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
                     break;
                 }
 
@@ -304,11 +347,11 @@ namespace Foundation.BMC.Services
             {
                 case "Create":
                     int quantity = payload.TryGetValue("quantity", out var q) ? q.GetInt32() : 1;
-                    await syncService.PushSetListSetAddedAsync(item.tenantGuid, rebrickableListId, setNum, quantity);
+                    await syncService.PushSetListSetAddedAsync(item.tenantGuid, rebrickableListId, setNum, quantity, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
                     break;
 
                 case "Delete":
-                    await syncService.PushSetListSetRemovedAsync(item.tenantGuid, rebrickableListId, setNum);
+                    await syncService.PushSetListSetRemovedAsync(item.tenantGuid, rebrickableListId, setNum, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
                     break;
 
                 default:
@@ -328,7 +371,12 @@ namespace Foundation.BMC.Services
                 case "Create":
                     string name = payload.GetValueOrDefault("name").GetString() ?? "Unnamed";
                     bool isBuildable = payload.TryGetValue("isBuildable", out var bl) && bl.GetBoolean();
-                    await syncService.PushPartListCreatedAsync(item.tenantGuid, name, isBuildable);
+                    var partListId = await syncService.PushPartListCreatedAsync(item.tenantGuid, name, isBuildable, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+
+                    if (!partListId.HasValue)
+                        throw new InvalidOperationException(
+                            $"PushPartListCreatedAsync returned null for '{name}' — " +
+                            "the Rebrickable API call may have been silently skipped (token issue or API failure)");
                     break;
 
                 default:
