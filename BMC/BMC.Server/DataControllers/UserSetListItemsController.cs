@@ -399,11 +399,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
-		// ========================================================================================
-		// Write methods commented out — custom implementation with Rebrickable sync logic
-		// is in UserSetListItemsController.Sync.cs partial class.
-		// ========================================================================================
-		/*
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing UserSetListItem record
@@ -550,9 +546,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 		}
-		*/
+*/
 
-		/* <summary>
+/* This function is expected to be overridden in a custom file
+        /// <summary>
         /// 
         /// This creates a new UserSetListItem record
         ///
@@ -633,9 +630,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			return CreatedAtRoute("UserSetListItem", new { id = userSetListItem.id }, Database.UserSetListItem.CreateAnonymousWithFirstLevelSubObjects(userSetListItem));
 		}
-		*/
 
-		/*
+*/
+
+
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a UserSetListItem record
@@ -721,9 +720,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 			return Ok();
 		}
-		*/
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of UserSetListItem records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.

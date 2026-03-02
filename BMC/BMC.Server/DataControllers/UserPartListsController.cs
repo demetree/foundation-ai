@@ -427,6 +427,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing UserPartList record
@@ -614,7 +615,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			}
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new UserPartList record
@@ -737,7 +740,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			return CreatedAtRoute("UserPartList", new { id = userPartList.id }, Database.UserPartList.CreateAnonymousWithFirstLevelSubObjects(userPartList));
 		}
 
+*/
 
+/* This function is expected to be overridden in a custom file
 
         /// <summary>
         /// 
@@ -893,6 +898,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				}
 			}
 		}
+
+*/
 
 
 
@@ -1169,6 +1176,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 		}
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a UserPartList record
@@ -1275,6 +1283,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of UserPartList records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.

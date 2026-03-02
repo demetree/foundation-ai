@@ -411,6 +411,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing UserLostPart record
@@ -557,7 +558,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new UserLostPart record
@@ -640,8 +643,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			return CreatedAtRoute("UserLostPart", new { id = userLostPart.id }, Database.UserLostPart.CreateAnonymousWithFirstLevelSubObjects(userLostPart));
 		}
 
+*/
 
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a UserLostPart record
@@ -729,6 +734,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of UserLostPart records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
