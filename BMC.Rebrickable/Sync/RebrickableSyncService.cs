@@ -721,6 +721,228 @@ namespace BMC.Rebrickable.Sync
                 });
         }
 
+        /// <summary>
+        /// Push a set quantity update to Rebrickable.
+        /// </summary>
+        public async Task PushSetUpdatedAsync(Guid tenantGuid, string setNum, int quantity)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "PUT",
+                $"api/v3/users/_token/sets/{setNum}/",
+                $"Update set {setNum} → quantity {quantity}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.UpdateUserSetAsync(token, setNum, quantity);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push a set list update (rename / toggle buildable) to Rebrickable.
+        /// </summary>
+        public async Task PushSetListUpdatedAsync(Guid tenantGuid, int rebrickableListId, string name = null, bool? isBuildable = null)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "PATCH",
+                $"api/v3/users/_token/setlists/{rebrickableListId}/",
+                $"Update set list {rebrickableListId}{(name != null ? $" → '{name}'" : "")}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.PatchUserSetListAsync(token, rebrickableListId, name, isBuildable);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push removing a set from a set list.
+        /// </summary>
+        public async Task PushSetListSetRemovedAsync(Guid tenantGuid, int rebrickableListId, string setNum)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "DELETE",
+                $"api/v3/users/_token/setlists/{rebrickableListId}/sets/{setNum}/",
+                $"Remove set {setNum} from list {rebrickableListId}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.DeleteUserSetListSetAsync(token, rebrickableListId, setNum);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push updating a set within a set list (quantity / include_spares).
+        /// </summary>
+        public async Task PushSetListSetUpdatedAsync(
+            Guid tenantGuid, int rebrickableListId, string setNum, int? quantity = null, bool? includeSpares = null)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "PATCH",
+                $"api/v3/users/_token/setlists/{rebrickableListId}/sets/{setNum}/",
+                $"Update set {setNum} in list {rebrickableListId}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.PatchUserSetListSetAsync(token, rebrickableListId, setNum, quantity, includeSpares);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push a part list deletion to Rebrickable.
+        /// </summary>
+        public async Task PushPartListDeletedAsync(Guid tenantGuid, int rebrickableListId)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "DELETE",
+                $"api/v3/users/_token/partlists/{rebrickableListId}/",
+                $"Delete part list {rebrickableListId}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.DeleteUserPartListAsync(token, rebrickableListId);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push a part list update (rename / toggle buildable) to Rebrickable.
+        /// </summary>
+        public async Task PushPartListUpdatedAsync(Guid tenantGuid, int rebrickableListId, string name = null, bool? isBuildable = null)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "PATCH",
+                $"api/v3/users/_token/partlists/{rebrickableListId}/",
+                $"Update part list {rebrickableListId}{(name != null ? $" → '{name}'" : "")}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.PatchUserPartListAsync(token, rebrickableListId, name, isBuildable);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push updating a part's quantity in a part list.
+        /// </summary>
+        public async Task PushPartListPartUpdatedAsync(
+            Guid tenantGuid, int rebrickableListId, string partNum, int colorId, int quantity)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "PUT",
+                $"api/v3/users/_token/partlists/{rebrickableListId}/parts/{partNum}/{colorId}/",
+                $"Update part {partNum} (color {colorId}) → qty {quantity} in list {rebrickableListId}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.UpdateUserPartListPartAsync(token, rebrickableListId, partNum, colorId, quantity);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push removing a part from a part list.
+        /// </summary>
+        public async Task PushPartListPartRemovedAsync(
+            Guid tenantGuid, int rebrickableListId, string partNum, int colorId)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "DELETE",
+                $"api/v3/users/_token/partlists/{rebrickableListId}/parts/{partNum}/{colorId}/",
+                $"Remove part {partNum} (color {colorId}) from list {rebrickableListId}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.DeleteUserPartListPartAsync(token, rebrickableListId, partNum, colorId);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push marking a part as lost.
+        /// </summary>
+        public async Task PushLostPartAddedAsync(Guid tenantGuid, int invPartId, int lostQuantity)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "POST",
+                $"api/v3/users/_token/lost_parts/",
+                $"Add lost part (inv_part_id {invPartId}) x{lostQuantity}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.AddUserLostPartAsync(token, invPartId, lostQuantity);
+                    return true;
+                });
+        }
+
+
+        /// <summary>
+        /// Push removing a lost part entry.
+        /// </summary>
+        public async Task PushLostPartRemovedAsync(Guid tenantGuid, int lostPartId)
+        {
+            if (!await ShouldPushAsync(tenantGuid)) return;
+
+            var (client, token) = await GetClientAndTokenAsync(tenantGuid);
+            if (client == null) return;
+
+            await ExecuteWithAuditAsync(tenantGuid, "Push", "DELETE",
+                $"api/v3/users/_token/lost_parts/{lostPartId}/",
+                $"Remove lost part {lostPartId}",
+                TRIGGER_USER_ACTION,
+                async () =>
+                {
+                    await client.DeleteUserLostPartAsync(token, lostPartId);
+                    return true;
+                });
+        }
+
 
         // ═══════════════════════════════════════════════════════════════════════
         //  PULL METHODS — import from Rebrickable into BMC

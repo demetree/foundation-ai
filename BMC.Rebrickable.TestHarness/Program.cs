@@ -241,6 +241,10 @@ namespace BMC.Rebrickable.TestHarness
                     await HandleRemoveSet(args);
                     return false;
 
+                case "sync-sets":
+                    await HandleSyncSets(args);
+                    return false;
+
                 case "my-setlists":
                     await HandleMySetLists();
                     return false;
@@ -261,6 +265,10 @@ namespace BMC.Rebrickable.TestHarness
                     await HandleDeleteSetList(args);
                     return false;
 
+                case "patch-setlist":
+                    await HandlePatchSetList(args);
+                    return false;
+
                 case "setlist-sets":
                     await HandleSetListSets(args);
                     return false;
@@ -275,6 +283,14 @@ namespace BMC.Rebrickable.TestHarness
 
                 case "delete-setlist-set":
                     await HandleDeleteSetListSet(args);
+                    return false;
+
+                case "setlist-set":
+                    await HandleGetSetListSet(args);
+                    return false;
+
+                case "patch-setlist-set":
+                    await HandlePatchSetListSet(args);
                     return false;
 
                 case "my-partlists":
@@ -297,6 +313,10 @@ namespace BMC.Rebrickable.TestHarness
                     await HandleDeletePartList(args);
                     return false;
 
+                case "patch-partlist":
+                    await HandlePatchPartList(args);
+                    return false;
+
                 case "partlist-parts":
                     await HandlePartListParts(args);
                     return false;
@@ -311,6 +331,10 @@ namespace BMC.Rebrickable.TestHarness
 
                 case "delete-partlist-part":
                     await HandleDeletePartListPart(args);
+                    return false;
+
+                case "partlist-part":
+                    await HandleGetPartListPart(args);
                     return false;
 
                 case "my-parts":
@@ -347,6 +371,10 @@ namespace BMC.Rebrickable.TestHarness
 
                 case "badge":
                     await HandleBadge(args);
+                    return false;
+
+                case "rate-limit":
+                    HandleRateLimit();
                     return false;
 
                 default:
@@ -813,6 +841,32 @@ namespace BMC.Rebrickable.TestHarness
         }
 
 
+        static async Task HandleSyncSets(string[] args)
+        {
+            if (!RequireLogin()) return;
+            if (args.Length < 1) { Console.WriteLine("Usage: sync-sets <set_num:qty> [set_num:qty] ... [--no-spares]"); return; }
+
+            bool includeSpares = !HasFlag(args, "--no-spares");
+
+            // Build the list of set objects expected by the API
+            var sets = new List<object>();
+            foreach (var arg in args)
+            {
+                if (arg.StartsWith("--")) continue;
+                var parts = arg.Split(':');
+                string setNum = parts[0];
+                int qty = parts.Length > 1 ? int.Parse(parts[1]) : 1;
+                sets.Add(new { set_num = setNum, quantity = qty, include_spares = includeSpares ? "True" : "False" });
+            }
+
+            await _client.SyncUserSetsAsync(_userToken, sets);
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"✓ Synced {sets.Count} sets");
+            Console.ResetColor();
+        }
+
+
         static async Task HandleMySetLists()
         {
             if (!RequireLogin()) return;
@@ -873,6 +927,19 @@ namespace BMC.Rebrickable.TestHarness
         }
 
 
+        static async Task HandlePatchSetList(string[] args)
+        {
+            if (!RequireLogin()) return;
+            if (args.Length < 1) { Console.WriteLine("Usage: patch-setlist <id> [--name X] [--buildable]"); return; }
+            string name = GetNamedArg(args, "--name");
+            bool? buildable = HasFlag(args, "--buildable") ? true : (bool?)null;
+            var result = await _client.PatchUserSetListAsync(_userToken, int.Parse(args[0]), name, buildable);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"✓ Patched set list [{result.Id}] → {result.Name}");
+            Console.ResetColor();
+        }
+
+
         static async Task HandleSetListSets(string[] args)
         {
             if (!RequireLogin()) return;
@@ -919,6 +986,36 @@ namespace BMC.Rebrickable.TestHarness
             await _client.DeleteUserSetListSetAsync(_userToken, int.Parse(args[0]), args[1]);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"✓ Removed {args[1]} from list {args[0]}");
+            Console.ResetColor();
+        }
+
+
+        static async Task HandleGetSetListSet(string[] args)
+        {
+            if (!RequireLogin()) return;
+            if (args.Length < 2) { Console.WriteLine("Usage: setlist-set <list_id> <set_num>"); return; }
+            var s = await _client.GetUserSetListSetAsync(_userToken, int.Parse(args[0]), args[1]);
+            PrintHeader($"Set {s.SetNum} in list {args[0]}");
+            Console.WriteLine($"  Name:           {s.SetName}");
+            Console.WriteLine($"  Quantity:       {s.Quantity}");
+            Console.WriteLine($"  Include Spares: {s.IncludeSpares}");
+            if (s.Set != null)
+            {
+                Console.WriteLine($"  Year:           {s.Set.Year}");
+                Console.WriteLine($"  Parts:          {s.Set.NumParts}");
+            }
+        }
+
+
+        static async Task HandlePatchSetListSet(string[] args)
+        {
+            if (!RequireLogin()) return;
+            if (args.Length < 2) { Console.WriteLine("Usage: patch-setlist-set <list_id> <set_num> [--qty N] [--no-spares]"); return; }
+            int? qty = GetIntNamedArg(args, "--qty");
+            bool? includeSpares = HasFlag(args, "--no-spares") ? false : (bool?)null;
+            var result = await _client.PatchUserSetListSetAsync(_userToken, int.Parse(args[0]), args[1], qty, includeSpares);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"✓ Patched {result.SetNum} in list {args[0]} → qty {result.Quantity}");
             Console.ResetColor();
         }
 
@@ -983,6 +1080,19 @@ namespace BMC.Rebrickable.TestHarness
         }
 
 
+        static async Task HandlePatchPartList(string[] args)
+        {
+            if (!RequireLogin()) return;
+            if (args.Length < 1) { Console.WriteLine("Usage: patch-partlist <id> [--name X] [--buildable]"); return; }
+            string name = GetNamedArg(args, "--name");
+            bool? buildable = HasFlag(args, "--buildable") ? true : (bool?)null;
+            var result = await _client.PatchUserPartListAsync(_userToken, int.Parse(args[0]), name, buildable);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"✓ Patched part list [{result.Id}] → {result.Name}");
+            Console.ResetColor();
+        }
+
+
         static async Task HandlePartListParts(string[] args)
         {
             if (!RequireLogin()) return;
@@ -1033,6 +1143,24 @@ namespace BMC.Rebrickable.TestHarness
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"✓ Removed {args[1]} (color {args[2]}) from list {args[0]}");
             Console.ResetColor();
+        }
+
+
+        static async Task HandleGetPartListPart(string[] args)
+        {
+            if (!RequireLogin()) return;
+            if (args.Length < 3) { Console.WriteLine("Usage: partlist-part <list_id> <part_num> <color_id>"); return; }
+            var p = await _client.GetUserPartListPartAsync(_userToken, int.Parse(args[0]), args[1], int.Parse(args[2]));
+            PrintHeader($"Part {args[1]} (color {args[2]}) in list {args[0]}");
+            if (p.Part != null)
+            {
+                Console.WriteLine($"  Part:     {p.Part.PartNum} — {p.Part.Name}");
+            }
+            if (p.Color != null)
+            {
+                Console.WriteLine($"  Color:    {p.Color.Name} (#{p.Color.Rgb})");
+            }
+            Console.WriteLine($"  Quantity: {p.Quantity}");
         }
 
 
@@ -1186,6 +1314,28 @@ namespace BMC.Rebrickable.TestHarness
         #endregion
 
 
+        #region General Commands
+
+        static void HandleRateLimit()
+        {
+            var rl = _client.RateLimit;
+            PrintHeader("API Rate Limit");
+            if (!rl.HasData)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("  No rate limit data yet — make an API call first.");
+                Console.ResetColor();
+                return;
+            }
+            Console.WriteLine($"  Remaining: {rl.Remaining} / {rl.Limit}");
+            Console.WriteLine($"  Used:      {rl.PercentRemaining:F0}% remaining");
+            Console.WriteLine($"  Resets in: {rl.ResetSeconds}s");
+            Console.WriteLine($"  Last seen: {rl.LastUpdated:HH:mm:ss}");
+        }
+
+        #endregion
+
+
         #region Helpers
 
         static bool RequireLogin()
@@ -1259,15 +1409,19 @@ namespace BMC.Rebrickable.TestHarness
             Console.WriteLine("  add-set <set_num> [qty] [--no-spares]  Add set to collection");
             Console.WriteLine("  update-set <set_num> <quantity>         Update set quantity");
             Console.WriteLine("  remove-set <set_num>                   Remove set from collection");
+            Console.WriteLine("  sync-sets <set:qty> [set:qty] ...       Sync sets to exact list");
             Console.WriteLine();
             Console.WriteLine("  my-setlists                            List set lists");
             Console.WriteLine("  setlist <id>                           Get set list details");
             Console.WriteLine("  create-setlist <name> [--buildable]     Create set list");
             Console.WriteLine("  update-setlist <id> <name> [--buildable]  Update set list");
             Console.WriteLine("  delete-setlist <id>                    Delete set list");
+            Console.WriteLine("  patch-setlist <id> [--name X] [--buildable]  Patch set list");
             Console.WriteLine("  setlist-sets <id> [--page N]           List sets in a set list");
+            Console.WriteLine("  setlist-set <id> <set_num>             Get set details in list");
             Console.WriteLine("  add-setlist-set <id> <set_num> [qty]   Add set to a list");
             Console.WriteLine("  update-setlist-set <id> <set> <qty>    Update set in a list");
+            Console.WriteLine("  patch-setlist-set <id> <set> [--qty N] [--no-spares]  Patch set");
             Console.WriteLine("  delete-setlist-set <id> <set_num>      Remove set from a list");
             Console.WriteLine();
             Console.WriteLine("  my-partlists                           List part lists");
@@ -1275,7 +1429,9 @@ namespace BMC.Rebrickable.TestHarness
             Console.WriteLine("  create-partlist <name> [--buildable]    Create part list");
             Console.WriteLine("  update-partlist <id> <name> [--buildable]  Update part list");
             Console.WriteLine("  delete-partlist <id>                   Delete part list");
+            Console.WriteLine("  patch-partlist <id> [--name X] [--buildable]  Patch part list");
             Console.WriteLine("  partlist-parts <id> [--page N]         List parts in a part list");
+            Console.WriteLine("  partlist-part <id> <part> <color>       Get part details in list");
             Console.WriteLine("  add-partlist-part <id> <part> <color> <qty>  Add part to list");
             Console.WriteLine("  update-partlist-part <id> <part> <color> <qty>  Update part qty");
             Console.WriteLine("  delete-partlist-part <id> <part> <color>  Remove part from list");
@@ -1294,6 +1450,7 @@ namespace BMC.Rebrickable.TestHarness
             Console.WriteLine();
 
             PrintHeader("General");
+            Console.WriteLine("  rate-limit                             Show API rate limit status");
             Console.WriteLine("  help                                   Show this help");
             Console.WriteLine("  exit / quit / q                        Exit the harness");
         }

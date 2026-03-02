@@ -567,6 +567,39 @@ namespace BMC.Rebrickable.Api
             return GetAllPagesAsync<RebrickableUserSet>($"/users/{userToken}/setlists/{listId}/sets/");
         }
 
+
+        /// <summary>Partially update a set list (PATCH — only supply fields to change).</summary>
+        public async Task<RebrickableUserSetList> PatchUserSetListAsync(
+            string userToken, int listId, string name = null, bool? isBuildable = null)
+        {
+            var pairs = new List<KeyValuePair<string, string>>();
+            if (name != null) pairs.Add(new KeyValuePair<string, string>("name", name));
+            if (isBuildable.HasValue) pairs.Add(new KeyValuePair<string, string>("is_buildable", isBuildable.Value ? "True" : "False"));
+
+            var content = new FormUrlEncodedContent(pairs);
+            return await PatchFormAsync<RebrickableUserSetList>($"{BaseUrl}/users/{userToken}/setlists/{listId}/", content);
+        }
+
+
+        /// <summary>Get details about a specific set in a set list.</summary>
+        public Task<RebrickableUserSet> GetUserSetListSetAsync(string userToken, int listId, string setNum)
+        {
+            return GetAsync<RebrickableUserSet>($"{BaseUrl}/users/{userToken}/setlists/{listId}/sets/{Uri.EscapeDataString(setNum)}/");
+        }
+
+
+        /// <summary>Partially update a set in a specific set list (PATCH).</summary>
+        public async Task<RebrickableUserSet> PatchUserSetListSetAsync(
+            string userToken, int listId, string setNum, int? quantity = null, bool? includeSpares = null)
+        {
+            var pairs = new List<KeyValuePair<string, string>>();
+            if (quantity.HasValue) pairs.Add(new KeyValuePair<string, string>("quantity", quantity.Value.ToString()));
+            if (includeSpares.HasValue) pairs.Add(new KeyValuePair<string, string>("include_spares", includeSpares.Value ? "True" : "False"));
+
+            var content = new FormUrlEncodedContent(pairs);
+            return await PatchFormAsync<RebrickableUserSet>($"{BaseUrl}/users/{userToken}/setlists/{listId}/sets/{Uri.EscapeDataString(setNum)}/", content);
+        }
+
         #endregion
 
 
@@ -677,6 +710,28 @@ namespace BMC.Rebrickable.Api
         public Task<List<RebrickableUserPartListPart>> GetAllUserPartListPartsAsync(string userToken, int listId)
         {
             return GetAllPagesAsync<RebrickableUserPartListPart>($"/users/{userToken}/partlists/{listId}/parts/");
+        }
+
+
+        /// <summary>Partially update a part list (PATCH — only supply fields to change).</summary>
+        public async Task<RebrickableUserPartList> PatchUserPartListAsync(
+            string userToken, int listId, string name = null, bool? isBuildable = null)
+        {
+            var pairs = new List<KeyValuePair<string, string>>();
+            if (name != null) pairs.Add(new KeyValuePair<string, string>("name", name));
+            if (isBuildable.HasValue) pairs.Add(new KeyValuePair<string, string>("is_buildable", isBuildable.Value ? "True" : "False"));
+
+            var content = new FormUrlEncodedContent(pairs);
+            return await PatchFormAsync<RebrickableUserPartList>($"{BaseUrl}/users/{userToken}/partlists/{listId}/", content);
+        }
+
+
+        /// <summary>Get details about a specific part in a part list.</summary>
+        public Task<RebrickableUserPartListPart> GetUserPartListPartAsync(
+            string userToken, int listId, string partNum, int colorId)
+        {
+            return GetAsync<RebrickableUserPartListPart>(
+                $"{BaseUrl}/users/{userToken}/partlists/{listId}/parts/{Uri.EscapeDataString(partNum)}/{colorId}/");
         }
 
         #endregion
