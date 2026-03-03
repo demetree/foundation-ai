@@ -141,7 +141,7 @@ export class BrickLinkSyncService {
     // ─── Private ───
 
     private getAuthHeaders(): HttpHeaders {
-        return this.authService.getAuthorizationHeaders();
+        return this.authService.GetAuthenticationHeaders();
     }
 }
 
