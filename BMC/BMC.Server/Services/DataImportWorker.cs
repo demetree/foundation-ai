@@ -102,8 +102,9 @@ namespace Foundation.BMC.Services
             int intervalMinutes = _configuration.GetValue<int>("DataImport:IntervalMinutes", 60);
 
             //
-            // Auto-bootstrap: if the database is empty, run a full import immediately
-            // before entering the normal hourly check loop.
+            // Auto-bootstrap: check the persisted state to determine if bootstrap
+            // is needed.  Uses BootstrapComplete flag instead of counting DB rows,
+            // so a partially-completed bootstrap will always resume on next start.
             //
             bool autoBootstrap = _configuration.GetValue<bool>("DataImport:AutoBootstrap", true);
 
@@ -111,18 +112,35 @@ namespace Foundation.BMC.Services
             {
                 try
                 {
-                    bool isEmpty = await IsDatabaseEmptyAsync(stoppingToken).ConfigureAwait(false);
+                    string cachePath = _configuration.GetValue<string>("DataImport:DataCachePath", "./import-cache");
+                    Directory.CreateDirectory(cachePath);
+                    ImportState bootState = await LoadStateAsync(cachePath).ConfigureAwait(false);
 
-                    if (isEmpty)
+                    if (bootState.BootstrapComplete == false)
                     {
+                        int completedCount = bootState.CompletedSteps.Count;
+                        bool isResume = completedCount > 0;
+
                         _logger.LogInformation(
                             "{Prefix} ═══════════════════════════════════════════════════════",
                             LOG_PREFIX
                         );
-                        _logger.LogInformation(
-                            "{Prefix} FIRST-RUN BOOTSTRAP: Empty database detected — starting full data import.",
-                            LOG_PREFIX
-                        );
+
+                        if (isResume)
+                        {
+                            _logger.LogInformation(
+                                "{Prefix} BOOTSTRAP RESUME: {Count} steps already completed — picking up where we left off.",
+                                LOG_PREFIX, completedCount
+                            );
+                        }
+                        else
+                        {
+                            _logger.LogInformation(
+                                "{Prefix} FIRST-RUN BOOTSTRAP: Starting full data import.",
+                                LOG_PREFIX
+                            );
+                        }
+
                         _logger.LogInformation(
                             "{Prefix} This will download all Rebrickable CSVs and LDraw data files.",
                             LOG_PREFIX
@@ -136,24 +154,24 @@ namespace Foundation.BMC.Services
                             LOG_PREFIX
                         );
 
-                        await RunImportCycleAsync(stoppingToken).ConfigureAwait(false);
+                        await RunImportCycleAsync(stoppingToken, isBootstrap: true).ConfigureAwait(false);
 
                         _logger.LogInformation(
-                            "{Prefix} First-run bootstrap complete. Entering normal hourly check cycle.",
+                            "{Prefix} Bootstrap complete. Entering normal hourly check cycle.",
                             LOG_PREFIX
                         );
                     }
                     else
                     {
                         _logger.LogInformation(
-                            "{Prefix} Database already populated — skipping bootstrap.",
+                            "{Prefix} Bootstrap already completed — skipping.",
                             LOG_PREFIX
                         );
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogInformation("{Prefix} Bootstrap cancelled during shutdown.", LOG_PREFIX);
+                    _logger.LogInformation("{Prefix} Bootstrap cancelled during shutdown — will resume on next start.", LOG_PREFIX);
                     return;
                 }
                 catch (Exception ex)
@@ -176,7 +194,7 @@ namespace Foundation.BMC.Services
 
                 try
                 {
-                    await RunImportCycleAsync(stoppingToken).ConfigureAwait(false);
+                    await RunImportCycleAsync(stoppingToken, isBootstrap: false).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -191,36 +209,11 @@ namespace Foundation.BMC.Services
         }
 
 
-        /// <summary>
-        /// Checks whether the database is effectively empty (no meaningful data imported yet).
-        /// Uses BrickParts count as the indicator — if Rebrickable import has run,
-        /// there should be 50,000+ parts.
-        /// </summary>
-        private async Task<bool> IsDatabaseEmptyAsync(CancellationToken ct)
-        {
-            using IServiceScope scope = _scopeFactory.CreateScope();
-
-            BMCContext context = scope.ServiceProvider.GetRequiredService<BMCContext>();
-
-            int partCount = await context.BrickParts
-                .CountAsync(ct)
-                .ConfigureAwait(false);
-
-            _logger.LogInformation(
-                "{Prefix} Database check: {Count} parts in BrickParts table.",
-                LOG_PREFIX, partCount
-            );
-
-            // Threshold of 100 — a handful of manually-added parts doesn't count as "populated"
-            return partCount < 100;
-        }
-
-
         // ─────────────────────────────────────────────────────────
         //  Main import cycle
         // ─────────────────────────────────────────────────────────
 
-        private async Task RunImportCycleAsync(CancellationToken ct)
+        private async Task RunImportCycleAsync(CancellationToken ct, bool isBootstrap)
         {
             _logger.LogInformation("{Prefix} ── Import cycle starting at {Time} ──", LOG_PREFIX, DateTime.UtcNow);
 
@@ -241,7 +234,7 @@ namespace Foundation.BMC.Services
             //
             if (rebrickableEnabled)
             {
-                await CheckAndImportRebrickableAsync(cachePath, state, ct).ConfigureAwait(false);
+                await CheckAndImportRebrickableAsync(cachePath, state, ct, isBootstrap).ConfigureAwait(false);
             }
 
             //
@@ -255,7 +248,8 @@ namespace Foundation.BMC.Services
                     stateKey: "ldraw_official",
                     cachePath: cachePath,
                     state: state,
-                    ct: ct
+                    ct: ct,
+                    isBootstrap: isBootstrap
                 ).ConfigureAwait(false);
             }
 
@@ -270,8 +264,18 @@ namespace Foundation.BMC.Services
                     stateKey: "ldraw_unofficial",
                     cachePath: cachePath,
                     state: state,
-                    ct: ct
+                    ct: ct,
+                    isBootstrap: isBootstrap
                 ).ConfigureAwait(false);
+            }
+
+            //
+            // Mark bootstrap complete if this was a bootstrap run
+            //
+            if (isBootstrap)
+            {
+                state.BootstrapComplete = true;
+                _logger.LogInformation("{Prefix} All bootstrap steps completed — marking bootstrap as done.", LOG_PREFIX);
             }
 
             //
@@ -287,7 +291,7 @@ namespace Foundation.BMC.Services
         //  Rebrickable: check + import
         // ─────────────────────────────────────────────────────────
 
-        private async Task CheckAndImportRebrickableAsync(string cachePath, ImportState state, CancellationToken ct)
+        private async Task CheckAndImportRebrickableAsync(string cachePath, ImportState state, CancellationToken ct, bool isBootstrap)
         {
             _logger.LogInformation("{Prefix} Checking Rebrickable CDN for updates...", LOG_PREFIX);
 
@@ -339,32 +343,68 @@ namespace Foundation.BMC.Services
                 }
             }
 
-            if (changedFiles.Count == 0)
+            //
+            // During bootstrap: also count steps that haven't been marked complete yet,
+            // even if the CDN timestamps haven't changed (files may already be cached).
+            //
+            bool hasIncompleteBootstrapSteps = false;
+
+            if (isBootstrap)
+            {
+                foreach (string stepKey in REBRICKABLE_STEP_KEYS)
+                {
+                    if (state.CompletedSteps.Contains(stepKey) == false)
+                    {
+                        hasIncompleteBootstrapSteps = true;
+                        break;
+                    }
+                }
+            }
+
+            if (changedFiles.Count == 0 && hasIncompleteBootstrapSteps == false)
             {
                 _logger.LogInformation("{Prefix} Rebrickable: no changes detected.", LOG_PREFIX);
                 return;
             }
 
-            _logger.LogInformation(
-                "{Prefix} Rebrickable: {Count} files changed — downloading and importing...",
-                LOG_PREFIX, changedFiles.Count
-            );
+            //
+            // Download changed files (or all files during bootstrap if they aren't cached)
+            //
+            List<string> filesToDownload = isBootstrap
+                ? new List<string>(REBRICKABLE_FILES)
+                : changedFiles;
 
-            //
-            // Download changed files
-            //
-            foreach (string fileName in changedFiles)
+            foreach (string fileName in filesToDownload)
             {
                 ct.ThrowIfCancellationRequested();
+
+                string outputPath = Path.Combine(rebrickableCachePath, fileName.Replace(".gz", ""));
+
+                //
+                // During bootstrap, skip downloading files that are already cached on disk
+                //
+                if (isBootstrap && changedFiles.Contains(fileName) == false && File.Exists(outputPath))
+                {
+                    _logger.LogDebug("{Prefix}   {File}: using cached file", LOG_PREFIX, fileName);
+                    continue;
+                }
+
                 await DownloadAndDecompressGzFileAsync(
                     url: REBRICKABLE_CDN_BASE + fileName,
-                    outputPath: Path.Combine(rebrickableCachePath, fileName.Replace(".gz", "")),
+                    outputPath: outputPath,
                     ct: ct
                 ).ConfigureAwait(false);
             }
 
+            _logger.LogInformation(
+                "{Prefix} Rebrickable: importing data...",
+                LOG_PREFIX
+            );
+
             //
-            // Run import in FK-dependency order using a scoped context
+            // Run import in FK-dependency order using a scoped context.
+            // Each step is individually tracked — if the server is interrupted,
+            // already-completed steps are skipped on the next run.
             //
             using (IServiceScope scope = _scopeFactory.CreateScope())
             {
@@ -376,10 +416,6 @@ namespace Foundation.BMC.Services
 
                 string csvDir = rebrickableCachePath;
 
-                //
-                // Import in FK-dependency order
-                // Only import targets whose CSV files were downloaded (or already cached)
-                //
                 string themesFile = Path.Combine(csvDir, "themes.csv");
                 string coloursFile = Path.Combine(csvDir, "colors.csv");
                 string categoriesFile = Path.Combine(csvDir, "part_categories.csv");
@@ -393,68 +429,176 @@ namespace Foundation.BMC.Services
                 string inventorySetsFile = Path.Combine(csvDir, "inventory_sets.csv");
                 string inventoryMinifigsFile = Path.Combine(csvDir, "inventory_minifigs.csv");
 
-                if (File.Exists(themesFile))
-                {
-                    await importService.ImportThemesAsync(themesFile).ConfigureAwait(false);
-                }
+                //
+                // Import in FK-dependency order with per-step tracking.
+                // During bootstrap: skip steps already completed (resume support).
+                // During normal cycle: always re-import changed files (no step gating).
+                //
 
-                if (File.Exists(coloursFile))
+                await RunTrackedStepAsync("rebrickable_themes", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportColoursAsync(coloursFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(themesFile))
+                    {
+                        await importService.ImportThemesAsync(themesFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(categoriesFile))
+                await RunTrackedStepAsync("rebrickable_colors", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportPartCategoriesAsync(categoriesFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(coloursFile))
+                    {
+                        await importService.ImportColoursAsync(coloursFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(partsFile))
+                await RunTrackedStepAsync("rebrickable_part_categories", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportPartsAsync(partsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(categoriesFile))
+                    {
+                        await importService.ImportPartCategoriesAsync(categoriesFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(relationshipsFile))
+                await RunTrackedStepAsync("rebrickable_parts", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportPartRelationshipsAsync(relationshipsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(partsFile))
+                    {
+                        await importService.ImportPartsAsync(partsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(elementsFile))
+                await RunTrackedStepAsync("rebrickable_part_relationships", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportElementsAsync(elementsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(relationshipsFile))
+                    {
+                        await importService.ImportPartRelationshipsAsync(relationshipsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(setsFile))
+                await RunTrackedStepAsync("rebrickable_elements", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportSetsAsync(setsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(elementsFile))
+                    {
+                        await importService.ImportElementsAsync(elementsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(minifigsFile))
+                await RunTrackedStepAsync("rebrickable_sets", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportMinifigsAsync(minifigsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(setsFile))
+                    {
+                        await importService.ImportSetsAsync(setsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(inventoriesFile) && File.Exists(inventoryPartsFile))
+                await RunTrackedStepAsync("rebrickable_minifigs", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportInventoryPartsAsync(inventoriesFile, inventoryPartsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(minifigsFile))
+                    {
+                        await importService.ImportMinifigsAsync(minifigsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(inventoriesFile) && File.Exists(inventorySetsFile))
+                await RunTrackedStepAsync("rebrickable_inventory_parts", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportInventorySetsAsync(inventoriesFile, inventorySetsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(inventoriesFile) && File.Exists(inventoryPartsFile))
+                    {
+                        await importService.ImportInventoryPartsAsync(inventoriesFile, inventoryPartsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
-                if (File.Exists(inventoriesFile) && File.Exists(inventoryMinifigsFile))
+                await RunTrackedStepAsync("rebrickable_inventory_sets", state, cachePath, isBootstrap, async () =>
                 {
-                    await importService.ImportInventoryMinifigsAsync(inventoriesFile, inventoryMinifigsFile).ConfigureAwait(false);
-                }
+                    if (File.Exists(inventoriesFile) && File.Exists(inventorySetsFile))
+                    {
+                        await importService.ImportInventorySetsAsync(inventoriesFile, inventorySetsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
+
+                await RunTrackedStepAsync("rebrickable_inventory_minifigs", state, cachePath, isBootstrap, async () =>
+                {
+                    if (File.Exists(inventoriesFile) && File.Exists(inventoryMinifigsFile))
+                    {
+                        await importService.ImportInventoryMinifigsAsync(inventoriesFile, inventoryMinifigsFile).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
 
                 //
                 // Post-import reconciliation
                 //
-                await importService.ReconcileMovedPartsAsync().ConfigureAwait(false);
+                await RunTrackedStepAsync("rebrickable_reconcile", state, cachePath, isBootstrap, async () =>
+                {
+                    await importService.ReconcileMovedPartsAsync().ConfigureAwait(false);
+                }).ConfigureAwait(false);
             }
 
             _logger.LogInformation("{Prefix} Rebrickable import complete.", LOG_PREFIX);
+        }
+
+
+        //
+        // AI-developed: Step-tracking keys for Rebrickable import steps.
+        // Used during bootstrap to detect incomplete imports.
+        //
+        private static readonly string[] REBRICKABLE_STEP_KEYS = new string[]
+        {
+            "rebrickable_themes",
+            "rebrickable_colors",
+            "rebrickable_part_categories",
+            "rebrickable_parts",
+            "rebrickable_part_relationships",
+            "rebrickable_elements",
+            "rebrickable_sets",
+            "rebrickable_minifigs",
+            "rebrickable_inventory_parts",
+            "rebrickable_inventory_sets",
+            "rebrickable_inventory_minifigs",
+            "rebrickable_reconcile"
+        };
+
+
+        /// <summary>
+        /// AI-developed: Runs a single import step with optional skip-if-complete logic.
+        /// During bootstrap, already-completed steps are skipped for resume support.
+        /// During normal hourly cycles, steps always run (no gating).
+        /// After successful completion, marks the step as done and saves state.
+        /// </summary>
+        private async Task RunTrackedStepAsync(
+            string stepKey,
+            ImportState state,
+            string cachePath,
+            bool isBootstrap,
+            Func<Task> action
+        )
+        {
+            if (isBootstrap && state.CompletedSteps.Contains(stepKey))
+            {
+                _logger.LogInformation(
+                    "{Prefix}   BOOTSTRAP RESUME: Skipping '{Step}' (already completed)",
+                    LOG_PREFIX, stepKey
+                );
+                return;
+            }
+
+            if (isBootstrap)
+            {
+                _logger.LogInformation(
+                    "{Prefix}   BOOTSTRAP: Running '{Step}'...",
+                    LOG_PREFIX, stepKey
+                );
+            }
+
+            await action().ConfigureAwait(false);
+
+            //
+            // Mark step as completed and save state immediately.
+            // This creates a checkpoint that survives crashes.
+            //
+            if (isBootstrap)
+            {
+                state.CompletedSteps.Add(stepKey);
+                await SaveStateAsync(cachePath, state).ConfigureAwait(false);
+            }
         }
 
 
@@ -468,13 +612,26 @@ namespace Foundation.BMC.Services
             string stateKey,
             string cachePath,
             ImportState state,
-            CancellationToken ct
+            CancellationToken ct,
+            bool isBootstrap
         )
         {
             _logger.LogInformation("{Prefix} Checking {Label}...", LOG_PREFIX, label);
 
             try
             {
+                //
+                // During bootstrap, skip this source if it was already completed.
+                //
+                if (isBootstrap && state.CompletedSteps.Contains(stateKey))
+                {
+                    _logger.LogInformation(
+                        "{Prefix}   BOOTSTRAP RESUME: Skipping '{Step}' (already completed)",
+                        LOG_PREFIX, stateKey
+                    );
+                    return;
+                }
+
                 //
                 // HEAD check
                 //
@@ -497,13 +654,32 @@ namespace Foundation.BMC.Services
                 if (state.Timestamps.TryGetValue(stateKey, out string previousValue)
                     && previousValue == compositeKey)
                 {
-                    _logger.LogInformation("{Prefix}   {Label}: unchanged.", LOG_PREFIX, label);
+                    //
+                    // Timestamps match — data was already imported successfully.
+                    // During bootstrap, just mark the step complete (no re-download needed).
+                    //
+                    if (isBootstrap)
+                    {
+                        _logger.LogInformation(
+                            "{Prefix}   {Label}: unchanged — marking bootstrap step complete (no re-download needed).",
+                            LOG_PREFIX, label
+                        );
+                        state.CompletedSteps.Add(stateKey);
+                        await SaveStateAsync(cachePath, state).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("{Prefix}   {Label}: unchanged.", LOG_PREFIX, label);
+                    }
+
                     return;
                 }
 
                 _logger.LogInformation(
-                    "{Prefix}   {Label}: CHANGED (was: {Old}, now: {New})",
-                    LOG_PREFIX, label, previousValue ?? "(first run)", compositeKey
+                    "{Prefix}   {Label}: {Status} (was: {Old}, now: {New})",
+                    LOG_PREFIX, label,
+                    isBootstrap ? "BOOTSTRAP" : "CHANGED",
+                    previousValue ?? "(first run)", compositeKey
                 );
 
                 //
@@ -559,9 +735,15 @@ namespace Foundation.BMC.Services
                 }
 
                 //
-                // Update state
+                // Update state and mark step complete
                 //
                 state.Timestamps[stateKey] = compositeKey;
+
+                if (isBootstrap)
+                {
+                    state.CompletedSteps.Add(stateKey);
+                    await SaveStateAsync(cachePath, state).ConfigureAwait(false);
+                }
 
                 _logger.LogInformation("{Prefix} {Label} import complete.", LOG_PREFIX, label);
             }
@@ -668,6 +850,8 @@ namespace Foundation.BMC.Services
     public class ImportState
     {
         public Dictionary<string, string> Timestamps { get; set; } = new Dictionary<string, string>();
+        public HashSet<string> CompletedSteps { get; set; } = new HashSet<string>();
+        public bool BootstrapComplete { get; set; } = false;
         public DateTime LastRunUtc { get; set; }
     }
 }

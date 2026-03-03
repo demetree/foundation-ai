@@ -175,6 +175,226 @@
             </div>
         </section>
 
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!--  BRICKBERG TERMINAL                                           -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="brickberg-terminal" *ngIf="!brickbergLoading || brickbergData">
+
+            <!-- Terminal Header -->
+            <div class="terminal-header">
+                <div class="terminal-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="terminal-name">BRICKBERG TERMINAL</span>
+                </div>
+                <div class="terminal-status" *ngIf="brickbergData">
+                    <span class="source-dot" [class.connected]="brickbergData.brickLink?.connected"
+                        title="BrickLink">BL</span>
+                    <span class="source-dot" [class.connected]="brickbergData.brickEconomy?.connected"
+                        title="BrickEconomy">BE</span>
+                    <span class="source-dot" [class.connected]="brickbergData.brickOwl?.connected"
+                        title="Brick Owl">BO</span>
+                </div>
+            </div>
+
+            <!-- Loading state -->
+            <div *ngIf="brickbergLoading && !brickbergData" class="terminal-loading">
+                <div class="terminal-skeleton"></div>
+            </div>
+
+            <!-- No sources connected -->
+            <div *ngIf="!brickbergLoading && brickbergData && !hasAnyBrickbergSource()" class="terminal-empty">
+                <i class="fas fa-plug"></i>
+                <p>Connect at least one marketplace integration to see market data.</p>
+                <a routerLink="/integrations" class="terminal-connect-link">
+                    <i class="fas fa-cog"></i> Manage Integrations
+                </a>
+            </div>
+
+            <!-- Dashboard content -->
+            <div *ngIf="brickbergData && hasAnyBrickbergSource()" class="terminal-body">
+
+                <!-- ── Ticker Strip ── -->
+                <div class="ticker-strip">
+                    <div class="ticker-item bl" *ngIf="brickbergData.brickLink?.loaded">
+                        <span class="ticker-source">BrickLink</span>
+                        <span class="ticker-price">
+                            ${{ brickbergData.priceGuideUsed?.avg_price | number:'1.2-2' }}
+                        </span>
+                        <span class="ticker-label">Used Avg</span>
+                    </div>
+                    <div class="ticker-item bl" *ngIf="brickbergData.brickLink?.loaded">
+                        <span class="ticker-source">&nbsp;</span>
+                        <span class="ticker-price">
+                            ${{ brickbergData.priceGuideNew?.avg_price | number:'1.2-2' }}
+                        </span>
+                        <span class="ticker-label">New Avg</span>
+                    </div>
+                    <div class="ticker-item be" *ngIf="brickbergData.brickEconomy?.loaded">
+                        <span class="ticker-source">BrickEconomy</span>
+                        <span class="ticker-price">
+                            ${{ brickbergData.valuation?.currentValue | number:'1.2-2' }}
+                        </span>
+                        <span class="ticker-change"
+                            [class.positive]="(brickbergData.valuation?.growthPercentage ?? 0) >= 0"
+                            [class.negative]="(brickbergData.valuation?.growthPercentage ?? 0) < 0">
+                            {{ (brickbergData.valuation?.growthPercentage ?? 0) >= 0 ? '▲' : '▼' }}
+                            {{ brickbergData.valuation?.growthPercentage | number:'1.1-1' }}%
+                        </span>
+                    </div>
+                    <div class="ticker-item bo" *ngIf="brickbergData.brickOwl?.loaded">
+                        <span class="ticker-source">Brick Owl</span>
+                        <span class="ticker-price ticker-stores">
+                            {{ brickbergData.availability?.length ?? '—' }}
+                        </span>
+                        <span class="ticker-label">Stores</span>
+                    </div>
+                </div>
+
+                <!-- ── Three-Column Grid ── -->
+                <div class="terminal-grid">
+
+                    <!-- Price Matrix (BrickLink) -->
+                    <div class="terminal-card price-matrix">
+                        <div class="card-header bl-accent">
+                            <i class="fas fa-table"></i> Price Matrix
+                        </div>
+                        <div *ngIf="brickbergData.brickLink?.loaded" class="card-content">
+                            <table class="price-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>New</th>
+                                        <th>Used</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">Average</td>
+                                        <td class="price">${{ brickbergData.priceGuideNew?.avg_price | number:'1.2-2' }}
+                                        </td>
+                                        <td class="price">${{ brickbergData.priceGuideUsed?.avg_price | number:'1.2-2'
+                                            }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Minimum</td>
+                                        <td class="price">${{ brickbergData.priceGuideNew?.min_price | number:'1.2-2' }}
+                                        </td>
+                                        <td class="price">${{ brickbergData.priceGuideUsed?.min_price | number:'1.2-2'
+                                            }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Maximum</td>
+                                        <td class="price">${{ brickbergData.priceGuideNew?.max_price | number:'1.2-2' }}
+                                        </td>
+                                        <td class="price">${{ brickbergData.priceGuideUsed?.max_price | number:'1.2-2'
+                                            }}</td>
+                                    </tr>
+                                    <tr class="lots-row">
+                                        <td class="label">Lots</td>
+                                        <td>{{ brickbergData.priceGuideNew?.total_quantity ?? '—' }}</td>
+                                        <td>{{ brickbergData.priceGuideUsed?.total_quantity ?? '—' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div *ngIf="brickbergData.brickLink?.connected && !brickbergData.brickLink?.loaded"
+                            class="card-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>{{ brickbergData.brickLink?.error ?? 'Failed to load' }}</span>
+                        </div>
+                        <div *ngIf="!brickbergData.brickLink?.connected" class="card-disconnected">
+                            <i class="fas fa-unlink"></i>
+                            <span>BrickLink not connected</span>
+                            <a routerLink="/integrations">Connect</a>
+                        </div>
+                    </div>
+
+                    <!-- Investment Metrics (BrickEconomy) -->
+                    <div class="terminal-card investment-metrics">
+                        <div class="card-header be-accent">
+                            <i class="fas fa-chart-bar"></i> Investment Metrics
+                        </div>
+                        <div *ngIf="brickbergData.brickEconomy?.loaded" class="card-content">
+                            <div class="metric-row primary-value">
+                                <span class="metric-label">Estimated Value</span>
+                                <span class="metric-value">${{ brickbergData.valuation?.currentValue | number:'1.2-2'
+                                    }}</span>
+                            </div>
+                            <div class="metric-row" *ngIf="brickbergData.valuation?.growthPercentage != null">
+                                <span class="metric-label">Growth</span>
+                                <span class="metric-value"
+                                    [class.positive]="brickbergData.valuation.growthPercentage >= 0"
+                                    [class.negative]="brickbergData.valuation.growthPercentage < 0">
+                                    {{ brickbergData.valuation.growthPercentage >= 0 ? '+' : '' }}{{
+                                    brickbergData.valuation.growthPercentage | number:'1.1-1' }}%
+                                </span>
+                            </div>
+                            <div class="metric-row" *ngIf="brickbergData.valuation?.forecastValue">
+                                <span class="metric-label">Forecast</span>
+                                <span class="metric-value">${{ brickbergData.valuation.forecastValue | number:'1.2-2'
+                                    }}</span>
+                            </div>
+                            <div class="metric-row" *ngIf="getPricePerPart() != null">
+                                <span class="metric-label">$/Part</span>
+                                <span class="metric-value">${{ getPricePerPart() | number:'1.3-3' }}</span>
+                            </div>
+                            <div class="metric-row grade-row">
+                                <span class="metric-label">Grade</span>
+                                <span class="grade-stars">
+                                    <i *ngFor="let s of [1,2,3,4,5]" class="fas fa-star"
+                                        [class.active]="s <= getInvestmentGrade()"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div *ngIf="brickbergData.brickEconomy?.connected && !brickbergData.brickEconomy?.loaded"
+                            class="card-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>{{ brickbergData.brickEconomy?.error ?? 'Failed to load' }}</span>
+                        </div>
+                        <div *ngIf="!brickbergData.brickEconomy?.connected" class="card-disconnected">
+                            <i class="fas fa-unlink"></i>
+                            <span>BrickEconomy not connected</span>
+                            <a routerLink="/integrations">Connect</a>
+                        </div>
+                    </div>
+
+                    <!-- Marketplace Availability (Brick Owl) -->
+                    <div class="terminal-card availability">
+                        <div class="card-header bo-accent">
+                            <i class="fas fa-store"></i> Availability
+                        </div>
+                        <div *ngIf="brickbergData.brickOwl?.loaded" class="card-content">
+                            <div class="availability-hero">
+                                <span class="store-count">{{ brickbergData.availability?.length ?? 0 }}</span>
+                                <span class="store-label">stores with stock</span>
+                            </div>
+                            <div class="availability-detail" *ngIf="getBestPrice() as best">
+                                <div class="metric-row">
+                                    <span class="metric-label">Best Price</span>
+                                    <span class="metric-value highlight">${{ best.price | number:'1.2-2' }}</span>
+                                </div>
+                                <div class="best-source">
+                                    {{ best.source }} · {{ best.condition }}
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="brickbergData.brickOwl?.connected && !brickbergData.brickOwl?.loaded"
+                            class="card-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>{{ brickbergData.brickOwl?.error ?? 'No listing found' }}</span>
+                        </div>
+                        <div *ngIf="!brickbergData.brickOwl?.connected" class="card-disconnected">
+                            <i class="fas fa-unlink"></i>
+                            <span>Brick Owl not connected</span>
+                            <a routerLink="/integrations">Connect</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
         <!-- Visualisations -->
         <section class="viz-section">
             <div class="viz-card">

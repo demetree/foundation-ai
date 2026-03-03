@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import * as d3 from 'd3';
 
@@ -41,6 +42,10 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     similarSetsLoading = false;
     enriching = false;
 
+    // ── Brickberg Terminal state ──
+    brickbergData: any = null;
+    brickbergLoading = false;
+
     get isInComparison(): boolean {
         return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
     }
@@ -72,6 +77,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private http: HttpClient,
         private legoSetService: LegoSetService,
         private thumbnailService: LDrawThumbnailService,
         private explorerApi: SetExplorerApiService,
@@ -111,6 +117,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
                 document.title = `${set.name} (${set.setNumber}) — Set Detail`;
                 this.loadRelatedData();
                 this.loadSimilarSets();
+                this.loadBrickbergData();
             },
             error: () => {
                 this.loading = false;
@@ -605,5 +612,66 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     private normalizeHex(hex: string | null | undefined): string | undefined {
         if (!hex) return undefined;
         return hex.startsWith('#') ? hex.substring(1) : hex;
+    }
+
+
+    // ── Brickberg Terminal ────────────────────────────────
+
+    private loadBrickbergData(): void {
+        if (!this.set?.setNumber) return;
+        this.brickbergLoading = true;
+        this.brickbergData = null;
+
+        this.http.get(`/api/brickberg/set/${this.set.setNumber}`).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (data) => {
+                this.brickbergData = data;
+                this.brickbergLoading = false;
+            },
+            error: () => {
+                this.brickbergLoading = false;
+            }
+        });
+    }
+
+    /** Investment grade: 1–5 stars based on growth % */
+    getInvestmentGrade(): number {
+        const growth = this.brickbergData?.valuation?.growthPercentage ?? 0;
+        if (growth >= 50) return 5;
+        if (growth >= 25) return 4;
+        if (growth >= 10) return 3;
+        if (growth >= 0) return 2;
+        return 1;
+    }
+
+    /** Price per part using BrickEconomy valuation */
+    getPricePerPart(): number | null {
+        const value = this.brickbergData?.valuation?.currentValue;
+        const parts = Number(this.set?.partCount);
+        if (value && parts > 0) return value / parts;
+        return null;
+    }
+
+    /** Find the lowest price across all sources */
+    getBestPrice(): { source: string; price: number; condition: string } | null {
+        const candidates: { source: string; price: number; condition: string }[] = [];
+
+        const blNewMin = this.brickbergData?.priceGuideNew?.min_price;
+        const blUsedMin = this.brickbergData?.priceGuideUsed?.min_price;
+
+        if (blNewMin > 0) candidates.push({ source: 'BrickLink', price: blNewMin, condition: 'New' });
+        if (blUsedMin > 0) candidates.push({ source: 'BrickLink', price: blUsedMin, condition: 'Used' });
+
+        if (candidates.length === 0) return null;
+        return candidates.sort((a, b) => a.price - b.price)[0];
+    }
+
+    /** Check if any Brickberg source is connected */
+    hasAnyBrickbergSource(): boolean {
+        if (!this.brickbergData) return false;
+        return this.brickbergData.brickLink?.connected ||
+            this.brickbergData.brickEconomy?.connected ||
+            this.brickbergData.brickOwl?.connected;
     }
 }

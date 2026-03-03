@@ -1290,3 +1290,509 @@
         color: #000;
     }
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+//  BRICKBERG TERMINAL
+// ═══════════════════════════════════════════════════════════════
+
+$bl-accent: #2196F3; // BrickLink blue
+$be-accent: #00B894; // BrickEconomy green
+$bo-accent: #6C5CE7; // Brick Owl purple
+
+.brickberg-terminal {
+    @include glass.glass-effect-lg;
+    margin-bottom: 32px;
+    padding: 0;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease-out 0.15s both;
+}
+
+// ── Terminal Header ──
+.terminal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--bmc-glass-border);
+    background: var(--bmc-glass-bg);
+}
+
+.terminal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+        color: $be-accent;
+        font-size: 1rem;
+    }
+}
+
+.terminal-name {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--bmc-text-primary);
+    text-transform: uppercase;
+}
+
+.terminal-status {
+    display: flex;
+    gap: 8px;
+}
+
+.source-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    background: var(--bmc-glass-bg);
+    color: var(--bmc-text-secondary);
+    opacity: 0.4;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+
+    &.connected {
+        opacity: 1;
+        color: #00B894;
+        background: rgba(0, 184, 148, 0.1);
+        border-color: rgba(0, 184, 148, 0.3);
+    }
+}
+
+// ── Loading / Empty States ──
+.terminal-loading {
+    padding: 32px 24px;
+}
+
+.terminal-skeleton {
+    height: 120px;
+    border-radius: 8px;
+    background: linear-gradient(90deg,
+            var(--bmc-glass-bg) 25%,
+            var(--bmc-glass-border) 50%,
+            var(--bmc-glass-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.terminal-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    gap: 12px;
+    color: var(--bmc-text-secondary);
+
+    i {
+        font-size: 1.8rem;
+        opacity: 0.2;
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.85rem;
+    }
+}
+
+.terminal-connect-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    color: var(--bmc-accent);
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.1);
+        border-color: var(--bmc-accent);
+    }
+}
+
+// ── Ticker Strip ──
+.ticker-strip {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--bmc-glass-border);
+    background: var(--bmc-glass-bg);
+    overflow-x: auto;
+}
+
+.ticker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 24px;
+    min-width: 140px;
+    border-right: 1px solid var(--bmc-glass-border);
+    transition: background 0.2s;
+
+    &:hover {
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.04);
+    }
+
+    &:last-child {
+        border-right: none;
+    }
+
+    &.bl {
+        border-top: 2px solid $bl-accent;
+    }
+
+    &.be {
+        border-top: 2px solid $be-accent;
+    }
+
+    &.bo {
+        border-top: 2px solid $bo-accent;
+    }
+}
+
+.ticker-source {
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--bmc-text-secondary);
+    opacity: 0.6;
+    min-height: 14px;
+}
+
+.ticker-price {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--bmc-text-primary);
+    margin: 2px 0;
+}
+
+.ticker-stores {
+    color: $bo-accent;
+}
+
+.ticker-label {
+    font-size: 0.62rem;
+    color: var(--bmc-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ticker-change {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    &.positive {
+        color: #00B894;
+    }
+
+    &.negative {
+        color: #FF6B6B;
+    }
+}
+
+// ── Terminal Grid ──
+.terminal-body {
+    padding: 0;
+}
+
+.terminal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+}
+
+.terminal-card {
+    border-right: 1px solid var(--bmc-glass-border);
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.card-header {
+    padding: 10px 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--bmc-glass-border);
+    color: var(--bmc-text-secondary);
+    background: var(--bmc-glass-bg);
+
+    i {
+        margin-right: 6px;
+        font-size: 0.7rem;
+    }
+
+    &.bl-accent {
+        border-left: 3px solid $bl-accent;
+
+        i {
+            color: $bl-accent;
+        }
+    }
+
+    &.be-accent {
+        border-left: 3px solid $be-accent;
+
+        i {
+            color: $be-accent;
+        }
+    }
+
+    &.bo-accent {
+        border-left: 3px solid $bo-accent;
+
+        i {
+            color: $bo-accent;
+        }
+    }
+}
+
+.card-content {
+    padding: 16px 20px;
+}
+
+// ── Price Table ──
+.price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+
+    th {
+        padding: 6px 12px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--bmc-text-secondary);
+        text-align: right;
+        border-bottom: 1px solid var(--bmc-glass-border);
+
+        &:first-child {
+            text-align: left;
+        }
+    }
+
+    td {
+        padding: 7px 12px;
+        font-size: 0.82rem;
+        border-bottom: 1px solid var(--bmc-glass-border);
+
+        &.label {
+            font-family: inherit;
+            font-size: 0.75rem;
+            color: var(--bmc-text-secondary);
+            font-weight: 500;
+        }
+
+        &.price {
+            text-align: right;
+            font-weight: 600;
+            color: var(--bmc-text-primary);
+        }
+    }
+
+    .lots-row td {
+        font-size: 0.72rem;
+        color: var(--bmc-text-secondary);
+        text-align: right;
+        border-bottom: none;
+    }
+}
+
+// ── Metric Rows ──
+.metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--bmc-glass-border);
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &.primary-value {
+        padding: 12px 0;
+        margin-bottom: 4px;
+
+        .metric-value {
+            font-size: 1.4rem;
+        }
+    }
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+    font-weight: 500;
+}
+
+.metric-value {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bmc-text-primary);
+
+    &.positive {
+        color: #00B894;
+    }
+
+    &.negative {
+        color: #FF6B6B;
+    }
+
+    &.highlight {
+        color: $be-accent;
+        font-size: 1.1rem;
+    }
+}
+
+// ── Investment Grade Stars ──
+.grade-stars {
+    display: flex;
+    gap: 3px;
+
+    i {
+        font-size: 0.85rem;
+        color: var(--bmc-glass-border);
+        transition: color 0.2s;
+
+        &.active {
+            color: #F0C040;
+            text-shadow: 0 0 6px rgba(240, 192, 64, 0.4);
+        }
+    }
+}
+
+// ── Availability Hero ──
+.availability-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+}
+
+.store-count {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: $bo-accent;
+    line-height: 1;
+}
+
+.store-label {
+    font-size: 0.72rem;
+    color: var(--bmc-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.availability-detail {
+    border-top: 1px solid var(--bmc-glass-border);
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+.best-source {
+    text-align: right;
+    font-size: 0.68rem;
+    color: var(--bmc-text-secondary);
+    margin-top: 2px;
+}
+
+// ── Disconnected / Error States ──
+.card-disconnected,
+.card-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    gap: 8px;
+    color: var(--bmc-text-secondary);
+    text-align: center;
+
+    i {
+        font-size: 1.2rem;
+        opacity: 0.2;
+    }
+
+    span {
+        font-size: 0.78rem;
+    }
+
+    a {
+        color: var(--bmc-accent);
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 4px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.card-error {
+    i {
+        color: #FF6B6B;
+        opacity: 0.6;
+    }
+
+    span {
+        color: rgba(255, 107, 107, 0.7);
+        font-size: 0.72rem;
+    }
+}
+
+// ── Responsive ──
+@media (max-width: 900px) {
+    .terminal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .terminal-card {
+        border-right: none;
+        border-bottom: 1px solid var(--bmc-glass-border);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .ticker-strip {
+        flex-wrap: wrap;
+    }
+
+    .ticker-item {
+        flex: 1;
+        min-width: 120px;
+    }
+}
