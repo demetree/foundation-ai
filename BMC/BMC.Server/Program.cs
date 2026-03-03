@@ -33,6 +33,7 @@ using Foundation.AI.VectorStore.Zvec;
 using BMC.AI;
 using Foundation.BMC.Services;
 using BMC.Rebrickable.Sync;
+using BMC.BrickSet.Sync;
 
 
 namespace Foundation.BMC
@@ -146,6 +147,11 @@ namespace Foundation.BMC
                 builder.Services.AddScoped<RebrickableSyncService>();
                 builder.Services.AddHostedService<Foundation.BMC.Services.RebrickablePeriodicPullService>();
                 builder.Services.AddHostedService<Foundation.BMC.Services.RebrickableSyncQueueProcessor>();
+
+                //
+                // BrickSet sync service — manages set enrichment and user collection sync with BrickSet API
+                //
+                builder.Services.AddScoped<BrickSetSyncService>();
 
 
                 //
@@ -294,6 +300,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(UserSetListController));
                 controllers.Add(typeof(MySetsController));
                 controllers.Add(typeof(MyPartListsController));
+                controllers.Add(typeof(MyLostPartsController));
 
 
                 //
@@ -311,6 +318,9 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BrickElementsController));
                 controllers.Add(typeof(BrickPartsController));
                 controllers.Add(typeof(BrickPartChangeHistoriesController));
+                controllers.Add(typeof(BrickSetSetReviewsController));
+                controllers.Add(typeof(BrickSetTransactionsController));
+                controllers.Add(typeof(BrickSetUserLinksController));
                 controllers.Add(typeof(BrickPartColoursController));
                 controllers.Add(typeof(BrickPartConnectorsController));
                 controllers.Add(typeof(BrickPartRelationshipsController));

@@ -73,6 +73,7 @@
     <ProjectReference Include="..\..\Foundation.AI\Foundation.AI.VectorStore.Zvec\Foundation.AI.VectorStore.Zvec.csproj" />
     <ProjectReference Include="..\..\BMC.LDraw\BMC.LDraw.csproj" />
     <ProjectReference Include="..\..\BMC.Rebrickable\BMC.Rebrickable.csproj" />
+    <ProjectReference Include="..\..\BMC.BrickSet\BMC.BrickSet.csproj" />
     <ProjectReference Include="..\BMC.Client\BMC.Client.esproj" />
   </ItemGroup>
 
