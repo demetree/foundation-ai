@@ -18,7 +18,13 @@ import {ApiRequestLogService} from  './api-request-log.service';
 import {BrickCategoryService} from  './brick-category.service';
 import {BrickColourService} from  './brick-colour.service';
 import {BrickConnectionService} from  './brick-connection.service';
+import {BrickEconomyTransactionService} from  './brick-economy-transaction.service';
+import {BrickEconomyUserLinkService} from  './brick-economy-user-link.service';
 import {BrickElementService} from  './brick-element.service';
+import {BrickLinkTransactionService} from  './brick-link-transaction.service';
+import {BrickLinkUserLinkService} from  './brick-link-user-link.service';
+import {BrickOwlTransactionService} from  './brick-owl-transaction.service';
+import {BrickOwlUserLinkService} from  './brick-owl-user-link.service';
 import {BrickPartService} from  './brick-part.service';
 import {BrickPartChangeHistoryService} from  './brick-part-change-history.service';
 import {BrickPartColourService} from  './brick-part-colour.service';
@@ -123,7 +129,13 @@ export class BMCDataServiceManagerService  {
               , public brickCategoryService: BrickCategoryService
               , public brickColourService: BrickColourService
               , public brickConnectionService: BrickConnectionService
+              , public brickEconomyTransactionService: BrickEconomyTransactionService
+              , public brickEconomyUserLinkService: BrickEconomyUserLinkService
               , public brickElementService: BrickElementService
+              , public brickLinkTransactionService: BrickLinkTransactionService
+              , public brickLinkUserLinkService: BrickLinkUserLinkService
+              , public brickOwlTransactionService: BrickOwlTransactionService
+              , public brickOwlUserLinkService: BrickOwlUserLinkService
               , public brickPartService: BrickPartService
               , public brickPartChangeHistoryService: BrickPartChangeHistoryService
               , public brickPartColourService: BrickPartColourService
@@ -226,7 +238,13 @@ export class BMCDataServiceManagerService  {
         this.brickCategoryService.ClearAllCaches();
         this.brickColourService.ClearAllCaches();
         this.brickConnectionService.ClearAllCaches();
+        this.brickEconomyTransactionService.ClearAllCaches();
+        this.brickEconomyUserLinkService.ClearAllCaches();
         this.brickElementService.ClearAllCaches();
+        this.brickLinkTransactionService.ClearAllCaches();
+        this.brickLinkUserLinkService.ClearAllCaches();
+        this.brickOwlTransactionService.ClearAllCaches();
+        this.brickOwlUserLinkService.ClearAllCaches();
         this.brickPartService.ClearAllCaches();
         this.brickPartChangeHistoryService.ClearAllCaches();
         this.brickPartColourService.ClearAllCaches();

@@ -143,6 +143,28 @@ export class BrickEconomySyncService {
     }
 
 
+    // ─── Transactions ───
+
+    /**
+     * Get paginated transaction history for BrickEconomy API calls.
+     */
+    getTransactions(
+        pageSize: number = 50,
+        pageNumber: number = 1,
+        direction?: string,
+        success?: boolean
+    ): Observable<BrickEconomyTransactionsPage> {
+        let params: any = { pageSize, pageNumber };
+        if (direction) params.direction = direction;
+        if (success !== undefined && success !== null) params.success = success;
+
+        return this.http.get<BrickEconomyTransactionsPage>(
+            `${this.baseUrl}/transactions`,
+            { headers: this.getAuthHeaders(), params }
+        );
+    }
+
+
     // ─── Private ───
 
     private getAuthHeaders(): HttpHeaders {
@@ -160,4 +182,24 @@ export interface BrickEconomyStatus {
     dailyQuotaUsed: number;
     dailyQuotaLimit: number;
     message: string | null;
+}
+
+export interface BrickEconomyTransaction {
+    id: number;
+    transactionDate: string;
+    direction: string;
+    methodName: string;
+    requestSummary: string;
+    success: boolean;
+    errorMessage: string | null;
+    triggeredBy: string;
+    recordCount: number | null;
+    dailyQuotaRemaining: number | null;
+}
+
+export interface BrickEconomyTransactionsPage {
+    totalCount: number;
+    pageSize: number;
+    pageNumber: number;
+    results: BrickEconomyTransaction[];
 }

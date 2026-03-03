@@ -629,6 +629,527 @@
             </div>
         </div>
 
+
+        <!-- ──── BrickLink Integration Card ──── -->
+        <div class="integration-card" [class.connected]="blStatus?.isConnected">
+
+            <!-- Card Header -->
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon bricklink">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="card-title-group">
+                        <h2>BrickLink</h2>
+                        <span class="card-tagline">Secondary market pricing &amp; part-level valuation</span>
+                    </div>
+                </div>
+                <div class="card-status-badge" [class.connected]="blStatus?.isConnected"
+                    [class.disconnected]="!blStatus?.isConnected">
+                    <span class="status-dot"></span>
+                    <span *ngIf="blStatus?.isConnected">Connected</span>
+                    <span *ngIf="!blStatus?.isConnected">Not Connected</span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="card-loading" *ngIf="blLoading">
+                <i class="fas fa-spinner fa-spin"></i> Loading status…
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body" *ngIf="!blLoading">
+
+                <!-- Connect Form (when not connected) -->
+                <div class="rb-connect-section" *ngIf="!blStatus?.isConnected">
+                    <button class="btn btn-primary" *ngIf="!blShowForm" (click)="blShowForm = true">
+                        <i class="fas fa-plug"></i> Connect to BrickLink
+                    </button>
+
+                    <div class="rb-token-form" *ngIf="blShowForm">
+                        <div class="rb-form-section">
+                            <div class="rb-token-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Generate OAuth tokens at <a
+                                        href="https://www.bricklink.com/v2/api/register_consumer.page" target="_blank"
+                                        rel="noopener">bricklink.com API</a>. Requires a BrickLink store or approved
+                                    developer account.</span>
+                            </div>
+                            <input type="password" class="rb-input" placeholder="Token Value"
+                                [(ngModel)]="blTokenValueInput" />
+                            <input type="password" class="rb-input" placeholder="Token Secret"
+                                [(ngModel)]="blTokenSecretInput" (keyup.enter)="connectToBrickLink()" />
+                        </div>
+
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary" (click)="connectToBrickLink()"
+                                [disabled]="blConnecting || !blTokenValueInput.trim() || !blTokenSecretInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="blConnecting"></i>
+                                <i class="fas fa-check" *ngIf="!blConnecting"></i>
+                                {{ blConnecting ? 'Validating…' : 'Connect' }}
+                            </button>
+                            <button class="btn btn-secondary"
+                                (click)="blShowForm = false; blTokenValueInput = ''; blTokenSecretInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <div class="rb-trust-note">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Your OAuth tokens are validated against the BrickLink API, then encrypted and stored
+                                in the database. App-level consumer credentials never leave the server.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connected: Actions -->
+                <div class="rb-connected-controls" *ngIf="blStatus?.isConnected">
+                    <div class="rb-action-row">
+                        <button class="btn btn-sm btn-outline" (click)="checkBlTokenHealth()"
+                            title="Validate stored OAuth tokens">
+                            <i class="fas fa-heartbeat"></i> Check Token
+                        </button>
+                        <button class="btn btn-sm btn-outline btn-danger-text" (click)="disconnectFromBrickLink()">
+                            <i class="fas fa-unlink"></i> Disconnect
+                        </button>
+                    </div>
+
+                    <!-- Last Sync -->
+                    <div class="rb-actions-section">
+                        <div class="rb-sync-dates" *ngIf="blStatus?.lastSyncDate">
+                            <div class="rb-sync-date">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Last sync: {{ blStatus.lastSyncDate | date:'medium' }}</span>
+                            </div>
+                        </div>
+                        <div class="rb-sync-dates" *ngIf="blStatus?.lastSyncError">
+                            <div class="rb-sync-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>{{ blStatus.lastSyncError }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── Communications Log ──── -->
+            <div class="card-comms" *ngIf="!blLoading">
+                <div class="comms-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Communications Log</h3>
+                    <span class="comms-count" *ngIf="blTxTotalCount">{{ blTxTotalCount }} total</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="comms-filters">
+                    <button class="filter-btn" [class.active]="!blTxDirectionFilter && blTxSuccessFilter === null"
+                        (click)="setBlTxFilter(null, null)">All</button>
+                    <button class="filter-btn" [class.active]="blTxDirectionFilter === 'Pull'"
+                        (click)="setBlTxFilter('Pull', null)">
+                        <i class="fas fa-arrow-down"></i> Pull
+                    </button>
+                    <button class="filter-btn" [class.active]="blTxDirectionFilter === 'Push'"
+                        (click)="setBlTxFilter('Push', null)">
+                        <i class="fas fa-arrow-up"></i> Push
+                    </button>
+                    <span class="filter-sep"></span>
+                    <button class="filter-btn" [class.active]="blTxSuccessFilter === true"
+                        (click)="setBlTxFilter(blTxDirectionFilter, true)">
+                        <i class="fas fa-check-circle"></i> Success
+                    </button>
+                    <button class="filter-btn" [class.active]="blTxSuccessFilter === false"
+                        (click)="setBlTxFilter(blTxDirectionFilter, false)">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </button>
+                </div>
+
+                <!-- Transaction Timeline -->
+                <div class="comms-timeline" *ngIf="blTransactions.length > 0">
+                    <div class="tx-row" *ngFor="let tx of blTransactions" [class.tx-failed]="!tx.success">
+                        <div class="tx-direction" [ngClass]="getDirectionClass(tx.direction)">
+                            <i [class]="getDirectionIcon(tx.direction)"></i>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-summary">{{ tx.requestSummary }}</div>
+                            <div class="tx-meta">
+                                <span class="tx-method">{{ tx.methodName }}</span>
+                                <span class="tx-trigger">{{ tx.triggeredBy }}</span>
+                                <span class="tx-status"
+                                    [ngClass]="tx.success ? 'status-success' : 'status-server-error'">
+                                    {{ tx.success ? 'OK' : 'ERR' }}
+                                </span>
+                            </div>
+                            <div class="tx-error" *ngIf="tx.errorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> {{ tx.errorMessage }}
+                            </div>
+                        </div>
+                        <div class="tx-time">{{ formatRelativeTime(tx.transactionDate) }}</div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="comms-empty" *ngIf="blTransactions.length === 0">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No communications recorded yet.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="comms-pagination" *ngIf="blTxTotalCount > blTxPageSize">
+                    <button class="page-btn" (click)="prevBlTxPage()" [disabled]="blTxPage <= 1">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">Page {{ blTxPage }} of {{ (blTxTotalCount / blTxPageSize |
+                        number:'1.0-0') }}</span>
+                    <button class="page-btn" (click)="nextBlTxPage()"
+                        [disabled]="blTxPage >= (blTxTotalCount / blTxPageSize)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ──── BrickEconomy Integration Card ──── -->
+        <div class="integration-card" [class.connected]="beStatus?.isConnected">
+
+            <!-- Card Header -->
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon brickeconomy">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-title-group">
+                        <h2>BrickEconomy</h2>
+                        <span class="card-tagline">AI-powered set &amp; minifig valuations</span>
+                    </div>
+                </div>
+                <div class="card-status-badge" [class.connected]="beStatus?.isConnected"
+                    [class.disconnected]="!beStatus?.isConnected">
+                    <span class="status-dot"></span>
+                    <span *ngIf="beStatus?.isConnected">Connected</span>
+                    <span *ngIf="!beStatus?.isConnected">Not Connected</span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="card-loading" *ngIf="beLoading">
+                <i class="fas fa-spinner fa-spin"></i> Loading status…
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body" *ngIf="!beLoading">
+
+                <!-- Quota Badge (when connected) -->
+                <div class="rb-connection-info" *ngIf="beStatus?.isConnected">
+                    <div class="bs-quota-badge">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>{{ beStatus.dailyQuotaUsed }} / {{ beStatus.dailyQuotaLimit }} API calls used today</span>
+                    </div>
+                </div>
+
+                <!-- Connect Form (when not connected) -->
+                <div class="rb-connect-section" *ngIf="!beStatus?.isConnected">
+                    <button class="btn btn-primary" *ngIf="!beShowForm" (click)="beShowForm = true">
+                        <i class="fas fa-plug"></i> Connect to BrickEconomy
+                    </button>
+
+                    <div class="rb-token-form" *ngIf="beShowForm">
+                        <div class="rb-form-section">
+                            <div class="rb-token-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Requires a <a href="https://www.brickeconomy.com/premium" target="_blank"
+                                        rel="noopener">BrickEconomy Premium</a> membership. Your API key is in your
+                                    profile settings.</span>
+                            </div>
+                            <input type="password" class="rb-input" placeholder="BrickEconomy API Key"
+                                [(ngModel)]="beApiKeyInput" (keyup.enter)="connectToBrickEconomy()" />
+                        </div>
+
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary" (click)="connectToBrickEconomy()"
+                                [disabled]="beConnecting || !beApiKeyInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="beConnecting"></i>
+                                <i class="fas fa-check" *ngIf="!beConnecting"></i>
+                                {{ beConnecting ? 'Validating…' : 'Connect' }}
+                            </button>
+                            <button class="btn btn-secondary" (click)="beShowForm = false; beApiKeyInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <div class="rb-trust-note">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Your API key is validated, encrypted, and stored in the database.
+                                Daily quota is limited to 100 API calls and resets at midnight UTC.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connected: Actions -->
+                <div class="rb-connected-controls" *ngIf="beStatus?.isConnected">
+                    <div class="rb-action-row">
+                        <button class="btn btn-sm btn-outline btn-danger-text" (click)="disconnectFromBrickEconomy()">
+                            <i class="fas fa-unlink"></i> Disconnect
+                        </button>
+                    </div>
+
+                    <!-- Last Sync -->
+                    <div class="rb-actions-section">
+                        <div class="rb-sync-dates" *ngIf="beStatus?.lastSyncDate">
+                            <div class="rb-sync-date">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Last sync: {{ beStatus.lastSyncDate | date:'medium' }}</span>
+                            </div>
+                        </div>
+                        <div class="rb-sync-dates" *ngIf="beStatus?.lastSyncError">
+                            <div class="rb-sync-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>{{ beStatus.lastSyncError }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── Communications Log ──── -->
+            <div class="card-comms" *ngIf="!beLoading">
+                <div class="comms-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Communications Log</h3>
+                    <span class="comms-count" *ngIf="beTxTotalCount">{{ beTxTotalCount }} total</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="comms-filters">
+                    <button class="filter-btn" [class.active]="!beTxDirectionFilter && beTxSuccessFilter === null"
+                        (click)="setBeTxFilter(null, null)">All</button>
+                    <button class="filter-btn" [class.active]="beTxDirectionFilter === 'Pull'"
+                        (click)="setBeTxFilter('Pull', null)">
+                        <i class="fas fa-arrow-down"></i> Pull
+                    </button>
+                    <span class="filter-sep"></span>
+                    <button class="filter-btn" [class.active]="beTxSuccessFilter === true"
+                        (click)="setBeTxFilter(beTxDirectionFilter, true)">
+                        <i class="fas fa-check-circle"></i> Success
+                    </button>
+                    <button class="filter-btn" [class.active]="beTxSuccessFilter === false"
+                        (click)="setBeTxFilter(beTxDirectionFilter, false)">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </button>
+                </div>
+
+                <!-- Transaction Timeline -->
+                <div class="comms-timeline" *ngIf="beTransactions.length > 0">
+                    <div class="tx-row" *ngFor="let tx of beTransactions" [class.tx-failed]="!tx.success">
+                        <div class="tx-direction direction-pull">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-summary">{{ tx.requestSummary }}</div>
+                            <div class="tx-meta">
+                                <span class="tx-method">{{ tx.methodName }}</span>
+                                <span class="tx-trigger">{{ tx.triggeredBy }}</span>
+                                <span class="tx-status"
+                                    [ngClass]="tx.success ? 'status-success' : 'status-server-error'">
+                                    {{ tx.success ? 'OK' : 'ERR' }}
+                                </span>
+                            </div>
+                            <div class="tx-error" *ngIf="tx.errorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> {{ tx.errorMessage }}
+                            </div>
+                        </div>
+                        <div class="tx-time">{{ formatRelativeTime(tx.transactionDate) }}</div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="comms-empty" *ngIf="beTransactions.length === 0">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No communications recorded yet.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="comms-pagination" *ngIf="beTxTotalCount > beTxPageSize">
+                    <button class="page-btn" (click)="prevBeTxPage()" [disabled]="beTxPage <= 1">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">Page {{ beTxPage }} of {{ (beTxTotalCount / beTxPageSize |
+                        number:'1.0-0') }}</span>
+                    <button class="page-btn" (click)="nextBeTxPage()"
+                        [disabled]="beTxPage >= (beTxTotalCount / beTxPageSize)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ──── Brick Owl Integration Card ──── -->
+        <div class="integration-card" [class.connected]="boStatus?.isConnected">
+
+            <!-- Card Header -->
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon brickowl">
+                        <i class="fas fa-feather-alt"></i>
+                    </div>
+                    <div class="card-title-group">
+                        <h2>Brick Owl</h2>
+                        <span class="card-tagline">Marketplace catalog, pricing &amp; cross-platform ID mapping</span>
+                    </div>
+                </div>
+                <div class="card-status-badge" [class.connected]="boStatus?.isConnected"
+                    [class.disconnected]="!boStatus?.isConnected">
+                    <span class="status-dot"></span>
+                    <span *ngIf="boStatus?.isConnected">Connected</span>
+                    <span *ngIf="!boStatus?.isConnected">Not Connected</span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="card-loading" *ngIf="boLoading">
+                <i class="fas fa-spinner fa-spin"></i> Loading status…
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body" *ngIf="!boLoading">
+
+                <!-- Connect Form (when not connected) -->
+                <div class="rb-connect-section" *ngIf="!boStatus?.isConnected">
+                    <button class="btn btn-primary" *ngIf="!boShowForm" (click)="boShowForm = true">
+                        <i class="fas fa-plug"></i> Connect to Brick Owl
+                    </button>
+
+                    <div class="rb-token-form" *ngIf="boShowForm">
+                        <div class="rb-form-section">
+                            <div class="rb-token-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Get your API key from your <a href="https://www.brickowl.com/myaccount/api"
+                                        target="_blank" rel="noopener">Brick Owl account settings</a></span>
+                            </div>
+                            <input type="password" class="rb-input" placeholder="Brick Owl API Key"
+                                [(ngModel)]="boApiKeyInput" (keyup.enter)="connectToBrickOwl()" />
+                        </div>
+
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary" (click)="connectToBrickOwl()"
+                                [disabled]="boConnecting || !boApiKeyInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="boConnecting"></i>
+                                <i class="fas fa-check" *ngIf="!boConnecting"></i>
+                                {{ boConnecting ? 'Validating…' : 'Connect' }}
+                            </button>
+                            <button class="btn btn-secondary" (click)="boShowForm = false; boApiKeyInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <div class="rb-trust-note">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Your API key is validated against the Brick Owl catalog, then encrypted and stored
+                                in the database.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connected: Actions -->
+                <div class="rb-connected-controls" *ngIf="boStatus?.isConnected">
+                    <div class="rb-action-row">
+                        <button class="btn btn-sm btn-outline btn-danger-text" (click)="disconnectFromBrickOwl()">
+                            <i class="fas fa-unlink"></i> Disconnect
+                        </button>
+                    </div>
+
+                    <!-- Last Sync -->
+                    <div class="rb-actions-section">
+                        <div class="rb-sync-dates" *ngIf="boStatus?.lastSyncDate">
+                            <div class="rb-sync-date">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Last sync: {{ boStatus.lastSyncDate | date:'medium' }}</span>
+                            </div>
+                        </div>
+                        <div class="rb-sync-dates" *ngIf="boStatus?.lastSyncError">
+                            <div class="rb-sync-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>{{ boStatus.lastSyncError }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── Communications Log ──── -->
+            <div class="card-comms" *ngIf="!boLoading">
+                <div class="comms-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Communications Log</h3>
+                    <span class="comms-count" *ngIf="boTxTotalCount">{{ boTxTotalCount }} total</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="comms-filters">
+                    <button class="filter-btn" [class.active]="!boTxDirectionFilter && boTxSuccessFilter === null"
+                        (click)="setBoTxFilter(null, null)">All</button>
+                    <button class="filter-btn" [class.active]="boTxDirectionFilter === 'Pull'"
+                        (click)="setBoTxFilter('Pull', null)">
+                        <i class="fas fa-arrow-down"></i> Pull
+                    </button>
+                    <button class="filter-btn" [class.active]="boTxDirectionFilter === 'Push'"
+                        (click)="setBoTxFilter('Push', null)">
+                        <i class="fas fa-arrow-up"></i> Push
+                    </button>
+                    <span class="filter-sep"></span>
+                    <button class="filter-btn" [class.active]="boTxSuccessFilter === true"
+                        (click)="setBoTxFilter(boTxDirectionFilter, true)">
+                        <i class="fas fa-check-circle"></i> Success
+                    </button>
+                    <button class="filter-btn" [class.active]="boTxSuccessFilter === false"
+                        (click)="setBoTxFilter(boTxDirectionFilter, false)">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </button>
+                </div>
+
+                <!-- Transaction Timeline -->
+                <div class="comms-timeline" *ngIf="boTransactions.length > 0">
+                    <div class="tx-row" *ngFor="let tx of boTransactions" [class.tx-failed]="!tx.success">
+                        <div class="tx-direction" [ngClass]="getDirectionClass(tx.direction)">
+                            <i [class]="getDirectionIcon(tx.direction)"></i>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-summary">{{ tx.requestSummary }}</div>
+                            <div class="tx-meta">
+                                <span class="tx-method">{{ tx.methodName }}</span>
+                                <span class="tx-trigger">{{ tx.triggeredBy }}</span>
+                                <span class="tx-status"
+                                    [ngClass]="tx.success ? 'status-success' : 'status-server-error'">
+                                    {{ tx.success ? 'OK' : 'ERR' }}
+                                </span>
+                            </div>
+                            <div class="tx-error" *ngIf="tx.errorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> {{ tx.errorMessage }}
+                            </div>
+                        </div>
+                        <div class="tx-time">{{ formatRelativeTime(tx.transactionDate) }}</div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="comms-empty" *ngIf="boTransactions.length === 0">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No communications recorded yet.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="comms-pagination" *ngIf="boTxTotalCount > boTxPageSize">
+                    <button class="page-btn" (click)="prevBoTxPage()" [disabled]="boTxPage <= 1">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">Page {{ boTxPage }} of {{ (boTxTotalCount / boTxPageSize |
+                        number:'1.0-0') }}</span>
+                    <button class="page-btn" (click)="nextBoTxPage()"
+                        [disabled]="boTxPage >= (boTxTotalCount / boTxPageSize)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 </div>

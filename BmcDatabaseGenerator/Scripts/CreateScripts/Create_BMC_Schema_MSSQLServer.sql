@@ -18,6 +18,12 @@ CREATE SCHEMA [BMC]
 GO
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE [BMC].[BrickOwlTransaction]
+-- DROP TABLE [BMC].[BrickEconomyTransaction]
+-- DROP TABLE [BMC].[BrickLinkTransaction]
+-- DROP TABLE [BMC].[BrickOwlUserLink]
+-- DROP TABLE [BMC].[BrickEconomyUserLink]
+-- DROP TABLE [BMC].[BrickLinkUserLink]
 -- DROP TABLE [BMC].[PendingRegistration]
 -- DROP TABLE [BMC].[ApiRequestLog]
 -- DROP TABLE [BMC].[ApiKey]
@@ -118,6 +124,12 @@ GO
 -- DROP TABLE [BMC].[BrickCategory]
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON [BMC].[BrickOwlTransaction] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickEconomyTransaction] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickLinkTransaction] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickOwlUserLink] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickEconomyUserLink] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickLinkUserLink] DISABLE
 -- ALTER INDEX ALL ON [BMC].[PendingRegistration] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ApiRequestLog] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ApiKey] DISABLE
@@ -218,6 +230,12 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON [BMC].[BrickOwlTransaction] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickEconomyTransaction] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickLinkTransaction] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickOwlUserLink] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickEconomyUserLink] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickLinkUserLink] REBUILD
 -- ALTER INDEX ALL ON [BMC].[PendingRegistration] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ApiRequestLog] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ApiKey] REBUILD
@@ -4358,6 +4376,205 @@ GO
 
 -- Index on the PendingRegistration table's status,codeExpiresAt,active,deleted fields.
 CREATE INDEX [I_PendingRegistration_status_codeExpiresAt_active_deleted] ON [BMC].[PendingRegistration] ([status], [codeExpiresAt], [active], [deleted])
+GO
+
+
+-- Stores per-tenant BrickLink OAuth 1.0 token credentials and sync state. The consumer key/secret are stored in appsettings.json; the per-user token value/secret are stored here encrypted.
+CREATE TABLE [BMC].[BrickLinkUserLink]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[encryptedTokenValue] NVARCHAR(500) NULL,		-- Encrypted OAuth 1.0 token value — encrypted via ASP.NET Data Protection
+	[encryptedTokenSecret] NVARCHAR(500) NULL,		-- Encrypted OAuth 1.0 token secret — encrypted via ASP.NET Data Protection
+	[syncEnabled] BIT NOT NULL DEFAULT 0,		-- Whether automatic sync is enabled for this tenant
+	[syncDirection] NVARCHAR(50) NULL,		-- Sync direction: Pull, Push, or Both (null = Pull)
+	[lastSyncDate] DATETIME2(7) NULL,		-- Date/time of the last successful sync operation
+	[lastPullDate] DATETIME2(7) NULL,		-- Date/time of the last successful pull from BrickLink
+	[lastPushDate] DATETIME2(7) NULL,		-- Date/time of the last successful push to BrickLink
+	[lastSyncError] NVARCHAR(1000) NULL,		-- Error message from the last failed sync attempt (null = no errors)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_BrickLinkUserLink_tenantGuid] UNIQUE ( [tenantGuid]) 		-- Uniqueness enforced on the BrickLinkUserLink table's tenantGuid field.
+)
+GO
+
+-- Index on the BrickLinkUserLink table's tenantGuid field.
+CREATE INDEX [I_BrickLinkUserLink_tenantGuid] ON [BMC].[BrickLinkUserLink] ([tenantGuid])
+GO
+
+-- Index on the BrickLinkUserLink table's tenantGuid,active fields.
+CREATE INDEX [I_BrickLinkUserLink_tenantGuid_active] ON [BMC].[BrickLinkUserLink] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickLinkUserLink table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickLinkUserLink_tenantGuid_deleted] ON [BMC].[BrickLinkUserLink] ([tenantGuid], [deleted])
+GO
+
+
+-- Stores per-tenant BrickEconomy Premium API key and sync state. BrickEconomy provides AI/ML-powered set and minifig valuations. Rate limited to 100 requests per day.
+CREATE TABLE [BMC].[BrickEconomyUserLink]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[encryptedApiKey] NVARCHAR(500) NULL,		-- Encrypted BrickEconomy Premium API key — encrypted via ASP.NET Data Protection
+	[syncEnabled] BIT NOT NULL DEFAULT 0,		-- Whether automatic sync is enabled for this tenant
+	[lastSyncDate] DATETIME2(7) NULL,		-- Date/time of the last successful sync operation
+	[lastSyncError] NVARCHAR(1000) NULL,		-- Error message from the last failed sync attempt (null = no errors)
+	[dailyQuotaUsed] INT NULL,		-- Number of API requests used today against the 100/day quota (reset at 00:00 UTC)
+	[quotaResetDate] DATETIME2(7) NULL,		-- Date when the daily quota counter was last reset
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_BrickEconomyUserLink_tenantGuid] UNIQUE ( [tenantGuid]) 		-- Uniqueness enforced on the BrickEconomyUserLink table's tenantGuid field.
+)
+GO
+
+-- Index on the BrickEconomyUserLink table's tenantGuid field.
+CREATE INDEX [I_BrickEconomyUserLink_tenantGuid] ON [BMC].[BrickEconomyUserLink] ([tenantGuid])
+GO
+
+-- Index on the BrickEconomyUserLink table's tenantGuid,active fields.
+CREATE INDEX [I_BrickEconomyUserLink_tenantGuid_active] ON [BMC].[BrickEconomyUserLink] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickEconomyUserLink table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickEconomyUserLink_tenantGuid_deleted] ON [BMC].[BrickEconomyUserLink] ([tenantGuid], [deleted])
+GO
+
+
+-- Stores per-tenant Brick Owl API key and sync state. Brick Owl is the second-largest LEGO marketplace, providing catalog lookups, cross-platform ID mapping, and collection management.
+CREATE TABLE [BMC].[BrickOwlUserLink]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[encryptedApiKey] NVARCHAR(500) NULL,		-- Encrypted Brick Owl API key — encrypted via ASP.NET Data Protection
+	[syncEnabled] BIT NOT NULL DEFAULT 0,		-- Whether automatic sync is enabled for this tenant
+	[syncDirection] NVARCHAR(50) NULL,		-- Sync direction: Pull, Push, or Both (null = Pull)
+	[lastSyncDate] DATETIME2(7) NULL,		-- Date/time of the last successful sync operation
+	[lastPullDate] DATETIME2(7) NULL,		-- Date/time of the last successful pull from Brick Owl
+	[lastPushDate] DATETIME2(7) NULL,		-- Date/time of the last successful push to Brick Owl
+	[lastSyncError] NVARCHAR(1000) NULL,		-- Error message from the last failed sync attempt (null = no errors)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_BrickOwlUserLink_tenantGuid] UNIQUE ( [tenantGuid]) 		-- Uniqueness enforced on the BrickOwlUserLink table's tenantGuid field.
+)
+GO
+
+-- Index on the BrickOwlUserLink table's tenantGuid field.
+CREATE INDEX [I_BrickOwlUserLink_tenantGuid] ON [BMC].[BrickOwlUserLink] ([tenantGuid])
+GO
+
+-- Index on the BrickOwlUserLink table's tenantGuid,active fields.
+CREATE INDEX [I_BrickOwlUserLink_tenantGuid_active] ON [BMC].[BrickOwlUserLink] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickOwlUserLink table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickOwlUserLink_tenantGuid_deleted] ON [BMC].[BrickOwlUserLink] ([tenantGuid], [deleted])
+GO
+
+
+-- Full audit log of every BrickLink API call BMC makes on behalf of a user. Mirrors the BrickSetTransaction pattern for complete transparency.
+CREATE TABLE [BMC].[BrickLinkTransaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[transactionDate] DATETIME2(7) NULL,		-- Date/time the API call was made
+	[direction] NVARCHAR(50) NOT NULL,		-- Direction of data flow: Push, Pull, Enrich
+	[methodName] NVARCHAR(100) NOT NULL,		-- BrickLink API method name (e.g. 'getItem', 'getPriceGuide', 'getSubsets')
+	[requestSummary] NVARCHAR(MAX) NULL,		-- Human-readable description of the operation
+	[success] BIT NOT NULL DEFAULT 1,		-- Whether the API call completed successfully
+	[errorMessage] NVARCHAR(MAX) NULL,		-- Error details if the call failed (null on success)
+	[triggeredBy] NVARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, SetDetailView, PriceGuide
+	[recordCount] INT NULL,		-- Number of rows retrieved or affected by this API call
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the BrickLinkTransaction table's tenantGuid field.
+CREATE INDEX [I_BrickLinkTransaction_tenantGuid] ON [BMC].[BrickLinkTransaction] ([tenantGuid])
+GO
+
+-- Index on the BrickLinkTransaction table's tenantGuid,active fields.
+CREATE INDEX [I_BrickLinkTransaction_tenantGuid_active] ON [BMC].[BrickLinkTransaction] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickLinkTransaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickLinkTransaction_tenantGuid_deleted] ON [BMC].[BrickLinkTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- Full audit log of every BrickEconomy API call BMC makes on behalf of a user. Tracks daily quota usage for the 100-request-per-day limit.
+CREATE TABLE [BMC].[BrickEconomyTransaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[transactionDate] DATETIME2(7) NULL,		-- Date/time the API call was made
+	[direction] NVARCHAR(50) NOT NULL,		-- Direction of data flow: Pull, Enrich
+	[methodName] NVARCHAR(100) NOT NULL,		-- BrickEconomy API method name (e.g. 'getSet', 'getMinifig', 'getSalesLedger')
+	[requestSummary] NVARCHAR(MAX) NULL,		-- Human-readable description of the operation
+	[success] BIT NOT NULL DEFAULT 1,		-- Whether the API call completed successfully
+	[errorMessage] NVARCHAR(MAX) NULL,		-- Error details if the call failed (null on success)
+	[triggeredBy] NVARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, SetDetailView, Valuation
+	[recordCount] INT NULL,		-- Number of rows retrieved or affected by this API call
+	[dailyQuotaRemaining] INT NULL,		-- Daily API quota remaining after this call (out of 100)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the BrickEconomyTransaction table's tenantGuid field.
+CREATE INDEX [I_BrickEconomyTransaction_tenantGuid] ON [BMC].[BrickEconomyTransaction] ([tenantGuid])
+GO
+
+-- Index on the BrickEconomyTransaction table's tenantGuid,active fields.
+CREATE INDEX [I_BrickEconomyTransaction_tenantGuid_active] ON [BMC].[BrickEconomyTransaction] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickEconomyTransaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickEconomyTransaction_tenantGuid_deleted] ON [BMC].[BrickEconomyTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- Full audit log of every Brick Owl API call BMC makes on behalf of a user. Mirrors the BrickSetTransaction pattern for complete transparency.
+CREATE TABLE [BMC].[BrickOwlTransaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[transactionDate] DATETIME2(7) NULL,		-- Date/time the API call was made
+	[direction] NVARCHAR(50) NOT NULL,		-- Direction of data flow: Push, Pull
+	[methodName] NVARCHAR(100) NOT NULL,		-- Brick Owl API method name (e.g. 'catalogLookup', 'idLookup', 'getCollection')
+	[requestSummary] NVARCHAR(MAX) NULL,		-- Human-readable description of the operation
+	[success] BIT NOT NULL DEFAULT 1,		-- Whether the API call completed successfully
+	[errorMessage] NVARCHAR(MAX) NULL,		-- Error details if the call failed (null on success)
+	[triggeredBy] NVARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, CatalogLookup, IdMapping
+	[recordCount] INT NULL,		-- Number of rows retrieved or affected by this API call
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the BrickOwlTransaction table's tenantGuid field.
+CREATE INDEX [I_BrickOwlTransaction_tenantGuid] ON [BMC].[BrickOwlTransaction] ([tenantGuid])
+GO
+
+-- Index on the BrickOwlTransaction table's tenantGuid,active fields.
+CREATE INDEX [I_BrickOwlTransaction_tenantGuid_active] ON [BMC].[BrickOwlTransaction] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickOwlTransaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickOwlTransaction_tenantGuid_deleted] ON [BMC].[BrickOwlTransaction] ([tenantGuid], [deleted])
 GO
 
 

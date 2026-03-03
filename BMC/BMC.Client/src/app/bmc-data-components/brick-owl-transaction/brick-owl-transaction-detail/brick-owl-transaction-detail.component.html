@@ -1,0 +1,89 @@
+<div class="container-fluid p-1 m-0 brick-owl-transaction-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-owl-transaction-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Owl Transaction</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Owl Transaction' : 'Add Brick Owl Transaction'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickOwlTransactionReader()">
+                <div class="col m-2 brick-owl-transaction-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickOwlTransactionForm" (ngSubmit)="submitForm()" class="brick-owl-transaction-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                                <label for="BrickOwlTransaction-transactionDate" id="label-BrickOwlTransaction-transactionDate">Transaction Date</label>
+                                <input type="datetime-local" id="BrickOwlTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" aria-labelledby="label-transactionDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('direction')">
+                                <label for="BrickOwlTransaction-direction" id="label-BrickOwlTransaction-direction"><span class="text-danger">*</span>Direction</label>
+                                <input type="text" id="BrickOwlTransaction-direction" formControlName="direction" placeholder="Enter Direction" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" aria-labelledby="label-direction" />
+                                <div *ngIf="brickOwlTransactionForm.get('direction')?.invalid && brickOwlTransactionForm.get('direction')?.touched" class="text-danger">
+                                    Direction is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('methodName')">
+                                <label for="BrickOwlTransaction-methodName" id="label-BrickOwlTransaction-methodName"><span class="text-danger">*</span>Method Name</label>
+                                <input type="text" id="BrickOwlTransaction-methodName" formControlName="methodName" placeholder="Enter Method Name" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" aria-labelledby="label-methodName" />
+                                <div *ngIf="brickOwlTransactionForm.get('methodName')?.invalid && brickOwlTransactionForm.get('methodName')?.touched" class="text-danger">
+                                    Method Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('requestSummary')">
+                                <label for="BrickOwlTransaction-requestSummary" id="label-BrickOwlTransaction-requestSummary">Request Summary</label>
+                                <textarea id="BrickOwlTransaction-requestSummary" formControlName="requestSummary" placeholder="Enter Request Summary" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                                <input type="checkbox" id="BrickOwlTransaction-success" formControlName="success" class="form-check-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" />
+                                <label for="BrickOwlTransaction-success" class="form-check-label" id="label-BrickOwlTransaction-success"><span class="text-danger">*</span>Success</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="BrickOwlTransaction-errorMessage" id="label-BrickOwlTransaction-errorMessage">Error Message</label>
+                                <textarea id="BrickOwlTransaction-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('triggeredBy')">
+                                <label for="BrickOwlTransaction-triggeredBy" id="label-BrickOwlTransaction-triggeredBy"><span class="text-danger">*</span>Triggered By</label>
+                                <input type="text" id="BrickOwlTransaction-triggeredBy" formControlName="triggeredBy" placeholder="Enter Triggered By" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" aria-labelledby="label-triggeredBy" />
+                                <div *ngIf="brickOwlTransactionForm.get('triggeredBy')?.invalid && brickOwlTransactionForm.get('triggeredBy')?.touched" class="text-danger">
+                                    Triggered By is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recordCount')">
+                                <label for="BrickOwlTransaction-recordCount" id="label-BrickOwlTransaction-recordCount">Record Count</label>
+                                <input type="number" id="BrickOwlTransaction-recordCount" formControlName="recordCount" placeholder="Enter Record Count" class="form-control brick-owl-transaction-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" aria-labelledby="label-recordCount" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickOwlTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" />
+                                <label for="BrickOwlTransaction-active" class="form-check-label" id="label-BrickOwlTransaction-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickOwlTransaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickOwlTransactionWriter()" />
+                                <label for="BrickOwlTransaction-deleted" class="form-check-label" id="label-BrickOwlTransaction-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-owl-transaction-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickOwlTransactionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Owl Transaction">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickOwlTransactionForm.valid || !brickOwlTransactionForm.dirty || brickOwlTransactionForm.pristine  || userIsBMCBrickOwlTransactionWriter() == false " ngbTooltip="Save the Brick Owl Transaction changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Owl Transaction' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

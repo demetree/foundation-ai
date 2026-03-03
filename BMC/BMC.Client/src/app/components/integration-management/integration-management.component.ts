@@ -3,6 +3,9 @@ import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { RebrickableSyncService, SyncStatus, SyncTransaction } from '../../services/rebrickable-sync.service';
 import { BrickSetSyncService, BrickSetSyncStatus, BrickSetTransaction } from '../../services/brickset-sync.service';
+import { BrickLinkSyncService, BrickLinkStatus, BrickLinkTransaction } from '../../services/bricklink-sync.service';
+import { BrickEconomySyncService, BrickEconomyStatus, BrickEconomyTransaction } from '../../services/brickeconomy-sync.service';
+import { BrickOwlSyncService, BrickOwlStatus, BrickOwlTransaction } from '../../services/brickowl-sync.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 
@@ -116,9 +119,64 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
     ];
 
 
+    // ───────────────────── BrickLink State ─────────────────────
+
+    blLoading = false;
+    blStatus: BrickLinkStatus | null = null;
+    blConnecting = false;
+    blShowForm = false;
+    blTokenValueInput = '';
+    blTokenSecretInput = '';
+
+    // Transaction log
+    blTransactions: BrickLinkTransaction[] = [];
+    blTxTotalCount = 0;
+    blTxPage = 1;
+    blTxPageSize = 20;
+    blTxDirectionFilter: string | null = null;
+    blTxSuccessFilter: boolean | null = null;
+
+
+    // ───────────────────── BrickEconomy State ─────────────────────
+
+    beLoading = false;
+    beStatus: BrickEconomyStatus | null = null;
+    beConnecting = false;
+    beShowForm = false;
+    beApiKeyInput = '';
+
+    // Transaction log
+    beTransactions: BrickEconomyTransaction[] = [];
+    beTxTotalCount = 0;
+    beTxPage = 1;
+    beTxPageSize = 20;
+    beTxDirectionFilter: string | null = null;
+    beTxSuccessFilter: boolean | null = null;
+
+
+    // ───────────────────── Brick Owl State ─────────────────────
+
+    boLoading = false;
+    boStatus: BrickOwlStatus | null = null;
+    boConnecting = false;
+    boShowForm = false;
+    boApiKeyInput = '';
+
+    // Transaction log
+    boTransactions: BrickOwlTransaction[] = [];
+    boTxTotalCount = 0;
+    boTxPage = 1;
+    boTxPageSize = 20;
+    boTxDirectionFilter: string | null = null;
+    boTxSuccessFilter: boolean | null = null;
+
+
     constructor(
         private syncService: RebrickableSyncService,
         private bsSyncService: BrickSetSyncService,
+        private blSyncService: BrickLinkSyncService,
+        private beSyncService: BrickEconomySyncService,
+        private boSyncService: BrickOwlSyncService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService
     ) { }
@@ -127,6 +185,9 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.loadRebrickableData();
         this.loadBrickSetData();
+        this.loadBrickLinkData();
+        this.loadBrickEconomyData();
+        this.loadBrickOwlData();
     }
 
 
@@ -592,6 +653,359 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
         if (this.bsTxPage > 1) {
             this.bsTxPage--;
             this.loadBsTransactions();
+        }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  BRICKLINK METHODS
+    // ═══════════════════════════════════════════════════════════════
+
+    loadBrickLinkData(): void {
+        this.blLoading = true;
+        this.blSyncService.getStatus().pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.blLoading = false)
+        ).subscribe({
+            next: (status) => {
+                this.blStatus = status;
+                this.loadBlTransactions();
+            },
+            error: () => {
+                this.blStatus = null;
+                this.loadBlTransactions();
+            }
+        });
+    }
+
+
+    connectToBrickLink(): void {
+        if (!this.blTokenValueInput.trim() || !this.blTokenSecretInput.trim()) return;
+
+        this.blConnecting = true;
+        this.blSyncService.connect(this.blTokenValueInput.trim(), this.blTokenSecretInput.trim()).pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.blConnecting = false)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Connected', 'Successfully connected to BrickLink!', MessageSeverity.success);
+                this.blTokenValueInput = '';
+                this.blTokenSecretInput = '';
+                this.blShowForm = false;
+                this.loadBrickLinkData();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Connection failed. Check your OAuth tokens.';
+                this.alertService.showMessage('Connection Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    async disconnectFromBrickLink(): Promise<void> {
+        const confirmed = await this.confirmationService.confirm(
+            'Disconnect BrickLink',
+            'This will remove your stored OAuth tokens. Your enriched data will be preserved.'
+        );
+        if (!confirmed) return;
+
+        this.blSyncService.disconnect().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Disconnected', 'BrickLink integration disabled.', MessageSeverity.success);
+                this.loadBrickLinkData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to disconnect.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    checkBlTokenHealth(): void {
+        this.blSyncService.getTokenHealth().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (result) => {
+                if (result.valid) {
+                    this.alertService.showMessage('Token Valid', 'Your BrickLink OAuth tokens are healthy.', MessageSeverity.success);
+                } else {
+                    this.alertService.showMessage('Token Invalid', result.error || 'Token validation failed.', MessageSeverity.warn);
+                }
+                this.loadBrickLinkData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Could not check BrickLink token health.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    loadBlTransactions(): void {
+        this.blSyncService.getTransactions(
+            this.blTxPageSize,
+            this.blTxPage,
+            this.blTxDirectionFilter || undefined,
+            this.blTxSuccessFilter !== null ? this.blTxSuccessFilter : undefined
+        ).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (page) => {
+                this.blTransactions = page.results;
+                this.blTxTotalCount = page.totalCount;
+            },
+            error: () => {
+                this.blTransactions = [];
+                this.blTxTotalCount = 0;
+            }
+        });
+    }
+
+
+    setBlTxFilter(direction: string | null, success: boolean | null): void {
+        this.blTxDirectionFilter = direction;
+        this.blTxSuccessFilter = success;
+        this.blTxPage = 1;
+        this.loadBlTransactions();
+    }
+
+
+    nextBlTxPage(): void {
+        const maxPage = Math.ceil(this.blTxTotalCount / this.blTxPageSize);
+        if (this.blTxPage < maxPage) {
+            this.blTxPage++;
+            this.loadBlTransactions();
+        }
+    }
+
+
+    prevBlTxPage(): void {
+        if (this.blTxPage > 1) {
+            this.blTxPage--;
+            this.loadBlTransactions();
+        }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  BRICKECONOMY METHODS
+    // ═══════════════════════════════════════════════════════════════
+
+    loadBrickEconomyData(): void {
+        this.beLoading = true;
+        this.beSyncService.getStatus().pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.beLoading = false)
+        ).subscribe({
+            next: (status) => {
+                this.beStatus = status;
+                this.loadBeTransactions();
+            },
+            error: () => {
+                this.beStatus = null;
+                this.loadBeTransactions();
+            }
+        });
+    }
+
+
+    connectToBrickEconomy(): void {
+        if (!this.beApiKeyInput.trim()) return;
+
+        this.beConnecting = true;
+        this.beSyncService.connect(this.beApiKeyInput.trim()).pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.beConnecting = false)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Connected', 'Successfully connected to BrickEconomy!', MessageSeverity.success);
+                this.beApiKeyInput = '';
+                this.beShowForm = false;
+                this.loadBrickEconomyData();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Connection failed. Check your API key.';
+                this.alertService.showMessage('Connection Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    async disconnectFromBrickEconomy(): Promise<void> {
+        const confirmed = await this.confirmationService.confirm(
+            'Disconnect BrickEconomy',
+            'This will remove your stored API key. Your enriched data will be preserved.'
+        );
+        if (!confirmed) return;
+
+        this.beSyncService.disconnect().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Disconnected', 'BrickEconomy integration disabled.', MessageSeverity.success);
+                this.loadBrickEconomyData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to disconnect.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    loadBeTransactions(): void {
+        this.beSyncService.getTransactions(
+            this.beTxPageSize,
+            this.beTxPage,
+            this.beTxDirectionFilter || undefined,
+            this.beTxSuccessFilter !== null ? this.beTxSuccessFilter : undefined
+        ).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (page) => {
+                this.beTransactions = page.results;
+                this.beTxTotalCount = page.totalCount;
+            },
+            error: () => {
+                this.beTransactions = [];
+                this.beTxTotalCount = 0;
+            }
+        });
+    }
+
+
+    setBeTxFilter(direction: string | null, success: boolean | null): void {
+        this.beTxDirectionFilter = direction;
+        this.beTxSuccessFilter = success;
+        this.beTxPage = 1;
+        this.loadBeTransactions();
+    }
+
+
+    nextBeTxPage(): void {
+        const maxPage = Math.ceil(this.beTxTotalCount / this.beTxPageSize);
+        if (this.beTxPage < maxPage) {
+            this.beTxPage++;
+            this.loadBeTransactions();
+        }
+    }
+
+
+    prevBeTxPage(): void {
+        if (this.beTxPage > 1) {
+            this.beTxPage--;
+            this.loadBeTransactions();
+        }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  BRICK OWL METHODS
+    // ═══════════════════════════════════════════════════════════════
+
+    loadBrickOwlData(): void {
+        this.boLoading = true;
+        this.boSyncService.getStatus().pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.boLoading = false)
+        ).subscribe({
+            next: (status) => {
+                this.boStatus = status;
+                this.loadBoTransactions();
+            },
+            error: () => {
+                this.boStatus = null;
+                this.loadBoTransactions();
+            }
+        });
+    }
+
+
+    connectToBrickOwl(): void {
+        if (!this.boApiKeyInput.trim()) return;
+
+        this.boConnecting = true;
+        this.boSyncService.connect(this.boApiKeyInput.trim()).pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.boConnecting = false)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Connected', 'Successfully connected to Brick Owl!', MessageSeverity.success);
+                this.boApiKeyInput = '';
+                this.boShowForm = false;
+                this.loadBrickOwlData();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Connection failed. Check your API key.';
+                this.alertService.showMessage('Connection Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    async disconnectFromBrickOwl(): Promise<void> {
+        const confirmed = await this.confirmationService.confirm(
+            'Disconnect Brick Owl',
+            'This will remove your stored API key. Your enriched data will be preserved.'
+        );
+        if (!confirmed) return;
+
+        this.boSyncService.disconnect().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Disconnected', 'Brick Owl integration disabled.', MessageSeverity.success);
+                this.loadBrickOwlData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to disconnect.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    loadBoTransactions(): void {
+        this.boSyncService.getTransactions(
+            this.boTxPageSize,
+            this.boTxPage,
+            this.boTxDirectionFilter || undefined,
+            this.boTxSuccessFilter !== null ? this.boTxSuccessFilter : undefined
+        ).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (page) => {
+                this.boTransactions = page.results;
+                this.boTxTotalCount = page.totalCount;
+            },
+            error: () => {
+                this.boTransactions = [];
+                this.boTxTotalCount = 0;
+            }
+        });
+    }
+
+
+    setBoTxFilter(direction: string | null, success: boolean | null): void {
+        this.boTxDirectionFilter = direction;
+        this.boTxSuccessFilter = success;
+        this.boTxPage = 1;
+        this.loadBoTransactions();
+    }
+
+
+    nextBoTxPage(): void {
+        const maxPage = Math.ceil(this.boTxTotalCount / this.boTxPageSize);
+        if (this.boTxPage < maxPage) {
+            this.boTxPage++;
+            this.loadBoTransactions();
+        }
+    }
+
+
+    prevBoTxPage(): void {
+        if (this.boTxPage > 1) {
+            this.boTxPage--;
+            this.loadBoTransactions();
         }
     }
 }

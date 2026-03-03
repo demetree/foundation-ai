@@ -1,0 +1,93 @@
+<div class="container-fluid p-1 m-0 brick-economy-transaction-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-economy-transaction-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Economy Transaction</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Economy Transaction' : 'Add Brick Economy Transaction'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickEconomyTransactionReader()">
+                <div class="col m-2 brick-economy-transaction-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickEconomyTransactionForm" (ngSubmit)="submitForm()" class="brick-economy-transaction-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                                <label for="BrickEconomyTransaction-transactionDate" id="label-BrickEconomyTransaction-transactionDate">Transaction Date</label>
+                                <input type="datetime-local" id="BrickEconomyTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" aria-labelledby="label-transactionDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('direction')">
+                                <label for="BrickEconomyTransaction-direction" id="label-BrickEconomyTransaction-direction"><span class="text-danger">*</span>Direction</label>
+                                <input type="text" id="BrickEconomyTransaction-direction" formControlName="direction" placeholder="Enter Direction" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" aria-labelledby="label-direction" />
+                                <div *ngIf="brickEconomyTransactionForm.get('direction')?.invalid && brickEconomyTransactionForm.get('direction')?.touched" class="text-danger">
+                                    Direction is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('methodName')">
+                                <label for="BrickEconomyTransaction-methodName" id="label-BrickEconomyTransaction-methodName"><span class="text-danger">*</span>Method Name</label>
+                                <input type="text" id="BrickEconomyTransaction-methodName" formControlName="methodName" placeholder="Enter Method Name" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" aria-labelledby="label-methodName" />
+                                <div *ngIf="brickEconomyTransactionForm.get('methodName')?.invalid && brickEconomyTransactionForm.get('methodName')?.touched" class="text-danger">
+                                    Method Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('requestSummary')">
+                                <label for="BrickEconomyTransaction-requestSummary" id="label-BrickEconomyTransaction-requestSummary">Request Summary</label>
+                                <textarea id="BrickEconomyTransaction-requestSummary" formControlName="requestSummary" placeholder="Enter Request Summary" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                                <input type="checkbox" id="BrickEconomyTransaction-success" formControlName="success" class="form-check-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" />
+                                <label for="BrickEconomyTransaction-success" class="form-check-label" id="label-BrickEconomyTransaction-success"><span class="text-danger">*</span>Success</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="BrickEconomyTransaction-errorMessage" id="label-BrickEconomyTransaction-errorMessage">Error Message</label>
+                                <textarea id="BrickEconomyTransaction-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('triggeredBy')">
+                                <label for="BrickEconomyTransaction-triggeredBy" id="label-BrickEconomyTransaction-triggeredBy"><span class="text-danger">*</span>Triggered By</label>
+                                <input type="text" id="BrickEconomyTransaction-triggeredBy" formControlName="triggeredBy" placeholder="Enter Triggered By" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" aria-labelledby="label-triggeredBy" />
+                                <div *ngIf="brickEconomyTransactionForm.get('triggeredBy')?.invalid && brickEconomyTransactionForm.get('triggeredBy')?.touched" class="text-danger">
+                                    Triggered By is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recordCount')">
+                                <label for="BrickEconomyTransaction-recordCount" id="label-BrickEconomyTransaction-recordCount">Record Count</label>
+                                <input type="number" id="BrickEconomyTransaction-recordCount" formControlName="recordCount" placeholder="Enter Record Count" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" aria-labelledby="label-recordCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dailyQuotaRemaining')">
+                                <label for="BrickEconomyTransaction-dailyQuotaRemaining" id="label-BrickEconomyTransaction-dailyQuotaRemaining">Daily Quota Remaining</label>
+                                <input type="number" id="BrickEconomyTransaction-dailyQuotaRemaining" formControlName="dailyQuotaRemaining" placeholder="Enter Daily Quota Remaining" class="form-control brick-economy-transaction-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" aria-labelledby="label-dailyQuotaRemaining" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickEconomyTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" />
+                                <label for="BrickEconomyTransaction-active" class="form-check-label" id="label-BrickEconomyTransaction-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickEconomyTransaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickEconomyTransactionWriter()" />
+                                <label for="BrickEconomyTransaction-deleted" class="form-check-label" id="label-BrickEconomyTransaction-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-economy-transaction-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickEconomyTransactionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Economy Transaction">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickEconomyTransactionForm.valid || !brickEconomyTransactionForm.dirty || brickEconomyTransactionForm.pristine  || userIsBMCBrickEconomyTransactionWriter() == false " ngbTooltip="Save the Brick Economy Transaction changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Economy Transaction' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,72 @@
+<div class="container-fluid p-1 m-0 brick-economy-user-link-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-economy-user-link-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Economy User Link</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Economy User Link' : 'Add Brick Economy User Link'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickEconomyUserLinkReader()">
+                <div class="col m-2 brick-economy-user-link-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickEconomyUserLinkForm" (ngSubmit)="submitForm()" class="brick-economy-user-link-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('encryptedApiKey')">
+                                <label for="BrickEconomyUserLink-encryptedApiKey" id="label-BrickEconomyUserLink-encryptedApiKey">Encrypted Api Key</label>
+                                <textarea id="BrickEconomyUserLink-encryptedApiKey" formControlName="encryptedApiKey" placeholder="Enter Encrypted Api Key" class="form-control brick-economy-user-link-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('syncEnabled')">
+                                <input type="checkbox" id="BrickEconomyUserLink-syncEnabled" formControlName="syncEnabled" class="form-check-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()" />
+                                <label for="BrickEconomyUserLink-syncEnabled" class="form-check-label" id="label-BrickEconomyUserLink-syncEnabled"><span class="text-danger">*</span>Sync Enabled</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastSyncDate')">
+                                <label for="BrickEconomyUserLink-lastSyncDate" id="label-BrickEconomyUserLink-lastSyncDate">Last Sync Date</label>
+                                <input type="datetime-local" id="BrickEconomyUserLink-lastSyncDate" formControlName="lastSyncDate" placeholder="Enter Last Sync Date" class="form-control brick-economy-user-link-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()" aria-labelledby="label-lastSyncDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastSyncError')">
+                                <label for="BrickEconomyUserLink-lastSyncError" id="label-BrickEconomyUserLink-lastSyncError">Last Sync Error</label>
+                                <textarea id="BrickEconomyUserLink-lastSyncError" formControlName="lastSyncError" placeholder="Enter Last Sync Error" class="form-control brick-economy-user-link-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dailyQuotaUsed')">
+                                <label for="BrickEconomyUserLink-dailyQuotaUsed" id="label-BrickEconomyUserLink-dailyQuotaUsed">Daily Quota Used</label>
+                                <input type="number" id="BrickEconomyUserLink-dailyQuotaUsed" formControlName="dailyQuotaUsed" placeholder="Enter Daily Quota Used" class="form-control brick-economy-user-link-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()" aria-labelledby="label-dailyQuotaUsed" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quotaResetDate')">
+                                <label for="BrickEconomyUserLink-quotaResetDate" id="label-BrickEconomyUserLink-quotaResetDate">Quota Reset Date</label>
+                                <input type="datetime-local" id="BrickEconomyUserLink-quotaResetDate" formControlName="quotaResetDate" placeholder="Enter Quota Reset Date" class="form-control brick-economy-user-link-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()" aria-labelledby="label-quotaResetDate" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickEconomyUserLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()" />
+                                <label for="BrickEconomyUserLink-active" class="form-check-label" id="label-BrickEconomyUserLink-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickEconomyUserLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickEconomyUserLinkWriter()" />
+                                <label for="BrickEconomyUserLink-deleted" class="form-check-label" id="label-BrickEconomyUserLink-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-economy-user-link-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickEconomyUserLinkForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Economy User Link">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickEconomyUserLinkForm.valid || !brickEconomyUserLinkForm.dirty || brickEconomyUserLinkForm.pristine  || userIsBMCBrickEconomyUserLinkWriter() == false " ngbTooltip="Save the Brick Economy User Link changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Economy User Link' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

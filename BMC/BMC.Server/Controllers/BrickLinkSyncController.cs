@@ -1,16 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.BMC.Database;
-using BMC.BrickLink.Api;
-using BMC.BrickLink.Api.Models.Responses;
+using BMC.BrickLink.Sync;
 
 
 namespace Foundation.BMC.Controllers.WebAPI
@@ -38,17 +39,17 @@ namespace Foundation.BMC.Controllers.WebAPI
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 
         private readonly BMCContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly BrickLinkSyncService _syncService;
         private readonly ILogger<BrickLinkSyncController> _logger;
 
 
         public BrickLinkSyncController(
             BMCContext context,
-            IConfiguration configuration,
+            BrickLinkSyncService syncService,
             ILogger<BrickLinkSyncController> logger) : base("BMC", "BrickLinkSync")
         {
             _context = context;
-            _configuration = configuration;
+            _syncService = syncService;
             _logger = logger;
         }
 
@@ -59,6 +60,20 @@ namespace Foundation.BMC.Controllers.WebAPI
         {
             public string tokenValue { get; set; }
             public string tokenSecret { get; set; }
+            public string syncDirection { get; set; } = "Pull";
+        }
+
+        public class BrickLinkTransactionDto
+        {
+            public int id { get; set; }
+            public DateTime transactionDate { get; set; }
+            public string direction { get; set; }
+            public string methodName { get; set; }
+            public string requestSummary { get; set; }
+            public bool success { get; set; }
+            public string errorMessage { get; set; }
+            public string triggeredBy { get; set; }
+            public int? recordCount { get; set; }
         }
 
         #endregion
@@ -104,52 +119,14 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // Get the app-level consumer credentials from appsettings
-            //
-            string consumerKey = _configuration["BrickLink:ConsumerKey"];
-            string consumerSecret = _configuration["BrickLink:ConsumerSecret"];
+            var (success, error) = await _syncService.ConnectAsync(
+                userTenantGuid, request.tokenValue, request.tokenSecret,
+                request.syncDirection, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(consumerKey) || string.IsNullOrWhiteSpace(consumerSecret))
+            if (!success)
             {
-                return Problem("BrickLink consumer credentials are not configured on the server.");
+                return BadRequest(new { error });
             }
-
-            //
-            // Validate the tokens by making a test API call
-            //
-            try
-            {
-                using (var client = new BrickLinkApiClient(consumerKey, consumerSecret,
-                    request.tokenValue, request.tokenSecret,
-                    msg => _logger.LogInformation(msg)))
-                {
-                    // Try to get the color list — a simple, low-cost endpoint to validate tokens
-                    var colors = await client.GetColorListAsync();
-
-                    _logger.LogInformation(
-                        "BrickLink token validation succeeded for tenant {TenantGuid} — {ColorCount} colors retrieved",
-                        userTenantGuid, colors.Count);
-                }
-            }
-            catch (BrickLinkApiException ex)
-            {
-                _logger.LogWarning(ex, "BrickLink token validation failed for tenant {TenantGuid}", userTenantGuid);
-
-                return BadRequest(new { error = $"BrickLink token validation failed: {ex.Message}" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during BrickLink token validation for tenant {TenantGuid}", userTenantGuid);
-
-                return BadRequest(new { error = "Failed to connect to BrickLink. Please check your credentials." });
-            }
-
-            //
-            // TODO: Store encrypted token credentials in BrickLinkUserLink table
-            //       (requires database migration to create the table)
-            //
-            _logger.LogInformation("BrickLink connected for tenant {TenantGuid} — token storage pending table creation", userTenantGuid);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickLink connected");
 
@@ -187,11 +164,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // TODO: Remove BrickLinkUserLink entry for this tenant
-            //       (requires database migration to create the table)
-            //
-            _logger.LogInformation("BrickLink disconnected for tenant {TenantGuid}", userTenantGuid);
+            await _syncService.DisconnectAsync(userTenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickLink disconnected");
 
@@ -232,19 +205,11 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // TODO: Look up BrickLinkUserLink for this tenant to determine connection state
-            //       (requires database migration to create the table)
-            //
+            var status = await _syncService.GetSyncStatusAsync(userTenantGuid, cancellationToken);
+
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get BrickLink sync status");
 
-            return Ok(new
-            {
-                isConnected = false,
-                lastSyncDate = (DateTime?)null,
-                lastSyncError = (string)null,
-                message = "BrickLink integration is installed but not yet connected. Store credentials pending database table creation."
-            });
+            return Ok(status);
         }
 
 
@@ -276,17 +241,30 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // TODO: Retrieve stored tokens and validate against BrickLink API
-            //       (requires database migration to create BrickLinkUserLink table)
-            //
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return Ok(new { valid = false, error = "No stored BrickLink credentials. Please connect your account." });
+            }
 
-            return Ok(new { valid = false, error = "BrickLink token storage not yet configured." });
+            try
+            {
+                using (client)
+                {
+                    var colors = await client.GetColorListAsync();
+                    return Ok(new { valid = true, colorCount = colors?.Count ?? 0 });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickLink token health check failed for tenant {TenantGuid}", userTenantGuid);
+                return Ok(new { valid = false, error = "Token validation failed. Please reconnect." });
+            }
         }
 
 
         // ═══════════════════════════════════════════════════════════════════════
-        //  CATALOG & PRICE GUIDE (public enrichment endpoints)
+        //  CATALOG & PRICE GUIDE (data endpoints using stored credentials)
         // ═══════════════════════════════════════════════════════════════════════
 
         /// <summary>
@@ -310,22 +288,41 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // TODO: Retrieve stored tokens from BrickLinkUserLink
-            //       For now, use app-level credentials only (will fail without user tokens)
-            //
-            string consumerKey = _configuration["BrickLink:ConsumerKey"];
-            string consumerSecret = _configuration["BrickLink:ConsumerSecret"];
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
 
-            if (string.IsNullOrWhiteSpace(consumerKey) || string.IsNullOrWhiteSpace(consumerSecret))
+            try
             {
-                return Problem("BrickLink consumer credentials are not configured on the server.");
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // Placeholder — once BrickLinkUserLink table exists, retrieve user tokens from DB
-            //
-            return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var priceGuide = await client.GetPriceGuideAsync(type, no,
+                        colorId, guideType, newOrUsed, null, currencyCode);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickLink price guide: {type}/{no}");
+
+                    return Ok(priceGuide);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickLink price guide failed for {Type}/{No}", type, no);
+                return Problem($"Failed to fetch BrickLink price guide: {ex.Message}");
+            }
         }
 
 
@@ -346,10 +343,40 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // Placeholder — once BrickLinkUserLink table exists, retrieve user tokens from DB
-            //
-            return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var item = await client.GetItemAsync(type, no);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickLink item: {type}/{no}");
+
+                    return Ok(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickLink item lookup failed for {Type}/{No}", type, no);
+                return Problem($"Failed to fetch BrickLink item: {ex.Message}");
+            }
         }
 
 
@@ -372,10 +399,40 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // Placeholder — once BrickLinkUserLink table exists, retrieve user tokens from DB
-            //
-            return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var subsets = await client.GetSubSetsAsync(type, no, null, breakMinifigs, breakSubsets);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickLink subsets: {type}/{no}");
+
+                    return Ok(subsets);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickLink subsets failed for {Type}/{No}", type, no);
+                return Problem($"Failed to fetch BrickLink subsets: {ex.Message}");
+            }
         }
 
 
@@ -398,10 +455,125 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // Placeholder — once BrickLinkUserLink table exists, retrieve user tokens from DB
-            //
-            return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var supersets = await client.GetSuperSetsAsync(type, no, colorId);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickLink supersets: {type}/{no}");
+
+                    return Ok(supersets);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickLink supersets failed for {Type}/{No}", type, no);
+                return Problem($"Failed to fetch BrickLink supersets: {ex.Message}");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  TRANSACTIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/bricklink-sync/transactions
+        ///
+        /// Returns paginated transaction history.
+        /// Sorted newest-first.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/bricklink-sync/transactions")]
+        public async Task<IActionResult> GetTransactions(
+            int? pageSize = 50, int? pageNumber = 1,
+            string direction = null, bool? success = null,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            IQueryable<BrickLinkTransactionDto> query = _context.BrickLinkTransactions
+                .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
+                .Select(t => new BrickLinkTransactionDto
+                {
+                    id = t.id,
+                    transactionDate = t.transactionDate ?? DateTime.MinValue,
+                    direction = t.direction,
+                    methodName = t.methodName,
+                    requestSummary = t.requestSummary,
+                    success = t.success,
+                    errorMessage = t.errorMessage,
+                    triggeredBy = t.triggeredBy,
+                    recordCount = t.recordCount
+                });
+
+            if (!string.IsNullOrWhiteSpace(direction))
+            {
+                query = query.Where(t => t.direction == direction);
+            }
+
+            if (success.HasValue)
+            {
+                query = query.Where(t => t.success == success.Value);
+            }
+
+            query = query.OrderByDescending(t => t.transactionDate);
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            int ps = Math.Max(pageSize ?? 50, 1);
+            int pn = Math.Max(pageNumber ?? 1, 1);
+            query = query.Skip((pn - 1) * ps).Take(ps);
+
+            List<BrickLinkTransactionDto> transactions = await query.AsNoTracking().ToListAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList,
+                $"Get BrickLink transactions — page={pn}, results={transactions.Count}");
+
+            return Ok(new
+            {
+                totalCount = totalCount,
+                pageSize = ps,
+                pageNumber = pn,
+                results = transactions
+            });
         }
     }
 }

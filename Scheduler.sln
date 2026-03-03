@@ -143,6 +143,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMC.BrickLink", "BMC.BrickL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMC.BrickEconomy", "BMC.BrickEconomy\BMC.BrickEconomy.csproj", "{FBC19D57-BE33-47B0-AD0E-DD5579FCEB80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMC.BrickOwl", "BMC.BrickOwl\BMC.BrickOwl.csproj", "{CCD49753-8169-483D-9E7D-C9FC2147CDF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -819,6 +821,18 @@ Global
 		{FBC19D57-BE33-47B0-AD0E-DD5579FCEB80}.Release|x64.Build.0 = Release|Any CPU
 		{FBC19D57-BE33-47B0-AD0E-DD5579FCEB80}.Release|x86.ActiveCfg = Release|Any CPU
 		{FBC19D57-BE33-47B0-AD0E-DD5579FCEB80}.Release|x86.Build.0 = Release|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Debug|x64.Build.0 = Debug|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Debug|x86.Build.0 = Debug|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Release|x64.ActiveCfg = Release|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Release|x64.Build.0 = Release|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Release|x86.ActiveCfg = Release|Any CPU
+		{CCD49753-8169-483D-9E7D-C9FC2147CDF0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

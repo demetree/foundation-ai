@@ -55,7 +55,31 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[BrickEconomyTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickEconomyUserLink]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[BrickElement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickLinkTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickLinkUserLink]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickOwlTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickOwlUserLink]",
          "ObjectType": 0
       },
       {

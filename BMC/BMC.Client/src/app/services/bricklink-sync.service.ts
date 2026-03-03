@@ -138,6 +138,28 @@ export class BrickLinkSyncService {
     }
 
 
+    // ─── Transactions ───
+
+    /**
+     * Get paginated transaction history for BrickLink API calls.
+     */
+    getTransactions(
+        pageSize: number = 50,
+        pageNumber: number = 1,
+        direction?: string,
+        success?: boolean
+    ): Observable<BrickLinkTransactionsPage> {
+        let params: any = { pageSize, pageNumber };
+        if (direction) params.direction = direction;
+        if (success !== undefined && success !== null) params.success = success;
+
+        return this.http.get<BrickLinkTransactionsPage>(
+            `${this.baseUrl}/transactions`,
+            { headers: this.getAuthHeaders(), params }
+        );
+    }
+
+
     // ─── Private ───
 
     private getAuthHeaders(): HttpHeaders {
@@ -160,4 +182,23 @@ export interface PriceGuideOptions {
     guideType?: 'stock' | 'sold';
     newOrUsed?: 'N' | 'U';
     currencyCode?: string;
+}
+
+export interface BrickLinkTransaction {
+    id: number;
+    transactionDate: string;
+    direction: string;
+    methodName: string;
+    requestSummary: string;
+    success: boolean;
+    errorMessage: string | null;
+    triggeredBy: string;
+    recordCount: number | null;
+}
+
+export interface BrickLinkTransactionsPage {
+    totalCount: number;
+    pageSize: number;
+    pageNumber: number;
+    results: BrickLinkTransaction[];
 }

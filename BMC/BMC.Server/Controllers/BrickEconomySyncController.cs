@@ -1,15 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.BMC.Database;
-using BMC.BrickEconomy.Api;
+using BMC.BrickEconomy.Sync;
 
 
 namespace Foundation.BMC.Controllers.WebAPI
@@ -37,17 +39,17 @@ namespace Foundation.BMC.Controllers.WebAPI
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 
         private readonly BMCContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly BrickEconomySyncService _syncService;
         private readonly ILogger<BrickEconomySyncController> _logger;
 
 
         public BrickEconomySyncController(
             BMCContext context,
-            IConfiguration configuration,
+            BrickEconomySyncService syncService,
             ILogger<BrickEconomySyncController> logger) : base("BMC", "BrickEconomySync")
         {
             _context = context;
-            _configuration = configuration;
+            _syncService = syncService;
             _logger = logger;
         }
 
@@ -57,6 +59,20 @@ namespace Foundation.BMC.Controllers.WebAPI
         public class BrickEconomyConnectRequest
         {
             public string apiKey { get; set; }
+        }
+
+        public class BrickEconomyTransactionDto
+        {
+            public int id { get; set; }
+            public DateTime transactionDate { get; set; }
+            public string direction { get; set; }
+            public string methodName { get; set; }
+            public string requestSummary { get; set; }
+            public bool success { get; set; }
+            public string errorMessage { get; set; }
+            public string triggeredBy { get; set; }
+            public int? recordCount { get; set; }
+            public int? dailyQuotaRemaining { get; set; }
         }
 
         #endregion
@@ -102,43 +118,12 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // Validate the API key by making a test call
-            //
-            try
+            var (success, error) = await _syncService.ConnectAsync(userTenantGuid, request.apiKey, cancellationToken);
+
+            if (!success)
             {
-                using (var client = new BrickEconomyApiClient(request.apiKey,
-                    msg => _logger.LogInformation(msg)))
-                {
-                    // Try to look up a well-known set to validate the API key
-                    var testSet = await client.GetSetAsync("10294-1");
-
-                    if (testSet != null)
-                    {
-                        _logger.LogInformation(
-                            "BrickEconomy API key validation succeeded for tenant {TenantGuid} — test set: {SetName}",
-                            userTenantGuid, testSet.Name);
-                    }
-                }
+                return BadRequest(new { error });
             }
-            catch (BrickEconomyApiException ex)
-            {
-                _logger.LogWarning(ex, "BrickEconomy API key validation failed for tenant {TenantGuid}", userTenantGuid);
-
-                return BadRequest(new { error = $"BrickEconomy API key validation failed: {ex.Message}" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during BrickEconomy API key validation for tenant {TenantGuid}", userTenantGuid);
-
-                return BadRequest(new { error = "Failed to connect to BrickEconomy. Please check your API key." });
-            }
-
-            //
-            // TODO: Store encrypted API key in BrickEconomyUserLink table
-            //       (requires database migration to create the table)
-            //
-            _logger.LogInformation("BrickEconomy connected for tenant {TenantGuid} — key storage pending table creation", userTenantGuid);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickEconomy connected");
 
@@ -176,10 +161,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // TODO: Remove BrickEconomyUserLink entry
-            //
-            _logger.LogInformation("BrickEconomy disconnected for tenant {TenantGuid}", userTenantGuid);
+            await _syncService.DisconnectAsync(userTenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickEconomy disconnected");
 
@@ -194,7 +176,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// <summary>
         /// GET /api/brickeconomy-sync/status
         ///
-        /// Returns the current BrickEconomy connection status.
+        /// Returns the current BrickEconomy connection status with quota info.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
@@ -220,20 +202,11 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            //
-            // TODO: Look up BrickEconomyUserLink for this tenant
-            //
+            var status = await _syncService.GetSyncStatusAsync(userTenantGuid, cancellationToken);
+
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get BrickEconomy sync status");
 
-            return Ok(new
-            {
-                isConnected = false,
-                lastSyncDate = (DateTime?)null,
-                lastSyncError = (string)null,
-                dailyQuotaUsed = 0,
-                dailyQuotaLimit = 100,
-                message = "BrickEconomy integration is installed but not yet connected."
-            });
+            return Ok(status);
         }
 
 
@@ -260,10 +233,42 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // TODO: Retrieve stored API key from BrickEconomyUserLink
-            //
-            return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var set = await client.GetSetAsync(setNumber, currency);
+
+                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickEconomy set valuation: {setNumber}");
+
+                    return Ok(set);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickEconomy set valuation failed for {SetNumber}", setNumber);
+                return Problem($"Failed to fetch BrickEconomy set valuation: {ex.Message}");
+            }
         }
 
 
@@ -285,10 +290,42 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // TODO: Retrieve stored API key from BrickEconomyUserLink
-            //
-            return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var minifig = await client.GetMinifigAsync(minifigNumber, currency);
+
+                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickEconomy minifig valuation: {minifigNumber}");
+
+                    return Ok(minifig);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickEconomy minifig valuation failed for {MinifigNumber}", minifigNumber);
+                return Problem($"Failed to fetch BrickEconomy minifig valuation: {ex.Message}");
+            }
         }
 
 
@@ -314,10 +351,42 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // TODO: Retrieve stored API key from BrickEconomyUserLink
-            //
-            return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var sets = await client.GetCollectionSetsAsync(currency);
+
+                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "BrickEconomy collection sets");
+
+                    return Ok(sets);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickEconomy collection sets failed");
+                return Problem($"Failed to fetch BrickEconomy collection: {ex.Message}");
+            }
         }
 
 
@@ -339,10 +408,42 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // TODO: Retrieve stored API key from BrickEconomyUserLink
-            //
-            return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var minifigs = await client.GetCollectionMinifigsAsync(currency);
+
+                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "BrickEconomy collection minifigs");
+
+                    return Ok(minifigs);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickEconomy collection minifigs failed");
+                return Problem($"Failed to fetch BrickEconomy minifig collection: {ex.Message}");
+            }
         }
 
 
@@ -367,10 +468,128 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Forbid();
             }
 
-            //
-            // TODO: Retrieve stored API key from BrickEconomyUserLink
-            //
-            return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            if (client == null)
+            {
+                return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
+            }
+
+            try
+            {
+                using (client)
+                {
+                    var ledger = await client.GetSalesLedgerAsync();
+
+                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
+
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "BrickEconomy sales ledger");
+
+                    return Ok(ledger);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "BrickEconomy sales ledger failed");
+                return Problem($"Failed to fetch BrickEconomy sales ledger: {ex.Message}");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  TRANSACTIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/brickeconomy-sync/transactions
+        ///
+        /// Returns paginated transaction history.
+        /// Sorted newest-first.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickeconomy-sync/transactions")]
+        public async Task<IActionResult> GetTransactions(
+            int? pageSize = 50, int? pageNumber = 1,
+            string direction = null, bool? success = null,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            IQueryable<BrickEconomyTransactionDto> query = _context.BrickEconomyTransactions
+                .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
+                .Select(t => new BrickEconomyTransactionDto
+                {
+                    id = t.id,
+                    transactionDate = t.transactionDate ?? DateTime.MinValue,
+                    direction = t.direction,
+                    methodName = t.methodName,
+                    requestSummary = t.requestSummary,
+                    success = t.success,
+                    errorMessage = t.errorMessage,
+                    triggeredBy = t.triggeredBy,
+                    recordCount = t.recordCount,
+                    dailyQuotaRemaining = t.dailyQuotaRemaining
+                });
+
+            if (!string.IsNullOrWhiteSpace(direction))
+            {
+                query = query.Where(t => t.direction == direction);
+            }
+
+            if (success.HasValue)
+            {
+                query = query.Where(t => t.success == success.Value);
+            }
+
+            query = query.OrderByDescending(t => t.transactionDate);
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            int ps = Math.Max(pageSize ?? 50, 1);
+            int pn = Math.Max(pageNumber ?? 1, 1);
+            query = query.Skip((pn - 1) * ps).Take(ps);
+
+            List<BrickEconomyTransactionDto> transactions = await query.AsNoTracking().ToListAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList,
+                $"Get BrickEconomy transactions — page={pn}, results={transactions.Count}");
+
+            return Ok(new
+            {
+                totalCount = totalCount,
+                pageSize = ps,
+                pageNumber = pn,
+                results = transactions
+            });
         }
     }
 }

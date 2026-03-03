@@ -1,0 +1,74 @@
+<div class="add-brick-owl-user-link" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-owl-user-link me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Owl User Link" 
+        *ngIf="userIsBMCBrickOwlUserLinkWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickOwlUserLinkModal let-modal>
+   <div class="modal-header brick-owl-user-link-modal-header">
+      <h5 class="modal-title mb-0" id="brickOwlUserLinkModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Owl User Link' : 'Add Brick Owl User Link' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body brick-owl-user-link-modal-body">
+      <form [formGroup]="brickOwlUserLinkForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('encryptedApiKey')">
+                <label for="BrickOwlUserLink-encryptedApiKey" id="label-BrickOwlUserLink-encryptedApiKey">Encrypted Api Key</label>
+                <textarea id="BrickOwlUserLink-encryptedApiKey" formControlName="encryptedApiKey" placeholder="Enter Encrypted Api Key" class="form-control brick-owl-user-link-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('syncEnabled')">
+                <input type="checkbox" id="BrickOwlUserLink-syncEnabled" formControlName="syncEnabled" class="form-check-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" />
+                <label for="BrickOwlUserLink-syncEnabled" class="form-check-label" id="label-BrickOwlUserLink-syncEnabled"><span class="text-danger">*</span>Sync Enabled</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('syncDirection')">
+                <label for="BrickOwlUserLink-syncDirection" id="label-BrickOwlUserLink-syncDirection">Sync Direction</label>
+                <input type="text" id="BrickOwlUserLink-syncDirection" formControlName="syncDirection" placeholder="Enter Sync Direction" class="form-control brick-owl-user-link-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" aria-labelledby="label-syncDirection" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSyncDate')">
+                <label for="BrickOwlUserLink-lastSyncDate" id="label-BrickOwlUserLink-lastSyncDate">Last Sync Date</label>
+                <input type="datetime-local" id="BrickOwlUserLink-lastSyncDate" formControlName="lastSyncDate" placeholder="Enter Last Sync Date" class="form-control brick-owl-user-link-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" aria-labelledby="label-lastSyncDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPullDate')">
+                <label for="BrickOwlUserLink-lastPullDate" id="label-BrickOwlUserLink-lastPullDate">Last Pull Date</label>
+                <input type="datetime-local" id="BrickOwlUserLink-lastPullDate" formControlName="lastPullDate" placeholder="Enter Last Pull Date" class="form-control brick-owl-user-link-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" aria-labelledby="label-lastPullDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPushDate')">
+                <label for="BrickOwlUserLink-lastPushDate" id="label-BrickOwlUserLink-lastPushDate">Last Push Date</label>
+                <input type="datetime-local" id="BrickOwlUserLink-lastPushDate" formControlName="lastPushDate" placeholder="Enter Last Push Date" class="form-control brick-owl-user-link-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" aria-labelledby="label-lastPushDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSyncError')">
+                <label for="BrickOwlUserLink-lastSyncError" id="label-BrickOwlUserLink-lastSyncError">Last Sync Error</label>
+                <textarea id="BrickOwlUserLink-lastSyncError" formControlName="lastSyncError" placeholder="Enter Last Sync Error" class="form-control brick-owl-user-link-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickOwlUserLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" />
+                <label for="BrickOwlUserLink-active" class="form-check-label" id="label-BrickOwlUserLink-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickOwlUserLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickOwlUserLinkWriter()" />
+                <label for="BrickOwlUserLink-deleted" class="form-check-label" id="label-BrickOwlUserLink-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-owl-user-link-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Owl User Link changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickOwlUserLinkForm.valid || brickOwlUserLinkForm.pristine  || userIsBMCBrickOwlUserLinkWriter() == false " ngbTooltip="Save the Brick Owl User Link changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Owl User Link' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -2128,6 +2128,180 @@ All operational tables include multi-tenant support, versioning where appropriat
             pendingRegistrationTable.CreateIndexForFields(new List<string>() { "status", "codeExpiresAt", "active", "deleted" });
 
             #endregion
+
+
+            #region External Integrations — User Link Tables
+
+            // ═══════════════════════════════════════════════════════════════════════
+            //  These tables store per-tenant credentials and sync state for external
+            //  LEGO data services. Each table follows the same pattern:
+            //    - Multi-tenant (one row per tenant)
+            //    - Encrypted credentials (encrypted via ASP.NET Data Protection)
+            //    - Sync tracking (enabled flag, direction, last sync/pull/push dates)
+            //    - Unique constraint on tenantGuid
+            //    - Standard control fields (objectGuid, active, deleted)
+            //
+            //  NOTE: BrickSetUserLink is defined above in the Collection Sync region.
+            // ═══════════════════════════════════════════════════════════════════════
+
+
+            // -------------------------------------------------
+            // BrickLinkUserLink — BrickLink integration credentials
+            // -------------------------------------------------
+            //
+            // Auth model: OAuth 1.0 — consumer key/secret (app-level in appsettings)
+            //              + token value/secret (per-user, stored here encrypted)
+            // API: REST at api.bricklink.com/api/store/v1
+            //
+            Database.Table brickLinkUserLinkTable = database.AddTable("BrickLinkUserLink");
+            brickLinkUserLinkTable.comment = "Stores per-tenant BrickLink OAuth 1.0 token credentials and sync state. The consumer key/secret are stored in appsettings.json; the per-user token value/secret are stored here encrypted.";
+            brickLinkUserLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            brickLinkUserLinkTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            brickLinkUserLinkTable.AddIdField();
+            brickLinkUserLinkTable.AddMultiTenantSupport();
+
+            brickLinkUserLinkTable.AddString500Field("encryptedTokenValue").AddScriptComments("Encrypted OAuth 1.0 token value — encrypted via ASP.NET Data Protection");
+            brickLinkUserLinkTable.AddString500Field("encryptedTokenSecret").AddScriptComments("Encrypted OAuth 1.0 token secret — encrypted via ASP.NET Data Protection");
+
+            brickLinkUserLinkTable.AddBoolField("syncEnabled", false, false).AddScriptComments("Whether automatic sync is enabled for this tenant");
+            brickLinkUserLinkTable.AddString50Field("syncDirection", true).AddScriptComments("Sync direction: Pull, Push, or Both (null = Pull)");
+            brickLinkUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of the last successful sync operation");
+            brickLinkUserLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("Date/time of the last successful pull from BrickLink");
+            brickLinkUserLinkTable.AddDateTimeField("lastPushDate", true).AddScriptComments("Date/time of the last successful push to BrickLink");
+            brickLinkUserLinkTable.AddString1000Field("lastSyncError", true).AddScriptComments("Error message from the last failed sync attempt (null = no errors)");
+
+            brickLinkUserLinkTable.AddControlFields();
+
+            brickLinkUserLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // BrickEconomyUserLink — BrickEconomy integration credentials
+            // -------------------------------------------------
+            //
+            // Auth model: API key via x-apikey header
+            // API: REST at brickeconomy.com/api/v1
+            // Rate limit: 100 requests/day (Premium membership required)
+            //
+            Database.Table brickEconomyUserLinkTable = database.AddTable("BrickEconomyUserLink");
+            brickEconomyUserLinkTable.comment = "Stores per-tenant BrickEconomy Premium API key and sync state. BrickEconomy provides AI/ML-powered set and minifig valuations. Rate limited to 100 requests per day.";
+            brickEconomyUserLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            brickEconomyUserLinkTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            brickEconomyUserLinkTable.AddIdField();
+            brickEconomyUserLinkTable.AddMultiTenantSupport();
+
+            brickEconomyUserLinkTable.AddString500Field("encryptedApiKey").AddScriptComments("Encrypted BrickEconomy Premium API key — encrypted via ASP.NET Data Protection");
+
+            brickEconomyUserLinkTable.AddBoolField("syncEnabled", false, false).AddScriptComments("Whether automatic sync is enabled for this tenant");
+            brickEconomyUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of the last successful sync operation");
+            brickEconomyUserLinkTable.AddString1000Field("lastSyncError", true).AddScriptComments("Error message from the last failed sync attempt (null = no errors)");
+            brickEconomyUserLinkTable.AddIntField("dailyQuotaUsed", true).AddScriptComments("Number of API requests used today against the 100/day quota (reset at 00:00 UTC)");
+            brickEconomyUserLinkTable.AddDateTimeField("quotaResetDate", true).AddScriptComments("Date when the daily quota counter was last reset");
+
+            brickEconomyUserLinkTable.AddControlFields();
+
+            brickEconomyUserLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // BrickOwlUserLink — Brick Owl integration credentials
+            // -------------------------------------------------
+            //
+            // Auth model: API key via "key" query parameter
+            // API: REST at api.brickowl.com/v1
+            // Rate limit: 600 requests/minute
+            //
+            Database.Table brickOwlUserLinkTable = database.AddTable("BrickOwlUserLink");
+            brickOwlUserLinkTable.comment = "Stores per-tenant Brick Owl API key and sync state. Brick Owl is the second-largest LEGO marketplace, providing catalog lookups, cross-platform ID mapping, and collection management.";
+            brickOwlUserLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            brickOwlUserLinkTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            brickOwlUserLinkTable.AddIdField();
+            brickOwlUserLinkTable.AddMultiTenantSupport();
+
+            brickOwlUserLinkTable.AddString500Field("encryptedApiKey").AddScriptComments("Encrypted Brick Owl API key — encrypted via ASP.NET Data Protection");
+
+            brickOwlUserLinkTable.AddBoolField("syncEnabled", false, false).AddScriptComments("Whether automatic sync is enabled for this tenant");
+            brickOwlUserLinkTable.AddString50Field("syncDirection", true).AddScriptComments("Sync direction: Pull, Push, or Both (null = Pull)");
+            brickOwlUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of the last successful sync operation");
+            brickOwlUserLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("Date/time of the last successful pull from Brick Owl");
+            brickOwlUserLinkTable.AddDateTimeField("lastPushDate", true).AddScriptComments("Date/time of the last successful push to Brick Owl");
+            brickOwlUserLinkTable.AddString1000Field("lastSyncError", true).AddScriptComments("Error message from the last failed sync attempt (null = no errors)");
+
+            brickOwlUserLinkTable.AddControlFields();
+
+            brickOwlUserLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, false);
+
+
+            // ─────────────────────────────────────────────────────────────
+            //  BrickLinkTransaction — Audit log for all BrickLink API calls
+            // ─────────────────────────────────────────────────────────────
+
+            Database.Table brickLinkTransactionTable = database.AddTable("BrickLinkTransaction");
+            brickLinkTransactionTable.comment = "Full audit log of every BrickLink API call BMC makes on behalf of a user. Mirrors the BrickSetTransaction pattern for complete transparency.";
+            brickLinkTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickLinkTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            brickLinkTransactionTable.AddIdField();
+            brickLinkTransactionTable.AddMultiTenantSupport();
+
+            brickLinkTransactionTable.AddDateTimeField("transactionDate").AddScriptComments("Date/time the API call was made");
+            brickLinkTransactionTable.AddString50Field("direction", false).AddScriptComments("Direction of data flow: Push, Pull, Enrich");
+            brickLinkTransactionTable.AddString100Field("methodName", false).AddScriptComments("BrickLink API method name (e.g. 'getItem', 'getPriceGuide', 'getSubsets')");
+            brickLinkTransactionTable.AddTextField("requestSummary").AddScriptComments("Human-readable description of the operation");
+            brickLinkTransactionTable.AddBoolField("success", false, true).AddScriptComments("Whether the API call completed successfully");
+            brickLinkTransactionTable.AddTextField("errorMessage").AddScriptComments("Error details if the call failed (null on success)");
+            brickLinkTransactionTable.AddString100Field("triggeredBy", false).AddScriptComments("What initiated this call: UserAction, SetDetailView, PriceGuide");
+            brickLinkTransactionTable.AddIntField("recordCount", true).AddScriptComments("Number of rows retrieved or affected by this API call");
+
+            brickLinkTransactionTable.AddControlFields();
+
+
+            // ─────────────────────────────────────────────────────────────
+            //  BrickEconomyTransaction — Audit log for all BrickEconomy API calls
+            // ─────────────────────────────────────────────────────────────
+
+            Database.Table brickEconomyTransactionTable = database.AddTable("BrickEconomyTransaction");
+            brickEconomyTransactionTable.comment = "Full audit log of every BrickEconomy API call BMC makes on behalf of a user. Tracks daily quota usage for the 100-request-per-day limit.";
+            brickEconomyTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickEconomyTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            brickEconomyTransactionTable.AddIdField();
+            brickEconomyTransactionTable.AddMultiTenantSupport();
+
+            brickEconomyTransactionTable.AddDateTimeField("transactionDate").AddScriptComments("Date/time the API call was made");
+            brickEconomyTransactionTable.AddString50Field("direction", false).AddScriptComments("Direction of data flow: Pull, Enrich");
+            brickEconomyTransactionTable.AddString100Field("methodName", false).AddScriptComments("BrickEconomy API method name (e.g. 'getSet', 'getMinifig', 'getSalesLedger')");
+            brickEconomyTransactionTable.AddTextField("requestSummary").AddScriptComments("Human-readable description of the operation");
+            brickEconomyTransactionTable.AddBoolField("success", false, true).AddScriptComments("Whether the API call completed successfully");
+            brickEconomyTransactionTable.AddTextField("errorMessage").AddScriptComments("Error details if the call failed (null on success)");
+            brickEconomyTransactionTable.AddString100Field("triggeredBy", false).AddScriptComments("What initiated this call: UserAction, SetDetailView, Valuation");
+            brickEconomyTransactionTable.AddIntField("recordCount", true).AddScriptComments("Number of rows retrieved or affected by this API call");
+            brickEconomyTransactionTable.AddIntField("dailyQuotaRemaining", true).AddScriptComments("Daily API quota remaining after this call (out of 100)");
+
+            brickEconomyTransactionTable.AddControlFields();
+
+
+            // ─────────────────────────────────────────────────────────────
+            //  BrickOwlTransaction — Audit log for all Brick Owl API calls
+            // ─────────────────────────────────────────────────────────────
+
+            Database.Table brickOwlTransactionTable = database.AddTable("BrickOwlTransaction");
+            brickOwlTransactionTable.comment = "Full audit log of every Brick Owl API call BMC makes on behalf of a user. Mirrors the BrickSetTransaction pattern for complete transparency.";
+            brickOwlTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickOwlTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            brickOwlTransactionTable.AddIdField();
+            brickOwlTransactionTable.AddMultiTenantSupport();
+
+            brickOwlTransactionTable.AddDateTimeField("transactionDate").AddScriptComments("Date/time the API call was made");
+            brickOwlTransactionTable.AddString50Field("direction", false).AddScriptComments("Direction of data flow: Push, Pull");
+            brickOwlTransactionTable.AddString100Field("methodName", false).AddScriptComments("Brick Owl API method name (e.g. 'catalogLookup', 'idLookup', 'getCollection')");
+            brickOwlTransactionTable.AddTextField("requestSummary").AddScriptComments("Human-readable description of the operation");
+            brickOwlTransactionTable.AddBoolField("success", false, true).AddScriptComments("Whether the API call completed successfully");
+            brickOwlTransactionTable.AddTextField("errorMessage").AddScriptComments("Error details if the call failed (null on success)");
+            brickOwlTransactionTable.AddString100Field("triggeredBy", false).AddScriptComments("What initiated this call: UserAction, CatalogLookup, IdMapping");
+            brickOwlTransactionTable.AddIntField("recordCount", true).AddScriptComments("Number of rows retrieved or affected by this API call");
+
+            brickOwlTransactionTable.AddControlFields();
+
+            #endregion
         }
     }
 }

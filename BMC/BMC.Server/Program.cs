@@ -34,6 +34,9 @@ using BMC.AI;
 using Foundation.BMC.Services;
 using BMC.Rebrickable.Sync;
 using BMC.BrickSet.Sync;
+using BMC.BrickLink.Sync;
+using BMC.BrickEconomy.Sync;
+using BMC.BrickOwl.Sync;
 
 
 namespace Foundation.BMC
@@ -152,6 +155,21 @@ namespace Foundation.BMC
                 // BrickSet sync service — manages set enrichment and user collection sync with BrickSet API
                 //
                 builder.Services.AddScoped<BrickSetSyncService>();
+
+                //
+                // BrickLink sync service — secondary market pricing via OAuth-authenticated API
+                //
+                builder.Services.AddScoped<BrickLinkSyncService>();
+
+                //
+                // BrickEconomy sync service — AI-powered set valuation with daily quota tracking
+                //
+                builder.Services.AddScoped<BrickEconomySyncService>();
+
+                //
+                // Brick Owl sync service — marketplace catalog, cross-platform ID mapping
+                //
+                builder.Services.AddScoped<BrickOwlSyncService>();
 
 
                 //
@@ -300,6 +318,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BrickSetSyncController));
                 controllers.Add(typeof(BrickLinkSyncController));
                 controllers.Add(typeof(BrickEconomySyncController));
+                controllers.Add(typeof(BrickOwlSyncController));
                 controllers.Add(typeof(UserSetListController));
                 controllers.Add(typeof(MySetsController));
                 controllers.Add(typeof(MyPartListsController));

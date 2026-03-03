@@ -1,0 +1,87 @@
+<div class="add-brick-link-transaction" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-link-transaction me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Link Transaction" 
+        *ngIf="userIsBMCBrickLinkTransactionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickLinkTransactionModal let-modal>
+   <div class="modal-header brick-link-transaction-modal-header">
+      <h5 class="modal-title mb-0" id="brickLinkTransactionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Link Transaction' : 'Add Brick Link Transaction' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body brick-link-transaction-modal-body">
+      <form [formGroup]="brickLinkTransactionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                <label for="BrickLinkTransaction-transactionDate" id="label-BrickLinkTransaction-transactionDate">Transaction Date</label>
+                <input type="datetime-local" id="BrickLinkTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" aria-labelledby="label-transactionDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('direction')">
+                <label for="BrickLinkTransaction-direction" id="label-BrickLinkTransaction-direction"><span class="text-danger">*</span>Direction</label>
+                <input type="text" id="BrickLinkTransaction-direction" formControlName="direction" placeholder="Enter Direction" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" aria-labelledby="label-direction" />
+                <div *ngIf="brickLinkTransactionForm.get('direction')?.invalid && brickLinkTransactionForm.get('direction')?.touched" class="text-danger">
+                    Direction is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('methodName')">
+                <label for="BrickLinkTransaction-methodName" id="label-BrickLinkTransaction-methodName"><span class="text-danger">*</span>Method Name</label>
+                <input type="text" id="BrickLinkTransaction-methodName" formControlName="methodName" placeholder="Enter Method Name" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" aria-labelledby="label-methodName" />
+                <div *ngIf="brickLinkTransactionForm.get('methodName')?.invalid && brickLinkTransactionForm.get('methodName')?.touched" class="text-danger">
+                    Method Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('requestSummary')">
+                <label for="BrickLinkTransaction-requestSummary" id="label-BrickLinkTransaction-requestSummary">Request Summary</label>
+                <textarea id="BrickLinkTransaction-requestSummary" formControlName="requestSummary" placeholder="Enter Request Summary" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                <input type="checkbox" id="BrickLinkTransaction-success" formControlName="success" class="form-check-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" />
+                <label for="BrickLinkTransaction-success" class="form-check-label" id="label-BrickLinkTransaction-success"><span class="text-danger">*</span>Success</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                <label for="BrickLinkTransaction-errorMessage" id="label-BrickLinkTransaction-errorMessage">Error Message</label>
+                <textarea id="BrickLinkTransaction-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('triggeredBy')">
+                <label for="BrickLinkTransaction-triggeredBy" id="label-BrickLinkTransaction-triggeredBy"><span class="text-danger">*</span>Triggered By</label>
+                <input type="text" id="BrickLinkTransaction-triggeredBy" formControlName="triggeredBy" placeholder="Enter Triggered By" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" aria-labelledby="label-triggeredBy" />
+                <div *ngIf="brickLinkTransactionForm.get('triggeredBy')?.invalid && brickLinkTransactionForm.get('triggeredBy')?.touched" class="text-danger">
+                    Triggered By is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('recordCount')">
+                <label for="BrickLinkTransaction-recordCount" id="label-BrickLinkTransaction-recordCount">Record Count</label>
+                <input type="number" id="BrickLinkTransaction-recordCount" formControlName="recordCount" placeholder="Enter Record Count" class="form-control brick-link-transaction-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" aria-labelledby="label-recordCount" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickLinkTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" />
+                <label for="BrickLinkTransaction-active" class="form-check-label" id="label-BrickLinkTransaction-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickLinkTransaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickLinkTransactionWriter()" />
+                <label for="BrickLinkTransaction-deleted" class="form-check-label" id="label-BrickLinkTransaction-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-link-transaction-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Link Transaction changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickLinkTransactionForm.valid || brickLinkTransactionForm.pristine  || userIsBMCBrickLinkTransactionWriter() == false " ngbTooltip="Save the Brick Link Transaction changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Link Transaction' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>
