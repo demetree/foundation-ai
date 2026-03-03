@@ -297,6 +297,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(ManualGeneratorController));
                 controllers.Add(typeof(PublicShowcaseController));
                 controllers.Add(typeof(RebrickableSyncController));
+                controllers.Add(typeof(BrickSetSyncController));
                 controllers.Add(typeof(UserSetListController));
                 controllers.Add(typeof(MySetsController));
                 controllers.Add(typeof(MyPartListsController));
