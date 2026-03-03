@@ -1,0 +1,95 @@
+<div class="add-brick-set-set-review" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-set-set-review me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Set Set Review" 
+        *ngIf="userIsBMCBrickSetSetReviewWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickSetSetReviewModal let-modal>
+   <div class="modal-header brick-set-set-review-modal-header">
+      <h5 class="modal-title mb-0" id="brickSetSetReviewModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Set Set Review' : 'Add Brick Set Set Review' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body brick-set-set-review-modal-body">
+      <form [formGroup]="brickSetSetReviewForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('legoSetId')">
+                <label for="BrickSetSetReview-legoSetId" id="label-BrickSetSetReview-legoSetId"><span class="text-danger">*</span>Lego Set</label>
+                <select id="BrickSetSetReview-legoSetId" formControlName="legoSetId" class="form-select brick-set-set-review-select" [disabled]="!userIsBMCBrickSetSetReviewWriter()">
+                    <option [ngValue]="null">Select Lego Set</option>
+                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                </select>
+                <div *ngIf="brickSetSetReviewForm.get('legoSetId')?.invalid && brickSetSetReviewForm.get('legoSetId')?.touched" class="text-danger">
+                    Lego Set is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewAuthor')">
+                <label for="BrickSetSetReview-reviewAuthor" id="label-BrickSetSetReview-reviewAuthor"><span class="text-danger">*</span>Review Author</label>
+                <input type="text" id="BrickSetSetReview-reviewAuthor" formControlName="reviewAuthor" placeholder="Enter Review Author" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-reviewAuthor" />
+                <div *ngIf="brickSetSetReviewForm.get('reviewAuthor')?.invalid && brickSetSetReviewForm.get('reviewAuthor')?.touched" class="text-danger">
+                    Review Author is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewDate')">
+                <label for="BrickSetSetReview-reviewDate" id="label-BrickSetSetReview-reviewDate">Review Date</label>
+                <input type="datetime-local" id="BrickSetSetReview-reviewDate" formControlName="reviewDate" placeholder="Enter Review Date" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-reviewDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewTitle')">
+                <label for="BrickSetSetReview-reviewTitle" id="label-BrickSetSetReview-reviewTitle">Review Title</label>
+                <textarea id="BrickSetSetReview-reviewTitle" formControlName="reviewTitle" placeholder="Enter Review Title" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reviewBody')">
+                <label for="BrickSetSetReview-reviewBody" id="label-BrickSetSetReview-reviewBody">Review Body</label>
+                <textarea id="BrickSetSetReview-reviewBody" formControlName="reviewBody" placeholder="Enter Review Body" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('overallRating')">
+                <label for="BrickSetSetReview-overallRating" id="label-BrickSetSetReview-overallRating">Overall Rating</label>
+                <input type="number" id="BrickSetSetReview-overallRating" formControlName="overallRating" placeholder="Enter Overall Rating" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-overallRating" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('buildingExperienceRating')">
+                <label for="BrickSetSetReview-buildingExperienceRating" id="label-BrickSetSetReview-buildingExperienceRating">Building Experience Rating</label>
+                <input type="number" id="BrickSetSetReview-buildingExperienceRating" formControlName="buildingExperienceRating" placeholder="Enter Building Experience Rating" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-buildingExperienceRating" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('valueForMoneyRating')">
+                <label for="BrickSetSetReview-valueForMoneyRating" id="label-BrickSetSetReview-valueForMoneyRating">Value For Money Rating</label>
+                <input type="number" id="BrickSetSetReview-valueForMoneyRating" formControlName="valueForMoneyRating" placeholder="Enter Value For Money Rating" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-valueForMoneyRating" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('partsRating')">
+                <label for="BrickSetSetReview-partsRating" id="label-BrickSetSetReview-partsRating">Parts Rating</label>
+                <input type="number" id="BrickSetSetReview-partsRating" formControlName="partsRating" placeholder="Enter Parts Rating" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-partsRating" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('playabilityRating')">
+                <label for="BrickSetSetReview-playabilityRating" id="label-BrickSetSetReview-playabilityRating">Playability Rating</label>
+                <input type="number" id="BrickSetSetReview-playabilityRating" formControlName="playabilityRating" placeholder="Enter Playability Rating" class="form-control brick-set-set-review-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" aria-labelledby="label-playabilityRating" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickSetSetReview-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" />
+                <label for="BrickSetSetReview-active" class="form-check-label" id="label-BrickSetSetReview-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickSetSetReview-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickSetSetReviewWriter()" />
+                <label for="BrickSetSetReview-deleted" class="form-check-label" id="label-BrickSetSetReview-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-set-set-review-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Set Set Review changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickSetSetReviewForm.valid || brickSetSetReviewForm.pristine  || userIsBMCBrickSetSetReviewWriter() == false " ngbTooltip="Save the Brick Set Set Review changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Set Set Review' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

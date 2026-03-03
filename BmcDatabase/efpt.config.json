@@ -79,6 +79,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[BrickSetSetReview]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickSetTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickSetUserLink]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[BuildChallenge]",
          "ObjectType": 0
       },

@@ -33,6 +33,7 @@ export class LegoThemeQueryParameters {
     description: string | null | undefined = null;
     legoThemeId: bigint | number | null | undefined = null;
     rebrickableThemeId: bigint | number | null | undefined = null;
+    brickSetThemeName: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -53,6 +54,7 @@ export class LegoThemeSubmitData {
     description!: string;
     legoThemeId: bigint | number | null = null;
     rebrickableThemeId!: bigint | number;
+    brickSetThemeName: string | null = null;
     sequence: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -107,6 +109,7 @@ export class LegoThemeData {
     description!: string;
     legoThemeId!: bigint | number;
     rebrickableThemeId!: bigint | number;
+    brickSetThemeName!: string | null;
     sequence!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -465,6 +468,7 @@ export class LegoThemeService extends SecureEndpointBase {
         output.description = data.description;
         output.legoThemeId = data.legoThemeId;
         output.rebrickableThemeId = data.rebrickableThemeId;
+        output.brickSetThemeName = data.brickSetThemeName;
         output.sequence = data.sequence;
         output.active = data.active;
         output.deleted = data.deleted;

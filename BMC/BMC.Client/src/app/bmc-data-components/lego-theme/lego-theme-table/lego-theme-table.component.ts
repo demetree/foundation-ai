@@ -179,6 +179,7 @@ export class LegoThemeTableComponent implements OnInit, OnChanges, AfterViewInit
     { key: 'description', label: 'Description', width: undefined },
     { key: 'legoTheme.name', label: 'Lego Theme', width: undefined, template: 'link', linkPath: ['/legotheme', 'legoThemeId'] },
     { key: 'rebrickableThemeId', label: 'Rebrickable Theme Id', width: undefined },
+    { key: 'brickSetThemeName', label: 'Brick Set Theme Name', width: undefined },
     { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
@@ -329,6 +330,7 @@ export class LegoThemeTableComponent implements OnInit, OnChanges, AfterViewInit
                       'description',
                       'legoTheme.name',
                       'rebrickableThemeId',
+                      'brickSetThemeName',
                       'sequence',
         ];
 

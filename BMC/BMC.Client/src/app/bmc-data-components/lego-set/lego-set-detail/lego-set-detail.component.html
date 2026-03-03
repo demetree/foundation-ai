@@ -72,6 +72,58 @@
                                 <label for="LegoSet-lastModifiedDate" id="label-LegoSet-lastModifiedDate">Last Modified Date</label>
                                 <input type="datetime-local" id="LegoSet-lastModifiedDate" formControlName="lastModifiedDate" placeholder="Enter Last Modified Date" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-lastModifiedDate" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickSetId')">
+                                <label for="LegoSet-brickSetId" id="label-LegoSet-brickSetId">Brick Set Id</label>
+                                <input type="number" id="LegoSet-brickSetId" formControlName="brickSetId" placeholder="Enter Brick Set Id" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickSetId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickSetUrl')">
+                                <label for="LegoSet-brickSetUrl" id="label-LegoSet-brickSetUrl">Brick Set Url</label>
+                                <input type="text" id="LegoSet-brickSetUrl" formControlName="brickSetUrl" placeholder="Enter Brick Set Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickSetUrl" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('retailPriceUS')">
+                                <label for="LegoSet-retailPriceUS" id="label-LegoSet-retailPriceUS">Retail Price U S</label>
+                                <input type="number" id="LegoSet-retailPriceUS" formControlName="retailPriceUS" placeholder="Enter Retail Price U S" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-retailPriceUS" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('retailPriceUK')">
+                                <label for="LegoSet-retailPriceUK" id="label-LegoSet-retailPriceUK">Retail Price U K</label>
+                                <input type="number" id="LegoSet-retailPriceUK" formControlName="retailPriceUK" placeholder="Enter Retail Price U K" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-retailPriceUK" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('retailPriceCA')">
+                                <label for="LegoSet-retailPriceCA" id="label-LegoSet-retailPriceCA">Retail Price C A</label>
+                                <input type="number" id="LegoSet-retailPriceCA" formControlName="retailPriceCA" placeholder="Enter Retail Price C A" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-retailPriceCA" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('retailPriceEU')">
+                                <label for="LegoSet-retailPriceEU" id="label-LegoSet-retailPriceEU">Retail Price E U</label>
+                                <input type="number" id="LegoSet-retailPriceEU" formControlName="retailPriceEU" placeholder="Enter Retail Price E U" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-retailPriceEU" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('instructionsUrl')">
+                                <label for="LegoSet-instructionsUrl" id="label-LegoSet-instructionsUrl">Instructions Url</label>
+                                <textarea id="LegoSet-instructionsUrl" formControlName="instructionsUrl" placeholder="Enter Instructions Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('subtheme')">
+                                <label for="LegoSet-subtheme" id="label-LegoSet-subtheme">Subtheme</label>
+                                <input type="text" id="LegoSet-subtheme" formControlName="subtheme" placeholder="Enter Subtheme" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-subtheme" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('availability')">
+                                <label for="LegoSet-availability" id="label-LegoSet-availability">Availability</label>
+                                <input type="text" id="LegoSet-availability" formControlName="availability" placeholder="Enter Availability" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-availability" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('minifigCount')">
+                                <label for="LegoSet-minifigCount" id="label-LegoSet-minifigCount">Minifig Count</label>
+                                <input type="number" id="LegoSet-minifigCount" formControlName="minifigCount" placeholder="Enter Minifig Count" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-minifigCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickSetRating')">
+                                <label for="LegoSet-brickSetRating" id="label-LegoSet-brickSetRating">Brick Set Rating</label>
+                                <input type="number" id="LegoSet-brickSetRating" formControlName="brickSetRating" placeholder="Enter Brick Set Rating" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickSetRating" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickSetReviewCount')">
+                                <label for="LegoSet-brickSetReviewCount" id="label-LegoSet-brickSetReviewCount">Brick Set Review Count</label>
+                                <input type="number" id="LegoSet-brickSetReviewCount" formControlName="brickSetReviewCount" placeholder="Enter Brick Set Review Count" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickSetReviewCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickSetLastEnrichedDate')">
+                                <label for="LegoSet-brickSetLastEnrichedDate" id="label-LegoSet-brickSetLastEnrichedDate">Brick Set Last Enriched Date</label>
+                                <input type="datetime-local" id="LegoSet-brickSetLastEnrichedDate" formControlName="brickSetLastEnrichedDate" placeholder="Enter Brick Set Last Enriched Date" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickSetLastEnrichedDate" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="LegoSet-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoSetWriter()" />
                                 <label for="LegoSet-active" class="form-check-label" id="label-LegoSet-active"><span class="text-danger">*</span>Active</label>
@@ -169,6 +221,20 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-user-collection-set-import-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-collection-set-import-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="brickSetSetReviewService.userIsBMCBrickSetSetReviewReader()">
+                            <button ngbNavLink>Brick Set Set Reviews
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.BrickSetSetReviewsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-set-set-review-table [queryParams]="{ legoSetId: legoSetData?.id }" [showAddButton]="true" [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-brick-set-set-review-table>
                                 </div>
                             </div>
                             </ng-template>

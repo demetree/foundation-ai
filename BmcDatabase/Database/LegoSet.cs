@@ -29,11 +29,39 @@ public partial class LegoSet
 
     public DateTime? lastModifiedDate { get; set; }
 
+    public int? brickSetId { get; set; }
+
+    public string brickSetUrl { get; set; }
+
+    public decimal? retailPriceUS { get; set; }
+
+    public decimal? retailPriceUK { get; set; }
+
+    public decimal? retailPriceCA { get; set; }
+
+    public decimal? retailPriceEU { get; set; }
+
+    public string instructionsUrl { get; set; }
+
+    public string subtheme { get; set; }
+
+    public string availability { get; set; }
+
+    public int? minifigCount { get; set; }
+
+    public float? brickSetRating { get; set; }
+
+    public int? brickSetReviewCount { get; set; }
+
+    public DateTime? brickSetLastEnrichedDate { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<BrickSetSetReview> BrickSetSetReviews { get; set; } = new List<BrickSetSetReview>();
 
     public virtual ICollection<LegoSetMinifig> LegoSetMinifigs { get; set; } = new List<LegoSetMinifig>();
 

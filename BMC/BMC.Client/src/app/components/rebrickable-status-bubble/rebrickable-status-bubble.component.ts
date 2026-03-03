@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subject, takeUntil, filter } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { RebrickableSignalrService, SyncActivityEvent, ConnectionChangedEvent, RateLimitEvent } from '../../services/rebrickable-signalr.service';
 import { RebrickableSyncService, SyncStatus } from '../../services/rebrickable-sync.service';
@@ -12,6 +13,40 @@ import { RebrickableSyncService, SyncStatus } from '../../services/rebrickable-s
 export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
 
+    //
+    // Route prefixes where the Rebrickable bubble should appear.
+    // Includes premium custom routes and scaffolded data routes for synced tables.
+    //
+    private static readonly REBRICKABLE_ROUTE_PREFIXES: string[] = [
+        // Premium custom UIs
+        '/my-collection',
+        '/my-set-lists',
+        '/my-sets',
+        '/my-part-lists',
+        '/my-lost-parts',
+        '/integrations',
+        // Scaffolded data routes for Rebrickable-synced tables
+        '/userlostparts',
+        '/userlostpart',
+        '/userpartlists',
+        '/userpartlist',
+        '/userpartlistitems',
+        '/userpartlistitem',
+        '/usersetlists',
+        '/usersetlist',
+        '/usersetlistitems',
+        '/usersetlistitem',
+        '/usersetownerships',
+        '/usersetownership',
+        // Rebrickable admin routes
+        '/rebrickablesyncqueues',
+        '/rebrickablesyncqueue',
+        '/rebrickabletransactions',
+        '/rebrickabletransaction',
+        '/rebrickableuserlinks',
+        '/rebrickableuserlink',
+    ];
+
     // State
     isConnected = false;
     isActive = false;
@@ -21,7 +56,8 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     showPanel = false;
     showTooltip = false;
     showReauth = false;
-    visible = false;
+    statusLoaded = false;
+    isOnRebrickableRoute = false;
 
     // Sync mode awareness
     integrationMode = 'None';
@@ -38,15 +74,35 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
     rateLimitResetSeconds = 0;
 
     constructor(
+        private router: Router,
         private authService: AuthService,
         private signalr: RebrickableSignalrService,
         private syncService: RebrickableSyncService
     ) { }
 
 
+    //
+    // Visible is true only when we have loaded status AND the user is on a Rebrickable route.
+    //
+    get visible(): boolean {
+        return this.statusLoaded && this.isOnRebrickableRoute;
+    }
+
+
     ngOnInit(): void {
         // Only show for logged-in users
         if (!this.authService.isLoggedIn) return;
+
+        // Evaluate the current route immediately
+        this.isOnRebrickableRoute = this.checkRebrickableRoute(this.router.url);
+
+        // Subscribe to route changes to toggle visibility
+        this.router.events.pipe(
+            filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+            takeUntil(this.destroy$)
+        ).subscribe(event => {
+            this.isOnRebrickableRoute = this.checkRebrickableRoute(event.urlAfterRedirects);
+        });
 
         // Load initial status
         this.loadStatus();
@@ -87,7 +143,7 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
         this.authService.getLoginStatusEvent().pipe(takeUntil(this.destroy$)).subscribe(isLoggedIn => {
             if (!isLoggedIn) {
                 this.signalr.disconnect();
-                this.visible = false;
+                this.statusLoaded = false;
             } else {
                 this.loadStatus();
                 this.signalr.connect();
@@ -104,10 +160,10 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
                 // Server DTO does not include syncEnabled — derive it from integrationMode.
                 // Sync is enabled when integration mode is anything other than 'None'.
                 this.syncEnabled = this.integrationMode !== 'None';
-                this.visible = true; // Show bubble once status is loaded
+                this.statusLoaded = true;
             },
             error: () => {
-                this.visible = false;
+                this.statusLoaded = false;
             }
         });
     }
@@ -237,6 +293,17 @@ export class RebrickableStatusBubbleComponent implements OnInit, OnDestroy {
             case 'ImportOnly': return 'Import Only';
             default: return 'None';
         }
+    }
+
+
+    //
+    // Returns true if the given URL starts with any of the Rebrickable route prefixes.
+    //
+    private checkRebrickableRoute(url: string): boolean {
+        const path = url.split('?')[0].split('#')[0].toLowerCase();
+        return RebrickableStatusBubbleComponent.REBRICKABLE_ROUTE_PREFIXES.some(
+            prefix => path === prefix || path.startsWith(prefix + '/')
+        );
     }
 
 

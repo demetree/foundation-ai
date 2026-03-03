@@ -56,7 +56,11 @@ export class HeaderComponent {
             label: 'MY STUFF',
             items: [
                 { icon: 'fas fa-user-circle', label: 'My Profile', route: '/profile' },
-                { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' }
+                { icon: 'fas fa-layer-group', label: 'My Collection', route: '/my-collection' },
+                { icon: 'fas fa-box-open', label: 'My Sets', route: '/my-sets' },
+                { icon: 'fas fa-list-ul', label: 'My Set Lists', route: '/my-set-lists' },
+                { icon: 'fas fa-list-check', label: 'My Part Lists', route: '/my-part-lists' },
+                { icon: 'fas fa-search-minus', label: 'Lost Parts', route: '/my-lost-parts' }
             ]
         },
         {

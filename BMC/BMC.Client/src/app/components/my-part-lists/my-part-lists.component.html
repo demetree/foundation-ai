@@ -1,0 +1,318 @@
+<!-- My Part Lists — Part List Management -->
+<div class="part-lists-container">
+
+    <!-- Feedback Messages -->
+    <div class="feedback-bar success" *ngIf="successMessage">
+        <i class="fas fa-check-circle"></i> {{ successMessage }}
+    </div>
+    <div class="feedback-bar error" *ngIf="errorMessage">
+        <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         LISTS VIEW
+         ═══════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="view === 'lists'">
+
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-left">
+                <h1 class="page-title">
+                    <i class="fas fa-list-check"></i>
+                    My Part Lists
+                </h1>
+                <p class="page-subtitle">Organize your brick parts into custom lists</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-create" (click)="toggleCreateForm()">
+                    <i class="fas" [ngClass]="showCreateForm ? 'fa-times' : 'fa-plus'"></i>
+                    <span>{{ showCreateForm ? 'Cancel' : 'New List' }}</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Create Form -->
+        <div class="create-form-card" *ngIf="showCreateForm">
+            <div class="create-form-body">
+                <div class="form-group">
+                    <label>List Name</label>
+                    <input type="text" class="form-input" [(ngModel)]="newListName" placeholder="e.g. Technic Gears"
+                        (keydown.enter)="createList()" autofocus />
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="newListBuildable" />
+                        Buildable
+                    </label>
+                    <span class="form-hint">Parts in this list are for a specific build</span>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-sm" (click)="createList()"
+                        [disabled]="creating || !newListName.trim()">
+                        <i class="fas" [ngClass]="creating ? 'fa-spinner fa-spin' : 'fa-plus'"></i> Create
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-overlay" *ngIf="loading">
+            <div class="spinner-wrap">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading part lists…</span>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!loading && lists.length === 0">
+            <i class="fas fa-list-check"></i>
+            <h3>No part lists yet</h3>
+            <p>Create your first part list to organize your brick collection.</p>
+            <button class="btn btn-create" (click)="toggleCreateForm()">
+                <i class="fas fa-plus"></i> Create Your First List
+            </button>
+        </div>
+
+        <!-- Lists Grid -->
+        <div class="lists-grid" *ngIf="!loading && lists.length > 0">
+            <div class="list-card" *ngFor="let list of lists" (click)="openList(list)">
+
+                <!-- Edit Mode -->
+                <div class="list-card-edit" *ngIf="editingListId === list.id">
+                    <div class="form-group">
+                        <input type="text" class="form-input" [(ngModel)]="editListName"
+                            (keydown.enter)="saveEditList(list)" />
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label small">
+                            <input type="checkbox" [(ngModel)]="editListBuildable" />
+                            Buildable
+                        </label>
+                    </div>
+                    <div class="edit-actions">
+                        <button class="btn btn-primary btn-sm" (click)="saveEditList(list); $event.stopPropagation()"
+                            [disabled]="savingList">
+                            <i class="fas" [ngClass]="savingList ? 'fa-spinner fa-spin' : 'fa-check'"></i> Save
+                        </button>
+                        <button class="btn btn-secondary btn-sm"
+                            (click)="cancelEditList(); $event.stopPropagation()">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Display Mode -->
+                <div class="list-card-display" *ngIf="editingListId !== list.id">
+                    <div class="list-card-header">
+                        <h3 class="list-name">{{ list.name }}</h3>
+                        <div class="list-badges">
+                            <span class="badge version-badge">v{{ list.versionNumber }}</span>
+                            <span class="badge buildable-badge" *ngIf="list.isBuildable">
+                                <i class="fas fa-hammer"></i> Buildable
+                            </span>
+                            <span class="badge sync-badge" [ngClass]="list.rebrickableListId ? 'synced' : 'local'">
+                                <i class="fas" [ngClass]="list.rebrickableListId ? 'fa-cloud' : 'fa-hdd'"></i>
+                                {{ list.rebrickableListId ? 'Synced' : 'Local' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="list-card-stats">
+                        <div class="mini-stat">
+                            <span class="mini-stat-value">{{ list.itemCount }}</span>
+                            <span class="mini-stat-label">parts</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value">{{ list.totalParts }}</span>
+                            <span class="mini-stat-label">total qty</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value">{{ list.uniqueColours }}</span>
+                            <span class="mini-stat-label">colours</span>
+                        </div>
+                    </div>
+
+                    <div class="list-card-actions">
+                        <button class="btn-icon" title="Edit" (click)="startEditList(list, $event)">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn-icon danger" title="Delete" (click)="deleteList(list, $event)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         DETAIL VIEW
+         ═══════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="view === 'detail'">
+
+        <!-- Loading Detail -->
+        <div class="loading-overlay" *ngIf="loadingDetail">
+            <div class="spinner-wrap">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading list…</span>
+            </div>
+        </div>
+
+        <ng-container *ngIf="!loadingDetail && selectedList">
+
+            <!-- Detail Header -->
+            <div class="detail-header">
+                <button class="btn btn-back" (click)="backToLists()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <div class="detail-title-row">
+                    <h2 class="detail-name">{{ selectedList.name }}</h2>
+                    <div class="detail-badges">
+                        <span class="badge version-badge">v{{ selectedList.versionNumber }}</span>
+                        <span class="badge buildable-badge" *ngIf="selectedList.isBuildable">
+                            <i class="fas fa-hammer"></i> Buildable
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Stats -->
+            <div class="stats-row detail-stats">
+                <div class="stat-card">
+                    <div class="stat-icon parts"><i class="fas fa-puzzle-piece"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-value">{{ filteredItems.length }}</span>
+                        <span class="stat-label">Unique Parts</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon total"><i class="fas fa-cubes"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-value">{{ totalParts }}</span>
+                        <span class="stat-label">Total Qty</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon colours"><i class="fas fa-palette"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-value">{{ uniqueColours }}</span>
+                        <span class="stat-label">Colours</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item Search -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search parts by name, number, colour…" [(ngModel)]="itemSearchText"
+                        (input)="onItemSearch($event)" />
+                    <button class="clear-btn" *ngIf="itemSearchText" (click)="itemSearchText = ''; applyItemFilter()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty Items -->
+            <div class="empty-state" *ngIf="filteredItems.length === 0 && !itemSearchText">
+                <i class="fas fa-puzzle-piece"></i>
+                <h3>No parts in this list</h3>
+                <p>Parts will appear here once added via the data management tools.</p>
+            </div>
+
+            <div class="empty-state" *ngIf="filteredItems.length === 0 && itemSearchText">
+                <i class="fas fa-search"></i>
+                <h3>No matching parts</h3>
+                <p>No parts match "{{ itemSearchText }}"</p>
+            </div>
+
+            <!-- Items Grid -->
+            <div class="items-grid" *ngIf="filteredItems.length > 0">
+                <div class="item-card" *ngFor="let item of filteredItems" [class.editing]="editingItemId === item.id">
+
+                    <!-- Edit Mode -->
+                    <div class="item-card-edit" *ngIf="editingItemId === item.id">
+                        <h4 class="edit-title">{{ item.partName }}</h4>
+                        <div class="edit-field">
+                            <label>Quantity</label>
+                            <div class="qty-control">
+                                <button class="qty-btn" (click)="editItemQuantity = Math.max(1, editItemQuantity - 1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="qty-value">{{ editItemQuantity }}</span>
+                                <button class="qty-btn" (click)="editItemQuantity = editItemQuantity + 1">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="edit-actions">
+                            <button class="btn btn-primary btn-sm" (click)="saveEditItem(item)" [disabled]="savingItem">
+                                <i class="fas" [ngClass]="savingItem ? 'fa-spinner fa-spin' : 'fa-check'"></i> Save
+                            </button>
+                            <button class="btn btn-secondary btn-sm" (click)="cancelEditItem()">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Display Mode -->
+                    <div class="item-card-display" *ngIf="editingItemId !== item.id">
+
+                        <!-- Part Image -->
+                        <div class="part-image-wrap">
+                            <img *ngIf="item.partImageUrl" [src]="item.partImageUrl" [alt]="item.partName"
+                                class="part-image" />
+                            <div class="part-image-placeholder" *ngIf="!item.partImageUrl">
+                                <i class="fas fa-puzzle-piece"></i>
+                            </div>
+                        </div>
+
+                        <!-- Part Info -->
+                        <div class="part-info">
+                            <h4 class="part-name" [title]="item.partName">
+                                {{ item.partName || 'Unknown Part' }}
+                            </h4>
+                            <span class="part-number">{{ item.partNum }}</span>
+
+                            <div class="part-meta">
+                                <span class="colour-swatch-group">
+                                    <span class="colour-swatch" [ngStyle]="getColourStyle(item.colourHex)"
+                                        [title]="item.colourName" [class.transparent]="item.isTransparent"></span>
+                                    <span class="colour-name">{{ item.colourName }}</span>
+                                </span>
+                                <span class="badge badge-category" *ngIf="item.partCategory">
+                                    {{ item.partCategory }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="item-quantity">
+                            <button class="qty-btn" (click)="updateItemQuantity(item, -1); $event.stopPropagation()"
+                                [disabled]="item.quantity <= 1">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="qty-value">{{ item.quantity }}</span>
+                            <button class="qty-btn" (click)="updateItemQuantity(item, 1); $event.stopPropagation()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="item-actions">
+                            <a *ngIf="item.rebrickablePartUrl" [href]="item.rebrickablePartUrl" target="_blank"
+                                rel="noopener" class="btn-icon external" title="View on Rebrickable"
+                                (click)="$event.stopPropagation()">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            <button class="btn-icon" title="Edit" (click)="startEditItem(item, $event)">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="btn-icon danger" title="Remove" (click)="removeItem(item, $event)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
+</div>

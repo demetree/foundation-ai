@@ -35,6 +35,19 @@ namespace Foundation.BMC.Database
 			public String rebrickableUrl { get; set; }
 			public String rebrickableSetNum { get; set; }
 			public DateTime? lastModifiedDate { get; set; }
+			public Int32? brickSetId { get; set; }
+			public String brickSetUrl { get; set; }
+			public Decimal? retailPriceUS { get; set; }
+			public Decimal? retailPriceUK { get; set; }
+			public Decimal? retailPriceCA { get; set; }
+			public Decimal? retailPriceEU { get; set; }
+			public String instructionsUrl { get; set; }
+			public String subtheme { get; set; }
+			public String availability { get; set; }
+			public Int32? minifigCount { get; set; }
+			public Single? brickSetRating { get; set; }
+			public Int32? brickSetReviewCount { get; set; }
+			public DateTime? brickSetLastEnrichedDate { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -75,6 +88,19 @@ namespace Foundation.BMC.Database
 				rebrickableUrl = this.rebrickableUrl,
 				rebrickableSetNum = this.rebrickableSetNum,
 				lastModifiedDate = this.lastModifiedDate,
+				brickSetId = this.brickSetId,
+				brickSetUrl = this.brickSetUrl,
+				retailPriceUS = this.retailPriceUS,
+				retailPriceUK = this.retailPriceUK,
+				retailPriceCA = this.retailPriceCA,
+				retailPriceEU = this.retailPriceEU,
+				instructionsUrl = this.instructionsUrl,
+				subtheme = this.subtheme,
+				availability = this.availability,
+				minifigCount = this.minifigCount,
+				brickSetRating = this.brickSetRating,
+				brickSetReviewCount = this.brickSetReviewCount,
+				brickSetLastEnrichedDate = this.brickSetLastEnrichedDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -127,6 +153,19 @@ namespace Foundation.BMC.Database
 				rebrickableUrl = this.rebrickableUrl,
 				rebrickableSetNum = this.rebrickableSetNum,
 				lastModifiedDate = this.lastModifiedDate,
+				brickSetId = this.brickSetId,
+				brickSetUrl = this.brickSetUrl,
+				retailPriceUS = this.retailPriceUS,
+				retailPriceUK = this.retailPriceUK,
+				retailPriceCA = this.retailPriceCA,
+				retailPriceEU = this.retailPriceEU,
+				instructionsUrl = this.instructionsUrl,
+				subtheme = this.subtheme,
+				availability = this.availability,
+				minifigCount = this.minifigCount,
+				brickSetRating = this.brickSetRating,
+				brickSetReviewCount = this.brickSetReviewCount,
+				brickSetLastEnrichedDate = this.brickSetLastEnrichedDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -180,6 +219,19 @@ namespace Foundation.BMC.Database
 				rebrickableUrl = dto.rebrickableUrl,
 				rebrickableSetNum = dto.rebrickableSetNum,
 				lastModifiedDate = dto.lastModifiedDate,
+				brickSetId = dto.brickSetId,
+				brickSetUrl = dto.brickSetUrl,
+				retailPriceUS = dto.retailPriceUS,
+				retailPriceUK = dto.retailPriceUK,
+				retailPriceCA = dto.retailPriceCA,
+				retailPriceEU = dto.retailPriceEU,
+				instructionsUrl = dto.instructionsUrl,
+				subtheme = dto.subtheme,
+				availability = dto.availability,
+				minifigCount = dto.minifigCount,
+				brickSetRating = dto.brickSetRating,
+				brickSetReviewCount = dto.brickSetReviewCount,
+				brickSetLastEnrichedDate = dto.brickSetLastEnrichedDate,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -209,6 +261,19 @@ namespace Foundation.BMC.Database
 			this.rebrickableUrl = dto.rebrickableUrl;
 			this.rebrickableSetNum = dto.rebrickableSetNum;
 			this.lastModifiedDate = dto.lastModifiedDate;
+			this.brickSetId = dto.brickSetId;
+			this.brickSetUrl = dto.brickSetUrl;
+			this.retailPriceUS = dto.retailPriceUS;
+			this.retailPriceUK = dto.retailPriceUK;
+			this.retailPriceCA = dto.retailPriceCA;
+			this.retailPriceEU = dto.retailPriceEU;
+			this.instructionsUrl = dto.instructionsUrl;
+			this.subtheme = dto.subtheme;
+			this.availability = dto.availability;
+			this.minifigCount = dto.minifigCount;
+			this.brickSetRating = dto.brickSetRating;
+			this.brickSetReviewCount = dto.brickSetReviewCount;
+			this.brickSetLastEnrichedDate = dto.brickSetLastEnrichedDate;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -243,6 +308,19 @@ namespace Foundation.BMC.Database
 				rebrickableUrl = this.rebrickableUrl,
 				rebrickableSetNum = this.rebrickableSetNum,
 				lastModifiedDate = this.lastModifiedDate,
+				brickSetId = this.brickSetId,
+				brickSetUrl = this.brickSetUrl,
+				retailPriceUS = this.retailPriceUS,
+				retailPriceUK = this.retailPriceUK,
+				retailPriceCA = this.retailPriceCA,
+				retailPriceEU = this.retailPriceEU,
+				instructionsUrl = this.instructionsUrl,
+				subtheme = this.subtheme,
+				availability = this.availability,
+				minifigCount = this.minifigCount,
+				brickSetRating = this.brickSetRating,
+				brickSetReviewCount = this.brickSetReviewCount,
+				brickSetLastEnrichedDate = this.brickSetLastEnrichedDate,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -309,6 +387,19 @@ namespace Foundation.BMC.Database
 				rebrickableUrl = legoSet.rebrickableUrl,
 				rebrickableSetNum = legoSet.rebrickableSetNum,
 				lastModifiedDate = legoSet.lastModifiedDate,
+				brickSetId = legoSet.brickSetId,
+				brickSetUrl = legoSet.brickSetUrl,
+				retailPriceUS = legoSet.retailPriceUS,
+				retailPriceUK = legoSet.retailPriceUK,
+				retailPriceCA = legoSet.retailPriceCA,
+				retailPriceEU = legoSet.retailPriceEU,
+				instructionsUrl = legoSet.instructionsUrl,
+				subtheme = legoSet.subtheme,
+				availability = legoSet.availability,
+				minifigCount = legoSet.minifigCount,
+				brickSetRating = legoSet.brickSetRating,
+				brickSetReviewCount = legoSet.brickSetReviewCount,
+				brickSetLastEnrichedDate = legoSet.brickSetLastEnrichedDate,
 				objectGuid = legoSet.objectGuid,
 				active = legoSet.active,
 				deleted = legoSet.deleted,
@@ -342,6 +433,19 @@ namespace Foundation.BMC.Database
 				rebrickableUrl = legoSet.rebrickableUrl,
 				rebrickableSetNum = legoSet.rebrickableSetNum,
 				lastModifiedDate = legoSet.lastModifiedDate,
+				brickSetId = legoSet.brickSetId,
+				brickSetUrl = legoSet.brickSetUrl,
+				retailPriceUS = legoSet.retailPriceUS,
+				retailPriceUK = legoSet.retailPriceUK,
+				retailPriceCA = legoSet.retailPriceCA,
+				retailPriceEU = legoSet.retailPriceEU,
+				instructionsUrl = legoSet.instructionsUrl,
+				subtheme = legoSet.subtheme,
+				availability = legoSet.availability,
+				minifigCount = legoSet.minifigCount,
+				brickSetRating = legoSet.brickSetRating,
+				brickSetReviewCount = legoSet.brickSetReviewCount,
+				brickSetLastEnrichedDate = legoSet.brickSetLastEnrichedDate,
 				objectGuid = legoSet.objectGuid,
 				active = legoSet.active,
 				deleted = legoSet.deleted,

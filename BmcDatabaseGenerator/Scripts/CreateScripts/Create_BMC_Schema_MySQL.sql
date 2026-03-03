@@ -61,6 +61,9 @@ USE `BMC`;
 -- DROP TABLE `UserPartListItem`
 -- DROP TABLE `UserPartListChangeHistory`
 -- DROP TABLE `UserPartList`
+-- DROP TABLE `BrickSetSetReview`
+-- DROP TABLE `BrickSetTransaction`
+-- DROP TABLE `BrickSetUserLink`
 -- DROP TABLE `RebrickableSyncQueue`
 -- DROP TABLE `RebrickableTransaction`
 -- DROP TABLE `RebrickableUserLink`
@@ -158,6 +161,9 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `UserPartListItem` DISABLE
 -- ALTER INDEX ALL ON `UserPartListChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `UserPartList` DISABLE
+-- ALTER INDEX ALL ON `BrickSetSetReview` DISABLE
+-- ALTER INDEX ALL ON `BrickSetTransaction` DISABLE
+-- ALTER INDEX ALL ON `BrickSetUserLink` DISABLE
 -- ALTER INDEX ALL ON `RebrickableSyncQueue` DISABLE
 -- ALTER INDEX ALL ON `RebrickableTransaction` DISABLE
 -- ALTER INDEX ALL ON `RebrickableUserLink` DISABLE
@@ -255,6 +261,9 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `UserPartListItem` REBUILD
 -- ALTER INDEX ALL ON `UserPartListChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `UserPartList` REBUILD
+-- ALTER INDEX ALL ON `BrickSetSetReview` REBUILD
+-- ALTER INDEX ALL ON `BrickSetTransaction` REBUILD
+-- ALTER INDEX ALL ON `BrickSetUserLink` REBUILD
 -- ALTER INDEX ALL ON `RebrickableSyncQueue` REBUILD
 -- ALTER INDEX ALL ON `RebrickableTransaction` REBUILD
 -- ALTER INDEX ALL ON `RebrickableUserLink` REBUILD
@@ -1317,6 +1326,7 @@ CREATE TABLE `LegoTheme`(
 	`description` VARCHAR(500) NOT NULL,
 	`legoThemeId` INT NULL,		-- Parent theme for hierarchical nesting (self-referencing FK, null = top-level)
 	`rebrickableThemeId` INT NOT NULL,		-- Rebrickable theme ID — source of truth for theme identity
+	`brickSetThemeName` VARCHAR(100) NULL,		-- BrickSet theme name for API calls — may differ from Rebrickable theme name (null if not mapped)
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -1349,6 +1359,19 @@ CREATE TABLE `LegoSet`(
 	`rebrickableUrl` VARCHAR(250) NULL,		-- URL to the set's Rebrickable page
 	`rebrickableSetNum` VARCHAR(100) NULL,		-- Explicit Rebrickable set number if it differs from setNumber
 	`lastModifiedDate` DATETIME NULL,		-- Last modification date for incremental sync with Rebrickable
+	`brickSetId` INT NULL,		-- BrickSet internal set ID — used for API calls (null if not yet enriched from BrickSet)
+	`brickSetUrl` VARCHAR(250) NULL,		-- URL to the set's BrickSet page
+	`retailPriceUS` DECIMAL(11,2) NULL,		-- US retail price in USD from BrickSet (null if not available)
+	`retailPriceUK` DECIMAL(11,2) NULL,		-- UK retail price in GBP from BrickSet (null if not available)
+	`retailPriceCA` DECIMAL(11,2) NULL,		-- Canadian retail price in CAD from BrickSet (null if not available)
+	`retailPriceEU` DECIMAL(11,2) NULL,		-- EU retail price in EUR from BrickSet (null if not available)
+	`instructionsUrl` VARCHAR(500) NULL,		-- URL to the set's official building instructions PDF (sourced from BrickSet)
+	`subtheme` VARCHAR(100) NULL,		-- Subtheme name from BrickSet (e.g. 'Police' under City)
+	`availability` VARCHAR(50) NULL,		-- Current availability status from BrickSet (e.g. 'Retail', 'Retired', 'LEGO exclusive')
+	`minifigCount` INT NULL,		-- Number of minifigs included in the set (from BrickSet, null if unknown)
+	`brickSetRating` FLOAT NULL,		-- Average community rating on BrickSet (1.0-5.0, null if no reviews)
+	`brickSetReviewCount` INT NULL,		-- Number of community reviews on BrickSet (null if unknown)
+	`brickSetLastEnrichedDate` DATETIME NULL,		-- When this set was last enriched with BrickSet data (null = never enriched)
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -1766,6 +1789,91 @@ CREATE INDEX `I_RebrickableSyncQueue_tenantGuid_active` ON `RebrickableSyncQueue
 
 -- Index on the RebrickableSyncQueue table's tenantGuid,deleted fields.
 CREATE INDEX `I_RebrickableSyncQueue_tenantGuid_deleted` ON `RebrickableSyncQueue` (`tenantGuid`, `deleted`);
+
+
+-- Stores each user's BrickSet userHash and sync configuration. One link per tenant. BrickSet auth uses an app-level API key (in appsettings.json) plus a session-based userHash obtained via login.
+CREATE TABLE `BrickSetUserLink`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`brickSetUsername` VARCHAR(100) NOT NULL,		-- User's BrickSet username for display and reference
+	`encryptedUserHash` VARCHAR(500) NOT NULL,		-- Encrypted BrickSet userHash — obtained via login, used for collection API calls
+	`encryptedPassword` VARCHAR(500) NULL,		-- Encrypted BrickSet password — stored for re-authentication when userHash expires (null if user chose not to store)
+	`syncEnabled` BIT NOT NULL DEFAULT 1,		-- Whether automatic sync is enabled for this user
+	`syncDirection` VARCHAR(50) NOT NULL,		-- Integration mode: None, PullOnly, PushOnly, Bidirectional
+	`lastSyncDate` DATETIME NULL,		-- Date/time of last successful sync with BrickSet
+	`lastPullDate` DATETIME NULL,		-- Date/time of last successful pull from BrickSet
+	`lastPushDate` DATETIME NULL,		-- Date/time of last successful push to BrickSet
+	`lastSyncError` TEXT NULL,		-- Last sync error message for display to the user (null = no error)
+	`userHashStoredDate` DATETIME NULL,		-- When the userHash was last stored or refreshed — used for session expiry tracking
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_BrickSetUserLink_tenantGuid_Unique`( `tenantGuid` ) 		-- Uniqueness enforced on the BrickSetUserLink table's tenantGuid field.
+);
+-- Index on the BrickSetUserLink table's tenantGuid field.
+CREATE INDEX `I_BrickSetUserLink_tenantGuid` ON `BrickSetUserLink` (`tenantGuid`);
+
+-- Index on the BrickSetUserLink table's tenantGuid,active fields.
+CREATE INDEX `I_BrickSetUserLink_tenantGuid_active` ON `BrickSetUserLink` (`tenantGuid`, `active`);
+
+-- Index on the BrickSetUserLink table's tenantGuid,deleted fields.
+CREATE INDEX `I_BrickSetUserLink_tenantGuid_deleted` ON `BrickSetUserLink` (`tenantGuid`, `deleted`);
+
+
+-- Full audit log of every BrickSet API call BMC makes on behalf of a user. Mirrors the RebrickableTransaction pattern for complete transparency.
+CREATE TABLE `BrickSetTransaction`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`transactionDate` DATETIME NULL,		-- Date/time the API call was made
+	`direction` VARCHAR(50) NOT NULL,		-- Direction of data flow: Push, Pull, Enrich
+	`methodName` VARCHAR(100) NOT NULL,		-- BrickSet API method name (e.g. 'getSets', 'setCollection', 'getInstructions')
+	`requestSummary` TEXT NULL,		-- Human-readable description of the operation, e.g. 'Enriched set 42131-1 with pricing data'
+	`success` BIT NOT NULL DEFAULT 1,		-- Whether the API call completed successfully
+	`errorMessage` TEXT NULL,		-- Error details if the call failed (null on success)
+	`triggeredBy` VARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, SetDetailView, ManualEnrich, CollectionSync
+	`recordCount` INT NULL,		-- Number of rows retrieved or affected by this API call
+	`apiCallsRemaining` INT NULL,		-- Daily API call quota remaining after this call (from getKeyUsageStats)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the BrickSetTransaction table's tenantGuid field.
+CREATE INDEX `I_BrickSetTransaction_tenantGuid` ON `BrickSetTransaction` (`tenantGuid`);
+
+-- Index on the BrickSetTransaction table's tenantGuid,active fields.
+CREATE INDEX `I_BrickSetTransaction_tenantGuid_active` ON `BrickSetTransaction` (`tenantGuid`, `active`);
+
+-- Index on the BrickSetTransaction table's tenantGuid,deleted fields.
+CREATE INDEX `I_BrickSetTransaction_tenantGuid_deleted` ON `BrickSetTransaction` (`tenantGuid`, `deleted`);
+
+
+-- Cached community reviews from BrickSet for official LEGO sets. Pulled periodically via the getReviews API method. Reviews are read-only reference data, not user-editable.
+CREATE TABLE `BrickSetSetReview`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`legoSetId` INT NOT NULL,		-- The set this review is for
+	`reviewAuthor` VARCHAR(100) NOT NULL,		-- BrickSet username of the reviewer
+	`reviewDate` DATETIME NULL,		-- When the review was posted on BrickSet
+	`reviewTitle` TEXT NULL,		-- Review title/heading
+	`reviewBody` TEXT NULL,		-- Full review text
+	`overallRating` INT NULL,		-- Overall rating (1-5)
+	`buildingExperienceRating` INT NULL,		-- Building experience rating (1-5, null if not rated)
+	`valueForMoneyRating` INT NULL,		-- Value for money rating (1-5, null if not rated)
+	`partsRating` INT NULL,		-- Parts/pieces rating (1-5, null if not rated)
+	`playabilityRating` INT NULL,		-- Playability rating (1-5, null if not rated)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`legoSetId`) REFERENCES `LegoSet`(`id`)		-- Foreign key to the LegoSet table.
+);
+-- Index on the BrickSetSetReview table's legoSetId field.
+CREATE INDEX `I_BrickSetSetReview_legoSetId` ON `BrickSetSetReview` (`legoSetId`);
+
+-- Index on the BrickSetSetReview table's active field.
+CREATE INDEX `I_BrickSetSetReview_active` ON `BrickSetSetReview` (`active`);
+
+-- Index on the BrickSetSetReview table's deleted field.
+CREATE INDEX `I_BrickSetSetReview_deleted` ON `BrickSetSetReview` (`deleted`);
 
 
 -- Named part lists, mirroring Rebrickable's partlists/ endpoint. Users can have multiple named lists for organizing parts.

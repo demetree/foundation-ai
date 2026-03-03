@@ -17,6 +17,8 @@ public partial class LegoTheme
 
     public int rebrickableThemeId { get; set; }
 
+    public string brickSetThemeName { get; set; }
+
     public int? sequence { get; set; }
 
     public Guid objectGuid { get; set; }

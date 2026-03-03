@@ -28,6 +28,7 @@ import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.ser
 import { LegoSetMinifigService } from '../../../bmc-data-services/lego-set-minifig.service';
 import { LegoSetSubsetService } from '../../../bmc-data-services/lego-set-subset.service';
 import { UserCollectionSetImportService } from '../../../bmc-data-services/user-collection-set-import.service';
+import { BrickSetSetReviewService } from '../../../bmc-data-services/brick-set-set-review.service';
 import { UserSetListItemService } from '../../../bmc-data-services/user-set-list-item.service';
 import { UserLostPartService } from '../../../bmc-data-services/user-lost-part.service';
 import { UserSetOwnershipService } from '../../../bmc-data-services/user-set-ownership.service';
@@ -52,6 +53,19 @@ interface LegoSetFormValues {
   rebrickableUrl: string | null,
   rebrickableSetNum: string | null,
   lastModifiedDate: string | null,
+  brickSetId: string | null,     // Stored as string for form input, converted to number on submit.
+  brickSetUrl: string | null,
+  retailPriceUS: string | null,     // Stored as string for form input, converted to number on submit.
+  retailPriceUK: string | null,     // Stored as string for form input, converted to number on submit.
+  retailPriceCA: string | null,     // Stored as string for form input, converted to number on submit.
+  retailPriceEU: string | null,     // Stored as string for form input, converted to number on submit.
+  instructionsUrl: string | null,
+  subtheme: string | null,
+  availability: string | null,
+  minifigCount: string | null,     // Stored as string for form input, converted to number on submit.
+  brickSetRating: string | null,     // Stored as string for form input, converted to number on submit.
+  brickSetReviewCount: string | null,     // Stored as string for form input, converted to number on submit.
+  brickSetLastEnrichedDate: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -91,6 +105,19 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         rebrickableUrl: [''],
         rebrickableSetNum: [''],
         lastModifiedDate: [''],
+        brickSetId: [''],
+        brickSetUrl: [''],
+        retailPriceUS: [''],
+        retailPriceUK: [''],
+        retailPriceCA: [''],
+        retailPriceEU: [''],
+        instructionsUrl: [''],
+        subtheme: [''],
+        availability: [''],
+        minifigCount: [''],
+        brickSetRating: [''],
+        brickSetReviewCount: [''],
+        brickSetLastEnrichedDate: [''],
         active: [true],
         deleted: [false],
       });
@@ -112,6 +139,7 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
   public legoSetMinifigs$ = this.legoSetMinifigService.GetLegoSetMinifigList();
   public legoSetSubsets$ = this.legoSetSubsetService.GetLegoSetSubsetList();
   public userCollectionSetImports$ = this.userCollectionSetImportService.GetUserCollectionSetImportList();
+  public brickSetSetReviews$ = this.brickSetSetReviewService.GetBrickSetSetReviewList();
   public userSetListItems$ = this.userSetListItemService.GetUserSetListItemList();
   public userLostParts$ = this.userLostPartService.GetUserLostPartList();
   public userSetOwnerships$ = this.userSetOwnershipService.GetUserSetOwnershipList();
@@ -125,6 +153,7 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
     public legoSetMinifigService: LegoSetMinifigService,
     public legoSetSubsetService: LegoSetSubsetService,
     public userCollectionSetImportService: UserCollectionSetImportService,
+    public brickSetSetReviewService: BrickSetSetReviewService,
     public userSetListItemService: UserSetListItemService,
     public userLostPartService: UserLostPartService,
     public userSetOwnershipService: UserSetOwnershipService,
@@ -419,6 +448,19 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         rebrickableUrl: '',
         rebrickableSetNum: '',
         lastModifiedDate: '',
+        brickSetId: '',
+        brickSetUrl: '',
+        retailPriceUS: '',
+        retailPriceUK: '',
+        retailPriceCA: '',
+        retailPriceEU: '',
+        instructionsUrl: '',
+        subtheme: '',
+        availability: '',
+        minifigCount: '',
+        brickSetRating: '',
+        brickSetReviewCount: '',
+        brickSetLastEnrichedDate: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -440,6 +482,19 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         rebrickableUrl: legoSetData.rebrickableUrl ?? '',
         rebrickableSetNum: legoSetData.rebrickableSetNum ?? '',
         lastModifiedDate: isoUtcStringToDateTimeLocal(legoSetData.lastModifiedDate) ?? '',
+        brickSetId: legoSetData.brickSetId?.toString() ?? '',
+        brickSetUrl: legoSetData.brickSetUrl ?? '',
+        retailPriceUS: legoSetData.retailPriceUS?.toString() ?? '',
+        retailPriceUK: legoSetData.retailPriceUK?.toString() ?? '',
+        retailPriceCA: legoSetData.retailPriceCA?.toString() ?? '',
+        retailPriceEU: legoSetData.retailPriceEU?.toString() ?? '',
+        instructionsUrl: legoSetData.instructionsUrl ?? '',
+        subtheme: legoSetData.subtheme ?? '',
+        availability: legoSetData.availability ?? '',
+        minifigCount: legoSetData.minifigCount?.toString() ?? '',
+        brickSetRating: legoSetData.brickSetRating?.toString() ?? '',
+        brickSetReviewCount: legoSetData.brickSetReviewCount?.toString() ?? '',
+        brickSetLastEnrichedDate: isoUtcStringToDateTimeLocal(legoSetData.brickSetLastEnrichedDate) ?? '',
         active: legoSetData.active ?? true,
         deleted: legoSetData.deleted ?? false,
       }, { emitEvent: false});
@@ -511,6 +566,19 @@ export class LegoSetDetailComponent implements OnInit, CanComponentDeactivate {
         rebrickableUrl: formValue.rebrickableUrl?.trim() || null,
         rebrickableSetNum: formValue.rebrickableSetNum?.trim() || null,
         lastModifiedDate: formValue.lastModifiedDate ? dateTimeLocalToIsoUtc(formValue.lastModifiedDate.trim()) : null,
+        brickSetId: formValue.brickSetId ? Number(formValue.brickSetId) : null,
+        brickSetUrl: formValue.brickSetUrl?.trim() || null,
+        retailPriceUS: formValue.retailPriceUS ? Number(formValue.retailPriceUS) : null,
+        retailPriceUK: formValue.retailPriceUK ? Number(formValue.retailPriceUK) : null,
+        retailPriceCA: formValue.retailPriceCA ? Number(formValue.retailPriceCA) : null,
+        retailPriceEU: formValue.retailPriceEU ? Number(formValue.retailPriceEU) : null,
+        instructionsUrl: formValue.instructionsUrl?.trim() || null,
+        subtheme: formValue.subtheme?.trim() || null,
+        availability: formValue.availability?.trim() || null,
+        minifigCount: formValue.minifigCount ? Number(formValue.minifigCount) : null,
+        brickSetRating: formValue.brickSetRating ? Number(formValue.brickSetRating) : null,
+        brickSetReviewCount: formValue.brickSetReviewCount ? Number(formValue.brickSetReviewCount) : null,
+        brickSetLastEnrichedDate: formValue.brickSetLastEnrichedDate ? dateTimeLocalToIsoUtc(formValue.brickSetLastEnrichedDate.trim()) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

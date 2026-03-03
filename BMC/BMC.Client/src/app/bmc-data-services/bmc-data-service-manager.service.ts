@@ -24,6 +24,9 @@ import {BrickPartChangeHistoryService} from  './brick-part-change-history.servic
 import {BrickPartColourService} from  './brick-part-colour.service';
 import {BrickPartConnectorService} from  './brick-part-connector.service';
 import {BrickPartRelationshipService} from  './brick-part-relationship.service';
+import {BrickSetSetReviewService} from  './brick-set-set-review.service';
+import {BrickSetTransactionService} from  './brick-set-transaction.service';
+import {BrickSetUserLinkService} from  './brick-set-user-link.service';
 import {BuildChallengeService} from  './build-challenge.service';
 import {BuildChallengeChangeHistoryService} from  './build-challenge-change-history.service';
 import {BuildChallengeEntryService} from  './build-challenge-entry.service';
@@ -126,6 +129,9 @@ export class BMCDataServiceManagerService  {
               , public brickPartColourService: BrickPartColourService
               , public brickPartConnectorService: BrickPartConnectorService
               , public brickPartRelationshipService: BrickPartRelationshipService
+              , public brickSetSetReviewService: BrickSetSetReviewService
+              , public brickSetTransactionService: BrickSetTransactionService
+              , public brickSetUserLinkService: BrickSetUserLinkService
               , public buildChallengeService: BuildChallengeService
               , public buildChallengeChangeHistoryService: BuildChallengeChangeHistoryService
               , public buildChallengeEntryService: BuildChallengeEntryService
@@ -226,6 +232,9 @@ export class BMCDataServiceManagerService  {
         this.brickPartColourService.ClearAllCaches();
         this.brickPartConnectorService.ClearAllCaches();
         this.brickPartRelationshipService.ClearAllCaches();
+        this.brickSetSetReviewService.ClearAllCaches();
+        this.brickSetTransactionService.ClearAllCaches();
+        this.brickSetUserLinkService.ClearAllCaches();
         this.buildChallengeService.ClearAllCaches();
         this.buildChallengeChangeHistoryService.ClearAllCaches();
         this.buildChallengeEntryService.ClearAllCaches();

@@ -293,7 +293,8 @@ namespace Foundation.BMC
                 controllers.Add(typeof(RebrickableSyncController));
                 controllers.Add(typeof(UserSetListController));
                 controllers.Add(typeof(MySetsController));
-                
+                controllers.Add(typeof(MyPartListsController));
+
 
                 //
                 // Start of code generated controller list for BMC module

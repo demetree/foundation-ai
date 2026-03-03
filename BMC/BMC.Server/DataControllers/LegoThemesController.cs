@@ -66,6 +66,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string description = null,
 			int? legoThemeId = null,
 			int? rebrickableThemeId = null,
+			string brickSetThemeName = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -121,6 +122,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(lt => lt.rebrickableThemeId == rebrickableThemeId.Value);
 			}
+			if (string.IsNullOrEmpty(brickSetThemeName) == false)
+			{
+				query = query.Where(lt => lt.brickSetThemeName == brickSetThemeName);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(lt => lt.sequence == sequence.Value);
@@ -154,7 +159,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(lt => lt.deleted == false);
 			}
 
-			query = query.OrderBy(lt => lt.sequence).ThenBy(lt => lt.name).ThenBy(lt => lt.description);
+			query = query.OrderBy(lt => lt.sequence).ThenBy(lt => lt.name).ThenBy(lt => lt.description).ThenBy(lt => lt.brickSetThemeName);
 
 
 			//
@@ -167,8 +172,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.brickSetThemeName.Contains(anyStringContains)
 			       || (includeRelations == true && x.legoTheme.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.legoTheme.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.legoTheme.brickSetThemeName.Contains(anyStringContains))
 			   );
 			}
 
@@ -227,6 +234,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string description = null,
 			int? legoThemeId = null,
 			int? rebrickableThemeId = null,
+			string brickSetThemeName = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -263,6 +271,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (rebrickableThemeId.HasValue == true)
 			{
 				query = query.Where(lt => lt.rebrickableThemeId == rebrickableThemeId.Value);
+			}
+			if (brickSetThemeName != null)
+			{
+				query = query.Where(lt => lt.brickSetThemeName == brickSetThemeName);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -307,8 +319,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.brickSetThemeName.Contains(anyStringContains)
 			       || x.legoTheme.name.Contains(anyStringContains)
 			       || x.legoTheme.description.Contains(anyStringContains)
+			       || x.legoTheme.brickSetThemeName.Contains(anyStringContains)
 			   );
 			}
 
@@ -494,6 +508,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				legoTheme.description = legoTheme.description.Substring(0, 500);
 			}
 
+			if (legoTheme.brickSetThemeName != null && legoTheme.brickSetThemeName.Length > 100)
+			{
+				legoTheme.brickSetThemeName = legoTheme.brickSetThemeName.Substring(0, 100);
+			}
+
 			EntityEntry<Database.LegoTheme> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(legoTheme);
 
@@ -573,6 +592,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (legoTheme.description != null && legoTheme.description.Length > 500)
 				{
 					legoTheme.description = legoTheme.description.Substring(0, 500);
+				}
+
+				if (legoTheme.brickSetThemeName != null && legoTheme.brickSetThemeName.Length > 100)
+				{
+					legoTheme.brickSetThemeName = legoTheme.brickSetThemeName.Substring(0, 100);
 				}
 
 				legoTheme.objectGuid = Guid.NewGuid();
@@ -692,6 +716,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string description = null,
 			int? legoThemeId = null,
 			int? rebrickableThemeId = null,
+			string brickSetThemeName = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -745,6 +770,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(lt => lt.rebrickableThemeId == rebrickableThemeId.Value);
 			}
+			if (string.IsNullOrEmpty(brickSetThemeName) == false)
+			{
+				query = query.Where(lt => lt.brickSetThemeName == brickSetThemeName);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(lt => lt.sequence == sequence.Value);
@@ -789,13 +818,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.brickSetThemeName.Contains(anyStringContains)
 			       || x.legoTheme.name.Contains(anyStringContains)
 			       || x.legoTheme.description.Contains(anyStringContains)
+			       || x.legoTheme.brickSetThemeName.Contains(anyStringContains)
 			   );
 			}
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description);
+			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description).ThenBy(x => x.brickSetThemeName);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

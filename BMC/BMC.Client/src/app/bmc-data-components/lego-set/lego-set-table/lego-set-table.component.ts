@@ -185,6 +185,19 @@ export class LegoSetTableComponent implements OnInit, OnChanges, AfterViewInit {
     { key: 'rebrickableUrl', label: 'Rebrickable Url', width: undefined },
     { key: 'rebrickableSetNum', label: 'Rebrickable Set Num', width: undefined },
     { key: 'lastModifiedDate', label: 'Last Modified Date', width: undefined, template: 'date' },
+    { key: 'brickSetId', label: 'Brick Set Id', width: undefined },
+    { key: 'brickSetUrl', label: 'Brick Set Url', width: undefined },
+    { key: 'retailPriceUS', label: 'Retail Price U S', width: undefined },
+    { key: 'retailPriceUK', label: 'Retail Price U K', width: undefined },
+    { key: 'retailPriceCA', label: 'Retail Price C A', width: undefined },
+    { key: 'retailPriceEU', label: 'Retail Price E U', width: undefined },
+    { key: 'instructionsUrl', label: 'Instructions Url', width: undefined },
+    { key: 'subtheme', label: 'Subtheme', width: undefined },
+    { key: 'availability', label: 'Availability', width: undefined },
+    { key: 'minifigCount', label: 'Minifig Count', width: undefined },
+    { key: 'brickSetRating', label: 'Brick Set Rating', width: undefined },
+    { key: 'brickSetReviewCount', label: 'Brick Set Review Count', width: undefined },
+    { key: 'brickSetLastEnrichedDate', label: 'Brick Set Last Enriched Date', width: undefined, template: 'date' },
 
     ];
 
@@ -340,6 +353,19 @@ export class LegoSetTableComponent implements OnInit, OnChanges, AfterViewInit {
                       'rebrickableUrl',
                       'rebrickableSetNum',
                       'lastModifiedDate',
+                      'brickSetId',
+                      'brickSetUrl',
+                      'retailPriceUS',
+                      'retailPriceUK',
+                      'retailPriceCA',
+                      'retailPriceEU',
+                      'instructionsUrl',
+                      'subtheme',
+                      'availability',
+                      'minifigCount',
+                      'brickSetRating',
+                      'brickSetReviewCount',
+                      'brickSetLastEnrichedDate',
         ];
 
         result = result.filter((legoSet) =>

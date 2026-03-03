@@ -730,6 +730,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             legoThemeTable.AddForeignKeyField(legoThemeTable, true).AddScriptComments("Parent theme for hierarchical nesting (self-referencing FK, null = top-level)");
 
             legoThemeTable.AddIntField("rebrickableThemeId", false).AddScriptComments("Rebrickable theme ID — source of truth for theme identity");
+            legoThemeTable.AddString100Field("brickSetThemeName").AddScriptComments("BrickSet theme name for API calls — may differ from Rebrickable theme name (null if not mapped)");
 
             legoThemeTable.AddSequenceField();
             legoThemeTable.AddControlFields();
@@ -755,6 +756,31 @@ All operational tables include multi-tenant support, versioning where appropriat
             legoSetTable.AddString250Field("rebrickableUrl").AddScriptComments("URL to the set's Rebrickable page");
             legoSetTable.AddString100Field("rebrickableSetNum", true).AddScriptComments("Explicit Rebrickable set number if it differs from setNumber");
             legoSetTable.AddDateTimeField("lastModifiedDate", true).AddScriptComments("Last modification date for incremental sync with Rebrickable");
+
+            // BrickSet integration fields
+            legoSetTable.AddIntField("brickSetId", true).AddScriptComments("BrickSet internal set ID — used for API calls (null if not yet enriched from BrickSet)");
+            legoSetTable.AddString250Field("brickSetUrl").AddScriptComments("URL to the set's BrickSet page");
+
+            // Pricing data from BrickSet (retail prices in local currency)
+            legoSetTable.AddMoneyField("retailPriceUS", true, true).AddScriptComments("US retail price in USD from BrickSet (null if not available)");
+            legoSetTable.AddMoneyField("retailPriceUK", true, true).AddScriptComments("UK retail price in GBP from BrickSet (null if not available)");
+            legoSetTable.AddMoneyField("retailPriceCA", true, true).AddScriptComments("Canadian retail price in CAD from BrickSet (null if not available)");
+            legoSetTable.AddMoneyField("retailPriceEU", true, true).AddScriptComments("EU retail price in EUR from BrickSet (null if not available)");
+
+            // Instructions link from BrickSet
+            legoSetTable.AddString500Field("instructionsUrl").AddScriptComments("URL to the set's official building instructions PDF (sourced from BrickSet)");
+
+            // Set metadata from BrickSet not available in Rebrickable
+            legoSetTable.AddString100Field("subtheme").AddScriptComments("Subtheme name from BrickSet (e.g. 'Police' under City)");
+            legoSetTable.AddString50Field("availability").AddScriptComments("Current availability status from BrickSet (e.g. 'Retail', 'Retired', 'LEGO exclusive')");
+            legoSetTable.AddIntField("minifigCount", true).AddScriptComments("Number of minifigs included in the set (from BrickSet, null if unknown)");
+
+            // BrickSet community data
+            legoSetTable.AddSingleField("brickSetRating", true).AddScriptComments("Average community rating on BrickSet (1.0-5.0, null if no reviews)");
+            legoSetTable.AddIntField("brickSetReviewCount", true).AddScriptComments("Number of community reviews on BrickSet (null if unknown)");
+
+            // Sync tracking
+            legoSetTable.AddDateTimeField("brickSetLastEnrichedDate", true).AddScriptComments("When this set was last enriched with BrickSet data (null = never enriched)");
 
             legoSetTable.AddControlFields();
 
@@ -1023,6 +1049,78 @@ All operational tables include multi-tenant support, versioning where appropriat
             rebrickableSyncQueueTable.AddTextField("responseBody").AddScriptComments("Last response body from Rebrickable for debugging (null on success)");
 
             rebrickableSyncQueueTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // BrickSetUserLink — User's BrickSet credentials and sync configuration
+            // -------------------------------------------------
+            Database.Table brickSetUserLinkTable = database.AddTable("BrickSetUserLink");
+            brickSetUserLinkTable.comment = "Stores each user's BrickSet userHash and sync configuration. One link per tenant. BrickSet auth uses an app-level API key (in appsettings.json) plus a session-based userHash obtained via login.";
+            brickSetUserLinkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COLLECTION_WRITER_PERMISSION_LEVEL);
+            brickSetUserLinkTable.customWriteAccessRole = BMC_COLLECTION_WRITER_CUSTOM_ROLE_NAME;
+            brickSetUserLinkTable.AddIdField();
+            brickSetUserLinkTable.AddMultiTenantSupport();
+
+            brickSetUserLinkTable.AddString100Field("brickSetUsername", false).AddScriptComments("User's BrickSet username for display and reference");
+            brickSetUserLinkTable.AddString500Field("encryptedUserHash", false).AddScriptComments("Encrypted BrickSet userHash — obtained via login, used for collection API calls");
+            brickSetUserLinkTable.AddString500Field("encryptedPassword", true).AddScriptComments("Encrypted BrickSet password — stored for re-authentication when userHash expires (null if user chose not to store)");
+            brickSetUserLinkTable.AddBoolField("syncEnabled", false, true).AddScriptComments("Whether automatic sync is enabled for this user");
+            brickSetUserLinkTable.AddString50Field("syncDirection", false).AddScriptComments("Integration mode: None, PullOnly, PushOnly, Bidirectional");
+            brickSetUserLinkTable.AddDateTimeField("lastSyncDate", true).AddScriptComments("Date/time of last successful sync with BrickSet");
+            brickSetUserLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("Date/time of last successful pull from BrickSet");
+            brickSetUserLinkTable.AddDateTimeField("lastPushDate", true).AddScriptComments("Date/time of last successful push to BrickSet");
+            brickSetUserLinkTable.AddTextField("lastSyncError").AddScriptComments("Last sync error message for display to the user (null = no error)");
+            brickSetUserLinkTable.AddDateTimeField("userHashStoredDate", true).AddScriptComments("When the userHash was last stored or refreshed — used for session expiry tracking");
+
+            brickSetUserLinkTable.AddControlFields();
+
+            brickSetUserLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, false);
+
+
+            // -------------------------------------------------
+            // BrickSetTransaction — Audit log for all BrickSet API calls - Not writeable through standard data controllers.  Fully system managed data.
+            // -------------------------------------------------
+            Database.Table brickSetTransactionTable = database.AddTable("BrickSetTransaction");
+            brickSetTransactionTable.comment = "Full audit log of every BrickSet API call BMC makes on behalf of a user. Mirrors the RebrickableTransaction pattern for complete transparency.";
+            brickSetTransactionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickSetTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            brickSetTransactionTable.AddIdField();
+            brickSetTransactionTable.AddMultiTenantSupport();
+
+            brickSetTransactionTable.AddDateTimeField("transactionDate").AddScriptComments("Date/time the API call was made");
+            brickSetTransactionTable.AddString50Field("direction", false).AddScriptComments("Direction of data flow: Push, Pull, Enrich");
+            brickSetTransactionTable.AddString100Field("methodName", false).AddScriptComments("BrickSet API method name (e.g. 'getSets', 'setCollection', 'getInstructions')");
+            brickSetTransactionTable.AddTextField("requestSummary").AddScriptComments("Human-readable description of the operation, e.g. 'Enriched set 42131-1 with pricing data'");
+            brickSetTransactionTable.AddBoolField("success", false, true).AddScriptComments("Whether the API call completed successfully");
+            brickSetTransactionTable.AddTextField("errorMessage").AddScriptComments("Error details if the call failed (null on success)");
+            brickSetTransactionTable.AddString100Field("triggeredBy", false).AddScriptComments("What initiated this call: UserAction, SetDetailView, ManualEnrich, CollectionSync");
+            brickSetTransactionTable.AddIntField("recordCount", true).AddScriptComments("Number of rows retrieved or affected by this API call");
+            brickSetTransactionTable.AddIntField("apiCallsRemaining", true).AddScriptComments("Daily API call quota remaining after this call (from getKeyUsageStats)");
+
+            brickSetTransactionTable.AddControlFields();
+
+
+            // -------------------------------------------------
+            // BrickSetSetReview — Cached BrickSet community reviews for sets
+            // -------------------------------------------------
+            Database.Table brickSetSetReviewTable = database.AddTable("BrickSetSetReview");
+            brickSetSetReviewTable.comment = "Cached community reviews from BrickSet for official LEGO sets. Pulled periodically via the getReviews API method. Reviews are read-only reference data, not user-editable.";
+            brickSetSetReviewTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            brickSetSetReviewTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            brickSetSetReviewTable.AddIdField();
+
+            brickSetSetReviewTable.AddForeignKeyField(legoSetTable, false).AddScriptComments("The set this review is for");
+            brickSetSetReviewTable.AddString100Field("reviewAuthor", false).AddScriptComments("BrickSet username of the reviewer");
+            brickSetSetReviewTable.AddDateTimeField("reviewDate", true).AddScriptComments("When the review was posted on BrickSet");
+            brickSetSetReviewTable.AddTextField("reviewTitle").AddScriptComments("Review title/heading");
+            brickSetSetReviewTable.AddTextField("reviewBody").AddScriptComments("Full review text");
+            brickSetSetReviewTable.AddIntField("overallRating", true).AddScriptComments("Overall rating (1-5)");
+            brickSetSetReviewTable.AddIntField("buildingExperienceRating", true).AddScriptComments("Building experience rating (1-5, null if not rated)");
+            brickSetSetReviewTable.AddIntField("valueForMoneyRating", true).AddScriptComments("Value for money rating (1-5, null if not rated)");
+            brickSetSetReviewTable.AddIntField("partsRating", true).AddScriptComments("Parts/pieces rating (1-5, null if not rated)");
+            brickSetSetReviewTable.AddIntField("playabilityRating", true).AddScriptComments("Playability rating (1-5, null if not rated)");
+
+            brickSetSetReviewTable.AddControlFields();
 
 
             // -------------------------------------------------

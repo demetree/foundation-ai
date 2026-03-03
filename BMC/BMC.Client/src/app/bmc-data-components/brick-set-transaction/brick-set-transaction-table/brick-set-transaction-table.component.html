@@ -1,0 +1,381 @@
+<app-brick-set-transaction-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-brick-set-transaction-add-edit>
+<div class="row" *ngIf="userIsBMCBrickSetTransactionReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBrickSetTransactionWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Brick Set Transaction">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCBrickSetTransactionWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('transactionDate')">
+                Transaction  Date
+                <span *ngIf="sortColumn === 'transactionDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('direction')">
+                Direction
+                <span *ngIf="sortColumn === 'direction'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('methodName')">
+                Method  Name
+                <span *ngIf="sortColumn === 'methodName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('requestSummary')">
+                Request  Summary
+                <span *ngIf="sortColumn === 'requestSummary'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('success')">
+                Success
+                <span *ngIf="sortColumn === 'success'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('errorMessage')">
+                Error  Message
+                <span *ngIf="sortColumn === 'errorMessage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('triggeredBy')">
+                Triggered  By
+                <span *ngIf="sortColumn === 'triggeredBy'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('recordCount')">
+                Record  Count
+                <span *ngIf="sortColumn === 'recordCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('apiCallsRemaining')">
+                Api  Calls  Remaining
+                <span *ngIf="sortColumn === 'apiCallsRemaining'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let brickSetTransaction of filteredBrickSetTransactions; trackBy: getBrickSetTransactionId"
+              [ngClass]="{
+                 'row-inactive': brickSetTransaction.active == false,
+                 'row-deleted': brickSetTransaction.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCBrickSetTransactionWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(brickSetTransaction)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCBrickSetTransactionWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(brickSetTransaction)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="brickSetTransaction.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(brickSetTransaction)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="brickSetTransaction.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(brickSetTransaction, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(brickSetTransaction, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(brickSetTransaction, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(brickSetTransaction, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(brickSetTransaction, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(brickSetTransaction, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(brickSetTransaction, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(brickSetTransaction, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/bricksettransaction', brickSetTransaction.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Set Transaction details">{{brickSetTransaction.transactionDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{brickSetTransaction.direction}}</td>
+            <td class="text-truncate">{{brickSetTransaction.methodName}}</td>
+            <td class="text-truncate">{{brickSetTransaction.requestSummary}}</td>
+            <td class="text-truncate"><boolean-icon [value]="brickSetTransaction.success"/></td>
+            <td class="text-truncate">{{brickSetTransaction.errorMessage}}</td>
+            <td class="text-truncate">{{brickSetTransaction.triggeredBy}}</td>
+            <td class="text-truncate">{{brickSetTransaction.recordCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickSetTransaction.apiCallsRemaining | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let brickSetTransaction of filteredBrickSetTransactions; trackBy: getBrickSetTransactionId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': brickSetTransaction.active == false,
+                 'row-deleted': brickSetTransaction.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(brickSetTransaction, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(brickSetTransaction, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(brickSetTransaction, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(brickSetTransaction, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(brickSetTransaction, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(brickSetTransaction, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(brickSetTransaction, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(brickSetTransaction, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(brickSetTransaction, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(brickSetTransaction, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(brickSetTransaction, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(brickSetTransaction, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(brickSetTransaction, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/bricksettransaction', brickSetTransaction.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(brickSetTransaction)" *ngIf="userIsBMCBrickSetTransactionWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(brickSetTransaction)" *ngIf="userIsBMCBrickSetTransactionWriter() && brickSetTransaction.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(brickSetTransaction)" *ngIf="userIsBMCBrickSetTransactionWriter() && brickSetTransaction.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{brickSetTransaction.id}}</strong>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/bricksettransaction', brickSetTransaction.id]"
+                        ngbTooltip="Brick Set Transaction Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(brickSetTransaction)"
+                        ngbTooltip="Edit Brick Set Transaction">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(brickSetTransaction)"
+                      ngbTooltip="Delete Brick Set Transaction" 
+                      placement="top"
+                      *ngIf="brickSetTransaction.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(brickSetTransaction)"
+                      ngbTooltip="Undelete Brick Set Transaction" 
+                      placement="top"
+                      *ngIf="brickSetTransaction.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.transactionDate != null">
+              <strong>Transaction Date: </strong>
+              {{brickSetTransaction.transactionDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.direction != null">
+              <strong>Direction: </strong>
+              {{brickSetTransaction.direction}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.methodName != null">
+              <strong>Method Name: </strong>
+              {{brickSetTransaction.methodName}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.requestSummary != null">
+              <strong>Request Summary: </strong>
+              {{brickSetTransaction.requestSummary}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.success != null">
+              <strong>Success: </strong>
+              <boolean-icon [value]="brickSetTransaction.success"/>
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.errorMessage != null">
+              <strong>Error Message: </strong>
+              {{brickSetTransaction.errorMessage}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.triggeredBy != null">
+              <strong>Triggered By: </strong>
+              {{brickSetTransaction.triggeredBy}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.recordCount != null">
+              <strong>Record Count: </strong>
+              {{brickSetTransaction.recordCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-set-transaction-info" *ngIf="brickSetTransaction.apiCallsRemaining != null">
+              <strong>Api Calls Remaining: </strong>
+              {{brickSetTransaction.apiCallsRemaining | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

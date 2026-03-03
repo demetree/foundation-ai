@@ -1,0 +1,312 @@
+<!-- My Sets — LEGO Set Ownership Management -->
+<div class="my-sets-container">
+
+    <!-- Feedback Messages -->
+    <div class="feedback-bar success" *ngIf="successMessage">
+        <i class="fas fa-check-circle"></i> {{ successMessage }}
+    </div>
+    <div class="feedback-bar error" *ngIf="errorMessage">
+        <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+    </div>
+
+
+    <!-- ═══════════════════ HEADER ═══════════════════ -->
+    <header class="page-header">
+        <div class="header-left">
+            <h1 class="page-title">
+                <i class="fas fa-boxes-stacked"></i>
+                My Sets
+            </h1>
+            <p class="page-subtitle">Your personal LEGO set collection</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-create" (click)="openAddModal()">
+                <i class="fas fa-plus"></i>
+                <span>Add Set</span>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- ═══════════════════ STATS ROW ═══════════════════ -->
+    <div class="stats-row" *ngIf="stats && !loadingStats">
+        <div class="stat-card">
+            <div class="stat-icon sets"><i class="fas fa-box-open"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.totalSets | number }}</span>
+                <span class="stat-label">Total Sets</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon unique"><i class="fas fa-fingerprint"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.uniqueSets | number }}</span>
+                <span class="stat-label">Unique</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon parts"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.totalParts | number }}</span>
+                <span class="stat-label">Total Parts</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon themes"><i class="fas fa-palette"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.totalThemes }}</span>
+                <span class="stat-label">Themes</span>
+            </div>
+        </div>
+        <div class="stat-card" *ngIf="stats.averageRating > 0">
+            <div class="stat-icon rating"><i class="fas fa-star"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.averageRating }}</span>
+                <span class="stat-label">Avg Rating</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════ TOOLBAR ═══════════════════ -->
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search sets by name or number…" [(ngModel)]="searchText"
+                (input)="onSearch($event)" />
+            <button class="clear-btn" *ngIf="searchText" (click)="searchText = ''; onFilterChange()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="filter-group">
+            <select class="filter-select" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+                <option value="">All Statuses</option>
+                <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+            </select>
+
+            <select class="filter-select" [(ngModel)]="selectedThemeId" (ngModelChange)="onFilterChange()">
+                <option [ngValue]="null">All Themes</option>
+                <option *ngFor="let t of themes" [ngValue]="t.id">{{ t.name }}</option>
+            </select>
+
+            <select class="filter-select sort-select" [(ngModel)]="sortBy" (ngModelChange)="onSortChange()">
+                <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+        </div>
+
+        <button class="btn-clear-filters" *ngIf="hasFilters" (click)="clearFilters()">
+            <i class="fas fa-filter-circle-xmark"></i> Clear Filters
+        </button>
+    </div>
+
+    <!-- Result count -->
+    <div class="result-count" *ngIf="!loading">
+        <span *ngIf="totalCount > 0">{{ totalCount }} {{ totalCount === 1 ? 'set' : 'sets' }}</span>
+        <span *ngIf="totalCount === 0 && hasFilters">No sets match your filters</span>
+    </div>
+
+
+    <!-- ═══════════════════ LOADING ═══════════════════ -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner-wrap">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading sets…</span>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════ EMPTY STATE ═══════════════════ -->
+    <div class="empty-state" *ngIf="!loading && totalCount === 0 && !hasFilters">
+        <i class="fas fa-boxes-stacked"></i>
+        <h3>No sets in your collection</h3>
+        <p>Start building your collection by adding your first LEGO set.</p>
+        <button class="btn btn-create" (click)="openAddModal()">
+            <i class="fas fa-plus"></i> Add Your First Set
+        </button>
+    </div>
+
+
+    <!-- ═══════════════════ SETS GRID ═══════════════════ -->
+    <div class="sets-grid" *ngIf="!loading && sets.length > 0">
+        <div class="set-card" *ngFor="let set of sets" [class.editing]="editingSet?.id === set.id">
+
+            <!-- Edit Overlay -->
+            <div class="set-card-edit" *ngIf="editingSet?.id === set.id">
+                <h4 class="edit-title">{{ set.setName }}</h4>
+
+                <div class="edit-field">
+                    <label>Quantity</label>
+                    <div class="qty-control">
+                        <button class="qty-btn" (click)="editQuantity = Math.max(1, editQuantity - 1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="qty-value">{{ editQuantity }}</span>
+                        <button class="qty-btn" (click)="editQuantity = editQuantity + 1">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="edit-field">
+                    <label>Status</label>
+                    <select class="edit-select" [(ngModel)]="editStatus">
+                        <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                    </select>
+                </div>
+
+                <div class="edit-field">
+                    <label>Rating</label>
+                    <div class="star-rating">
+                        <i *ngFor="let star of getStars(editRating)" class="fas fa-star star-btn"
+                            [class.filled]="editRating != null && star <= editRating" (click)="setEditRating(star)"></i>
+                    </div>
+                </div>
+
+                <div class="edit-field">
+                    <label>Notes</label>
+                    <textarea class="edit-textarea" [(ngModel)]="editNotes" rows="2"
+                        placeholder="Personal notes…"></textarea>
+                </div>
+
+                <div class="edit-actions">
+                    <button class="btn btn-primary btn-sm" (click)="saveEdit()" [disabled]="savingEdit">
+                        <i class="fas" [ngClass]="savingEdit ? 'fa-spinner fa-spin' : 'fa-check'"></i> Save
+                    </button>
+                    <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Display Mode -->
+            <div class="set-card-display" *ngIf="editingSet?.id !== set.id">
+                <!-- Set Image -->
+                <div class="set-image-wrap" (click)="navigateToSet(set)">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.setName" class="set-image" />
+                    <div class="set-image-placeholder" *ngIf="!set.imageUrl">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <!-- Quantity badge -->
+                    <span class="qty-badge" *ngIf="set.quantity > 1">×{{ set.quantity }}</span>
+                </div>
+
+                <!-- Set Info -->
+                <div class="set-info">
+                    <h4 class="set-name" [title]="set.setName" (click)="navigateToSet(set)">
+                        {{ set.setName || 'Unknown Set' }}
+                    </h4>
+                    <span class="set-number">{{ set.setNumber }}</span>
+
+                    <div class="set-meta">
+                        <span class="badge badge-year" *ngIf="set.year">
+                            <i class="fas fa-calendar-alt"></i> {{ set.year }}
+                        </span>
+                        <span class="badge badge-parts" *ngIf="set.partCount">
+                            <i class="fas fa-puzzle-piece"></i> {{ set.partCount | number }}
+                        </span>
+                        <span class="badge badge-theme" *ngIf="set.themeName">{{ set.themeName }}</span>
+                        <span class="badge badge-status" [ngClass]="getStatusClass(set.status)">
+                            <i [class]="getStatusIcon(set.status)"></i> {{ set.status }}
+                        </span>
+                    </div>
+
+                    <!-- Star Rating Display -->
+                    <div class="set-rating" *ngIf="set.personalRating">
+                        <i *ngFor="let star of getStars(set.personalRating)" class="fas fa-star"
+                            [class.filled]="star <= (set.personalRating || 0)"></i>
+                    </div>
+                </div>
+
+                <!-- Quantity Controls -->
+                <div class="set-quantity">
+                    <button class="qty-btn" (click)="updateQuantity(set, -1); $event.stopPropagation()"
+                        [disabled]="set.quantity <= 1">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="qty-value">{{ set.quantity }}</span>
+                    <button class="qty-btn" (click)="updateQuantity(set, 1); $event.stopPropagation()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Actions -->
+                <div class="set-actions">
+                    <a *ngIf="set.rebrickableUrl" [href]="set.rebrickableUrl" target="_blank" rel="noopener"
+                        class="btn-icon external" title="View on Rebrickable" (click)="$event.stopPropagation()">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    <button class="btn-icon" title="Edit" (click)="startEdit(set, $event)">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="btn-icon danger" title="Remove" (click)="removeSet(set, $event)">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════ PAGINATION ═══════════════════ -->
+    <div class="pagination" *ngIf="totalPages > 1">
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="page-btn" *ngFor="let p of getVisiblePages()" [class.active]="p === currentPage"
+            (click)="goToPage(p)">
+            {{ p }}
+        </button>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+
+    <!-- ═══════════════════ ADD SET MODAL ═══════════════════ -->
+    <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3><i class="fas fa-search"></i> Add Set to Collection</h3>
+                <button class="btn-icon" (click)="closeAddModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search by name or set number…" [(ngModel)]="setSearchQuery"
+                        (input)="searchSets()" autofocus />
+                </div>
+
+                <div class="loading-inline" *ngIf="searching">
+                    <i class="fas fa-spinner fa-spin"></i> Searching…
+                </div>
+
+                <div class="search-results" *ngIf="!searching && setSearchResults.length > 0">
+                    <div class="search-result" *ngFor="let result of setSearchResults"
+                        (click)="addSetFromSearch(result)" [class.disabled]="addingSet">
+                        <img *ngIf="result.imageUrl" [src]="result.imageUrl" class="result-thumb" />
+                        <div class="result-placeholder" *ngIf="!result.imageUrl">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="result-info">
+                            <strong>{{ result.name }}</strong>
+                            <span class="result-meta">
+                                {{ result.setNumber }}
+                                <span *ngIf="result.year"> · {{ result.year }}</span>
+                                <span *ngIf="result.partCount"> · {{ result.partCount }} parts</span>
+                                <span *ngIf="result.themeName"> · {{ result.themeName }}</span>
+                            </span>
+                        </div>
+                        <i class="fas fa-plus-circle add-icon"></i>
+                    </div>
+                </div>
+
+                <div class="search-empty"
+                    *ngIf="!searching && setSearchQuery.length >= 2 && setSearchResults.length === 0">
+                    <p>No sets found for "{{ setSearchQuery }}"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

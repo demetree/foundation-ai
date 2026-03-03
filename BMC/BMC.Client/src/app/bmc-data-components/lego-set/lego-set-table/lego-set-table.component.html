@@ -67,6 +67,58 @@
                 Last  Modified  Date
                 <span *ngIf="sortColumn === 'lastModifiedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickSetId')">
+                Brick  Set  Id
+                <span *ngIf="sortColumn === 'brickSetId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickSetUrl')">
+                Brick  Set  Url
+                <span *ngIf="sortColumn === 'brickSetUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('retailPriceUS')">
+                Retail  Price  U  S
+                <span *ngIf="sortColumn === 'retailPriceUS'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('retailPriceUK')">
+                Retail  Price  U  K
+                <span *ngIf="sortColumn === 'retailPriceUK'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('retailPriceCA')">
+                Retail  Price  C  A
+                <span *ngIf="sortColumn === 'retailPriceCA'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('retailPriceEU')">
+                Retail  Price  E  U
+                <span *ngIf="sortColumn === 'retailPriceEU'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('instructionsUrl')">
+                Instructions  Url
+                <span *ngIf="sortColumn === 'instructionsUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('subtheme')">
+                Subtheme
+                <span *ngIf="sortColumn === 'subtheme'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('availability')">
+                Availability
+                <span *ngIf="sortColumn === 'availability'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('minifigCount')">
+                Minifig  Count
+                <span *ngIf="sortColumn === 'minifigCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickSetRating')">
+                Brick  Set  Rating
+                <span *ngIf="sortColumn === 'brickSetRating'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickSetReviewCount')">
+                Brick  Set  Review  Count
+                <span *ngIf="sortColumn === 'brickSetReviewCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickSetLastEnrichedDate')">
+                Brick  Set  Last  Enriched  Date
+                <span *ngIf="sortColumn === 'brickSetLastEnrichedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -162,6 +214,19 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{legoSet.rebrickableUrl}}</td>
             <td class="text-truncate">{{legoSet.rebrickableSetNum}}</td>
             <td class="text-truncate">{{legoSet.lastModifiedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{legoSet.brickSetId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.brickSetUrl}}</td>
+            <td class="text-truncate">{{legoSet.retailPriceUS | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.retailPriceUK | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.retailPriceCA | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.retailPriceEU | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.instructionsUrl}}</td>
+            <td class="text-truncate">{{legoSet.subtheme}}</td>
+            <td class="text-truncate">{{legoSet.availability}}</td>
+            <td class="text-truncate">{{legoSet.minifigCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.brickSetRating | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.brickSetReviewCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoSet.brickSetLastEnrichedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -348,6 +413,58 @@ End of commented block for alternate definition option -->
             <p class="lego-set-info" *ngIf="legoSet.lastModifiedDate != null">
               <strong>Last Modified Date: </strong>
               {{legoSet.lastModifiedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.brickSetId != null">
+              <strong>Brick Set Id: </strong>
+              {{legoSet.brickSetId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.brickSetUrl != null">
+              <strong>Brick Set Url: </strong>
+              {{legoSet.brickSetUrl}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.retailPriceUS != null">
+              <strong>Retail Price U S: </strong>
+              {{legoSet.retailPriceUS | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.retailPriceUK != null">
+              <strong>Retail Price U K: </strong>
+              {{legoSet.retailPriceUK | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.retailPriceCA != null">
+              <strong>Retail Price C A: </strong>
+              {{legoSet.retailPriceCA | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.retailPriceEU != null">
+              <strong>Retail Price E U: </strong>
+              {{legoSet.retailPriceEU | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.instructionsUrl != null">
+              <strong>Instructions Url: </strong>
+              {{legoSet.instructionsUrl}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.subtheme != null">
+              <strong>Subtheme: </strong>
+              {{legoSet.subtheme}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.availability != null">
+              <strong>Availability: </strong>
+              {{legoSet.availability}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.minifigCount != null">
+              <strong>Minifig Count: </strong>
+              {{legoSet.minifigCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.brickSetRating != null">
+              <strong>Brick Set Rating: </strong>
+              {{legoSet.brickSetRating | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.brickSetReviewCount != null">
+              <strong>Brick Set Review Count: </strong>
+              {{legoSet.brickSetReviewCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-set-info" *ngIf="legoSet.brickSetLastEnrichedDate != null">
+              <strong>Brick Set Last Enriched Date: </strong>
+              {{legoSet.brickSetLastEnrichedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             </div>
          </div>

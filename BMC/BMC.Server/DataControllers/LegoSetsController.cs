@@ -72,6 +72,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string rebrickableUrl = null,
 			string rebrickableSetNum = null,
 			DateTime? lastModifiedDate = null,
+			int? brickSetId = null,
+			string brickSetUrl = null,
+			decimal? retailPriceUS = null,
+			decimal? retailPriceUK = null,
+			decimal? retailPriceCA = null,
+			decimal? retailPriceEU = null,
+			string instructionsUrl = null,
+			string subtheme = null,
+			string availability = null,
+			int? minifigCount = null,
+			float? brickSetRating = null,
+			int? brickSetReviewCount = null,
+			DateTime? brickSetLastEnrichedDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -117,6 +130,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
 			}
 
+			if (brickSetLastEnrichedDate.HasValue == true && brickSetLastEnrichedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				brickSetLastEnrichedDate = brickSetLastEnrichedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.LegoSet> query = (from ls in _context.LegoSets select ls);
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -157,6 +175,58 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (lastModifiedDate.HasValue == true)
 			{
 				query = query.Where(ls => ls.lastModifiedDate == lastModifiedDate.Value);
+			}
+			if (brickSetId.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetId == brickSetId.Value);
+			}
+			if (string.IsNullOrEmpty(brickSetUrl) == false)
+			{
+				query = query.Where(ls => ls.brickSetUrl == brickSetUrl);
+			}
+			if (retailPriceUS.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceUS == retailPriceUS.Value);
+			}
+			if (retailPriceUK.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceUK == retailPriceUK.Value);
+			}
+			if (retailPriceCA.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceCA == retailPriceCA.Value);
+			}
+			if (retailPriceEU.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceEU == retailPriceEU.Value);
+			}
+			if (string.IsNullOrEmpty(instructionsUrl) == false)
+			{
+				query = query.Where(ls => ls.instructionsUrl == instructionsUrl);
+			}
+			if (string.IsNullOrEmpty(subtheme) == false)
+			{
+				query = query.Where(ls => ls.subtheme == subtheme);
+			}
+			if (string.IsNullOrEmpty(availability) == false)
+			{
+				query = query.Where(ls => ls.availability == availability);
+			}
+			if (minifigCount.HasValue == true)
+			{
+				query = query.Where(ls => ls.minifigCount == minifigCount.Value);
+			}
+			if (brickSetRating.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetRating == brickSetRating.Value);
+			}
+			if (brickSetReviewCount.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetReviewCount == brickSetReviewCount.Value);
+			}
+			if (brickSetLastEnrichedDate.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetLastEnrichedDate == brickSetLastEnrichedDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -204,8 +274,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.brickLinkUrl.Contains(anyStringContains)
 			       || x.rebrickableUrl.Contains(anyStringContains)
 			       || x.rebrickableSetNum.Contains(anyStringContains)
+			       || x.brickSetUrl.Contains(anyStringContains)
+			       || x.instructionsUrl.Contains(anyStringContains)
+			       || x.subtheme.Contains(anyStringContains)
+			       || x.availability.Contains(anyStringContains)
 			       || (includeRelations == true && x.legoTheme.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.legoTheme.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.legoTheme.brickSetThemeName.Contains(anyStringContains))
 			   );
 			}
 
@@ -270,6 +345,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string rebrickableUrl = null,
 			string rebrickableSetNum = null,
 			DateTime? lastModifiedDate = null,
+			int? brickSetId = null,
+			string brickSetUrl = null,
+			decimal? retailPriceUS = null,
+			decimal? retailPriceUK = null,
+			decimal? retailPriceCA = null,
+			decimal? retailPriceEU = null,
+			string instructionsUrl = null,
+			string subtheme = null,
+			string availability = null,
+			int? minifigCount = null,
+			float? brickSetRating = null,
+			int? brickSetReviewCount = null,
+			DateTime? brickSetLastEnrichedDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -295,6 +383,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (lastModifiedDate.HasValue == true && lastModifiedDate.Value.Kind != DateTimeKind.Utc)
 			{
 				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
+			}
+
+			if (brickSetLastEnrichedDate.HasValue == true && brickSetLastEnrichedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				brickSetLastEnrichedDate = brickSetLastEnrichedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.LegoSet> query = (from ls in _context.LegoSets select ls);
@@ -337,6 +430,58 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (lastModifiedDate.HasValue == true)
 			{
 				query = query.Where(ls => ls.lastModifiedDate == lastModifiedDate.Value);
+			}
+			if (brickSetId.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetId == brickSetId.Value);
+			}
+			if (brickSetUrl != null)
+			{
+				query = query.Where(ls => ls.brickSetUrl == brickSetUrl);
+			}
+			if (retailPriceUS.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceUS == retailPriceUS.Value);
+			}
+			if (retailPriceUK.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceUK == retailPriceUK.Value);
+			}
+			if (retailPriceCA.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceCA == retailPriceCA.Value);
+			}
+			if (retailPriceEU.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceEU == retailPriceEU.Value);
+			}
+			if (instructionsUrl != null)
+			{
+				query = query.Where(ls => ls.instructionsUrl == instructionsUrl);
+			}
+			if (subtheme != null)
+			{
+				query = query.Where(ls => ls.subtheme == subtheme);
+			}
+			if (availability != null)
+			{
+				query = query.Where(ls => ls.availability == availability);
+			}
+			if (minifigCount.HasValue == true)
+			{
+				query = query.Where(ls => ls.minifigCount == minifigCount.Value);
+			}
+			if (brickSetRating.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetRating == brickSetRating.Value);
+			}
+			if (brickSetReviewCount.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetReviewCount == brickSetReviewCount.Value);
+			}
+			if (brickSetLastEnrichedDate.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetLastEnrichedDate == brickSetLastEnrichedDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -381,8 +526,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.brickLinkUrl.Contains(anyStringContains)
 			       || x.rebrickableUrl.Contains(anyStringContains)
 			       || x.rebrickableSetNum.Contains(anyStringContains)
+			       || x.brickSetUrl.Contains(anyStringContains)
+			       || x.instructionsUrl.Contains(anyStringContains)
+			       || x.subtheme.Contains(anyStringContains)
+			       || x.availability.Contains(anyStringContains)
 			       || x.legoTheme.name.Contains(anyStringContains)
 			       || x.legoTheme.description.Contains(anyStringContains)
+			       || x.legoTheme.brickSetThemeName.Contains(anyStringContains)
 			   );
 			}
 
@@ -593,6 +743,31 @@ namespace Foundation.BMC.Controllers.WebAPI
 				legoSet.lastModifiedDate = legoSet.lastModifiedDate.Value.ToUniversalTime();
 			}
 
+			if (legoSet.brickSetUrl != null && legoSet.brickSetUrl.Length > 250)
+			{
+				legoSet.brickSetUrl = legoSet.brickSetUrl.Substring(0, 250);
+			}
+
+			if (legoSet.instructionsUrl != null && legoSet.instructionsUrl.Length > 500)
+			{
+				legoSet.instructionsUrl = legoSet.instructionsUrl.Substring(0, 500);
+			}
+
+			if (legoSet.subtheme != null && legoSet.subtheme.Length > 100)
+			{
+				legoSet.subtheme = legoSet.subtheme.Substring(0, 100);
+			}
+
+			if (legoSet.availability != null && legoSet.availability.Length > 50)
+			{
+				legoSet.availability = legoSet.availability.Substring(0, 50);
+			}
+
+			if (legoSet.brickSetLastEnrichedDate.HasValue == true && legoSet.brickSetLastEnrichedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				legoSet.brickSetLastEnrichedDate = legoSet.brickSetLastEnrichedDate.Value.ToUniversalTime();
+			}
+
 			EntityEntry<Database.LegoSet> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(legoSet);
 
@@ -697,6 +872,31 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (legoSet.lastModifiedDate.HasValue == true && legoSet.lastModifiedDate.Value.Kind != DateTimeKind.Utc)
 				{
 					legoSet.lastModifiedDate = legoSet.lastModifiedDate.Value.ToUniversalTime();
+				}
+
+				if (legoSet.brickSetUrl != null && legoSet.brickSetUrl.Length > 250)
+				{
+					legoSet.brickSetUrl = legoSet.brickSetUrl.Substring(0, 250);
+				}
+
+				if (legoSet.instructionsUrl != null && legoSet.instructionsUrl.Length > 500)
+				{
+					legoSet.instructionsUrl = legoSet.instructionsUrl.Substring(0, 500);
+				}
+
+				if (legoSet.subtheme != null && legoSet.subtheme.Length > 100)
+				{
+					legoSet.subtheme = legoSet.subtheme.Substring(0, 100);
+				}
+
+				if (legoSet.availability != null && legoSet.availability.Length > 50)
+				{
+					legoSet.availability = legoSet.availability.Substring(0, 50);
+				}
+
+				if (legoSet.brickSetLastEnrichedDate.HasValue == true && legoSet.brickSetLastEnrichedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					legoSet.brickSetLastEnrichedDate = legoSet.brickSetLastEnrichedDate.Value.ToUniversalTime();
 				}
 
 				legoSet.objectGuid = Guid.NewGuid();
@@ -822,6 +1022,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string rebrickableUrl = null,
 			string rebrickableSetNum = null,
 			DateTime? lastModifiedDate = null,
+			int? brickSetId = null,
+			string brickSetUrl = null,
+			decimal? retailPriceUS = null,
+			decimal? retailPriceUK = null,
+			decimal? retailPriceCA = null,
+			decimal? retailPriceEU = null,
+			string instructionsUrl = null,
+			string subtheme = null,
+			string availability = null,
+			int? minifigCount = null,
+			float? brickSetRating = null,
+			int? brickSetReviewCount = null,
+			DateTime? brickSetLastEnrichedDate = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -865,6 +1078,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				lastModifiedDate = lastModifiedDate.Value.ToUniversalTime();
 			}
 
+			if (brickSetLastEnrichedDate.HasValue == true && brickSetLastEnrichedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				brickSetLastEnrichedDate = brickSetLastEnrichedDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.LegoSet> query = (from ls in _context.LegoSets select ls);
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -905,6 +1123,58 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (lastModifiedDate.HasValue == true)
 			{
 				query = query.Where(ls => ls.lastModifiedDate == lastModifiedDate.Value);
+			}
+			if (brickSetId.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetId == brickSetId.Value);
+			}
+			if (string.IsNullOrEmpty(brickSetUrl) == false)
+			{
+				query = query.Where(ls => ls.brickSetUrl == brickSetUrl);
+			}
+			if (retailPriceUS.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceUS == retailPriceUS.Value);
+			}
+			if (retailPriceUK.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceUK == retailPriceUK.Value);
+			}
+			if (retailPriceCA.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceCA == retailPriceCA.Value);
+			}
+			if (retailPriceEU.HasValue == true)
+			{
+				query = query.Where(ls => ls.retailPriceEU == retailPriceEU.Value);
+			}
+			if (string.IsNullOrEmpty(instructionsUrl) == false)
+			{
+				query = query.Where(ls => ls.instructionsUrl == instructionsUrl);
+			}
+			if (string.IsNullOrEmpty(subtheme) == false)
+			{
+				query = query.Where(ls => ls.subtheme == subtheme);
+			}
+			if (string.IsNullOrEmpty(availability) == false)
+			{
+				query = query.Where(ls => ls.availability == availability);
+			}
+			if (minifigCount.HasValue == true)
+			{
+				query = query.Where(ls => ls.minifigCount == minifigCount.Value);
+			}
+			if (brickSetRating.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetRating == brickSetRating.Value);
+			}
+			if (brickSetReviewCount.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetReviewCount == brickSetReviewCount.Value);
+			}
+			if (brickSetLastEnrichedDate.HasValue == true)
+			{
+				query = query.Where(ls => ls.brickSetLastEnrichedDate == brickSetLastEnrichedDate.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -950,8 +1220,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.brickLinkUrl.Contains(anyStringContains)
 			       || x.rebrickableUrl.Contains(anyStringContains)
 			       || x.rebrickableSetNum.Contains(anyStringContains)
+			       || x.brickSetUrl.Contains(anyStringContains)
+			       || x.instructionsUrl.Contains(anyStringContains)
+			       || x.subtheme.Contains(anyStringContains)
+			       || x.availability.Contains(anyStringContains)
 			       || x.legoTheme.name.Contains(anyStringContains)
 			       || x.legoTheme.description.Contains(anyStringContains)
+			       || x.legoTheme.brickSetThemeName.Contains(anyStringContains)
 			   );
 			}
 

@@ -1,0 +1,95 @@
+<div class="add-brick-set-user-link" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-set-user-link me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Set User Link" 
+        *ngIf="userIsBMCBrickSetUserLinkWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickSetUserLinkModal let-modal>
+   <div class="modal-header brick-set-user-link-modal-header">
+      <h5 class="modal-title mb-0" id="brickSetUserLinkModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Set User Link' : 'Add Brick Set User Link' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body brick-set-user-link-modal-body">
+      <form [formGroup]="brickSetUserLinkForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('brickSetUsername')">
+                <label for="BrickSetUserLink-brickSetUsername" id="label-BrickSetUserLink-brickSetUsername"><span class="text-danger">*</span>Brick Set Username</label>
+                <input type="text" id="BrickSetUserLink-brickSetUsername" formControlName="brickSetUsername" placeholder="Enter Brick Set Username" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" aria-labelledby="label-brickSetUsername" />
+                <div *ngIf="brickSetUserLinkForm.get('brickSetUsername')?.invalid && brickSetUserLinkForm.get('brickSetUsername')?.touched" class="text-danger">
+                    Brick Set Username is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('encryptedUserHash')">
+                <label for="BrickSetUserLink-encryptedUserHash" id="label-BrickSetUserLink-encryptedUserHash"><span class="text-danger">*</span>Encrypted User Hash</label>
+                <textarea id="BrickSetUserLink-encryptedUserHash" formControlName="encryptedUserHash" placeholder="Enter Encrypted User Hash" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()"></textarea>
+                <div *ngIf="brickSetUserLinkForm.get('encryptedUserHash')?.invalid && brickSetUserLinkForm.get('encryptedUserHash')?.touched" class="text-danger">
+                    Encrypted User Hash is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('encryptedPassword')">
+                <label for="BrickSetUserLink-encryptedPassword" id="label-BrickSetUserLink-encryptedPassword">Encrypted Password</label>
+                <textarea id="BrickSetUserLink-encryptedPassword" formControlName="encryptedPassword" placeholder="Enter Encrypted Password" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('syncEnabled')">
+                <input type="checkbox" id="BrickSetUserLink-syncEnabled" formControlName="syncEnabled" class="form-check-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" />
+                <label for="BrickSetUserLink-syncEnabled" class="form-check-label" id="label-BrickSetUserLink-syncEnabled"><span class="text-danger">*</span>Sync Enabled</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('syncDirection')">
+                <label for="BrickSetUserLink-syncDirection" id="label-BrickSetUserLink-syncDirection"><span class="text-danger">*</span>Sync Direction</label>
+                <input type="text" id="BrickSetUserLink-syncDirection" formControlName="syncDirection" placeholder="Enter Sync Direction" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" aria-labelledby="label-syncDirection" />
+                <div *ngIf="brickSetUserLinkForm.get('syncDirection')?.invalid && brickSetUserLinkForm.get('syncDirection')?.touched" class="text-danger">
+                    Sync Direction is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSyncDate')">
+                <label for="BrickSetUserLink-lastSyncDate" id="label-BrickSetUserLink-lastSyncDate">Last Sync Date</label>
+                <input type="datetime-local" id="BrickSetUserLink-lastSyncDate" formControlName="lastSyncDate" placeholder="Enter Last Sync Date" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" aria-labelledby="label-lastSyncDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPullDate')">
+                <label for="BrickSetUserLink-lastPullDate" id="label-BrickSetUserLink-lastPullDate">Last Pull Date</label>
+                <input type="datetime-local" id="BrickSetUserLink-lastPullDate" formControlName="lastPullDate" placeholder="Enter Last Pull Date" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" aria-labelledby="label-lastPullDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPushDate')">
+                <label for="BrickSetUserLink-lastPushDate" id="label-BrickSetUserLink-lastPushDate">Last Push Date</label>
+                <input type="datetime-local" id="BrickSetUserLink-lastPushDate" formControlName="lastPushDate" placeholder="Enter Last Push Date" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" aria-labelledby="label-lastPushDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSyncError')">
+                <label for="BrickSetUserLink-lastSyncError" id="label-BrickSetUserLink-lastSyncError">Last Sync Error</label>
+                <textarea id="BrickSetUserLink-lastSyncError" formControlName="lastSyncError" placeholder="Enter Last Sync Error" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userHashStoredDate')">
+                <label for="BrickSetUserLink-userHashStoredDate" id="label-BrickSetUserLink-userHashStoredDate">User Hash Stored Date</label>
+                <input type="datetime-local" id="BrickSetUserLink-userHashStoredDate" formControlName="userHashStoredDate" placeholder="Enter User Hash Stored Date" class="form-control brick-set-user-link-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" aria-labelledby="label-userHashStoredDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickSetUserLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" />
+                <label for="BrickSetUserLink-active" class="form-check-label" id="label-BrickSetUserLink-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickSetUserLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickSetUserLinkWriter()" />
+                <label for="BrickSetUserLink-deleted" class="form-check-label" id="label-BrickSetUserLink-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-set-user-link-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Set User Link changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickSetUserLinkForm.valid || brickSetUserLinkForm.pristine  || userIsBMCBrickSetUserLinkWriter() == false " ngbTooltip="Save the Brick Set User Link changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Set User Link' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

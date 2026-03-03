@@ -38,6 +38,7 @@ interface LegoThemeFormValues {
   description: string,
   legoThemeId: number | bigint | null,       // For FK link number
   rebrickableThemeId: string,     // Stored as string for form input, converted to number on submit.
+  brickSetThemeName: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -75,6 +76,7 @@ export class LegoThemeAddEditComponent {
         description: ['', Validators.required],
         legoThemeId: [null],
         rebrickableThemeId: ['', Validators.required],
+        brickSetThemeName: [''],
         sequence: [''],
         active: [true],
         deleted: [false],
@@ -215,6 +217,7 @@ export class LegoThemeAddEditComponent {
         description: formValue.description!.trim(),
         legoThemeId: formValue.legoThemeId ? Number(formValue.legoThemeId) : null,
         rebrickableThemeId: Number(formValue.rebrickableThemeId),
+        brickSetThemeName: formValue.brickSetThemeName?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
@@ -347,6 +350,7 @@ export class LegoThemeAddEditComponent {
         description: '',
         legoThemeId: null,
         rebrickableThemeId: '',
+        brickSetThemeName: '',
         sequence: '',
         active: true,
         deleted: false,
@@ -363,6 +367,7 @@ export class LegoThemeAddEditComponent {
         description: legoThemeData.description ?? '',
         legoThemeId: legoThemeData.legoThemeId,
         rebrickableThemeId: legoThemeData.rebrickableThemeId?.toString() ?? '',
+        brickSetThemeName: legoThemeData.brickSetThemeName ?? '',
         sequence: legoThemeData.sequence?.toString() ?? '',
         active: legoThemeData.active ?? true,
         deleted: legoThemeData.deleted ?? false,

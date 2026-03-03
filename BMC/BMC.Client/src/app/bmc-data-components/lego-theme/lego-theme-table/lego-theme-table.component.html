@@ -43,6 +43,10 @@
                 Rebrickable  Theme  Id
                 <span *ngIf="sortColumn === 'rebrickableThemeId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickSetThemeName')">
+                Brick  Set  Theme  Name
+                <span *ngIf="sortColumn === 'brickSetThemeName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
                 <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -136,6 +140,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{legoTheme.description}}</td>
             <td class="text-truncate"><a [routerLink]="['/legotheme', legoTheme.legoThemeId]" class="btn btn-link text-left" ngbTooltip="Open Lego Theme details">{{legoTheme.legoTheme?.name}}</a></td>
             <td class="text-truncate">{{legoTheme.rebrickableThemeId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{legoTheme.brickSetThemeName}}</td>
             <td class="text-truncate">{{legoTheme.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
@@ -299,6 +304,10 @@ End of commented block for alternate definition option -->
             <p class="lego-theme-info" *ngIf="legoTheme.rebrickableThemeId != null">
               <strong>Rebrickable Theme Id: </strong>
               {{legoTheme.rebrickableThemeId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="lego-theme-info" *ngIf="legoTheme.brickSetThemeName != null">
+              <strong>Brick Set Theme Name: </strong>
+              {{legoTheme.brickSetThemeName}}
             </p>
             <p class="lego-theme-info" *ngIf="legoTheme.sequence != null">
               <strong>Sequence: </strong>

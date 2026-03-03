@@ -1,0 +1,189 @@
+<!-- My Lost Parts — Track missing/lost brick parts -->
+<div class="lost-parts-container">
+
+    <!-- Feedback -->
+    <div class="feedback-bar success" *ngIf="successMessage">
+        <i class="fas fa-check-circle"></i> {{ successMessage }}
+    </div>
+    <div class="feedback-bar error" *ngIf="errorMessage">
+        <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+    </div>
+
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-left">
+            <h1 class="page-title">
+                <i class="fas fa-search-minus"></i>
+                My Lost Parts
+            </h1>
+            <p class="page-subtitle">Track missing parts from your LEGO sets</p>
+        </div>
+    </header>
+
+
+    <!-- Stats Row -->
+    <div class="stats-row" *ngIf="stats">
+        <div class="stat-card">
+            <div class="stat-icon records"><i class="fas fa-clipboard-list"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.totalRecords }}</span>
+                <span class="stat-label">Records</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon total"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.totalLostParts }}</span>
+                <span class="stat-label">Total Lost</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon unique"><i class="fas fa-shapes"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.uniqueParts }}</span>
+                <span class="stat-label">Unique Parts</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon sets"><i class="fas fa-box-open"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.setsAffected }}</span>
+                <span class="stat-label">Sets Affected</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon colours"><i class="fas fa-palette"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ stats.uniqueColours }}</span>
+                <span class="stat-label">Colours</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search parts, colours, sets…" [(ngModel)]="searchText"
+                (input)="onSearchInput($event)" />
+            <button class="clear-btn" *ngIf="searchText" (click)="clearSearch()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <select class="toolbar-select" (change)="onSetFilter($event)">
+            <option value="">All Sets</option>
+            <option *ngFor="let s of affectedSets" [value]="s.id">{{ s.name }} ({{ s.setNum }})</option>
+        </select>
+
+        <select class="toolbar-select" (change)="onSortChange($event)">
+            <option value="partName">Sort: Part Name</option>
+            <option value="colour">Sort: Colour</option>
+            <option value="set">Sort: Set</option>
+            <option value="quantity-desc">Sort: Qty ↓</option>
+            <option value="quantity-asc">Sort: Qty ↑</option>
+        </select>
+    </div>
+
+
+    <!-- Loading -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner-wrap">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading lost parts…</span>
+        </div>
+    </div>
+
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && lostParts.length === 0">
+        <i class="fas fa-check-circle"></i>
+        <h3>No lost parts!</h3>
+        <p>Great news — you haven't reported any missing parts.</p>
+    </div>
+
+
+    <!-- Parts Grid -->
+    <div class="parts-grid" *ngIf="!loading && lostParts.length > 0">
+        <div class="part-card" *ngFor="let part of lostParts" [class.editing]="editingId === part.id">
+
+            <!-- Edit Mode -->
+            <div class="part-card-edit" *ngIf="editingId === part.id">
+                <h4 class="edit-title">{{ part.partName }}</h4>
+                <div class="edit-field">
+                    <label>Lost Quantity</label>
+                    <div class="qty-control">
+                        <button class="qty-btn" (click)="editQuantity = Math.max(1, editQuantity - 1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="qty-value">{{ editQuantity }}</span>
+                        <button class="qty-btn" (click)="editQuantity = editQuantity + 1">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="edit-actions">
+                    <button class="btn btn-primary btn-sm" (click)="saveEdit(part)" [disabled]="savingEdit">
+                        <i class="fas" [ngClass]="savingEdit ? 'fa-spinner fa-spin' : 'fa-check'"></i> Save
+                    </button>
+                    <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Display Mode -->
+            <div class="part-card-display" *ngIf="editingId !== part.id">
+
+                <!-- Part Image -->
+                <div class="part-image-wrap">
+                    <img *ngIf="part.partImageUrl" [src]="part.partImageUrl" [alt]="part.partName" class="part-image" />
+                    <div class="part-image-placeholder" *ngIf="!part.partImageUrl">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="part-info">
+                    <h4 class="part-name" [title]="part.partName">{{ part.partName || 'Unknown Part' }}</h4>
+                    <span class="part-number">{{ part.partNum }}</span>
+
+                    <div class="part-meta">
+                        <span class="colour-swatch-group">
+                            <span class="colour-swatch" [ngStyle]="getColourStyle(part.colourHex)"
+                                [title]="part.colourName" [class.transparent]="part.isTransparent"></span>
+                            <span class="colour-name">{{ part.colourName }}</span>
+                        </span>
+                    </div>
+
+                    <div class="set-tag" *ngIf="part.setName">
+                        <i class="fas fa-box-open"></i>
+                        {{ part.setName }} <span class="set-num">({{ part.setNum }})</span>
+                    </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="item-quantity">
+                    <button class="qty-btn" (click)="updateQuantity(part, -1); $event.stopPropagation()"
+                        [disabled]="part.lostQuantity <= 1">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="qty-value lost-badge">{{ part.lostQuantity }}</span>
+                    <button class="qty-btn" (click)="updateQuantity(part, 1); $event.stopPropagation()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Actions -->
+                <div class="item-actions">
+                    <button class="btn-icon" title="Edit" (click)="startEdit(part, $event)">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="btn-icon found" title="Found it!" (click)="removePart(part, $event)">
+                        <i class="fas fa-check-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

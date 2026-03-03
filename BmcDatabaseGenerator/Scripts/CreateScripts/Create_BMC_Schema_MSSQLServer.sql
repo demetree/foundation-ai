@@ -69,6 +69,9 @@ GO
 -- DROP TABLE [BMC].[UserPartListItem]
 -- DROP TABLE [BMC].[UserPartListChangeHistory]
 -- DROP TABLE [BMC].[UserPartList]
+-- DROP TABLE [BMC].[BrickSetSetReview]
+-- DROP TABLE [BMC].[BrickSetTransaction]
+-- DROP TABLE [BMC].[BrickSetUserLink]
 -- DROP TABLE [BMC].[RebrickableSyncQueue]
 -- DROP TABLE [BMC].[RebrickableTransaction]
 -- DROP TABLE [BMC].[RebrickableUserLink]
@@ -166,6 +169,9 @@ GO
 -- ALTER INDEX ALL ON [BMC].[UserPartListItem] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserPartListChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[UserPartList] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickSetSetReview] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickSetTransaction] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BrickSetUserLink] DISABLE
 -- ALTER INDEX ALL ON [BMC].[RebrickableSyncQueue] DISABLE
 -- ALTER INDEX ALL ON [BMC].[RebrickableTransaction] DISABLE
 -- ALTER INDEX ALL ON [BMC].[RebrickableUserLink] DISABLE
@@ -263,6 +269,9 @@ GO
 -- ALTER INDEX ALL ON [BMC].[UserPartListItem] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserPartListChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[UserPartList] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickSetSetReview] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickSetTransaction] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BrickSetUserLink] REBUILD
 -- ALTER INDEX ALL ON [BMC].[RebrickableSyncQueue] REBUILD
 -- ALTER INDEX ALL ON [BMC].[RebrickableTransaction] REBUILD
 -- ALTER INDEX ALL ON [BMC].[RebrickableUserLink] REBUILD
@@ -1621,6 +1630,7 @@ CREATE TABLE [BMC].[LegoTheme]
 	[description] NVARCHAR(500) NOT NULL,
 	[legoThemeId] INT NULL,		-- Parent theme for hierarchical nesting (self-referencing FK, null = top-level)
 	[rebrickableThemeId] INT NOT NULL,		-- Rebrickable theme ID — source of truth for theme identity
+	[brickSetThemeName] NVARCHAR(100) NULL,		-- BrickSet theme name for API calls — may differ from Rebrickable theme name (null if not mapped)
 	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -1661,6 +1671,19 @@ CREATE TABLE [BMC].[LegoSet]
 	[rebrickableUrl] NVARCHAR(250) NULL,		-- URL to the set's Rebrickable page
 	[rebrickableSetNum] NVARCHAR(100) NULL,		-- Explicit Rebrickable set number if it differs from setNumber
 	[lastModifiedDate] DATETIME2(7) NULL,		-- Last modification date for incremental sync with Rebrickable
+	[brickSetId] INT NULL,		-- BrickSet internal set ID — used for API calls (null if not yet enriched from BrickSet)
+	[brickSetUrl] NVARCHAR(250) NULL,		-- URL to the set's BrickSet page
+	[retailPriceUS] MONEY NULL,		-- US retail price in USD from BrickSet (null if not available)
+	[retailPriceUK] MONEY NULL,		-- UK retail price in GBP from BrickSet (null if not available)
+	[retailPriceCA] MONEY NULL,		-- Canadian retail price in CAD from BrickSet (null if not available)
+	[retailPriceEU] MONEY NULL,		-- EU retail price in EUR from BrickSet (null if not available)
+	[instructionsUrl] NVARCHAR(500) NULL,		-- URL to the set's official building instructions PDF (sourced from BrickSet)
+	[subtheme] NVARCHAR(100) NULL,		-- Subtheme name from BrickSet (e.g. 'Police' under City)
+	[availability] NVARCHAR(50) NULL,		-- Current availability status from BrickSet (e.g. 'Retail', 'Retired', 'LEGO exclusive')
+	[minifigCount] INT NULL,		-- Number of minifigs included in the set (from BrickSet, null if unknown)
+	[brickSetRating] REAL NULL,		-- Average community rating on BrickSet (1.0-5.0, null if no reviews)
+	[brickSetReviewCount] INT NULL,		-- Number of community reviews on BrickSet (null if unknown)
+	[brickSetLastEnrichedDate] DATETIME2(7) NULL,		-- When this set was last enriched with BrickSet data (null = never enriched)
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -2196,6 +2219,111 @@ GO
 
 -- Index on the RebrickableSyncQueue table's tenantGuid,deleted fields.
 CREATE INDEX [I_RebrickableSyncQueue_tenantGuid_deleted] ON [BMC].[RebrickableSyncQueue] ([tenantGuid], [deleted])
+GO
+
+
+-- Stores each user's BrickSet userHash and sync configuration. One link per tenant. BrickSet auth uses an app-level API key (in appsettings.json) plus a session-based userHash obtained via login.
+CREATE TABLE [BMC].[BrickSetUserLink]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[brickSetUsername] NVARCHAR(100) NOT NULL,		-- User's BrickSet username for display and reference
+	[encryptedUserHash] NVARCHAR(500) NOT NULL,		-- Encrypted BrickSet userHash — obtained via login, used for collection API calls
+	[encryptedPassword] NVARCHAR(500) NULL,		-- Encrypted BrickSet password — stored for re-authentication when userHash expires (null if user chose not to store)
+	[syncEnabled] BIT NOT NULL DEFAULT 1,		-- Whether automatic sync is enabled for this user
+	[syncDirection] NVARCHAR(50) NOT NULL,		-- Integration mode: None, PullOnly, PushOnly, Bidirectional
+	[lastSyncDate] DATETIME2(7) NULL,		-- Date/time of last successful sync with BrickSet
+	[lastPullDate] DATETIME2(7) NULL,		-- Date/time of last successful pull from BrickSet
+	[lastPushDate] DATETIME2(7) NULL,		-- Date/time of last successful push to BrickSet
+	[lastSyncError] NVARCHAR(MAX) NULL,		-- Last sync error message for display to the user (null = no error)
+	[userHashStoredDate] DATETIME2(7) NULL,		-- When the userHash was last stored or refreshed — used for session expiry tracking
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_BrickSetUserLink_tenantGuid] UNIQUE ( [tenantGuid]) 		-- Uniqueness enforced on the BrickSetUserLink table's tenantGuid field.
+)
+GO
+
+-- Index on the BrickSetUserLink table's tenantGuid field.
+CREATE INDEX [I_BrickSetUserLink_tenantGuid] ON [BMC].[BrickSetUserLink] ([tenantGuid])
+GO
+
+-- Index on the BrickSetUserLink table's tenantGuid,active fields.
+CREATE INDEX [I_BrickSetUserLink_tenantGuid_active] ON [BMC].[BrickSetUserLink] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickSetUserLink table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickSetUserLink_tenantGuid_deleted] ON [BMC].[BrickSetUserLink] ([tenantGuid], [deleted])
+GO
+
+
+-- Full audit log of every BrickSet API call BMC makes on behalf of a user. Mirrors the RebrickableTransaction pattern for complete transparency.
+CREATE TABLE [BMC].[BrickSetTransaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[transactionDate] DATETIME2(7) NULL,		-- Date/time the API call was made
+	[direction] NVARCHAR(50) NOT NULL,		-- Direction of data flow: Push, Pull, Enrich
+	[methodName] NVARCHAR(100) NOT NULL,		-- BrickSet API method name (e.g. 'getSets', 'setCollection', 'getInstructions')
+	[requestSummary] NVARCHAR(MAX) NULL,		-- Human-readable description of the operation, e.g. 'Enriched set 42131-1 with pricing data'
+	[success] BIT NOT NULL DEFAULT 1,		-- Whether the API call completed successfully
+	[errorMessage] NVARCHAR(MAX) NULL,		-- Error details if the call failed (null on success)
+	[triggeredBy] NVARCHAR(100) NOT NULL,		-- What initiated this call: UserAction, SetDetailView, ManualEnrich, CollectionSync
+	[recordCount] INT NULL,		-- Number of rows retrieved or affected by this API call
+	[apiCallsRemaining] INT NULL,		-- Daily API call quota remaining after this call (from getKeyUsageStats)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the BrickSetTransaction table's tenantGuid field.
+CREATE INDEX [I_BrickSetTransaction_tenantGuid] ON [BMC].[BrickSetTransaction] ([tenantGuid])
+GO
+
+-- Index on the BrickSetTransaction table's tenantGuid,active fields.
+CREATE INDEX [I_BrickSetTransaction_tenantGuid_active] ON [BMC].[BrickSetTransaction] ([tenantGuid], [active])
+GO
+
+-- Index on the BrickSetTransaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_BrickSetTransaction_tenantGuid_deleted] ON [BMC].[BrickSetTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- Cached community reviews from BrickSet for official LEGO sets. Pulled periodically via the getReviews API method. Reviews are read-only reference data, not user-editable.
+CREATE TABLE [BMC].[BrickSetSetReview]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[legoSetId] INT NOT NULL,		-- The set this review is for
+	[reviewAuthor] NVARCHAR(100) NOT NULL,		-- BrickSet username of the reviewer
+	[reviewDate] DATETIME2(7) NULL,		-- When the review was posted on BrickSet
+	[reviewTitle] NVARCHAR(MAX) NULL,		-- Review title/heading
+	[reviewBody] NVARCHAR(MAX) NULL,		-- Full review text
+	[overallRating] INT NULL,		-- Overall rating (1-5)
+	[buildingExperienceRating] INT NULL,		-- Building experience rating (1-5, null if not rated)
+	[valueForMoneyRating] INT NULL,		-- Value for money rating (1-5, null if not rated)
+	[partsRating] INT NULL,		-- Parts/pieces rating (1-5, null if not rated)
+	[playabilityRating] INT NULL,		-- Playability rating (1-5, null if not rated)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_BrickSetSetReview_LegoSet_legoSetId] FOREIGN KEY ([legoSetId]) REFERENCES [BMC].[LegoSet] ([id])		-- Foreign key to the LegoSet table.
+)
+GO
+
+-- Index on the BrickSetSetReview table's legoSetId field.
+CREATE INDEX [I_BrickSetSetReview_legoSetId] ON [BMC].[BrickSetSetReview] ([legoSetId])
+GO
+
+-- Index on the BrickSetSetReview table's active field.
+CREATE INDEX [I_BrickSetSetReview_active] ON [BMC].[BrickSetSetReview] ([active])
+GO
+
+-- Index on the BrickSetSetReview table's deleted field.
+CREATE INDEX [I_BrickSetSetReview_deleted] ON [BMC].[BrickSetSetReview] ([deleted])
 GO
 
 

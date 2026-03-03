@@ -1,0 +1,93 @@
+<div class="container-fluid p-1 m-0 brick-set-transaction-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-set-transaction-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Set Transaction</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Set Transaction' : 'Add Brick Set Transaction'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickSetTransactionReader()">
+                <div class="col m-2 brick-set-transaction-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickSetTransactionForm" (ngSubmit)="submitForm()" class="brick-set-transaction-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                                <label for="BrickSetTransaction-transactionDate" id="label-BrickSetTransaction-transactionDate">Transaction Date</label>
+                                <input type="datetime-local" id="BrickSetTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" aria-labelledby="label-transactionDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('direction')">
+                                <label for="BrickSetTransaction-direction" id="label-BrickSetTransaction-direction"><span class="text-danger">*</span>Direction</label>
+                                <input type="text" id="BrickSetTransaction-direction" formControlName="direction" placeholder="Enter Direction" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" aria-labelledby="label-direction" />
+                                <div *ngIf="brickSetTransactionForm.get('direction')?.invalid && brickSetTransactionForm.get('direction')?.touched" class="text-danger">
+                                    Direction is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('methodName')">
+                                <label for="BrickSetTransaction-methodName" id="label-BrickSetTransaction-methodName"><span class="text-danger">*</span>Method Name</label>
+                                <input type="text" id="BrickSetTransaction-methodName" formControlName="methodName" placeholder="Enter Method Name" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" aria-labelledby="label-methodName" />
+                                <div *ngIf="brickSetTransactionForm.get('methodName')?.invalid && brickSetTransactionForm.get('methodName')?.touched" class="text-danger">
+                                    Method Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('requestSummary')">
+                                <label for="BrickSetTransaction-requestSummary" id="label-BrickSetTransaction-requestSummary">Request Summary</label>
+                                <textarea id="BrickSetTransaction-requestSummary" formControlName="requestSummary" placeholder="Enter Request Summary" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                                <input type="checkbox" id="BrickSetTransaction-success" formControlName="success" class="form-check-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" />
+                                <label for="BrickSetTransaction-success" class="form-check-label" id="label-BrickSetTransaction-success"><span class="text-danger">*</span>Success</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="BrickSetTransaction-errorMessage" id="label-BrickSetTransaction-errorMessage">Error Message</label>
+                                <textarea id="BrickSetTransaction-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('triggeredBy')">
+                                <label for="BrickSetTransaction-triggeredBy" id="label-BrickSetTransaction-triggeredBy"><span class="text-danger">*</span>Triggered By</label>
+                                <input type="text" id="BrickSetTransaction-triggeredBy" formControlName="triggeredBy" placeholder="Enter Triggered By" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" aria-labelledby="label-triggeredBy" />
+                                <div *ngIf="brickSetTransactionForm.get('triggeredBy')?.invalid && brickSetTransactionForm.get('triggeredBy')?.touched" class="text-danger">
+                                    Triggered By is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recordCount')">
+                                <label for="BrickSetTransaction-recordCount" id="label-BrickSetTransaction-recordCount">Record Count</label>
+                                <input type="number" id="BrickSetTransaction-recordCount" formControlName="recordCount" placeholder="Enter Record Count" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" aria-labelledby="label-recordCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('apiCallsRemaining')">
+                                <label for="BrickSetTransaction-apiCallsRemaining" id="label-BrickSetTransaction-apiCallsRemaining">Api Calls Remaining</label>
+                                <input type="number" id="BrickSetTransaction-apiCallsRemaining" formControlName="apiCallsRemaining" placeholder="Enter Api Calls Remaining" class="form-control brick-set-transaction-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" aria-labelledby="label-apiCallsRemaining" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickSetTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" />
+                                <label for="BrickSetTransaction-active" class="form-check-label" id="label-BrickSetTransaction-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickSetTransaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickSetTransactionWriter()" />
+                                <label for="BrickSetTransaction-deleted" class="form-check-label" id="label-BrickSetTransaction-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-set-transaction-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickSetTransactionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Set Transaction">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickSetTransactionForm.valid || !brickSetTransactionForm.dirty || brickSetTransactionForm.pristine  || userIsBMCBrickSetTransactionWriter() == false " ngbTooltip="Save the Brick Set Transaction changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Set Transaction' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

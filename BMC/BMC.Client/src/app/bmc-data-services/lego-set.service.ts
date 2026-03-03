@@ -21,6 +21,7 @@ import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
 import { LegoSetMinifigService, LegoSetMinifigData } from './lego-set-minifig.service';
 import { LegoSetSubsetService, LegoSetSubsetData } from './lego-set-subset.service';
 import { UserCollectionSetImportService, UserCollectionSetImportData } from './user-collection-set-import.service';
+import { BrickSetSetReviewService, BrickSetSetReviewData } from './brick-set-set-review.service';
 import { UserSetListItemService, UserSetListItemData } from './user-set-list-item.service';
 import { UserLostPartService, UserLostPartData } from './user-lost-part.service';
 import { UserSetOwnershipService, UserSetOwnershipData } from './user-set-ownership.service';
@@ -45,6 +46,19 @@ export class LegoSetQueryParameters {
     rebrickableUrl: string | null | undefined = null;
     rebrickableSetNum: string | null | undefined = null;
     lastModifiedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    brickSetId: bigint | number | null | undefined = null;
+    brickSetUrl: string | null | undefined = null;
+    retailPriceUS: number | null | undefined = null;
+    retailPriceUK: number | null | undefined = null;
+    retailPriceCA: number | null | undefined = null;
+    retailPriceEU: number | null | undefined = null;
+    instructionsUrl: string | null | undefined = null;
+    subtheme: string | null | undefined = null;
+    availability: string | null | undefined = null;
+    minifigCount: bigint | number | null | undefined = null;
+    brickSetRating: number | null | undefined = null;
+    brickSetReviewCount: bigint | number | null | undefined = null;
+    brickSetLastEnrichedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -70,6 +84,19 @@ export class LegoSetSubmitData {
     rebrickableUrl: string | null = null;
     rebrickableSetNum: string | null = null;
     lastModifiedDate: string | null = null;     // ISO 8601 (full datetime)
+    brickSetId: bigint | number | null = null;
+    brickSetUrl: string | null = null;
+    retailPriceUS: number | null = null;
+    retailPriceUK: number | null = null;
+    retailPriceCA: number | null = null;
+    retailPriceEU: number | null = null;
+    instructionsUrl: string | null = null;
+    subtheme: string | null = null;
+    availability: string | null = null;
+    minifigCount: bigint | number | null = null;
+    brickSetRating: number | null = null;
+    brickSetReviewCount: bigint | number | null = null;
+    brickSetLastEnrichedDate: string | null = null;     // ISO 8601 (full datetime)
     active!: boolean;
     deleted!: boolean;
 }
@@ -129,6 +156,19 @@ export class LegoSetData {
     rebrickableUrl!: string | null;
     rebrickableSetNum!: string | null;
     lastModifiedDate!: string | null;   // ISO 8601 (full datetime)
+    brickSetId!: bigint | number;
+    brickSetUrl!: string | null;
+    retailPriceUS!: number | null;
+    retailPriceUK!: number | null;
+    retailPriceCA!: number | null;
+    retailPriceEU!: number | null;
+    instructionsUrl!: string | null;
+    subtheme!: string | null;
+    availability!: string | null;
+    minifigCount!: bigint | number;
+    brickSetRating!: number | null;
+    brickSetReviewCount!: bigint | number;
+    brickSetLastEnrichedDate!: string | null;   // ISO 8601 (full datetime)
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -158,6 +198,11 @@ export class LegoSetData {
     private _userCollectionSetImports: UserCollectionSetImportData[] | null = null;
     private _userCollectionSetImportsPromise: Promise<UserCollectionSetImportData[]> | null  = null;
     private _userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
+
+                
+    private _brickSetSetReviews: BrickSetSetReviewData[] | null = null;
+    private _brickSetSetReviewsPromise: Promise<BrickSetSetReviewData[]> | null  = null;
+    private _brickSetSetReviewsSubject = new BehaviorSubject<BrickSetSetReviewData[] | null>(null);
 
                 
     private _userSetListItems: UserSetListItemData[] | null = null;
@@ -305,6 +350,31 @@ export class LegoSetData {
 
 
 
+    public BrickSetSetReviews$ = this._brickSetSetReviewsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickSetSetReviews === null && this._brickSetSetReviewsPromise === null) {
+            this.loadBrickSetSetReviews(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _brickSetSetReviewsCount$: Observable<bigint | number> | null = null;
+    public get BrickSetSetReviewsCount$(): Observable<bigint | number> {
+        if (this._brickSetSetReviewsCount$ === null) {
+            this._brickSetSetReviewsCount$ = BrickSetSetReviewService.Instance.GetBrickSetSetReviewsRowCount({legoSetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._brickSetSetReviewsCount$;
+    }
+
+
+
     public UserSetListItems$ = this._userSetListItemsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -442,6 +512,11 @@ export class LegoSetData {
      this._userCollectionSetImportsPromise = null;
      this._userCollectionSetImportsSubject.next(null);
      this._userCollectionSetImportsCount$ = null;
+
+     this._brickSetSetReviews = null;
+     this._brickSetSetReviewsPromise = null;
+     this._brickSetSetReviewsSubject.next(null);
+     this._brickSetSetReviewsCount$ = null;
 
      this._userSetListItems = null;
      this._userSetListItemsPromise = null;
@@ -791,6 +866,71 @@ export class LegoSetData {
 
     /**
      *
+     * Gets the BrickSetSetReviews for this LegoSet.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.legoSet.BrickSetSetReviews.then(legoSets => { ... })
+     *   or
+     *   await this.legoSet.legoSets
+     *
+    */
+    public get BrickSetSetReviews(): Promise<BrickSetSetReviewData[]> {
+        if (this._brickSetSetReviews !== null) {
+            return Promise.resolve(this._brickSetSetReviews);
+        }
+
+        if (this._brickSetSetReviewsPromise !== null) {
+            return this._brickSetSetReviewsPromise;
+        }
+
+        // Start the load
+        this.loadBrickSetSetReviews();
+
+        return this._brickSetSetReviewsPromise!;
+    }
+
+
+
+    private loadBrickSetSetReviews(): void {
+
+        this._brickSetSetReviewsPromise = lastValueFrom(
+            LegoSetService.Instance.GetBrickSetSetReviewsForLegoSet(this.id)
+        )
+        .then(BrickSetSetReviews => {
+            this._brickSetSetReviews = BrickSetSetReviews ?? [];
+            this._brickSetSetReviewsSubject.next(this._brickSetSetReviews);
+            return this._brickSetSetReviews;
+         })
+        .catch(err => {
+            this._brickSetSetReviews = [];
+            this._brickSetSetReviewsSubject.next(this._brickSetSetReviews);
+            throw err;
+        })
+        .finally(() => {
+            this._brickSetSetReviewsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickSetSetReview. Call after mutations to force refresh.
+     */
+    public ClearBrickSetSetReviewsCache(): void {
+        this._brickSetSetReviews = null;
+        this._brickSetSetReviewsPromise = null;
+        this._brickSetSetReviewsSubject.next(this._brickSetSetReviews);      // Emit to observable
+    }
+
+    public get HasBrickSetSetReviews(): Promise<boolean> {
+        return this.BrickSetSetReviews.then(brickSetSetReviews => brickSetSetReviews.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the UserSetListItems for this LegoSet.
      *
      * If already loaded, returns cached array.
@@ -1023,6 +1163,7 @@ export class LegoSetService extends SecureEndpointBase {
         private legoSetMinifigService: LegoSetMinifigService,
         private legoSetSubsetService: LegoSetSubsetService,
         private userCollectionSetImportService: UserCollectionSetImportService,
+        private brickSetSetReviewService: BrickSetSetReviewService,
         private userSetListItemService: UserSetListItemService,
         private userLostPartService: UserLostPartService,
         private userSetOwnershipService: UserSetOwnershipService,
@@ -1093,6 +1234,19 @@ export class LegoSetService extends SecureEndpointBase {
         output.rebrickableUrl = data.rebrickableUrl;
         output.rebrickableSetNum = data.rebrickableSetNum;
         output.lastModifiedDate = data.lastModifiedDate;
+        output.brickSetId = data.brickSetId;
+        output.brickSetUrl = data.brickSetUrl;
+        output.retailPriceUS = data.retailPriceUS;
+        output.retailPriceUK = data.retailPriceUK;
+        output.retailPriceCA = data.retailPriceCA;
+        output.retailPriceEU = data.retailPriceEU;
+        output.instructionsUrl = data.instructionsUrl;
+        output.subtheme = data.subtheme;
+        output.availability = data.availability;
+        output.minifigCount = data.minifigCount;
+        output.brickSetRating = data.brickSetRating;
+        output.brickSetReviewCount = data.brickSetReviewCount;
+        output.brickSetLastEnrichedDate = data.brickSetLastEnrichedDate;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -1441,6 +1595,16 @@ export class LegoSetService extends SecureEndpointBase {
     }
 
 
+    public GetBrickSetSetReviewsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickSetSetReviewData[]> {
+        return this.brickSetSetReviewService.GetBrickSetSetReviewList({
+            legoSetId: legoSetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetUserSetListItemsForLegoSet(legoSetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserSetListItemData[]> {
         return this.userSetListItemService.GetUserSetListItemList({
             legoSetId: legoSetId,
@@ -1526,6 +1690,10 @@ export class LegoSetService extends SecureEndpointBase {
     (revived as any)._userCollectionSetImportsPromise = null;
     (revived as any)._userCollectionSetImportsSubject = new BehaviorSubject<UserCollectionSetImportData[] | null>(null);
 
+    (revived as any)._brickSetSetReviews = null;
+    (revived as any)._brickSetSetReviewsPromise = null;
+    (revived as any)._brickSetSetReviewsSubject = new BehaviorSubject<BrickSetSetReviewData[] | null>(null);
+
     (revived as any)._userSetListItems = null;
     (revived as any)._userSetListItemsPromise = null;
     (revived as any)._userSetListItemsSubject = new BehaviorSubject<UserSetListItemData[] | null>(null);
@@ -1608,6 +1776,18 @@ export class LegoSetService extends SecureEndpointBase {
       );
 
     (revived as any)._userCollectionSetImportsCount$ = null;
+
+
+    (revived as any).BrickSetSetReviews$ = (revived as any)._brickSetSetReviewsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickSetSetReviews === null && (revived as any)._brickSetSetReviewsPromise === null) {
+                (revived as any).loadBrickSetSetReviews();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._brickSetSetReviewsCount$ = null;
 
 
     (revived as any).UserSetListItems$ = (revived as any)._userSetListItemsSubject.asObservable().pipe(
