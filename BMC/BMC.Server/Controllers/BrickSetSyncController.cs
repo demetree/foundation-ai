@@ -52,25 +52,25 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         #region DTOs
 
-        public class ConnectRequest
+        public class BrickSetConnectRequest
         {
             public string username { get; set; }
             public string password { get; set; }
             public string syncDirection { get; set; } = "EnrichOnly";
         }
 
-        public class UpdateSettingsRequest
+        public class BrickSetUpdateSettingsRequest
         {
             public string syncDirection { get; set; }
         }
 
-        public class EnrichReviewsRequest
+        public class BrickSetEnrichReviewsRequest
         {
             public int legoSetId { get; set; }
             public int brickSetId { get; set; }
         }
 
-        public class TransactionDto
+        public class BrickSetTransactionDto
         {
             public int id { get; set; }
             public DateTime transactionDate { get; set; }
@@ -100,7 +100,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickset-sync/connect")]
-        public async Task<IActionResult> Connect([FromBody] ConnectRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Connect([FromBody] BrickSetConnectRequest request, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -315,7 +315,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickset-sync/enrich-reviews")]
-        public async Task<IActionResult> EnrichReviews([FromBody] EnrichReviewsRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> EnrichReviews([FromBody] BrickSetEnrichReviewsRequest request, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -426,9 +426,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            IQueryable<TransactionDto> query = _context.BrickSetTransactions
+            IQueryable<BrickSetTransactionDto> query = _context.BrickSetTransactions
                 .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
-                .Select(t => new TransactionDto
+                .Select(t => new BrickSetTransactionDto
                 {
                     id = t.id,
                     transactionDate = t.transactionDate ?? DateTime.MinValue,
@@ -465,7 +465,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             int pn = Math.Max(pageNumber ?? 1, 1);
             query = query.Skip((pn - 1) * ps).Take(ps);
 
-            List<TransactionDto> transactions = await query.AsNoTracking().ToListAsync(cancellationToken);
+            List<BrickSetTransactionDto> transactions = await query.AsNoTracking().ToListAsync(cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadList,
                 $"Get BrickSet transactions — page={pn}, results={transactions.Count}");
@@ -492,7 +492,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpPut]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickset-sync/settings")]
-        public async Task<IActionResult> UpdateSettings([FromBody] UpdateSettingsRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> UpdateSettings([FromBody] BrickSetUpdateSettingsRequest request, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 

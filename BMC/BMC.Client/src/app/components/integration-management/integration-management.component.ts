@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { RebrickableSyncService, SyncStatus, SyncTransaction } from '../../services/rebrickable-sync.service';
+import { BrickSetSyncService, BrickSetSyncStatus, BrickSetTransaction } from '../../services/brickset-sync.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 
@@ -84,8 +85,40 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
     ];
 
 
+    // ───────────────────── BrickSet State ─────────────────────
+
+    bsLoading = false;
+    bsStatus: BrickSetSyncStatus | null = null;
+    bsConnecting = false;
+    bsShowForm = false;
+    bsShowSyncModeEdit = false;
+
+    // Credential inputs
+    bsUsernameInput = '';
+    bsPasswordInput = '';
+
+    // Selected sync direction
+    bsSelectedDirection = 'EnrichOnly';
+
+    // Transaction log
+    bsTransactions: BrickSetTransaction[] = [];
+    bsTxTotalCount = 0;
+    bsTxPage = 1;
+    bsTxPageSize = 20;
+    bsTxDirectionFilter: string | null = null;
+    bsTxSuccessFilter: boolean | null = null;
+
+    // Sync direction options
+    bsSyncDirections = [
+        { value: 'None', label: 'Disabled', icon: 'fas fa-ban', desc: 'No BrickSet integration' },
+        { value: 'EnrichOnly', label: 'Enrich Only', icon: 'fas fa-database', desc: 'Pull pricing, ratings, and metadata into BMC sets' },
+        { value: 'Full', label: 'Full Sync', icon: 'fas fa-sync-alt', desc: 'Bidirectional collection sync (future)' }
+    ];
+
+
     constructor(
         private syncService: RebrickableSyncService,
+        private bsSyncService: BrickSetSyncService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService
     ) { }
@@ -93,6 +126,7 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadRebrickableData();
+        this.loadBrickSetData();
     }
 
 
@@ -401,5 +435,163 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
         this.usernameInput = '';
         this.passwordInput = '';
         this.userTokenInput = '';
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  BRICKSET METHODS
+    // ═══════════════════════════════════════════════════════════════
+
+    loadBrickSetData(): void {
+        this.bsLoading = true;
+        this.bsSyncService.getStatus().pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.bsLoading = false)
+        ).subscribe({
+            next: (status) => {
+                this.bsStatus = status;
+                this.bsSelectedDirection = status.syncDirection || 'None';
+                this.loadBsTransactions();
+            },
+            error: () => {
+                this.bsStatus = null;
+                this.loadBsTransactions();
+            }
+        });
+    }
+
+
+    loadBsTransactions(): void {
+        this.bsSyncService.getTransactions(
+            this.bsTxPageSize,
+            this.bsTxPage,
+            this.bsTxDirectionFilter || undefined,
+            this.bsTxSuccessFilter !== null ? this.bsTxSuccessFilter : undefined
+        ).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (page) => {
+                this.bsTransactions = page.results;
+                this.bsTxTotalCount = page.totalCount;
+            },
+            error: () => {
+                this.bsTransactions = [];
+                this.bsTxTotalCount = 0;
+            }
+        });
+    }
+
+
+    connectToBrickSet(): void {
+        if (!this.bsUsernameInput.trim() || !this.bsPasswordInput.trim()) return;
+
+        this.bsConnecting = true;
+        this.bsSyncService.connect({
+            username: this.bsUsernameInput.trim(),
+            password: this.bsPasswordInput,
+            syncDirection: this.bsSelectedDirection
+        }).pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.bsConnecting = false)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Connected', 'Successfully connected to BrickSet!', MessageSeverity.success);
+                this.bsUsernameInput = '';
+                this.bsPasswordInput = '';
+                this.bsShowForm = false;
+                this.loadBrickSetData();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Connection failed. Check your credentials.';
+                this.alertService.showMessage('Connection Failed', msg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    async disconnectFromBrickSet(): Promise<void> {
+        const confirmed = await this.confirmationService.confirm(
+            'Disconnect BrickSet',
+            'This will remove your stored credentials and stop enrichment. Your enriched data will be preserved.'
+        );
+        if (!confirmed) return;
+
+        this.bsSyncService.disconnect().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Disconnected', 'BrickSet integration disabled.', MessageSeverity.success);
+                this.loadBrickSetData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to disconnect.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    checkBsHashHealth(): void {
+        this.bsSyncService.checkHashHealth().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (result) => {
+                if (result.valid) {
+                    this.alertService.showMessage('Hash Valid', 'Your BrickSet session is healthy.', MessageSeverity.success);
+                } else {
+                    this.alertService.showMessage('Hash Invalid', result.error || 'Session expired — attempting refresh...', MessageSeverity.warn);
+                }
+                this.loadBrickSetData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Could not check BrickSet session health.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    updateBsSettings(): void {
+        this.bsSyncService.updateSettings({
+            syncDirection: this.bsSelectedDirection
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage('Settings Updated', `BrickSet sync direction set to ${this.bsSelectedDirection}`, MessageSeverity.success);
+                this.loadBrickSetData();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to update BrickSet settings.', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    getCurrentBsDirectionOption() {
+        return this.bsSyncDirections.find(d => d.value === this.bsSelectedDirection);
+    }
+
+
+    setBsTxFilter(direction: string | null, success: boolean | null): void {
+        this.bsTxDirectionFilter = direction;
+        this.bsTxSuccessFilter = success;
+        this.bsTxPage = 1;
+        this.loadBsTransactions();
+    }
+
+
+    nextBsTxPage(): void {
+        const maxPage = Math.ceil(this.bsTxTotalCount / this.bsTxPageSize);
+        if (this.bsTxPage < maxPage) {
+            this.bsTxPage++;
+            this.loadBsTransactions();
+        }
+    }
+
+
+    prevBsTxPage(): void {
+        if (this.bsTxPage > 1) {
+            this.bsTxPage--;
+            this.loadBsTransactions();
+        }
     }
 }

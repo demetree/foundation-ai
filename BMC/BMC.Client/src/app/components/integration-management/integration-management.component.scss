@@ -108,6 +108,28 @@
         background: linear-gradient(135deg, rgba(66, 165, 245, 0.15), rgba(33, 150, 243, 0.15));
         color: #42a5f5;
     }
+
+    &.brickset {
+        background: linear-gradient(135deg, rgba(229, 57, 53, 0.15), rgba(255, 167, 38, 0.15));
+        color: #e53935;
+    }
+}
+
+.bs-quota-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bmc-glass-bg);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: var(--bmc-text-secondary);
+
+    i {
+        color: #ffa726;
+        font-size: 0.72rem;
+    }
 }
 
 .card-title-group {

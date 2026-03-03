@@ -908,6 +908,196 @@
     }
 }
 
+// ── BrickSet Enrichment Panel ────────────────────
+.brickset-section {
+    @include glass.glass-effect-lg;
+    padding: 24px 32px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s ease-out 0.15s both;
+}
+
+.brickset-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    .section-heading {
+        margin: 0;
+
+        i {
+            background: linear-gradient(135deg, #e53935, #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    }
+}
+
+.brickset-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.enriched-date {
+    font-size: 0.75rem;
+    color: var(--bmc-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    i {
+        font-size: 0.68rem;
+    }
+}
+
+.brickset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.bs-card {
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--bmc-glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--bmc-glass-border);
+    transition: border-color 0.2s;
+
+    &:hover {
+        border-color: rgba(229, 57, 53, 0.3);
+    }
+}
+
+.bs-card-label {
+    font-size: 0.7rem;
+    color: var(--bmc-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    .flag-icon {
+        font-style: normal;
+        font-size: 0.85rem;
+    }
+}
+
+.bs-rating-card {
+    grid-column: span 2;
+
+    @media (max-width: 600px) {
+        grid-column: span 1;
+    }
+}
+
+.bs-rating-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.bs-stars {
+    display: flex;
+    gap: 2px;
+
+    i {
+        font-size: 1.1rem;
+        color: #ffa726;
+    }
+}
+
+.bs-rating-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--bmc-text-primary);
+}
+
+.bs-review-count {
+    font-size: 0.78rem;
+    color: var(--bmc-text-secondary);
+}
+
+.bs-price {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--bmc-text-primary);
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+.brickset-meta-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bs-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: var(--bmc-glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: var(--bmc-text-secondary);
+    transition: border-color 0.2s;
+
+    i {
+        color: var(--bmc-accent);
+        font-size: 0.72rem;
+    }
+
+    a {
+        color: var(--bmc-text-secondary);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        &:hover {
+            color: var(--bmc-accent);
+        }
+    }
+
+    &:hover {
+        border-color: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.3);
+    }
+}
+
+.btn-sm.btn-outline {
+    padding: 5px 12px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-sm, 6px);
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    &:hover:not(:disabled) {
+        color: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+
 // ── Similar Sets Section ─────────────────────────
 .similar-sets-section {
     margin-top: 32px;

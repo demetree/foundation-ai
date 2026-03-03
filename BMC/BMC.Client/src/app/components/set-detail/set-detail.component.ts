@@ -11,6 +11,8 @@ import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
 import { SetComparisonService } from '../../services/set-comparison.service';
 import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
+import { BrickSetSyncService } from '../../services/brickset-sync.service';
+import { AlertService, MessageSeverity } from '../../services/alert.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -37,6 +39,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     selectedCategoryFilter: string | null = null;
     similarSets: SetExplorerItem[] = [];
     similarSetsLoading = false;
+    enriching = false;
 
     get isInComparison(): boolean {
         return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
@@ -74,6 +77,8 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         private explorerApi: SetExplorerApiService,
         public comparisonService: SetComparisonService,
         public ownershipCache: SetOwnershipCacheService,
+        private bsSyncService: BrickSetSyncService,
+        private alertService: AlertService,
     ) {
         this.ownershipCache.ensureLoaded();
     }
@@ -432,6 +437,30 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     async toggleWant(): Promise<void> {
         if (!this.set) return;
         await this.ownershipCache.toggleOwnership(Number(this.set.id), 'wanted');
+    }
+
+
+    triggerEnrich(): void {
+        if (!this.set?.setNumber) return;
+        this.enriching = true;
+        this.bsSyncService.enrichSet(this.set.setNumber).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (result) => {
+                this.enriching = false;
+                if (result.enriched) {
+                    this.alertService.showMessage('Enriched', `${result.setNumber} updated from BrickSet`, MessageSeverity.success);
+                    // Reload the set to pick up enriched fields
+                    this.loadSet(Number(this.set!.id));
+                } else {
+                    this.alertService.showMessage('Not Enriched', `No BrickSet data found for ${result.setNumber}`, MessageSeverity.warn);
+                }
+            },
+            error: () => {
+                this.enriching = false;
+                this.alertService.showMessage('Error', 'Enrichment failed. Check BrickSet connection.', MessageSeverity.error);
+            }
+        });
     }
 
     // ── Similar Sets recommendation engine ───────────────

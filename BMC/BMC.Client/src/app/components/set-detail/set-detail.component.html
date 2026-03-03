@@ -67,6 +67,9 @@
                     <button *ngIf="set.brickLinkUrl" class="ext-btn" (click)="openExternal(set.brickLinkUrl)">
                         <i class="fas fa-external-link-alt"></i> BrickLink
                     </button>
+                    <button *ngIf="set.brickSetUrl" class="ext-btn" (click)="openExternal(set.brickSetUrl)">
+                        <i class="fas fa-th"></i> BrickSet
+                    </button>
                     <button class="ext-btn" (click)="openInstructions()">
                         <i class="fas fa-book-open"></i> Instructions
                     </button>
@@ -94,6 +97,81 @@
                         {{ isWanted ? 'Wanted' : 'Want' }}
                     </button>
                 </div>
+            </div>
+        </section>
+
+        <!-- BrickSet Enrichment Panel -->
+        <section class="brickset-section" *ngIf="set.brickSetId">
+            <div class="brickset-header">
+                <h2 class="section-heading"><i class="fas fa-th"></i> BrickSet Data</h2>
+                <div class="brickset-header-actions">
+                    <span class="enriched-date" *ngIf="set.brickSetLastEnrichedDate">
+                        <i class="fas fa-clock"></i>
+                        {{ set.brickSetLastEnrichedDate | date:'mediumDate' }}
+                    </span>
+                    <button class="btn btn-sm btn-outline" (click)="triggerEnrich()" [disabled]="enriching">
+                        <i class="fas fa-spinner fa-spin" *ngIf="enriching"></i>
+                        <i class="fas fa-sync-alt" *ngIf="!enriching"></i>
+                        {{ enriching ? 'Enriching…' : 'Refresh' }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="brickset-grid">
+
+                <!-- Rating Card -->
+                <div class="bs-card bs-rating-card" *ngIf="set.brickSetRating">
+                    <div class="bs-card-label">Community Rating</div>
+                    <div class="bs-rating-display">
+                        <div class="bs-stars">
+                            <i *ngFor="let star of [1,2,3,4,5]" class="fas"
+                                [class.fa-star]="star <= (set.brickSetRating | number:'1.0-0')"
+                                [class.fa-star-half-alt]="star > (set.brickSetRating | number:'1.0-0') && star <= set.brickSetRating + 0.5"
+                                [class.fa-star-o]="star > set.brickSetRating + 0.5"></i>
+                        </div>
+                        <span class="bs-rating-value">{{ set.brickSetRating | number:'1.1-1' }}</span>
+                        <span class="bs-review-count" *ngIf="set.brickSetReviewCount">
+                            ({{ set.brickSetReviewCount }} reviews)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Pricing Cards -->
+                <div class="bs-card bs-price-card" *ngIf="set.retailPriceUS">
+                    <div class="bs-card-label"><i class="flag-icon">🇺🇸</i> US Retail</div>
+                    <div class="bs-price">${{ set.retailPriceUS | number:'1.2-2' }}</div>
+                </div>
+                <div class="bs-card bs-price-card" *ngIf="set.retailPriceUK">
+                    <div class="bs-card-label"><i class="flag-icon">🇬🇧</i> UK Retail</div>
+                    <div class="bs-price">£{{ set.retailPriceUK | number:'1.2-2' }}</div>
+                </div>
+                <div class="bs-card bs-price-card" *ngIf="set.retailPriceCA">
+                    <div class="bs-card-label"><i class="flag-icon">🇨🇦</i> CA Retail</div>
+                    <div class="bs-price">CA${{ set.retailPriceCA | number:'1.2-2' }}</div>
+                </div>
+                <div class="bs-card bs-price-card" *ngIf="set.retailPriceEU">
+                    <div class="bs-card-label"><i class="flag-icon">🇪🇺</i> EU Retail</div>
+                    <div class="bs-price">€{{ set.retailPriceEU | number:'1.2-2' }}</div>
+                </div>
+
+            </div>
+
+            <!-- Metadata Chips -->
+            <div class="brickset-meta-row">
+                <span class="bs-meta-chip" *ngIf="set.subtheme">
+                    <i class="fas fa-tag"></i> {{ set.subtheme }}
+                </span>
+                <span class="bs-meta-chip" *ngIf="set.availability">
+                    <i class="fas fa-store"></i> {{ set.availability }}
+                </span>
+                <span class="bs-meta-chip" *ngIf="set.minifigCount">
+                    <i class="fas fa-user"></i> {{ set.minifigCount }} minifigs (BrickSet)
+                </span>
+                <span class="bs-meta-chip" *ngIf="set.instructionsUrl">
+                    <a [href]="set.instructionsUrl" target="_blank" rel="noopener">
+                        <i class="fas fa-book-open"></i> Instructions PDF
+                    </a>
+                </span>
             </div>
         </section>
 

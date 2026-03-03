@@ -347,12 +347,15 @@ namespace BMC.BrickSet.Sync
                 return false;
             }
 
+            // BrickSet's getSets requires userHash authentication
+            string userHash = await GetUserHashAsync(tenantGuid, ct);
+
             var client = new BrickSetApiClient(_apiKey, msg => _logger.LogDebug(msg));
 
             BrickSetSet bsSet;
             try
             {
-                bsSet = await client.GetSetByNumberAsync(setNumber);
+                bsSet = await client.GetSetByNumberAsync(setNumber, userHash);
             }
             catch (BrickSetApiException ex)
             {
@@ -553,6 +556,35 @@ namespace BMC.BrickSet.Sync
         // ═══════════════════════════════════════════════════════════════════════
         //  INTERNAL HELPERS
         // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Retrieve the decrypted userHash for API calls. Caches in memory to avoid
+        /// repeated decryption and DB lookups.
+        /// </summary>
+        private async Task<string> GetUserHashAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            string cacheKey = $"{CACHE_PREFIX}{tenantGuid}_hash";
+
+            if (_cache.TryGetValue(cacheKey, out string cachedHash))
+            {
+                return cachedHash;
+            }
+
+            var link = await GetUserLinkAsync(tenantGuid, ct);
+            if (link == null || string.IsNullOrEmpty(link.encryptedUserHash))
+            {
+                return null;
+            }
+
+            string hash = Decrypt(link.encryptedUserHash);
+            if (!string.IsNullOrEmpty(hash))
+            {
+                _cache.Set(cacheKey, hash, HASH_CACHE_DURATION);
+            }
+
+            return hash;
+        }
+
 
         /// <summary>
         /// Get or create a BrickSetUserLink for the given tenant.

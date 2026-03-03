@@ -218,10 +218,8 @@ namespace BMC.BrickSet.Api
 
             parameters["params"] = JsonSerializer.Serialize(setParams);
 
-            if (!string.IsNullOrEmpty(userHash))
-            {
-                parameters["userHash"] = userHash;
-            }
+            // BrickSet's ASMX endpoint requires userHash to always be present
+            parameters["userHash"] = userHash ?? string.Empty;
 
             return await GetAsync<BrickSetSetsResponse>("getSets", parameters);
         }

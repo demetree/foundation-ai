@@ -354,28 +354,277 @@
         </div>
 
 
-        <!-- ──── BMC Public API Card (Coming Soon) ──── -->
-        <div class="integration-card disabled">
+        <!-- ──── BrickSet Integration Card ──── -->
+        <div class="integration-card" [class.connected]="bsStatus?.isConnected">
+
+            <!-- Card Header -->
             <div class="card-header">
                 <div class="card-header-left">
-                    <div class="card-icon bmc-api">
-                        <i class="fas fa-server"></i>
+                    <div class="card-icon brickset">
+                        <i class="fas fa-th"></i>
                     </div>
                     <div class="card-title-group">
-                        <h2>BMC Public API</h2>
-                        <span class="card-tagline">Expose your collection data via REST API</span>
+                        <h2>BrickSet</h2>
+                        <span class="card-tagline">Set enrichment — pricing, ratings, reviews &amp; metadata</span>
                     </div>
                 </div>
-                <div class="card-status-badge coming-soon">
-                    <i class="fas fa-clock"></i>
-                    <span>Coming Soon</span>
+                <div class="card-status-badge" [class.connected]="bsStatus?.isConnected"
+                    [class.disconnected]="!bsStatus?.isConnected">
+                    <span class="status-dot"></span>
+                    <span *ngIf="bsStatus?.isConnected">Connected</span>
+                    <span *ngIf="!bsStatus?.isConnected">Not Connected</span>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="coming-soon-content">
-                    <i class="fas fa-code"></i>
-                    <p>Provide a Rebrickable-compatible API for third-party tools to query your collection, wishlists,
-                        and set lists. Full REST + WebSocket support.</p>
+
+            <!-- Loading -->
+            <div class="card-loading" *ngIf="bsLoading">
+                <i class="fas fa-spinner fa-spin"></i> Loading status…
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body" *ngIf="!bsLoading">
+
+                <!-- Connection Info (when connected) -->
+                <div class="rb-connection-info" *ngIf="bsStatus?.isConnected">
+                    <div class="rb-user-badge" *ngIf="bsStatus?.brickSetUsername">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ bsStatus.brickSetUsername }}</span>
+                    </div>
+                    <div class="bs-quota-badge" *ngIf="bsStatus?.apiCallsRemainingToday !== null">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>{{ bsStatus.apiCallsRemainingToday }} API calls today</span>
+                    </div>
+                </div>
+
+
+                <!-- ── Connect Form (when not connected) ── -->
+                <div class="rb-connect-section" *ngIf="!bsStatus?.isConnected">
+                    <button class="btn btn-primary" *ngIf="!bsShowForm" (click)="bsShowForm = true">
+                        <i class="fas fa-plug"></i> Connect to BrickSet
+                    </button>
+
+                    <div class="rb-token-form" *ngIf="bsShowForm">
+                        <div class="rb-form-section">
+                            <div class="rb-token-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Use your <a href="https://brickset.com/" target="_blank"
+                                        rel="noopener">BrickSet.com</a> account credentials</span>
+                            </div>
+                            <input type="text" class="rb-input" placeholder="BrickSet username"
+                                [(ngModel)]="bsUsernameInput" />
+                            <input type="password" class="rb-input" placeholder="BrickSet password"
+                                [(ngModel)]="bsPasswordInput" (keyup.enter)="connectToBrickSet()" />
+                        </div>
+
+                        <!-- Sync Direction -->
+                        <div class="rb-form-section">
+                            <label class="rb-form-label">Sync Mode</label>
+                            <div class="rb-mode-grid">
+                                <div class="rb-mode-option" *ngFor="let dir of bsSyncDirections"
+                                    [class.selected]="bsSelectedDirection === dir.value"
+                                    (click)="bsSelectedDirection = dir.value">
+                                    <div class="rb-mode-icon"><i [class]="dir.icon"></i></div>
+                                    <div class="rb-mode-info">
+                                        <strong>{{ dir.label }}</strong>
+                                        <span>{{ dir.desc }}</span>
+                                    </div>
+                                    <i class="fas fa-check rb-mode-check" *ngIf="bsSelectedDirection === dir.value"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Connect / Cancel -->
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary" (click)="connectToBrickSet()"
+                                [disabled]="bsConnecting || !bsUsernameInput.trim() || !bsPasswordInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="bsConnecting"></i>
+                                <i class="fas fa-check" *ngIf="!bsConnecting"></i>
+                                {{ bsConnecting ? 'Validating…' : 'Connect' }}
+                            </button>
+                            <button class="btn btn-secondary"
+                                (click)="bsShowForm = false; bsUsernameInput = ''; bsPasswordInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <!-- Trust Note -->
+                        <div class="rb-trust-note">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Your password is used once to obtain a session hash, then encrypted and stored.
+                                The hash is cached locally and auto-refreshed if it expires.</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ── Connected: Actions ── -->
+                <div class="rb-connected-controls" *ngIf="bsStatus?.isConnected">
+
+                    <!-- Action Buttons -->
+                    <div class="rb-action-row">
+                        <button class="btn btn-sm btn-outline" (click)="checkBsHashHealth()"
+                            title="Validate stored session hash">
+                            <i class="fas fa-heartbeat"></i> Check Health
+                        </button>
+                        <button class="btn btn-sm btn-outline" (click)="bsShowForm = !bsShowForm"
+                            title="Re-connect with new credentials">
+                            <i class="fas fa-redo"></i> Re-connect
+                        </button>
+                        <button class="btn btn-sm btn-outline btn-danger-text" (click)="disconnectFromBrickSet()">
+                            <i class="fas fa-unlink"></i> Disconnect
+                        </button>
+                    </div>
+
+                    <!-- Re-connect Form (inline) -->
+                    <div class="rb-token-form" *ngIf="bsShowForm">
+                        <div class="rb-form-section">
+                            <input type="text" class="rb-input" placeholder="BrickSet username"
+                                [(ngModel)]="bsUsernameInput" />
+                            <input type="password" class="rb-input" placeholder="BrickSet password"
+                                [(ngModel)]="bsPasswordInput" (keyup.enter)="connectToBrickSet()" />
+                        </div>
+                        <div class="rb-form-actions">
+                            <button class="btn btn-primary btn-sm" (click)="connectToBrickSet()"
+                                [disabled]="bsConnecting || !bsUsernameInput.trim() || !bsPasswordInput.trim()">
+                                <i class="fas fa-spinner fa-spin" *ngIf="bsConnecting"></i>
+                                <i class="fas fa-redo" *ngIf="!bsConnecting"></i>
+                                {{ bsConnecting ? 'Validating…' : 'Re-connect' }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm"
+                                (click)="bsShowForm = false; bsUsernameInput = ''; bsPasswordInput = ''">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sync Direction -->
+                    <div class="rb-mode-section">
+                        <h4>Sync Mode</h4>
+
+                        <!-- Compact display -->
+                        <div class="rb-mode-compact" *ngIf="!bsShowSyncModeEdit" (click)="bsShowSyncModeEdit = true">
+                            <i class="{{ getCurrentBsDirectionOption()?.icon || 'fas fa-database' }}"></i>
+                            <strong>{{ getCurrentBsDirectionOption()?.label || bsSelectedDirection }}</strong>
+                            <span class="rb-mode-compact-desc">{{ getCurrentBsDirectionOption()?.desc }}</span>
+                            <i class="fas fa-pencil-alt rb-mode-edit-icon" title="Change sync direction"></i>
+                        </div>
+
+                        <!-- Expanded grid -->
+                        <div *ngIf="bsShowSyncModeEdit">
+                            <div class="rb-mode-grid">
+                                <div class="rb-mode-option" *ngFor="let dir of bsSyncDirections"
+                                    [class.selected]="bsSelectedDirection === dir.value"
+                                    (click)="bsSelectedDirection = dir.value">
+                                    <div class="rb-mode-icon"><i [class]="dir.icon"></i></div>
+                                    <div class="rb-mode-info">
+                                        <strong>{{ dir.label }}</strong>
+                                        <span>{{ dir.desc }}</span>
+                                    </div>
+                                    <i class="fas fa-check rb-mode-check" *ngIf="bsSelectedDirection === dir.value"></i>
+                                </div>
+                            </div>
+                            <div class="rb-mode-edit-actions">
+                                <button class="btn btn-primary btn-sm"
+                                    (click)="updateBsSettings(); bsShowSyncModeEdit = false"
+                                    *ngIf="bsSelectedDirection !== bsStatus?.syncDirection">
+                                    <i class="fas fa-save"></i> Save Mode
+                                </button>
+                                <button class="btn btn-secondary btn-sm"
+                                    (click)="bsShowSyncModeEdit = false; bsSelectedDirection = bsStatus?.syncDirection">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last Enrichment -->
+                    <div class="rb-actions-section">
+                        <h4>Status</h4>
+                        <div class="rb-sync-dates">
+                            <div class="rb-sync-date" *ngIf="bsStatus?.lastEnrichmentDate">
+                                <i class="fas fa-database"></i>
+                                <span>Last enrichment: {{ bsStatus.lastEnrichmentDate | date:'medium' }}</span>
+                            </div>
+                            <div class="rb-sync-date" *ngIf="bsStatus?.lastSyncDate">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Last sync: {{ bsStatus.lastSyncDate | date:'medium' }}</span>
+                            </div>
+                            <div class="rb-sync-error" *ngIf="bsStatus?.lastSyncError">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>{{ bsStatus.lastSyncError }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── Communications Log ──── -->
+            <div class="card-comms" *ngIf="!bsLoading">
+                <div class="comms-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Communications Log</h3>
+                    <span class="comms-count" *ngIf="bsTxTotalCount">{{ bsTxTotalCount }} total</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="comms-filters">
+                    <button class="filter-btn" [class.active]="!bsTxDirectionFilter && bsTxSuccessFilter === null"
+                        (click)="setBsTxFilter(null, null)">All</button>
+                    <button class="filter-btn" [class.active]="bsTxDirectionFilter === 'Pull'"
+                        (click)="setBsTxFilter('Pull', null)">
+                        <i class="fas fa-arrow-down"></i> Pull
+                    </button>
+                    <span class="filter-sep"></span>
+                    <button class="filter-btn" [class.active]="bsTxSuccessFilter === true"
+                        (click)="setBsTxFilter(bsTxDirectionFilter, true)">
+                        <i class="fas fa-check-circle"></i> Success
+                    </button>
+                    <button class="filter-btn" [class.active]="bsTxSuccessFilter === false"
+                        (click)="setBsTxFilter(bsTxDirectionFilter, false)">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </button>
+                </div>
+
+                <!-- Transaction Timeline -->
+                <div class="comms-timeline" *ngIf="bsTransactions.length > 0">
+                    <div class="tx-row" *ngFor="let tx of bsTransactions" [class.tx-failed]="!tx.success">
+                        <div class="tx-direction direction-pull">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-summary">{{ tx.requestSummary }}</div>
+                            <div class="tx-meta">
+                                <span class="tx-method">{{ tx.methodName }}</span>
+                                <span class="tx-trigger">{{ tx.triggeredBy }}</span>
+                                <span class="tx-status"
+                                    [ngClass]="tx.success ? 'status-success' : 'status-server-error'">
+                                    {{ tx.success ? 'OK' : 'ERR' }}
+                                </span>
+                            </div>
+                            <div class="tx-error" *ngIf="tx.errorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> {{ tx.errorMessage }}
+                            </div>
+                        </div>
+                        <div class="tx-time">{{ formatRelativeTime(tx.transactionDate) }}</div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="comms-empty" *ngIf="bsTransactions.length === 0">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No communications recorded yet.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="comms-pagination" *ngIf="bsTxTotalCount > bsTxPageSize">
+                    <button class="page-btn" (click)="prevBsTxPage()" [disabled]="bsTxPage <= 1">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">Page {{ bsTxPage }} of {{ (bsTxTotalCount / bsTxPageSize |
+                        number:'1.0-0') }}</span>
+                    <button class="page-btn" (click)="nextBsTxPage()"
+                        [disabled]="bsTxPage >= (bsTxTotalCount / bsTxPageSize)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
