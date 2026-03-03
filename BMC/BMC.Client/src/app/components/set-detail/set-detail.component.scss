@@ -1338,9 +1338,183 @@ $bo-accent: #6C5CE7; // Brick Owl purple
     text-transform: uppercase;
 }
 
+.terminal-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .terminal-status {
     display: flex;
     gap: 8px;
+}
+
+.terminal-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        color: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.08);
+    }
+
+    &.active {
+        color: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.12);
+    }
+}
+
+// ── Onboarding Panel ──
+.terminal-onboarding {
+    border-bottom: 1px solid var(--bmc-glass-border);
+    animation: fadeUp 0.25s ease-out;
+}
+
+.onboarding-header {
+    padding: 20px 24px 12px;
+
+    h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--bmc-text-primary);
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.82rem;
+        color: var(--bmc-text-secondary);
+        line-height: 1.5;
+    }
+}
+
+.onboarding-sources {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 16px 24px 20px;
+}
+
+.onboarding-source {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--bmc-glass-border);
+    margin: 0 6px;
+    transition: border-color 0.2s;
+
+    &.bl {
+        border-top: 2px solid $bl-accent;
+
+        .onboarding-icon {
+            color: $bl-accent;
+        }
+    }
+
+    &.be {
+        border-top: 2px solid $be-accent;
+
+        .onboarding-icon {
+            color: $be-accent;
+        }
+    }
+
+    &.bo {
+        border-top: 2px solid $bo-accent;
+
+        .onboarding-icon {
+            color: $bo-accent;
+        }
+    }
+
+    &:first-child {
+        margin-left: 0;
+    }
+
+    &:last-child {
+        margin-right: 0;
+    }
+}
+
+.onboarding-icon {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    padding-top: 2px;
+}
+
+.onboarding-info {
+    h4 {
+        margin: 0 0 4px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--bmc-text-primary);
+    }
+
+    p {
+        margin: 0 0 10px;
+        font-size: 0.75rem;
+        color: var(--bmc-text-secondary);
+        line-height: 1.45;
+    }
+}
+
+.onboarding-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #00B894;
+
+    i {
+        font-size: 0.7rem;
+    }
+}
+
+.onboarding-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: var(--radius-md);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--bmc-accent);
+    text-decoration: none;
+    transition: all 0.2s;
+
+    i {
+        font-size: 0.68rem;
+    }
+
+    &:hover {
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.1);
+        border-color: var(--bmc-accent);
+    }
+}
+
+@media (max-width: 900px) {
+    .onboarding-sources {
+        grid-template-columns: 1fr;
+    }
+
+    .onboarding-source {
+        margin: 4px 0;
+    }
 }
 
 .source-dot {
@@ -1403,13 +1577,24 @@ $bo-accent: #6C5CE7; // Brick Owl purple
     color: var(--bmc-text-secondary);
 
     i {
-        font-size: 1.8rem;
-        opacity: 0.2;
+        font-size: 2rem;
+        opacity: 0.15;
+        color: var(--bmc-accent);
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--bmc-text-primary);
     }
 
     p {
         margin: 0;
         font-size: 0.85rem;
+        max-width: 480px;
+        text-align: center;
+        line-height: 1.5;
     }
 }
 

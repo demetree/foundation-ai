@@ -186,13 +186,75 @@
                     <i class="fas fa-chart-line"></i>
                     <span class="terminal-name">BRICKBERG TERMINAL</span>
                 </div>
-                <div class="terminal-status" *ngIf="brickbergData">
-                    <span class="source-dot" [class.connected]="brickbergData.brickLink?.connected"
-                        title="BrickLink">BL</span>
-                    <span class="source-dot" [class.connected]="brickbergData.brickEconomy?.connected"
-                        title="BrickEconomy">BE</span>
-                    <span class="source-dot" [class.connected]="brickbergData.brickOwl?.connected"
-                        title="Brick Owl">BO</span>
+                <div class="terminal-header-right">
+                    <div class="terminal-status" *ngIf="brickbergData">
+                        <span class="source-dot" [class.connected]="brickbergData.brickLink?.connected"
+                            title="BrickLink">BL</span>
+                        <span class="source-dot" [class.connected]="brickbergData.brickEconomy?.connected"
+                            title="BrickEconomy">BE</span>
+                        <span class="source-dot" [class.connected]="brickbergData.brickOwl?.connected"
+                            title="Brick Owl">BO</span>
+                    </div>
+                    <button class="terminal-help-btn" (click)="brickbergHelpOpen = !brickbergHelpOpen"
+                        [class.active]="brickbergHelpOpen" title="What is the Brickberg Terminal?">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Help / Onboarding Panel (toggled) -->
+            <div class="terminal-onboarding" *ngIf="brickbergHelpOpen">
+                <div class="onboarding-header">
+                    <h3>What is the Brickberg Terminal?</h3>
+                    <p>The Brickberg Terminal aggregates real-time market data from three LEGO marketplace integrations,
+                        giving you a unified financial view of any set.</p>
+                </div>
+                <div class="onboarding-sources">
+                    <div class="onboarding-source bl">
+                        <div class="onboarding-icon"><i class="fas fa-table"></i></div>
+                        <div class="onboarding-info">
+                            <h4>BrickLink</h4>
+                            <p>Secondary market price guide — average, min, and max prices for new and used sets based
+                                on recent sales.</p>
+                            <span class="onboarding-status" *ngIf="brickbergData?.brickLink?.connected">
+                                <i class="fas fa-check-circle"></i> Connected
+                            </span>
+                            <a *ngIf="!brickbergData?.brickLink?.connected" routerLink="/integrations"
+                                class="onboarding-action">
+                                <i class="fas fa-plug"></i> Connect BrickLink
+                            </a>
+                        </div>
+                    </div>
+                    <div class="onboarding-source be">
+                        <div class="onboarding-icon"><i class="fas fa-chart-bar"></i></div>
+                        <div class="onboarding-info">
+                            <h4>BrickEconomy</h4>
+                            <p>AI-powered valuation — estimated market value, growth trends, investment grade, and price
+                                forecasts.</p>
+                            <span class="onboarding-status" *ngIf="brickbergData?.brickEconomy?.connected">
+                                <i class="fas fa-check-circle"></i> Connected
+                            </span>
+                            <a *ngIf="!brickbergData?.brickEconomy?.connected" routerLink="/integrations"
+                                class="onboarding-action">
+                                <i class="fas fa-plug"></i> Connect BrickEconomy
+                            </a>
+                        </div>
+                    </div>
+                    <div class="onboarding-source bo">
+                        <div class="onboarding-icon"><i class="fas fa-store"></i></div>
+                        <div class="onboarding-info">
+                            <h4>Brick Owl</h4>
+                            <p>Marketplace availability — how many stores currently stock this set and the lowest listed
+                                price.</p>
+                            <span class="onboarding-status" *ngIf="brickbergData?.brickOwl?.connected">
+                                <i class="fas fa-check-circle"></i> Connected
+                            </span>
+                            <a *ngIf="!brickbergData?.brickOwl?.connected" routerLink="/integrations"
+                                class="onboarding-action">
+                                <i class="fas fa-plug"></i> Connect Brick Owl
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -201,13 +263,16 @@
                 <div class="terminal-skeleton"></div>
             </div>
 
-            <!-- No sources connected -->
-            <div *ngIf="!brickbergLoading && brickbergData && !hasAnyBrickbergSource()" class="terminal-empty">
-                <i class="fas fa-plug"></i>
-                <p>Connect at least one marketplace integration to see market data.</p>
-                <a routerLink="/integrations" class="terminal-connect-link">
-                    <i class="fas fa-cog"></i> Manage Integrations
-                </a>
+            <!-- No sources connected — show onboarding automatically -->
+            <div *ngIf="!brickbergLoading && brickbergData && !hasAnyBrickbergSource() && !brickbergHelpOpen"
+                class="terminal-empty">
+                <i class="fas fa-chart-line"></i>
+                <h3>Unlock Market Intelligence</h3>
+                <p>Connect marketplace integrations to see real-time pricing, valuations, and availability data for
+                    every LEGO set.</p>
+                <button class="terminal-connect-link" (click)="brickbergHelpOpen = true">
+                    <i class="fas fa-info-circle"></i> Learn More
+                </button>
             </div>
 
             <!-- Dashboard content -->

@@ -45,6 +45,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     // ── Brickberg Terminal state ──
     brickbergData: any = null;
     brickbergLoading = false;
+    brickbergHelpOpen = false;
 
     get isInComparison(): boolean {
         return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
