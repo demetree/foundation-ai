@@ -1,0 +1,167 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">
+                        <i class="fa-solid fa-receipt me-2"></i>Transactions
+                    </h3>
+                    <small class="text-white-50">Income and expense records</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Type Filter Tabs -->
+                <div class="btn-group me-3">
+                    <button class="btn btn-sm" [ngClass]="filterType === 'all' ? 'btn-glass-active' : 'btn-glass'"
+                        (click)="setTypeFilter('all')">
+                        All <span class="badge badge-glass-sm ms-1">{{ totalCount }}</span>
+                    </button>
+                    <button class="btn btn-sm" [ngClass]="filterType === 'income' ? 'btn-glass-active' : 'btn-glass'"
+                        (click)="setTypeFilter('income')">
+                        <i class="fa-solid fa-arrow-down me-1"></i>Income <span class="badge badge-glass-sm ms-1">{{
+                            incomeCount }}</span>
+                    </button>
+                    <button class="btn btn-sm" [ngClass]="filterType === 'expense' ? 'btn-glass-active' : 'btn-glass'"
+                        (click)="setTypeFilter('expense')">
+                        <i class="fa-solid fa-arrow-up me-1"></i>Expense <span class="badge badge-glass-sm ms-1">{{
+                            expenseCount }}</span>
+                    </button>
+                </div>
+
+                <!-- Category Filter -->
+                <select class="form-select form-select-sm glass-select me-2" [(ngModel)]="filterCategoryId"
+                    (ngModelChange)="onFilterChange()" style="max-width: 200px;">
+                    <option [ngValue]="null">All Categories</option>
+                    <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
+                </select>
+
+                <!-- Search -->
+                <div class="search-bar position-relative">
+                    <i class="fa fa-search search-icon text-white-50"></i>
+                    <input type="text" class="form-control search-input glass-input" placeholder="Search..."
+                        [(ngModel)]="filterText" (ngModelChange)="onFilterChange()">
+                    <button *ngIf="filterText" class="clear-search btn text-white"
+                        (click)="filterText=''; onFilterChange()" title="Clear Search">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm text-center py-5" *ngIf="!isLoading && filteredTransactions.length === 0">
+        <div class="card-body">
+            <i class="fa-solid fa-receipt fa-3x text-muted opacity-25 mb-3"></i>
+            <h5 class="text-muted">No Transactions Found</h5>
+            <p class="text-muted" *ngIf="filterText || filterType !== 'all' || filterCategoryId">
+                Try adjusting your filters.
+            </p>
+            <p class="text-muted" *ngIf="!filterText && filterType === 'all' && !filterCategoryId">
+                No financial transactions have been recorded yet.
+            </p>
+        </div>
+    </div>
+
+    <!-- Transaction Table (Desktop) -->
+    <div class="card border-0 shadow-sm" *ngIf="!isLoading && filteredTransactions.length > 0 && !isSmallScreen">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 sortable" (click)="sortBy('transactionDate')">
+                            Date <i class="fa-solid ms-1" [ngClass]="getSortIcon('transactionDate')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('category')">
+                            Category <i class="fa-solid ms-1" [ngClass]="getSortIcon('category')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('description')">
+                            Description <i class="fa-solid ms-1" [ngClass]="getSortIcon('description')"></i>
+                        </th>
+                        <th>Method</th>
+                        <th>Reference</th>
+                        <th class="text-end sortable" (click)="sortBy('totalAmount')">
+                            Amount <i class="fa-solid ms-1" [ngClass]="getSortIcon('totalAmount')"></i>
+                        </th>
+                        <th class="text-end pe-4">Tax</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let tx of filteredTransactions; trackBy: trackById" class="tx-row">
+                        <td class="ps-4">
+                            <span class="fw-medium">{{ tx.transactionDate | date:'mediumDate' }}</span>
+                        </td>
+                        <td>
+                            <span class="badge category-badge" *ngIf="tx.financialCategory"
+                                [ngClass]="tx.isRevenue ? 'category-income' : 'category-expense'">
+                                {{ tx.financialCategory.name }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 300px;">{{ tx.description }}</div>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ tx.paymentMethod || '—' }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ tx.referenceNumber || '—' }}</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold" [ngClass]="tx.isRevenue ? 'text-success' : 'text-danger'">
+                                {{ tx.isRevenue ? '+' : '-' }}{{ tx.totalAmount | currency:'CAD':'symbol':'1.2-2' }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <span class="text-muted small">{{ tx.taxAmount | currency:'CAD':'symbol':'1.2-2' }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer with count -->
+        <div class="card-footer bg-white border-top py-2 px-4">
+            <small class="text-muted">
+                Showing {{ filteredTransactions.length }} of {{ totalCount }} transactions
+            </small>
+        </div>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div *ngIf="!isLoading && filteredTransactions.length > 0 && isSmallScreen">
+        <div class="card border-0 shadow-sm mb-2" *ngFor="let tx of filteredTransactions; trackBy: trackById">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-medium">{{ tx.description || 'Transaction' }}</div>
+                        <small class="text-muted">{{ tx.transactionDate | date:'mediumDate' }}</small>
+                        <span class="badge category-badge ms-1"
+                            [ngClass]="tx.isRevenue ? 'category-income' : 'category-expense'"
+                            *ngIf="tx.financialCategory">
+                            {{ tx.financialCategory.name }}
+                        </span>
+                    </div>
+                    <span class="fw-bold" [ngClass]="tx.isRevenue ? 'text-success' : 'text-danger'">
+                        {{ tx.isRevenue ? '+' : '-' }}{{ tx.totalAmount | currency:'CAD':'symbol':'1.2-2' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -23,6 +23,7 @@ import { AlertService, MessageSeverity } from '../../services/alert.service';
 export class SetDetailComponent implements OnInit, OnDestroy {
     @ViewChild('colourDonut', { static: false }) colourDonutRef!: ElementRef;
     @ViewChild('categoryBar', { static: false }) categoryBarRef!: ElementRef;
+    @ViewChild('priceHistoryChart', { static: false }) priceHistoryRef!: ElementRef;
 
     set: LegoSetData | null = null;
     parts: LegoSetPartData[] = [];
@@ -46,6 +47,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     brickbergData: any = null;
     brickbergLoading = false;
     brickbergHelpOpen = false;
+    priceMatrixTab: 'sold' | 'stock' = 'sold';
 
     get isInComparison(): boolean {
         return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
@@ -629,6 +631,8 @@ export class SetDetailComponent implements OnInit, OnDestroy {
             next: (data) => {
                 this.brickbergData = data;
                 this.brickbergLoading = false;
+                // Render price chart after DOM updates
+                setTimeout(() => this.renderPriceHistory(), 100);
             },
             error: () => {
                 this.brickbergLoading = false;
@@ -674,5 +678,150 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         return this.brickbergData.brickLink?.connected ||
             this.brickbergData.brickEconomy?.connected ||
             this.brickbergData.brickOwl?.connected;
+    }
+
+
+    // ── Price History D3 Chart ────────────────────────────
+    private renderPriceHistory(): void {
+        if (!this.priceHistoryRef) return;
+        const events: any[] = this.brickbergData?.valuation?.price_events;
+        if (!events || events.length === 0) return;
+
+        const el = this.priceHistoryRef.nativeElement;
+        d3.select(el).selectAll('*').remove();
+
+        // Parse events into data points
+        const parseDate = d3.timeParse('%Y-%m-%d');
+        const data = events
+            .filter((e: any) => e.date && e.price != null)
+            .map((e: any) => ({
+                date: parseDate(e.date) ?? new Date(e.date),
+                price: +e.price,
+                event: e.event ?? ''
+            }))
+            .sort((a: any, b: any) => a.date.getTime() - b.date.getTime());
+
+        if (data.length < 2) return;
+
+        const margin = { top: 20, right: 24, bottom: 40, left: 60 };
+        const width = Math.min(el.clientWidth || 600, 800) - margin.left - margin.right;
+        const height = 200 - margin.top - margin.bottom;
+
+        const svg = d3.select(el)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleTime()
+            .domain(d3.extent(data, (d: any) => d.date) as [Date, Date])
+            .range([0, width]);
+
+        const yMin = d3.min(data, (d: any) => d.price) ?? 0;
+        const yMax = d3.max(data, (d: any) => d.price) ?? 100;
+        const yPad = (yMax - yMin) * 0.15 || 10;
+
+        const y = d3.scaleLinear()
+            .domain([Math.max(0, yMin - yPad), yMax + yPad])
+            .range([height, 0]);
+
+        // Grid lines
+        svg.append('g')
+            .attr('class', 'grid-lines')
+            .selectAll('line')
+            .data(y.ticks(5))
+            .enter()
+            .append('line')
+            .attr('x1', 0)
+            .attr('x2', width)
+            .attr('y1', (d: any) => y(d))
+            .attr('y2', (d: any) => y(d))
+            .attr('stroke', 'var(--bmc-glass-border)')
+            .attr('stroke-dasharray', '3,3')
+            .attr('opacity', 0.5);
+
+        // Gradient fill under line
+        const areaGradient = svg.append('defs').append('linearGradient')
+            .attr('id', 'price-area-gradient')
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+        areaGradient.append('stop').attr('offset', '0%').attr('stop-color', '#00B894').attr('stop-opacity', 0.3);
+        areaGradient.append('stop').attr('offset', '100%').attr('stop-color', '#00B894').attr('stop-opacity', 0.02);
+
+        const area = d3.area<any>()
+            .x((d: any) => x(d.date))
+            .y0(height)
+            .y1((d: any) => y(d.price))
+            .curve(d3.curveMonotoneX);
+
+        svg.append('path')
+            .datum(data)
+            .attr('fill', 'url(#price-area-gradient)')
+            .attr('d', area);
+
+        // Price line
+        const line = d3.line<any>()
+            .x((d: any) => x(d.date))
+            .y((d: any) => y(d.price))
+            .curve(d3.curveMonotoneX);
+
+        svg.append('path')
+            .datum(data)
+            .attr('fill', 'none')
+            .attr('stroke', '#00B894')
+            .attr('stroke-width', 2.5)
+            .attr('d', line);
+
+        // Retail price reference line
+        const retailPrice = this.brickbergData?.valuation?.retail_price;
+        if (retailPrice && retailPrice > 0) {
+            svg.append('line')
+                .attr('x1', 0).attr('x2', width)
+                .attr('y1', y(retailPrice)).attr('y2', y(retailPrice))
+                .attr('stroke', '#FDCB6E')
+                .attr('stroke-width', 1.5)
+                .attr('stroke-dasharray', '6,4')
+                .attr('opacity', 0.7);
+
+            svg.append('text')
+                .attr('x', width - 4)
+                .attr('y', y(retailPrice) - 6)
+                .attr('text-anchor', 'end')
+                .attr('fill', '#FDCB6E')
+                .style('font-size', '0.62rem')
+                .style('font-weight', '600')
+                .text(`Retail $${retailPrice}`);
+        }
+
+        // Data point dots
+        svg.selectAll('.data-dot')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'data-dot')
+            .attr('cx', (d: any) => x(d.date))
+            .attr('cy', (d: any) => y(d.price))
+            .attr('r', 3.5)
+            .attr('fill', '#00B894')
+            .attr('stroke', 'var(--bmc-glass-bg)')
+            .attr('stroke-width', 2);
+
+        // Axes
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat('%b %Y') as any))
+            .selectAll('text')
+            .style('fill', 'var(--bmc-text-secondary)')
+            .style('font-size', '0.62rem');
+
+        svg.append('g')
+            .call(d3.axisLeft(y).ticks(5).tickFormat((d: any) => `$${d}`))
+            .selectAll('text')
+            .style('fill', 'var(--bmc-text-secondary)')
+            .style('font-size', '0.65rem');
+
+        svg.selectAll('.domain, .tick line')
+            .attr('stroke', 'var(--bmc-glass-border)');
     }
 }

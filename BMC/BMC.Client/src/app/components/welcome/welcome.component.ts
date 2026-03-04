@@ -135,6 +135,23 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             route: '/dashboard',
             gradient: 'designer-gradient',
             accentColor: '#8b5cf6'
+        },
+        {
+            id: 'investor',
+            icon: 'fas fa-chart-line',
+            title: 'Brickberg Terminal',
+            subtitle: 'LEGO Financial Intelligence',
+            description: 'Track your portfolio value, monitor market trends, compare investments, and get real-time pricing across BrickLink, BrickEconomy, and Brick Owl.',
+            features: [
+                { name: 'Portfolio', route: '/brickberg' },
+                { name: 'Market Movers', route: '/brickberg' },
+                { name: 'Quick Lookup', route: '/brickberg' },
+                { name: 'Integration Health', route: '/brickberg' }
+            ],
+            ctaLabel: 'Open Terminal',
+            route: '/brickberg',
+            gradient: 'brickberg-gradient',
+            accentColor: '#00B894'
         }
     ];
 
@@ -153,7 +170,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-layer-group', title: 'My Collection', description: 'Track your sets', route: '/my-collection', gradient: 'gradient-amber' },
         { icon: 'fas fa-exchange-alt', title: 'Compare Sets', description: 'Side by side', route: '/lego/compare', gradient: 'gradient-indigo' },
         { icon: 'fas fa-palette', title: 'Colours', description: 'Brick colours', route: '/colours', gradient: 'gradient-rainbow' },
-        { icon: 'fas fa-robot', title: 'AI Assistant', description: 'Intelligent search', route: '/ai', gradient: 'gradient-cyan' }
+        { icon: 'fas fa-robot', title: 'AI Assistant', description: 'Intelligent search', route: '/ai', gradient: 'gradient-cyan' },
+        { icon: 'fas fa-chart-line', title: 'Brickberg', description: 'LEGO financial terminal', route: '/brickberg', gradient: 'gradient-green' }
     ];
 
 

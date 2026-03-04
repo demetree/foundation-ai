@@ -1761,6 +1761,50 @@ $bo-accent: #6C5CE7; // Brick Owl purple
     padding: 16px 20px;
 }
 
+// ── Price Matrix Tabs (Sold / For Sale) ──
+.price-matrix-tabs {
+    display: inline-flex;
+    margin-left: auto;
+    gap: 0;
+    background: var(--bmc-glass-bg);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.pm-tab {
+    padding: 3px 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+
+    &:not(:last-child) {
+        border-right: 1px solid var(--bmc-glass-border);
+    }
+
+    &:hover:not(.active) {
+        color: var(--bmc-text-primary);
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.06);
+    }
+
+    &.active {
+        color: #fff;
+        background: $bl-accent;
+    }
+}
+
+.card-header.bl-accent {
+    display: flex;
+    align-items: center;
+}
+
 // ── Price Table ──
 .price-table {
     width: 100%;
@@ -1902,6 +1946,21 @@ $bo-accent: #6C5CE7; // Brick Owl purple
     border-top: 1px solid var(--bmc-glass-border);
     padding-top: 12px;
     margin-top: 8px;
+}
+
+// ── Price History Chart ──
+.price-history-section {
+    border-top: 1px solid var(--bmc-glass-border);
+}
+
+.price-history-chart {
+    padding: 16px 20px;
+    min-height: 200px;
+
+    svg {
+        display: block;
+        width: 100%;
+    }
 }
 
 .best-source {

@@ -1089,6 +1089,49 @@ namespace Foundation.Scheduler.CodeGeneration
 
                     context.SaveChanges();
                 }
+
+
+                //
+                // Tax Codes
+                //
+                TaxCode hstTaxCode = (from tc in context.TaxCodes where tc.code == "HST" && tc.tenantGuid == PHMCTenantGuid select tc).FirstOrDefault();
+
+                if (hstTaxCode == null)
+                {
+                    hstTaxCode = new TaxCode();
+
+                    hstTaxCode.tenantGuid = PHMCTenantGuid;
+                    hstTaxCode.name = "HST (NL)";
+                    hstTaxCode.description = "Harmonized Sales Tax - Newfoundland and Labrador (15%)";
+                    hstTaxCode.code = "HST";
+                    hstTaxCode.rate = 15.0m;
+                    hstTaxCode.isDefault = true;
+                    hstTaxCode.isExempt = false;
+                    hstTaxCode.sequence = 1;
+                    hstTaxCode.objectGuid = Guid.NewGuid();
+                    hstTaxCode.active = true;
+                    hstTaxCode.deleted = false;
+
+                    context.TaxCodes.Add(hstTaxCode);
+
+                    TaxCode exemptTaxCode = new TaxCode();
+
+                    exemptTaxCode.tenantGuid = PHMCTenantGuid;
+                    exemptTaxCode.name = "Exempt";
+                    exemptTaxCode.description = "Tax exempt";
+                    exemptTaxCode.code = "EXEMPT";
+                    exemptTaxCode.rate = 0;
+                    exemptTaxCode.isDefault = false;
+                    exemptTaxCode.isExempt = true;
+                    exemptTaxCode.sequence = 2;
+                    exemptTaxCode.objectGuid = Guid.NewGuid();
+                    exemptTaxCode.active = true;
+                    exemptTaxCode.deleted = false;
+
+                    context.TaxCodes.Add(exemptTaxCode);
+
+                    context.SaveChanges();
+                }
             }
         }
 

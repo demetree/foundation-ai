@@ -43,6 +43,8 @@ import { ScheduledEventBasicListData } from '../../../scheduler-data-services/sc
 import { ConflictDetectionService } from '../../../services/conflict-detection.service';
 import { InputDialogService } from '../../../services/input-dialog.service';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
+import { EventChargeService, EventChargeData } from '../../../scheduler-data-services/event-charge.service';
+import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
 
 @Component({
   selector: 'app-event-add-edit-modal',
@@ -142,6 +144,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
 
+  // Financials tab state (lazy-loaded)
+  eventCharges: EventChargeData[] = [];
+  eventTransactions: FinancialTransactionData[] = [];
+  financialsLoaded = false;
+  loadingFinancials = false;
+  financialsTotal = { charges: 0, income: 0, expenses: 0, net: 0 };
+
   // Track whether the user has manually set the end date
   private endDateManuallySet = false;
 
@@ -180,7 +189,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private resourceAvailabilityService: ResourceAvailabilityService,
     private resourceShiftService: ResourceShiftService,
     private resourceScheduleContextService: ResourceScheduleContextService,
-    private schedulerHelperService: SchedulerHelperService
+    private schedulerHelperService: SchedulerHelperService,
+    private eventChargeService: EventChargeService,
+    private financialTransactionService: FinancialTransactionService
   ) {
     this.buildForm();
   }
@@ -359,6 +370,50 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // -------------------------------------------------------------------------
   setActiveTab(tab: string): void {
     this.activeTab = tab;
+    if (tab === 'financials' && !this.financialsLoaded && this.isEditMode) {
+      this.loadEventFinancials();
+    }
+  }
+
+  private loadEventFinancials(): void {
+    if (!this.event || this.loadingFinancials) return;
+    this.loadingFinancials = true;
+
+    forkJoin({
+      charges: this.eventChargeService.GetEventChargeList({
+        scheduledEventId: this.event.id,
+        active: true,
+        includeRelations: true
+      }),
+      transactions: this.financialTransactionService.GetFinancialTransactionList({
+        scheduledEventId: this.event.id,
+        active: true,
+        includeRelations: true
+      })
+    }).subscribe({
+      next: (data: any) => {
+        this.eventCharges = data.charges;
+        this.eventTransactions = data.transactions;
+        this.financialsLoaded = true;
+        this.loadingFinancials = false;
+
+        // Calculate totals
+        this.financialsTotal.charges = this.eventCharges.reduce(
+          (sum: number, c: any) => sum + (Number(c.extendedAmount) || 0), 0
+        );
+        this.financialsTotal.income = this.eventTransactions
+          .filter((t: any) => t.isRevenue === true)
+          .reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0);
+        this.financialsTotal.expenses = this.eventTransactions
+          .filter((t: any) => t.isRevenue === false)
+          .reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0);
+        this.financialsTotal.net = this.financialsTotal.income - this.financialsTotal.expenses;
+      },
+      error: () => {
+        this.loadingFinancials = false;
+        this.alertService.showMessage('Failed to load financial data', '', MessageSeverity.error);
+      }
+    });
   }
 
   // -------------------------------------------------------------------------

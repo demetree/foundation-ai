@@ -68,6 +68,15 @@
         </span>
       </button>
     </li>
+    <li class="nav-item" *ngIf="isEditMode">
+      <button class="nav-link" [class.active]="activeTab === 'financials'" (click)="setActiveTab('financials')">
+        <i class="bi bi-wallet2 me-1"></i>Financials
+        <span class="badge bg-success-subtle text-success ms-1"
+          *ngIf="financialsLoaded && (eventCharges.length + eventTransactions.length) > 0">
+          {{ eventCharges.length + eventTransactions.length }}
+        </span>
+      </button>
+    </li>
   </ul>
 
   <form [formGroup]="eventForm">
@@ -618,6 +627,128 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- FINANCIALS TAB -->
+    <!-- ============================================================== -->
+    <div class="tab-pane-content" *ngIf="activeTab === 'financials'">
+
+      <!-- Loading State -->
+      <div class="text-center py-4" *ngIf="loadingFinancials">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-2 small">Loading financial data...</p>
+      </div>
+
+      <div *ngIf="financialsLoaded && !loadingFinancials">
+        <!-- Summary Cards -->
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="card border-0 bg-light text-center py-2 px-1">
+              <small class="text-muted text-uppercase"
+                style="font-size: 0.65rem; letter-spacing: 0.5px;">Charges</small>
+              <strong class="text-primary">{{ financialsTotal.charges | currency:'USD':'symbol':'1.2-2' }}</strong>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card border-0 bg-light text-center py-2 px-1">
+              <small class="text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Income</small>
+              <strong class="text-success">{{ financialsTotal.income | currency:'USD':'symbol':'1.2-2' }}</strong>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card border-0 bg-light text-center py-2 px-1">
+              <small class="text-muted text-uppercase"
+                style="font-size: 0.65rem; letter-spacing: 0.5px;">Expenses</small>
+              <strong class="text-danger">{{ financialsTotal.expenses | currency:'USD':'symbol':'1.2-2' }}</strong>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card border-0 bg-light text-center py-2 px-1">
+              <small class="text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Net</small>
+              <strong [class.text-success]="financialsTotal.net >= 0" [class.text-danger]="financialsTotal.net < 0">
+                {{ financialsTotal.net | currency:'USD':'symbol':'1.2-2' }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Charges -->
+        <div class="mb-4" *ngIf="eventCharges.length > 0">
+          <h6 class="fw-semibold mb-2">
+            <i class="bi bi-receipt me-2 text-primary"></i>Event Charges
+          </h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Charge Type</th>
+                  <th>Description</th>
+                  <th class="text-end">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let charge of eventCharges">
+                  <td>{{ charge.chargeType?.name || '—' }}</td>
+                  <td>{{ charge.notes || '—' }}</td>
+                  <td class="text-end fw-semibold">{{ charge.extendedAmount | currency:'USD':'symbol':'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Financial Transactions -->
+        <div class="mb-3" *ngIf="eventTransactions.length > 0">
+          <h6 class="fw-semibold mb-2">
+            <i class="bi bi-journal-text me-2 text-success"></i>Financial Transactions
+          </h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Type</th>
+                  <th class="text-end">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let txn of eventTransactions">
+                  <td>{{ txn.transactionDate | date:'shortDate' }}</td>
+                  <td>{{ txn.financialCategory?.name || '—' }}</td>
+                  <td>{{ txn.description || '—' }}</td>
+                  <td>
+                    <span class="badge" [class.bg-success-subtle]="txn.isRevenue" [class.text-success]="txn.isRevenue"
+                      [class.bg-danger-subtle]="!txn.isRevenue" [class.text-danger]="!txn.isRevenue">
+                      {{ txn.isRevenue ? 'Income' : 'Expense' }}
+                    </span>
+                  </td>
+                  <td class="text-end fw-semibold" [class.text-success]="txn.isRevenue"
+                    [class.text-danger]="!txn.isRevenue">
+                    {{ !txn.isRevenue ? '-' : '+' }}{{ txn.amount | currency:'USD':'symbol':'1.2-2'
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state py-4" *ngIf="eventCharges.length === 0 && eventTransactions.length === 0">
+          <i class="bi bi-wallet2 display-6 text-muted mb-2"></i>
+          <p class="text-muted small mb-1">No financial records linked to this event.</p>
+          <p class="text-muted small mb-0">
+            <a routerLink="/finances/transactions" (click)="activeModal.dismiss('navigate')">
+              View all transactions →
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   </form>
 </div>

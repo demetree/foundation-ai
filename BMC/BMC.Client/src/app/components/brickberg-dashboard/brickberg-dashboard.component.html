@@ -1,0 +1,239 @@
+<!-- AI-Generated: Brickberg Terminal — Bloomberg-inspired LEGO financial dashboard -->
+<div class="brickberg-page" @fadeInUp>
+
+    <!-- ══════════ Terminal Header ══════════ -->
+    <header class="bb-header">
+        <div class="bb-title">
+            <i class="fas fa-chart-line"></i>
+            <span class="bb-name">BRICKBERG TERMINAL</span>
+        </div>
+        <div class="bb-header-right">
+            <div class="bb-status-dots">
+                <span class="bb-dot" [class.connected]="integrationStatus?.brickLink?.connected"
+                    title="BrickLink">BL</span>
+                <span class="bb-dot" [class.connected]="integrationStatus?.brickEconomy?.connected"
+                    title="BrickEconomy">BE</span>
+                <span class="bb-dot" [class.connected]="integrationStatus?.brickOwl?.connected"
+                    title="Brick Owl">BO</span>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- ══════════ Quick Lookup Bar ══════════ -->
+    <section class="bb-lookup">
+        <div class="lookup-bar">
+            <i class="fas fa-search lookup-icon"></i>
+            <input type="text" class="lookup-input" placeholder="Enter set number (e.g. 42131-1)..."
+                [(ngModel)]="lookupSetNumber" (keydown)="onLookupKeydown($event)" />
+            <button class="lookup-go" (click)="performLookup()" [disabled]="lookupLoading || !lookupSetNumber.trim()">
+                <span *ngIf="!lookupLoading">GO</span>
+                <i *ngIf="lookupLoading" class="fas fa-spinner fa-spin"></i>
+            </button>
+        </div>
+
+        <!-- Lookup Result -->
+        <div class="lookup-result" *ngIf="lookupResult">
+            <div class="lookup-result-header">
+                <span class="lookup-set-number">{{ lookupSetNumber }}</span>
+                <button class="lookup-close" (click)="clearLookup()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="lookup-data-grid">
+                <div class="lookup-col" *ngIf="lookupResult.brickLink?.loaded">
+                    <span class="lookup-source bl-color">BrickLink</span>
+                    <div class="lookup-metric">
+                        <span class="lookup-label">Sold Avg (Used)</span>
+                        <span class="lookup-value">${{ lookupResult.priceGuideUsed?.avg_price | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="lookup-metric">
+                        <span class="lookup-label">For Sale (New)</span>
+                        <span class="lookup-value">${{ lookupResult.stockGuideNew?.avg_price | number:'1.2-2' }}</span>
+                    </div>
+                </div>
+                <div class="lookup-col" *ngIf="lookupResult.brickEconomy?.loaded">
+                    <span class="lookup-source be-color">BrickEconomy</span>
+                    <div class="lookup-metric">
+                        <span class="lookup-label">Current Value</span>
+                        <span class="lookup-value">${{ lookupResult.valuation?.current_value | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="lookup-metric">
+                        <span class="lookup-label">Growth</span>
+                        <span class="lookup-value"
+                            [class.positive]="(lookupResult.valuation?.growth_percentage ?? 0) >= 0"
+                            [class.negative]="(lookupResult.valuation?.growth_percentage ?? 0) < 0">
+                            {{ (lookupResult.valuation?.growth_percentage ?? 0) >= 0 ? '▲' : '▼' }}
+                            {{ lookupResult.valuation?.growth_percentage | number:'1.1-1' }}%
+                        </span>
+                    </div>
+                </div>
+                <div class="lookup-col" *ngIf="lookupResult.brickOwl?.loaded">
+                    <span class="lookup-source bo-color">Brick Owl</span>
+                    <div class="lookup-metric">
+                        <span class="lookup-label">Stores</span>
+                        <span class="lookup-value">{{ lookupResult.availability?.length ?? '—' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lookup-error" *ngIf="lookupError">
+            <i class="fas fa-exclamation-triangle"></i> {{ lookupError }}
+        </div>
+    </section>
+
+
+    <!-- ══════════ Main Grid ══════════ -->
+    <div class="bb-grid">
+
+        <!-- ── Portfolio Summary ── -->
+        <section class="bb-panel portfolio-panel">
+            <div class="panel-header">
+                <i class="fas fa-wallet"></i> Portfolio Summary
+            </div>
+            <div class="panel-body" *ngIf="!portfolioLoading && portfolio">
+                <div class="portfolio-hero">
+                    <div class="portfolio-total">
+                        <span class="portfolio-total-label">Total Collection Value</span>
+                        <span class="portfolio-total-value">${{ portfolio.totalValue | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="portfolio-meta">
+                        <span>{{ portfolio.totalSets }} sets owned</span>
+                        <span class="meta-sep">·</span>
+                        <span>{{ portfolio.valuedSets }} valued</span>
+                    </div>
+                </div>
+
+                <div class="portfolio-movers" *ngIf="portfolio.topGainers?.length > 0">
+                    <h4>Top Performers</h4>
+                    <div class="mover-row" *ngFor="let g of portfolio.topGainers">
+                        <span class="mover-set" (click)="openSet(g.setNumber)">{{ g.setNumber }}</span>
+                        <span class="mover-name">{{ g.name }}</span>
+                        <span class="mover-growth positive">▲ {{ g.growthPercentage | number:'1.1-1' }}%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-skeleton" *ngIf="portfolioLoading">
+                <div class="skeleton-block"></div>
+                <div class="skeleton-block short"></div>
+            </div>
+            <div class="panel-empty" *ngIf="!portfolioLoading && !portfolio">
+                <i class="fas fa-box-open"></i>
+                <p>No owned sets found. Mark sets as owned to see your portfolio value.</p>
+            </div>
+        </section>
+
+        <!-- ── Market Movers ── -->
+        <section class="bb-panel movers-panel">
+            <div class="panel-header">
+                <i class="fas fa-fire"></i> Market Movers
+            </div>
+            <div class="panel-body" *ngIf="!moversLoading && marketMovers">
+                <div class="movers-section">
+                    <h4 class="movers-heading gainers">
+                        <i class="fas fa-arrow-up"></i> Top Gainers
+                    </h4>
+                    <div class="mover-row" *ngFor="let g of marketMovers.gainers">
+                        <span class="mover-set" (click)="openSet(g.setNumber)">{{ g.setNumber }}</span>
+                        <span class="mover-name">{{ g.name }}</span>
+                        <span class="mover-growth positive">▲ {{ g.growthPercentage | number:'1.1-1' }}%</span>
+                    </div>
+                </div>
+                <div class="movers-section">
+                    <h4 class="movers-heading losers">
+                        <i class="fas fa-arrow-down"></i> Top Losers
+                    </h4>
+                    <div class="mover-row" *ngFor="let l of marketMovers.losers">
+                        <span class="mover-set" (click)="openSet(l.setNumber)">{{ l.setNumber }}</span>
+                        <span class="mover-name">{{ l.name }}</span>
+                        <span class="mover-growth negative">▼ {{ l.growthPercentage | number:'1.1-1' }}%</span>
+                    </div>
+                </div>
+                <div class="movers-section" *ngIf="marketMovers.recentlyRetired?.length > 0">
+                    <h4 class="movers-heading retired">
+                        <i class="fas fa-archive"></i> Recently Retired
+                    </h4>
+                    <div class="mover-row" *ngFor="let r of marketMovers.recentlyRetired">
+                        <span class="mover-set" (click)="openSet(r.setNumber)">{{ r.setNumber }}</span>
+                        <span class="mover-name">{{ r.name }}</span>
+                        <span class="mover-value" *ngIf="r.currentValue">${{ r.currentValue | number:'1.0-0' }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-skeleton" *ngIf="moversLoading">
+                <div class="skeleton-block"></div>
+                <div class="skeleton-block short"></div>
+            </div>
+            <div class="panel-empty" *ngIf="!moversLoading && !marketMovers?.gainers?.length">
+                <i class="fas fa-chart-bar"></i>
+                <p>No cached market data yet. Browse some sets to build up cache.</p>
+            </div>
+        </section>
+
+        <!-- ── Integration Health ── -->
+        <section class="bb-panel health-panel">
+            <div class="panel-header">
+                <i class="fas fa-plug"></i> Integration Health
+            </div>
+            <div class="panel-body" *ngIf="!statusLoading && integrationStatus">
+                <div class="integration-row" [class.connected]="integrationStatus.brickLink?.connected">
+                    <span class="integration-dot"></span>
+                    <span class="integration-name">BrickLink</span>
+                    <span class="integration-status">
+                        {{ integrationStatus.brickLink?.connected ? 'Connected' : 'Not connected' }}
+                    </span>
+                </div>
+                <div class="integration-row" [class.connected]="integrationStatus.brickEconomy?.connected">
+                    <span class="integration-dot"></span>
+                    <span class="integration-name">BrickEconomy</span>
+                    <span class="integration-status">
+                        {{ integrationStatus.brickEconomy?.connected ? 'Connected' : 'Not connected' }}
+                    </span>
+                </div>
+                <div class="integration-row" [class.connected]="integrationStatus.brickOwl?.connected">
+                    <span class="integration-dot"></span>
+                    <span class="integration-name">Brick Owl</span>
+                    <span class="integration-status">
+                        {{ integrationStatus.brickOwl?.connected ? 'Connected' : 'Not connected' }}
+                    </span>
+                </div>
+                <button class="manage-btn" (click)="goToIntegrations()">
+                    <i class="fas fa-cog"></i> Manage Integrations
+                </button>
+            </div>
+            <div class="panel-skeleton" *ngIf="statusLoading">
+                <div class="skeleton-block short"></div>
+            </div>
+        </section>
+
+        <!-- ── Cache Statistics ── -->
+        <section class="bb-panel cache-panel">
+            <div class="panel-header">
+                <i class="fas fa-database"></i> Cache Statistics
+            </div>
+            <div class="panel-body" *ngIf="!cacheLoading && cacheStats">
+                <div class="cache-row">
+                    <span class="cache-label">Cache Hits</span>
+                    <span class="cache-value positive">{{ cacheStats.hits | number }}</span>
+                </div>
+                <div class="cache-row">
+                    <span class="cache-label">Cache Misses</span>
+                    <span class="cache-value">{{ cacheStats.misses | number }}</span>
+                </div>
+                <div class="cache-row">
+                    <span class="cache-label">Active Entries</span>
+                    <span class="cache-value">{{ cacheStats.activeEntries | number }}</span>
+                </div>
+                <div class="cache-row">
+                    <span class="cache-label">Expired</span>
+                    <span class="cache-value">{{ cacheStats.expiredEntries | number }}</span>
+                </div>
+                <div class="cache-row">
+                    <span class="cache-label">Total Entries</span>
+                    <span class="cache-value">{{ cacheStats.totalEntries | number }}</span>
+                </div>
+            </div>
+            <div class="panel-skeleton" *ngIf="cacheLoading">
+                <div class="skeleton-block short"></div>
+            </div>
+        </section>
+    </div>
+</div>

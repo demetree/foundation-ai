@@ -38,7 +38,7 @@
         <h2 class="section-prompt">How would you like to use BMC today?</h2>
 
         <div class="pathway-grid">
-            <div class="pathway-card" *ngFor="let p of pathways; let i = index" [class]="p.gradient"
+            <div class="pathway-card" *ngFor="let p of pathways | slice:0:2; let i = index" [class]="p.gradient"
                 [style.animation-delay]="(i * 120) + 'ms'" (click)="selectPathway(p)">
 
                 <!-- Icon -->
@@ -64,6 +64,25 @@
                     {{ p.ctaLabel }} <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
+        </div>
+
+        <!-- Brickberg Terminal — full-width featured card -->
+        <div class="brickberg-featured" *ngIf="pathways[2] as bb" (click)="selectPathway(bb)">
+            <div class="pathway-icon-wrapper">
+                <i [class]="bb.icon" class="pathway-icon"></i>
+            </div>
+            <div class="pathway-body">
+                <h3 class="pathway-title">{{ bb.title }}</h3>
+                <span class="pathway-subtitle">{{ bb.subtitle }}</span>
+                <p class="pathway-description">{{ bb.description }}</p>
+                <div class="pathway-features">
+                    <button class="feature-pill" *ngFor="let f of bb.features"
+                        (click)="goToFeaturePill($event, f.route)">{{ f.name }}</button>
+                </div>
+            </div>
+            <button class="pathway-cta">
+                {{ bb.ctaLabel }} <i class="fas fa-arrow-right"></i>
+            </button>
         </div>
     </section>
 

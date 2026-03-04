@@ -1,0 +1,251 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-4 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">
+                        <i class="fa-solid fa-wallet me-2"></i>Finances
+                    </h3>
+                    <small class="text-white-50">Financial overview and management</small>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-glass btn-sm me-2" (click)="goToCategories()">
+                    <i class="fa-solid fa-layer-group me-1"></i> Categories
+                </button>
+                <button class="btn btn-glass btn-sm" (click)="goToTransactions()">
+                    <i class="fa-solid fa-list me-1"></i> All Transactions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading financial data...</span>
+        </div>
+        <p class="text-muted mt-3">Loading financial data...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <ng-container *ngIf="!isLoading">
+
+        <!-- Summary Cards Row -->
+        <div class="row g-3 mb-4">
+
+            <!-- Total Income -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 summary-card border-0 shadow-sm" (click)="goToTransactions()">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold ls-1">Total Income</small>
+                                <h3 class="mb-0 mt-2 text-success fw-bold">{{ totalIncome |
+                                    currency:'CAD':'symbol':'1.2-2' }}</h3>
+                                <small class="text-muted">All time revenue</small>
+                            </div>
+                            <div class="summary-icon income-icon">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-accent accent-success"></div>
+                </div>
+            </div>
+
+            <!-- Total Expenses -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 summary-card border-0 shadow-sm" (click)="goToTransactions()">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold ls-1">Total Expenses</small>
+                                <h3 class="mb-0 mt-2 text-danger fw-bold">{{ totalExpenses |
+                                    currency:'CAD':'symbol':'1.2-2' }}</h3>
+                                <small class="text-muted">All time expenses</small>
+                            </div>
+                            <div class="summary-icon expense-icon">
+                                <i class="fa-solid fa-arrow-trend-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-accent accent-danger"></div>
+                </div>
+            </div>
+
+            <!-- Net Balance -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 summary-card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold ls-1">Net Balance</small>
+                                <h3 class="mb-0 mt-2 fw-bold"
+                                    [ngClass]="netBalance >= 0 ? 'text-success' : 'text-danger'">
+                                    {{ netBalance | currency:'CAD':'symbol':'1.2-2' }}
+                                </h3>
+                                <small class="text-muted">Income minus expenses</small>
+                            </div>
+                            <div class="summary-icon balance-icon">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-accent" [ngClass]="netBalance >= 0 ? 'accent-success' : 'accent-danger'"></div>
+                </div>
+            </div>
+
+            <!-- Counts -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 summary-card border-0 shadow-sm" (click)="goToCategories()">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold ls-1">Records</small>
+                                <h3 class="mb-0 mt-2 text-primary fw-bold">{{ transactionCount }}</h3>
+                                <small class="text-muted">{{ categoryCount }} categories</small>
+                            </div>
+                            <div class="summary-icon records-icon">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-accent accent-primary"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Two Column Layout: Chart + Recent -->
+        <div class="row g-4">
+
+            <!-- Monthly Breakdown Chart -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fa-solid fa-chart-bar text-primary me-2"></i>
+                            {{ currentYear }} Monthly Breakdown
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <div class="chart-bars">
+                                <div class="month-group" *ngFor="let month of months; let i = index"
+                                    [ngClass]="{'current-month': i === getCurrentMonthIndex()}">
+                                    <div class="bar-pair">
+                                        <div class="bar income-bar" [style.height.%]="getBarHeight(monthlyIncome[i])"
+                                            [ngbTooltip]="'Income: ' + (monthlyIncome[i] | currency:'CAD':'symbol':'1.0-0')">
+                                        </div>
+                                        <div class="bar expense-bar" [style.height.%]="getBarHeight(monthlyExpenses[i])"
+                                            [ngbTooltip]="'Expenses: ' + (monthlyExpenses[i] | currency:'CAD':'symbol':'1.0-0')">
+                                        </div>
+                                    </div>
+                                    <span class="month-label">{{ month }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center gap-4 mt-3">
+                            <span class="legend-item">
+                                <span class="legend-dot income-dot"></span> Income
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-dot expense-dot"></span> Expenses
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>
+                            Recent Transactions
+                        </h6>
+                        <button class="btn btn-link btn-sm text-decoration-none p-0" (click)="goToTransactions()">
+                            View All <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+
+                        <!-- Loading -->
+                        <div class="text-center py-4" *ngIf="loadingRecent">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2 text-muted">Loading...</span>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="text-center py-5" *ngIf="!loadingRecent && recentTransactions.length === 0">
+                            <i class="fa-solid fa-receipt fa-3x text-muted opacity-25 mb-3"></i>
+                            <p class="text-muted">No transactions recorded yet.</p>
+                            <button class="btn btn-primary btn-sm" (click)="goToTransactions()">
+                                <i class="fa-solid fa-plus me-1"></i> Record Transaction
+                            </button>
+                        </div>
+
+                        <!-- Transaction List -->
+                        <div class="recent-list" *ngIf="!loadingRecent && recentTransactions.length > 0">
+                            <div class="recent-item" *ngFor="let tx of recentTransactions">
+                                <div class="d-flex align-items-center">
+                                    <div class="tx-icon me-3" [ngClass]="tx.isRevenue ? 'tx-income' : 'tx-expense'">
+                                        <i
+                                            [ngClass]="tx.isRevenue ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'"></i>
+                                    </div>
+                                    <div class="flex-grow-1 min-width-0">
+                                        <div class="fw-medium text-truncate">{{ tx.description || 'Transaction' }}</div>
+                                        <small class="text-muted">
+                                            {{ tx.transactionDate | date:'mediumDate' }}
+                                            <span *ngIf="tx.financialCategory" class="ms-1">
+                                                · {{ tx.financialCategory.name }}
+                                            </span>
+                                        </small>
+                                    </div>
+                                    <div class="text-end ms-2">
+                                        <span class="fw-bold" [ngClass]="tx.isRevenue ? 'text-success' : 'text-danger'">
+                                            {{ tx.isRevenue ? '+' : '-' }}{{ tx.totalAmount |
+                                            currency:'CAD':'symbol':'1.2-2' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row g-3 mt-3">
+            <div class="col-md-4">
+                <button class="btn btn-outline-success w-100 py-3 quick-action" (click)="goToTransactions()">
+                    <i class="fa-solid fa-plus-circle me-2"></i>
+                    Record Income
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-outline-danger w-100 py-3 quick-action" (click)="goToTransactions()">
+                    <i class="fa-solid fa-minus-circle me-2"></i>
+                    Record Expense
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-outline-primary w-100 py-3 quick-action" (click)="goToCategories()">
+                    <i class="fa-solid fa-layer-group me-2"></i>
+                    Manage Categories
+                </button>
+            </div>
+        </div>
+
+    </ng-container>
+</div>

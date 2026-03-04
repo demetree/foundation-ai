@@ -1,0 +1,274 @@
+.page-container {
+    background-color: #f4f6f9;
+    min-height: 100%;
+    padding: 1rem;
+}
+
+//
+// Premium Header — Finance gradient (teal/emerald)
+//
+$gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%);
+
+.premium-header {
+    background: $gradient-finance;
+    border-radius: 16px;
+    overflow: hidden;
+
+    .card-header {
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-left,
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-title {
+        color: white;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+        color: white;
+    }
+}
+
+//
+// Summary Cards
+//
+.summary-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+}
+
+.card-accent {
+    height: 4px;
+    width: 100%;
+}
+
+.accent-success {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.accent-danger {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.accent-primary {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.income-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.expense-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.balance-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.records-icon {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.ls-1 {
+    letter-spacing: 0.05em;
+}
+
+
+//
+// Monthly Chart
+//
+.chart-container {
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-bars {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 0 8px;
+}
+
+.month-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &.current-month .month-label {
+        font-weight: 700;
+        color: #3b82f6;
+    }
+}
+
+.bar-pair {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 170px;
+    width: 100%;
+    justify-content: center;
+}
+
+.bar {
+    width: 40%;
+    min-height: 2px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.6s ease;
+}
+
+.income-bar {
+    background: linear-gradient(180deg, #10b981, #34d399);
+}
+
+.expense-bar {
+    background: linear-gradient(180deg, #ef4444, #f87171);
+}
+
+.month-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-top: 6px;
+    text-transform: uppercase;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+.income-dot {
+    background: #10b981;
+}
+
+.expense-dot {
+    background: #ef4444;
+}
+
+
+//
+// Recent Transactions
+//
+.recent-list {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.recent-item {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #f9fafb;
+    }
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.tx-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.tx-income {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.tx-expense {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.min-width-0 {
+    min-width: 0;
+}
+
+
+//
+// Quick Actions
+//
+.quick-action {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+}

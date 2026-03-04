@@ -249,6 +249,91 @@
             box-shadow: 0 20px 60px rgba(139, 92, 246, 0.15);
         }
     }
+
+    //
+    // Brickberg Terminal — green/teal gradient card
+    //
+    &.brickberg-gradient {
+        background: linear-gradient(145deg,
+                rgba(0, 184, 148, 0.12) 0%,
+                rgba(0, 206, 201, 0.08) 100%);
+        border: 1px solid rgba(0, 184, 148, 0.2);
+
+        .pathway-icon-wrapper {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+        }
+
+        .pathway-cta {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+        }
+
+        .feature-pill {
+            background: rgba(0, 184, 148, 0.12);
+            color: #00b894;
+        }
+
+        &:hover {
+            border-color: rgba(0, 184, 148, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 184, 148, 0.15);
+        }
+    }
+}
+
+
+/* ── Full-Width Brickberg Featured Card ─────────────────────── */
+.brickberg-featured {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 20px;
+    padding: 28px 32px;
+    border-radius: var(--radius-lg, 16px);
+    cursor: pointer;
+    animation: fadeSlideIn 0.6s ease-out both;
+    animation-delay: 240ms;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+
+    // Brickberg green gradient
+    background: linear-gradient(145deg,
+            rgba(0, 184, 148, 0.12) 0%,
+            rgba(0, 206, 201, 0.08) 100%);
+    border: 1px solid rgba(0, 184, 148, 0.2);
+
+    &:hover {
+        transform: translateY(-4px);
+        border-color: rgba(0, 184, 148, 0.4);
+        box-shadow: 0 20px 60px rgba(0, 184, 148, 0.15);
+
+        .pathway-cta {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .pathway-icon-wrapper {
+            transform: scale(1.08);
+        }
+    }
+
+    .pathway-icon-wrapper {
+        background: linear-gradient(135deg, #00b894, #00cec9);
+    }
+
+    .pathway-cta {
+        background: linear-gradient(135deg, #00b894, #00cec9);
+        white-space: nowrap;
+    }
+
+    .feature-pill {
+        background: rgba(0, 184, 148, 0.12);
+        color: #00b894;
+    }
+
+    .pathway-body {
+        margin-top: 0;
+        align-items: flex-start;
+        text-align: left;
+    }
 }
 
 

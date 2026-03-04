@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Foundation.Auditor;
 using Foundation.Controllers;
@@ -74,6 +77,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             public BrickbergSourceStatus brickOwl { get; set; } = new();
             public object priceGuideNew { get; set; }
             public object priceGuideUsed { get; set; }
+            public object stockGuideNew { get; set; }
+            public object stockGuideUsed { get; set; }
             public object valuation { get; set; }
             public object availability { get; set; }
             public string brickOwlBoid { get; set; }
@@ -85,6 +90,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             public BrickbergSourceStatus brickEconomy { get; set; } = new();
             public object priceGuideNew { get; set; }
             public object priceGuideUsed { get; set; }
+            public object stockGuideNew { get; set; }
+            public object stockGuideUsed { get; set; }
             public object valuation { get; set; }
         }
 
@@ -132,9 +139,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             // Each source is wrapped in cache-aware fetch: on cache hit, the API client
             // is not used and no quota is consumed.
 
-            // BrickLink: new + used sold price guides (cached independently per condition)
+            // BrickLink: new + used price guides for both sold and stock (cached independently)
             object localPriceNew = null;
             object localPriceUsed = null;
+            object localStockNew = null;
+            object localStockUsed = null;
             bool blLoaded = false;
             string blError = null;
 
@@ -145,20 +154,34 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (blClient)
                     {
-                        var newTask = _cacheService.GetOrFetchAsync<object>(
+                        // Sold price guides (last 6 months of completed sales)
+                        var soldNewTask = _cacheService.GetOrFetchAsync<object>(
                             "BrickLink", "SET", setNumber, "N",
                             () => blClient.GetPriceGuideAsync("SET", setNumber, null, "sold", "N", null, null),
                             cancellationToken);
 
-                        var usedTask = _cacheService.GetOrFetchAsync<object>(
+                        var soldUsedTask = _cacheService.GetOrFetchAsync<object>(
                             "BrickLink", "SET", setNumber, "U",
                             () => blClient.GetPriceGuideAsync("SET", setNumber, null, "sold", "U", null, null),
                             cancellationToken);
 
-                        await Task.WhenAll(newTask, usedTask);
+                        // Stock price guides (currently for sale — the "order book")
+                        var stockNewTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "SET", setNumber, "SN",
+                            () => blClient.GetPriceGuideAsync("SET", setNumber, null, "stock", "N", null, null),
+                            cancellationToken);
 
-                        localPriceNew = newTask.Result;
-                        localPriceUsed = usedTask.Result;
+                        var stockUsedTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "SET", setNumber, "SU",
+                            () => blClient.GetPriceGuideAsync("SET", setNumber, null, "stock", "U", null, null),
+                            cancellationToken);
+
+                        await Task.WhenAll(soldNewTask, soldUsedTask, stockNewTask, stockUsedTask);
+
+                        localPriceNew = soldNewTask.Result;
+                        localPriceUsed = soldUsedTask.Result;
+                        localStockNew = stockNewTask.Result;
+                        localStockUsed = stockUsedTask.Result;
                         blLoaded = true;
                     }
                 }
@@ -248,6 +271,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             // Assign results to response (single-threaded now, no race)
             response.priceGuideNew = localPriceNew;
             response.priceGuideUsed = localPriceUsed;
+            response.stockGuideNew = localStockNew;
+            response.stockGuideUsed = localStockUsed;
             response.brickLink.loaded = blLoaded;
             response.brickLink.error = blError;
 
@@ -300,6 +325,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             // Local variables for thread safety — cache-wrapped fetches
             object localPriceNew = null;
             object localPriceUsed = null;
+            object localStockNew = null;
+            object localStockUsed = null;
             bool blLoaded = false;
             string blError = null;
 
@@ -310,20 +337,34 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (blClient)
                     {
-                        var newTask = _cacheService.GetOrFetchAsync<object>(
+                        // Sold price guides
+                        var soldNewTask = _cacheService.GetOrFetchAsync<object>(
                             "BrickLink", "MINIFIG", minifigNumber, "N",
                             () => blClient.GetPriceGuideAsync("MINIFIG", minifigNumber, null, "sold", "N", null, null),
                             cancellationToken);
 
-                        var usedTask = _cacheService.GetOrFetchAsync<object>(
+                        var soldUsedTask = _cacheService.GetOrFetchAsync<object>(
                             "BrickLink", "MINIFIG", minifigNumber, "U",
                             () => blClient.GetPriceGuideAsync("MINIFIG", minifigNumber, null, "sold", "U", null, null),
                             cancellationToken);
 
-                        await Task.WhenAll(newTask, usedTask);
+                        // Stock price guides (for sale now)
+                        var stockNewTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "MINIFIG", minifigNumber, "SN",
+                            () => blClient.GetPriceGuideAsync("MINIFIG", minifigNumber, null, "stock", "N", null, null),
+                            cancellationToken);
 
-                        localPriceNew = newTask.Result;
-                        localPriceUsed = usedTask.Result;
+                        var stockUsedTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "MINIFIG", minifigNumber, "SU",
+                            () => blClient.GetPriceGuideAsync("MINIFIG", minifigNumber, null, "stock", "U", null, null),
+                            cancellationToken);
+
+                        await Task.WhenAll(soldNewTask, soldUsedTask, stockNewTask, stockUsedTask);
+
+                        localPriceNew = soldNewTask.Result;
+                        localPriceUsed = soldUsedTask.Result;
+                        localStockNew = stockNewTask.Result;
+                        localStockUsed = stockUsedTask.Result;
                         blLoaded = true;
                     }
                 }
@@ -368,6 +409,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             response.priceGuideNew = localPriceNew;
             response.priceGuideUsed = localPriceUsed;
+            response.stockGuideNew = localStockNew;
+            response.stockGuideUsed = localStockUsed;
             response.brickLink.loaded = blLoaded;
             response.brickLink.error = blError;
 
@@ -478,6 +521,206 @@ namespace Foundation.BMC.Controllers.WebAPI
             var stats = await _cacheService.GetStatsAsync(cancellationToken);
 
             return Ok(stats);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════
+        //  PORTFOLIO
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/brickberg/portfolio
+        ///
+        /// Cross-references owned sets with cached BrickEconomy valuations
+        /// to produce a portfolio summary. Uses only cached data — no external calls.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickberg/portfolio")]
+        public async Task<IActionResult> GetPortfolio(CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
+
+            // Get owned sets with their set numbers
+            var ownedSets = await _context.UserSetOwnerships
+                .Where(o => o.tenantGuid == tenantGuid && o.status == "owned" && o.active && !o.deleted)
+                .Include(o => o.legoSet)
+                .ToListAsync(cancellationToken);
+
+            var portfolioItems = new List<object>();
+            decimal totalValue = 0;
+            int valuedCount = 0;
+
+            foreach (var ownership in ownedSets)
+            {
+                var setNumber = ownership.legoSet?.setNumber;
+                if (string.IsNullOrEmpty(setNumber)) continue;
+
+                // Look up cached BrickEconomy valuation
+                var cacheEntry = await _context.MarketDataCaches
+                    .Where(c => c.source == "BrickEconomy" && c.itemType == "SET"
+                                && c.itemNumber == setNumber && c.active && !c.deleted)
+                    .OrderByDescending(c => c.fetchedDate)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                decimal? currentValue = null;
+                decimal? growthPct = null;
+                decimal? retailPrice = null;
+                string theme = null;
+
+                if (cacheEntry?.responseJson != null)
+                {
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(cacheEntry.responseJson);
+                        var root = doc.RootElement;
+
+                        if (root.TryGetProperty("current_value", out var cv) && cv.ValueKind == System.Text.Json.JsonValueKind.Number)
+                            currentValue = cv.GetDecimal();
+                        if (root.TryGetProperty("growth_percentage", out var gp) && gp.ValueKind == System.Text.Json.JsonValueKind.Number)
+                            growthPct = gp.GetDecimal();
+                        if (root.TryGetProperty("retail_price", out var rp) && rp.ValueKind == System.Text.Json.JsonValueKind.Number)
+                            retailPrice = rp.GetDecimal();
+                        if (root.TryGetProperty("theme", out var th) && th.ValueKind == System.Text.Json.JsonValueKind.String)
+                            theme = th.GetString();
+                    }
+                    catch { /* skip malformed */ }
+                }
+
+                if (currentValue.HasValue)
+                {
+                    totalValue += currentValue.Value * ownership.quantity;
+                    valuedCount++;
+                }
+
+                portfolioItems.Add(new
+                {
+                    setNumber,
+                    name = ownership.legoSet?.name,
+                    quantity = ownership.quantity,
+                    currentValue,
+                    retailPrice,
+                    growthPercentage = growthPct,
+                    theme,
+                    imageUrl = ownership.legoSet?.imageUrl
+                });
+            }
+
+            // Sort for top gainers / losers
+            var sorted = portfolioItems
+                .Where(p => ((dynamic)p).growthPercentage != null)
+                .OrderByDescending(p => (decimal)((dynamic)p).growthPercentage)
+                .ToList();
+
+            return Ok(new
+            {
+                totalSets = ownedSets.Count,
+                valuedSets = valuedCount,
+                totalValue,
+                items = portfolioItems,
+                topGainers = sorted.Take(5),
+                topLosers = sorted.TakeLast(5).Reverse()
+            });
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════
+        //  MARKET MOVERS
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/brickberg/market-movers
+        ///
+        /// Scans all cached BrickEconomy SET valuations to find top gainers,
+        /// losers, and recently retired sets. Uses only cached data.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickberg/market-movers")]
+        public async Task<IActionResult> GetMarketMovers(CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
+
+            // Get all cached BrickEconomy SET valuations
+            var cacheEntries = await _context.MarketDataCaches
+                .Where(c => c.source == "BrickEconomy" && c.itemType == "SET"
+                            && c.active && !c.deleted)
+                .ToListAsync(cancellationToken);
+
+            var movers = new List<(string setNumber, string name, decimal growth, decimal? currentValue, bool retired)>();
+
+            foreach (var entry in cacheEntries)
+            {
+                if (string.IsNullOrEmpty(entry.responseJson)) continue;
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(entry.responseJson);
+                    var root = doc.RootElement;
+
+                    decimal? growth = null;
+                    decimal? value = null;
+                    bool retired = false;
+                    string name = null;
+
+                    if (root.TryGetProperty("growth_percentage", out var gp) && gp.ValueKind == System.Text.Json.JsonValueKind.Number)
+                        growth = gp.GetDecimal();
+                    if (root.TryGetProperty("current_value", out var cv) && cv.ValueKind == System.Text.Json.JsonValueKind.Number)
+                        value = cv.GetDecimal();
+                    if (root.TryGetProperty("retired", out var rt) && rt.ValueKind == System.Text.Json.JsonValueKind.True)
+                        retired = true;
+                    if (root.TryGetProperty("name", out var nm) && nm.ValueKind == System.Text.Json.JsonValueKind.String)
+                        name = nm.GetString();
+
+                    if (growth.HasValue)
+                    {
+                        movers.Add((entry.itemNumber, name, growth.Value, value, retired));
+                    }
+                }
+                catch { /* skip malformed entries */ }
+            }
+
+            var sorted = movers.OrderByDescending(m => m.growth).ToList();
+
+            return Ok(new
+            {
+                totalCached = cacheEntries.Count,
+                gainers = sorted.Take(10).Select(m => new { m.setNumber, m.name, growthPercentage = m.growth, m.currentValue }),
+                losers = sorted.TakeLast(10).Reverse().Select(m => new { m.setNumber, m.name, growthPercentage = m.growth, m.currentValue }),
+                recentlyRetired = movers.Where(m => m.retired).Select(m => new { m.setNumber, m.name, m.currentValue, growthPercentage = m.growth })
+            });
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════
+        //  INTEGRATION STATUS
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/brickberg/status
+        ///
+        /// Returns connection status for each marketplace integration.
+        /// Lightweight endpoint — only checks if credentials are stored.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickberg/status")]
+        public async Task<IActionResult> GetIntegrationStatus(CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
+
+            var blStatus = await _blSyncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
+            var beStatus = await _beSyncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
+            var boStatus = await _boSyncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
+
+            return Ok(new
+            {
+                brickLink = new { connected = blStatus?.IsConnected ?? false },
+                brickEconomy = new { connected = beStatus?.IsConnected ?? false },
+                brickOwl = new { connected = boStatus?.IsConnected ?? false }
+            });
         }
     }
 }

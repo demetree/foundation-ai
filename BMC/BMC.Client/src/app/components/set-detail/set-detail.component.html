@@ -318,13 +318,20 @@
                 <!-- ── Three-Column Grid ── -->
                 <div class="terminal-grid">
 
-                    <!-- Price Matrix (BrickLink) -->
+                    <!-- Price Matrix (BrickLink) — Sold / For Sale tabs -->
                     <div class="terminal-card price-matrix">
                         <div class="card-header bl-accent">
                             <i class="fas fa-table"></i> Price Matrix
+                            <div class="price-matrix-tabs" *ngIf="brickbergData.brickLink?.loaded">
+                                <button class="pm-tab" [class.active]="priceMatrixTab === 'sold'"
+                                    (click)="priceMatrixTab = 'sold'">Sold</button>
+                                <button class="pm-tab" [class.active]="priceMatrixTab === 'stock'"
+                                    (click)="priceMatrixTab = 'stock'">For Sale</button>
+                            </div>
                         </div>
                         <div *ngIf="brickbergData.brickLink?.loaded" class="card-content">
-                            <table class="price-table">
+                            <!-- Sold tab (completed sales — last 6 months) -->
+                            <table class="price-table" *ngIf="priceMatrixTab === 'sold'">
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -358,6 +365,44 @@
                                         <td class="label">Lots</td>
                                         <td>{{ brickbergData.priceGuideNew?.total_quantity ?? '—' }}</td>
                                         <td>{{ brickbergData.priceGuideUsed?.total_quantity ?? '—' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!-- For Sale tab (active listings — the order book) -->
+                            <table class="price-table" *ngIf="priceMatrixTab === 'stock'">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>New</th>
+                                        <th>Used</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">Average</td>
+                                        <td class="price">${{ brickbergData.stockGuideNew?.avg_price | number:'1.2-2' }}
+                                        </td>
+                                        <td class="price">${{ brickbergData.stockGuideUsed?.avg_price | number:'1.2-2'
+                                            }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Minimum</td>
+                                        <td class="price">${{ brickbergData.stockGuideNew?.min_price | number:'1.2-2' }}
+                                        </td>
+                                        <td class="price">${{ brickbergData.stockGuideUsed?.min_price | number:'1.2-2'
+                                            }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Maximum</td>
+                                        <td class="price">${{ brickbergData.stockGuideNew?.max_price | number:'1.2-2' }}
+                                        </td>
+                                        <td class="price">${{ brickbergData.stockGuideUsed?.max_price | number:'1.2-2'
+                                            }}</td>
+                                    </tr>
+                                    <tr class="lots-row">
+                                        <td class="label">Listings</td>
+                                        <td>{{ brickbergData.stockGuideNew?.total_quantity ?? '—' }}</td>
+                                        <td>{{ brickbergData.stockGuideUsed?.total_quantity ?? '—' }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -456,6 +501,16 @@
                     </div>
 
                 </div>
+
+                <!-- ── Price History Chart ── -->
+                <div class="price-history-section"
+                    *ngIf="brickbergData.brickEconomy?.loaded && brickbergData.valuation?.price_events?.length > 0">
+                    <div class="card-header be-accent">
+                        <i class="fas fa-chart-area"></i> Price History
+                    </div>
+                    <div class="price-history-chart" #priceHistoryChart></div>
+                </div>
+
             </div>
 
         </section>
