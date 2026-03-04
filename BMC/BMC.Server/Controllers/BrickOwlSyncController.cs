@@ -17,28 +17,36 @@ using BMC.BrickOwl.Sync;
 namespace Foundation.BMC.Controllers.WebAPI
 {
     /// <summary>
-    /// Controller for managing Brick Owl integration and marketplace data.
+    /// Controller for managing Brick Owl integration settings and sync operations.
     ///
-    /// Brick Owl is the second-largest LEGO marketplace, supporting catalog lookups,
-    /// cross-platform ID mapping (BrickLink ↔ Brick Owl ↔ LEGO), pricing/availability,
-    /// store inventory management, order tracking, and wishlists.
+    /// Brick Owl is a major LEGO marketplace with cross-platform ID mapping capabilities
+    /// (BrickLink ↔ Brick Owl ↔ LEGO design IDs). Uses API key authentication.
+    ///
+    /// The syncDirection setting controls integration behavior:
+    ///   - "Pull" — import catalog/availability data from Brick Owl
+    ///   - "Push" — push collection changes to Brick Owl
+    ///   - "Both" — bidirectional sync
     ///
     /// Endpoints:
-    ///   POST  /api/brickowl-sync/connect               — Validate API key
-    ///   POST  /api/brickowl-sync/disconnect              — Clear stored API key
-    ///   GET   /api/brickowl-sync/status                  — Current connection status
-    ///   GET   /api/brickowl-sync/catalog/lookup/{boid}   — Look up item by BOID
-    ///   GET   /api/brickowl-sync/catalog/id-lookup       — Map external IDs to BOIDs
-    ///   GET   /api/brickowl-sync/catalog/availability/{boid} — Get pricing/availability
-    ///   GET   /api/brickowl-sync/collection              — Get personal collection
-    ///   GET   /api/brickowl-sync/wishlists               — Get wishlists
-    ///   GET   /api/brickowl-sync/wishlist/{id}/items     — Get wishlist items
+    ///   POST  /api/brickowl-sync/connect             — Validate API key + store encrypted
+    ///   POST  /api/brickowl-sync/disconnect           — Clear credentials
+    ///   GET   /api/brickowl-sync/status               — Current sync status for UI display
+    ///   GET   /api/brickowl-sync/key-health           — Validate stored API key
+    ///   GET   /api/brickowl-sync/catalog/{boid}       — Catalog lookup by BOID
+    ///   GET   /api/brickowl-sync/catalog-id           — Map external ID to BOID
+    ///   GET   /api/brickowl-sync/availability/{boid}  — Pricing + availability
+    ///   GET   /api/brickowl-sync/collection           — User's collection lots
+    ///   GET   /api/brickowl-sync/wishlists            — User's wishlists
+    ///   GET   /api/brickowl-sync/wishlists/{id}/items — Items in a wishlist
+    ///   GET   /api/brickowl-sync/transactions         — Paginated transaction history
+    ///   PUT   /api/brickowl-sync/settings             — Update sync direction
     ///
     /// AI-Developed — This file was significantly developed with AI assistance.
     /// </summary>
     public class BrickOwlSyncController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        private const int MAX_PAGE_SIZE = 200;
 
         private readonly BMCContext _context;
         private readonly BrickOwlSyncService _syncService;
@@ -64,6 +72,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string syncDirection { get; set; } = "Pull";
         }
 
+        public class BrickOwlUpdateSettingsRequest
+        {
+            public string syncDirection { get; set; }
+        }
+
         public class BrickOwlTransactionDto
         {
             public int id { get; set; }
@@ -87,45 +100,27 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// <summary>
         /// POST /api/brickowl-sync/connect
         ///
-        /// Validate the provided API key by making a test catalog lookup,
-        /// then store the encrypted key.
+        /// Validate API key via a test catalog lookup, then store encrypted.
         /// </summary>
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickowl-sync/connect")]
         public async Task<IActionResult> Connect([FromBody] BrickOwlConnectRequest request, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (request == null || string.IsNullOrWhiteSpace(request.apiKey))
             {
                 return BadRequest("API key is required.");
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var (success, error) = await _syncService.ConnectAsync(
-                userTenantGuid, request.apiKey, request.syncDirection, cancellationToken);
+            var (success, connectError) = await _syncService.ConnectAsync(
+                tenantGuid, request.apiKey, request.syncDirection, cancellationToken);
 
             if (!success)
             {
-                return BadRequest(new { error });
+                return BadRequest(new { error = connectError });
             }
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Brick Owl connected");
@@ -136,33 +131,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         /// <summary>
         /// POST /api/brickowl-sync/disconnect
+        ///
+        /// Clear stored API key and disable sync.
         /// </summary>
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickowl-sync/disconnect")]
         public async Task<IActionResult> Disconnect(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            await _syncService.DisconnectAsync(userTenantGuid, cancellationToken);
+            await _syncService.DisconnectAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Brick Owl disconnected");
 
@@ -171,37 +151,23 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
         // ═══════════════════════════════════════════════════════════════════════
-        //  STATUS
+        //  STATUS & HEALTH
         // ═══════════════════════════════════════════════════════════════════════
 
         /// <summary>
         /// GET /api/brickowl-sync/status
+        ///
+        /// Returns the current Brick Owl sync status.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickowl-sync/status")]
         public async Task<IActionResult> GetStatus(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var status = await _syncService.GetSyncStatusAsync(userTenantGuid, cancellationToken);
+            var status = await _syncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get Brick Owl sync status");
 
@@ -209,96 +175,90 @@ namespace Foundation.BMC.Controllers.WebAPI
         }
 
 
-        // ═══════════════════════════════════════════════════════════════════════
-        //  CATALOG
-        // ═══════════════════════════════════════════════════════════════════════
-
         /// <summary>
-        /// GET /api/brickowl-sync/catalog/lookup/{boid}
+        /// GET /api/brickowl-sync/key-health
+        ///
+        /// Validate the stored API key by making a test catalog lookup.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-        [Route("api/brickowl-sync/catalog/lookup/{boid}")]
+        [Route("api/brickowl-sync/key-health")]
+        public async Task<IActionResult> KeyHealth(CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
+
+            var (valid, healthError) = await _syncService.ValidateStoredKeyAsync(tenantGuid, cancellationToken);
+
+            return Ok(new { valid = valid, error = healthError });
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  CATALOG OPERATIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/brickowl-sync/catalog/{boid}
+        ///
+        /// Catalog lookup by Brick Owl ID (BOID).
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickowl-sync/catalog/{boid}")]
         public async Task<IActionResult> CatalogLookup(string boid, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
-                return BadRequest(new { error = "Brick Owl connection required. Please connect your Brick Owl account first." });
+                return BadRequest(new { error = "Brick Owl connection required. Please connect first." });
             }
 
             try
             {
                 using (client)
                 {
-                    var item = await client.CatalogLookupAsync(boid);
+                    var result = await client.CatalogLookupAsync(boid);
 
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Brick Owl catalog lookup: {boid}");
 
-                    return Ok(item);
+                    return Ok(result);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Brick Owl catalog lookup failed for BOID {Boid}", boid);
-                return Problem($"Failed to fetch Brick Owl catalog data: {ex.Message}");
+                return Problem("Failed to fetch Brick Owl catalog data. Please try again later.");
             }
         }
 
 
         /// <summary>
-        /// GET /api/brickowl-sync/catalog/id-lookup
+        /// GET /api/brickowl-sync/catalog-id
         ///
-        /// Map an external ID to Brick Owl BOIDs.
+        /// Map an external ID (e.g., BrickLink ID, LEGO set number) to a Brick Owl BOID.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-        [Route("api/brickowl-sync/catalog/id-lookup")]
-        public async Task<IActionResult> CatalogIdLookup(string id, string type, string idType = null,
+        [Route("api/brickowl-sync/catalog-id")]
+        public async Task<IActionResult> CatalogIdLookup(string id, string type = null, string idType = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            if (string.IsNullOrWhiteSpace(id))
             {
-                return Forbid();
+                return BadRequest("ID parameter is required.");
             }
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
-                return BadRequest(new { error = "Brick Owl connection required. Please connect your Brick Owl account first." });
+                return BadRequest(new { error = "Brick Owl connection required. Please connect first." });
             }
 
             try
@@ -315,59 +275,45 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Brick Owl ID lookup failed for {Id}", id);
-                return Problem($"Failed Brick Owl ID lookup: {ex.Message}");
+                return Problem("Failed to look up Brick Owl ID. Please try again later.");
             }
         }
 
 
         /// <summary>
-        /// GET /api/brickowl-sync/catalog/availability/{boid}
+        /// GET /api/brickowl-sync/availability/{boid}
+        ///
+        /// Get pricing and availability information for an item by BOID.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-        [Route("api/brickowl-sync/catalog/availability/{boid}")]
+        [Route("api/brickowl-sync/availability/{boid}")]
         public async Task<IActionResult> CatalogAvailability(string boid, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
-                return BadRequest(new { error = "Brick Owl connection required. Please connect your Brick Owl account first." });
+                return BadRequest(new { error = "Brick Owl connection required. Please connect first." });
             }
 
             try
             {
                 using (client)
                 {
-                    var availability = await client.CatalogAvailabilityAsync(boid);
+                    var result = await client.CatalogAvailabilityAsync(boid);
 
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Brick Owl availability: {boid}");
 
-                    return Ok(availability);
+                    return Ok(result);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Brick Owl availability failed for BOID {Boid}", boid);
-                return Problem($"Failed to fetch Brick Owl availability: {ex.Message}");
+                _logger.LogWarning(ex, "Brick Owl availability lookup failed for BOID {Boid}", boid);
+                return Problem("Failed to fetch Brick Owl availability data. Please try again later.");
             }
         }
 
@@ -378,87 +324,59 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         /// <summary>
         /// GET /api/brickowl-sync/collection
+        ///
+        /// Get the user's Brick Owl collection lots.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickowl-sync/collection")]
-        public async Task<IActionResult> GetCollection(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetCollectionLotsAsync(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
-                return BadRequest(new { error = "Brick Owl connection required. Please connect your Brick Owl account first." });
+                return BadRequest(new { error = "Brick Owl connection required. Please connect first." });
             }
 
             try
             {
                 using (client)
                 {
-                    var collection = await client.GetCollectionLotsAsync();
+                    var lots = await client.GetOrdersListAsync();
 
-                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Brick Owl collection");
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Brick Owl collection lots");
 
-                    return Ok(collection);
+                    return Ok(lots);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Brick Owl collection fetch failed");
-                return Problem($"Failed to fetch Brick Owl collection: {ex.Message}");
+                _logger.LogWarning(ex, "Brick Owl collection lots failed");
+                return Problem("Failed to fetch Brick Owl collection. Please try again later.");
             }
         }
 
 
         /// <summary>
         /// GET /api/brickowl-sync/wishlists
+        ///
+        /// Get the user's Brick Owl wishlists.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/brickowl-sync/wishlists")]
-        public async Task<IActionResult> GetWishlists(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetWishlistsAsync(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
-                return BadRequest(new { error = "Brick Owl connection required. Please connect your Brick Owl account first." });
+                return BadRequest(new { error = "Brick Owl connection required. Please connect first." });
             }
 
             try
@@ -474,60 +392,46 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Brick Owl wishlists fetch failed");
-                return Problem($"Failed to fetch Brick Owl wishlists: {ex.Message}");
+                _logger.LogWarning(ex, "Brick Owl wishlists failed");
+                return Problem("Failed to fetch Brick Owl wishlists. Please try again later.");
             }
         }
 
 
         /// <summary>
-        /// GET /api/brickowl-sync/wishlist/{id}/items
+        /// GET /api/brickowl-sync/wishlists/{wishlistId}/items
+        ///
+        /// Get items within a specific Brick Owl wishlist.
         /// </summary>
         [HttpGet]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-        [Route("api/brickowl-sync/wishlist/{id}/items")]
-        public async Task<IActionResult> GetWishlistItems(string id, CancellationToken cancellationToken = default)
+        [Route("api/brickowl-sync/wishlists/{wishlistId}/items")]
+        public async Task<IActionResult> GetWishlistItemsAsync(string wishlistId, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
-                return BadRequest(new { error = "Brick Owl connection required. Please connect your Brick Owl account first." });
+                return BadRequest(new { error = "Brick Owl connection required. Please connect first." });
             }
 
             try
             {
                 using (client)
                 {
-                    var items = await client.GetWishlistItemsAsync(id);
+                    var items = await client.GetWishlistItemsAsync(wishlistId);
 
-                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Brick Owl wishlist items: {id}");
+                    await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"Brick Owl wishlist items: {wishlistId}");
 
                     return Ok(items);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Brick Owl wishlist items failed for {Id}", id);
-                return Problem($"Failed to fetch Brick Owl wishlist items: {ex.Message}");
+                _logger.LogWarning(ex, "Brick Owl wishlist items failed for wishlist {WishlistId}", wishlistId);
+                return Problem("Failed to fetch Brick Owl wishlist items. Please try again later.");
             }
         }
 
@@ -550,27 +454,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             string direction = null, bool? success = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
             IQueryable<BrickOwlTransactionDto> query = _context.BrickOwlTransactions
-                .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
+                .Where(t => t.tenantGuid == tenantGuid && t.active == true && t.deleted == false)
                 .Select(t => new BrickOwlTransactionDto
                 {
                     id = t.id,
@@ -598,7 +486,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             int totalCount = await query.CountAsync(cancellationToken);
 
-            int ps = Math.Max(pageSize ?? 50, 1);
+            int ps = Math.Clamp(pageSize ?? 50, 1, MAX_PAGE_SIZE);
             int pn = Math.Max(pageNumber ?? 1, 1);
             query = query.Skip((pn - 1) * ps).Take(ps);
 
@@ -613,6 +501,62 @@ namespace Foundation.BMC.Controllers.WebAPI
                 pageSize = ps,
                 pageNumber = pn,
                 results = transactions
+            });
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  SETTINGS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// PUT /api/brickowl-sync/settings
+        ///
+        /// Update sync direction.
+        /// </summary>
+        [HttpPut]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickowl-sync/settings")]
+        public async Task<IActionResult> UpdateSettings([FromBody] BrickOwlUpdateSettingsRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request == null)
+            {
+                return BadRequest();
+            }
+
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
+
+            var link = await _syncService.GetUserLinkAsync(tenantGuid, cancellationToken);
+            if (link == null)
+            {
+                return BadRequest("Not connected to Brick Owl. Connect first.");
+            }
+
+            // Validate sync direction
+            string[] validDirections = { BrickOwlSyncService.DIRECTION_PULL,
+                                         BrickOwlSyncService.DIRECTION_PUSH,
+                                         BrickOwlSyncService.DIRECTION_BOTH };
+
+            if (!string.IsNullOrEmpty(request.syncDirection) && !validDirections.Contains(request.syncDirection))
+            {
+                return BadRequest($"Invalid sync direction. Valid options: {string.Join(", ", validDirections)}");
+            }
+
+            if (!string.IsNullOrEmpty(request.syncDirection))
+            {
+                link.syncDirection = request.syncDirection;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
+                $"Updated Brick Owl settings — direction={link.syncDirection}");
+
+            return Ok(new
+            {
+                syncDirection = link.syncDirection,
+                syncEnabled = link.syncEnabled
             });
         }
     }

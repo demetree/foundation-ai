@@ -16,13 +16,15 @@ using BMC.BrickOwl.Sync;
 namespace Foundation.BMC.Controllers.WebAPI
 {
     /// <summary>
-    /// Controller for the Brickberg Terminal — a Bloomberg-style financial dashboard for LEGO sets.
+    /// Controller for the Brickberg Terminal — a Bloomberg-style financial dashboard for LEGO sets
+    /// and minifigures.
     ///
     /// Aggregates data from BrickLink, BrickEconomy, and Brick Owl into a single unified response.
     /// All API calls are fired in parallel on the server for maximum performance.
     ///
     /// Endpoints:
-    ///   GET  /api/brickberg/set/{setNumber}  — Unified market data for a LEGO set
+    ///   GET  /api/brickberg/set/{setNumber}            — Unified market data for a LEGO set
+    ///   GET  /api/brickberg/minifig/{minifigNumber}    — Minifig valuation data
     ///
     /// AI-Developed — This file was significantly developed with AI assistance.
     /// </summary>
@@ -73,6 +75,15 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string brickOwlBoid { get; set; }
         }
 
+        public class BrickbergMinifigResponse
+        {
+            public BrickbergSourceStatus brickLink { get; set; } = new();
+            public BrickbergSourceStatus brickEconomy { get; set; } = new();
+            public object priceGuideNew { get; set; }
+            public object priceGuideUsed { get; set; }
+            public object valuation { get; set; }
+        }
+
         #endregion
 
 
@@ -98,140 +109,244 @@ namespace Foundation.BMC.Controllers.WebAPI
         public async Task<IActionResult> GetSetMarketData(string setNumber,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
             var response = new BrickbergSetResponse();
 
             // ── Create clients (null if not connected) ──
-            var blClientTask = CreateBrickLinkClientSafe(userTenantGuid, cancellationToken);
-            var beClientTask = CreateBrickEconomyClientSafe(userTenantGuid, cancellationToken);
-            var boClientTask = CreateBrickOwlClientSafe(userTenantGuid, cancellationToken);
-
-            await Task.WhenAll(blClientTask, beClientTask, boClientTask);
-
-            var blClient = blClientTask.Result;
-            var beClient = beClientTask.Result;
-            var boClient = boClientTask.Result;
+            var blClient = await CreateBrickLinkClientSafe(tenantGuid, cancellationToken);
+            var beClient = await CreateBrickEconomyClientSafe(tenantGuid, cancellationToken);
+            var boClient = await CreateBrickOwlClientSafe(tenantGuid, cancellationToken);
 
             response.brickLink.connected = blClient != null;
             response.brickEconomy.connected = beClient != null;
             response.brickOwl.connected = boClient != null;
 
-            // ── Fire all data queries in parallel ──
-            var tasks = new System.Collections.Generic.List<Task>();
+            // ── Fire all data queries in parallel using local variables ──
+            // Each task captures results in local variables to avoid race conditions
+            // on the shared response object across threads.
 
             // BrickLink: new + used sold price guides
-            if (blClient != null)
+            object localPriceNew = null;
+            object localPriceUsed = null;
+            bool blLoaded = false;
+            string blError = null;
+
+            async Task FetchBrickLinkAsync()
             {
-                tasks.Add(Task.Run(async () =>
+                if (blClient == null) return;
+                try
                 {
-                    try
+                    using (blClient)
                     {
-                        using (blClient)
-                        {
-                            // Fire both price guide calls in parallel
-                            var newTask = blClient.GetPriceGuideAsync("SET", setNumber,
-                                null, "sold", "N", null, null);
-                            var usedTask = blClient.GetPriceGuideAsync("SET", setNumber,
-                                null, "sold", "U", null, null);
+                        var newTask = blClient.GetPriceGuideAsync("SET", setNumber,
+                            null, "sold", "N", null, null);
+                        var usedTask = blClient.GetPriceGuideAsync("SET", setNumber,
+                            null, "sold", "U", null, null);
 
-                            await Task.WhenAll(newTask, usedTask);
+                        await Task.WhenAll(newTask, usedTask);
 
-                            response.priceGuideNew = newTask.Result;
-                            response.priceGuideUsed = usedTask.Result;
-                            response.brickLink.loaded = true;
-                        }
+                        localPriceNew = newTask.Result;
+                        localPriceUsed = usedTask.Result;
+                        blLoaded = true;
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Brickberg: BrickLink price guide failed for {SetNumber}", setNumber);
-                        response.brickLink.error = ex.Message;
-                    }
-                }, cancellationToken));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Brickberg: BrickLink price guide failed for {SetNumber}", setNumber);
+                    blError = "BrickLink price guide unavailable.";
+                }
             }
 
             // BrickEconomy: AI valuation
-            if (beClient != null)
-            {
-                tasks.Add(Task.Run(async () =>
-                {
-                    try
-                    {
-                        using (beClient)
-                        {
-                            var valuation = await beClient.GetSetAsync(setNumber, null);
-                            response.valuation = valuation;
-                            response.brickEconomy.loaded = true;
+            object localValuation = null;
+            bool beLoaded = false;
+            string beError = null;
 
-                            await _beSyncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
-                        }
-                    }
-                    catch (Exception ex)
+            async Task FetchBrickEconomyAsync()
+            {
+                if (beClient == null) return;
+                try
+                {
+                    using (beClient)
                     {
-                        _logger.LogWarning(ex, "Brickberg: BrickEconomy valuation failed for {SetNumber}", setNumber);
-                        response.brickEconomy.error = ex.Message;
+                        localValuation = await beClient.GetSetAsync(setNumber, null);
+                        beLoaded = true;
                     }
-                }, cancellationToken));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Brickberg: BrickEconomy valuation failed for {SetNumber}", setNumber);
+                    beError = "BrickEconomy valuation unavailable.";
+                }
+                finally
+                {
+                    await _beSyncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
+                }
             }
 
             // Brick Owl: BOID lookup → availability
-            if (boClient != null)
+            object localAvailability = null;
+            string localBoid = null;
+            bool boLoaded = false;
+            string boError = null;
+
+            async Task FetchBrickOwlAsync()
             {
-                tasks.Add(Task.Run(async () =>
+                if (boClient == null) return;
+                try
                 {
-                    try
+                    using (boClient)
                     {
-                        using (boClient)
+                        var idLookup = await boClient.CatalogIdLookupAsync(setNumber, "Set", null);
+                        string boid = ExtractBoid(idLookup);
+
+                        if (!string.IsNullOrEmpty(boid))
                         {
-                            // Step 1: Map set number to BOID
-                            var idLookup = await boClient.CatalogIdLookupAsync(setNumber, "Set", null);
-
-                            // The API returns a dictionary-like object; extract the first BOID
-                            string boid = ExtractBoid(idLookup);
-                            if (!string.IsNullOrEmpty(boid))
-                            {
-                                response.brickOwlBoid = boid;
-
-                                // Step 2: Get availability for that BOID
-                                var availability = await boClient.CatalogAvailabilityAsync(boid);
-                                response.availability = availability;
-                                response.brickOwl.loaded = true;
-                            }
-                            else
-                            {
-                                response.brickOwl.error = "No Brick Owl BOID found for this set.";
-                            }
+                            localBoid = boid;
+                            localAvailability = await boClient.CatalogAvailabilityAsync(boid);
+                            boLoaded = true;
+                        }
+                        else
+                        {
+                            boError = "No Brick Owl BOID found for this set.";
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Brickberg: Brick Owl lookup failed for {SetNumber}", setNumber);
-                        response.brickOwl.error = ex.Message;
-                    }
-                }, cancellationToken));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Brickberg: Brick Owl lookup failed for {SetNumber}", setNumber);
+                    boError = "Brick Owl data unavailable.";
+                }
             }
 
-            await Task.WhenAll(tasks);
+            // Run all three in parallel
+            await Task.WhenAll(FetchBrickLinkAsync(), FetchBrickEconomyAsync(), FetchBrickOwlAsync());
+
+            // Assign results to response (single-threaded now, no race)
+            response.priceGuideNew = localPriceNew;
+            response.priceGuideUsed = localPriceUsed;
+            response.brickLink.loaded = blLoaded;
+            response.brickLink.error = blError;
+
+            response.valuation = localValuation;
+            response.brickEconomy.loaded = beLoaded;
+            response.brickEconomy.error = beError;
+
+            response.availability = localAvailability;
+            response.brickOwlBoid = localBoid;
+            response.brickOwl.loaded = boLoaded;
+            response.brickOwl.error = boError;
 
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity,
-                $"Brickberg set data: {setNumber} — BL={response.brickLink.loaded}, BE={response.brickEconomy.loaded}, BO={response.brickOwl.loaded}");
+                $"Brickberg set data: {setNumber} — BL={blLoaded}, BE={beLoaded}, BO={boLoaded}");
+
+            return Ok(response);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  MINIFIG MARKET DATA
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/brickberg/minifig/{minifigNumber}
+        ///
+        /// Returns unified market data for a LEGO minifigure by aggregating:
+        /// - BrickLink: new and used sold price guides
+        /// - BrickEconomy: AI-powered minifig valuation
+        ///
+        /// Brick Owl is not used here because minifig BOID lookup is not reliable.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickberg/minifig/{minifigNumber}")]
+        public async Task<IActionResult> GetMinifigMarketData(string minifigNumber,
+            CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
+
+            var response = new BrickbergMinifigResponse();
+
+            var blClient = await CreateBrickLinkClientSafe(tenantGuid, cancellationToken);
+            var beClient = await CreateBrickEconomyClientSafe(tenantGuid, cancellationToken);
+
+            response.brickLink.connected = blClient != null;
+            response.brickEconomy.connected = beClient != null;
+
+            // Local variables for thread safety
+            object localPriceNew = null;
+            object localPriceUsed = null;
+            bool blLoaded = false;
+            string blError = null;
+
+            async Task FetchBrickLinkAsync()
+            {
+                if (blClient == null) return;
+                try
+                {
+                    using (blClient)
+                    {
+                        var newTask = blClient.GetPriceGuideAsync("MINIFIG", minifigNumber,
+                            null, "sold", "N", null, null);
+                        var usedTask = blClient.GetPriceGuideAsync("MINIFIG", minifigNumber,
+                            null, "sold", "U", null, null);
+
+                        await Task.WhenAll(newTask, usedTask);
+
+                        localPriceNew = newTask.Result;
+                        localPriceUsed = usedTask.Result;
+                        blLoaded = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Brickberg: BrickLink minifig price guide failed for {MinifigNumber}", minifigNumber);
+                    blError = "BrickLink price guide unavailable.";
+                }
+            }
+
+            object localValuation = null;
+            bool beLoaded = false;
+            string beError = null;
+
+            async Task FetchBrickEconomyAsync()
+            {
+                if (beClient == null) return;
+                try
+                {
+                    using (beClient)
+                    {
+                        localValuation = await beClient.GetMinifigAsync(minifigNumber, null);
+                        beLoaded = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Brickberg: BrickEconomy minifig valuation failed for {MinifigNumber}", minifigNumber);
+                    beError = "BrickEconomy valuation unavailable.";
+                }
+                finally
+                {
+                    await _beSyncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
+                }
+            }
+
+            await Task.WhenAll(FetchBrickLinkAsync(), FetchBrickEconomyAsync());
+
+            response.priceGuideNew = localPriceNew;
+            response.priceGuideUsed = localPriceUsed;
+            response.brickLink.loaded = blLoaded;
+            response.brickLink.error = blError;
+
+            response.valuation = localValuation;
+            response.brickEconomy.loaded = beLoaded;
+            response.brickEconomy.error = beError;
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity,
+                $"Brickberg minifig data: {minifigNumber} — BL={blLoaded}, BE={beLoaded}");
 
             return Ok(response);
         }

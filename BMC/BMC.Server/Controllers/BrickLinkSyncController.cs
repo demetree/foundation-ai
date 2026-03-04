@@ -31,12 +31,14 @@ namespace Foundation.BMC.Controllers.WebAPI
     ///   GET   /api/bricklink-sync/item/{type}/{no} — Get catalog item details
     ///   GET   /api/bricklink-sync/subsets/{type}/{no}      — Part-out a set
     ///   GET   /api/bricklink-sync/supersets/{type}/{no}    — Find sets containing a part
+    ///   GET   /api/bricklink-sync/transactions     — Paginated transaction history
     ///
     /// AI-Developed — This file was significantly developed with AI assistance.
     /// </summary>
     public class BrickLinkSyncController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        private const int MAX_PAGE_SIZE = 200;
 
         private readonly BMCContext _context;
         private readonly BrickLinkSyncService _syncService;
@@ -94,38 +96,21 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/bricklink-sync/connect")]
         public async Task<IActionResult> Connect([FromBody] BrickLinkConnectRequest request, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (request == null || string.IsNullOrWhiteSpace(request.tokenValue) || string.IsNullOrWhiteSpace(request.tokenSecret))
             {
                 return BadRequest("Token value and token secret are required.");
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var (success, error) = await _syncService.ConnectAsync(
-                userTenantGuid, request.tokenValue, request.tokenSecret,
+            var (success, connectError) = await _syncService.ConnectAsync(
+                tenantGuid, request.tokenValue, request.tokenSecret,
                 request.syncDirection, cancellationToken);
 
             if (!success)
             {
-                return BadRequest(new { error });
+                return BadRequest(new { error = connectError });
             }
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickLink connected");
@@ -144,27 +129,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/bricklink-sync/disconnect")]
         public async Task<IActionResult> Disconnect(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            await _syncService.DisconnectAsync(userTenantGuid, cancellationToken);
+            await _syncService.DisconnectAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickLink disconnected");
 
@@ -186,26 +154,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/bricklink-sync/status")]
         public async Task<IActionResult> GetStatus(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var status = await _syncService.GetSyncStatusAsync(userTenantGuid, cancellationToken);
+            var status = await _syncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get BrickLink sync status");
 
@@ -223,25 +175,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/bricklink-sync/token-health")]
         public async Task<IActionResult> TokenHealth(CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return Ok(new { valid = false, error = "No stored BrickLink credentials. Please connect your account." });
@@ -257,7 +194,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "BrickLink token health check failed for tenant {TenantGuid}", userTenantGuid);
+                _logger.LogWarning(ex, "BrickLink token health check failed for tenant {TenantGuid}", tenantGuid);
                 return Ok(new { valid = false, error = "Token validation failed. Please reconnect." });
             }
         }
@@ -281,26 +218,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             string currencyCode = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
@@ -321,7 +242,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickLink price guide failed for {Type}/{No}", type, no);
-                return Problem($"Failed to fetch BrickLink price guide: {ex.Message}");
+                return Problem("Failed to fetch BrickLink price guide. Please try again later.");
             }
         }
 
@@ -336,26 +257,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/bricklink-sync/item/{type}/{no}")]
         public async Task<IActionResult> GetItem(string type, string no, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
@@ -375,7 +280,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickLink item lookup failed for {Type}/{No}", type, no);
-                return Problem($"Failed to fetch BrickLink item: {ex.Message}");
+                return Problem("Failed to fetch BrickLink item. Please try again later.");
             }
         }
 
@@ -392,26 +297,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             bool? breakMinifigs = null, bool? breakSubsets = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
@@ -431,7 +320,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickLink subsets failed for {Type}/{No}", type, no);
-                return Problem($"Failed to fetch BrickLink subsets: {ex.Message}");
+                return Problem("Failed to fetch BrickLink subsets. Please try again later.");
             }
         }
 
@@ -448,26 +337,10 @@ namespace Foundation.BMC.Controllers.WebAPI
             int? colorId = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickLink connection required. Please connect your BrickLink account first." });
@@ -487,7 +360,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickLink supersets failed for {Type}/{No}", type, no);
-                return Problem($"Failed to fetch BrickLink supersets: {ex.Message}");
+                return Problem("Failed to fetch BrickLink supersets. Please try again later.");
             }
         }
 
@@ -510,27 +383,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             string direction = null, bool? success = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
             IQueryable<BrickLinkTransactionDto> query = _context.BrickLinkTransactions
-                .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
+                .Where(t => t.tenantGuid == tenantGuid && t.active == true && t.deleted == false)
                 .Select(t => new BrickLinkTransactionDto
                 {
                     id = t.id,
@@ -558,7 +415,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             int totalCount = await query.CountAsync(cancellationToken);
 
-            int ps = Math.Max(pageSize ?? 50, 1);
+            int ps = Math.Clamp(pageSize ?? 50, 1, MAX_PAGE_SIZE);
             int pn = Math.Max(pageNumber ?? 1, 1);
             query = query.Skip((pn - 1) * ps).Take(ps);
 

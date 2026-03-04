@@ -369,10 +369,10 @@ namespace Foundation.BMC.Services
             RebrickableSyncQueue item,
             Dictionary<string, JsonElement> payload)
         {
-            // Part list push — to be fully implemented in Phase 2
             switch (item.operationType)
             {
                 case "Create":
+                {
                     string name = payload.GetValueOrDefault("name").GetString() ?? "Unnamed";
                     bool isBuildable = payload.TryGetValue("isBuildable", out var bl) && bl.GetBoolean();
                     var partListId = await syncService.PushPartListCreatedAsync(item.tenantGuid, name, isBuildable, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
@@ -381,11 +381,37 @@ namespace Foundation.BMC.Services
                         throw new InvalidOperationException(
                             $"PushPartListCreatedAsync returned null for '{name}' — " +
                             "the Rebrickable API call may have been silently skipped (token issue or API failure)");
+
+                    // Write back the Rebrickable ID to the local entity (mirroring SetList pattern)
+                    using var innerScope = _scopeFactory.CreateScope();
+                    var innerDb = innerScope.ServiceProvider.GetRequiredService<BMCContext>();
+                    var partList = await innerDb.UserPartLists.FindAsync((int)item.entityId);
+                    if (partList != null)
+                    {
+                        partList.rebrickableListId = partListId.Value;
+                        await innerDb.SaveChangesAsync();
+                    }
                     break;
+                }
+
+                case "Update":
+                {
+                    int rebrickableListId = payload.GetValueOrDefault("rebrickableListId").GetInt32();
+                    string name = payload.TryGetValue("name", out var n) ? n.GetString() : null;
+                    bool? isBuildable = payload.TryGetValue("isBuildable", out var b2) ? b2.GetBoolean() : null;
+                    await syncService.PushPartListUpdatedAsync(item.tenantGuid, rebrickableListId, name, isBuildable, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+                }
+
+                case "Delete":
+                {
+                    int rebrickableListId = payload.GetValueOrDefault("rebrickableListId").GetInt32();
+                    await syncService.PushPartListDeletedAsync(item.tenantGuid, rebrickableListId, RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+                }
 
                 default:
-                    _logger.LogWarning("PartList operation {Op} not yet implemented in queue processor", item.operationType);
-                    break;
+                    throw new NotSupportedException($"Unknown operation for PartList: {item.operationType}");
             }
         }
 
@@ -395,8 +421,39 @@ namespace Foundation.BMC.Services
             RebrickableSyncQueue item,
             Dictionary<string, JsonElement> payload)
         {
-            // Part list item push — to be fully implemented in Phase 2
-            _logger.LogWarning("PartListItem queue processing not yet implemented");
+            int rebrickableListId = payload.GetValueOrDefault("rebrickableListId").GetInt32();
+            string partNum = payload.GetValueOrDefault("partNum").GetString();
+            int colorId = payload.TryGetValue("colorId", out var c) ? c.GetInt32() : 0;
+
+            switch (item.operationType)
+            {
+                case "Create":
+                {
+                    int quantity = payload.TryGetValue("quantity", out var q) ? q.GetInt32() : 1;
+                    await syncService.PushPartListPartAddedAsync(
+                        item.tenantGuid, rebrickableListId, partNum, colorId, quantity,
+                        RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+                }
+
+                case "Update":
+                {
+                    int quantity = payload.TryGetValue("quantity", out var q) ? q.GetInt32() : 1;
+                    await syncService.PushPartListPartUpdatedAsync(
+                        item.tenantGuid, rebrickableListId, partNum, colorId, quantity,
+                        RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+                }
+
+                case "Delete":
+                    await syncService.PushPartListPartRemovedAsync(
+                        item.tenantGuid, rebrickableListId, partNum, colorId,
+                        RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Unknown operation for PartListItem: {item.operationType}");
+            }
         }
 
 
@@ -405,8 +462,30 @@ namespace Foundation.BMC.Services
             RebrickableSyncQueue item,
             Dictionary<string, JsonElement> payload)
         {
-            // Lost part push — to be fully implemented in Phase 2
-            _logger.LogWarning("LostPart queue processing not yet implemented");
+            switch (item.operationType)
+            {
+                case "Create":
+                {
+                    int invPartId = payload.GetValueOrDefault("invPartId").GetInt32();
+                    int lostQuantity = payload.TryGetValue("lostQuantity", out var q) ? q.GetInt32() : 1;
+                    await syncService.PushLostPartAddedAsync(
+                        item.tenantGuid, invPartId, lostQuantity,
+                        RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+                }
+
+                case "Delete":
+                {
+                    int lostPartId = payload.GetValueOrDefault("lostPartId").GetInt32();
+                    await syncService.PushLostPartRemovedAsync(
+                        item.tenantGuid, lostPartId,
+                        RebrickableSyncService.TRIGGER_QUEUE_PROCESSOR);
+                    break;
+                }
+
+                default:
+                    throw new NotSupportedException($"Unknown operation for LostPart: {item.operationType}");
+            }
         }
     }
 }

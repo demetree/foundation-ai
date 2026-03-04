@@ -254,6 +254,40 @@ namespace BMC.BrickEconomy.Sync
         }
 
 
+        /// <summary>
+        /// Validate the stored API key by creating a client and making a lightweight test call.
+        /// Returns (valid, error) — valid is true if the key works, false with an error message otherwise.
+        /// </summary>
+        public async Task<(bool valid, string error)> ValidateStoredKeyAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            var client = await CreateClientAsync(tenantGuid, ct);
+            if (client == null)
+            {
+                return (false, "No stored credentials — please reconnect.");
+            }
+
+            try
+            {
+                using (client)
+                {
+                    await client.GetSetAsync("75192-1");
+                    return (true, null);
+                }
+            }
+            catch (BrickEconomyApiException ex)
+            {
+                var link = await GetUserLinkAsync(tenantGuid, ct);
+                if (link != null)
+                {
+                    link.lastSyncError = $"Key health check failed: {ex.Message}";
+                    await _context.SaveChangesAsync(ct);
+                }
+
+                return (false, $"Stored API key is no longer valid: {ex.Message}");
+            }
+        }
+
+
         // ═══════════════════════════════════════════════════════════════════════
         //  INTERNAL HELPERS
         // ═══════════════════════════════════════════════════════════════════════

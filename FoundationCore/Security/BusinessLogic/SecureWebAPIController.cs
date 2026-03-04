@@ -716,6 +716,75 @@ namespace Foundation.Security
         }
 
 
+        #region Tenant Resolution Helpers
+
+        /// <summary>
+        /// Resolves the current user's tenant GUID with security checks and audit clock.
+        /// Use this overload for endpoints requiring a custom role (e.g., "BMC Collection Writer")
+        /// with admin fallback.
+        ///
+        /// Usage:
+        ///   var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+        ///   if (error != null) return error;
+        /// </summary>
+        protected async Task<(Guid tenantGuid, IActionResult error)> ResolveTenantAsync(
+            string customRoleName, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync(customRoleName, cancellationToken) == false &&
+                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return (Guid.Empty, Forbid());
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            try
+            {
+                var guid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                return (guid, null);
+            }
+            catch (Exception)
+            {
+                return (Guid.Empty, Problem("Your user account is not configured with a tenant."));
+            }
+        }
+
+
+        /// <summary>
+        /// Resolves the current user's tenant GUID with security checks and audit clock.
+        /// Use this overload for read-only endpoints requiring a read privilege level.
+        ///
+        /// Usage:
+        ///   var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+        ///   if (error != null) return error;
+        /// </summary>
+        protected async Task<(Guid tenantGuid, IActionResult error)> ResolveTenantAsync(
+            int readPermissionLevelRequired, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(readPermissionLevelRequired, cancellationToken) == false)
+            {
+                return (Guid.Empty, Forbid());
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            try
+            {
+                var guid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                return (guid, null);
+            }
+            catch (Exception)
+            {
+                return (Guid.Empty, Problem("Your user account is not configured with a tenant."));
+            }
+        }
+
+        #endregion
+
 
         protected void StartAuditEventClock()
         {

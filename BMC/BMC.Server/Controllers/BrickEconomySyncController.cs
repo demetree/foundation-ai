@@ -26,17 +26,20 @@ namespace Foundation.BMC.Controllers.WebAPI
     ///   POST  /api/brickeconomy-sync/connect          — Validate API key
     ///   POST  /api/brickeconomy-sync/disconnect        — Clear stored API key
     ///   GET   /api/brickeconomy-sync/status            — Current connection status
+    ///   GET   /api/brickeconomy-sync/key-health        — Validate stored API key
     ///   GET   /api/brickeconomy-sync/set/{setNumber}   — Get set valuation
     ///   GET   /api/brickeconomy-sync/minifig/{minifigNumber} — Get minifig valuation
     ///   GET   /api/brickeconomy-sync/collection/sets   — Get user's collection with valuations
     ///   GET   /api/brickeconomy-sync/collection/minifigs — Get user's minifig collection
     ///   GET   /api/brickeconomy-sync/salesledger       — Get sales transaction history
+    ///   GET   /api/brickeconomy-sync/transactions      — Paginated transaction history
     ///
     /// AI-Developed — This file was significantly developed with AI assistance.
     /// </summary>
     public class BrickEconomySyncController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        private const int MAX_PAGE_SIZE = 200;
 
         private readonly BMCContext _context;
         private readonly BrickEconomySyncService _syncService;
@@ -93,36 +96,19 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickeconomy-sync/connect")]
         public async Task<IActionResult> Connect([FromBody] BrickEconomyConnectRequest request, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (request == null || string.IsNullOrWhiteSpace(request.apiKey))
             {
                 return BadRequest("API key is required.");
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var (success, error) = await _syncService.ConnectAsync(userTenantGuid, request.apiKey, cancellationToken);
+            var (success, connectError) = await _syncService.ConnectAsync(tenantGuid, request.apiKey, cancellationToken);
 
             if (!success)
             {
-                return BadRequest(new { error });
+                return BadRequest(new { error = connectError });
             }
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickEconomy connected");
@@ -141,27 +127,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickeconomy-sync/disconnect")]
         public async Task<IActionResult> Disconnect(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            await _syncService.DisconnectAsync(userTenantGuid, cancellationToken);
+            await _syncService.DisconnectAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickEconomy disconnected");
 
@@ -170,7 +139,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
         // ═══════════════════════════════════════════════════════════════════════
-        //  STATUS
+        //  STATUS & HEALTH
         // ═══════════════════════════════════════════════════════════════════════
 
         /// <summary>
@@ -183,30 +152,33 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickeconomy-sync/status")]
         public async Task<IActionResult> GetStatus(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var status = await _syncService.GetSyncStatusAsync(userTenantGuid, cancellationToken);
+            var status = await _syncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get BrickEconomy sync status");
 
             return Ok(status);
+        }
+
+
+        /// <summary>
+        /// GET /api/brickeconomy-sync/key-health
+        ///
+        /// Validate the stored API key by creating a client and making a test call.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickeconomy-sync/key-health")]
+        public async Task<IActionResult> KeyHealth(CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
+
+            var (valid, healthError) = await _syncService.ValidateStoredKeyAsync(tenantGuid, cancellationToken);
+
+            return Ok(new { valid = valid, error = healthError });
         }
 
 
@@ -226,26 +198,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         public async Task<IActionResult> GetSetValuation(string setNumber, string currency = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
@@ -257,8 +213,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     var set = await client.GetSetAsync(setNumber, currency);
 
-                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
-
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickEconomy set valuation: {setNumber}");
 
                     return Ok(set);
@@ -267,7 +221,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickEconomy set valuation failed for {SetNumber}", setNumber);
-                return Problem($"Failed to fetch BrickEconomy set valuation: {ex.Message}");
+                return Problem("Failed to fetch BrickEconomy set valuation. Please try again later.");
+            }
+            finally
+            {
+                await _syncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
             }
         }
 
@@ -283,26 +241,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         public async Task<IActionResult> GetMinifigValuation(string minifigNumber, string currency = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
@@ -314,8 +256,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     var minifig = await client.GetMinifigAsync(minifigNumber, currency);
 
-                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
-
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, $"BrickEconomy minifig valuation: {minifigNumber}");
 
                     return Ok(minifig);
@@ -324,7 +264,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickEconomy minifig valuation failed for {MinifigNumber}", minifigNumber);
-                return Problem($"Failed to fetch BrickEconomy minifig valuation: {ex.Message}");
+                return Problem("Failed to fetch BrickEconomy minifig valuation. Please try again later.");
+            }
+            finally
+            {
+                await _syncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
             }
         }
 
@@ -344,26 +288,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         public async Task<IActionResult> GetCollectionSets(string currency = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
@@ -375,8 +303,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     var sets = await client.GetCollectionSetsAsync(currency);
 
-                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
-
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "BrickEconomy collection sets");
 
                     return Ok(sets);
@@ -385,7 +311,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickEconomy collection sets failed");
-                return Problem($"Failed to fetch BrickEconomy collection: {ex.Message}");
+                return Problem("Failed to fetch BrickEconomy collection. Please try again later.");
+            }
+            finally
+            {
+                await _syncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
             }
         }
 
@@ -401,26 +331,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         public async Task<IActionResult> GetCollectionMinifigs(string currency = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
@@ -432,8 +346,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     var minifigs = await client.GetCollectionMinifigsAsync(currency);
 
-                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
-
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "BrickEconomy collection minifigs");
 
                     return Ok(minifigs);
@@ -442,7 +354,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickEconomy collection minifigs failed");
-                return Problem($"Failed to fetch BrickEconomy minifig collection: {ex.Message}");
+                return Problem("Failed to fetch BrickEconomy minifig collection. Please try again later.");
+            }
+            finally
+            {
+                await _syncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
             }
         }
 
@@ -461,26 +377,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickeconomy-sync/salesledger")]
         public async Task<IActionResult> GetSalesLedger(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var client = await _syncService.CreateClientAsync(userTenantGuid, cancellationToken);
+            var client = await _syncService.CreateClientAsync(tenantGuid, cancellationToken);
             if (client == null)
             {
                 return BadRequest(new { error = "BrickEconomy connection required. Please connect your BrickEconomy account first." });
@@ -492,8 +392,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     var ledger = await client.GetSalesLedgerAsync();
 
-                    await _syncService.IncrementQuotaAsync(userTenantGuid, 1, cancellationToken);
-
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "BrickEconomy sales ledger");
 
                     return Ok(ledger);
@@ -502,7 +400,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "BrickEconomy sales ledger failed");
-                return Problem($"Failed to fetch BrickEconomy sales ledger: {ex.Message}");
+                return Problem("Failed to fetch BrickEconomy sales ledger. Please try again later.");
+            }
+            finally
+            {
+                await _syncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
             }
         }
 
@@ -525,27 +427,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             string direction = null, bool? success = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
             IQueryable<BrickEconomyTransactionDto> query = _context.BrickEconomyTransactions
-                .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
+                .Where(t => t.tenantGuid == tenantGuid && t.active == true && t.deleted == false)
                 .Select(t => new BrickEconomyTransactionDto
                 {
                     id = t.id,
@@ -574,7 +460,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             int totalCount = await query.CountAsync(cancellationToken);
 
-            int ps = Math.Max(pageSize ?? 50, 1);
+            int ps = Math.Clamp(pageSize ?? 50, 1, MAX_PAGE_SIZE);
             int pn = Math.Max(pageNumber ?? 1, 1);
             query = query.Skip((pn - 1) * ps).Take(ps);
 

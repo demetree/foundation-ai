@@ -33,6 +33,7 @@ namespace Foundation.BMC.Controllers.WebAPI
     public class BrickSetSyncController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        private const int MAX_PAGE_SIZE = 200;
 
         private readonly BMCContext _context;
         private readonly BrickSetSyncService _syncService;
@@ -102,39 +103,22 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/connect")]
         public async Task<IActionResult> Connect([FromBody] BrickSetConnectRequest request, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (request == null || string.IsNullOrWhiteSpace(request.username) || string.IsNullOrWhiteSpace(request.password))
             {
                 return BadRequest("Username and password are required.");
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var (success, error) = await _syncService.ConnectAsync(
-                userTenantGuid, request.username, request.password,
+            var (success, connectError) = await _syncService.ConnectAsync(
+                tenantGuid, request.username, request.password,
                 request.syncDirection ?? BrickSetSyncService.DIRECTION_ENRICH_ONLY,
                 cancellationToken);
 
             if (!success)
             {
-                return BadRequest(new { error = error });
+                return BadRequest(new { error = connectError });
             }
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickSet connected");
@@ -153,27 +137,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/disconnect")]
         public async Task<IActionResult> Disconnect(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            await _syncService.DisconnectAsync(userTenantGuid, cancellationToken);
+            await _syncService.DisconnectAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "BrickSet disconnected");
 
@@ -196,26 +163,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/status")]
         public async Task<IActionResult> GetStatus(CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var status = await _syncService.GetSyncStatusAsync(userTenantGuid, cancellationToken);
+            var status = await _syncService.GetSyncStatusAsync(tenantGuid, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Get BrickSet sync status");
 
@@ -234,27 +185,12 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/hash-health")]
         public async Task<IActionResult> HashHealth(CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
+            var (valid, healthError) = await _syncService.ValidateAndRefreshHashAsync(tenantGuid, cancellationToken);
 
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var (valid, error) = await _syncService.ValidateAndRefreshHashAsync(userTenantGuid, cancellationToken);
-
-            return Ok(new { valid = valid, error = error });
+            return Ok(new { valid = valid, error = healthError });
         }
 
 
@@ -273,32 +209,15 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/enrich/{setNumber}")]
         public async Task<IActionResult> EnrichSet(string setNumber, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (string.IsNullOrWhiteSpace(setNumber))
             {
                 return BadRequest("Set number is required.");
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            bool enriched = await _syncService.EnrichSetAsync(userTenantGuid, setNumber, cancellationToken);
+            bool enriched = await _syncService.EnrichSetAsync(tenantGuid, setNumber, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
                 $"BrickSet enrich set {setNumber} — {(enriched ? "success" : "not found")}");
@@ -317,33 +236,16 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/enrich-reviews")]
         public async Task<IActionResult> EnrichReviews([FromBody] BrickSetEnrichReviewsRequest request, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (request == null)
             {
                 return BadRequest("Request body is required.");
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
             int reviewsCached = await _syncService.EnrichSetReviewsAsync(
-                userTenantGuid, request.legoSetId, request.brickSetId, cancellationToken);
+                tenantGuid, request.legoSetId, request.brickSetId, cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
                 $"BrickSet enrich reviews — {reviewsCached} cached for set ID {request.legoSetId}");
@@ -366,24 +268,10 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/quota")]
         public async Task<IActionResult> GetQuota(CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            int? callsToday = await _syncService.GetQuotaRemainingAsync(userTenantGuid, cancellationToken);
+            int? callsToday = await _syncService.GetQuotaRemainingAsync(tenantGuid, cancellationToken);
 
             return Ok(new { apiCallsToday = callsToday });
         }
@@ -407,27 +295,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             string direction = null, bool? success = null,
             CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-            {
-                return Forbid();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
 
             IQueryable<BrickSetTransactionDto> query = _context.BrickSetTransactions
-                .Where(t => t.tenantGuid == userTenantGuid && t.active == true && t.deleted == false)
+                .Where(t => t.tenantGuid == tenantGuid && t.active == true && t.deleted == false)
                 .Select(t => new BrickSetTransactionDto
                 {
                     id = t.id,
@@ -442,26 +314,21 @@ namespace Foundation.BMC.Controllers.WebAPI
                     apiCallsRemaining = t.apiCallsRemaining
                 });
 
-            // Filter by direction (Pull/Push)
             if (!string.IsNullOrWhiteSpace(direction))
             {
                 query = query.Where(t => t.direction == direction);
             }
 
-            // Filter by success/failure
             if (success.HasValue)
             {
                 query = query.Where(t => t.success == success.Value);
             }
 
-            // Always newest first
             query = query.OrderByDescending(t => t.transactionDate);
 
-            // Count before paging
             int totalCount = await query.CountAsync(cancellationToken);
 
-            // Page
-            int ps = Math.Max(pageSize ?? 50, 1);
+            int ps = Math.Clamp(pageSize ?? 50, 1, MAX_PAGE_SIZE);
             int pn = Math.Max(pageNumber ?? 1, 1);
             query = query.Skip((pn - 1) * ps).Take(ps);
 
@@ -494,32 +361,15 @@ namespace Foundation.BMC.Controllers.WebAPI
         [Route("api/brickset-sync/settings")]
         public async Task<IActionResult> UpdateSettings([FromBody] BrickSetUpdateSettingsRequest request, CancellationToken cancellationToken = default)
         {
-            StartAuditEventClock();
-
             if (request == null)
             {
                 return BadRequest();
             }
 
-            if (await DoesUserHaveCustomRoleSecurityCheckAsync("BMC Collection Writer", cancellationToken) == false &&
-                await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-            {
-                return Forbid();
-            }
+            var (tenantGuid, error) = await ResolveTenantAsync("BMC Collection Writer", cancellationToken);
+            if (error != null) return error;
 
-            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid userTenantGuid;
-
-            try
-            {
-                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
-            }
-            catch (Exception)
-            {
-                return Problem("Your user account is not configured with a tenant.");
-            }
-
-            var link = await _syncService.GetUserLinkAsync(userTenantGuid, cancellationToken);
+            var link = await _syncService.GetUserLinkAsync(tenantGuid, cancellationToken);
             if (link == null)
             {
                 return BadRequest("Not connected to BrickSet. Connect first.");
