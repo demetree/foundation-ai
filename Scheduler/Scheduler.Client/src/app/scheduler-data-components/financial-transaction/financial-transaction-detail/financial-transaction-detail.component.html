@@ -41,6 +41,24 @@
                                     <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
                                 </select>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactRole')">
+                                <label for="FinancialTransaction-contactRole" id="label-FinancialTransaction-contactRole">Contact Role</label>
+                                <input type="text" id="FinancialTransaction-contactRole" formControlName="contactRole" placeholder="Enter Contact Role" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-contactRole" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('taxCodeId')">
+                                <label for="FinancialTransaction-taxCodeId" id="label-FinancialTransaction-taxCodeId">Tax Code</label>
+                                <select id="FinancialTransaction-taxCodeId" formControlName="taxCodeId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                                    <option [ngValue]="null">Select Tax Code</option>
+                                    <option *ngFor="let taxCode of taxCodes$ | async" [ngValue]="taxCode.id">{{taxCode.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fiscalPeriodId')">
+                                <label for="FinancialTransaction-fiscalPeriodId" id="label-FinancialTransaction-fiscalPeriodId">Fiscal Period</label>
+                                <select id="FinancialTransaction-fiscalPeriodId" formControlName="fiscalPeriodId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                                    <option [ngValue]="null">Select Fiscal Period</option>
+                                    <option *ngFor="let fiscalPeriod of fiscalPeriods$ | async" [ngValue]="fiscalPeriod.id">{{fiscalPeriod.name}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
                                 <label for="FinancialTransaction-transactionDate" id="label-FinancialTransaction-transactionDate"><span class="text-danger">*</span>Transaction Date</label>
                                 <input type="datetime-local" id="FinancialTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-transactionDate" />
@@ -80,6 +98,10 @@
                                 <input type="checkbox" id="FinancialTransaction-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" />
                                 <label for="FinancialTransaction-isRevenue" class="form-check-label" id="label-FinancialTransaction-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('journalEntryType')">
+                                <label for="FinancialTransaction-journalEntryType" id="label-FinancialTransaction-journalEntryType">Journal Entry Type</label>
+                                <input type="text" id="FinancialTransaction-journalEntryType" formControlName="journalEntryType" placeholder="Enter Journal Entry Type" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-journalEntryType" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('paymentMethod')">
                                 <label for="FinancialTransaction-paymentMethod" id="label-FinancialTransaction-paymentMethod">Payment Method</label>
                                 <input type="text" id="FinancialTransaction-paymentMethod" formControlName="paymentMethod" placeholder="Enter Payment Method" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-paymentMethod" />
@@ -109,6 +131,10 @@
                             <div class="form-group" *ngIf="!isFieldHidden('externalId')">
                                 <label for="FinancialTransaction-externalId" id="label-FinancialTransaction-externalId">External Id</label>
                                 <input type="text" id="FinancialTransaction-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalSystemName')">
+                                <label for="FinancialTransaction-externalSystemName" id="label-FinancialTransaction-externalSystemName">External System Name</label>
+                                <input type="text" id="FinancialTransaction-externalSystemName" formControlName="externalSystemName" placeholder="Enter External System Name" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-externalSystemName" />
                             </div>
                             <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <label for="FinancialTransaction-versionNumber" id="label-FinancialTransaction-versionNumber"><span class="text-danger">*</span>Version Number</label>

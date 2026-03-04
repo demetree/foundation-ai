@@ -26,6 +26,8 @@ import { FinancialTransactionService, FinancialTransactionData, FinancialTransac
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
+import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
+import { FiscalPeriodService } from '../../../scheduler-data-services/fiscal-period.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { FinancialTransactionChangeHistoryService } from '../../../scheduler-data-services/financial-transaction-change-history.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
@@ -44,18 +46,23 @@ interface FinancialTransactionFormValues {
   financialCategoryId: number | bigint,       // For FK link number
   scheduledEventId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
+  contactRole: string | null,
+  taxCodeId: number | bigint | null,       // For FK link number
+  fiscalPeriodId: number | bigint | null,       // For FK link number
   transactionDate: string,
   description: string,
   amount: string,     // Stored as string for form input, converted to number on submit.
   taxAmount: string,     // Stored as string for form input, converted to number on submit.
   totalAmount: string,     // Stored as string for form input, converted to number on submit.
   isRevenue: boolean,
+  journalEntryType: string | null,
   paymentMethod: string | null,
   referenceNumber: string | null,
   notes: string | null,
   currencyId: number | bigint,       // For FK link number
   exportedDate: string | null,
   externalId: string | null,
+  externalSystemName: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -89,18 +96,23 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
         financialCategoryId: [null, Validators.required],
         scheduledEventId: [null],
         contactId: [null],
+        contactRole: [''],
+        taxCodeId: [null],
+        fiscalPeriodId: [null],
         transactionDate: ['', Validators.required],
         description: ['', Validators.required],
         amount: ['', Validators.required],
         taxAmount: ['', Validators.required],
         totalAmount: ['', Validators.required],
         isRevenue: [false],
+        journalEntryType: [''],
         paymentMethod: [''],
         referenceNumber: [''],
         notes: [''],
         currencyId: [null, Validators.required],
         exportedDate: [''],
         externalId: [''],
+        externalSystemName: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -121,6 +133,8 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
   public financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public contacts$ = this.contactService.GetContactList();
+  public taxCodes$ = this.taxCodeService.GetTaxCodeList();
+  public fiscalPeriods$ = this.fiscalPeriodService.GetFiscalPeriodList();
   public currencies$ = this.currencyService.GetCurrencyList();
   public financialTransactionChangeHistories$ = this.financialTransactionChangeHistoryService.GetFinancialTransactionChangeHistoryList();
   public documents$ = this.documentService.GetDocumentList();
@@ -133,6 +147,8 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
     public financialCategoryService: FinancialCategoryService,
     public scheduledEventService: ScheduledEventService,
     public contactService: ContactService,
+    public taxCodeService: TaxCodeService,
+    public fiscalPeriodService: FiscalPeriodService,
     public currencyService: CurrencyService,
     public financialTransactionChangeHistoryService: FinancialTransactionChangeHistoryService,
     public documentService: DocumentService,
@@ -421,18 +437,23 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
         financialCategoryId: null,
         scheduledEventId: null,
         contactId: null,
+        contactRole: '',
+        taxCodeId: null,
+        fiscalPeriodId: null,
         transactionDate: '',
         description: '',
         amount: '',
         taxAmount: '',
         totalAmount: '',
         isRevenue: false,
+        journalEntryType: '',
         paymentMethod: '',
         referenceNumber: '',
         notes: '',
         currencyId: null,
         exportedDate: '',
         externalId: '',
+        externalSystemName: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -448,18 +469,23 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
         financialCategoryId: financialTransactionData.financialCategoryId,
         scheduledEventId: financialTransactionData.scheduledEventId,
         contactId: financialTransactionData.contactId,
+        contactRole: financialTransactionData.contactRole ?? '',
+        taxCodeId: financialTransactionData.taxCodeId,
+        fiscalPeriodId: financialTransactionData.fiscalPeriodId,
         transactionDate: isoUtcStringToDateTimeLocal(financialTransactionData.transactionDate) ?? '',
         description: financialTransactionData.description ?? '',
         amount: financialTransactionData.amount?.toString() ?? '',
         taxAmount: financialTransactionData.taxAmount?.toString() ?? '',
         totalAmount: financialTransactionData.totalAmount?.toString() ?? '',
         isRevenue: financialTransactionData.isRevenue ?? false,
+        journalEntryType: financialTransactionData.journalEntryType ?? '',
         paymentMethod: financialTransactionData.paymentMethod ?? '',
         referenceNumber: financialTransactionData.referenceNumber ?? '',
         notes: financialTransactionData.notes ?? '',
         currencyId: financialTransactionData.currencyId,
         exportedDate: isoUtcStringToDateTimeLocal(financialTransactionData.exportedDate) ?? '',
         externalId: financialTransactionData.externalId ?? '',
+        externalSystemName: financialTransactionData.externalSystemName ?? '',
         versionNumber: financialTransactionData.versionNumber?.toString() ?? '',
         active: financialTransactionData.active ?? true,
         deleted: financialTransactionData.deleted ?? false,
@@ -525,18 +551,23 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
         financialCategoryId: Number(formValue.financialCategoryId),
         scheduledEventId: formValue.scheduledEventId ? Number(formValue.scheduledEventId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
+        contactRole: formValue.contactRole?.trim() || null,
+        taxCodeId: formValue.taxCodeId ? Number(formValue.taxCodeId) : null,
+        fiscalPeriodId: formValue.fiscalPeriodId ? Number(formValue.fiscalPeriodId) : null,
         transactionDate: dateTimeLocalToIsoUtc(formValue.transactionDate!.trim())!,
         description: formValue.description!.trim(),
         amount: Number(formValue.amount),
         taxAmount: Number(formValue.taxAmount),
         totalAmount: Number(formValue.totalAmount),
         isRevenue: !!formValue.isRevenue,
+        journalEntryType: formValue.journalEntryType?.trim() || null,
         paymentMethod: formValue.paymentMethod?.trim() || null,
         referenceNumber: formValue.referenceNumber?.trim() || null,
         notes: formValue.notes?.trim() || null,
         currencyId: Number(formValue.currencyId),
         exportedDate: formValue.exportedDate ? dateTimeLocalToIsoUtc(formValue.exportedDate.trim()) : null,
         externalId: formValue.externalId?.trim() || null,
+        externalSystemName: formValue.externalSystemName?.trim() || null,
         versionNumber: this.financialTransactionData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

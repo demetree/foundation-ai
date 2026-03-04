@@ -43,6 +43,10 @@
                 Is  Revenue
                 <span *ngIf="sortColumn === 'isRevenue'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('accountType')">
+                Account  Type
+                <span *ngIf="sortColumn === 'accountType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('parentFinancialCategory.name')">
                 Parent  Financial  Category
                 <span *ngIf="sortColumn === 'parentFinancialCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -54,6 +58,10 @@
             <th class="sortable" scope="col" (click)="sortBy('defaultAmount')">
                 Default  Amount
                 <span *ngIf="sortColumn === 'defaultAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalAccountId')">
+                External  Account  Id
+                <span *ngIf="sortColumn === 'externalAccountId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
@@ -152,9 +160,11 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{financialCategory.description}}</td>
             <td class="text-truncate">{{financialCategory.code}}</td>
             <td class="text-truncate"><boolean-icon [value]="financialCategory.isRevenue"/></td>
+            <td class="text-truncate">{{financialCategory.accountType}}</td>
             <td class="text-truncate"><a [routerLink]="['/financialcategory', financialCategory.parentFinancialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{financialCategory.parentFinancialCategory?.name}}</a></td>
             <td class="text-truncate"><boolean-icon [value]="financialCategory.isTaxApplicable"/></td>
             <td class="text-truncate">{{financialCategory.defaultAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{financialCategory.externalAccountId}}</td>
             <td class="text-truncate">{{financialCategory.sequence | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{financialCategory.color}}</td>
 End of commented block for alternate definition option -->
@@ -320,6 +330,10 @@ End of commented block for alternate definition option -->
               <strong>Is Revenue: </strong>
               <boolean-icon [value]="financialCategory.isRevenue"/>
             </p>
+            <p class="financial-category-info" *ngIf="financialCategory.accountType != null">
+              <strong>Account Type: </strong>
+              {{financialCategory.accountType}}
+            </p>
             <p class="financial-category-info" *ngIf="financialCategory.parentFinancialCategoryId != null">
               <strong>Parent Financial Category: </strong>
               <a [routerLink]="['/financialcategory', financialCategory.parentFinancialCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Category details">{{financialCategory.parentFinancialCategory?.name}}</a>
@@ -331,6 +345,10 @@ End of commented block for alternate definition option -->
             <p class="financial-category-info" *ngIf="financialCategory.defaultAmount != null">
               <strong>Default Amount: </strong>
               {{financialCategory.defaultAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="financial-category-info" *ngIf="financialCategory.externalAccountId != null">
+              <strong>External Account Id: </strong>
+              {{financialCategory.externalAccountId}}
             </p>
             <p class="financial-category-info" *ngIf="financialCategory.sequence != null">
               <strong>Sequence: </strong>

@@ -42,6 +42,13 @@
                                 <input type="checkbox" id="FinancialCategory-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" />
                                 <label for="FinancialCategory-isRevenue" class="form-check-label" id="label-FinancialCategory-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('accountType')">
+                                <label for="FinancialCategory-accountType" id="label-FinancialCategory-accountType"><span class="text-danger">*</span>Account Type</label>
+                                <input type="text" id="FinancialCategory-accountType" formControlName="accountType" placeholder="Enter Account Type" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-accountType" />
+                                <div *ngIf="financialCategoryForm.get('accountType')?.invalid && financialCategoryForm.get('accountType')?.touched" class="text-danger">
+                                    Account Type is required
+                                </div>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('parentFinancialCategoryId')">
                                 <label for="FinancialCategory-parentFinancialCategoryId" id="label-FinancialCategory-parentFinancialCategoryId">Parent Financial Category</label>
                                 <select id="FinancialCategory-parentFinancialCategoryId" formControlName="parentFinancialCategoryId" class="form-select financial-category-select" [disabled]="!userIsSchedulerFinancialCategoryWriter()">
@@ -56,6 +63,10 @@
                             <div class="form-group" *ngIf="!isFieldHidden('defaultAmount')">
                                 <label for="FinancialCategory-defaultAmount" id="label-FinancialCategory-defaultAmount">Default Amount</label>
                                 <input type="number" id="FinancialCategory-defaultAmount" formControlName="defaultAmount" placeholder="Enter Default Amount" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-defaultAmount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalAccountId')">
+                                <label for="FinancialCategory-externalAccountId" id="label-FinancialCategory-externalAccountId">External Account Id</label>
+                                <input type="text" id="FinancialCategory-externalAccountId" formControlName="externalAccountId" placeholder="Enter External Account Id" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-externalAccountId" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                                 <label for="FinancialCategory-sequence" id="label-FinancialCategory-sequence">Sequence</label>

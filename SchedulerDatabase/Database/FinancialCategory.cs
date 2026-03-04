@@ -19,11 +19,15 @@ public partial class FinancialCategory
 
     public bool isRevenue { get; set; }
 
+    public string accountType { get; set; }
+
     public int? parentFinancialCategoryId { get; set; }
 
     public bool isTaxApplicable { get; set; }
 
     public decimal? defaultAmount { get; set; }
+
+    public string externalAccountId { get; set; }
 
     public int? sequence { get; set; }
 

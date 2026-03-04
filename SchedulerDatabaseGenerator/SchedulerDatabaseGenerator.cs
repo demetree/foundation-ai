@@ -2787,6 +2787,9 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
  DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
  sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+
+ accountType aligns with standard accounting classifications, enabling mapping to external systems
+ like QuickBooks: Income, Expense, COGS, Asset, Liability, Equity.
  ====================================================================================================";
 
             financialCategoryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
@@ -2795,16 +2798,104 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             financialCategoryTable.AddMultiTenantSupport();
             financialCategoryTable.AddNameAndDescriptionFields(true, true, false);
             financialCategoryTable.AddString50Field("code", false).AddScriptComments("Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).");
-            financialCategoryTable.AddBoolField("isRevenue", false, true).AddScriptComments("True = income category, False = expense category.");
+            financialCategoryTable.AddBoolField("isRevenue", false, true).AddScriptComments("True = income category, False = expense category. Maintained for backward compatibility.");
+            financialCategoryTable.AddString50Field("accountType", false, "Income").AddScriptComments("Standard accounting classification: Income, Expense, COGS, Asset, Liability, Equity. Maps directly to QuickBooks account types.");
             financialCategoryTable.AddForeignKeyField("parentFinancialCategoryId", financialCategoryTable, true, true).AddScriptComments("Optional parent for sub-categories.");
             financialCategoryTable.AddBoolField("isTaxApplicable", false, false).AddScriptComments("Whether HST/tax typically applies to transactions in this category.");
             financialCategoryTable.AddMoneyField("defaultAmount", true, true).AddScriptComments("Optional default amount for common transactions in this category.");
+            financialCategoryTable.AddString250Field("externalAccountId", true).AddScriptComments("Account ID in external system (e.g., QuickBooks account ID) for sync.").CreateIndex();
             financialCategoryTable.AddSequenceField();
             financialCategoryTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
             financialCategoryTable.AddVersionControl();
             financialCategoryTable.AddControlFields();
 
             financialCategoryTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
+
+
+            //
+            // Tax Code — Tax rates for financial transactions
+            // Maps to QuickBooks TaxCode/TaxRate objects for integration.
+            //
+            Database.Table taxCodeTable = database.AddTable("TaxCode");
+            taxCodeTable.comment = @"====================================================================================================
+ TAX CODE
+ Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
+ This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
+
+ DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
+ A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
+ ====================================================================================================";
+
+            taxCodeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            taxCodeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            taxCodeTable.AddIdField();
+            taxCodeTable.AddMultiTenantSupport();
+            taxCodeTable.AddNameAndDescriptionFields(true, true, false);
+            taxCodeTable.AddString50Field("code", false).AddScriptComments("Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').");
+            taxCodeTable.AddDecimalField("rate", false, 0, true).AddScriptComments("Tax rate as a percentage (e.g., 15.0 for 15% HST).");
+            taxCodeTable.AddBoolField("isDefault", false, false).AddScriptComments("Whether this is the default tax code for new transactions.");
+            taxCodeTable.AddBoolField("isExempt", false, false).AddScriptComments("True for tax-exempt codes (rate should be 0).");
+            taxCodeTable.AddString250Field("externalTaxCodeId", true).AddScriptComments("Tax code ID in external system (e.g., QuickBooks TaxCode ID).").CreateIndex();
+            taxCodeTable.AddSequenceField();
+            taxCodeTable.AddControlFields();
+
+            taxCodeTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
+
+
+            /* - this won't work without tenant guid 
+            // Seed with NL HST
+            taxCodeTable.AddData(new Dictionary<string, string> {
+                { "name", "HST (NL)" },
+                { "description", "Harmonized Sales Tax - Newfoundland and Labrador (15%)" },
+                { "code", "HST" },
+                { "rate", "15.0" },
+                { "isDefault", "1" },
+                { "isExempt", "0" },
+                { "sequence", "1" },
+                { "objectGuid", "c1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
+
+            taxCodeTable.AddData(new Dictionary<string, string> {
+                { "name", "Exempt" },
+                { "description", "Tax exempt" },
+                { "code", "EXEMPT" },
+                { "rate", "0" },
+                { "isDefault", "0" },
+                { "isExempt", "1" },
+                { "sequence", "2" },
+                { "objectGuid", "c1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
+            */
+
+            //
+            // Fiscal Period — Accounting period tracking
+            //
+            Database.Table fiscalPeriodTable = database.AddTable("FiscalPeriod");
+            fiscalPeriodTable.comment = @"====================================================================================================
+ FISCAL PERIOD
+ Tracks accounting periods (months, quarters, or custom periods) for financial reporting.
+ Supports period-close controls to prevent modifications to finalized periods.
+
+ DESIGN NOTE: Allows both calendar-year and fiscal-year configurations.
+ The isClosed flag prevents new transactions from being added to closed periods.
+ ====================================================================================================";
+
+            fiscalPeriodTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            fiscalPeriodTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            fiscalPeriodTable.AddIdField();
+            fiscalPeriodTable.AddMultiTenantSupport();
+            fiscalPeriodTable.AddNameAndDescriptionFields(true, true, false);
+            fiscalPeriodTable.AddDateTimeField("startDate", false).AddScriptComments("Period start date (inclusive).");
+            fiscalPeriodTable.AddDateTimeField("endDate", false).AddScriptComments("Period end date (inclusive).");
+            fiscalPeriodTable.AddString50Field("periodType", false, "Month").AddScriptComments("Period type: Month, Quarter, Year, Custom.");
+            fiscalPeriodTable.AddIntField("fiscalYear", false).AddScriptComments("The fiscal year this period belongs to.");
+            fiscalPeriodTable.AddIntField("periodNumber", false).AddScriptComments("Period number within the fiscal year (1-12 for months, 1-4 for quarters, 1 for year).");
+            fiscalPeriodTable.AddBoolField("isClosed", false, false).AddScriptComments("When true, no new transactions can be posted to this period.");
+            fiscalPeriodTable.AddDateTimeField("closedDate", true).AddScriptComments("When the period was closed.");
+            fiscalPeriodTable.AddString100Field("closedBy", true).AddScriptComments("User who closed the period.");
+            fiscalPeriodTable.AddSequenceField();
+            fiscalPeriodTable.AddVersionControl();
+            fiscalPeriodTable.AddControlFields();
+
+            fiscalPeriodTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "fiscalYear", "periodNumber" }, true);
 
 
             //
@@ -2832,18 +2923,23 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             financialTransactionTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("Link to the FinancialCategory (chart of accounts entry).");
             financialTransactionTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent when the transaction relates to a booking.");
             financialTransactionTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to the Contact who paid or was paid.");
+            financialTransactionTable.AddString50Field("contactRole", true, "Customer").AddScriptComments("Role of the linked contact: Customer, Vendor, Employee. Maps to QuickBooks entity types for sync.");
+            financialTransactionTable.AddForeignKeyField(taxCodeTable, true, true).AddScriptComments("Optional link to TaxCode. Overrides the category-level isTaxApplicable for precise tax handling.");
+            financialTransactionTable.AddForeignKeyField(fiscalPeriodTable, true, true).AddScriptComments("Optional link to FiscalPeriod. Auto-assigned based on transactionDate when null.");
             financialTransactionTable.AddDateTimeField("transactionDate", false).AddScriptComments("When the transaction occurred (UTC).").CreateIndex();
             financialTransactionTable.AddString500Field("description", false).AddScriptComments("Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').");
             financialTransactionTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Transaction amount before tax. Always positive — direction determined by isRevenue.");
-            financialTransactionTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("Tax amount (e.g., HST).");
+            financialTransactionTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("Tax amount (e.g., HST). Calculated from TaxCode.rate when applicable.");
             financialTransactionTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Total amount inclusive of tax (amount + taxAmount).");
             financialTransactionTable.AddBoolField("isRevenue", false, true).AddScriptComments("Denormalized from FinancialCategory. True = income, False = expense.");
+            financialTransactionTable.AddString50Field("journalEntryType", true).AddScriptComments("Double-entry type for accounting integration: Debit or Credit. Null = auto-determined from isRevenue.");
             financialTransactionTable.AddString50Field("paymentMethod", true).AddScriptComments("How payment was made: e-transfer, cash, cheque, card, etc.");
             financialTransactionTable.AddString100Field("referenceNumber", true).AddScriptComments("Cheque number, e-transfer reference, receipt number, etc.");
             financialTransactionTable.AddTextField("notes", true).AddScriptComments("Optional notes about the transaction.");
             financialTransactionTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Link to Currency table.");
             financialTransactionTable.AddDateTimeField("exportedDate", true).AddScriptComments("When this transaction was last exported for reporting (null = not exported yet).");
-            financialTransactionTable.AddString100Field("externalId", true).AddScriptComments("Identifier from external system.").CreateIndex();
+            financialTransactionTable.AddString100Field("externalId", true).AddScriptComments("Identifier from external system (e.g., QuickBooks Transaction ID).").CreateIndex();
+            financialTransactionTable.AddString50Field("externalSystemName", true).AddScriptComments("Name of the external system (e.g., 'QuickBooks', 'Xero') for multi-system tracking.");
             financialTransactionTable.AddVersionControl();
             financialTransactionTable.AddControlFields();
 

@@ -19,6 +19,8 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { FinancialCategoryData } from './financial-category.service';
 import { ScheduledEventData } from './scheduled-event.service';
 import { ContactData } from './contact.service';
+import { TaxCodeData } from './tax-code.service';
+import { FiscalPeriodData } from './fiscal-period.service';
 import { CurrencyData } from './currency.service';
 import { FinancialTransactionChangeHistoryService, FinancialTransactionChangeHistoryData } from './financial-transaction-change-history.service';
 import { DocumentService, DocumentData } from './document.service';
@@ -37,18 +39,23 @@ export class FinancialTransactionQueryParameters {
     financialCategoryId: bigint | number | null | undefined = null;
     scheduledEventId: bigint | number | null | undefined = null;
     contactId: bigint | number | null | undefined = null;
+    contactRole: string | null | undefined = null;
+    taxCodeId: bigint | number | null | undefined = null;
+    fiscalPeriodId: bigint | number | null | undefined = null;
     transactionDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     description: string | null | undefined = null;
     amount: number | null | undefined = null;
     taxAmount: number | null | undefined = null;
     totalAmount: number | null | undefined = null;
     isRevenue: boolean | null | undefined = null;
+    journalEntryType: string | null | undefined = null;
     paymentMethod: string | null | undefined = null;
     referenceNumber: string | null | undefined = null;
     notes: string | null | undefined = null;
     currencyId: bigint | number | null | undefined = null;
     exportedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     externalId: string | null | undefined = null;
+    externalSystemName: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -68,18 +75,23 @@ export class FinancialTransactionSubmitData {
     financialCategoryId!: bigint | number;
     scheduledEventId: bigint | number | null = null;
     contactId: bigint | number | null = null;
+    contactRole: string | null = null;
+    taxCodeId: bigint | number | null = null;
+    fiscalPeriodId: bigint | number | null = null;
     transactionDate!: string;      // ISO 8601 (full datetime)
     description!: string;
     amount!: number;
     taxAmount!: number;
     totalAmount!: number;
     isRevenue!: boolean;
+    journalEntryType: string | null = null;
     paymentMethod: string | null = null;
     referenceNumber: string | null = null;
     notes: string | null = null;
     currencyId!: bigint | number;
     exportedDate: string | null = null;     // ISO 8601 (full datetime)
     externalId: string | null = null;
+    externalSystemName: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -153,18 +165,23 @@ export class FinancialTransactionData {
     financialCategoryId!: bigint | number;
     scheduledEventId!: bigint | number;
     contactId!: bigint | number;
+    contactRole!: string | null;
+    taxCodeId!: bigint | number;
+    fiscalPeriodId!: bigint | number;
     transactionDate!: string;      // ISO 8601 (full datetime)
     description!: string;
     amount!: number;
     taxAmount!: number;
     totalAmount!: number;
     isRevenue!: boolean;
+    journalEntryType!: string | null;
     paymentMethod!: string | null;
     referenceNumber!: string | null;
     notes!: string | null;
     currencyId!: bigint | number;
     exportedDate!: string | null;   // ISO 8601 (full datetime)
     externalId!: string | null;
+    externalSystemName!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -172,7 +189,9 @@ export class FinancialTransactionData {
     contact: ContactData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     currency: CurrencyData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialCategory: FinancialCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    fiscalPeriod: FiscalPeriodData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     scheduledEvent: ScheduledEventData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    taxCode: TaxCodeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -681,18 +700,23 @@ export class FinancialTransactionService extends SecureEndpointBase {
         output.financialCategoryId = data.financialCategoryId;
         output.scheduledEventId = data.scheduledEventId;
         output.contactId = data.contactId;
+        output.contactRole = data.contactRole;
+        output.taxCodeId = data.taxCodeId;
+        output.fiscalPeriodId = data.fiscalPeriodId;
         output.transactionDate = data.transactionDate;
         output.description = data.description;
         output.amount = data.amount;
         output.taxAmount = data.taxAmount;
         output.totalAmount = data.totalAmount;
         output.isRevenue = data.isRevenue;
+        output.journalEntryType = data.journalEntryType;
         output.paymentMethod = data.paymentMethod;
         output.referenceNumber = data.referenceNumber;
         output.notes = data.notes;
         output.currencyId = data.currencyId;
         output.exportedDate = data.exportedDate;
         output.externalId = data.externalId;
+        output.externalSystemName = data.externalSystemName;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

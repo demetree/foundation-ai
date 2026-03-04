@@ -289,10 +289,13 @@ namespace Foundation.Scheduler.Database
 			public String code { get; set; }
 			[Required]
 			public Boolean isRevenue { get; set; }
+			[Required]
+			public String accountType { get; set; }
 			public Int32? parentFinancialCategoryId { get; set; }
 			[Required]
 			public Boolean isTaxApplicable { get; set; }
 			public Decimal? defaultAmount { get; set; }
+			public String externalAccountId { get; set; }
 			public Int32? sequence { get; set; }
 			public String color { get; set; }
 			public Int32 versionNumber { get; set; }
@@ -330,9 +333,11 @@ namespace Foundation.Scheduler.Database
 				description = this.description,
 				code = this.code,
 				isRevenue = this.isRevenue,
+				accountType = this.accountType,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
+				externalAccountId = this.externalAccountId,
 				sequence = this.sequence,
 				color = this.color,
 				versionNumber = this.versionNumber,
@@ -382,9 +387,11 @@ namespace Foundation.Scheduler.Database
 				description = this.description,
 				code = this.code,
 				isRevenue = this.isRevenue,
+				accountType = this.accountType,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
+				externalAccountId = this.externalAccountId,
 				sequence = this.sequence,
 				color = this.color,
 				versionNumber = this.versionNumber,
@@ -435,9 +442,11 @@ namespace Foundation.Scheduler.Database
 				description = dto.description,
 				code = dto.code,
 				isRevenue = dto.isRevenue,
+				accountType = dto.accountType,
 				parentFinancialCategoryId = dto.parentFinancialCategoryId,
 				isTaxApplicable = dto.isTaxApplicable,
 				defaultAmount = dto.defaultAmount,
+				externalAccountId = dto.externalAccountId,
 				sequence = dto.sequence,
 				color = dto.color,
 				versionNumber = dto.versionNumber,
@@ -464,9 +473,11 @@ namespace Foundation.Scheduler.Database
 			this.description = dto.description;
 			this.code = dto.code;
 			this.isRevenue = dto.isRevenue;
+			this.accountType = dto.accountType;
 			this.parentFinancialCategoryId = dto.parentFinancialCategoryId;
 			this.isTaxApplicable = dto.isTaxApplicable;
 			this.defaultAmount = dto.defaultAmount;
+			this.externalAccountId = dto.externalAccountId;
 			this.sequence = dto.sequence;
 			this.color = dto.color;
 			this.versionNumber = dto.versionNumber;
@@ -499,9 +510,11 @@ namespace Foundation.Scheduler.Database
 				description = this.description,
 				code = this.code,
 				isRevenue = this.isRevenue,
+				accountType = this.accountType,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
+				externalAccountId = this.externalAccountId,
 				sequence = this.sequence,
 				color = this.color,
 				versionNumber = this.versionNumber,
@@ -565,9 +578,11 @@ namespace Foundation.Scheduler.Database
 				description = financialCategory.description,
 				code = financialCategory.code,
 				isRevenue = financialCategory.isRevenue,
+				accountType = financialCategory.accountType,
 				parentFinancialCategoryId = financialCategory.parentFinancialCategoryId,
 				isTaxApplicable = financialCategory.isTaxApplicable,
 				defaultAmount = financialCategory.defaultAmount,
+				externalAccountId = financialCategory.externalAccountId,
 				sequence = financialCategory.sequence,
 				color = financialCategory.color,
 				versionNumber = financialCategory.versionNumber,
@@ -598,9 +613,11 @@ namespace Foundation.Scheduler.Database
 				description = financialCategory.description,
 				code = financialCategory.code,
 				isRevenue = financialCategory.isRevenue,
+				accountType = financialCategory.accountType,
 				parentFinancialCategoryId = financialCategory.parentFinancialCategoryId,
 				isTaxApplicable = financialCategory.isTaxApplicable,
 				defaultAmount = financialCategory.defaultAmount,
+				externalAccountId = financialCategory.externalAccountId,
 				sequence = financialCategory.sequence,
 				color = financialCategory.color,
 				versionNumber = financialCategory.versionNumber,

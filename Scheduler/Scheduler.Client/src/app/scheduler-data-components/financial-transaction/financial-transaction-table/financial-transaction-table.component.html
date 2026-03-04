@@ -39,6 +39,18 @@
                 Contact
                 <span *ngIf="sortColumn === 'contact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('contactRole')">
+                Contact  Role
+                <span *ngIf="sortColumn === 'contactRole'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('taxCode.name')">
+                Tax  Code
+                <span *ngIf="sortColumn === 'taxCode.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fiscalPeriod.name')">
+                Fiscal  Period
+                <span *ngIf="sortColumn === 'fiscalPeriod.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('transactionDate')">
                 Transaction  Date
                 <span *ngIf="sortColumn === 'transactionDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -63,6 +75,10 @@
                 Is  Revenue
                 <span *ngIf="sortColumn === 'isRevenue'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('journalEntryType')">
+                Journal  Entry  Type
+                <span *ngIf="sortColumn === 'journalEntryType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('paymentMethod')">
                 Payment  Method
                 <span *ngIf="sortColumn === 'paymentMethod'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -86,6 +102,10 @@
             <th class="sortable" scope="col" (click)="sortBy('externalId')">
                 External  Id
                 <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalSystemName')">
+                External  System  Name
+                <span *ngIf="sortColumn === 'externalSystemName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
 End of commented block for alternate definition option -->
           </tr>
@@ -175,18 +195,23 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/financialcategory', financialTransaction.financialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{financialTransaction.financialCategory?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/scheduledevent', financialTransaction.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{financialTransaction.scheduledEvent?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/contact', financialTransaction.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{financialTransaction.contact?.name}}</a></td>
-            <td class="text-truncate"><a [routerLink]="['/financialtransaction', financialTransaction.id]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{financialTransaction.transactionDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialtransaction', financialTransaction.id]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{financialTransaction.contactRole}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/taxcode', financialTransaction.taxCodeId]" class="btn btn-link text-left" ngbTooltip="Open Tax Code details">{{financialTransaction.taxCode?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/fiscalperiod', financialTransaction.fiscalPeriodId]" class="btn btn-link text-left" ngbTooltip="Open Fiscal Period details">{{financialTransaction.fiscalPeriod?.name}}</a></td>
+            <td class="text-truncate">{{financialTransaction.transactionDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{financialTransaction.description}}</td>
             <td class="text-truncate">{{financialTransaction.amount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{financialTransaction.taxAmount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{financialTransaction.totalAmount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="financialTransaction.isRevenue"/></td>
+            <td class="text-truncate">{{financialTransaction.journalEntryType}}</td>
             <td class="text-truncate">{{financialTransaction.paymentMethod}}</td>
             <td class="text-truncate">{{financialTransaction.referenceNumber}}</td>
             <td class="text-truncate">{{financialTransaction.notes}}</td>
             <td class="text-truncate"><a [routerLink]="['/currency', financialTransaction.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{financialTransaction.currency?.name}}</a></td>
             <td class="text-truncate">{{financialTransaction.exportedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{financialTransaction.externalId}}</td>
+            <td class="text-truncate">{{financialTransaction.externalSystemName}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -346,6 +371,18 @@ End of commented block for alternate definition option -->
               <strong>Contact: </strong>
               <a [routerLink]="['/contact', financialTransaction.contactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{financialTransaction.contact?.name}}</a>
             </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.contactRole != null">
+              <strong>Contact Role: </strong>
+              {{financialTransaction.contactRole}}
+            </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.taxCodeId != null">
+              <strong>Tax Code: </strong>
+              <a [routerLink]="['/taxcode', financialTransaction.taxCodeId]" class="text-left p-0 m-0" ngbTooltip="Open Tax Code details">{{financialTransaction.taxCode?.name}}</a>
+            </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.fiscalPeriodId != null">
+              <strong>Fiscal Period: </strong>
+              <a [routerLink]="['/fiscalperiod', financialTransaction.fiscalPeriodId]" class="text-left p-0 m-0" ngbTooltip="Open Fiscal Period details">{{financialTransaction.fiscalPeriod?.name}}</a>
+            </p>
             <p class="financial-transaction-info" *ngIf="financialTransaction.transactionDate != null">
               <strong>Transaction Date: </strong>
               {{financialTransaction.transactionDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
@@ -370,6 +407,10 @@ End of commented block for alternate definition option -->
               <strong>Is Revenue: </strong>
               <boolean-icon [value]="financialTransaction.isRevenue"/>
             </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.journalEntryType != null">
+              <strong>Journal Entry Type: </strong>
+              {{financialTransaction.journalEntryType}}
+            </p>
             <p class="financial-transaction-info" *ngIf="financialTransaction.paymentMethod != null">
               <strong>Payment Method: </strong>
               {{financialTransaction.paymentMethod}}
@@ -393,6 +434,10 @@ End of commented block for alternate definition option -->
             <p class="financial-transaction-info" *ngIf="financialTransaction.externalId != null">
               <strong>External Id: </strong>
               {{financialTransaction.externalId}}
+            </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.externalSystemName != null">
+              <strong>External System Name: </strong>
+              {{financialTransaction.externalSystemName}}
             </p>
             </div>
          </div>

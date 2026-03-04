@@ -1,0 +1,73 @@
+<div class="add-fiscal-period-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-fiscal-period-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Fiscal Period Change History" 
+        *ngIf="userIsSchedulerFiscalPeriodChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #fiscalPeriodChangeHistoryModal let-modal>
+   <div class="modal-header fiscal-period-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="fiscalPeriodChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Fiscal Period Change History' : 'Add Fiscal Period Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body fiscal-period-change-history-modal-body">
+      <form [formGroup]="fiscalPeriodChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('fiscalPeriodId')">
+                <label for="FiscalPeriodChangeHistory-fiscalPeriodId" id="label-FiscalPeriodChangeHistory-fiscalPeriodId"><span class="text-danger">*</span>Fiscal Period</label>
+                <select id="FiscalPeriodChangeHistory-fiscalPeriodId" formControlName="fiscalPeriodId" class="form-select fiscal-period-change-history-select" [disabled]="!userIsSchedulerFiscalPeriodChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Fiscal Period</option>
+                    <option *ngFor="let fiscalPeriod of fiscalPeriods$ | async" [ngValue]="fiscalPeriod.id">{{fiscalPeriod.name}}</option>
+                </select>
+                <div *ngIf="fiscalPeriodChangeHistoryForm.get('fiscalPeriodId')?.invalid && fiscalPeriodChangeHistoryForm.get('fiscalPeriodId')?.touched" class="text-danger">
+                    Fiscal Period is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="FiscalPeriodChangeHistory-versionNumber" id="label-FiscalPeriodChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="FiscalPeriodChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control fiscal-period-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="FiscalPeriodChangeHistory-timeStamp" id="label-FiscalPeriodChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="FiscalPeriodChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control fiscal-period-change-history-input" [disabled]="!userIsSchedulerFiscalPeriodChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="fiscalPeriodChangeHistoryForm.get('timeStamp')?.invalid && fiscalPeriodChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="FiscalPeriodChangeHistory-userId" id="label-FiscalPeriodChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="FiscalPeriodChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control fiscal-period-change-history-input" [disabled]="!userIsSchedulerFiscalPeriodChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="fiscalPeriodChangeHistoryForm.get('userId')?.invalid && fiscalPeriodChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="FiscalPeriodChangeHistory-data" id="label-FiscalPeriodChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="FiscalPeriodChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control fiscal-period-change-history-input" [disabled]="!userIsSchedulerFiscalPeriodChangeHistoryWriter()"></textarea>
+                <div *ngIf="fiscalPeriodChangeHistoryForm.get('data')?.invalid && fiscalPeriodChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer fiscal-period-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Fiscal Period Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !fiscalPeriodChangeHistoryForm.valid || fiscalPeriodChangeHistoryForm.pristine  || userIsSchedulerFiscalPeriodChangeHistoryWriter() == false " ngbTooltip="Save the Fiscal Period Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Fiscal Period Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

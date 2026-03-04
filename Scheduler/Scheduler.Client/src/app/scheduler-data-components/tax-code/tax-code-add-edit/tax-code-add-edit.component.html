@@ -1,0 +1,90 @@
+<div class="add-tax-code" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-tax-code me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Tax Code" 
+        *ngIf="userIsSchedulerTaxCodeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #taxCodeModal let-modal>
+   <div class="modal-header tax-code-modal-header">
+      <h5 class="modal-title mb-0" id="taxCodeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Tax Code' : 'Add Tax Code' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body tax-code-modal-body">
+      <form [formGroup]="taxCodeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="TaxCode-name" id="label-TaxCode-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="TaxCode-name" formControlName="name" placeholder="Enter Name" class="form-control tax-code-input" [disabled]="!userIsSchedulerTaxCodeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="taxCodeForm.get('name')?.invalid && taxCodeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="TaxCode-description" id="label-TaxCode-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="TaxCode-description" formControlName="description" placeholder="Enter Description" class="form-control tax-code-input" [disabled]="!userIsSchedulerTaxCodeWriter()"></textarea>
+                <div *ngIf="taxCodeForm.get('description')?.invalid && taxCodeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('code')">
+                <label for="TaxCode-code" id="label-TaxCode-code"><span class="text-danger">*</span>Code</label>
+                <input type="text" id="TaxCode-code" formControlName="code" placeholder="Enter Code" class="form-control tax-code-input" [disabled]="!userIsSchedulerTaxCodeWriter()" aria-labelledby="label-code" />
+                <div *ngIf="taxCodeForm.get('code')?.invalid && taxCodeForm.get('code')?.touched" class="text-danger">
+                    Code is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rate')">
+                <label for="TaxCode-rate" id="label-TaxCode-rate"><span class="text-danger">*</span>Rate</label>
+                <input type="number" id="TaxCode-rate" formControlName="rate" placeholder="Enter Rate" class="form-control tax-code-input" [disabled]="!userIsSchedulerTaxCodeWriter()" aria-labelledby="label-rate" />
+                <div *ngIf="taxCodeForm.get('rate')?.invalid && taxCodeForm.get('rate')?.touched" class="text-danger">
+                    Rate is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDefault')">
+                <input type="checkbox" id="TaxCode-isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsSchedulerTaxCodeWriter()" />
+                <label for="TaxCode-isDefault" class="form-check-label" id="label-TaxCode-isDefault"><span class="text-danger">*</span>Is Default</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isExempt')">
+                <input type="checkbox" id="TaxCode-isExempt" formControlName="isExempt" class="form-check-input" [disabled]="!userIsSchedulerTaxCodeWriter()" />
+                <label for="TaxCode-isExempt" class="form-check-label" id="label-TaxCode-isExempt"><span class="text-danger">*</span>Is Exempt</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('externalTaxCodeId')">
+                <label for="TaxCode-externalTaxCodeId" id="label-TaxCode-externalTaxCodeId">External Tax Code Id</label>
+                <input type="text" id="TaxCode-externalTaxCodeId" formControlName="externalTaxCodeId" placeholder="Enter External Tax Code Id" class="form-control tax-code-input" [disabled]="!userIsSchedulerTaxCodeWriter()" aria-labelledby="label-externalTaxCodeId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="TaxCode-sequence" id="label-TaxCode-sequence">Sequence</label>
+                <input type="number" id="TaxCode-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control tax-code-input" [disabled]="!userIsSchedulerTaxCodeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="TaxCode-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerTaxCodeWriter()" />
+                <label for="TaxCode-active" class="form-check-label" id="label-TaxCode-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="TaxCode-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerTaxCodeWriter()" />
+                <label for="TaxCode-deleted" class="form-check-label" id="label-TaxCode-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer tax-code-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Tax Code changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !taxCodeForm.valid || taxCodeForm.pristine  || userIsSchedulerTaxCodeWriter() == false " ngbTooltip="Save the Tax Code changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Tax Code' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

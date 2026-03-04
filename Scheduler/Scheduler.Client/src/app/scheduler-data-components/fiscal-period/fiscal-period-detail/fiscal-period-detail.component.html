@@ -1,0 +1,155 @@
+<div class="container-fluid p-1 m-0 fiscal-period-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="fiscal-period-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Fiscal Period</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Fiscal Period' : 'Add Fiscal Period'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerFiscalPeriodReader()">
+                <div class="col m-2 fiscal-period-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="fiscalPeriodForm" (ngSubmit)="submitForm()" class="fiscal-period-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="FiscalPeriod-name" id="label-FiscalPeriod-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="FiscalPeriod-name" formControlName="name" placeholder="Enter Name" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="fiscalPeriodForm.get('name')?.invalid && fiscalPeriodForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="FiscalPeriod-description" id="label-FiscalPeriod-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="FiscalPeriod-description" formControlName="description" placeholder="Enter Description" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()"></textarea>
+                                <div *ngIf="fiscalPeriodForm.get('description')?.invalid && fiscalPeriodForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startDate')">
+                                <label for="FiscalPeriod-startDate" id="label-FiscalPeriod-startDate"><span class="text-danger">*</span>Start Date</label>
+                                <input type="datetime-local" id="FiscalPeriod-startDate" formControlName="startDate" placeholder="Enter Start Date" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-startDate" />
+                                <div *ngIf="fiscalPeriodForm.get('startDate')?.invalid && fiscalPeriodForm.get('startDate')?.touched" class="text-danger">
+                                    Start Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endDate')">
+                                <label for="FiscalPeriod-endDate" id="label-FiscalPeriod-endDate"><span class="text-danger">*</span>End Date</label>
+                                <input type="datetime-local" id="FiscalPeriod-endDate" formControlName="endDate" placeholder="Enter End Date" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-endDate" />
+                                <div *ngIf="fiscalPeriodForm.get('endDate')?.invalid && fiscalPeriodForm.get('endDate')?.touched" class="text-danger">
+                                    End Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('periodType')">
+                                <label for="FiscalPeriod-periodType" id="label-FiscalPeriod-periodType"><span class="text-danger">*</span>Period Type</label>
+                                <input type="text" id="FiscalPeriod-periodType" formControlName="periodType" placeholder="Enter Period Type" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-periodType" />
+                                <div *ngIf="fiscalPeriodForm.get('periodType')?.invalid && fiscalPeriodForm.get('periodType')?.touched" class="text-danger">
+                                    Period Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fiscalYear')">
+                                <label for="FiscalPeriod-fiscalYear" id="label-FiscalPeriod-fiscalYear"><span class="text-danger">*</span>Fiscal Year</label>
+                                <input type="number" id="FiscalPeriod-fiscalYear" formControlName="fiscalYear" placeholder="Enter Fiscal Year" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-fiscalYear" />
+                                <div *ngIf="fiscalPeriodForm.get('fiscalYear')?.invalid && fiscalPeriodForm.get('fiscalYear')?.touched" class="text-danger">
+                                    Fiscal Year is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('periodNumber')">
+                                <label for="FiscalPeriod-periodNumber" id="label-FiscalPeriod-periodNumber"><span class="text-danger">*</span>Period Number</label>
+                                <input type="number" id="FiscalPeriod-periodNumber" formControlName="periodNumber" placeholder="Enter Period Number" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-periodNumber" />
+                                <div *ngIf="fiscalPeriodForm.get('periodNumber')?.invalid && fiscalPeriodForm.get('periodNumber')?.touched" class="text-danger">
+                                    Period Number is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isClosed')">
+                                <input type="checkbox" id="FiscalPeriod-isClosed" formControlName="isClosed" class="form-check-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" />
+                                <label for="FiscalPeriod-isClosed" class="form-check-label" id="label-FiscalPeriod-isClosed"><span class="text-danger">*</span>Is Closed</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('closedDate')">
+                                <label for="FiscalPeriod-closedDate" id="label-FiscalPeriod-closedDate">Closed Date</label>
+                                <input type="datetime-local" id="FiscalPeriod-closedDate" formControlName="closedDate" placeholder="Enter Closed Date" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-closedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('closedBy')">
+                                <label for="FiscalPeriod-closedBy" id="label-FiscalPeriod-closedBy">Closed By</label>
+                                <input type="text" id="FiscalPeriod-closedBy" formControlName="closedBy" placeholder="Enter Closed By" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-closedBy" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="FiscalPeriod-sequence" id="label-FiscalPeriod-sequence">Sequence</label>
+                                <input type="number" id="FiscalPeriod-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control fiscal-period-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="FiscalPeriod-versionNumber" id="label-FiscalPeriod-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="FiscalPeriod-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control fiscal-period-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FiscalPeriod-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" />
+                                <label for="FiscalPeriod-active" class="form-check-label" id="label-FiscalPeriod-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FiscalPeriod-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" />
+                                <label for="FiscalPeriod-deleted" class="form-check-label" id="label-FiscalPeriod-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="fiscal-period-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="fiscalPeriodForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Fiscal Period">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !fiscalPeriodForm.valid || !fiscalPeriodForm.dirty || fiscalPeriodForm.pristine  || userIsSchedulerFiscalPeriodWriter() == false " ngbTooltip="Save the Fiscal Period changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Fiscal Period' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerFiscalPeriodReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 fiscal-period-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="fiscalPeriodChangeHistoryService.userIsSchedulerFiscalPeriodChangeHistoryReader()">
+                            <button ngbNavLink>Fiscal Period Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (fiscalPeriodData?.FiscalPeriodChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-fiscal-period-change-history-table [queryParams]="{ fiscalPeriodId: fiscalPeriodData?.id }" [showAddButton]="true" [preSeededData]="{ fiscalPeriodId: fiscalPeriodData?.id }" [hiddenFields]="['fiscalPeriodId']"></app-fiscal-period-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (fiscalPeriodData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ fiscalPeriodId: fiscalPeriodData?.id }" [showAddButton]="true" [preSeededData]="{ fiscalPeriodId: fiscalPeriodData?.id }" [hiddenFields]="['fiscalPeriodId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

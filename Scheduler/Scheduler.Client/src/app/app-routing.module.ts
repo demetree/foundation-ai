@@ -224,6 +224,10 @@ import { FinancialTransactionListingComponent } from './scheduler-data-component
 import { FinancialTransactionDetailComponent } from './scheduler-data-components/financial-transaction/financial-transaction-detail/financial-transaction-detail.component';
 import { FinancialTransactionChangeHistoryListingComponent } from './scheduler-data-components/financial-transaction-change-history/financial-transaction-change-history-listing/financial-transaction-change-history-listing.component';
 import { FinancialTransactionChangeHistoryDetailComponent } from './scheduler-data-components/financial-transaction-change-history/financial-transaction-change-history-detail/financial-transaction-change-history-detail.component';
+import { FiscalPeriodListingComponent } from './scheduler-data-components/fiscal-period/fiscal-period-listing/fiscal-period-listing.component';
+import { FiscalPeriodDetailComponent } from './scheduler-data-components/fiscal-period/fiscal-period-detail/fiscal-period-detail.component';
+import { FiscalPeriodChangeHistoryListingComponent } from './scheduler-data-components/fiscal-period-change-history/fiscal-period-change-history-listing/fiscal-period-change-history-listing.component';
+import { FiscalPeriodChangeHistoryDetailComponent } from './scheduler-data-components/fiscal-period-change-history/fiscal-period-change-history-detail/fiscal-period-change-history-detail.component';
 import { FundListingComponent } from './scheduler-data-components/fund/fund-listing/fund-listing.component';
 import { FundDetailComponent } from './scheduler-data-components/fund/fund-detail/fund-detail.component';
 import { FundChangeHistoryListingComponent } from './scheduler-data-components/fund-change-history/fund-change-history-listing/fund-change-history-listing.component';
@@ -378,6 +382,8 @@ import { StateProvinceListingComponent } from './scheduler-data-components/state
 import { StateProvinceDetailComponent } from './scheduler-data-components/state-province/state-province-detail/state-province-detail.component';
 import { TagListingComponent } from './scheduler-data-components/tag/tag-listing/tag-listing.component';
 import { TagDetailComponent } from './scheduler-data-components/tag/tag-detail/tag-detail.component';
+import { TaxCodeListingComponent } from './scheduler-data-components/tax-code/tax-code-listing/tax-code-listing.component';
+import { TaxCodeDetailComponent } from './scheduler-data-components/tax-code/tax-code-detail/tax-code-detail.component';
 import { TenantProfileListingComponent } from './scheduler-data-components/tenant-profile/tenant-profile-listing/tenant-profile-listing.component';
 import { TenantProfileDetailComponent } from './scheduler-data-components/tenant-profile/tenant-profile-detail/tenant-profile-detail.component';
 import { TenantProfileChangeHistoryListingComponent } from './scheduler-data-components/tenant-profile-change-history/tenant-profile-change-history-listing/tenant-profile-change-history-listing.component';
@@ -825,6 +831,16 @@ const routes: Routes = [
   {path: 'financialtransactionchangehistories/:financialTransactionChangeHistoryId', component: FinancialTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction Change History' },
   {path: 'financialtransactionchangehistory/:financialTransactionChangeHistoryId', component: FinancialTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction Change History' },
   {path: 'financialtransactionchangehistory',  redirectTo: 'financialtransactionchangehistories'},
+  {path: 'fiscalperiods', component: FiscalPeriodListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Fiscal Periods' },
+  {path: 'fiscalperiods/new', component: FiscalPeriodDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Fiscal Period' },
+  {path: 'fiscalperiods/:fiscalPeriodId', component: FiscalPeriodDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fiscal Period' },
+  {path: 'fiscalperiod/:fiscalPeriodId', component: FiscalPeriodDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fiscal Period' },
+  {path: 'fiscalperiod',  redirectTo: 'fiscalperiods'},
+  {path: 'fiscalperiodchangehistories', component: FiscalPeriodChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Fiscal Period Change Histories' },
+  {path: 'fiscalperiodchangehistories/new', component: FiscalPeriodChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Fiscal Period Change History' },
+  {path: 'fiscalperiodchangehistories/:fiscalPeriodChangeHistoryId', component: FiscalPeriodChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fiscal Period Change History' },
+  {path: 'fiscalperiodchangehistory/:fiscalPeriodChangeHistoryId', component: FiscalPeriodChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fiscal Period Change History' },
+  {path: 'fiscalperiodchangehistory',  redirectTo: 'fiscalperiodchangehistories'},
   {path: 'funds', component: FundListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Funds' },
   {path: 'funds/new', component: FundDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Fund' },
   {path: 'funds/:fundId', component: FundDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fund' },
@@ -1210,6 +1226,11 @@ const routes: Routes = [
   {path: 'tags/:tagId', component: TagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tag' },
   {path: 'tag/:tagId', component: TagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tag' },
   {path: 'tag',  redirectTo: 'tags'},
+  {path: 'taxcodes', component: TaxCodeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Tax Codes' },
+  {path: 'taxcodes/new', component: TaxCodeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Tax Code' },
+  {path: 'taxcodes/:taxCodeId', component: TaxCodeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tax Code' },
+  {path: 'taxcode/:taxCodeId', component: TaxCodeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tax Code' },
+  {path: 'taxcode',  redirectTo: 'taxcodes'},
   {path: 'tenantprofiles', component: TenantProfileListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Tenant Profiles' },
   {path: 'tenantprofiles/new', component: TenantProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Tenant Profile' },
   {path: 'tenantprofiles/:tenantProfileId', component: TenantProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tenant Profile' },

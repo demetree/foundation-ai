@@ -17,6 +17,12 @@ public partial class FinancialTransaction
 
     public int? contactId { get; set; }
 
+    public string contactRole { get; set; }
+
+    public int? taxCodeId { get; set; }
+
+    public int? fiscalPeriodId { get; set; }
+
     public DateTime transactionDate { get; set; }
 
     public string description { get; set; }
@@ -29,6 +35,8 @@ public partial class FinancialTransaction
 
     public bool isRevenue { get; set; }
 
+    public string journalEntryType { get; set; }
+
     public string paymentMethod { get; set; }
 
     public string referenceNumber { get; set; }
@@ -40,6 +48,8 @@ public partial class FinancialTransaction
     public DateTime? exportedDate { get; set; }
 
     public string externalId { get; set; }
+
+    public string externalSystemName { get; set; }
 
     public int versionNumber { get; set; }
 
@@ -61,5 +71,9 @@ public partial class FinancialTransaction
 
     public virtual FinancialCategory financialCategory { get; set; }
 
+    public virtual FiscalPeriod fiscalPeriod { get; set; }
+
     public virtual ScheduledEvent scheduledEvent { get; set; }
+
+    public virtual TaxCode taxCode { get; set; }
 }

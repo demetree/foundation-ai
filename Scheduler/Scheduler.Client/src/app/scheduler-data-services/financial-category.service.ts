@@ -33,9 +33,11 @@ export class FinancialCategoryQueryParameters {
     description: string | null | undefined = null;
     code: string | null | undefined = null;
     isRevenue: boolean | null | undefined = null;
+    accountType: string | null | undefined = null;
     parentFinancialCategoryId: bigint | number | null | undefined = null;
     isTaxApplicable: boolean | null | undefined = null;
     defaultAmount: number | null | undefined = null;
+    externalAccountId: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -58,9 +60,11 @@ export class FinancialCategorySubmitData {
     description!: string;
     code!: string;
     isRevenue!: boolean;
+    accountType!: string;
     parentFinancialCategoryId: bigint | number | null = null;
     isTaxApplicable!: boolean;
     defaultAmount: number | null = null;
+    externalAccountId: string | null = null;
     sequence: bigint | number | null = null;
     color: string | null = null;
     versionNumber!: bigint | number;
@@ -137,9 +141,11 @@ export class FinancialCategoryData {
     description!: string;
     code!: string;
     isRevenue!: boolean;
+    accountType!: string;
     parentFinancialCategoryId!: bigint | number;
     isTaxApplicable!: boolean;
     defaultAmount!: number | null;
+    externalAccountId!: string | null;
     sequence!: bigint | number;
     color!: string | null;
     versionNumber!: bigint | number;
@@ -555,9 +561,11 @@ export class FinancialCategoryService extends SecureEndpointBase {
         output.description = data.description;
         output.code = data.code;
         output.isRevenue = data.isRevenue;
+        output.accountType = data.accountType;
         output.parentFinancialCategoryId = data.parentFinancialCategoryId;
         output.isTaxApplicable = data.isTaxApplicable;
         output.defaultAmount = data.defaultAmount;
+        output.externalAccountId = data.externalAccountId;
         output.sequence = data.sequence;
         output.color = data.color;
         output.versionNumber = data.versionNumber;

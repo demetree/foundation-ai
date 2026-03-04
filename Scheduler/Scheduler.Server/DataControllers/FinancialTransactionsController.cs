@@ -69,18 +69,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? financialCategoryId = null,
 			int? scheduledEventId = null,
 			int? contactId = null,
+			string contactRole = null,
+			int? taxCodeId = null,
+			int? fiscalPeriodId = null,
 			DateTime? transactionDate = null,
 			string description = null,
 			decimal? amount = null,
 			decimal? taxAmount = null,
 			decimal? totalAmount = null,
 			bool? isRevenue = null,
+			string journalEntryType = null,
 			string paymentMethod = null,
 			string referenceNumber = null,
 			string notes = null,
 			int? currencyId = null,
 			DateTime? exportedDate = null,
 			string externalId = null,
+			string externalSystemName = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -160,6 +165,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ft => ft.contactId == contactId.Value);
 			}
+			if (string.IsNullOrEmpty(contactRole) == false)
+			{
+				query = query.Where(ft => ft.contactRole == contactRole);
+			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ft => ft.taxCodeId == taxCodeId.Value);
+			}
+			if (fiscalPeriodId.HasValue == true)
+			{
+				query = query.Where(ft => ft.fiscalPeriodId == fiscalPeriodId.Value);
+			}
 			if (transactionDate.HasValue == true)
 			{
 				query = query.Where(ft => ft.transactionDate == transactionDate.Value);
@@ -184,6 +201,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ft => ft.isRevenue == isRevenue.Value);
 			}
+			if (string.IsNullOrEmpty(journalEntryType) == false)
+			{
+				query = query.Where(ft => ft.journalEntryType == journalEntryType);
+			}
 			if (string.IsNullOrEmpty(paymentMethod) == false)
 			{
 				query = query.Where(ft => ft.paymentMethod == paymentMethod);
@@ -207,6 +228,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(externalId) == false)
 			{
 				query = query.Where(ft => ft.externalId == externalId);
+			}
+			if (string.IsNullOrEmpty(externalSystemName) == false)
+			{
+				query = query.Where(ft => ft.externalSystemName == externalSystemName);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -241,7 +266,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(ft => ft.deleted == false);
 			}
 
-			query = query.OrderBy(ft => ft.description).ThenBy(ft => ft.paymentMethod).ThenBy(ft => ft.referenceNumber);
+			query = query.OrderBy(ft => ft.contactRole).ThenBy(ft => ft.description).ThenBy(ft => ft.journalEntryType);
 
 
 			//
@@ -252,11 +277,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.description.Contains(anyStringContains)
+			       x.contactRole.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.journalEntryType.Contains(anyStringContains)
 			       || x.paymentMethod.Contains(anyStringContains)
 			       || x.referenceNumber.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
+			       || x.externalSystemName.Contains(anyStringContains)
 			       || (includeRelations == true && x.contact.firstName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.middleName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.lastName.Contains(anyStringContains))
@@ -280,7 +308,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.financialCategory.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialCategory.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialCategory.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.accountType.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.externalAccountId.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialCategory.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.fiscalPeriod.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.fiscalPeriod.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.fiscalPeriod.periodType.Contains(anyStringContains))
+			       || (includeRelations == true && x.fiscalPeriod.closedBy.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.location.Contains(anyStringContains))
@@ -288,6 +322,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.scheduledEvent.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.externalTaxCodeId.Contains(anyStringContains))
 			   );
 			}
 
@@ -296,7 +334,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Include(x => x.contact);
 				query = query.Include(x => x.currency);
 				query = query.Include(x => x.financialCategory);
+				query = query.Include(x => x.fiscalPeriod);
 				query = query.Include(x => x.scheduledEvent);
+				query = query.Include(x => x.taxCode);
 				query = query.AsSplitQuery();
 			}
 
@@ -348,18 +388,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? financialCategoryId = null,
 			int? scheduledEventId = null,
 			int? contactId = null,
+			string contactRole = null,
+			int? taxCodeId = null,
+			int? fiscalPeriodId = null,
 			DateTime? transactionDate = null,
 			string description = null,
 			decimal? amount = null,
 			decimal? taxAmount = null,
 			decimal? totalAmount = null,
 			bool? isRevenue = null,
+			string journalEntryType = null,
 			string paymentMethod = null,
 			string referenceNumber = null,
 			string notes = null,
 			int? currencyId = null,
 			DateTime? exportedDate = null,
 			string externalId = null,
+			string externalSystemName = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -419,6 +464,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ft => ft.contactId == contactId.Value);
 			}
+			if (contactRole != null)
+			{
+				query = query.Where(ft => ft.contactRole == contactRole);
+			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ft => ft.taxCodeId == taxCodeId.Value);
+			}
+			if (fiscalPeriodId.HasValue == true)
+			{
+				query = query.Where(ft => ft.fiscalPeriodId == fiscalPeriodId.Value);
+			}
 			if (transactionDate.HasValue == true)
 			{
 				query = query.Where(ft => ft.transactionDate == transactionDate.Value);
@@ -443,6 +500,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ft => ft.isRevenue == isRevenue.Value);
 			}
+			if (journalEntryType != null)
+			{
+				query = query.Where(ft => ft.journalEntryType == journalEntryType);
+			}
 			if (paymentMethod != null)
 			{
 				query = query.Where(ft => ft.paymentMethod == paymentMethod);
@@ -466,6 +527,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (externalId != null)
 			{
 				query = query.Where(ft => ft.externalId == externalId);
+			}
+			if (externalSystemName != null)
+			{
+				query = query.Where(ft => ft.externalSystemName == externalSystemName);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -508,11 +573,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.description.Contains(anyStringContains)
+			       x.contactRole.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.journalEntryType.Contains(anyStringContains)
 			       || x.paymentMethod.Contains(anyStringContains)
 			       || x.referenceNumber.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
+			       || x.externalSystemName.Contains(anyStringContains)
 			       || x.contact.firstName.Contains(anyStringContains)
 			       || x.contact.middleName.Contains(anyStringContains)
 			       || x.contact.lastName.Contains(anyStringContains)
@@ -536,7 +604,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialCategory.name.Contains(anyStringContains)
 			       || x.financialCategory.description.Contains(anyStringContains)
 			       || x.financialCategory.code.Contains(anyStringContains)
+			       || x.financialCategory.accountType.Contains(anyStringContains)
+			       || x.financialCategory.externalAccountId.Contains(anyStringContains)
 			       || x.financialCategory.color.Contains(anyStringContains)
+			       || x.fiscalPeriod.name.Contains(anyStringContains)
+			       || x.fiscalPeriod.description.Contains(anyStringContains)
+			       || x.fiscalPeriod.periodType.Contains(anyStringContains)
+			       || x.fiscalPeriod.closedBy.Contains(anyStringContains)
 			       || x.scheduledEvent.name.Contains(anyStringContains)
 			       || x.scheduledEvent.description.Contains(anyStringContains)
 			       || x.scheduledEvent.location.Contains(anyStringContains)
@@ -544,6 +618,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.taxCode.name.Contains(anyStringContains)
+			       || x.taxCode.description.Contains(anyStringContains)
+			       || x.taxCode.code.Contains(anyStringContains)
+			       || x.taxCode.externalTaxCodeId.Contains(anyStringContains)
 			   );
 			}
 
@@ -610,7 +688,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					query = query.Include(x => x.contact);
 					query = query.Include(x => x.currency);
 					query = query.Include(x => x.financialCategory);
+					query = query.Include(x => x.fiscalPeriod);
 					query = query.Include(x => x.scheduledEvent);
+					query = query.Include(x => x.taxCode);
 					query = query.AsSplitQuery();
 				}
 
@@ -624,7 +704,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.FinancialTransaction Entity was read with Admin privilege." : "Scheduler.FinancialTransaction Entity was read.");
 
-					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "FinancialTransaction", materialized.id, materialized.description));
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "FinancialTransaction", materialized.id, materialized.contactRole));
 
 
 					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -782,6 +862,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					return Forbid();
 				}
 
+				if (financialTransaction.contactRole != null && financialTransaction.contactRole.Length > 50)
+				{
+					financialTransaction.contactRole = financialTransaction.contactRole.Substring(0, 50);
+				}
+
 				if (financialTransaction.transactionDate.Kind != DateTimeKind.Utc)
 				{
 					financialTransaction.transactionDate = financialTransaction.transactionDate.ToUniversalTime();
@@ -790,6 +875,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (financialTransaction.description != null && financialTransaction.description.Length > 500)
 				{
 					financialTransaction.description = financialTransaction.description.Substring(0, 500);
+				}
+
+				if (financialTransaction.journalEntryType != null && financialTransaction.journalEntryType.Length > 50)
+				{
+					financialTransaction.journalEntryType = financialTransaction.journalEntryType.Substring(0, 50);
 				}
 
 				if (financialTransaction.paymentMethod != null && financialTransaction.paymentMethod.Length > 50)
@@ -810,6 +900,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (financialTransaction.externalId != null && financialTransaction.externalId.Length > 100)
 				{
 					financialTransaction.externalId = financialTransaction.externalId.Substring(0, 100);
+				}
+
+				if (financialTransaction.externalSystemName != null && financialTransaction.externalSystemName.Length > 50)
+				{
+					financialTransaction.externalSystemName = financialTransaction.externalSystemName.Substring(0, 50);
 				}
 
 				try
@@ -920,6 +1015,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				financialTransaction.tenantGuid = userTenantGuid;
 
+				if (financialTransaction.contactRole != null && financialTransaction.contactRole.Length > 50)
+				{
+					financialTransaction.contactRole = financialTransaction.contactRole.Substring(0, 50);
+				}
+
 				if (financialTransaction.transactionDate.Kind != DateTimeKind.Utc)
 				{
 					financialTransaction.transactionDate = financialTransaction.transactionDate.ToUniversalTime();
@@ -928,6 +1028,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (financialTransaction.description != null && financialTransaction.description.Length > 500)
 				{
 					financialTransaction.description = financialTransaction.description.Substring(0, 500);
+				}
+
+				if (financialTransaction.journalEntryType != null && financialTransaction.journalEntryType.Length > 50)
+				{
+					financialTransaction.journalEntryType = financialTransaction.journalEntryType.Substring(0, 50);
 				}
 
 				if (financialTransaction.paymentMethod != null && financialTransaction.paymentMethod.Length > 50)
@@ -948,6 +1053,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (financialTransaction.externalId != null && financialTransaction.externalId.Length > 100)
 				{
 					financialTransaction.externalId = financialTransaction.externalId.Substring(0, 100);
+				}
+
+				if (financialTransaction.externalSystemName != null && financialTransaction.externalSystemName.Length > 50)
+				{
+					financialTransaction.externalSystemName = financialTransaction.externalSystemName.Substring(0, 50);
 				}
 
 				financialTransaction.objectGuid = Guid.NewGuid();
@@ -977,7 +1087,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					financialTransaction.contact = null;
 					financialTransaction.currency = null;
 					financialTransaction.financialCategory = null;
+					financialTransaction.fiscalPeriod = null;
 					financialTransaction.scheduledEvent = null;
+					financialTransaction.taxCode = null;
 
 
 				    FinancialTransactionChangeHistory financialTransactionChangeHistory = new FinancialTransactionChangeHistory();
@@ -1011,7 +1123,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "FinancialTransaction", financialTransaction.id, financialTransaction.description));
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "FinancialTransaction", financialTransaction.id, financialTransaction.contactRole));
 
 			return CreatedAtRoute("FinancialTransaction", new { id = financialTransaction.id }, Database.FinancialTransaction.CreateAnonymousWithFirstLevelSubObjects(financialTransaction));
 		}
@@ -1098,7 +1210,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.contact = null;
 				cloneOfExisting.currency = null;
 				cloneOfExisting.financialCategory = null;
+				cloneOfExisting.fiscalPeriod = null;
 				cloneOfExisting.scheduledEvent = null;
+				cloneOfExisting.taxCode = null;
 
 				if (versionNumber >= financialTransaction.versionNumber)
 				{
@@ -1130,18 +1244,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    financialTransaction.financialCategoryId = oldFinancialTransaction.financialCategoryId;
 				    financialTransaction.scheduledEventId = oldFinancialTransaction.scheduledEventId;
 				    financialTransaction.contactId = oldFinancialTransaction.contactId;
+				    financialTransaction.contactRole = oldFinancialTransaction.contactRole;
+				    financialTransaction.taxCodeId = oldFinancialTransaction.taxCodeId;
+				    financialTransaction.fiscalPeriodId = oldFinancialTransaction.fiscalPeriodId;
 				    financialTransaction.transactionDate = oldFinancialTransaction.transactionDate;
 				    financialTransaction.description = oldFinancialTransaction.description;
 				    financialTransaction.amount = oldFinancialTransaction.amount;
 				    financialTransaction.taxAmount = oldFinancialTransaction.taxAmount;
 				    financialTransaction.totalAmount = oldFinancialTransaction.totalAmount;
 				    financialTransaction.isRevenue = oldFinancialTransaction.isRevenue;
+				    financialTransaction.journalEntryType = oldFinancialTransaction.journalEntryType;
 				    financialTransaction.paymentMethod = oldFinancialTransaction.paymentMethod;
 				    financialTransaction.referenceNumber = oldFinancialTransaction.referenceNumber;
 				    financialTransaction.notes = oldFinancialTransaction.notes;
 				    financialTransaction.currencyId = oldFinancialTransaction.currencyId;
 				    financialTransaction.exportedDate = oldFinancialTransaction.exportedDate;
 				    financialTransaction.externalId = oldFinancialTransaction.externalId;
+				    financialTransaction.externalSystemName = oldFinancialTransaction.externalSystemName;
 				    financialTransaction.objectGuid = oldFinancialTransaction.objectGuid;
 				    financialTransaction.active = oldFinancialTransaction.active;
 				    financialTransaction.deleted = oldFinancialTransaction.deleted;
@@ -1587,18 +1706,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? financialCategoryId = null,
 			int? scheduledEventId = null,
 			int? contactId = null,
+			string contactRole = null,
+			int? taxCodeId = null,
+			int? fiscalPeriodId = null,
 			DateTime? transactionDate = null,
 			string description = null,
 			decimal? amount = null,
 			decimal? taxAmount = null,
 			decimal? totalAmount = null,
 			bool? isRevenue = null,
+			string journalEntryType = null,
 			string paymentMethod = null,
 			string referenceNumber = null,
 			string notes = null,
 			int? currencyId = null,
 			DateTime? exportedDate = null,
 			string externalId = null,
+			string externalSystemName = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1677,6 +1801,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ft => ft.contactId == contactId.Value);
 			}
+			if (string.IsNullOrEmpty(contactRole) == false)
+			{
+				query = query.Where(ft => ft.contactRole == contactRole);
+			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ft => ft.taxCodeId == taxCodeId.Value);
+			}
+			if (fiscalPeriodId.HasValue == true)
+			{
+				query = query.Where(ft => ft.fiscalPeriodId == fiscalPeriodId.Value);
+			}
 			if (transactionDate.HasValue == true)
 			{
 				query = query.Where(ft => ft.transactionDate == transactionDate.Value);
@@ -1701,6 +1837,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ft => ft.isRevenue == isRevenue.Value);
 			}
+			if (string.IsNullOrEmpty(journalEntryType) == false)
+			{
+				query = query.Where(ft => ft.journalEntryType == journalEntryType);
+			}
 			if (string.IsNullOrEmpty(paymentMethod) == false)
 			{
 				query = query.Where(ft => ft.paymentMethod == paymentMethod);
@@ -1724,6 +1864,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(externalId) == false)
 			{
 				query = query.Where(ft => ft.externalId == externalId);
+			}
+			if (string.IsNullOrEmpty(externalSystemName) == false)
+			{
+				query = query.Where(ft => ft.externalSystemName == externalSystemName);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1767,11 +1911,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.description.Contains(anyStringContains)
+			       x.contactRole.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.journalEntryType.Contains(anyStringContains)
 			       || x.paymentMethod.Contains(anyStringContains)
 			       || x.referenceNumber.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
+			       || x.externalSystemName.Contains(anyStringContains)
 			       || x.contact.firstName.Contains(anyStringContains)
 			       || x.contact.middleName.Contains(anyStringContains)
 			       || x.contact.lastName.Contains(anyStringContains)
@@ -1795,7 +1942,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialCategory.name.Contains(anyStringContains)
 			       || x.financialCategory.description.Contains(anyStringContains)
 			       || x.financialCategory.code.Contains(anyStringContains)
+			       || x.financialCategory.accountType.Contains(anyStringContains)
+			       || x.financialCategory.externalAccountId.Contains(anyStringContains)
 			       || x.financialCategory.color.Contains(anyStringContains)
+			       || x.fiscalPeriod.name.Contains(anyStringContains)
+			       || x.fiscalPeriod.description.Contains(anyStringContains)
+			       || x.fiscalPeriod.periodType.Contains(anyStringContains)
+			       || x.fiscalPeriod.closedBy.Contains(anyStringContains)
 			       || x.scheduledEvent.name.Contains(anyStringContains)
 			       || x.scheduledEvent.description.Contains(anyStringContains)
 			       || x.scheduledEvent.location.Contains(anyStringContains)
@@ -1803,6 +1956,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.taxCode.name.Contains(anyStringContains)
+			       || x.taxCode.description.Contains(anyStringContains)
+			       || x.taxCode.code.Contains(anyStringContains)
+			       || x.taxCode.externalTaxCodeId.Contains(anyStringContains)
 			   );
 			}
 
@@ -1810,7 +1967,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.description).ThenBy(x => x.paymentMethod).ThenBy(x => x.referenceNumber);
+			query = query.OrderBy(x => x.contactRole).ThenBy(x => x.description).ThenBy(x => x.journalEntryType);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

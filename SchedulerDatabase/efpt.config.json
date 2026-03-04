@@ -259,6 +259,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[FiscalPeriod]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FiscalPeriodChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Fund]",
          "ObjectType": 0
       },
@@ -564,6 +572,10 @@
       },
       {
          "Name": "[Scheduler].[Tag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[TaxCode]",
          "ObjectType": 0
       },
       {

@@ -24,7 +24,7 @@
                 <label for="FinancialTransactionChangeHistory-financialTransactionId" id="label-FinancialTransactionChangeHistory-financialTransactionId"><span class="text-danger">*</span>Financial Transaction</label>
                 <select id="FinancialTransactionChangeHistory-financialTransactionId" formControlName="financialTransactionId" class="form-select financial-transaction-change-history-select" [disabled]="!userIsSchedulerFinancialTransactionChangeHistoryWriter()">
                     <option [ngValue]="null">Select Financial Transaction</option>
-                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.description}}</option>
+                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.contactRole}}</option>
                 </select>
                 <div *ngIf="financialTransactionChangeHistoryForm.get('financialTransactionId')?.invalid && financialTransactionChangeHistoryForm.get('financialTransactionId')?.touched" class="text-danger">
                     Financial Transaction is required

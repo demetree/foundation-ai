@@ -179,9 +179,11 @@ export class FinancialCategoryTableComponent implements OnInit, OnChanges, After
     { key: 'description', label: 'Description', width: undefined },
     { key: 'code', label: 'Code', width: undefined },
     { key: 'isRevenue', label: 'Is Revenue', width: '120px', template: 'boolean' },
+    { key: 'accountType', label: 'Account Type', width: undefined },
     { key: 'parentFinancialCategory.name', label: 'Financial Category', width: undefined, template: 'link', linkPath: ['/financialcategory', 'parentFinancialCategoryId'] },
     { key: 'isTaxApplicable', label: 'Is Tax Applicable', width: '120px', template: 'boolean' },
     { key: 'defaultAmount', label: 'Default Amount', width: undefined },
+    { key: 'externalAccountId', label: 'External Account Id', width: undefined },
     { key: 'sequence', label: 'Sequence', width: undefined },
     { key: 'color', label: 'Color', width: "50px", template: 'color' },
 
@@ -335,9 +337,11 @@ export class FinancialCategoryTableComponent implements OnInit, OnChanges, After
                       'description',
                       'code',
                       'isRevenue',
+                      'accountType',
                       'parentFinancialCategory.name',
                       'isTaxApplicable',
                       'defaultAmount',
+                      'externalAccountId',
                       'sequence',
                       'color',
         ];

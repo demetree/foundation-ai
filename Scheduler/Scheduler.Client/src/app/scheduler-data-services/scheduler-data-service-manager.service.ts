@@ -69,6 +69,8 @@ import {FinancialCategoryService} from  './financial-category.service';
 import {FinancialCategoryChangeHistoryService} from  './financial-category-change-history.service';
 import {FinancialTransactionService} from  './financial-transaction.service';
 import {FinancialTransactionChangeHistoryService} from  './financial-transaction-change-history.service';
+import {FiscalPeriodService} from  './fiscal-period.service';
+import {FiscalPeriodChangeHistoryService} from  './fiscal-period-change-history.service';
 import {FundService} from  './fund.service';
 import {FundChangeHistoryService} from  './fund-change-history.service';
 import {GiftService} from  './gift.service';
@@ -146,6 +148,7 @@ import {SoftCreditService} from  './soft-credit.service';
 import {SoftCreditChangeHistoryService} from  './soft-credit-change-history.service';
 import {StateProvinceService} from  './state-province.service';
 import {TagService} from  './tag.service';
+import {TaxCodeService} from  './tax-code.service';
 import {TenantProfileService} from  './tenant-profile.service';
 import {TenantProfileChangeHistoryService} from  './tenant-profile-change-history.service';
 import {TimeZoneService} from  './time-zone.service';
@@ -226,6 +229,8 @@ export class SchedulerDataServiceManagerService  {
               , public financialCategoryChangeHistoryService: FinancialCategoryChangeHistoryService
               , public financialTransactionService: FinancialTransactionService
               , public financialTransactionChangeHistoryService: FinancialTransactionChangeHistoryService
+              , public fiscalPeriodService: FiscalPeriodService
+              , public fiscalPeriodChangeHistoryService: FiscalPeriodChangeHistoryService
               , public fundService: FundService
               , public fundChangeHistoryService: FundChangeHistoryService
               , public giftService: GiftService
@@ -303,6 +308,7 @@ export class SchedulerDataServiceManagerService  {
               , public softCreditChangeHistoryService: SoftCreditChangeHistoryService
               , public stateProvinceService: StateProvinceService
               , public tagService: TagService
+              , public taxCodeService: TaxCodeService
               , public tenantProfileService: TenantProfileService
               , public tenantProfileChangeHistoryService: TenantProfileChangeHistoryService
               , public timeZoneService: TimeZoneService
@@ -381,6 +387,8 @@ export class SchedulerDataServiceManagerService  {
         this.financialCategoryChangeHistoryService.ClearAllCaches();
         this.financialTransactionService.ClearAllCaches();
         this.financialTransactionChangeHistoryService.ClearAllCaches();
+        this.fiscalPeriodService.ClearAllCaches();
+        this.fiscalPeriodChangeHistoryService.ClearAllCaches();
         this.fundService.ClearAllCaches();
         this.fundChangeHistoryService.ClearAllCaches();
         this.giftService.ClearAllCaches();
@@ -458,6 +466,7 @@ export class SchedulerDataServiceManagerService  {
         this.softCreditChangeHistoryService.ClearAllCaches();
         this.stateProvinceService.ClearAllCaches();
         this.tagService.ClearAllCaches();
+        this.taxCodeService.ClearAllCaches();
         this.tenantProfileService.ClearAllCaches();
         this.tenantProfileChangeHistoryService.ClearAllCaches();
         this.timeZoneService.ClearAllCaches();

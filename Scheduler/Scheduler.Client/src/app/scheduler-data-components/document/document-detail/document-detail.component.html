@@ -86,7 +86,7 @@
                                 <label for="Document-financialTransactionId" id="label-Document-financialTransactionId">Financial Transaction</label>
                                 <select id="Document-financialTransactionId" formControlName="financialTransactionId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
                                     <option [ngValue]="null">Select Financial Transaction</option>
-                                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.description}}</option>
+                                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.contactRole}}</option>
                                 </select>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('contactId')">

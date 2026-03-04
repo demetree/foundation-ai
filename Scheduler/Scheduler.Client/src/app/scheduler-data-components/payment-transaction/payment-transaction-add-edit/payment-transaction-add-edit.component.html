@@ -48,7 +48,7 @@
                 <label for="PaymentTransaction-financialTransactionId" id="label-PaymentTransaction-financialTransactionId">Financial Transaction</label>
                 <select id="PaymentTransaction-financialTransactionId" formControlName="financialTransactionId" class="form-select payment-transaction-select" [disabled]="!userIsSchedulerPaymentTransactionWriter()">
                     <option [ngValue]="null">Select Financial Transaction</option>
-                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.description}}</option>
+                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.contactRole}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('eventChargeId')">
