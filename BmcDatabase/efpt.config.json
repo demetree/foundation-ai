@@ -203,6 +203,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[MarketDataCache]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[MocComment]",
          "ObjectType": 0
       },

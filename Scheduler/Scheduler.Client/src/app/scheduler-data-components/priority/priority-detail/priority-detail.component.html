@@ -104,10 +104,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tag-table [queryParams]="{ priorityId: priorityData?.id }"></app-tag-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tag-add-edit [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-tag-add-edit>
+                                    <app-tag-table [queryParams]="{ priorityId: priorityData?.id }" [showAddButton]="true" [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-tag-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -121,10 +118,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-table [queryParams]="{ priorityId: priorityData?.id }"></app-scheduled-event-template-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-add-edit [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-scheduled-event-template-add-edit>
+                                    <app-scheduled-event-template-table [queryParams]="{ priorityId: priorityData?.id }" [showAddButton]="true" [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-scheduled-event-template-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -138,10 +132,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-table [queryParams]="{ priorityId: priorityData?.id }"></app-scheduled-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-add-edit [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-scheduled-event-add-edit>
+                                    <app-scheduled-event-table [queryParams]="{ priorityId: priorityData?.id }" [showAddButton]="true" [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-scheduled-event-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -155,10 +146,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-interaction-table [queryParams]="{ priorityId: priorityData?.id }"></app-contact-interaction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-interaction-add-edit [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-contact-interaction-add-edit>
+                                    <app-contact-interaction-table [queryParams]="{ priorityId: priorityData?.id }" [showAddButton]="true" [preSeededData]="{ priorityId: priorityData?.id }" [hiddenFields]="['priorityId']"></app-contact-interaction-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -165,6 +165,7 @@ export class ResourceChangeHistoryListingComponent implements OnInit, AfterViewI
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.resourceChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.resourceChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

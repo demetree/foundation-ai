@@ -165,6 +165,7 @@ export class CalendarChangeHistoryListingComponent implements OnInit, AfterViewI
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.calendarChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.calendarChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

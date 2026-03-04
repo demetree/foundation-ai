@@ -76,7 +76,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -175,12 +174,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(sed => sed.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.dependencyType);
@@ -189,35 +182,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduled Event Dependency, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.dependencyType.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.dependencyType.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.dependencyType.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.location.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.predecessorEvent.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.location.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.successorEvent.attributes.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ScheduledEventDependency> materialized = await query.ToListAsync(cancellationToken);
@@ -265,7 +235,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -343,35 +312,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(sed => sed.active == true);
 				query = query.Where(sed => sed.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduled Event Dependency, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.dependencyType.name.Contains(anyStringContains)
-			       || x.dependencyType.description.Contains(anyStringContains)
-			       || x.dependencyType.color.Contains(anyStringContains)
-			       || x.predecessorEvent.name.Contains(anyStringContains)
-			       || x.predecessorEvent.description.Contains(anyStringContains)
-			       || x.predecessorEvent.location.Contains(anyStringContains)
-			       || x.predecessorEvent.notes.Contains(anyStringContains)
-			       || x.predecessorEvent.color.Contains(anyStringContains)
-			       || x.predecessorEvent.externalId.Contains(anyStringContains)
-			       || x.predecessorEvent.attributes.Contains(anyStringContains)
-			       || x.successorEvent.name.Contains(anyStringContains)
-			       || x.successorEvent.description.Contains(anyStringContains)
-			       || x.successorEvent.location.Contains(anyStringContains)
-			       || x.successorEvent.notes.Contains(anyStringContains)
-			       || x.successorEvent.color.Contains(anyStringContains)
-			       || x.successorEvent.externalId.Contains(anyStringContains)
-			       || x.successorEvent.attributes.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1339,7 +1279,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1435,35 +1374,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(sed => sed.active == true);
 				query = query.Where(sed => sed.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduled Event Dependency, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.dependencyType.name.Contains(anyStringContains)
-			       || x.dependencyType.description.Contains(anyStringContains)
-			       || x.dependencyType.color.Contains(anyStringContains)
-			       || x.predecessorEvent.name.Contains(anyStringContains)
-			       || x.predecessorEvent.description.Contains(anyStringContains)
-			       || x.predecessorEvent.location.Contains(anyStringContains)
-			       || x.predecessorEvent.notes.Contains(anyStringContains)
-			       || x.predecessorEvent.color.Contains(anyStringContains)
-			       || x.predecessorEvent.externalId.Contains(anyStringContains)
-			       || x.predecessorEvent.attributes.Contains(anyStringContains)
-			       || x.successorEvent.name.Contains(anyStringContains)
-			       || x.successorEvent.description.Contains(anyStringContains)
-			       || x.successorEvent.location.Contains(anyStringContains)
-			       || x.successorEvent.notes.Contains(anyStringContains)
-			       || x.successorEvent.color.Contains(anyStringContains)
-			       || x.successorEvent.externalId.Contains(anyStringContains)
-			       || x.successorEvent.attributes.Contains(anyStringContains)
-			   );
 			}
 
 

@@ -165,6 +165,7 @@ export class TributeListingComponent implements OnInit, AfterViewInit, CanCompon
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.tributeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.tributeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

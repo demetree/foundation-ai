@@ -82,7 +82,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -213,12 +212,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(rs => rs.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.assignmentRole);
@@ -230,59 +223,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Rate Sheet, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || (includeRelations == true && x.assignmentRole.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.assignmentRole.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.assignmentRole.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.currency.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.currency.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.currency.code.Contains(anyStringContains))
-			       || (includeRelations == true && x.currency.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.addressLine1.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.addressLine2.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.city.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.postalCode.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.phone.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.email.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.office.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.rateType.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.rateType.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.rateType.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.avatarMimeType.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.RateSheet> materialized = await query.ToListAsync(cancellationToken);
@@ -336,7 +282,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -446,59 +391,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(rs => rs.active == true);
 				query = query.Where(rs => rs.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Rate Sheet, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || x.assignmentRole.name.Contains(anyStringContains)
-			       || x.assignmentRole.description.Contains(anyStringContains)
-			       || x.assignmentRole.color.Contains(anyStringContains)
-			       || x.currency.name.Contains(anyStringContains)
-			       || x.currency.description.Contains(anyStringContains)
-			       || x.currency.code.Contains(anyStringContains)
-			       || x.currency.color.Contains(anyStringContains)
-			       || x.office.name.Contains(anyStringContains)
-			       || x.office.description.Contains(anyStringContains)
-			       || x.office.addressLine1.Contains(anyStringContains)
-			       || x.office.addressLine2.Contains(anyStringContains)
-			       || x.office.city.Contains(anyStringContains)
-			       || x.office.postalCode.Contains(anyStringContains)
-			       || x.office.phone.Contains(anyStringContains)
-			       || x.office.email.Contains(anyStringContains)
-			       || x.office.notes.Contains(anyStringContains)
-			       || x.office.externalId.Contains(anyStringContains)
-			       || x.office.color.Contains(anyStringContains)
-			       || x.office.attributes.Contains(anyStringContains)
-			       || x.office.avatarFileName.Contains(anyStringContains)
-			       || x.office.avatarMimeType.Contains(anyStringContains)
-			       || x.rateType.name.Contains(anyStringContains)
-			       || x.rateType.description.Contains(anyStringContains)
-			       || x.rateType.color.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			       || x.schedulingTarget.name.Contains(anyStringContains)
-			       || x.schedulingTarget.description.Contains(anyStringContains)
-			       || x.schedulingTarget.notes.Contains(anyStringContains)
-			       || x.schedulingTarget.externalId.Contains(anyStringContains)
-			       || x.schedulingTarget.color.Contains(anyStringContains)
-			       || x.schedulingTarget.attributes.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1506,7 +1398,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1634,59 +1525,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(rs => rs.active == true);
 				query = query.Where(rs => rs.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Rate Sheet, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || x.assignmentRole.name.Contains(anyStringContains)
-			       || x.assignmentRole.description.Contains(anyStringContains)
-			       || x.assignmentRole.color.Contains(anyStringContains)
-			       || x.currency.name.Contains(anyStringContains)
-			       || x.currency.description.Contains(anyStringContains)
-			       || x.currency.code.Contains(anyStringContains)
-			       || x.currency.color.Contains(anyStringContains)
-			       || x.office.name.Contains(anyStringContains)
-			       || x.office.description.Contains(anyStringContains)
-			       || x.office.addressLine1.Contains(anyStringContains)
-			       || x.office.addressLine2.Contains(anyStringContains)
-			       || x.office.city.Contains(anyStringContains)
-			       || x.office.postalCode.Contains(anyStringContains)
-			       || x.office.phone.Contains(anyStringContains)
-			       || x.office.email.Contains(anyStringContains)
-			       || x.office.notes.Contains(anyStringContains)
-			       || x.office.externalId.Contains(anyStringContains)
-			       || x.office.color.Contains(anyStringContains)
-			       || x.office.attributes.Contains(anyStringContains)
-			       || x.office.avatarFileName.Contains(anyStringContains)
-			       || x.office.avatarMimeType.Contains(anyStringContains)
-			       || x.rateType.name.Contains(anyStringContains)
-			       || x.rateType.description.Contains(anyStringContains)
-			       || x.rateType.color.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			       || x.schedulingTarget.name.Contains(anyStringContains)
-			       || x.schedulingTarget.description.Contains(anyStringContains)
-			       || x.schedulingTarget.notes.Contains(anyStringContains)
-			       || x.schedulingTarget.externalId.Contains(anyStringContains)
-			       || x.schedulingTarget.color.Contains(anyStringContains)
-			       || x.schedulingTarget.attributes.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
-			   );
 			}
 
 

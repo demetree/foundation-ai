@@ -116,10 +116,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-appeal-change-history-table [queryParams]="{ appealId: appealData?.id }"></app-appeal-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-appeal-change-history-add-edit [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-appeal-change-history-add-edit>
+                                    <app-appeal-change-history-table [queryParams]="{ appealId: appealData?.id }" [showAddButton]="true" [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-appeal-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -133,10 +130,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-pledge-table [queryParams]="{ appealId: appealData?.id }"></app-pledge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-pledge-add-edit [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-pledge-add-edit>
+                                    <app-pledge-table [queryParams]="{ appealId: appealData?.id }" [showAddButton]="true" [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-pledge-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -150,10 +144,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-batch-table [queryParams]="{ defaultAppealId: appealData?.id }"></app-batch-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-batch-add-edit [preSeededData]="{ defaultAppealId: appealData?.id }" [hiddenFields]="['defaultAppealId']"></app-batch-add-edit>
+                                    <app-batch-table [queryParams]="{ defaultAppealId: appealData?.id }" [showAddButton]="true" [preSeededData]="{ defaultAppealId: appealData?.id }" [hiddenFields]="['defaultAppealId']"></app-batch-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -167,10 +158,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ appealId: appealData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ appealId: appealData?.id }" [showAddButton]="true" [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -82,6 +82,7 @@
   <app-time-zone-table
     *ngIf="userIsSchedulerTimeZoneReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTimeZoneCount$ | async) ?? 0">
   </app-time-zone-table>
 </div>

@@ -112,10 +112,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-calendar-change-history-table [queryParams]="{ calendarId: calendarData?.id }"></app-calendar-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-calendar-change-history-add-edit [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-calendar-change-history-add-edit>
+                                    <app-calendar-change-history-table [queryParams]="{ calendarId: calendarData?.id }" [showAddButton]="true" [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-calendar-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -129,10 +126,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-client-table [queryParams]="{ calendarId: calendarData?.id }"></app-client-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-client-add-edit [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-client-add-edit>
+                                    <app-client-table [queryParams]="{ calendarId: calendarData?.id }" [showAddButton]="true" [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-client-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -146,10 +140,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-table [queryParams]="{ calendarId: calendarData?.id }"></app-scheduling-target-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-add-edit [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-scheduling-target-add-edit>
+                                    <app-scheduling-target-table [queryParams]="{ calendarId: calendarData?.id }" [showAddButton]="true" [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-scheduling-target-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -163,10 +154,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-calendar-table [queryParams]="{ calendarId: calendarData?.id }"></app-event-calendar-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-calendar-add-edit [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-event-calendar-add-edit>
+                                    <app-event-calendar-table [queryParams]="{ calendarId: calendarData?.id }" [showAddButton]="true" [preSeededData]="{ calendarId: calendarData?.id }" [hiddenFields]="['calendarId']"></app-event-calendar-table>
                                 </div>
                             </div>
                             </ng-template>

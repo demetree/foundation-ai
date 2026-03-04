@@ -115,10 +115,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-tag-table [queryParams]="{ tagId: tagData?.id }"></app-contact-tag-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-tag-add-edit [preSeededData]="{ tagId: tagData?.id }" [hiddenFields]="['tagId']"></app-contact-tag-add-edit>
+                                    <app-contact-tag-table [queryParams]="{ tagId: tagData?.id }" [showAddButton]="true" [preSeededData]="{ tagId: tagData?.id }" [hiddenFields]="['tagId']"></app-contact-tag-table>
                                 </div>
                             </div>
                             </ng-template>

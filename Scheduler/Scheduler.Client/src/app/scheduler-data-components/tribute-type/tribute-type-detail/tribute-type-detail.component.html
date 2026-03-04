@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tribute-table [queryParams]="{ tributeTypeId: tributeTypeData?.id }"></app-tribute-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tribute-add-edit [preSeededData]="{ tributeTypeId: tributeTypeData?.id }" [hiddenFields]="['tributeTypeId']"></app-tribute-add-edit>
+                                    <app-tribute-table [queryParams]="{ tributeTypeId: tributeTypeData?.id }" [showAddButton]="true" [preSeededData]="{ tributeTypeId: tributeTypeData?.id }" [hiddenFields]="['tributeTypeId']"></app-tribute-table>
                                 </div>
                             </div>
                             </ng-template>

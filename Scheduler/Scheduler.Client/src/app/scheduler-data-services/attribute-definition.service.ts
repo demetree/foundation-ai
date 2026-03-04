@@ -179,11 +179,17 @@ export class AttributeDefinitionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AttributeDefinitionChangeHistoriesCount$ = AttributeDefinitionChangeHistoryService.Instance.GetAttributeDefinitionChangeHistoriesRowCount({attributeDefinitionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _attributeDefinitionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get AttributeDefinitionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._attributeDefinitionChangeHistoriesCount$ === null) {
+            this._attributeDefinitionChangeHistoriesCount$ = AttributeDefinitionChangeHistoryService.Instance.GetAttributeDefinitionChangeHistoriesRowCount({attributeDefinitionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._attributeDefinitionChangeHistoriesCount$;
+    }
 
 
 
@@ -228,6 +234,7 @@ export class AttributeDefinitionData {
      this._attributeDefinitionChangeHistories = null;
      this._attributeDefinitionChangeHistoriesPromise = null;
      this._attributeDefinitionChangeHistoriesSubject.next(null);
+     this._attributeDefinitionChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -917,11 +924,7 @@ export class AttributeDefinitionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AttributeDefinitionChangeHistoriesCount$ = AttributeDefinitionChangeHistoryService.Instance.GetAttributeDefinitionChangeHistoriesRowCount({attributeDefinitionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._attributeDefinitionChangeHistoriesCount$ = null;
 
 
 

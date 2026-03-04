@@ -102,6 +102,7 @@ import { LegoSetMinifigService } from './bmc-data-services/lego-set-minifig.serv
 import { LegoSetPartService } from './bmc-data-services/lego-set-part.service';
 import { LegoSetSubsetService } from './bmc-data-services/lego-set-subset.service';
 import { LegoThemeService } from './bmc-data-services/lego-theme.service';
+import { MarketDataCacheService } from './bmc-data-services/market-data-cache.service';
 import { MocCommentService } from './bmc-data-services/moc-comment.service';
 import { MocFavouriteService } from './bmc-data-services/moc-favourite.service';
 import { MocLikeService } from './bmc-data-services/moc-like.service';
@@ -351,6 +352,10 @@ import { LegoThemeListingComponent } from './bmc-data-components/lego-theme/lego
 import { LegoThemeAddEditComponent } from './bmc-data-components/lego-theme/lego-theme-add-edit/lego-theme-add-edit.component';
 import { LegoThemeDetailComponent } from './bmc-data-components/lego-theme/lego-theme-detail/lego-theme-detail.component';
 import { LegoThemeTableComponent } from './bmc-data-components/lego-theme/lego-theme-table/lego-theme-table.component';
+import { MarketDataCacheListingComponent } from './bmc-data-components/market-data-cache/market-data-cache-listing/market-data-cache-listing.component';
+import { MarketDataCacheAddEditComponent } from './bmc-data-components/market-data-cache/market-data-cache-add-edit/market-data-cache-add-edit.component';
+import { MarketDataCacheDetailComponent } from './bmc-data-components/market-data-cache/market-data-cache-detail/market-data-cache-detail.component';
+import { MarketDataCacheTableComponent } from './bmc-data-components/market-data-cache/market-data-cache-table/market-data-cache-table.component';
 import { MocCommentListingComponent } from './bmc-data-components/moc-comment/moc-comment-listing/moc-comment-listing.component';
 import { MocCommentAddEditComponent } from './bmc-data-components/moc-comment/moc-comment-add-edit/moc-comment-add-edit.component';
 import { MocCommentDetailComponent } from './bmc-data-components/moc-comment/moc-comment-detail/moc-comment-detail.component';
@@ -861,6 +866,10 @@ LegoThemeListingComponent,
 LegoThemeAddEditComponent,
 LegoThemeDetailComponent,
 LegoThemeTableComponent,
+MarketDataCacheListingComponent,
+MarketDataCacheAddEditComponent,
+MarketDataCacheDetailComponent,
+MarketDataCacheTableComponent,
 MocCommentListingComponent,
 MocCommentAddEditComponent,
 MocCommentDetailComponent,
@@ -1179,6 +1188,7 @@ LegoSetMinifigService,
 LegoSetPartService,
 LegoSetSubsetService,
 LegoThemeService,
+MarketDataCacheService,
 MocCommentService,
 MocFavouriteService,
 MocLikeService,

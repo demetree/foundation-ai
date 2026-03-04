@@ -165,6 +165,7 @@ export class PledgeChangeHistoryListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.pledgeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.pledgeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

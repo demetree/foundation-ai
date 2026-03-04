@@ -167,11 +167,17 @@ export class ScheduledEventTemplateQualificationRequirementData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = ScheduledEventTemplateQualificationRequirementChangeHistoryService.Instance.GetScheduledEventTemplateQualificationRequirementChangeHistoriesRowCount({scheduledEventTemplateQualificationRequirementId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplateQualificationRequirementChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplateQualificationRequirementChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplateQualificationRequirementChangeHistoriesCount$ === null) {
+            this._scheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = ScheduledEventTemplateQualificationRequirementChangeHistoryService.Instance.GetScheduledEventTemplateQualificationRequirementChangeHistoriesRowCount({scheduledEventTemplateQualificationRequirementId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplateQualificationRequirementChangeHistoriesCount$;
+    }
 
 
 
@@ -216,6 +222,7 @@ export class ScheduledEventTemplateQualificationRequirementData {
      this._scheduledEventTemplateQualificationRequirementChangeHistories = null;
      this._scheduledEventTemplateQualificationRequirementChangeHistoriesPromise = null;
      this._scheduledEventTemplateQualificationRequirementChangeHistoriesSubject.next(null);
+     this._scheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -901,11 +908,7 @@ export class ScheduledEventTemplateQualificationRequirementService extends Secur
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = ScheduledEventTemplateQualificationRequirementChangeHistoryService.Instance.GetScheduledEventTemplateQualificationRequirementChangeHistoriesRowCount({scheduledEventTemplateQualificationRequirementId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = null;
 
 
 

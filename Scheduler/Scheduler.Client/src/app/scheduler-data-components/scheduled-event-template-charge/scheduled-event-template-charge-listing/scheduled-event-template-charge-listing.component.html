@@ -82,6 +82,7 @@
   <app-scheduled-event-template-charge-table
     *ngIf="userIsSchedulerScheduledEventTemplateChargeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredScheduledEventTemplateChargeCount$ | async) ?? 0">
   </app-scheduled-event-template-charge-table>
 </div>

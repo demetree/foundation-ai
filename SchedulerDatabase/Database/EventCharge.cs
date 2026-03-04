@@ -35,6 +35,10 @@ public partial class EventCharge
 
     public bool isAutomatic { get; set; }
 
+    public bool isDeposit { get; set; }
+
+    public DateTime? depositRefundedDate { get; set; }
+
     public DateTime? exportedDate { get; set; }
 
     public string externalId { get; set; }
@@ -48,6 +52,8 @@ public partial class EventCharge
     public bool deleted { get; set; }
 
     public virtual ICollection<EventChargeChangeHistory> EventChargeChangeHistories { get; set; } = new List<EventChargeChangeHistory>();
+
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ChargeStatus chargeStatus { get; set; }
 

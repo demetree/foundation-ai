@@ -165,6 +165,7 @@ export class FundListingComponent implements OnInit, AfterViewInit, CanComponent
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.fundTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.fundTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

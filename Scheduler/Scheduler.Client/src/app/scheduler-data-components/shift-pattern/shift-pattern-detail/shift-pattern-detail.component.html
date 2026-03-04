@@ -101,10 +101,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-shift-pattern-change-history-table [queryParams]="{ shiftPatternId: shiftPatternData?.id }"></app-shift-pattern-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-shift-pattern-change-history-add-edit [preSeededData]="{ shiftPatternId: shiftPatternData?.id }" [hiddenFields]="['shiftPatternId']"></app-shift-pattern-change-history-add-edit>
+                                    <app-shift-pattern-change-history-table [queryParams]="{ shiftPatternId: shiftPatternData?.id }" [showAddButton]="true" [preSeededData]="{ shiftPatternId: shiftPatternData?.id }" [hiddenFields]="['shiftPatternId']"></app-shift-pattern-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -118,10 +115,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-shift-pattern-day-table [queryParams]="{ shiftPatternId: shiftPatternData?.id }"></app-shift-pattern-day-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-shift-pattern-day-add-edit [preSeededData]="{ shiftPatternId: shiftPatternData?.id }" [hiddenFields]="['shiftPatternId']"></app-shift-pattern-day-add-edit>
+                                    <app-shift-pattern-day-table [queryParams]="{ shiftPatternId: shiftPatternData?.id }" [showAddButton]="true" [preSeededData]="{ shiftPatternId: shiftPatternData?.id }" [hiddenFields]="['shiftPatternId']"></app-shift-pattern-day-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -135,10 +129,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-table [queryParams]="{ shiftPatternId: shiftPatternData?.id }"></app-resource-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-add-edit [preSeededData]="{ shiftPatternId: shiftPatternData?.id }" [hiddenFields]="['shiftPatternId']"></app-resource-add-edit>
+                                    <app-resource-table [queryParams]="{ shiftPatternId: shiftPatternData?.id }" [showAddButton]="true" [preSeededData]="{ shiftPatternId: shiftPatternData?.id }" [hiddenFields]="['shiftPatternId']"></app-resource-table>
                                 </div>
                             </div>
                             </ng-template>

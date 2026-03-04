@@ -35,6 +35,8 @@ import { OfficeContactService } from '../../../scheduler-data-services/office-co
 import { ClientContactService } from '../../../scheduler-data-services/client-contact.service';
 import { SchedulingTargetContactService } from '../../../scheduler-data-services/scheduling-target-contact.service';
 import { ResourceContactService } from '../../../scheduler-data-services/resource-contact.service';
+import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { ContactInteractionService } from '../../../scheduler-data-services/contact-interaction.service';
 import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
@@ -157,6 +159,8 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
   public clientContacts$ = this.clientContactService.GetClientContactList();
   public schedulingTargetContacts$ = this.schedulingTargetContactService.GetSchedulingTargetContactList();
   public resourceContacts$ = this.resourceContactService.GetResourceContactList();
+  public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public documents$ = this.documentService.GetDocumentList();
   public contactInteractions$ = this.contactInteractionService.GetContactInteractionList();
   public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
   public constituents$ = this.constituentService.GetConstituentList();
@@ -178,6 +182,8 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
     public clientContactService: ClientContactService,
     public schedulingTargetContactService: SchedulingTargetContactService,
     public resourceContactService: ResourceContactService,
+    public financialTransactionService: FinancialTransactionService,
+    public documentService: DocumentService,
     public contactInteractionService: ContactInteractionService,
     public notificationSubscriptionService: NotificationSubscriptionService,
     public constituentService: ConstituentService,

@@ -165,6 +165,7 @@ export class TenantProfileChangeHistoryListingComponent implements OnInit, After
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.tenantProfileChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.tenantProfileChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

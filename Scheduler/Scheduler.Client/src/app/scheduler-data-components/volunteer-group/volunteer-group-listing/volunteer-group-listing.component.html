@@ -82,6 +82,7 @@
   <app-volunteer-group-table
     *ngIf="userIsSchedulerVolunteerGroupReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredVolunteerGroupCount$ | async) ?? 0">
   </app-volunteer-group-table>
 </div>

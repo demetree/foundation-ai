@@ -165,6 +165,7 @@ export class EventCalendarListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.eventCalendarTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.eventCalendarTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

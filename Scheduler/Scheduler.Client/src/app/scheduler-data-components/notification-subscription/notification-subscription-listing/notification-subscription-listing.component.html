@@ -82,6 +82,7 @@
   <app-notification-subscription-table
     *ngIf="userIsSchedulerNotificationSubscriptionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredNotificationSubscriptionCount$ | async) ?? 0">
   </app-notification-subscription-table>
 </div>

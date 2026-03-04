@@ -124,10 +124,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-member-change-history-table [queryParams]="{ crewMemberId: crewMemberData?.id }"></app-crew-member-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-member-change-history-add-edit [preSeededData]="{ crewMemberId: crewMemberData?.id }" [hiddenFields]="['crewMemberId']"></app-crew-member-change-history-add-edit>
+                                    <app-crew-member-change-history-table [queryParams]="{ crewMemberId: crewMemberData?.id }" [showAddButton]="true" [preSeededData]="{ crewMemberId: crewMemberData?.id }" [hiddenFields]="['crewMemberId']"></app-crew-member-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

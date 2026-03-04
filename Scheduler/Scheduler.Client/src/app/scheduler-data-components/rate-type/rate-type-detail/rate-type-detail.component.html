@@ -97,10 +97,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-charge-type-table [queryParams]="{ rateTypeId: rateTypeData?.id }"></app-charge-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-charge-type-add-edit [preSeededData]="{ rateTypeId: rateTypeData?.id }" [hiddenFields]="['rateTypeId']"></app-charge-type-add-edit>
+                                    <app-charge-type-table [queryParams]="{ rateTypeId: rateTypeData?.id }" [showAddButton]="true" [preSeededData]="{ rateTypeId: rateTypeData?.id }" [hiddenFields]="['rateTypeId']"></app-charge-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -114,10 +111,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-rate-sheet-table [queryParams]="{ rateTypeId: rateTypeData?.id }"></app-rate-sheet-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-rate-sheet-add-edit [preSeededData]="{ rateTypeId: rateTypeData?.id }" [hiddenFields]="['rateTypeId']"></app-rate-sheet-add-edit>
+                                    <app-rate-sheet-table [queryParams]="{ rateTypeId: rateTypeData?.id }" [showAddButton]="true" [preSeededData]="{ rateTypeId: rateTypeData?.id }" [hiddenFields]="['rateTypeId']"></app-rate-sheet-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -131,10 +125,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-charge-table [queryParams]="{ rateTypeId: rateTypeData?.id }"></app-event-charge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-charge-add-edit [preSeededData]="{ rateTypeId: rateTypeData?.id }" [hiddenFields]="['rateTypeId']"></app-event-charge-add-edit>
+                                    <app-event-charge-table [queryParams]="{ rateTypeId: rateTypeData?.id }" [showAddButton]="true" [preSeededData]="{ rateTypeId: rateTypeData?.id }" [hiddenFields]="['rateTypeId']"></app-event-charge-table>
                                 </div>
                             </div>
                             </ng-template>

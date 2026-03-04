@@ -168,11 +168,17 @@ export class RecurrenceExceptionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RecurrenceExceptionChangeHistoriesCount$ = RecurrenceExceptionChangeHistoryService.Instance.GetRecurrenceExceptionChangeHistoriesRowCount({recurrenceExceptionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _recurrenceExceptionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get RecurrenceExceptionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._recurrenceExceptionChangeHistoriesCount$ === null) {
+            this._recurrenceExceptionChangeHistoriesCount$ = RecurrenceExceptionChangeHistoryService.Instance.GetRecurrenceExceptionChangeHistoriesRowCount({recurrenceExceptionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._recurrenceExceptionChangeHistoriesCount$;
+    }
 
 
 
@@ -217,6 +223,7 @@ export class RecurrenceExceptionData {
      this._recurrenceExceptionChangeHistories = null;
      this._recurrenceExceptionChangeHistoriesPromise = null;
      this._recurrenceExceptionChangeHistoriesSubject.next(null);
+     this._recurrenceExceptionChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -903,11 +910,7 @@ export class RecurrenceExceptionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RecurrenceExceptionChangeHistoriesCount$ = RecurrenceExceptionChangeHistoryService.Instance.GetRecurrenceExceptionChangeHistoriesRowCount({recurrenceExceptionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._recurrenceExceptionChangeHistoriesCount$ = null;
 
 
 

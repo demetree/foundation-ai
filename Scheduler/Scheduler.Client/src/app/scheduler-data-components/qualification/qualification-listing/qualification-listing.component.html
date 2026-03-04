@@ -82,6 +82,7 @@
   <app-qualification-table
     *ngIf="userIsSchedulerQualificationReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredQualificationCount$ | async) ?? 0">
   </app-qualification-table>
 </div>

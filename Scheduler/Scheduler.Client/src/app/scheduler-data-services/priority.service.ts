@@ -157,11 +157,17 @@ export class PriorityData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TagsCount$ = TagService.Instance.GetTagsRowCount({priorityId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tagsCount$: Observable<bigint | number> | null = null;
+    public get TagsCount$(): Observable<bigint | number> {
+        if (this._tagsCount$ === null) {
+            this._tagsCount$ = TagService.Instance.GetTagsRowCount({priorityId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tagsCount$;
+    }
 
 
 
@@ -176,11 +182,17 @@ export class PriorityData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({priorityId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplatesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplatesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplatesCount$ === null) {
+            this._scheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({priorityId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplatesCount$;
+    }
 
 
 
@@ -195,11 +207,17 @@ export class PriorityData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({priorityId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({priorityId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -214,11 +232,17 @@ export class PriorityData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({priorityId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactInteractionsCount$: Observable<bigint | number> | null = null;
+    public get ContactInteractionsCount$(): Observable<bigint | number> {
+        if (this._contactInteractionsCount$ === null) {
+            this._contactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({priorityId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactInteractionsCount$;
+    }
 
 
 
@@ -263,18 +287,22 @@ export class PriorityData {
      this._tags = null;
      this._tagsPromise = null;
      this._tagsSubject.next(null);
+     this._tagsCount$ = null;
 
      this._scheduledEventTemplates = null;
      this._scheduledEventTemplatesPromise = null;
      this._scheduledEventTemplatesSubject.next(null);
+     this._scheduledEventTemplatesCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._contactInteractions = null;
      this._contactInteractionsPromise = null;
      this._contactInteractionsSubject.next(null);
+     this._contactInteractionsCount$ = null;
 
   }
 
@@ -1053,11 +1081,7 @@ export class PriorityService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TagsCount$ = TagService.Instance.GetTagsRowCount({priorityId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tagsCount$ = null;
 
 
     (revived as any).ScheduledEventTemplates$ = (revived as any)._scheduledEventTemplatesSubject.asObservable().pipe(
@@ -1069,11 +1093,7 @@ export class PriorityService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({priorityId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplatesCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1085,11 +1105,7 @@ export class PriorityService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({priorityId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
     (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
@@ -1101,11 +1117,7 @@ export class PriorityService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({priorityId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactInteractionsCount$ = null;
 
 
 

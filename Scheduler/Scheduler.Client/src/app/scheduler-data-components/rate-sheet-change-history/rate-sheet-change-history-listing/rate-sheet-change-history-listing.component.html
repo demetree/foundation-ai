@@ -82,6 +82,7 @@
   <app-rate-sheet-change-history-table
     *ngIf="userIsSchedulerRateSheetChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRateSheetChangeHistoryCount$ | async) ?? 0">
   </app-rate-sheet-change-history-table>
 </div>

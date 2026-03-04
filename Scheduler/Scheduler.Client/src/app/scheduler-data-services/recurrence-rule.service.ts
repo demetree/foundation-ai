@@ -183,11 +183,17 @@ export class RecurrenceRuleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RecurrenceRuleChangeHistoriesCount$ = RecurrenceRuleChangeHistoryService.Instance.GetRecurrenceRuleChangeHistoriesRowCount({recurrenceRuleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _recurrenceRuleChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get RecurrenceRuleChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._recurrenceRuleChangeHistoriesCount$ === null) {
+            this._recurrenceRuleChangeHistoriesCount$ = RecurrenceRuleChangeHistoryService.Instance.GetRecurrenceRuleChangeHistoriesRowCount({recurrenceRuleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._recurrenceRuleChangeHistoriesCount$;
+    }
 
 
 
@@ -202,11 +208,17 @@ export class RecurrenceRuleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({recurrenceRuleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({recurrenceRuleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -251,10 +263,12 @@ export class RecurrenceRuleData {
      this._recurrenceRuleChangeHistories = null;
      this._recurrenceRuleChangeHistoriesPromise = null;
      this._recurrenceRuleChangeHistoriesSubject.next(null);
+     this._recurrenceRuleChangeHistoriesCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1024,11 +1038,7 @@ export class RecurrenceRuleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RecurrenceRuleChangeHistoriesCount$ = RecurrenceRuleChangeHistoryService.Instance.GetRecurrenceRuleChangeHistoriesRowCount({recurrenceRuleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._recurrenceRuleChangeHistoriesCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1040,11 +1050,7 @@ export class RecurrenceRuleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({recurrenceRuleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
 

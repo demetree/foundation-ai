@@ -165,6 +165,7 @@ export class ScheduledEventTemplateChargeListingComponent implements OnInit, Aft
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventTemplateChargeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventTemplateChargeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -198,10 +198,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-resource-assignment-change-history-table [queryParams]="{ eventResourceAssignmentId: eventResourceAssignmentData?.id }"></app-event-resource-assignment-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-change-history-add-edit [preSeededData]="{ eventResourceAssignmentId: eventResourceAssignmentData?.id }" [hiddenFields]="['eventResourceAssignmentId']"></app-event-resource-assignment-change-history-add-edit>
+                                    <app-event-resource-assignment-change-history-table [queryParams]="{ eventResourceAssignmentId: eventResourceAssignmentData?.id }" [showAddButton]="true" [preSeededData]="{ eventResourceAssignmentId: eventResourceAssignmentData?.id }" [hiddenFields]="['eventResourceAssignmentId']"></app-event-resource-assignment-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -172,11 +172,17 @@ export class ClientContactData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientContactChangeHistoriesCount$ = ClientContactChangeHistoryService.Instance.GetClientContactChangeHistoriesRowCount({clientContactId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientContactChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ClientContactChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._clientContactChangeHistoriesCount$ === null) {
+            this._clientContactChangeHistoriesCount$ = ClientContactChangeHistoryService.Instance.GetClientContactChangeHistoriesRowCount({clientContactId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientContactChangeHistoriesCount$;
+    }
 
 
 
@@ -221,6 +227,7 @@ export class ClientContactData {
      this._clientContactChangeHistories = null;
      this._clientContactChangeHistoriesPromise = null;
      this._clientContactChangeHistoriesSubject.next(null);
+     this._clientContactChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -907,11 +914,7 @@ export class ClientContactService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientContactChangeHistoriesCount$ = ClientContactChangeHistoryService.Instance.GetClientContactChangeHistoriesRowCount({clientContactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientContactChangeHistoriesCount$ = null;
 
 
 

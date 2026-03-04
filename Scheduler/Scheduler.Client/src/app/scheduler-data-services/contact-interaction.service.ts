@@ -193,11 +193,17 @@ export class ContactInteractionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactInteractionChangeHistoriesCount$ = ContactInteractionChangeHistoryService.Instance.GetContactInteractionChangeHistoriesRowCount({contactInteractionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactInteractionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ContactInteractionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._contactInteractionChangeHistoriesCount$ === null) {
+            this._contactInteractionChangeHistoriesCount$ = ContactInteractionChangeHistoryService.Instance.GetContactInteractionChangeHistoriesRowCount({contactInteractionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactInteractionChangeHistoriesCount$;
+    }
 
 
 
@@ -242,6 +248,7 @@ export class ContactInteractionData {
      this._contactInteractionChangeHistories = null;
      this._contactInteractionChangeHistoriesPromise = null;
      this._contactInteractionChangeHistoriesSubject.next(null);
+     this._contactInteractionChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -934,11 +941,7 @@ export class ContactInteractionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactInteractionChangeHistoriesCount$ = ContactInteractionChangeHistoryService.Instance.GetContactInteractionChangeHistoriesRowCount({contactInteractionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactInteractionChangeHistoriesCount$ = null;
 
 
 

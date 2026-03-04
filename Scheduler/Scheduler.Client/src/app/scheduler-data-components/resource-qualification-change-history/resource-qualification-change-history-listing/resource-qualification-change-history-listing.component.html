@@ -82,6 +82,7 @@
   <app-resource-qualification-change-history-table
     *ngIf="userIsSchedulerResourceQualificationChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredResourceQualificationChangeHistoryCount$ | async) ?? 0">
   </app-resource-qualification-change-history-table>
 </div>

@@ -165,6 +165,7 @@ export class IconListingComponent implements OnInit, AfterViewInit, CanComponent
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.iconTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.iconTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

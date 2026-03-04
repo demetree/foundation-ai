@@ -82,6 +82,7 @@
   <app-volunteer-profile-change-history-table
     *ngIf="userIsSchedulerVolunteerProfileChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredVolunteerProfileChangeHistoryCount$ | async) ?? 0">
   </app-volunteer-profile-change-history-table>
 </div>

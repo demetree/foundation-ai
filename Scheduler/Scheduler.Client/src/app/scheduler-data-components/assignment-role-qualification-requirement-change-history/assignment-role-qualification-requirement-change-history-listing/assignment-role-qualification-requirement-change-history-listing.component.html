@@ -82,6 +82,7 @@
   <app-assignment-role-qualification-requirement-change-history-table
     *ngIf="userIsSchedulerAssignmentRoleQualificationRequirementChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAssignmentRoleQualificationRequirementChangeHistoryCount$ | async) ?? 0">
   </app-assignment-role-qualification-requirement-change-history-table>
 </div>

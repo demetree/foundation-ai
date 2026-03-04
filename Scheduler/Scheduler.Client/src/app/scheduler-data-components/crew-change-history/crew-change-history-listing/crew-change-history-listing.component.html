@@ -82,6 +82,7 @@
   <app-crew-change-history-table
     *ngIf="userIsSchedulerCrewChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCrewChangeHistoryCount$ | async) ?? 0">
   </app-crew-change-history-table>
 </div>

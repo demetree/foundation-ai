@@ -104,10 +104,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-interaction-table [queryParams]="{ interactionTypeId: interactionTypeData?.id }"></app-contact-interaction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-interaction-add-edit [preSeededData]="{ interactionTypeId: interactionTypeData?.id }" [hiddenFields]="['interactionTypeId']"></app-contact-interaction-add-edit>
+                                    <app-contact-interaction-table [queryParams]="{ interactionTypeId: interactionTypeData?.id }" [showAddButton]="true" [preSeededData]="{ interactionTypeId: interactionTypeData?.id }" [hiddenFields]="['interactionTypeId']"></app-contact-interaction-table>
                                 </div>
                             </div>
                             </ng-template>

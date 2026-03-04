@@ -82,6 +82,7 @@
   <app-appeal-table
     *ngIf="userIsSchedulerAppealReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAppealCount$ | async) ?? 0">
   </app-appeal-table>
 </div>

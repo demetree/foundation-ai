@@ -82,6 +82,7 @@
   <app-office-table
     *ngIf="userIsSchedulerOfficeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredOfficeCount$ | async) ?? 0">
   </app-office-table>
 </div>

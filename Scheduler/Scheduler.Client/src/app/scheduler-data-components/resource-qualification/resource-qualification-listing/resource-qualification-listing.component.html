@@ -82,6 +82,7 @@
   <app-resource-qualification-table
     *ngIf="userIsSchedulerResourceQualificationReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredResourceQualificationCount$ | async) ?? 0">
   </app-resource-qualification-table>
 </div>

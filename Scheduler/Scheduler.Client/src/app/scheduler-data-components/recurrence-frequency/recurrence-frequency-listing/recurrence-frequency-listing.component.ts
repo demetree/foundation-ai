@@ -165,6 +165,7 @@ export class RecurrenceFrequencyListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.recurrenceFrequencyTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.recurrenceFrequencyTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

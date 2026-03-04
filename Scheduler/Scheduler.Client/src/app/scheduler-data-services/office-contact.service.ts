@@ -172,11 +172,17 @@ export class OfficeContactData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficeContactChangeHistoriesCount$ = OfficeContactChangeHistoryService.Instance.GetOfficeContactChangeHistoriesRowCount({officeContactId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officeContactChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get OfficeContactChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._officeContactChangeHistoriesCount$ === null) {
+            this._officeContactChangeHistoriesCount$ = OfficeContactChangeHistoryService.Instance.GetOfficeContactChangeHistoriesRowCount({officeContactId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officeContactChangeHistoriesCount$;
+    }
 
 
 
@@ -221,6 +227,7 @@ export class OfficeContactData {
      this._officeContactChangeHistories = null;
      this._officeContactChangeHistoriesPromise = null;
      this._officeContactChangeHistoriesSubject.next(null);
+     this._officeContactChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -907,11 +914,7 @@ export class OfficeContactService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficeContactChangeHistoriesCount$ = OfficeContactChangeHistoryService.Instance.GetOfficeContactChangeHistoriesRowCount({officeContactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officeContactChangeHistoriesCount$ = null;
 
 
 

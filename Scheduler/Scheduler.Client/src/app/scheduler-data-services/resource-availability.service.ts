@@ -176,11 +176,17 @@ export class ResourceAvailabilityData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceAvailabilityChangeHistoriesCount$ = ResourceAvailabilityChangeHistoryService.Instance.GetResourceAvailabilityChangeHistoriesRowCount({resourceAvailabilityId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceAvailabilityChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ResourceAvailabilityChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._resourceAvailabilityChangeHistoriesCount$ === null) {
+            this._resourceAvailabilityChangeHistoriesCount$ = ResourceAvailabilityChangeHistoryService.Instance.GetResourceAvailabilityChangeHistoriesRowCount({resourceAvailabilityId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceAvailabilityChangeHistoriesCount$;
+    }
 
 
 
@@ -225,6 +231,7 @@ export class ResourceAvailabilityData {
      this._resourceAvailabilityChangeHistories = null;
      this._resourceAvailabilityChangeHistoriesPromise = null;
      this._resourceAvailabilityChangeHistoriesSubject.next(null);
+     this._resourceAvailabilityChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -913,11 +920,7 @@ export class ResourceAvailabilityService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceAvailabilityChangeHistoriesCount$ = ResourceAvailabilityChangeHistoryService.Instance.GetResourceAvailabilityChangeHistoriesRowCount({resourceAvailabilityId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceAvailabilityChangeHistoriesCount$ = null;
 
 
 

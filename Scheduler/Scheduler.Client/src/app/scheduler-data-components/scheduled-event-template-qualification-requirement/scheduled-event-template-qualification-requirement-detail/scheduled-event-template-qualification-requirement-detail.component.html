@@ -85,10 +85,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-qualification-requirement-change-history-table [queryParams]="{ scheduledEventTemplateQualificationRequirementId: scheduledEventTemplateQualificationRequirementData?.id }"></app-scheduled-event-template-qualification-requirement-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-qualification-requirement-change-history-add-edit [preSeededData]="{ scheduledEventTemplateQualificationRequirementId: scheduledEventTemplateQualificationRequirementData?.id }" [hiddenFields]="['scheduledEventTemplateQualificationRequirementId']"></app-scheduled-event-template-qualification-requirement-change-history-add-edit>
+                                    <app-scheduled-event-template-qualification-requirement-change-history-table [queryParams]="{ scheduledEventTemplateQualificationRequirementId: scheduledEventTemplateQualificationRequirementData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventTemplateQualificationRequirementId: scheduledEventTemplateQualificationRequirementData?.id }" [hiddenFields]="['scheduledEventTemplateQualificationRequirementId']"></app-scheduled-event-template-qualification-requirement-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

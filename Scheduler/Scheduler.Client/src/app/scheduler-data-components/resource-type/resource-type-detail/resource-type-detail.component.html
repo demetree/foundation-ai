@@ -108,10 +108,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-table [queryParams]="{ resourceTypeId: resourceTypeData?.id }"></app-resource-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-add-edit [preSeededData]="{ resourceTypeId: resourceTypeData?.id }" [hiddenFields]="['resourceTypeId']"></app-resource-add-edit>
+                                    <app-resource-table [queryParams]="{ resourceTypeId: resourceTypeData?.id }" [showAddButton]="true" [preSeededData]="{ resourceTypeId: resourceTypeData?.id }" [hiddenFields]="['resourceTypeId']"></app-resource-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -82,6 +82,7 @@
   <app-event-resource-assignment-table
     *ngIf="userIsSchedulerEventResourceAssignmentReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredEventResourceAssignmentCount$ | async) ?? 0">
   </app-event-resource-assignment-table>
 </div>

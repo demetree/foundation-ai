@@ -82,6 +82,7 @@
   <app-scheduled-event-qualification-requirement-change-history-table
     *ngIf="userIsSchedulerScheduledEventQualificationRequirementChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredScheduledEventQualificationRequirementChangeHistoryCount$ | async) ?? 0">
   </app-scheduled-event-qualification-requirement-change-history-table>
 </div>

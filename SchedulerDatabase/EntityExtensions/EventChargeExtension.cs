@@ -300,6 +300,9 @@ namespace Foundation.Scheduler.Database
 			public String notes { get; set; }
 			[Required]
 			public Boolean isAutomatic { get; set; }
+			[Required]
+			public Boolean isDeposit { get; set; }
+			public DateTime? depositRefundedDate { get; set; }
 			public DateTime? exportedDate { get; set; }
 			public String externalId { get; set; }
 			public Int32 versionNumber { get; set; }
@@ -350,6 +353,8 @@ namespace Foundation.Scheduler.Database
 				rateTypeId = this.rateTypeId,
 				notes = this.notes,
 				isAutomatic = this.isAutomatic,
+				isDeposit = this.isDeposit,
+				depositRefundedDate = this.depositRefundedDate,
 				exportedDate = this.exportedDate,
 				externalId = this.externalId,
 				versionNumber = this.versionNumber,
@@ -407,6 +412,8 @@ namespace Foundation.Scheduler.Database
 				rateTypeId = this.rateTypeId,
 				notes = this.notes,
 				isAutomatic = this.isAutomatic,
+				isDeposit = this.isDeposit,
+				depositRefundedDate = this.depositRefundedDate,
 				exportedDate = this.exportedDate,
 				externalId = this.externalId,
 				versionNumber = this.versionNumber,
@@ -470,6 +477,8 @@ namespace Foundation.Scheduler.Database
 				rateTypeId = dto.rateTypeId,
 				notes = dto.notes,
 				isAutomatic = dto.isAutomatic,
+				isDeposit = dto.isDeposit,
+				depositRefundedDate = dto.depositRefundedDate,
 				exportedDate = dto.exportedDate,
 				externalId = dto.externalId,
 				versionNumber = dto.versionNumber,
@@ -504,6 +513,8 @@ namespace Foundation.Scheduler.Database
 			this.rateTypeId = dto.rateTypeId;
 			this.notes = dto.notes;
 			this.isAutomatic = dto.isAutomatic;
+			this.isDeposit = dto.isDeposit;
+			this.depositRefundedDate = dto.depositRefundedDate;
 			this.exportedDate = dto.exportedDate;
 			this.externalId = dto.externalId;
 			this.versionNumber = dto.versionNumber;
@@ -544,6 +555,8 @@ namespace Foundation.Scheduler.Database
 				rateTypeId = this.rateTypeId,
 				notes = this.notes,
 				isAutomatic = this.isAutomatic,
+				isDeposit = this.isDeposit,
+				depositRefundedDate = this.depositRefundedDate,
 				exportedDate = this.exportedDate,
 				externalId = this.externalId,
 				versionNumber = this.versionNumber,
@@ -615,6 +628,8 @@ namespace Foundation.Scheduler.Database
 				rateTypeId = eventCharge.rateTypeId,
 				notes = eventCharge.notes,
 				isAutomatic = eventCharge.isAutomatic,
+				isDeposit = eventCharge.isDeposit,
+				depositRefundedDate = eventCharge.depositRefundedDate,
 				exportedDate = eventCharge.exportedDate,
 				externalId = eventCharge.externalId,
 				versionNumber = eventCharge.versionNumber,
@@ -653,6 +668,8 @@ namespace Foundation.Scheduler.Database
 				rateTypeId = eventCharge.rateTypeId,
 				notes = eventCharge.notes,
 				isAutomatic = eventCharge.isAutomatic,
+				isDeposit = eventCharge.isDeposit,
+				depositRefundedDate = eventCharge.depositRefundedDate,
 				exportedDate = eventCharge.exportedDate,
 				externalId = eventCharge.externalId,
 				versionNumber = eventCharge.versionNumber,

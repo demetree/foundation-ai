@@ -165,6 +165,7 @@ export class ShiftPatternChangeHistoryListingComponent implements OnInit, AfterV
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.shiftPatternChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.shiftPatternChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

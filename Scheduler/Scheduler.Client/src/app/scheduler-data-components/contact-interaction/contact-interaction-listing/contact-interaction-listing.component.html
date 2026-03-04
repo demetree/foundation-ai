@@ -82,6 +82,7 @@
   <app-contact-interaction-table
     *ngIf="userIsSchedulerContactInteractionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredContactInteractionCount$ | async) ?? 0">
   </app-contact-interaction-table>
 </div>

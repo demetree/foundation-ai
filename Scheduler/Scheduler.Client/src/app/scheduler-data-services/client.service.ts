@@ -267,11 +267,17 @@ export class ClientData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientChangeHistoriesCount$ = ClientChangeHistoryService.Instance.GetClientChangeHistoriesRowCount({clientId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ClientChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._clientChangeHistoriesCount$ === null) {
+            this._clientChangeHistoriesCount$ = ClientChangeHistoryService.Instance.GetClientChangeHistoriesRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientChangeHistoriesCount$;
+    }
 
 
 
@@ -286,11 +292,17 @@ export class ClientData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({clientId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientContactsCount$: Observable<bigint | number> | null = null;
+    public get ClientContactsCount$(): Observable<bigint | number> {
+        if (this._clientContactsCount$ === null) {
+            this._clientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientContactsCount$;
+    }
 
 
 
@@ -305,11 +317,17 @@ export class ClientData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({clientId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetsCount$ === null) {
+            this._schedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetsCount$;
+    }
 
 
 
@@ -324,11 +342,17 @@ export class ClientData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({clientId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetAddressesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetAddressesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetAddressesCount$ === null) {
+            this._schedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetAddressesCount$;
+    }
 
 
 
@@ -343,11 +367,17 @@ export class ClientData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({clientId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -362,11 +392,17 @@ export class ClientData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({clientId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentsCount$: Observable<bigint | number> | null = null;
+    public get ConstituentsCount$(): Observable<bigint | number> {
+        if (this._constituentsCount$ === null) {
+            this._constituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentsCount$;
+    }
 
 
 
@@ -411,26 +447,32 @@ export class ClientData {
      this._clientChangeHistories = null;
      this._clientChangeHistoriesPromise = null;
      this._clientChangeHistoriesSubject.next(null);
+     this._clientChangeHistoriesCount$ = null;
 
      this._clientContacts = null;
      this._clientContactsPromise = null;
      this._clientContactsSubject.next(null);
+     this._clientContactsCount$ = null;
 
      this._schedulingTargets = null;
      this._schedulingTargetsPromise = null;
      this._schedulingTargetsSubject.next(null);
+     this._schedulingTargetsCount$ = null;
 
      this._schedulingTargetAddresses = null;
      this._schedulingTargetAddressesPromise = null;
      this._schedulingTargetAddressesSubject.next(null);
+     this._schedulingTargetAddressesCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
+     this._constituentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1537,11 +1579,7 @@ export class ClientService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientChangeHistoriesCount$ = ClientChangeHistoryService.Instance.GetClientChangeHistoriesRowCount({clientId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientChangeHistoriesCount$ = null;
 
 
     (revived as any).ClientContacts$ = (revived as any)._clientContactsSubject.asObservable().pipe(
@@ -1553,11 +1591,7 @@ export class ClientService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({clientId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientContactsCount$ = null;
 
 
     (revived as any).SchedulingTargets$ = (revived as any)._schedulingTargetsSubject.asObservable().pipe(
@@ -1569,11 +1603,7 @@ export class ClientService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({clientId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetsCount$ = null;
 
 
     (revived as any).SchedulingTargetAddresses$ = (revived as any)._schedulingTargetAddressesSubject.asObservable().pipe(
@@ -1585,11 +1615,7 @@ export class ClientService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({clientId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetAddressesCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1601,11 +1627,7 @@ export class ClientService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({clientId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(
@@ -1617,11 +1639,7 @@ export class ClientService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({clientId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentsCount$ = null;
 
 
 

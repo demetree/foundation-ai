@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-batch-table [queryParams]="{ batchStatusId: batchStatusData?.id }"></app-batch-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-batch-add-edit [preSeededData]="{ batchStatusId: batchStatusData?.id }" [hiddenFields]="['batchStatusId']"></app-batch-add-edit>
+                                    <app-batch-table [queryParams]="{ batchStatusId: batchStatusData?.id }" [showAddButton]="true" [preSeededData]="{ batchStatusId: batchStatusData?.id }" [hiddenFields]="['batchStatusId']"></app-batch-table>
                                 </div>
                             </div>
                             </ng-template>

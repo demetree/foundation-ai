@@ -82,6 +82,7 @@
   <app-resource-shift-table
     *ngIf="userIsSchedulerResourceShiftReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredResourceShiftCount$ | async) ?? 0">
   </app-resource-shift-table>
 </div>

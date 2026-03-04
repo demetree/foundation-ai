@@ -165,6 +165,7 @@ export class ContactInteractionChangeHistoryListingComponent implements OnInit, 
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.contactInteractionChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.contactInteractionChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

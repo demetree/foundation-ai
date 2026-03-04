@@ -82,6 +82,7 @@
   <app-soft-credit-change-history-table
     *ngIf="userIsSchedulerSoftCreditChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSoftCreditChangeHistoryCount$ | async) ?? 0">
   </app-soft-credit-change-history-table>
 </div>

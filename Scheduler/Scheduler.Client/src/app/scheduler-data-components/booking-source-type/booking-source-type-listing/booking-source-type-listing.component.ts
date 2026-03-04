@@ -165,6 +165,7 @@ export class BookingSourceTypeListingComponent implements OnInit, AfterViewInit,
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.bookingSourceTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.bookingSourceTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

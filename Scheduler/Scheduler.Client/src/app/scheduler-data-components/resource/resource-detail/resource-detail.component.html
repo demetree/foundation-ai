@@ -160,10 +160,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-change-history-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-change-history-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-change-history-add-edit>
+                                    <app-resource-change-history-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -177,10 +174,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-contact-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-contact-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-contact-add-edit>
+                                    <app-resource-contact-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -194,10 +188,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-rate-sheet-table [queryParams]="{ resourceId: resourceData?.id }"></app-rate-sheet-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-rate-sheet-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-rate-sheet-add-edit>
+                                    <app-rate-sheet-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-rate-sheet-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -211,10 +202,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-qualification-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-qualification-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-qualification-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-qualification-add-edit>
+                                    <app-resource-qualification-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-qualification-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -228,10 +216,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-availability-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-availability-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-availability-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-availability-add-edit>
+                                    <app-resource-availability-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-availability-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -245,10 +230,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-shift-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-shift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-shift-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-shift-add-edit>
+                                    <app-resource-shift-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-shift-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -262,10 +244,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-member-table [queryParams]="{ resourceId: resourceData?.id }"></app-crew-member-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-member-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-crew-member-add-edit>
+                                    <app-crew-member-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-crew-member-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -279,10 +258,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-table [queryParams]="{ resourceId: resourceData?.id }"></app-scheduled-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-scheduled-event-add-edit>
+                                    <app-scheduled-event-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-scheduled-event-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -296,10 +272,21 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-charge-table [queryParams]="{ resourceId: resourceData?.id }"></app-event-charge-table>
+                                    <app-event-charge-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-charge-table>
                                 </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-charge-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-charge-add-edit>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -313,10 +300,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-notification-subscription-table [queryParams]="{ resourceId: resourceData?.id }"></app-notification-subscription-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-notification-subscription-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-notification-subscription-add-edit>
+                                    <app-notification-subscription-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-notification-subscription-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -330,10 +314,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-profile-table [queryParams]="{ resourceId: resourceData?.id }"></app-volunteer-profile-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-profile-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-profile-add-edit>
+                                    <app-volunteer-profile-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-profile-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -347,10 +328,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-group-member-table [queryParams]="{ resourceId: resourceData?.id }"></app-volunteer-group-member-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-group-member-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-group-member-add-edit>
+                                    <app-volunteer-group-member-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-group-member-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -364,10 +342,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-resource-assignment-table [queryParams]="{ resourceId: resourceData?.id }"></app-event-resource-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-resource-assignment-add-edit>
+                                    <app-event-resource-assignment-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-resource-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

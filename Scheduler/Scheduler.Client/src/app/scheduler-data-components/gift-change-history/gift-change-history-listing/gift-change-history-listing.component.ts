@@ -165,6 +165,7 @@ export class GiftChangeHistoryListingComponent implements OnInit, AfterViewInit,
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.giftChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.giftChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

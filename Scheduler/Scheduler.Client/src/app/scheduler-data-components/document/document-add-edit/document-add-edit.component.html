@@ -1,0 +1,163 @@
+<div class="add-document" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-document me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Document" 
+        *ngIf="userIsSchedulerDocumentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #documentModal let-modal>
+   <div class="modal-header document-modal-header">
+      <h5 class="modal-title mb-0" id="documentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Document' : 'Add Document' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body document-modal-body">
+      <form [formGroup]="documentForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('documentTypeId')">
+                <label for="Document-documentTypeId" id="label-Document-documentTypeId"><span class="text-danger">*</span>Document Type</label>
+                <select id="Document-documentTypeId" formControlName="documentTypeId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Document Type</option>
+                    <option *ngFor="let documentType of documentTypes$ | async" [ngValue]="documentType.id">{{documentType.name}}</option>
+                </select>
+                <div *ngIf="documentForm.get('documentTypeId')?.invalid && documentForm.get('documentTypeId')?.touched" class="text-danger">
+                    Document Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Document-name" id="label-Document-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Document-name" formControlName="name" placeholder="Enter Name" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-name" />
+                <div *ngIf="documentForm.get('name')?.invalid && documentForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Document-description" id="label-Document-description">Description</label>
+                <textarea id="Document-description" formControlName="description" placeholder="Enter Description" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileName')">
+                <label for="Document-fileName" id="label-Document-fileName"><span class="text-danger">*</span>File Name</label>
+                <textarea id="Document-fileName" formControlName="fileName" placeholder="Enter File Name" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()"></textarea>
+                <div *ngIf="documentForm.get('fileName')?.invalid && documentForm.get('fileName')?.touched" class="text-danger">
+                    File Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('mimeType')">
+                <label for="Document-mimeType" id="label-Document-mimeType"><span class="text-danger">*</span>Mime Type</label>
+                <input type="text" id="Document-mimeType" formControlName="mimeType" placeholder="Enter Mime Type" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-mimeType" />
+                <div *ngIf="documentForm.get('mimeType')?.invalid && documentForm.get('mimeType')?.touched" class="text-danger">
+                    Mime Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileSizeBytes')">
+                <label for="Document-fileSizeBytes" id="label-Document-fileSizeBytes"><span class="text-danger">*</span>File Size Bytes</label>
+                <input type="number" id="Document-fileSizeBytes" formControlName="fileSizeBytes" placeholder="Enter File Size Bytes" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileSizeBytes" />
+                <div *ngIf="documentForm.get('fileSizeBytes')?.invalid && documentForm.get('fileSizeBytes')?.touched" class="text-danger">
+                    File Size Bytes is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileDataFileName')">
+                <label for="Document-fileDataFileName" id="label-Document-fileDataFileName">File Data File Name</label>
+                <input type="text" id="Document-fileDataFileName" formControlName="fileDataFileName" placeholder="Enter File Data File Name" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileDataFileName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileDataSize')">
+                <label for="Document-fileDataSize" id="label-Document-fileDataSize">File Data Size</label>
+                <input type="number" id="Document-fileDataSize" formControlName="fileDataSize" placeholder="Enter File Data Size" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileDataSize" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileDataData')">
+                <label for="Document-fileDataData" id="label-Document-fileDataData">File Data Data</label>
+                <input type="text" id="Document-fileDataData" formControlName="fileDataData" placeholder="Enter File Data Data" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileDataData" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileDataMimeType')">
+                <label for="Document-fileDataMimeType" id="label-Document-fileDataMimeType">File Data Mime Type</label>
+                <input type="text" id="Document-fileDataMimeType" formControlName="fileDataMimeType" placeholder="Enter File Data Mime Type" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileDataMimeType" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="Document-scheduledEventId" id="label-Document-scheduledEventId">Scheduled Event</label>
+                <select id="Document-scheduledEventId" formControlName="scheduledEventId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('financialTransactionId')">
+                <label for="Document-financialTransactionId" id="label-Document-financialTransactionId">Financial Transaction</label>
+                <select id="Document-financialTransactionId" formControlName="financialTransactionId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Financial Transaction</option>
+                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.description}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="Document-contactId" id="label-Document-contactId">Contact</label>
+                <select id="Document-contactId" formControlName="contactId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="Document-resourceId" id="label-Document-resourceId">Resource</label>
+                <select id="Document-resourceId" formControlName="resourceId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="Document-status" id="label-Document-status">Status</label>
+                <input type="text" id="Document-status" formControlName="status" placeholder="Enter Status" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-status" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('statusDate')">
+                <label for="Document-statusDate" id="label-Document-statusDate">Status Date</label>
+                <input type="datetime-local" id="Document-statusDate" formControlName="statusDate" placeholder="Enter Status Date" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-statusDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('statusChangedBy')">
+                <label for="Document-statusChangedBy" id="label-Document-statusChangedBy">Status Changed By</label>
+                <input type="text" id="Document-statusChangedBy" formControlName="statusChangedBy" placeholder="Enter Status Changed By" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-statusChangedBy" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('uploadedDate')">
+                <label for="Document-uploadedDate" id="label-Document-uploadedDate"><span class="text-danger">*</span>Uploaded Date</label>
+                <input type="datetime-local" id="Document-uploadedDate" formControlName="uploadedDate" placeholder="Enter Uploaded Date" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-uploadedDate" />
+                <div *ngIf="documentForm.get('uploadedDate')?.invalid && documentForm.get('uploadedDate')?.touched" class="text-danger">
+                    Uploaded Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('uploadedBy')">
+                <label for="Document-uploadedBy" id="label-Document-uploadedBy">Uploaded By</label>
+                <input type="text" id="Document-uploadedBy" formControlName="uploadedBy" placeholder="Enter Uploaded By" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-uploadedBy" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Document-notes" id="label-Document-notes">Notes</label>
+                <textarea id="Document-notes" formControlName="notes" placeholder="Enter Notes" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Document-versionNumber" id="label-Document-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Document-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Document-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerDocumentWriter()" />
+                <label for="Document-active" class="form-check-label" id="label-Document-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Document-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerDocumentWriter()" />
+                <label for="Document-deleted" class="form-check-label" id="label-Document-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer document-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Document changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentForm.valid || documentForm.pristine  || userIsSchedulerDocumentWriter() == false " ngbTooltip="Save the Document changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Document' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

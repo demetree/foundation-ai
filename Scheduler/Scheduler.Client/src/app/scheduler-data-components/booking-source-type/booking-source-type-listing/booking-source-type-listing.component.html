@@ -82,6 +82,7 @@
   <app-booking-source-type-table
     *ngIf="userIsSchedulerBookingSourceTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBookingSourceTypeCount$ | async) ?? 0">
   </app-booking-source-type-table>
 </div>

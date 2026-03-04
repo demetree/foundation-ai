@@ -23,6 +23,7 @@ import { ChargeStatusData } from './charge-status.service';
 import { CurrencyData } from './currency.service';
 import { RateTypeData } from './rate-type.service';
 import { EventChargeChangeHistoryService, EventChargeChangeHistoryData } from './event-charge-change-history.service';
+import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -46,6 +47,8 @@ export class EventChargeQueryParameters {
     rateTypeId: bigint | number | null | undefined = null;
     notes: string | null | undefined = null;
     isAutomatic: boolean | null | undefined = null;
+    isDeposit: boolean | null | undefined = null;
+    depositRefundedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     exportedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     externalId: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -76,6 +79,8 @@ export class EventChargeSubmitData {
     rateTypeId: bigint | number | null = null;
     notes: string | null = null;
     isAutomatic!: boolean;
+    isDeposit!: boolean;
+    depositRefundedDate: string | null = null;     // ISO 8601 (full datetime)
     exportedDate: string | null = null;     // ISO 8601 (full datetime)
     externalId: string | null = null;
     versionNumber!: bigint | number;
@@ -160,6 +165,8 @@ export class EventChargeData {
     rateTypeId!: bigint | number;
     notes!: string | null;
     isAutomatic!: boolean;
+    isDeposit!: boolean;
+    depositRefundedDate!: string | null;   // ISO 8601 (full datetime)
     exportedDate!: string | null;   // ISO 8601 (full datetime)
     externalId!: string | null;
     versionNumber!: bigint | number;
@@ -179,6 +186,11 @@ export class EventChargeData {
     private _eventChargeChangeHistories: EventChargeChangeHistoryData[] | null = null;
     private _eventChargeChangeHistoriesPromise: Promise<EventChargeChangeHistoryData[]> | null  = null;
     private _eventChargeChangeHistoriesSubject = new BehaviorSubject<EventChargeChangeHistoryData[] | null>(null);
+
+                
+    private _paymentTransactions: PaymentTransactionData[] | null = null;
+    private _paymentTransactionsPromise: Promise<PaymentTransactionData[]> | null  = null;
+    private _paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
 
                 
 
@@ -208,11 +220,42 @@ export class EventChargeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargeChangeHistoriesCount$ = EventChargeChangeHistoryService.Instance.GetEventChargeChangeHistoriesRowCount({eventChargeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get EventChargeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._eventChargeChangeHistoriesCount$ === null) {
+            this._eventChargeChangeHistoriesCount$ = EventChargeChangeHistoryService.Instance.GetEventChargeChangeHistoriesRowCount({eventChargeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargeChangeHistoriesCount$;
+    }
+
+
+
+    public PaymentTransactions$ = this._paymentTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._paymentTransactions === null && this._paymentTransactionsPromise === null) {
+            this.loadPaymentTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _paymentTransactionsCount$: Observable<bigint | number> | null = null;
+    public get PaymentTransactionsCount$(): Observable<bigint | number> {
+        if (this._paymentTransactionsCount$ === null) {
+            this._paymentTransactionsCount$ = PaymentTransactionService.Instance.GetPaymentTransactionsRowCount({eventChargeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._paymentTransactionsCount$;
+    }
 
 
 
@@ -257,6 +300,12 @@ export class EventChargeData {
      this._eventChargeChangeHistories = null;
      this._eventChargeChangeHistoriesPromise = null;
      this._eventChargeChangeHistoriesSubject.next(null);
+     this._eventChargeChangeHistoriesCount$ = null;
+
+     this._paymentTransactions = null;
+     this._paymentTransactionsPromise = null;
+     this._paymentTransactionsSubject.next(null);
+     this._paymentTransactionsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -329,6 +378,71 @@ export class EventChargeData {
 
     public get HasEventChargeChangeHistories(): Promise<boolean> {
         return this.EventChargeChangeHistories.then(eventChargeChangeHistories => eventChargeChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the PaymentTransactions for this EventCharge.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.eventCharge.PaymentTransactions.then(eventCharges => { ... })
+     *   or
+     *   await this.eventCharge.eventCharges
+     *
+    */
+    public get PaymentTransactions(): Promise<PaymentTransactionData[]> {
+        if (this._paymentTransactions !== null) {
+            return Promise.resolve(this._paymentTransactions);
+        }
+
+        if (this._paymentTransactionsPromise !== null) {
+            return this._paymentTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadPaymentTransactions();
+
+        return this._paymentTransactionsPromise!;
+    }
+
+
+
+    private loadPaymentTransactions(): void {
+
+        this._paymentTransactionsPromise = lastValueFrom(
+            EventChargeService.Instance.GetPaymentTransactionsForEventCharge(this.id)
+        )
+        .then(PaymentTransactions => {
+            this._paymentTransactions = PaymentTransactions ?? [];
+            this._paymentTransactionsSubject.next(this._paymentTransactions);
+            return this._paymentTransactions;
+         })
+        .catch(err => {
+            this._paymentTransactions = [];
+            this._paymentTransactionsSubject.next(this._paymentTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._paymentTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached PaymentTransaction. Call after mutations to force refresh.
+     */
+    public ClearPaymentTransactionsCache(): void {
+        this._paymentTransactions = null;
+        this._paymentTransactionsPromise = null;
+        this._paymentTransactionsSubject.next(this._paymentTransactions);      // Emit to observable
+    }
+
+    public get HasPaymentTransactions(): Promise<boolean> {
+        return this.PaymentTransactions.then(paymentTransactions => paymentTransactions.length > 0);
     }
 
 
@@ -411,6 +525,7 @@ export class EventChargeService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private eventChargeChangeHistoryService: EventChargeChangeHistoryService,
+        private paymentTransactionService: PaymentTransactionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -480,6 +595,8 @@ export class EventChargeService extends SecureEndpointBase {
         output.rateTypeId = data.rateTypeId;
         output.notes = data.notes;
         output.isAutomatic = data.isAutomatic;
+        output.isDeposit = data.isDeposit;
+        output.depositRefundedDate = data.depositRefundedDate;
         output.exportedDate = data.exportedDate;
         output.externalId = data.externalId;
         output.versionNumber = data.versionNumber;
@@ -893,6 +1010,16 @@ export class EventChargeService extends SecureEndpointBase {
     }
 
 
+    public GetPaymentTransactionsForEventCharge(eventChargeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
+        return this.paymentTransactionService.GetPaymentTransactionList({
+            eventChargeId: eventChargeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full EventChargeData instance.
@@ -932,6 +1059,10 @@ export class EventChargeService extends SecureEndpointBase {
     (revived as any)._eventChargeChangeHistoriesPromise = null;
     (revived as any)._eventChargeChangeHistoriesSubject = new BehaviorSubject<EventChargeChangeHistoryData[] | null>(null);
 
+    (revived as any)._paymentTransactions = null;
+    (revived as any)._paymentTransactionsPromise = null;
+    (revived as any)._paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -953,11 +1084,19 @@ export class EventChargeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargeChangeHistoriesCount$ = EventChargeChangeHistoryService.Instance.GetEventChargeChangeHistoriesRowCount({eventChargeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._eventChargeChangeHistoriesCount$ = null;
 
+
+    (revived as any).PaymentTransactions$ = (revived as any)._paymentTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._paymentTransactions === null && (revived as any)._paymentTransactionsPromise === null) {
+                (revived as any).loadPaymentTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._paymentTransactionsCount$ = null;
 
 
 

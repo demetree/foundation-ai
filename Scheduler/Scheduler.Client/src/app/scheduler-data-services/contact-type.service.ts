@@ -139,11 +139,17 @@ export class ContactTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({contactTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactsCount$: Observable<bigint | number> | null = null;
+    public get ContactsCount$(): Observable<bigint | number> {
+        if (this._contactsCount$ === null) {
+            this._contactsCount$ = ContactService.Instance.GetContactsRowCount({contactTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactsCount$;
+    }
 
 
 
@@ -188,6 +194,7 @@ export class ContactTypeData {
      this._contacts = null;
      this._contactsPromise = null;
      this._contactsSubject.next(null);
+     this._contactsCount$ = null;
 
   }
 
@@ -726,11 +733,7 @@ export class ContactTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactsCount$ = ContactService.Instance.GetContactsRowCount({contactTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactsCount$ = null;
 
 
 

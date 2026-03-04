@@ -210,11 +210,17 @@ export class VolunteerGroupData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupChangeHistoriesCount$ = VolunteerGroupChangeHistoryService.Instance.GetVolunteerGroupChangeHistoriesRowCount({volunteerGroupId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupChangeHistoriesCount$ === null) {
+            this._volunteerGroupChangeHistoriesCount$ = VolunteerGroupChangeHistoryService.Instance.GetVolunteerGroupChangeHistoriesRowCount({volunteerGroupId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupChangeHistoriesCount$;
+    }
 
 
 
@@ -229,11 +235,17 @@ export class VolunteerGroupData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({volunteerGroupId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupMembersCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupMembersCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupMembersCount$ === null) {
+            this._volunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({volunteerGroupId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupMembersCount$;
+    }
 
 
 
@@ -248,11 +260,17 @@ export class VolunteerGroupData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({volunteerGroupId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({volunteerGroupId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -297,14 +315,17 @@ export class VolunteerGroupData {
      this._volunteerGroupChangeHistories = null;
      this._volunteerGroupChangeHistoriesPromise = null;
      this._volunteerGroupChangeHistoriesSubject.next(null);
+     this._volunteerGroupChangeHistoriesCount$ = null;
 
      this._volunteerGroupMembers = null;
      this._volunteerGroupMembersPromise = null;
      this._volunteerGroupMembersSubject.next(null);
+     this._volunteerGroupMembersCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1160,11 +1181,7 @@ export class VolunteerGroupService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupChangeHistoriesCount$ = VolunteerGroupChangeHistoryService.Instance.GetVolunteerGroupChangeHistoriesRowCount({volunteerGroupId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupChangeHistoriesCount$ = null;
 
 
     (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
@@ -1176,11 +1193,7 @@ export class VolunteerGroupService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({volunteerGroupId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupMembersCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -1192,11 +1205,7 @@ export class VolunteerGroupService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({volunteerGroupId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

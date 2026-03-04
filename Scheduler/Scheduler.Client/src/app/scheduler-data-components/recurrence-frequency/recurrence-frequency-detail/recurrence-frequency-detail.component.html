@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-recurrence-rule-table [queryParams]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }"></app-recurrence-rule-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-recurrence-rule-add-edit [preSeededData]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }" [hiddenFields]="['recurrenceFrequencyId']"></app-recurrence-rule-add-edit>
+                                    <app-recurrence-rule-table [queryParams]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }" [showAddButton]="true" [preSeededData]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }" [hiddenFields]="['recurrenceFrequencyId']"></app-recurrence-rule-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -92,10 +89,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-pledge-table [queryParams]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }"></app-pledge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-pledge-add-edit [preSeededData]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }" [hiddenFields]="['recurrenceFrequencyId']"></app-pledge-add-edit>
+                                    <app-pledge-table [queryParams]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }" [showAddButton]="true" [preSeededData]="{ recurrenceFrequencyId: recurrenceFrequencyData?.id }" [hiddenFields]="['recurrenceFrequencyId']"></app-pledge-table>
                                 </div>
                             </div>
                             </ng-template>

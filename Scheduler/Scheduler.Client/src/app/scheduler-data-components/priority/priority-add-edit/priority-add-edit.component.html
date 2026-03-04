@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #priorityModal let-modal>
-   <div class="modal-header bg-dark text-light priority-modal-header">
+   <div class="modal-header priority-modal-header">
       <h5 class="modal-title mb-0" id="priorityModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Priority' : 'Add Priority' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body priority-modal-body">
       <form [formGroup]="priorityForm" (ngSubmit)="submitForm()">

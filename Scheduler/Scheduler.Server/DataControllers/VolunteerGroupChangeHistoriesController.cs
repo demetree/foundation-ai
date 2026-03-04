@@ -69,7 +69,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -148,38 +147,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderByDescending(vgch => vgch.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.volunteerGroup);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Group Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || (includeRelations == true && x.volunteerGroup.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.purpose.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.avatarMimeType.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.VolunteerGroupChangeHistory> materialized = await query.ToListAsync(cancellationToken);
@@ -224,7 +203,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -282,26 +260,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(vgch => vgch.data == data);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Group Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.volunteerGroup.name.Contains(anyStringContains)
-			       || x.volunteerGroup.description.Contains(anyStringContains)
-			       || x.volunteerGroup.purpose.Contains(anyStringContains)
-			       || x.volunteerGroup.color.Contains(anyStringContains)
-			       || x.volunteerGroup.notes.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarFileName.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarMimeType.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -724,7 +682,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -800,26 +757,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(data) == false)
 			{
 				query = query.Where(vgch => vgch.data == data);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Group Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.volunteerGroup.name.Contains(anyStringContains)
-			       || x.volunteerGroup.description.Contains(anyStringContains)
-			       || x.volunteerGroup.purpose.Contains(anyStringContains)
-			       || x.volunteerGroup.color.Contains(anyStringContains)
-			       || x.volunteerGroup.notes.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarFileName.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarMimeType.Contains(anyStringContains)
-			   );
 			}
 
 

@@ -82,6 +82,7 @@
   <app-assignment-status-table
     *ngIf="userIsSchedulerAssignmentStatusReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAssignmentStatusCount$ | async) ?? 0">
   </app-assignment-status-table>
 </div>

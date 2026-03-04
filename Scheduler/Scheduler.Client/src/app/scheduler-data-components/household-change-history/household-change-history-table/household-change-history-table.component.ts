@@ -42,6 +42,10 @@ export class HouseholdChangeHistoryTableComponent implements OnInit, OnChanges, 
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<HouseholdChangeHistoryData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<HouseholdChangeHistoryData>(); // Emitted for custom delete handling
 
@@ -52,6 +56,11 @@ export class HouseholdChangeHistoryTableComponent implements OnInit, OnChanges, 
   // Sorting properties
   public sortColumn: string | null = null;
   public sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Pagination
+  @Input() totalRowCount: number = 0;
+  public currentPage: number = 1;
+  public pageSize: number = 50;
 
 
   private isLoadingSubject = new BehaviorSubject<boolean>(true);
@@ -221,7 +230,9 @@ export class HouseholdChangeHistoryTableComponent implements OnInit, OnChanges, 
     //
     const householdChangeHistoryQueryParams = {
         ...this.queryParams,
-        anyStringContains: this.filterText || undefined
+        anyStringContains: this.filterText || undefined,
+        pageSize: this.pageSize,
+        pageNumber: this.currentPage
     };
 
     //
@@ -369,6 +380,14 @@ export class HouseholdChangeHistoryTableComponent implements OnInit, OnChanges, 
 }
 
 
+  public handleAdd(): void {
+    if (this.addEditHouseholdChangeHistoryComponent)
+    {
+        this.addEditHouseholdChangeHistoryComponent.openModal(); // Open in add mode (no data)
+    }
+}
+
+
   public handleDelete(householdChangeHistory: HouseholdChangeHistoryData): void {
     if (this.disableDefaultDelete)
     {
@@ -444,6 +463,42 @@ export class HouseholdChangeHistoryTableComponent implements OnInit, OnChanges, 
   // First "prominent" column for mobile view
   get prominentColumn(): TableColumn | null {
     return this.columns.find(col => col.mobile === 'prominent') || null;
+  }
+
+
+  //
+  // Pagination
+  //
+  public get totalPages(): number {
+    if (this.totalRowCount <= 0 || this.pageSize <= 0) {
+      return 1;
+    }
+    return Math.ceil(this.totalRowCount / this.pageSize);
+  }
+
+  public nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadData();
+    }
+  }
+
+  public previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  public goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadData();
+    }
+  }
+
+  public resetToFirstPage(): void {
+    this.currentPage = 1;
   }
 
 }

@@ -198,11 +198,17 @@ export class ConstituentJourneyStageData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentJourneyStageChangeHistoriesCount$ = ConstituentJourneyStageChangeHistoryService.Instance.GetConstituentJourneyStageChangeHistoriesRowCount({constituentJourneyStageId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentJourneyStageChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ConstituentJourneyStageChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._constituentJourneyStageChangeHistoriesCount$ === null) {
+            this._constituentJourneyStageChangeHistoriesCount$ = ConstituentJourneyStageChangeHistoryService.Instance.GetConstituentJourneyStageChangeHistoriesRowCount({constituentJourneyStageId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentJourneyStageChangeHistoriesCount$;
+    }
 
 
 
@@ -217,11 +223,17 @@ export class ConstituentJourneyStageData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentJourneyStageId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentsCount$: Observable<bigint | number> | null = null;
+    public get ConstituentsCount$(): Observable<bigint | number> {
+        if (this._constituentsCount$ === null) {
+            this._constituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentJourneyStageId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentsCount$;
+    }
 
 
 
@@ -266,10 +278,12 @@ export class ConstituentJourneyStageData {
      this._constituentJourneyStageChangeHistories = null;
      this._constituentJourneyStageChangeHistoriesPromise = null;
      this._constituentJourneyStageChangeHistoriesSubject.next(null);
+     this._constituentJourneyStageChangeHistoriesCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
+     this._constituentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1044,11 +1058,7 @@ export class ConstituentJourneyStageService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentJourneyStageChangeHistoriesCount$ = ConstituentJourneyStageChangeHistoryService.Instance.GetConstituentJourneyStageChangeHistoriesRowCount({constituentJourneyStageId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentJourneyStageChangeHistoriesCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(
@@ -1060,11 +1070,7 @@ export class ConstituentJourneyStageService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentJourneyStageId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentsCount$ = null;
 
 
 

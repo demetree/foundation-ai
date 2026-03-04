@@ -230,21 +230,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(r => r.name);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.office);
-				query = query.Include(x => x.resourceType);
-				query = query.Include(x => x.shiftPattern);
-				query = query.Include(x => x.timeZone);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Resource, or on an any of the string fields on its immediate relations
@@ -290,6 +275,21 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.office);
+				query = query.Include(x => x.resourceType);
+				query = query.Include(x => x.shiftPattern);
+				query = query.Include(x => x.timeZone);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.Resource> materialized = await query.ToListAsync(cancellationToken);
@@ -1058,6 +1058,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					resource.avatarData = null;
 					resource.CrewMembers = null;
+					resource.Documents = null;
 					resource.EventCharges = null;
 					resource.EventResourceAssignments = null;
 					resource.NotificationSubscriptions = null;
@@ -1201,6 +1202,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.avatarData = null;
 				cloneOfExisting.CrewMembers = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.EventCharges = null;
 				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.NotificationSubscriptions = null;

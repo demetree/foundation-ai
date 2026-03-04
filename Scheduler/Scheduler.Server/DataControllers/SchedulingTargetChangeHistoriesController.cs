@@ -69,7 +69,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -148,39 +147,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderByDescending(stch => stch.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.schedulingTarget);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduling Target Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || (includeRelations == true && x.schedulingTarget.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.schedulingTarget.avatarMimeType.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.SchedulingTargetChangeHistory> materialized = await query.ToListAsync(cancellationToken);
@@ -225,7 +203,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -283,27 +260,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(stch => stch.data == data);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduling Target Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.schedulingTarget.name.Contains(anyStringContains)
-			       || x.schedulingTarget.description.Contains(anyStringContains)
-			       || x.schedulingTarget.notes.Contains(anyStringContains)
-			       || x.schedulingTarget.externalId.Contains(anyStringContains)
-			       || x.schedulingTarget.color.Contains(anyStringContains)
-			       || x.schedulingTarget.attributes.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -726,7 +682,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -802,27 +757,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(data) == false)
 			{
 				query = query.Where(stch => stch.data == data);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduling Target Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.schedulingTarget.name.Contains(anyStringContains)
-			       || x.schedulingTarget.description.Contains(anyStringContains)
-			       || x.schedulingTarget.notes.Contains(anyStringContains)
-			       || x.schedulingTarget.externalId.Contains(anyStringContains)
-			       || x.schedulingTarget.color.Contains(anyStringContains)
-			       || x.schedulingTarget.attributes.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
-			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
-			   );
 			}
 
 

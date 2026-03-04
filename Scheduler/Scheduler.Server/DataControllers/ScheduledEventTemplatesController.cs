@@ -190,19 +190,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(set => set.name).ThenBy(set => set.description).ThenBy(set => set.defaultLocationPattern);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.priority);
-				query = query.Include(x => x.schedulingTargetType);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Scheduled Event Template, or on an any of the string fields on its immediate relations
@@ -224,6 +211,19 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.priority);
+				query = query.Include(x => x.schedulingTargetType);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ScheduledEventTemplate> materialized = await query.ToListAsync(cancellationToken);

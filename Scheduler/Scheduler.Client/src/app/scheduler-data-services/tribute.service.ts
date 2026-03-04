@@ -201,11 +201,17 @@ export class TributeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TributeChangeHistoriesCount$ = TributeChangeHistoryService.Instance.GetTributeChangeHistoriesRowCount({tributeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tributeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get TributeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._tributeChangeHistoriesCount$ === null) {
+            this._tributeChangeHistoriesCount$ = TributeChangeHistoryService.Instance.GetTributeChangeHistoriesRowCount({tributeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tributeChangeHistoriesCount$;
+    }
 
 
 
@@ -220,11 +226,17 @@ export class TributeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({tributeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({tributeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -269,10 +281,12 @@ export class TributeData {
      this._tributeChangeHistories = null;
      this._tributeChangeHistoriesPromise = null;
      this._tributeChangeHistoriesSubject.next(null);
+     this._tributeChangeHistoriesCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1047,11 +1061,7 @@ export class TributeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TributeChangeHistoriesCount$ = TributeChangeHistoryService.Instance.GetTributeChangeHistoriesRowCount({tributeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tributeChangeHistoriesCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1063,11 +1073,7 @@ export class TributeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({tributeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

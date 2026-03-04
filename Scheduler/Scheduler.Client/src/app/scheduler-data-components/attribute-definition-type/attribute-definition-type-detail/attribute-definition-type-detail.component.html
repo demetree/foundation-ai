@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-attribute-definition-table [queryParams]="{ attributeDefinitionTypeId: attributeDefinitionTypeData?.id }"></app-attribute-definition-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-attribute-definition-add-edit [preSeededData]="{ attributeDefinitionTypeId: attributeDefinitionTypeData?.id }" [hiddenFields]="['attributeDefinitionTypeId']"></app-attribute-definition-add-edit>
+                                    <app-attribute-definition-table [queryParams]="{ attributeDefinitionTypeId: attributeDefinitionTypeData?.id }" [showAddButton]="true" [preSeededData]="{ attributeDefinitionTypeId: attributeDefinitionTypeData?.id }" [hiddenFields]="['attributeDefinitionTypeId']"></app-attribute-definition-table>
                                 </div>
                             </div>
                             </ng-template>

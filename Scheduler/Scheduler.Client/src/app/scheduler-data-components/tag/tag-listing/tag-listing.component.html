@@ -82,6 +82,7 @@
   <app-tag-table
     *ngIf="userIsSchedulerTagReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTagCount$ | async) ?? 0">
   </app-tag-table>
 </div>

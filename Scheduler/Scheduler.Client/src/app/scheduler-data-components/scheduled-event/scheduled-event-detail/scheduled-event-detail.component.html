@@ -223,10 +223,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-change-history-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-scheduled-event-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-change-history-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-scheduled-event-change-history-add-edit>
+                                    <app-scheduled-event-change-history-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-scheduled-event-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -240,10 +237,49 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-charge-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-event-charge-table>
+                                    <app-event-charge-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-charge-table>
                                 </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-charge-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-charge-add-edit>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-document-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
+                            <button ngbNavLink>Payment Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.PaymentTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-payment-transaction-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-payment-transaction-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -257,10 +293,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-interaction-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-contact-interaction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-interaction-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-contact-interaction-add-edit>
+                                    <app-contact-interaction-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-contact-interaction-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -274,10 +307,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-calendar-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-event-calendar-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-calendar-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-calendar-add-edit>
+                                    <app-event-calendar-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-calendar-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -291,10 +321,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-dependency-table [queryParams]="{ predecessorEventId: scheduledEventData?.id }"></app-scheduled-event-dependency-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-dependency-add-edit [preSeededData]="{ predecessorEventId: scheduledEventData?.id }" [hiddenFields]="['predecessorEventId']"></app-scheduled-event-dependency-add-edit>
+                                    <app-scheduled-event-dependency-table [queryParams]="{ predecessorEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ predecessorEventId: scheduledEventData?.id }" [hiddenFields]="['predecessorEventId']"></app-scheduled-event-dependency-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -308,10 +335,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-dependency-table [queryParams]="{ successorEventId: scheduledEventData?.id }"></app-scheduled-event-dependency-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-dependency-add-edit [preSeededData]="{ successorEventId: scheduledEventData?.id }" [hiddenFields]="['successorEventId']"></app-scheduled-event-dependency-add-edit>
+                                    <app-scheduled-event-dependency-table [queryParams]="{ successorEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ successorEventId: scheduledEventData?.id }" [hiddenFields]="['successorEventId']"></app-scheduled-event-dependency-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -325,10 +349,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-qualification-requirement-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-scheduled-event-qualification-requirement-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-qualification-requirement-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-scheduled-event-qualification-requirement-add-edit>
+                                    <app-scheduled-event-qualification-requirement-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-scheduled-event-qualification-requirement-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -342,10 +363,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-recurrence-exception-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-recurrence-exception-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-recurrence-exception-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-recurrence-exception-add-edit>
+                                    <app-recurrence-exception-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-recurrence-exception-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -359,10 +377,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-resource-assignment-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-event-resource-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-resource-assignment-add-edit>
+                                    <app-event-resource-assignment-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-resource-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

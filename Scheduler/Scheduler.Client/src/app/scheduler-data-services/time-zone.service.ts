@@ -203,11 +203,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactsCount$: Observable<bigint | number> | null = null;
+    public get ContactsCount$(): Observable<bigint | number> {
+        if (this._contactsCount$ === null) {
+            this._contactsCount$ = ContactService.Instance.GetContactsRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactsCount$;
+    }
 
 
 
@@ -222,11 +228,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officesCount$: Observable<bigint | number> | null = null;
+    public get OfficesCount$(): Observable<bigint | number> {
+        if (this._officesCount$ === null) {
+            this._officesCount$ = OfficeService.Instance.GetOfficesRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officesCount$;
+    }
 
 
 
@@ -241,11 +253,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientsCount$: Observable<bigint | number> | null = null;
+    public get ClientsCount$(): Observable<bigint | number> {
+        if (this._clientsCount$ === null) {
+            this._clientsCount$ = ClientService.Instance.GetClientsRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientsCount$;
+    }
 
 
 
@@ -260,11 +278,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tenantProfilesCount$: Observable<bigint | number> | null = null;
+    public get TenantProfilesCount$(): Observable<bigint | number> {
+        if (this._tenantProfilesCount$ === null) {
+            this._tenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tenantProfilesCount$;
+    }
 
 
 
@@ -279,11 +303,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetsCount$ === null) {
+            this._schedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetsCount$;
+    }
 
 
 
@@ -298,11 +328,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ShiftPatternsCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _shiftPatternsCount$: Observable<bigint | number> | null = null;
+    public get ShiftPatternsCount$(): Observable<bigint | number> {
+        if (this._shiftPatternsCount$ === null) {
+            this._shiftPatternsCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._shiftPatternsCount$;
+    }
 
 
 
@@ -317,11 +353,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourcesCount$: Observable<bigint | number> | null = null;
+    public get ResourcesCount$(): Observable<bigint | number> {
+        if (this._resourcesCount$ === null) {
+            this._resourcesCount$ = ResourceService.Instance.GetResourcesRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourcesCount$;
+    }
 
 
 
@@ -336,11 +378,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceAvailabilitiesCount$: Observable<bigint | number> | null = null;
+    public get ResourceAvailabilitiesCount$(): Observable<bigint | number> {
+        if (this._resourceAvailabilitiesCount$ === null) {
+            this._resourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceAvailabilitiesCount$;
+    }
 
 
 
@@ -355,11 +403,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceShiftsCount$: Observable<bigint | number> | null = null;
+    public get ResourceShiftsCount$(): Observable<bigint | number> {
+        if (this._resourceShiftsCount$ === null) {
+            this._resourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceShiftsCount$;
+    }
 
 
 
@@ -374,11 +428,17 @@ export class TimeZoneData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({timeZoneId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({timeZoneId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -423,42 +483,52 @@ export class TimeZoneData {
      this._contacts = null;
      this._contactsPromise = null;
      this._contactsSubject.next(null);
+     this._contactsCount$ = null;
 
      this._offices = null;
      this._officesPromise = null;
      this._officesSubject.next(null);
+     this._officesCount$ = null;
 
      this._clients = null;
      this._clientsPromise = null;
      this._clientsSubject.next(null);
+     this._clientsCount$ = null;
 
      this._tenantProfiles = null;
      this._tenantProfilesPromise = null;
      this._tenantProfilesSubject.next(null);
+     this._tenantProfilesCount$ = null;
 
      this._schedulingTargets = null;
      this._schedulingTargetsPromise = null;
      this._schedulingTargetsSubject.next(null);
+     this._schedulingTargetsCount$ = null;
 
      this._shiftPatterns = null;
      this._shiftPatternsPromise = null;
      this._shiftPatternsSubject.next(null);
+     this._shiftPatternsCount$ = null;
 
      this._resources = null;
      this._resourcesPromise = null;
      this._resourcesSubject.next(null);
+     this._resourcesCount$ = null;
 
      this._resourceAvailabilities = null;
      this._resourceAvailabilitiesPromise = null;
      this._resourceAvailabilitiesSubject.next(null);
+     this._resourceAvailabilitiesCount$ = null;
 
      this._resourceShifts = null;
      this._resourceShiftsPromise = null;
      this._resourceShiftsSubject.next(null);
+     this._resourceShiftsCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
   }
 
@@ -1721,11 +1791,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactsCount$ = ContactService.Instance.GetContactsRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactsCount$ = null;
 
 
     (revived as any).Offices$ = (revived as any)._officesSubject.asObservable().pipe(
@@ -1737,11 +1803,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officesCount$ = null;
 
 
     (revived as any).Clients$ = (revived as any)._clientsSubject.asObservable().pipe(
@@ -1753,11 +1815,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientsCount$ = ClientService.Instance.GetClientsRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientsCount$ = null;
 
 
     (revived as any).TenantProfiles$ = (revived as any)._tenantProfilesSubject.asObservable().pipe(
@@ -1769,11 +1827,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tenantProfilesCount$ = null;
 
 
     (revived as any).SchedulingTargets$ = (revived as any)._schedulingTargetsSubject.asObservable().pipe(
@@ -1785,11 +1839,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetsCount$ = null;
 
 
     (revived as any).ShiftPatterns$ = (revived as any)._shiftPatternsSubject.asObservable().pipe(
@@ -1801,11 +1851,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ShiftPatternsCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._shiftPatternsCount$ = null;
 
 
     (revived as any).Resources$ = (revived as any)._resourcesSubject.asObservable().pipe(
@@ -1817,11 +1863,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourcesCount$ = null;
 
 
     (revived as any).ResourceAvailabilities$ = (revived as any)._resourceAvailabilitiesSubject.asObservable().pipe(
@@ -1833,11 +1875,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceAvailabilitiesCount$ = null;
 
 
     (revived as any).ResourceShifts$ = (revived as any)._resourceShiftsSubject.asObservable().pipe(
@@ -1849,11 +1887,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceShiftsCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1865,11 +1899,7 @@ export class TimeZoneService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({timeZoneId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
 

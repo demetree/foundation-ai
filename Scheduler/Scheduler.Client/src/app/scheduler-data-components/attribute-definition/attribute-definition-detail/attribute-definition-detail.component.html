@@ -95,10 +95,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-attribute-definition-change-history-table [queryParams]="{ attributeDefinitionId: attributeDefinitionData?.id }"></app-attribute-definition-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-attribute-definition-change-history-add-edit [preSeededData]="{ attributeDefinitionId: attributeDefinitionData?.id }" [hiddenFields]="['attributeDefinitionId']"></app-attribute-definition-change-history-add-edit>
+                                    <app-attribute-definition-change-history-table [queryParams]="{ attributeDefinitionId: attributeDefinitionData?.id }" [showAddButton]="true" [preSeededData]="{ attributeDefinitionId: attributeDefinitionData?.id }" [hiddenFields]="['attributeDefinitionId']"></app-attribute-definition-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

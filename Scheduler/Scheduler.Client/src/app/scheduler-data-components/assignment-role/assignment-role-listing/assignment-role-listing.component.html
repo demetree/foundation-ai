@@ -82,6 +82,7 @@
   <app-assignment-role-table
     *ngIf="userIsSchedulerAssignmentRoleReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAssignmentRoleCount$ | async) ?? 0">
   </app-assignment-role-table>
 </div>

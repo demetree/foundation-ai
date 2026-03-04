@@ -82,6 +82,7 @@
   <app-scheduling-target-qualification-requirement-table
     *ngIf="userIsSchedulerSchedulingTargetQualificationRequirementReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSchedulingTargetQualificationRequirementCount$ | async) ?? 0">
   </app-scheduling-target-qualification-requirement-table>
 </div>

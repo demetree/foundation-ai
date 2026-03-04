@@ -165,6 +165,7 @@ export class VolunteerProfileChangeHistoryListingComponent implements OnInit, Af
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.volunteerProfileChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.volunteerProfileChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

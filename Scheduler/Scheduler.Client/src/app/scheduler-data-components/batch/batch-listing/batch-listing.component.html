@@ -82,6 +82,7 @@
   <app-batch-table
     *ngIf="userIsSchedulerBatchReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBatchCount$ | async) ?? 0">
   </app-batch-table>
 </div>

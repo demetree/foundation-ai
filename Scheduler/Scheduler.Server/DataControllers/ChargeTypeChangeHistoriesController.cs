@@ -69,7 +69,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -148,36 +147,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderByDescending(ctch => ctch.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.chargeType);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Charge Type Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || (includeRelations == true && x.chargeType.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.defaultDescription.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.color.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ChargeTypeChangeHistory> materialized = await query.ToListAsync(cancellationToken);
@@ -222,7 +203,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -280,24 +260,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ctch => ctch.data == data);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Charge Type Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.chargeType.name.Contains(anyStringContains)
-			       || x.chargeType.description.Contains(anyStringContains)
-			       || x.chargeType.externalId.Contains(anyStringContains)
-			       || x.chargeType.defaultDescription.Contains(anyStringContains)
-			       || x.chargeType.color.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -720,7 +682,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -796,24 +757,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(data) == false)
 			{
 				query = query.Where(ctch => ctch.data == data);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Charge Type Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.chargeType.name.Contains(anyStringContains)
-			       || x.chargeType.description.Contains(anyStringContains)
-			       || x.chargeType.externalId.Contains(anyStringContains)
-			       || x.chargeType.defaultDescription.Contains(anyStringContains)
-			       || x.chargeType.color.Contains(anyStringContains)
-			   );
 			}
 
 

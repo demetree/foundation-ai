@@ -82,6 +82,7 @@
   <app-resource-availability-change-history-table
     *ngIf="userIsSchedulerResourceAvailabilityChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredResourceAvailabilityChangeHistoryCount$ | async) ?? 0">
   </app-resource-availability-change-history-table>
 </div>

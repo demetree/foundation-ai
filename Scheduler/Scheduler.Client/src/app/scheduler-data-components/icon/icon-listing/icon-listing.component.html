@@ -82,6 +82,7 @@
   <app-icon-table
     *ngIf="userIsSchedulerIconReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredIconCount$ | async) ?? 0">
   </app-icon-table>
 </div>

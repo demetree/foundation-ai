@@ -82,6 +82,7 @@
   <app-attribute-definition-entity-table
     *ngIf="userIsSchedulerAttributeDefinitionEntityReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAttributeDefinitionEntityCount$ | async) ?? 0">
   </app-attribute-definition-entity-table>
 </div>

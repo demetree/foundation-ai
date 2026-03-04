@@ -82,6 +82,7 @@
   <app-volunteer-status-table
     *ngIf="userIsSchedulerVolunteerStatusReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredVolunteerStatusCount$ | async) ?? 0">
   </app-volunteer-status-table>
 </div>

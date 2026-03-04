@@ -164,11 +164,17 @@ export class CountryData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public StateProvincesCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({countryId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _stateProvincesCount$: Observable<bigint | number> | null = null;
+    public get StateProvincesCount$(): Observable<bigint | number> {
+        if (this._stateProvincesCount$ === null) {
+            this._stateProvincesCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({countryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._stateProvincesCount$;
+    }
 
 
 
@@ -183,11 +189,17 @@ export class CountryData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({countryId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officesCount$: Observable<bigint | number> | null = null;
+    public get OfficesCount$(): Observable<bigint | number> {
+        if (this._officesCount$ === null) {
+            this._officesCount$ = OfficeService.Instance.GetOfficesRowCount({countryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officesCount$;
+    }
 
 
 
@@ -202,11 +214,17 @@ export class CountryData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({countryId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientsCount$: Observable<bigint | number> | null = null;
+    public get ClientsCount$(): Observable<bigint | number> {
+        if (this._clientsCount$ === null) {
+            this._clientsCount$ = ClientService.Instance.GetClientsRowCount({countryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientsCount$;
+    }
 
 
 
@@ -221,11 +239,17 @@ export class CountryData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({countryId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tenantProfilesCount$: Observable<bigint | number> | null = null;
+    public get TenantProfilesCount$(): Observable<bigint | number> {
+        if (this._tenantProfilesCount$ === null) {
+            this._tenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({countryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tenantProfilesCount$;
+    }
 
 
 
@@ -240,11 +264,17 @@ export class CountryData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({countryId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetAddressesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetAddressesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetAddressesCount$ === null) {
+            this._schedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({countryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetAddressesCount$;
+    }
 
 
 
@@ -289,22 +319,27 @@ export class CountryData {
      this._stateProvinces = null;
      this._stateProvincesPromise = null;
      this._stateProvincesSubject.next(null);
+     this._stateProvincesCount$ = null;
 
      this._offices = null;
      this._officesPromise = null;
      this._officesSubject.next(null);
+     this._officesCount$ = null;
 
      this._clients = null;
      this._clientsPromise = null;
      this._clientsSubject.next(null);
+     this._clientsCount$ = null;
 
      this._tenantProfiles = null;
      this._tenantProfilesPromise = null;
      this._tenantProfilesSubject.next(null);
+     this._tenantProfilesCount$ = null;
 
      this._schedulingTargetAddresses = null;
      this._schedulingTargetAddressesPromise = null;
      this._schedulingTargetAddressesSubject.next(null);
+     this._schedulingTargetAddressesCount$ = null;
 
   }
 
@@ -1164,11 +1199,7 @@ export class CountryService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).StateProvincesCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({countryId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._stateProvincesCount$ = null;
 
 
     (revived as any).Offices$ = (revived as any)._officesSubject.asObservable().pipe(
@@ -1180,11 +1211,7 @@ export class CountryService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({countryId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officesCount$ = null;
 
 
     (revived as any).Clients$ = (revived as any)._clientsSubject.asObservable().pipe(
@@ -1196,11 +1223,7 @@ export class CountryService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientsCount$ = ClientService.Instance.GetClientsRowCount({countryId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientsCount$ = null;
 
 
     (revived as any).TenantProfiles$ = (revived as any)._tenantProfilesSubject.asObservable().pipe(
@@ -1212,11 +1235,7 @@ export class CountryService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({countryId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tenantProfilesCount$ = null;
 
 
     (revived as any).SchedulingTargetAddresses$ = (revived as any)._schedulingTargetAddressesSubject.asObservable().pipe(
@@ -1228,11 +1247,7 @@ export class CountryService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({countryId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetAddressesCount$ = null;
 
 
 

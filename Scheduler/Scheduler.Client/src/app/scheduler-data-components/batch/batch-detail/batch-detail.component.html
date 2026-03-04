@@ -132,10 +132,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-batch-change-history-table [queryParams]="{ batchId: batchData?.id }"></app-batch-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-batch-change-history-add-edit [preSeededData]="{ batchId: batchData?.id }" [hiddenFields]="['batchId']"></app-batch-change-history-add-edit>
+                                    <app-batch-change-history-table [queryParams]="{ batchId: batchData?.id }" [showAddButton]="true" [preSeededData]="{ batchId: batchData?.id }" [hiddenFields]="['batchId']"></app-batch-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -149,10 +146,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ batchId: batchData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ batchId: batchData?.id }" [hiddenFields]="['batchId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ batchId: batchData?.id }" [showAddButton]="true" [preSeededData]="{ batchId: batchData?.id }" [hiddenFields]="['batchId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>

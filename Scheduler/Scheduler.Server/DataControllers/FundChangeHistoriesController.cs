@@ -69,7 +69,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -148,36 +147,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderByDescending(fch => fch.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.fund);
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Fund Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || (includeRelations == true && x.fund.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.fund.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.fund.glCode.Contains(anyStringContains))
-			       || (includeRelations == true && x.fund.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.fund.color.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.FundChangeHistory> materialized = await query.ToListAsync(cancellationToken);
@@ -222,7 +203,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -280,24 +260,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fch => fch.data == data);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Fund Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.fund.name.Contains(anyStringContains)
-			       || x.fund.description.Contains(anyStringContains)
-			       || x.fund.glCode.Contains(anyStringContains)
-			       || x.fund.notes.Contains(anyStringContains)
-			       || x.fund.color.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -720,7 +682,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? timeStamp = null,
 			int? userId = null,
 			string data = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -796,24 +757,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(data) == false)
 			{
 				query = query.Where(fch => fch.data == data);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Fund Change History, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.data.Contains(anyStringContains)
-			       || x.fund.name.Contains(anyStringContains)
-			       || x.fund.description.Contains(anyStringContains)
-			       || x.fund.glCode.Contains(anyStringContains)
-			       || x.fund.notes.Contains(anyStringContains)
-			       || x.fund.color.Contains(anyStringContains)
-			   );
 			}
 
 

@@ -21,6 +21,8 @@ import { OfficeService, OfficeData } from './office.service';
 import { ClientService, ClientData } from './client.service';
 import { RateSheetService, RateSheetData } from './rate-sheet.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
+import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
+import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -146,6 +148,16 @@ export class CurrencyData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
+    private _financialTransactions: FinancialTransactionData[] | null = null;
+    private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
+    private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
+    private _paymentTransactions: PaymentTransactionData[] | null = null;
+    private _paymentTransactionsPromise: Promise<PaymentTransactionData[]> | null  = null;
+    private _paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
+                
 
     //
     // Public observables — use with | async in templates
@@ -164,11 +176,17 @@ export class CurrencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ChargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({currencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _chargeTypesCount$: Observable<bigint | number> | null = null;
+    public get ChargeTypesCount$(): Observable<bigint | number> {
+        if (this._chargeTypesCount$ === null) {
+            this._chargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._chargeTypesCount$;
+    }
 
 
 
@@ -183,11 +201,17 @@ export class CurrencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({currencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officesCount$: Observable<bigint | number> | null = null;
+    public get OfficesCount$(): Observable<bigint | number> {
+        if (this._officesCount$ === null) {
+            this._officesCount$ = OfficeService.Instance.GetOfficesRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officesCount$;
+    }
 
 
 
@@ -202,11 +226,17 @@ export class CurrencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({currencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientsCount$: Observable<bigint | number> | null = null;
+    public get ClientsCount$(): Observable<bigint | number> {
+        if (this._clientsCount$ === null) {
+            this._clientsCount$ = ClientService.Instance.GetClientsRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientsCount$;
+    }
 
 
 
@@ -221,11 +251,17 @@ export class CurrencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({currencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetsCount$: Observable<bigint | number> | null = null;
+    public get RateSheetsCount$(): Observable<bigint | number> {
+        if (this._rateSheetsCount$ === null) {
+            this._rateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetsCount$;
+    }
 
 
 
@@ -240,11 +276,67 @@ export class CurrencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({currencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
+
+
+
+    public FinancialTransactions$ = this._financialTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._financialTransactions === null && this._financialTransactionsPromise === null) {
+            this.loadFinancialTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _financialTransactionsCount$: Observable<bigint | number> | null = null;
+    public get FinancialTransactionsCount$(): Observable<bigint | number> {
+        if (this._financialTransactionsCount$ === null) {
+            this._financialTransactionsCount$ = FinancialTransactionService.Instance.GetFinancialTransactionsRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._financialTransactionsCount$;
+    }
+
+
+
+    public PaymentTransactions$ = this._paymentTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._paymentTransactions === null && this._paymentTransactionsPromise === null) {
+            this.loadPaymentTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _paymentTransactionsCount$: Observable<bigint | number> | null = null;
+    public get PaymentTransactionsCount$(): Observable<bigint | number> {
+        if (this._paymentTransactionsCount$ === null) {
+            this._paymentTransactionsCount$ = PaymentTransactionService.Instance.GetPaymentTransactionsRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._paymentTransactionsCount$;
+    }
 
 
 
@@ -289,22 +381,37 @@ export class CurrencyData {
      this._chargeTypes = null;
      this._chargeTypesPromise = null;
      this._chargeTypesSubject.next(null);
+     this._chargeTypesCount$ = null;
 
      this._offices = null;
      this._officesPromise = null;
      this._officesSubject.next(null);
+     this._officesCount$ = null;
 
      this._clients = null;
      this._clientsPromise = null;
      this._clientsSubject.next(null);
+     this._clientsCount$ = null;
 
      this._rateSheets = null;
      this._rateSheetsPromise = null;
      this._rateSheetsSubject.next(null);
+     this._rateSheetsCount$ = null;
 
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
+
+     this._financialTransactions = null;
+     this._financialTransactionsPromise = null;
+     this._financialTransactionsSubject.next(null);
+     this._financialTransactionsCount$ = null;
+
+     this._paymentTransactions = null;
+     this._paymentTransactionsPromise = null;
+     this._paymentTransactionsSubject.next(null);
+     this._paymentTransactionsCount$ = null;
 
   }
 
@@ -637,6 +744,136 @@ export class CurrencyData {
     }
 
 
+    /**
+     *
+     * Gets the FinancialTransactions for this Currency.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.currency.FinancialTransactions.then(currencies => { ... })
+     *   or
+     *   await this.currency.currencies
+     *
+    */
+    public get FinancialTransactions(): Promise<FinancialTransactionData[]> {
+        if (this._financialTransactions !== null) {
+            return Promise.resolve(this._financialTransactions);
+        }
+
+        if (this._financialTransactionsPromise !== null) {
+            return this._financialTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadFinancialTransactions();
+
+        return this._financialTransactionsPromise!;
+    }
+
+
+
+    private loadFinancialTransactions(): void {
+
+        this._financialTransactionsPromise = lastValueFrom(
+            CurrencyService.Instance.GetFinancialTransactionsForCurrency(this.id)
+        )
+        .then(FinancialTransactions => {
+            this._financialTransactions = FinancialTransactions ?? [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            return this._financialTransactions;
+         })
+        .catch(err => {
+            this._financialTransactions = [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._financialTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached FinancialTransaction. Call after mutations to force refresh.
+     */
+    public ClearFinancialTransactionsCache(): void {
+        this._financialTransactions = null;
+        this._financialTransactionsPromise = null;
+        this._financialTransactionsSubject.next(this._financialTransactions);      // Emit to observable
+    }
+
+    public get HasFinancialTransactions(): Promise<boolean> {
+        return this.FinancialTransactions.then(financialTransactions => financialTransactions.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the PaymentTransactions for this Currency.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.currency.PaymentTransactions.then(currencies => { ... })
+     *   or
+     *   await this.currency.currencies
+     *
+    */
+    public get PaymentTransactions(): Promise<PaymentTransactionData[]> {
+        if (this._paymentTransactions !== null) {
+            return Promise.resolve(this._paymentTransactions);
+        }
+
+        if (this._paymentTransactionsPromise !== null) {
+            return this._paymentTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadPaymentTransactions();
+
+        return this._paymentTransactionsPromise!;
+    }
+
+
+
+    private loadPaymentTransactions(): void {
+
+        this._paymentTransactionsPromise = lastValueFrom(
+            CurrencyService.Instance.GetPaymentTransactionsForCurrency(this.id)
+        )
+        .then(PaymentTransactions => {
+            this._paymentTransactions = PaymentTransactions ?? [];
+            this._paymentTransactionsSubject.next(this._paymentTransactions);
+            return this._paymentTransactions;
+         })
+        .catch(err => {
+            this._paymentTransactions = [];
+            this._paymentTransactionsSubject.next(this._paymentTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._paymentTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached PaymentTransaction. Call after mutations to force refresh.
+     */
+    public ClearPaymentTransactionsCache(): void {
+        this._paymentTransactions = null;
+        this._paymentTransactionsPromise = null;
+        this._paymentTransactionsSubject.next(this._paymentTransactions);      // Emit to observable
+    }
+
+    public get HasPaymentTransactions(): Promise<boolean> {
+        return this.PaymentTransactions.then(paymentTransactions => paymentTransactions.length > 0);
+    }
+
+
 
 
     /**
@@ -677,6 +914,8 @@ export class CurrencyService extends SecureEndpointBase {
         private clientService: ClientService,
         private rateSheetService: RateSheetService,
         private eventChargeService: EventChargeService,
+        private financialTransactionService: FinancialTransactionService,
+        private paymentTransactionService: PaymentTransactionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1088,6 +1327,26 @@ export class CurrencyService extends SecureEndpointBase {
     }
 
 
+    public GetFinancialTransactionsForCurrency(currencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FinancialTransactionData[]> {
+        return this.financialTransactionService.GetFinancialTransactionList({
+            currencyId: currencyId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetPaymentTransactionsForCurrency(currencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
+        return this.paymentTransactionService.GetPaymentTransactionList({
+            currencyId: currencyId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full CurrencyData instance.
@@ -1143,6 +1402,14 @@ export class CurrencyService extends SecureEndpointBase {
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+    (revived as any)._financialTransactions = null;
+    (revived as any)._financialTransactionsPromise = null;
+    (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+    (revived as any)._paymentTransactions = null;
+    (revived as any)._paymentTransactionsPromise = null;
+    (revived as any)._paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1164,11 +1431,7 @@ export class CurrencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ChargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({currencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._chargeTypesCount$ = null;
 
 
     (revived as any).Offices$ = (revived as any)._officesSubject.asObservable().pipe(
@@ -1180,11 +1443,7 @@ export class CurrencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({currencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officesCount$ = null;
 
 
     (revived as any).Clients$ = (revived as any)._clientsSubject.asObservable().pipe(
@@ -1196,11 +1455,7 @@ export class CurrencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientsCount$ = ClientService.Instance.GetClientsRowCount({currencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientsCount$ = null;
 
 
     (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
@@ -1212,11 +1467,7 @@ export class CurrencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({currencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetsCount$ = null;
 
 
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
@@ -1228,11 +1479,31 @@ export class CurrencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({currencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._eventChargesCount$ = null;
 
+
+    (revived as any).FinancialTransactions$ = (revived as any)._financialTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._financialTransactions === null && (revived as any)._financialTransactionsPromise === null) {
+                (revived as any).loadFinancialTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._financialTransactionsCount$ = null;
+
+
+    (revived as any).PaymentTransactions$ = (revived as any)._paymentTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._paymentTransactions === null && (revived as any)._paymentTransactionsPromise === null) {
+                (revived as any).loadPaymentTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._paymentTransactionsCount$ = null;
 
 
 

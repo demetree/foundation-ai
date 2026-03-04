@@ -201,10 +201,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tenant-profile-change-history-table [queryParams]="{ tenantProfileId: tenantProfileData?.id }"></app-tenant-profile-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tenant-profile-change-history-add-edit [preSeededData]="{ tenantProfileId: tenantProfileData?.id }" [hiddenFields]="['tenantProfileId']"></app-tenant-profile-change-history-add-edit>
+                                    <app-tenant-profile-change-history-table [queryParams]="{ tenantProfileId: tenantProfileData?.id }" [showAddButton]="true" [preSeededData]="{ tenantProfileId: tenantProfileData?.id }" [hiddenFields]="['tenantProfileId']"></app-tenant-profile-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

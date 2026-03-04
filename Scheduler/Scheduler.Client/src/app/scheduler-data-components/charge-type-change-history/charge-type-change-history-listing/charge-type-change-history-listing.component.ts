@@ -165,6 +165,7 @@ export class ChargeTypeChangeHistoryListingComponent implements OnInit, AfterVie
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.chargeTypeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.chargeTypeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

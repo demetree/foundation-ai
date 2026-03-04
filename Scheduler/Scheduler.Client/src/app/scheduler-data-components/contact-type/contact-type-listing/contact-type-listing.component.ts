@@ -165,6 +165,7 @@ export class ContactTypeListingComponent implements OnInit, AfterViewInit, CanCo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.contactTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.contactTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

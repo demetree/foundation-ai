@@ -55,6 +55,7 @@ import {LegoSetMinifigService} from  './lego-set-minifig.service';
 import {LegoSetPartService} from  './lego-set-part.service';
 import {LegoSetSubsetService} from  './lego-set-subset.service';
 import {LegoThemeService} from  './lego-theme.service';
+import {MarketDataCacheService} from  './market-data-cache.service';
 import {MocCommentService} from  './moc-comment.service';
 import {MocFavouriteService} from  './moc-favourite.service';
 import {MocLikeService} from  './moc-like.service';
@@ -166,6 +167,7 @@ export class BMCDataServiceManagerService  {
               , public legoSetPartService: LegoSetPartService
               , public legoSetSubsetService: LegoSetSubsetService
               , public legoThemeService: LegoThemeService
+              , public marketDataCacheService: MarketDataCacheService
               , public mocCommentService: MocCommentService
               , public mocFavouriteService: MocFavouriteService
               , public mocLikeService: MocLikeService
@@ -275,6 +277,7 @@ export class BMCDataServiceManagerService  {
         this.legoSetPartService.ClearAllCaches();
         this.legoSetSubsetService.ClearAllCaches();
         this.legoThemeService.ClearAllCaches();
+        this.marketDataCacheService.ClearAllCaches();
         this.mocCommentService.ClearAllCaches();
         this.mocFavouriteService.ClearAllCaches();
         this.mocLikeService.ClearAllCaches();

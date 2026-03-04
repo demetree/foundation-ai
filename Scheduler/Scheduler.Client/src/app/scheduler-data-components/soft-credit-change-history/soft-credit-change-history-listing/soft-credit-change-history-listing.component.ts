@@ -165,6 +165,7 @@ export class SoftCreditChangeHistoryListingComponent implements OnInit, AfterVie
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.softCreditChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.softCreditChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

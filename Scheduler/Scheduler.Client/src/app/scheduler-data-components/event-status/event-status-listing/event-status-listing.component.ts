@@ -165,6 +165,7 @@ export class EventStatusListingComponent implements OnInit, AfterViewInit, CanCo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.eventStatusTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.eventStatusTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

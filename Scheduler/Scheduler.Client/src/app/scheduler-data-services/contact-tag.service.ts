@@ -164,11 +164,17 @@ export class ContactTagData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactTagChangeHistoriesCount$ = ContactTagChangeHistoryService.Instance.GetContactTagChangeHistoriesRowCount({contactTagId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactTagChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ContactTagChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._contactTagChangeHistoriesCount$ === null) {
+            this._contactTagChangeHistoriesCount$ = ContactTagChangeHistoryService.Instance.GetContactTagChangeHistoriesRowCount({contactTagId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactTagChangeHistoriesCount$;
+    }
 
 
 
@@ -213,6 +219,7 @@ export class ContactTagData {
      this._contactTagChangeHistories = null;
      this._contactTagChangeHistoriesPromise = null;
      this._contactTagChangeHistoriesSubject.next(null);
+     this._contactTagChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -897,11 +904,7 @@ export class ContactTagService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactTagChangeHistoriesCount$ = ContactTagChangeHistoryService.Instance.GetContactTagChangeHistoriesRowCount({contactTagId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactTagChangeHistoriesCount$ = null;
 
 
 

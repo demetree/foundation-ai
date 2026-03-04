@@ -294,29 +294,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(se => se.name);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.bookingSourceType);
-				query = query.Include(x => x.client);
-				query = query.Include(x => x.crew);
-				query = query.Include(x => x.eventStatus);
-				query = query.Include(x => x.office);
-				query = query.Include(x => x.parentScheduledEvent);
-				query = query.Include(x => x.priority);
-				query = query.Include(x => x.recurrenceRule);
-				query = query.Include(x => x.resource);
-				query = query.Include(x => x.scheduledEventTemplate);
-				query = query.Include(x => x.schedulingTarget);
-				query = query.Include(x => x.timeZone);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Scheduled Event, or on an any of the string fields on its immediate relations
@@ -410,6 +387,29 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.bookingSourceType);
+				query = query.Include(x => x.client);
+				query = query.Include(x => x.crew);
+				query = query.Include(x => x.eventStatus);
+				query = query.Include(x => x.office);
+				query = query.Include(x => x.parentScheduledEvent);
+				query = query.Include(x => x.priority);
+				query = query.Include(x => x.recurrenceRule);
+				query = query.Include(x => x.resource);
+				query = query.Include(x => x.scheduledEventTemplate);
+				query = query.Include(x => x.schedulingTarget);
+				query = query.Include(x => x.timeZone);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ScheduledEvent> materialized = await query.ToListAsync(cancellationToken);
@@ -1202,10 +1202,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					scheduledEvent.ContactInteractions = null;
+					scheduledEvent.Documents = null;
 					scheduledEvent.EventCalendars = null;
 					scheduledEvent.EventCharges = null;
 					scheduledEvent.EventResourceAssignments = null;
+					scheduledEvent.FinancialTransactions = null;
 					scheduledEvent.InverseparentScheduledEvent = null;
+					scheduledEvent.PaymentTransactions = null;
 					scheduledEvent.RecurrenceExceptions = null;
 					scheduledEvent.ScheduledEventChangeHistories = null;
 					scheduledEvent.ScheduledEventDependencypredecessorEvents = null;
@@ -1338,10 +1341,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.ContactInteractions = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.EventCalendars = null;
 				cloneOfExisting.EventCharges = null;
 				cloneOfExisting.EventResourceAssignments = null;
+				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.InverseparentScheduledEvent = null;
+				cloneOfExisting.PaymentTransactions = null;
 				cloneOfExisting.RecurrenceExceptions = null;
 				cloneOfExisting.ScheduledEventChangeHistories = null;
 				cloneOfExisting.ScheduledEventDependencypredecessorEvents = null;

@@ -196,11 +196,17 @@ export class RateSheetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetChangeHistoriesCount$ = RateSheetChangeHistoryService.Instance.GetRateSheetChangeHistoriesRowCount({rateSheetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get RateSheetChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._rateSheetChangeHistoriesCount$ === null) {
+            this._rateSheetChangeHistoriesCount$ = RateSheetChangeHistoryService.Instance.GetRateSheetChangeHistoriesRowCount({rateSheetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetChangeHistoriesCount$;
+    }
 
 
 
@@ -245,6 +251,7 @@ export class RateSheetData {
      this._rateSheetChangeHistories = null;
      this._rateSheetChangeHistoriesPromise = null;
      this._rateSheetChangeHistoriesSubject.next(null);
+     this._rateSheetChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -937,11 +944,7 @@ export class RateSheetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetChangeHistoriesCount$ = RateSheetChangeHistoryService.Instance.GetRateSheetChangeHistoriesRowCount({rateSheetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetChangeHistoriesCount$ = null;
 
 
 

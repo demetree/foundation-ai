@@ -121,10 +121,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-fund-change-history-table [queryParams]="{ fundId: fundData?.id }"></app-fund-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-fund-change-history-add-edit [preSeededData]="{ fundId: fundData?.id }" [hiddenFields]="['fundId']"></app-fund-change-history-add-edit>
+                                    <app-fund-change-history-table [queryParams]="{ fundId: fundData?.id }" [showAddButton]="true" [preSeededData]="{ fundId: fundData?.id }" [hiddenFields]="['fundId']"></app-fund-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -138,10 +135,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-pledge-table [queryParams]="{ fundId: fundData?.id }"></app-pledge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-pledge-add-edit [preSeededData]="{ fundId: fundData?.id }" [hiddenFields]="['fundId']"></app-pledge-add-edit>
+                                    <app-pledge-table [queryParams]="{ fundId: fundData?.id }" [showAddButton]="true" [preSeededData]="{ fundId: fundData?.id }" [hiddenFields]="['fundId']"></app-pledge-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -155,10 +149,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-batch-table [queryParams]="{ defaultFundId: fundData?.id }"></app-batch-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-batch-add-edit [preSeededData]="{ defaultFundId: fundData?.id }" [hiddenFields]="['defaultFundId']"></app-batch-add-edit>
+                                    <app-batch-table [queryParams]="{ defaultFundId: fundData?.id }" [showAddButton]="true" [preSeededData]="{ defaultFundId: fundData?.id }" [hiddenFields]="['defaultFundId']"></app-batch-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -172,10 +163,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ fundId: fundData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ fundId: fundData?.id }" [hiddenFields]="['fundId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ fundId: fundData?.id }" [showAddButton]="true" [preSeededData]="{ fundId: fundData?.id }" [hiddenFields]="['fundId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>

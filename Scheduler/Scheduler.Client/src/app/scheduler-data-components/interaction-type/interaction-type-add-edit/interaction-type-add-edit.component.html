@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #interactionTypeModal let-modal>
-   <div class="modal-header bg-dark text-light interaction-type-modal-header">
+   <div class="modal-header interaction-type-modal-header">
       <h5 class="modal-title mb-0" id="interactionTypeModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Interaction Type' : 'Add Interaction Type' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body interaction-type-modal-body">
       <form [formGroup]="interactionTypeForm" (ngSubmit)="submitForm()">

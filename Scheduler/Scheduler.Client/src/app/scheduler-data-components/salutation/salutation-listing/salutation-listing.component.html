@@ -82,6 +82,7 @@
   <app-salutation-table
     *ngIf="userIsSchedulerSalutationReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSalutationCount$ | async) ?? 0">
   </app-salutation-table>
 </div>

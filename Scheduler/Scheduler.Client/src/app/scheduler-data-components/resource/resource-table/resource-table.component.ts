@@ -43,6 +43,10 @@ export class ResourceTableComponent implements OnInit, OnChanges, AfterViewInit 
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<ResourceData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<ResourceData>(); // Emitted for custom delete handling
   @Output() undelete = new EventEmitter<ResourceData>(); // Emitted for custom undelete handling
@@ -54,6 +58,11 @@ export class ResourceTableComponent implements OnInit, OnChanges, AfterViewInit 
   // Sorting properties
   public sortColumn: string | null = null;
   public sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Pagination
+  @Input() totalRowCount: number = 0;
+  public currentPage: number = 1;
+  public pageSize: number = 50;
 
 
   private isLoadingSubject = new BehaviorSubject<boolean>(true);
@@ -236,7 +245,9 @@ export class ResourceTableComponent implements OnInit, OnChanges, AfterViewInit 
     //
     const resourceQueryParams = {
         ...this.queryParams,
-        anyStringContains: this.filterText || undefined
+        anyStringContains: this.filterText || undefined,
+        pageSize: this.pageSize,
+        pageNumber: this.currentPage
     };
 
     //
@@ -395,6 +406,14 @@ export class ResourceTableComponent implements OnInit, OnChanges, AfterViewInit 
 }
 
 
+  public handleAdd(): void {
+    if (this.addEditResourceComponent)
+    {
+        this.addEditResourceComponent.openModal(); // Open in add mode (no data)
+    }
+}
+
+
   public handleDelete(resource: ResourceData): void {
     if (this.disableDefaultDelete)
     {
@@ -507,6 +526,42 @@ export class ResourceTableComponent implements OnInit, OnChanges, AfterViewInit 
   // First "prominent" column for mobile view
   get prominentColumn(): TableColumn | null {
     return this.columns.find(col => col.mobile === 'prominent') || null;
+  }
+
+
+  //
+  // Pagination
+  //
+  public get totalPages(): number {
+    if (this.totalRowCount <= 0 || this.pageSize <= 0) {
+      return 1;
+    }
+    return Math.ceil(this.totalRowCount / this.pageSize);
+  }
+
+  public nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadData();
+    }
+  }
+
+  public previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  public goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadData();
+    }
+  }
+
+  public resetToFirstPage(): void {
+    this.currentPage = 1;
   }
 
 }

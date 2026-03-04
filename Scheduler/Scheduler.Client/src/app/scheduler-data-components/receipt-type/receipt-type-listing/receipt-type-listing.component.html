@@ -82,6 +82,7 @@
   <app-receipt-type-table
     *ngIf="userIsSchedulerReceiptTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredReceiptTypeCount$ | async) ?? 0">
   </app-receipt-type-table>
 </div>

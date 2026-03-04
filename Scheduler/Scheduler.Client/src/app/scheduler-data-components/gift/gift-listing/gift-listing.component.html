@@ -82,6 +82,7 @@
   <app-gift-table
     *ngIf="userIsSchedulerGiftReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredGiftCount$ | async) ?? 0">
   </app-gift-table>
 </div>

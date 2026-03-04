@@ -203,11 +203,17 @@ export class CampaignData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CampaignChangeHistoriesCount$ = CampaignChangeHistoryService.Instance.GetCampaignChangeHistoriesRowCount({campaignId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _campaignChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get CampaignChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._campaignChangeHistoriesCount$ === null) {
+            this._campaignChangeHistoriesCount$ = CampaignChangeHistoryService.Instance.GetCampaignChangeHistoriesRowCount({campaignId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._campaignChangeHistoriesCount$;
+    }
 
 
 
@@ -222,11 +228,17 @@ export class CampaignData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AppealsCount$ = AppealService.Instance.GetAppealsRowCount({campaignId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _appealsCount$: Observable<bigint | number> | null = null;
+    public get AppealsCount$(): Observable<bigint | number> {
+        if (this._appealsCount$ === null) {
+            this._appealsCount$ = AppealService.Instance.GetAppealsRowCount({campaignId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._appealsCount$;
+    }
 
 
 
@@ -241,11 +253,17 @@ export class CampaignData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({campaignId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _pledgesCount$: Observable<bigint | number> | null = null;
+    public get PledgesCount$(): Observable<bigint | number> {
+        if (this._pledgesCount$ === null) {
+            this._pledgesCount$ = PledgeService.Instance.GetPledgesRowCount({campaignId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._pledgesCount$;
+    }
 
 
 
@@ -260,11 +278,17 @@ export class CampaignData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BatchDefaultCampaignsCount$ = BatchService.Instance.GetBatchesRowCount({defaultCampaignId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _batchDefaultCampaignsCount$: Observable<bigint | number> | null = null;
+    public get BatchDefaultCampaignsCount$(): Observable<bigint | number> {
+        if (this._batchDefaultCampaignsCount$ === null) {
+            this._batchDefaultCampaignsCount$ = BatchService.Instance.GetBatchesRowCount({defaultCampaignId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._batchDefaultCampaignsCount$;
+    }
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -278,11 +302,17 @@ export class CampaignData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({campaignId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({campaignId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -327,22 +357,27 @@ export class CampaignData {
      this._campaignChangeHistories = null;
      this._campaignChangeHistoriesPromise = null;
      this._campaignChangeHistoriesSubject.next(null);
+     this._campaignChangeHistoriesCount$ = null;
 
      this._appeals = null;
      this._appealsPromise = null;
      this._appealsSubject.next(null);
+     this._appealsCount$ = null;
 
      this._pledges = null;
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
+     this._pledgesCount$ = null;
 
      this._batchDefaultCampaigns = null;
      this._batchDefaultCampaignsPromise = null;
      this._batchDefaultCampaignsSubject.next(null);
+     this._batchDefaultCampaignsCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1324,9 +1359,9 @@ export class CampaignService extends SecureEndpointBase {
     (revived as any)._pledgesPromise = null;
     (revived as any)._pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    (revived as any)._batches = null;
-    (revived as any)._batchesPromise = null;
-    (revived as any)._batchesSubject = new BehaviorSubject<BatchData[] | null>(null);
+    (revived as any)._batchDefaultCampaigns = null;
+    (revived as any)._batchDefaultCampaignsPromise = null;
+    (revived as any)._batchDefaultCampaignsSubject = new BehaviorSubject<BatchData[] | null>(null);
 
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
@@ -1353,11 +1388,7 @@ export class CampaignService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CampaignChangeHistoriesCount$ = CampaignChangeHistoryService.Instance.GetCampaignChangeHistoriesRowCount({campaignId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._campaignChangeHistoriesCount$ = null;
 
 
     (revived as any).Appeals$ = (revived as any)._appealsSubject.asObservable().pipe(
@@ -1369,11 +1400,7 @@ export class CampaignService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AppealsCount$ = AppealService.Instance.GetAppealsRowCount({campaignId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._appealsCount$ = null;
 
 
     (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
@@ -1385,27 +1412,19 @@ export class CampaignService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({campaignId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._pledgesCount$ = null;
 
 
-
-    (revived as any).Batches$ = (revived as any)._batchesSubject.asObservable().pipe(
+    (revived as any).BatchDefaultCampaigns$ = (revived as any)._batchDefaultCampaignsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._batches === null && (revived as any)._batchesPromise === null) {
-                (revived as any).loadBatches();        // Need to cast to any to invoke private load method
+              if ((revived as any)._batchDefaultCampaigns === null && (revived as any)._batchDefaultCampaignsPromise === null) {
+                (revived as any).loadBatchDefaultCampaigns();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any).BatchesCount$ = BatchService.Instance.GetBatchesRowCount({campaignId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._batchDefaultCampaignsCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1417,11 +1436,7 @@ export class CampaignService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({campaignId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

@@ -170,10 +170,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-change-history-table [queryParams]="{ giftId: giftData?.id }"></app-gift-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-change-history-add-edit [preSeededData]="{ giftId: giftData?.id }" [hiddenFields]="['giftId']"></app-gift-change-history-add-edit>
+                                    <app-gift-change-history-table [queryParams]="{ giftId: giftData?.id }" [showAddButton]="true" [preSeededData]="{ giftId: giftData?.id }" [hiddenFields]="['giftId']"></app-gift-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -187,10 +184,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-soft-credit-table [queryParams]="{ giftId: giftData?.id }"></app-soft-credit-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-soft-credit-add-edit [preSeededData]="{ giftId: giftData?.id }" [hiddenFields]="['giftId']"></app-soft-credit-add-edit>
+                                    <app-soft-credit-table [queryParams]="{ giftId: giftData?.id }" [showAddButton]="true" [preSeededData]="{ giftId: giftData?.id }" [hiddenFields]="['giftId']"></app-soft-credit-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -82,6 +82,7 @@
   <app-calendar-table
     *ngIf="userIsSchedulerCalendarReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCalendarCount$ | async) ?? 0">
   </app-calendar-table>
 </div>

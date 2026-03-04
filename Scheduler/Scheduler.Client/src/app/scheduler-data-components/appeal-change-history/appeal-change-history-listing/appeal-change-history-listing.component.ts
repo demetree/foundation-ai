@@ -165,6 +165,7 @@ export class AppealChangeHistoryListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.appealChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.appealChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

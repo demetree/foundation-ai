@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #chargeTypeChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light charge-type-change-history-modal-header">
+   <div class="modal-header charge-type-change-history-modal-header">
       <h5 class="modal-title mb-0" id="chargeTypeChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Charge Type Change History' : 'Add Charge Type Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body charge-type-change-history-modal-body">
       <form [formGroup]="chargeTypeChangeHistoryForm" (ngSubmit)="submitForm()">

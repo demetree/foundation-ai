@@ -95,10 +95,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-contact-change-history-table [queryParams]="{ schedulingTargetContactId: schedulingTargetContactData?.id }"></app-scheduling-target-contact-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-contact-change-history-add-edit [preSeededData]="{ schedulingTargetContactId: schedulingTargetContactData?.id }" [hiddenFields]="['schedulingTargetContactId']"></app-scheduling-target-contact-change-history-add-edit>
+                                    <app-scheduling-target-contact-change-history-table [queryParams]="{ schedulingTargetContactId: schedulingTargetContactData?.id }" [showAddButton]="true" [preSeededData]="{ schedulingTargetContactId: schedulingTargetContactData?.id }" [hiddenFields]="['schedulingTargetContactId']"></app-scheduling-target-contact-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

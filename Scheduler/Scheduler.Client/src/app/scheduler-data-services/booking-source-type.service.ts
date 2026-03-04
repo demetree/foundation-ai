@@ -134,11 +134,17 @@ export class BookingSourceTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({bookingSourceTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({bookingSourceTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class BookingSourceTypeData {
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class BookingSourceTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({bookingSourceTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
 

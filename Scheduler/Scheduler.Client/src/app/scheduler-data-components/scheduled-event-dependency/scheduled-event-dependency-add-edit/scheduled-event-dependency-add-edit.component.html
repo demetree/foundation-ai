@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #scheduledEventDependencyModal let-modal>
-   <div class="modal-header bg-dark text-light scheduled-event-dependency-modal-header">
+   <div class="modal-header scheduled-event-dependency-modal-header">
       <h5 class="modal-title mb-0" id="scheduledEventDependencyModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Scheduled Event Dependency' : 'Add Scheduled Event Dependency' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body scheduled-event-dependency-modal-body">
       <form [formGroup]="scheduledEventDependencyForm" (ngSubmit)="submitForm()">

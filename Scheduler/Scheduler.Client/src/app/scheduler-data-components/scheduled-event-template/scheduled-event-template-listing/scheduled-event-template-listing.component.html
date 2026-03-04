@@ -82,6 +82,7 @@
   <app-scheduled-event-template-table
     *ngIf="userIsSchedulerScheduledEventTemplateReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredScheduledEventTemplateCount$ | async) ?? 0">
   </app-scheduled-event-template-table>
 </div>

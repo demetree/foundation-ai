@@ -219,11 +219,17 @@ export class VolunteerProfileData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({volunteerProfileId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerProfileChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerProfileChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._volunteerProfileChangeHistoriesCount$ === null) {
+            this._volunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({volunteerProfileId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerProfileChangeHistoriesCount$;
+    }
 
 
 
@@ -268,6 +274,7 @@ export class VolunteerProfileData {
      this._volunteerProfileChangeHistories = null;
      this._volunteerProfileChangeHistoriesPromise = null;
      this._volunteerProfileChangeHistoriesSubject.next(null);
+     this._volunteerProfileChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -969,11 +976,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerProfileChangeHistoriesCount$ = VolunteerProfileChangeHistoryService.Instance.GetVolunteerProfileChangeHistoriesRowCount({volunteerProfileId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerProfileChangeHistoriesCount$ = null;
 
 
 

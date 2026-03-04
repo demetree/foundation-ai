@@ -147,11 +147,17 @@ export class TagData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({tagId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactTagsCount$: Observable<bigint | number> | null = null;
+    public get ContactTagsCount$(): Observable<bigint | number> {
+        if (this._contactTagsCount$ === null) {
+            this._contactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({tagId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactTagsCount$;
+    }
 
 
 
@@ -196,6 +202,7 @@ export class TagData {
      this._contactTags = null;
      this._contactTagsPromise = null;
      this._contactTagsSubject.next(null);
+     this._contactTagsCount$ = null;
 
   }
 
@@ -736,11 +743,7 @@ export class TagService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({tagId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactTagsCount$ = null;
 
 
 

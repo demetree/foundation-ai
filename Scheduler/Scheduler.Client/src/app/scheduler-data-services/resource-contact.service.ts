@@ -172,11 +172,17 @@ export class ResourceContactData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceContactChangeHistoriesCount$ = ResourceContactChangeHistoryService.Instance.GetResourceContactChangeHistoriesRowCount({resourceContactId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceContactChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ResourceContactChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._resourceContactChangeHistoriesCount$ === null) {
+            this._resourceContactChangeHistoriesCount$ = ResourceContactChangeHistoryService.Instance.GetResourceContactChangeHistoriesRowCount({resourceContactId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceContactChangeHistoriesCount$;
+    }
 
 
 
@@ -221,6 +227,7 @@ export class ResourceContactData {
      this._resourceContactChangeHistories = null;
      this._resourceContactChangeHistoriesPromise = null;
      this._resourceContactChangeHistoriesSubject.next(null);
+     this._resourceContactChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -907,11 +914,7 @@ export class ResourceContactService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceContactChangeHistoriesCount$ = ResourceContactChangeHistoryService.Instance.GetResourceContactChangeHistoriesRowCount({resourceContactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceContactChangeHistoriesCount$ = null;
 
 
 

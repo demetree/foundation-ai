@@ -8,6 +8,7 @@ using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.BMC.Database;
+using Foundation.BMC.Services;
 using BMC.BrickLink.Sync;
 using BMC.BrickEconomy.Sync;
 using BMC.BrickOwl.Sync;
@@ -36,6 +37,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         private readonly BrickLinkSyncService _blSyncService;
         private readonly BrickEconomySyncService _beSyncService;
         private readonly BrickOwlSyncService _boSyncService;
+        private readonly MarketDataCacheService _cacheService;
         private readonly ILogger<BrickbergController> _logger;
 
 
@@ -44,12 +46,14 @@ namespace Foundation.BMC.Controllers.WebAPI
             BrickLinkSyncService blSyncService,
             BrickEconomySyncService beSyncService,
             BrickOwlSyncService boSyncService,
+            MarketDataCacheService cacheService,
             ILogger<BrickbergController> logger) : base("BMC", "Brickberg")
         {
             _context = context;
             _blSyncService = blSyncService;
             _beSyncService = beSyncService;
             _boSyncService = boSyncService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -124,10 +128,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             response.brickOwl.connected = boClient != null;
 
             // ── Fire all data queries in parallel using local variables ──
-            // Each task captures results in local variables to avoid race conditions
-            // on the shared response object across threads.
+            // Each task captures results in local variables to avoid race conditions.
+            // Each source is wrapped in cache-aware fetch: on cache hit, the API client
+            // is not used and no quota is consumed.
 
-            // BrickLink: new + used sold price guides
+            // BrickLink: new + used sold price guides (cached independently per condition)
             object localPriceNew = null;
             object localPriceUsed = null;
             bool blLoaded = false;
@@ -140,10 +145,15 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (blClient)
                     {
-                        var newTask = blClient.GetPriceGuideAsync("SET", setNumber,
-                            null, "sold", "N", null, null);
-                        var usedTask = blClient.GetPriceGuideAsync("SET", setNumber,
-                            null, "sold", "U", null, null);
+                        var newTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "SET", setNumber, "N",
+                            () => blClient.GetPriceGuideAsync("SET", setNumber, null, "sold", "N", null, null),
+                            cancellationToken);
+
+                        var usedTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "SET", setNumber, "U",
+                            () => blClient.GetPriceGuideAsync("SET", setNumber, null, "sold", "U", null, null),
+                            cancellationToken);
 
                         await Task.WhenAll(newTask, usedTask);
 
@@ -159,7 +169,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                 }
             }
 
-            // BrickEconomy: AI valuation
+            // BrickEconomy: AI valuation (cached with no condition qualifier)
             object localValuation = null;
             bool beLoaded = false;
             string beError = null;
@@ -171,7 +181,15 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (beClient)
                     {
-                        localValuation = await beClient.GetSetAsync(setNumber, null);
+                        localValuation = await _cacheService.GetOrFetchAsync<object>(
+                            "BrickEconomy", "SET", setNumber, null,
+                            async () =>
+                            {
+                                var result = await beClient.GetSetAsync(setNumber, null);
+                                await _beSyncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
+                                return result;
+                            },
+                            cancellationToken);
                         beLoaded = true;
                     }
                 }
@@ -180,13 +198,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                     _logger.LogWarning(ex, "Brickberg: BrickEconomy valuation failed for {SetNumber}", setNumber);
                     beError = "BrickEconomy valuation unavailable.";
                 }
-                finally
-                {
-                    await _beSyncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
-                }
             }
 
-            // Brick Owl: BOID lookup → availability
+            // Brick Owl: BOID lookup → availability (cached as a single entry)
             object localAvailability = null;
             string localBoid = null;
             bool boLoaded = false;
@@ -199,13 +213,20 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (boClient)
                     {
-                        var idLookup = await boClient.CatalogIdLookupAsync(setNumber, "Set", null);
+                        // Cache the BOID lookup separately — avoids ID mapping API call on cache hit
+                        var idLookup = await _cacheService.GetOrFetchAsync<object>(
+                            "BrickOwl", "BOID", setNumber, null,
+                            () => boClient.CatalogIdLookupAsync(setNumber, "Set", null),
+                            cancellationToken);
                         string boid = ExtractBoid(idLookup);
 
                         if (!string.IsNullOrEmpty(boid))
                         {
                             localBoid = boid;
-                            localAvailability = await boClient.CatalogAvailabilityAsync(boid);
+                            localAvailability = await _cacheService.GetOrFetchAsync<object>(
+                                "BrickOwl", "SET", setNumber, null,
+                                () => boClient.CatalogAvailabilityAsync(boid),
+                                cancellationToken);
                             boLoaded = true;
                         }
                         else
@@ -276,7 +297,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             response.brickLink.connected = blClient != null;
             response.brickEconomy.connected = beClient != null;
 
-            // Local variables for thread safety
+            // Local variables for thread safety — cache-wrapped fetches
             object localPriceNew = null;
             object localPriceUsed = null;
             bool blLoaded = false;
@@ -289,10 +310,15 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (blClient)
                     {
-                        var newTask = blClient.GetPriceGuideAsync("MINIFIG", minifigNumber,
-                            null, "sold", "N", null, null);
-                        var usedTask = blClient.GetPriceGuideAsync("MINIFIG", minifigNumber,
-                            null, "sold", "U", null, null);
+                        var newTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "MINIFIG", minifigNumber, "N",
+                            () => blClient.GetPriceGuideAsync("MINIFIG", minifigNumber, null, "sold", "N", null, null),
+                            cancellationToken);
+
+                        var usedTask = _cacheService.GetOrFetchAsync<object>(
+                            "BrickLink", "MINIFIG", minifigNumber, "U",
+                            () => blClient.GetPriceGuideAsync("MINIFIG", minifigNumber, null, "sold", "U", null, null),
+                            cancellationToken);
 
                         await Task.WhenAll(newTask, usedTask);
 
@@ -319,7 +345,15 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     using (beClient)
                     {
-                        localValuation = await beClient.GetMinifigAsync(minifigNumber, null);
+                        localValuation = await _cacheService.GetOrFetchAsync<object>(
+                            "BrickEconomy", "MINIFIG", minifigNumber, null,
+                            async () =>
+                            {
+                                var result = await beClient.GetMinifigAsync(minifigNumber, null);
+                                await _beSyncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
+                                return result;
+                            },
+                            cancellationToken);
                         beLoaded = true;
                     }
                 }
@@ -327,10 +361,6 @@ namespace Foundation.BMC.Controllers.WebAPI
                 {
                     _logger.LogWarning(ex, "Brickberg: BrickEconomy minifig valuation failed for {MinifigNumber}", minifigNumber);
                     beError = "BrickEconomy valuation unavailable.";
-                }
-                finally
-                {
-                    await _beSyncService.IncrementQuotaAsync(tenantGuid, 1, cancellationToken);
                 }
             }
 
@@ -426,6 +456,28 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             return null;
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Cache Metrics
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Returns cache hit/miss metrics and database-level entry statistics.
+        /// Useful for monitoring cache effectiveness from the System Health dashboard.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/brickberg/cache-stats")]
+        public async Task<IActionResult> GetCacheStats(CancellationToken cancellationToken = default)
+        {
+            var (tenantGuid, error) = await ResolveTenantAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken);
+            if (error != null) return error;
+
+            var stats = await _cacheService.GetStatsAsync(cancellationToken);
+
+            return Ok(stats);
         }
     }
 }

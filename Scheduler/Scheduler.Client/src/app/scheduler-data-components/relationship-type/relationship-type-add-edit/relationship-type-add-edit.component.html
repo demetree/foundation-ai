@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #relationshipTypeModal let-modal>
-   <div class="modal-header bg-dark text-light relationship-type-modal-header">
+   <div class="modal-header relationship-type-modal-header">
       <h5 class="modal-title mb-0" id="relationshipTypeModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Relationship Type' : 'Add Relationship Type' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body relationship-type-modal-body">
       <form [formGroup]="relationshipTypeForm" (ngSubmit)="submitForm()">

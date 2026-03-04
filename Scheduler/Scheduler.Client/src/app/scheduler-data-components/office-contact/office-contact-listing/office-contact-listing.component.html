@@ -82,6 +82,7 @@
   <app-office-contact-table
     *ngIf="userIsSchedulerOfficeContactReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredOfficeContactCount$ | async) ?? 0">
   </app-office-contact-table>
 </div>

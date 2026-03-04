@@ -1,0 +1,99 @@
+<div class="add-payment-provider" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-payment-provider me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Payment Provider" 
+        *ngIf="userIsSchedulerPaymentProviderWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #paymentProviderModal let-modal>
+   <div class="modal-header payment-provider-modal-header">
+      <h5 class="modal-title mb-0" id="paymentProviderModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Payment Provider' : 'Add Payment Provider' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body payment-provider-modal-body">
+      <form [formGroup]="paymentProviderForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="PaymentProvider-name" id="label-PaymentProvider-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="PaymentProvider-name" formControlName="name" placeholder="Enter Name" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" aria-labelledby="label-name" />
+                <div *ngIf="paymentProviderForm.get('name')?.invalid && paymentProviderForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="PaymentProvider-description" id="label-PaymentProvider-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="PaymentProvider-description" formControlName="description" placeholder="Enter Description" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()"></textarea>
+                <div *ngIf="paymentProviderForm.get('description')?.invalid && paymentProviderForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('providerType')">
+                <label for="PaymentProvider-providerType" id="label-PaymentProvider-providerType"><span class="text-danger">*</span>Provider Type</label>
+                <input type="text" id="PaymentProvider-providerType" formControlName="providerType" placeholder="Enter Provider Type" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" aria-labelledby="label-providerType" />
+                <div *ngIf="paymentProviderForm.get('providerType')?.invalid && paymentProviderForm.get('providerType')?.touched" class="text-danger">
+                    Provider Type is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isActive')">
+                <input type="checkbox" id="PaymentProvider-isActive" formControlName="isActive" class="form-check-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" />
+                <label for="PaymentProvider-isActive" class="form-check-label" id="label-PaymentProvider-isActive"><span class="text-danger">*</span>Is Active</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('apiKeyEncrypted')">
+                <label for="PaymentProvider-apiKeyEncrypted" id="label-PaymentProvider-apiKeyEncrypted">Api Key Encrypted</label>
+                <textarea id="PaymentProvider-apiKeyEncrypted" formControlName="apiKeyEncrypted" placeholder="Enter Api Key Encrypted" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('merchantId')">
+                <label for="PaymentProvider-merchantId" id="label-PaymentProvider-merchantId">Merchant Id</label>
+                <input type="text" id="PaymentProvider-merchantId" formControlName="merchantId" placeholder="Enter Merchant Id" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" aria-labelledby="label-merchantId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('webhookSecret')">
+                <label for="PaymentProvider-webhookSecret" id="label-PaymentProvider-webhookSecret">Webhook Secret</label>
+                <textarea id="PaymentProvider-webhookSecret" formControlName="webhookSecret" placeholder="Enter Webhook Secret" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('processingFeePercent')">
+                <label for="PaymentProvider-processingFeePercent" id="label-PaymentProvider-processingFeePercent">Processing Fee Percent</label>
+                <input type="number" id="PaymentProvider-processingFeePercent" formControlName="processingFeePercent" placeholder="Enter Processing Fee Percent" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" aria-labelledby="label-processingFeePercent" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('processingFeeFixed')">
+                <label for="PaymentProvider-processingFeeFixed" id="label-PaymentProvider-processingFeeFixed">Processing Fee Fixed</label>
+                <input type="number" id="PaymentProvider-processingFeeFixed" formControlName="processingFeeFixed" placeholder="Enter Processing Fee Fixed" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" aria-labelledby="label-processingFeeFixed" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="PaymentProvider-notes" id="label-PaymentProvider-notes">Notes</label>
+                <textarea id="PaymentProvider-notes" formControlName="notes" placeholder="Enter Notes" class="form-control payment-provider-input" [disabled]="!userIsSchedulerPaymentProviderWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="PaymentProvider-versionNumber" id="label-PaymentProvider-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="PaymentProvider-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control payment-provider-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PaymentProvider-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" />
+                <label for="PaymentProvider-active" class="form-check-label" id="label-PaymentProvider-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PaymentProvider-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPaymentProviderWriter()" />
+                <label for="PaymentProvider-deleted" class="form-check-label" id="label-PaymentProvider-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer payment-provider-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Payment Provider changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !paymentProviderForm.valid || paymentProviderForm.pristine  || userIsSchedulerPaymentProviderWriter() == false " ngbTooltip="Save the Payment Provider changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Payment Provider' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

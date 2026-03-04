@@ -180,11 +180,17 @@ export class ShiftPatternData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ShiftPatternChangeHistoriesCount$ = ShiftPatternChangeHistoryService.Instance.GetShiftPatternChangeHistoriesRowCount({shiftPatternId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _shiftPatternChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ShiftPatternChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._shiftPatternChangeHistoriesCount$ === null) {
+            this._shiftPatternChangeHistoriesCount$ = ShiftPatternChangeHistoryService.Instance.GetShiftPatternChangeHistoriesRowCount({shiftPatternId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._shiftPatternChangeHistoriesCount$;
+    }
 
 
 
@@ -199,11 +205,17 @@ export class ShiftPatternData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ShiftPatternDaysCount$ = ShiftPatternDayService.Instance.GetShiftPatternDaysRowCount({shiftPatternId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _shiftPatternDaysCount$: Observable<bigint | number> | null = null;
+    public get ShiftPatternDaysCount$(): Observable<bigint | number> {
+        if (this._shiftPatternDaysCount$ === null) {
+            this._shiftPatternDaysCount$ = ShiftPatternDayService.Instance.GetShiftPatternDaysRowCount({shiftPatternId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._shiftPatternDaysCount$;
+    }
 
 
 
@@ -218,11 +230,17 @@ export class ShiftPatternData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({shiftPatternId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourcesCount$: Observable<bigint | number> | null = null;
+    public get ResourcesCount$(): Observable<bigint | number> {
+        if (this._resourcesCount$ === null) {
+            this._resourcesCount$ = ResourceService.Instance.GetResourcesRowCount({shiftPatternId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourcesCount$;
+    }
 
 
 
@@ -267,14 +285,17 @@ export class ShiftPatternData {
      this._shiftPatternChangeHistories = null;
      this._shiftPatternChangeHistoriesPromise = null;
      this._shiftPatternChangeHistoriesSubject.next(null);
+     this._shiftPatternChangeHistoriesCount$ = null;
 
      this._shiftPatternDays = null;
      this._shiftPatternDaysPromise = null;
      this._shiftPatternDaysSubject.next(null);
+     this._shiftPatternDaysCount$ = null;
 
      this._resources = null;
      this._resourcesPromise = null;
      this._resourcesSubject.next(null);
+     this._resourcesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1121,11 +1142,7 @@ export class ShiftPatternService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ShiftPatternChangeHistoriesCount$ = ShiftPatternChangeHistoryService.Instance.GetShiftPatternChangeHistoriesRowCount({shiftPatternId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._shiftPatternChangeHistoriesCount$ = null;
 
 
     (revived as any).ShiftPatternDays$ = (revived as any)._shiftPatternDaysSubject.asObservable().pipe(
@@ -1137,11 +1154,7 @@ export class ShiftPatternService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ShiftPatternDaysCount$ = ShiftPatternDayService.Instance.GetShiftPatternDaysRowCount({shiftPatternId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._shiftPatternDaysCount$ = null;
 
 
     (revived as any).Resources$ = (revived as any)._resourcesSubject.asObservable().pipe(
@@ -1153,11 +1166,7 @@ export class ShiftPatternService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({shiftPatternId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourcesCount$ = null;
 
 
 

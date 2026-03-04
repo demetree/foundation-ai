@@ -1,4 +1,4 @@
-<app-crew-change-history-add-edit [showAddButton]="false"></app-crew-change-history-add-edit>
+<app-crew-change-history-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-crew-change-history-add-edit>
 <div class="row" *ngIf="userIsSchedulerCrewChangeHistoryReader() == true">
     <div class="col" *showSpinner="isLoading$ | async">
       <!-- Virtual Scrolling Table for Desktop -->
@@ -8,7 +8,11 @@
         <table class="custom-table mb-0">
         <thead>
           <tr>
-            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCrewChangeHistoryWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCrewChangeHistoryWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Crew Change History">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
             <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCrewChangeHistoryWriter() == true"></th>
 
               <!-- Dynamic columns built with rules from the columns input -->
@@ -50,17 +54,19 @@ End of commented block for alternate definition option -->
             <!-- Only visible rows are rendered -->
           <tr *cdkVirtualFor="let crewChangeHistory of filteredCrewChangeHistories; trackBy: getCrewChangeHistoryId">
             <td class="header-action-button" *ngIf="userIsSchedulerCrewChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-edit"
                       (click)="handleEdit(crewChangeHistory)"
                       ngbTooltip="Edit" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-pen"></i>
               </button>
             </td>
             <td class="header-action-button" *ngIf="userIsSchedulerCrewChangeHistoryWriter() == true">
-              <button class="btn btn-sm"
+              <button class="action-btn action-delete"
                       (click)="handleDelete(crewChangeHistory)"
                       ngbTooltip="Delete" 
+                      container="body"
                       placement="top">
                 <i class="fa fa-trash"></i>
               </button>
@@ -204,14 +210,14 @@ End of commented block for alternate definition option -->
         <!-- Action buttons -->
         <div class="card-footer bg-transparent border-0 pt-0">
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/crewchangehistory', crewChangeHistory.id]" ngbTooltip="View">
+            <button class="action-btn action-view" [routerLink]="['/crewchangehistory', crewChangeHistory.id]" ngbTooltip="View">
               <i class="fa fa-magnifying-glass"></i> View
             </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(crewChangeHistory)" *ngIf="userIsSchedulerCrewChangeHistoryWriter()" ngbTooltip="Edit">
+            <button class="action-btn action-edit" (click)="handleEdit(crewChangeHistory)" *ngIf="userIsSchedulerCrewChangeHistoryWriter()" ngbTooltip="Edit">
               <i class="fa fa-pen"></i> Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(crewChangeHistory)" *ngIf="userIsSchedulerCrewChangeHistoryWriter()" ngbTooltip="Delete">
+            <button class="action-btn action-delete" (click)="handleDelete(crewChangeHistory)" *ngIf="userIsSchedulerCrewChangeHistoryWriter()" ngbTooltip="Delete">
               <i class="fa fa-trash"></i> Delete
             </button>
 
@@ -226,17 +232,17 @@ End of commented block for alternate definition option -->
                <small class="text-muted d-block">{{crewChangeHistory.crew?.name}}</small>
              </div>
              <div>
-                <button class="btn btn-sm"
+                <button class="action-btn action-view"
                         [routerLink]="['/crewchangehistory', crewChangeHistory.id]"
                         ngbTooltip="Crew Change History Details">
                 <i class="fa fa-magnifying-glass"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-edit"
                         (click)="handleEdit(crewChangeHistory)"
                         ngbTooltip="Edit Crew Change History">
                 <i class="fa fa-pen"></i>
                 </button>
-                <button class="btn btn-sm"
+                <button class="action-btn action-delete"
                      (click)="handleDelete(crewChangeHistory)"
                      ngbTooltip="Delete Crew Change History" 
                      placement="top">
@@ -265,5 +271,39 @@ End of commented block for alternate definition option -->
          </div>
 End of commented block for alternate definition option  -->
       </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
    </div>
 </div>

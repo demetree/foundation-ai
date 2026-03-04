@@ -165,6 +165,7 @@ export class CurrencyListingComponent implements OnInit, AfterViewInit, CanCompo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.currencyTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.currencyTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

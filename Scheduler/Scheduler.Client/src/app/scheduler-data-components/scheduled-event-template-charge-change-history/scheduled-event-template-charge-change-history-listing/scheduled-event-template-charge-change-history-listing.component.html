@@ -82,6 +82,7 @@
   <app-scheduled-event-template-charge-change-history-table
     *ngIf="userIsSchedulerScheduledEventTemplateChargeChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredScheduledEventTemplateChargeChangeHistoryCount$ | async) ?? 0">
   </app-scheduled-event-template-charge-change-history-table>
 </div>

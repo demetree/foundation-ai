@@ -29,6 +29,7 @@ import { ResourceShiftService, ResourceShiftData } from './resource-shift.servic
 import { CrewMemberService, CrewMemberData } from './crew-member.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
+import { DocumentService, DocumentData } from './document.service';
 import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
 import { VolunteerProfileService, VolunteerProfileData } from './volunteer-profile.service';
 import { VolunteerGroupMemberService, VolunteerGroupMemberData } from './volunteer-group-member.service';
@@ -231,6 +232,11 @@ export class ResourceData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
+
+                
     private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
     private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
@@ -278,11 +284,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ResourceChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._resourceChangeHistoriesCount$ === null) {
+            this._resourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceChangeHistoriesCount$;
+    }
 
 
 
@@ -297,11 +309,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceContactsCount$: Observable<bigint | number> | null = null;
+    public get ResourceContactsCount$(): Observable<bigint | number> {
+        if (this._resourceContactsCount$ === null) {
+            this._resourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceContactsCount$;
+    }
 
 
 
@@ -316,11 +334,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetsCount$: Observable<bigint | number> | null = null;
+    public get RateSheetsCount$(): Observable<bigint | number> {
+        if (this._rateSheetsCount$ === null) {
+            this._rateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetsCount$;
+    }
 
 
 
@@ -335,11 +359,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceQualificationsCount$: Observable<bigint | number> | null = null;
+    public get ResourceQualificationsCount$(): Observable<bigint | number> {
+        if (this._resourceQualificationsCount$ === null) {
+            this._resourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceQualificationsCount$;
+    }
 
 
 
@@ -354,11 +384,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceAvailabilitiesCount$: Observable<bigint | number> | null = null;
+    public get ResourceAvailabilitiesCount$(): Observable<bigint | number> {
+        if (this._resourceAvailabilitiesCount$ === null) {
+            this._resourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceAvailabilitiesCount$;
+    }
 
 
 
@@ -373,11 +409,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceShiftsCount$: Observable<bigint | number> | null = null;
+    public get ResourceShiftsCount$(): Observable<bigint | number> {
+        if (this._resourceShiftsCount$ === null) {
+            this._resourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceShiftsCount$;
+    }
 
 
 
@@ -392,11 +434,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewMembersCount$: Observable<bigint | number> | null = null;
+    public get CrewMembersCount$(): Observable<bigint | number> {
+        if (this._crewMembersCount$ === null) {
+            this._crewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewMembersCount$;
+    }
 
 
 
@@ -411,11 +459,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -430,11 +484,42 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
+
+
+
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
+    }
 
 
 
@@ -449,11 +534,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _notificationSubscriptionsCount$: Observable<bigint | number> | null = null;
+    public get NotificationSubscriptionsCount$(): Observable<bigint | number> {
+        if (this._notificationSubscriptionsCount$ === null) {
+            this._notificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._notificationSubscriptionsCount$;
+    }
 
 
 
@@ -468,11 +559,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerProfilesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerProfilesCount$(): Observable<bigint | number> {
+        if (this._volunteerProfilesCount$ === null) {
+            this._volunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerProfilesCount$;
+    }
 
 
 
@@ -487,11 +584,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupMembersCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupMembersCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupMembersCount$ === null) {
+            this._volunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupMembersCount$;
+    }
 
 
 
@@ -506,11 +609,17 @@ export class ResourceData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -555,54 +664,72 @@ export class ResourceData {
      this._resourceChangeHistories = null;
      this._resourceChangeHistoriesPromise = null;
      this._resourceChangeHistoriesSubject.next(null);
+     this._resourceChangeHistoriesCount$ = null;
 
      this._resourceContacts = null;
      this._resourceContactsPromise = null;
      this._resourceContactsSubject.next(null);
+     this._resourceContactsCount$ = null;
 
      this._rateSheets = null;
      this._rateSheetsPromise = null;
      this._rateSheetsSubject.next(null);
+     this._rateSheetsCount$ = null;
 
      this._resourceQualifications = null;
      this._resourceQualificationsPromise = null;
      this._resourceQualificationsSubject.next(null);
+     this._resourceQualificationsCount$ = null;
 
      this._resourceAvailabilities = null;
      this._resourceAvailabilitiesPromise = null;
      this._resourceAvailabilitiesSubject.next(null);
+     this._resourceAvailabilitiesCount$ = null;
 
      this._resourceShifts = null;
      this._resourceShiftsPromise = null;
      this._resourceShiftsSubject.next(null);
+     this._resourceShiftsCount$ = null;
 
      this._crewMembers = null;
      this._crewMembersPromise = null;
      this._crewMembersSubject.next(null);
+     this._crewMembersCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._notificationSubscriptions = null;
      this._notificationSubscriptionsPromise = null;
      this._notificationSubscriptionsSubject.next(null);
+     this._notificationSubscriptionsCount$ = null;
 
      this._volunteerProfiles = null;
      this._volunteerProfilesPromise = null;
      this._volunteerProfilesSubject.next(null);
+     this._volunteerProfilesCount$ = null;
 
      this._volunteerGroupMembers = null;
      this._volunteerGroupMembersPromise = null;
      this._volunteerGroupMembersSubject.next(null);
+     this._volunteerGroupMembersCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1200,6 +1327,71 @@ export class ResourceData {
 
     /**
      *
+     * Gets the Documents for this Resource.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.resource.Documents.then(resources => { ... })
+     *   or
+     *   await this.resource.resources
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            ResourceService.Instance.GetDocumentsForResource(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the NotificationSubscriptions for this Resource.
      *
      * If already loaded, returns cached array.
@@ -1545,6 +1737,7 @@ export class ResourceService extends SecureEndpointBase {
         private crewMemberService: CrewMemberService,
         private scheduledEventService: ScheduledEventService,
         private eventChargeService: EventChargeService,
+        private documentService: DocumentService,
         private notificationSubscriptionService: NotificationSubscriptionService,
         private volunteerProfileService: VolunteerProfileService,
         private volunteerGroupMemberService: VolunteerGroupMemberService,
@@ -2112,6 +2305,16 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
+            resourceId: resourceId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetNotificationSubscriptionsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationSubscriptionData[]> {
         return this.notificationSubscriptionService.GetNotificationSubscriptionList({
             resourceId: resourceId,
@@ -2223,6 +2426,10 @@ export class ResourceService extends SecureEndpointBase {
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
+
     (revived as any)._notificationSubscriptions = null;
     (revived as any)._notificationSubscriptionsPromise = null;
     (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
@@ -2260,11 +2467,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceChangeHistoriesCount$ = null;
 
 
     (revived as any).ResourceContacts$ = (revived as any)._resourceContactsSubject.asObservable().pipe(
@@ -2276,11 +2479,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceContactsCount$ = null;
 
 
     (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
@@ -2292,11 +2491,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetsCount$ = null;
 
 
     (revived as any).ResourceQualifications$ = (revived as any)._resourceQualificationsSubject.asObservable().pipe(
@@ -2308,11 +2503,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceQualificationsCount$ = null;
 
 
     (revived as any).ResourceAvailabilities$ = (revived as any)._resourceAvailabilitiesSubject.asObservable().pipe(
@@ -2324,11 +2515,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceAvailabilitiesCount$ = null;
 
 
     (revived as any).ResourceShifts$ = (revived as any)._resourceShiftsSubject.asObservable().pipe(
@@ -2340,11 +2527,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceShiftsCount$ = null;
 
 
     (revived as any).CrewMembers$ = (revived as any)._crewMembersSubject.asObservable().pipe(
@@ -2356,11 +2539,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewMembersCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -2372,11 +2551,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
@@ -2388,11 +2563,19 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._eventChargesCount$ = null;
 
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
     (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
@@ -2404,11 +2587,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._notificationSubscriptionsCount$ = null;
 
 
     (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
@@ -2420,11 +2599,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerProfilesCount$ = null;
 
 
     (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
@@ -2436,11 +2611,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupMembersCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -2452,11 +2623,7 @@ export class ResourceService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

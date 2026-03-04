@@ -146,11 +146,17 @@ export class RateTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ChargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({rateTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _chargeTypesCount$: Observable<bigint | number> | null = null;
+    public get ChargeTypesCount$(): Observable<bigint | number> {
+        if (this._chargeTypesCount$ === null) {
+            this._chargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({rateTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._chargeTypesCount$;
+    }
 
 
 
@@ -165,11 +171,17 @@ export class RateTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({rateTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetsCount$: Observable<bigint | number> | null = null;
+    public get RateSheetsCount$(): Observable<bigint | number> {
+        if (this._rateSheetsCount$ === null) {
+            this._rateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({rateTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetsCount$;
+    }
 
 
 
@@ -184,11 +196,17 @@ export class RateTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({rateTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({rateTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
 
 
 
@@ -233,14 +251,17 @@ export class RateTypeData {
      this._chargeTypes = null;
      this._chargeTypesPromise = null;
      this._chargeTypesSubject.next(null);
+     this._chargeTypesCount$ = null;
 
      this._rateSheets = null;
      this._rateSheetsPromise = null;
      this._rateSheetsSubject.next(null);
+     this._rateSheetsCount$ = null;
 
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
 
   }
 
@@ -938,11 +959,7 @@ export class RateTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ChargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({rateTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._chargeTypesCount$ = null;
 
 
     (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
@@ -954,11 +971,7 @@ export class RateTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({rateTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetsCount$ = null;
 
 
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
@@ -970,11 +983,7 @@ export class RateTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({rateTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventChargesCount$ = null;
 
 
 

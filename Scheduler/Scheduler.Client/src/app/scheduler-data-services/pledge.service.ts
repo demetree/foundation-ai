@@ -209,11 +209,17 @@ export class PledgeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgeChangeHistoriesCount$ = PledgeChangeHistoryService.Instance.GetPledgeChangeHistoriesRowCount({pledgeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _pledgeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get PledgeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._pledgeChangeHistoriesCount$ === null) {
+            this._pledgeChangeHistoriesCount$ = PledgeChangeHistoryService.Instance.GetPledgeChangeHistoriesRowCount({pledgeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._pledgeChangeHistoriesCount$;
+    }
 
 
 
@@ -228,11 +234,17 @@ export class PledgeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({pledgeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({pledgeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -277,10 +289,12 @@ export class PledgeData {
      this._pledgeChangeHistories = null;
      this._pledgeChangeHistoriesPromise = null;
      this._pledgeChangeHistoriesSubject.next(null);
+     this._pledgeChangeHistoriesCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1056,11 +1070,7 @@ export class PledgeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PledgeChangeHistoriesCount$ = PledgeChangeHistoryService.Instance.GetPledgeChangeHistoriesRowCount({pledgeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._pledgeChangeHistoriesCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1072,11 +1082,7 @@ export class PledgeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({pledgeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

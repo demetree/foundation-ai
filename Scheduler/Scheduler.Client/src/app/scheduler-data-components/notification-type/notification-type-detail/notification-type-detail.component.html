@@ -97,10 +97,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-notification-subscription-table [queryParams]="{ notificationTypeId: notificationTypeData?.id }"></app-notification-subscription-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-notification-subscription-add-edit [preSeededData]="{ notificationTypeId: notificationTypeData?.id }" [hiddenFields]="['notificationTypeId']"></app-notification-subscription-add-edit>
+                                    <app-notification-subscription-table [queryParams]="{ notificationTypeId: notificationTypeData?.id }" [showAddButton]="true" [preSeededData]="{ notificationTypeId: notificationTypeData?.id }" [hiddenFields]="['notificationTypeId']"></app-notification-subscription-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -171,11 +171,17 @@ export class ShiftPatternDayData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ShiftPatternDayChangeHistoriesCount$ = ShiftPatternDayChangeHistoryService.Instance.GetShiftPatternDayChangeHistoriesRowCount({shiftPatternDayId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _shiftPatternDayChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ShiftPatternDayChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._shiftPatternDayChangeHistoriesCount$ === null) {
+            this._shiftPatternDayChangeHistoriesCount$ = ShiftPatternDayChangeHistoryService.Instance.GetShiftPatternDayChangeHistoriesRowCount({shiftPatternDayId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._shiftPatternDayChangeHistoriesCount$;
+    }
 
 
 
@@ -220,6 +226,7 @@ export class ShiftPatternDayData {
      this._shiftPatternDayChangeHistories = null;
      this._shiftPatternDayChangeHistoriesPromise = null;
      this._shiftPatternDayChangeHistoriesSubject.next(null);
+     this._shiftPatternDayChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -907,11 +914,7 @@ export class ShiftPatternDayService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ShiftPatternDayChangeHistoriesCount$ = ShiftPatternDayChangeHistoryService.Instance.GetShiftPatternDayChangeHistoriesRowCount({shiftPatternDayId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._shiftPatternDayChangeHistoriesCount$ = null;
 
 
 

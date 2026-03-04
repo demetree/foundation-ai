@@ -154,11 +154,17 @@ export class VolunteerStatusData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({volunteerStatusId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerProfilesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerProfilesCount$(): Observable<bigint | number> {
+        if (this._volunteerProfilesCount$ === null) {
+            this._volunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({volunteerStatusId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerProfilesCount$;
+    }
 
 
 
@@ -173,11 +179,17 @@ export class VolunteerStatusData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({volunteerStatusId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupsCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupsCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupsCount$ === null) {
+            this._volunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({volunteerStatusId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupsCount$;
+    }
 
 
 
@@ -222,10 +234,12 @@ export class VolunteerStatusData {
      this._volunteerProfiles = null;
      this._volunteerProfilesPromise = null;
      this._volunteerProfilesSubject.next(null);
+     this._volunteerProfilesCount$ = null;
 
      this._volunteerGroups = null;
      this._volunteerGroupsPromise = null;
      this._volunteerGroupsSubject.next(null);
+     this._volunteerGroupsCount$ = null;
 
   }
 
@@ -847,11 +861,7 @@ export class VolunteerStatusService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({volunteerStatusId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerProfilesCount$ = null;
 
 
     (revived as any).VolunteerGroups$ = (revived as any)._volunteerGroupsSubject.asObservable().pipe(
@@ -863,11 +873,7 @@ export class VolunteerStatusService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({volunteerStatusId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupsCount$ = null;
 
 
 

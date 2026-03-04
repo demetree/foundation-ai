@@ -76,7 +76,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -175,12 +174,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(setc => setc.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.chargeType);
@@ -188,26 +181,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduled Event Template Charge, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.chargeType.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.defaultDescription.Contains(anyStringContains))
-			       || (includeRelations == true && x.chargeType.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.scheduledEventTemplate.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.scheduledEventTemplate.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.scheduledEventTemplate.defaultLocationPattern.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ScheduledEventTemplateCharge> materialized = await query.ToListAsync(cancellationToken);
@@ -255,7 +234,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -333,26 +311,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(setc => setc.active == true);
 				query = query.Where(setc => setc.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduled Event Template Charge, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.chargeType.name.Contains(anyStringContains)
-			       || x.chargeType.description.Contains(anyStringContains)
-			       || x.chargeType.externalId.Contains(anyStringContains)
-			       || x.chargeType.defaultDescription.Contains(anyStringContains)
-			       || x.chargeType.color.Contains(anyStringContains)
-			       || x.scheduledEventTemplate.name.Contains(anyStringContains)
-			       || x.scheduledEventTemplate.description.Contains(anyStringContains)
-			       || x.scheduledEventTemplate.defaultLocationPattern.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1317,7 +1275,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1413,26 +1370,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(setc => setc.active == true);
 				query = query.Where(setc => setc.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Scheduled Event Template Charge, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.chargeType.name.Contains(anyStringContains)
-			       || x.chargeType.description.Contains(anyStringContains)
-			       || x.chargeType.externalId.Contains(anyStringContains)
-			       || x.chargeType.defaultDescription.Contains(anyStringContains)
-			       || x.chargeType.color.Contains(anyStringContains)
-			       || x.scheduledEventTemplate.name.Contains(anyStringContains)
-			       || x.scheduledEventTemplate.description.Contains(anyStringContains)
-			       || x.scheduledEventTemplate.defaultLocationPattern.Contains(anyStringContains)
-			   );
 			}
 
 

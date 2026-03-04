@@ -82,6 +82,7 @@
   <app-volunteer-group-member-change-history-table
     *ngIf="userIsSchedulerVolunteerGroupMemberChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredVolunteerGroupMemberChangeHistoryCount$ | async) ?? 0">
   </app-volunteer-group-member-change-history-table>
 </div>

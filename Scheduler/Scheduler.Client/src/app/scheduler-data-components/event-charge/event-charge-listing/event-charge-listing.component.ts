@@ -165,6 +165,7 @@ export class EventChargeListingComponent implements OnInit, AfterViewInit, CanCo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.eventChargeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.eventChargeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

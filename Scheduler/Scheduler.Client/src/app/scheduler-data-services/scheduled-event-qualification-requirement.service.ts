@@ -164,11 +164,17 @@ export class ScheduledEventQualificationRequirementData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventQualificationRequirementChangeHistoriesCount$ = ScheduledEventQualificationRequirementChangeHistoryService.Instance.GetScheduledEventQualificationRequirementChangeHistoriesRowCount({scheduledEventQualificationRequirementId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventQualificationRequirementChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventQualificationRequirementChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventQualificationRequirementChangeHistoriesCount$ === null) {
+            this._scheduledEventQualificationRequirementChangeHistoriesCount$ = ScheduledEventQualificationRequirementChangeHistoryService.Instance.GetScheduledEventQualificationRequirementChangeHistoriesRowCount({scheduledEventQualificationRequirementId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventQualificationRequirementChangeHistoriesCount$;
+    }
 
 
 
@@ -213,6 +219,7 @@ export class ScheduledEventQualificationRequirementData {
      this._scheduledEventQualificationRequirementChangeHistories = null;
      this._scheduledEventQualificationRequirementChangeHistoriesPromise = null;
      this._scheduledEventQualificationRequirementChangeHistoriesSubject.next(null);
+     this._scheduledEventQualificationRequirementChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -897,11 +904,7 @@ export class ScheduledEventQualificationRequirementService extends SecureEndpoin
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventQualificationRequirementChangeHistoriesCount$ = ScheduledEventQualificationRequirementChangeHistoryService.Instance.GetScheduledEventQualificationRequirementChangeHistoriesRowCount({scheduledEventQualificationRequirementId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventQualificationRequirementChangeHistoriesCount$ = null;
 
 
 

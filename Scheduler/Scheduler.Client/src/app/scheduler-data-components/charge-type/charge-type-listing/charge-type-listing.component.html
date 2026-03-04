@@ -82,6 +82,7 @@
   <app-charge-type-table
     *ngIf="userIsSchedulerChargeTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredChargeTypeCount$ | async) ?? 0">
   </app-charge-type-table>
 </div>

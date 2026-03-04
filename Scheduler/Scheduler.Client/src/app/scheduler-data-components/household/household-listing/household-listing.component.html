@@ -82,6 +82,7 @@
   <app-household-table
     *ngIf="userIsSchedulerHouseholdReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredHouseholdCount$ | async) ?? 0">
   </app-household-table>
 </div>

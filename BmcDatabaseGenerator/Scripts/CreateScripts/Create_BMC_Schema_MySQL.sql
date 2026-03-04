@@ -10,6 +10,7 @@ CREATE DATABASE `BMC`;
 USE `BMC`;
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE `MarketDataCache`
 -- DROP TABLE `BrickOwlTransaction`
 -- DROP TABLE `BrickEconomyTransaction`
 -- DROP TABLE `BrickLinkTransaction`
@@ -116,6 +117,7 @@ USE `BMC`;
 -- DROP TABLE `BrickCategory`
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON `MarketDataCache` DISABLE
 -- ALTER INDEX ALL ON `BrickOwlTransaction` DISABLE
 -- ALTER INDEX ALL ON `BrickEconomyTransaction` DISABLE
 -- ALTER INDEX ALL ON `BrickLinkTransaction` DISABLE
@@ -222,6 +224,7 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `BrickCategory` DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON `MarketDataCache` REBUILD
 -- ALTER INDEX ALL ON `BrickOwlTransaction` REBUILD
 -- ALTER INDEX ALL ON `BrickEconomyTransaction` REBUILD
 -- ALTER INDEX ALL ON `BrickLinkTransaction` REBUILD
@@ -3629,5 +3632,28 @@ CREATE INDEX `I_BrickOwlTransaction_tenantGuid_active` ON `BrickOwlTransaction` 
 
 -- Index on the BrickOwlTransaction table's tenantGuid,deleted fields.
 CREATE INDEX `I_BrickOwlTransaction_tenantGuid_deleted` ON `BrickOwlTransaction` (`tenantGuid`, `deleted`);
+
+
+-- Caches API responses from external marketplaces (BrickLink, BrickEconomy, BrickOwl) to reduce external calls and improve Brickberg Terminal performance. TTL-based expiry with configurable per-source cache durations. Not multi-tenant — cache is shared across all users for the same item.
+CREATE TABLE `MarketDataCache`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`source` VARCHAR(50) NOT NULL,		-- Marketplace source: BrickLink, BrickEconomy, BrickOwl
+	`itemType` VARCHAR(50) NOT NULL,		-- Item type: SET, MINIFIG, PART
+	`itemNumber` VARCHAR(100) NOT NULL,		-- Item identifier (e.g. '42131-1', 'fig-001234')
+	`condition` VARCHAR(50) NULL,		-- Condition qualifier: N (new), U (used), null for non-BrickLink sources
+	`responseJson` TEXT NULL,		-- Serialized JSON API response payload
+	`fetchedDate` DATETIME NOT NULL,		-- UTC timestamp when the response was fetched from the source API
+	`expiresDate` DATETIME NOT NULL,		-- UTC timestamp when this cache entry expires and should be refreshed
+	`ttlMinutes` INT NOT NULL,		-- TTL in minutes that was used when caching this entry (for diagnostics/auditing)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_MarketDataCache_source_itemType_itemNumber_condition_Unique`( `source`, `itemType`, `itemNumber`, `condition` ) 		-- Uniqueness enforced on the MarketDataCache table's source and itemType and itemNumber and condition fields.
+);
+-- Index on the MarketDataCache table's active field.
+CREATE INDEX `I_MarketDataCache_active` ON `MarketDataCache` (`active`);
+
+-- Index on the MarketDataCache table's deleted field.
+CREATE INDEX `I_MarketDataCache_deleted` ON `MarketDataCache` (`deleted`);
 
 

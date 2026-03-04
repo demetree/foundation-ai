@@ -131,11 +131,17 @@ export class BatchStatusData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BatchesCount$ = BatchService.Instance.GetBatchesRowCount({batchStatusId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _batchesCount$: Observable<bigint | number> | null = null;
+    public get BatchesCount$(): Observable<bigint | number> {
+        if (this._batchesCount$ === null) {
+            this._batchesCount$ = BatchService.Instance.GetBatchesRowCount({batchStatusId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._batchesCount$;
+    }
 
 
 
@@ -180,6 +186,7 @@ export class BatchStatusData {
      this._batches = null;
      this._batchesPromise = null;
      this._batchesSubject.next(null);
+     this._batchesCount$ = null;
 
   }
 
@@ -716,11 +723,7 @@ export class BatchStatusService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BatchesCount$ = BatchService.Instance.GetBatchesRowCount({batchStatusId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._batchesCount$ = null;
 
 
 

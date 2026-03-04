@@ -165,6 +165,7 @@ export class FundChangeHistoryListingComponent implements OnInit, AfterViewInit,
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.fundChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.fundChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

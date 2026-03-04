@@ -165,6 +165,7 @@ export class TagListingComponent implements OnInit, AfterViewInit, CanComponentD
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.tagTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.tagTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

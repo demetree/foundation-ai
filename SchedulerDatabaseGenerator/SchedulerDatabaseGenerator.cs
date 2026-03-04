@@ -2761,11 +2761,313 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             eventChargeTable.AddForeignKeyField(rateTypeTable, true, true).AddScriptComments("Optional link to RateType (e.g., 'Overtime').");
             eventChargeTable.AddTextField("notes", true).AddScriptComments("Optional notes about the charge");
             eventChargeTable.AddBoolField("isAutomatic", false, true).AddScriptComments("1 = auto-dropped from event type, 0 = manual add/edit.");
+            eventChargeTable.AddBoolField("isDeposit", false, false).AddScriptComments("Marks this charge as a refundable deposit (e.g., damage deposit for hall rental).");
+            eventChargeTable.AddDateTimeField("depositRefundedDate", true).AddScriptComments("When the deposit was refunded (null = not yet refunded). Only applicable when isDeposit = true.");
             eventChargeTable.AddDateTimeField("exportedDate", true).AddScriptComments("When this charge was last exported (null = not exported yet).");
             eventChargeTable.AddString100Field("externalId", true).AddScriptComments("Identifier from extenral system - possibly invoice number or some other billing grouper").CreateIndex();
             eventChargeTable.AddVersionControl();
             eventChargeTable.AddControlFields();
 
+
+
+            #region Financial Ledger — FinancialCategory + FinancialTransaction
+
+            //
+            // Financial Category — Chart of Accounts
+            // Tenant-specific categories for all income and expense transactions.
+            // Separate from ChargeType because these are general ledger categories
+            // (cleaning, supplies, grants, bar sales, etc.) not tied to the event charge pipeline.
+            //
+            Database.Table financialCategoryTable = database.AddTable("FinancialCategory");
+            financialCategoryTable.comment = @"====================================================================================================
+ FINANCIAL CATEGORY (Chart of Accounts)
+ Tenant-specific chart of accounts for categorizing all income and expense transactions.
+ Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
+ general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+
+ DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
+ sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+ ====================================================================================================";
+
+            financialCategoryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            financialCategoryTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            financialCategoryTable.AddIdField();
+            financialCategoryTable.AddMultiTenantSupport();
+            financialCategoryTable.AddNameAndDescriptionFields(true, true, false);
+            financialCategoryTable.AddString50Field("code", false).AddScriptComments("Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).");
+            financialCategoryTable.AddBoolField("isRevenue", false, true).AddScriptComments("True = income category, False = expense category.");
+            financialCategoryTable.AddForeignKeyField("parentFinancialCategoryId", financialCategoryTable, true, true).AddScriptComments("Optional parent for sub-categories.");
+            financialCategoryTable.AddBoolField("isTaxApplicable", false, false).AddScriptComments("Whether HST/tax typically applies to transactions in this category.");
+            financialCategoryTable.AddMoneyField("defaultAmount", true, true).AddScriptComments("Optional default amount for common transactions in this category.");
+            financialCategoryTable.AddSequenceField();
+            financialCategoryTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            financialCategoryTable.AddVersionControl();
+            financialCategoryTable.AddControlFields();
+
+            financialCategoryTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
+
+
+            //
+            // Financial Transaction — General Ledger
+            // Individual income or expense line items, optionally linked to a scheduled event.
+            // This is the core table for standalone financial recording that doesn't require
+            // a ScheduledEvent (unlike EventCharge).
+            //
+            Database.Table financialTransactionTable = database.AddTable("FinancialTransaction");
+            financialTransactionTable.comment = @"====================================================================================================
+ FINANCIAL TRANSACTION (General Ledger)
+ Records individual income and expense transactions. Unlike EventCharge (which always requires a
+ ScheduledEvent), FinancialTransaction can exist independently for items like cleaning labour,
+ supply purchases, bank fees, grants received, bar sales, etc.
+
+ Optionally links to a ScheduledEvent when the transaction relates to a booking.
+
+ DESIGN NOTE: isRevenue is denormalized from FinancialCategory for query performance.
+ Amount is always stored as a positive value; isRevenue determines the direction.
+ ====================================================================================================";
+
+            financialTransactionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            financialTransactionTable.AddIdField();
+            financialTransactionTable.AddMultiTenantSupport();
+            financialTransactionTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("Link to the FinancialCategory (chart of accounts entry).");
+            financialTransactionTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent when the transaction relates to a booking.");
+            financialTransactionTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to the Contact who paid or was paid.");
+            financialTransactionTable.AddDateTimeField("transactionDate", false).AddScriptComments("When the transaction occurred (UTC).").CreateIndex();
+            financialTransactionTable.AddString500Field("description", false).AddScriptComments("Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').");
+            financialTransactionTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Transaction amount before tax. Always positive — direction determined by isRevenue.");
+            financialTransactionTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("Tax amount (e.g., HST).");
+            financialTransactionTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Total amount inclusive of tax (amount + taxAmount).");
+            financialTransactionTable.AddBoolField("isRevenue", false, true).AddScriptComments("Denormalized from FinancialCategory. True = income, False = expense.");
+            financialTransactionTable.AddString50Field("paymentMethod", true).AddScriptComments("How payment was made: e-transfer, cash, cheque, card, etc.");
+            financialTransactionTable.AddString100Field("referenceNumber", true).AddScriptComments("Cheque number, e-transfer reference, receipt number, etc.");
+            financialTransactionTable.AddTextField("notes", true).AddScriptComments("Optional notes about the transaction.");
+            financialTransactionTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Link to Currency table.");
+            financialTransactionTable.AddDateTimeField("exportedDate", true).AddScriptComments("When this transaction was last exported for reporting (null = not exported yet).");
+            financialTransactionTable.AddString100Field("externalId", true).AddScriptComments("Identifier from external system.").CreateIndex();
+            financialTransactionTable.AddVersionControl();
+            financialTransactionTable.AddControlFields();
+
+            #endregion
+
+
+            #region Document Attachments — DocumentType + Document
+
+            //
+            // Document Type — Classification of attachments
+            //
+            Database.Table documentTypeTable = database.AddTable("DocumentType");
+            documentTypeTable.comment = "Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).";
+            documentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            documentTypeTable.AddIdField();
+            documentTypeTable.AddNameAndDescriptionFields(true, true, false);
+            documentTypeTable.AddSequenceField();
+            documentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            documentTypeTable.AddControlFields();
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Rental Agreement" },
+                { "description", "Signed rental or usage agreement" },
+                { "sequence", "1" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Receipt" },
+                { "description", "Purchase receipt or proof of payment" },
+                { "sequence", "2" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Invoice" },
+                { "description", "Invoice issued or received" },
+                { "sequence", "3" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456703" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Photo" },
+                { "description", "Photograph or image" },
+                { "sequence", "4" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Other" },
+                { "description", "Other document type" },
+                { "sequence", "99" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456799" } });
+
+
+            //
+            // Document — Attachment record with binary storage
+            // Supports polymorphic links to events, financial transactions, contacts, and resources.
+            // Includes status tracking for workflows like rental agreement signing.
+            //
+            Database.Table documentTable = database.AddTable("Document");
+            documentTable.comment = @"====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================";
+
+            documentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentTable.AddIdField();
+            documentTable.AddMultiTenantSupport();
+            documentTable.AddForeignKeyField(documentTypeTable, false, true).AddScriptComments("The type of document (Rental Agreement, Receipt, Photo, etc.).");
+            documentTable.AddString250Field("name", false).AddScriptComments("Display name for the document.");
+            documentTable.AddString500Field("description", true).AddScriptComments("Optional description of the document.");
+            documentTable.AddString500Field("fileName", false).AddScriptComments("Original filename with extension (e.g., 'rental-agreement-smith.pdf').");
+            documentTable.AddString100Field("mimeType", false).AddScriptComments("MIME type of the file (e.g., 'application/pdf', 'image/jpeg').");
+            documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
+            documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
+
+            // Polymorphic entity links — at least one should be set
+            documentTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., rental agreement for a booking).");
+            documentTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., receipt for a purchase).");
+            documentTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to a Contact.");
+            documentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional link to a Resource.");
+
+            // Status tracking for document workflows
+            documentTable.AddString50Field("status", true).AddScriptComments("Document workflow status: pending, signed, verified, etc.");
+            documentTable.AddDateTimeField("statusDate", true).AddScriptComments("When the status was last changed.");
+            documentTable.AddString100Field("statusChangedBy", true).AddScriptComments("Who changed the status.");
+
+            documentTable.AddDateTimeField("uploadedDate", false).AddScriptComments("When the document was uploaded (UTC).");
+            documentTable.AddString100Field("uploadedBy", true).AddScriptComments("User who uploaded the document.");
+            documentTable.AddTextField("notes", true).AddScriptComments("Optional notes about the document.");
+            documentTable.AddVersionControl();
+            documentTable.AddControlFields();
+
+            #endregion
+
+
+            #region Electronic Payments — PaymentMethod + PaymentProvider + PaymentTransaction
+
+            //
+            // Payment Method — How payment was made (Cash, E-Transfer, Credit Card, etc.)
+            //
+            Database.Table paymentMethodTable = database.AddTable("PaymentMethod");
+            paymentMethodTable.comment = "Master list of payment methods (Cash, E-Transfer, Credit Card, Debit Card, Cheque).";
+            paymentMethodTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            paymentMethodTable.AddIdField();
+            paymentMethodTable.AddNameAndDescriptionFields(true, true, false);
+            paymentMethodTable.AddBoolField("isElectronic", false, false).AddScriptComments("True for card and e-transfer, false for cash and cheque.");
+            paymentMethodTable.AddSequenceField();
+            paymentMethodTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            paymentMethodTable.AddControlFields();
+
+            paymentMethodTable.AddData(new Dictionary<string, string> {
+                { "name", "Cash" },
+                { "description", "Cash payment" },
+                { "isElectronic", "0" },
+                { "sequence", "1" },
+                { "objectGuid", "b1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
+
+            paymentMethodTable.AddData(new Dictionary<string, string> {
+                { "name", "E-Transfer" },
+                { "description", "Interac e-Transfer" },
+                { "isElectronic", "1" },
+                { "sequence", "2" },
+                { "objectGuid", "b1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
+
+            paymentMethodTable.AddData(new Dictionary<string, string> {
+                { "name", "Cheque" },
+                { "description", "Cheque payment" },
+                { "isElectronic", "0" },
+                { "sequence", "3" },
+                { "objectGuid", "b1a1b2c3-d4e5-6789-abcd-ef0123456703" } });
+
+            paymentMethodTable.AddData(new Dictionary<string, string> {
+                { "name", "Credit Card" },
+                { "description", "Credit card payment" },
+                { "isElectronic", "1" },
+                { "sequence", "4" },
+                { "objectGuid", "b1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
+
+            paymentMethodTable.AddData(new Dictionary<string, string> {
+                { "name", "Debit Card" },
+                { "description", "Debit card payment" },
+                { "isElectronic", "1" },
+                { "sequence", "5" },
+                { "objectGuid", "b1a1b2c3-d4e5-6789-abcd-ef0123456705" } });
+
+
+            //
+            // Payment Provider — Integration configuration for electronic payment processors
+            //
+            Database.Table paymentProviderTable = database.AddTable("PaymentProvider");
+            paymentProviderTable.comment = @"====================================================================================================
+ PAYMENT PROVIDER
+ Configuration for electronic payment processor integrations (Stripe, Square, or Manual).
+ Stores encrypted API keys and merchant account details.
+
+ DESIGN NOTE: Starts with a 'Manual' provider for recording cash/cheque payments.
+ Add Stripe/Square providers when ready for electronic payment acceptance.
+ ====================================================================================================";
+
+            paymentProviderTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            paymentProviderTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            paymentProviderTable.AddIdField();
+            paymentProviderTable.AddMultiTenantSupport();
+            paymentProviderTable.AddNameAndDescriptionFields(true, true, false);
+            paymentProviderTable.AddString50Field("providerType", false).AddScriptComments("Provider type identifier: 'manual', 'stripe', 'square', 'moneris'.");
+            paymentProviderTable.AddBoolField("isActive", false, true).AddScriptComments("Whether this provider is currently active.");
+            paymentProviderTable.AddTextField("apiKeyEncrypted", true).AddScriptComments("Encrypted API key for the payment provider.");
+            paymentProviderTable.AddString100Field("merchantId", true).AddScriptComments("Merchant account identifier with the provider.");
+            paymentProviderTable.AddTextField("webhookSecret", true).AddScriptComments("Encrypted webhook validation secret for the provider.");
+            paymentProviderTable.AddDecimalField("processingFeePercent", true, null, true).AddScriptComments("Provider processing fee percentage (e.g., 2.9 for Stripe).");
+            paymentProviderTable.AddMoneyField("processingFeeFixed", true, true).AddScriptComments("Provider fixed processing fee per transaction (e.g., $0.30).");
+            paymentProviderTable.AddTextField("notes", true).AddScriptComments("Optional notes about the provider configuration.");
+            paymentProviderTable.AddVersionControl();
+            paymentProviderTable.AddControlFields();
+
+
+            //
+            // Payment Transaction — Individual payment records
+            //
+            Database.Table paymentTransactionTable = database.AddTable("PaymentTransaction");
+            paymentTransactionTable.comment = @"====================================================================================================
+ PAYMENT TRANSACTION
+ Records individual payments received or made. Links to PaymentMethod (how) and optionally to
+ PaymentProvider (which processor). Can be associated with a ScheduledEvent, FinancialTransaction,
+ or EventCharge.
+
+ DESIGN NOTE: Supports both manual recording (cash register replacement) and electronic payment
+ processing (Stripe/Square integration). The providerTransactionId and providerResponse fields
+ store the raw response from electronic providers for audit purposes.
+ ====================================================================================================";
+
+            paymentTransactionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            paymentTransactionTable.AddIdField();
+            paymentTransactionTable.AddMultiTenantSupport();
+            paymentTransactionTable.AddForeignKeyField(paymentMethodTable, false, true).AddScriptComments("How the payment was made (Cash, E-Transfer, Credit Card, etc.).");
+            paymentTransactionTable.AddForeignKeyField(paymentProviderTable, true, true).AddScriptComments("Optional link to payment processor (null for cash/cheque).");
+
+            // What this payment is for — at least one should be set
+            paymentTransactionTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., booking payment).");
+            paymentTransactionTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., bar tab payment).");
+            paymentTransactionTable.AddForeignKeyField(eventChargeTable, true, true).AddScriptComments("Optional link to a specific EventCharge (e.g., damage deposit payment).");
+
+            paymentTransactionTable.AddDateTimeField("transactionDate", false).AddScriptComments("When the payment occurred (UTC).").CreateIndex();
+            paymentTransactionTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Gross payment amount.");
+            paymentTransactionTable.AddMoneyField("processingFee", false, 0, true).AddScriptComments("Fee deducted by the payment provider.");
+            paymentTransactionTable.AddMoneyField("netAmount", false, 0, true).AddScriptComments("Net amount received (amount - processingFee).");
+            paymentTransactionTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Link to Currency table.");
+            paymentTransactionTable.AddString50Field("status", false).AddScriptComments("Payment status: pending, completed, failed, refunded.");
+            paymentTransactionTable.AddString250Field("providerTransactionId", true).AddScriptComments("Transaction ID from the payment provider (e.g., Stripe charge ID).").CreateIndex();
+            paymentTransactionTable.AddTextField("providerResponse", true).AddScriptComments("JSON response from the payment provider for audit purposes.");
+            paymentTransactionTable.AddString250Field("payerName", true).AddScriptComments("Name of the person who paid.");
+            paymentTransactionTable.AddString250Field("payerEmail", true).AddScriptComments("Email of the payer.");
+            paymentTransactionTable.AddString50Field("payerPhone", true).AddScriptComments("Phone number of the payer.");
+            paymentTransactionTable.AddString100Field("receiptNumber", true).AddScriptComments("Generated receipt number.").CreateIndex();
+            paymentTransactionTable.AddTextField("notes", true).AddScriptComments("Optional notes about the payment.");
+            paymentTransactionTable.AddVersionControl();
+            paymentTransactionTable.AddControlFields();
+
+            #endregion
 
 
             //

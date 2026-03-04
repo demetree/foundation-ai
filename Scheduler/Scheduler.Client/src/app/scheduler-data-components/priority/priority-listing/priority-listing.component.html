@@ -82,6 +82,7 @@
   <app-priority-table
     *ngIf="userIsSchedulerPriorityReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPriorityCount$ | async) ?? 0">
   </app-priority-table>
 </div>

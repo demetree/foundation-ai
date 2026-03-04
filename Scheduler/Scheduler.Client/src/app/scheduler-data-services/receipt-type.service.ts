@@ -131,11 +131,17 @@ export class ReceiptTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({receiptTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({receiptTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -180,6 +186,7 @@ export class ReceiptTypeData {
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
   }
 
@@ -716,11 +723,7 @@ export class ReceiptTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({receiptTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

@@ -43,6 +43,10 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
+  @Input() showAddButton: boolean = false;              // Forward to embedded add-edit component
+  @Input() preSeededData: any = null;                   // Forward to embedded add-edit component
+  @Input() hiddenFields: string[] = [];                 // Forward to embedded add-edit component
+
   @Output() edit = new EventEmitter<EventChargeData>(); // Emitted for custom edit handling
   @Output() delete = new EventEmitter<EventChargeData>(); // Emitted for custom delete handling
   @Output() undelete = new EventEmitter<EventChargeData>(); // Emitted for custom undelete handling
@@ -54,6 +58,11 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
   // Sorting properties
   public sortColumn: string | null = null;
   public sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Pagination
+  @Input() totalRowCount: number = 0;
+  public currentPage: number = 1;
+  public pageSize: number = 50;
 
 
   private isLoadingSubject = new BehaviorSubject<boolean>(true);
@@ -178,6 +187,8 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
     { key: 'rateType.name', label: 'Rate Type', width: undefined, template: 'link', linkPath: ['/ratetype', 'rateTypeId'] },
     { key: 'notes', label: 'Notes', width: undefined },
     { key: 'isAutomatic', label: 'Is Automatic', width: '120px', template: 'boolean' },
+    { key: 'isDeposit', label: 'Is Deposit', width: '120px', template: 'boolean' },
+    { key: 'depositRefundedDate', label: 'Deposit Refunded Date', width: undefined, template: 'date' },
     { key: 'exportedDate', label: 'Exported Date', width: undefined, template: 'date' },
     { key: 'externalId', label: 'External Id', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/eventcharge', 'id']  },
 
@@ -235,7 +246,9 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
     //
     const eventChargeQueryParams = {
         ...this.queryParams,
-        anyStringContains: this.filterText || undefined
+        anyStringContains: this.filterText || undefined,
+        pageSize: this.pageSize,
+        pageNumber: this.currentPage
     };
 
     //
@@ -337,6 +350,8 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
                       'rateType.name',
                       'notes',
                       'isAutomatic',
+                      'isDeposit',
+                      'depositRefundedDate',
                       'exportedDate',
                       'externalId',
         ];
@@ -389,6 +404,14 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
           'Add/Edit component not initialized',
           MessageSeverity.warn
         );
+    }
+}
+
+
+  public handleAdd(): void {
+    if (this.addEditEventChargeComponent)
+    {
+        this.addEditEventChargeComponent.openModal(); // Open in add mode (no data)
     }
 }
 
@@ -505,6 +528,42 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
   // First "prominent" column for mobile view
   get prominentColumn(): TableColumn | null {
     return this.columns.find(col => col.mobile === 'prominent') || null;
+  }
+
+
+  //
+  // Pagination
+  //
+  public get totalPages(): number {
+    if (this.totalRowCount <= 0 || this.pageSize <= 0) {
+      return 1;
+    }
+    return Math.ceil(this.totalRowCount / this.pageSize);
+  }
+
+  public nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadData();
+    }
+  }
+
+  public previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  public goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadData();
+    }
+  }
+
+  public resetToFirstPage(): void {
+    this.currentPage = 1;
   }
 
 }

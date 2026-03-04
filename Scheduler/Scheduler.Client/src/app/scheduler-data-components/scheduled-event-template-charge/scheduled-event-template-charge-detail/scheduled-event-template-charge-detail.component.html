@@ -92,10 +92,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-charge-change-history-table [queryParams]="{ scheduledEventTemplateChargeId: scheduledEventTemplateChargeData?.id }"></app-scheduled-event-template-charge-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-charge-change-history-add-edit [preSeededData]="{ scheduledEventTemplateChargeId: scheduledEventTemplateChargeData?.id }" [hiddenFields]="['scheduledEventTemplateChargeId']"></app-scheduled-event-template-charge-change-history-add-edit>
+                                    <app-scheduled-event-template-charge-change-history-table [queryParams]="{ scheduledEventTemplateChargeId: scheduledEventTemplateChargeData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventTemplateChargeId: scheduledEventTemplateChargeData?.id }" [hiddenFields]="['scheduledEventTemplateChargeId']"></app-scheduled-event-template-charge-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

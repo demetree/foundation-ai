@@ -165,6 +165,7 @@ export class SchedulingTargetQualificationRequirementListingComponent implements
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.schedulingTargetQualificationRequirementTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.schedulingTargetQualificationRequirementTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -139,11 +139,17 @@ export class InteractionTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({interactionTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactInteractionsCount$: Observable<bigint | number> | null = null;
+    public get ContactInteractionsCount$(): Observable<bigint | number> {
+        if (this._contactInteractionsCount$ === null) {
+            this._contactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({interactionTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactInteractionsCount$;
+    }
 
 
 
@@ -188,6 +194,7 @@ export class InteractionTypeData {
      this._contactInteractions = null;
      this._contactInteractionsPromise = null;
      this._contactInteractionsSubject.next(null);
+     this._contactInteractionsCount$ = null;
 
   }
 
@@ -726,11 +733,7 @@ export class InteractionTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({interactionTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactInteractionsCount$ = null;
 
 
 

@@ -175,11 +175,17 @@ export class NotificationSubscriptionData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public NotificationSubscriptionChangeHistoriesCount$ = NotificationSubscriptionChangeHistoryService.Instance.GetNotificationSubscriptionChangeHistoriesRowCount({notificationSubscriptionId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _notificationSubscriptionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get NotificationSubscriptionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._notificationSubscriptionChangeHistoriesCount$ === null) {
+            this._notificationSubscriptionChangeHistoriesCount$ = NotificationSubscriptionChangeHistoryService.Instance.GetNotificationSubscriptionChangeHistoriesRowCount({notificationSubscriptionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._notificationSubscriptionChangeHistoriesCount$;
+    }
 
 
 
@@ -224,6 +230,7 @@ export class NotificationSubscriptionData {
      this._notificationSubscriptionChangeHistories = null;
      this._notificationSubscriptionChangeHistoriesPromise = null;
      this._notificationSubscriptionChangeHistoriesSubject.next(null);
+     this._notificationSubscriptionChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -911,11 +918,7 @@ export class NotificationSubscriptionService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).NotificationSubscriptionChangeHistoriesCount$ = NotificationSubscriptionChangeHistoryService.Instance.GetNotificationSubscriptionChangeHistoriesRowCount({notificationSubscriptionId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._notificationSubscriptionChangeHistoriesCount$ = null;
 
 
 

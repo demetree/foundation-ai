@@ -163,11 +163,17 @@ export class AssignmentRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({assignmentRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _assignmentRoleQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get AssignmentRoleQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._assignmentRoleQualificationRequirementsCount$ === null) {
+            this._assignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({assignmentRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._assignmentRoleQualificationRequirementsCount$;
+    }
 
 
 
@@ -182,11 +188,17 @@ export class AssignmentRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({assignmentRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetsCount$: Observable<bigint | number> | null = null;
+    public get RateSheetsCount$(): Observable<bigint | number> {
+        if (this._rateSheetsCount$ === null) {
+            this._rateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({assignmentRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetsCount$;
+    }
 
 
 
@@ -201,11 +213,17 @@ export class AssignmentRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({assignmentRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewMembersCount$: Observable<bigint | number> | null = null;
+    public get CrewMembersCount$(): Observable<bigint | number> {
+        if (this._crewMembersCount$ === null) {
+            this._crewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({assignmentRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewMembersCount$;
+    }
 
 
 
@@ -220,11 +238,17 @@ export class AssignmentRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({assignmentRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupMembersCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupMembersCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupMembersCount$ === null) {
+            this._volunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({assignmentRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupMembersCount$;
+    }
 
 
 
@@ -239,11 +263,17 @@ export class AssignmentRoleData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentRoleId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentRoleId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -288,22 +318,27 @@ export class AssignmentRoleData {
      this._assignmentRoleQualificationRequirements = null;
      this._assignmentRoleQualificationRequirementsPromise = null;
      this._assignmentRoleQualificationRequirementsSubject.next(null);
+     this._assignmentRoleQualificationRequirementsCount$ = null;
 
      this._rateSheets = null;
      this._rateSheetsPromise = null;
      this._rateSheetsSubject.next(null);
+     this._rateSheetsCount$ = null;
 
      this._crewMembers = null;
      this._crewMembersPromise = null;
      this._crewMembersSubject.next(null);
+     this._crewMembersCount$ = null;
 
      this._volunteerGroupMembers = null;
      this._volunteerGroupMembersPromise = null;
      this._volunteerGroupMembersSubject.next(null);
+     this._volunteerGroupMembersCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
   }
 
@@ -1162,11 +1197,7 @@ export class AssignmentRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({assignmentRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._assignmentRoleQualificationRequirementsCount$ = null;
 
 
     (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
@@ -1178,11 +1209,7 @@ export class AssignmentRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({assignmentRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetsCount$ = null;
 
 
     (revived as any).CrewMembers$ = (revived as any)._crewMembersSubject.asObservable().pipe(
@@ -1194,11 +1221,7 @@ export class AssignmentRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({assignmentRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewMembersCount$ = null;
 
 
     (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
@@ -1210,11 +1233,7 @@ export class AssignmentRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({assignmentRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupMembersCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -1226,11 +1245,7 @@ export class AssignmentRoleService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentRoleId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

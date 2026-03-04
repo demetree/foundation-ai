@@ -82,6 +82,7 @@
   <app-scheduled-event-dependency-table
     *ngIf="userIsSchedulerScheduledEventDependencyReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredScheduledEventDependencyCount$ | async) ?? 0">
   </app-scheduled-event-dependency-table>
 </div>

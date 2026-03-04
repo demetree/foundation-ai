@@ -208,11 +208,17 @@ export class HouseholdData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public HouseholdChangeHistoriesCount$ = HouseholdChangeHistoryService.Instance.GetHouseholdChangeHistoriesRowCount({householdId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _householdChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get HouseholdChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._householdChangeHistoriesCount$ === null) {
+            this._householdChangeHistoriesCount$ = HouseholdChangeHistoryService.Instance.GetHouseholdChangeHistoriesRowCount({householdId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._householdChangeHistoriesCount$;
+    }
 
 
 
@@ -227,11 +233,17 @@ export class HouseholdData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({householdId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentsCount$: Observable<bigint | number> | null = null;
+    public get ConstituentsCount$(): Observable<bigint | number> {
+        if (this._constituentsCount$ === null) {
+            this._constituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({householdId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentsCount$;
+    }
 
 
 
@@ -276,10 +288,12 @@ export class HouseholdData {
      this._householdChangeHistories = null;
      this._householdChangeHistoriesPromise = null;
      this._householdChangeHistoriesSubject.next(null);
+     this._householdChangeHistoriesCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
+     this._constituentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1057,11 +1071,7 @@ export class HouseholdService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).HouseholdChangeHistoriesCount$ = HouseholdChangeHistoryService.Instance.GetHouseholdChangeHistoriesRowCount({householdId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._householdChangeHistoriesCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(
@@ -1073,11 +1083,7 @@ export class HouseholdService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({householdId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentsCount$ = null;
 
 
 

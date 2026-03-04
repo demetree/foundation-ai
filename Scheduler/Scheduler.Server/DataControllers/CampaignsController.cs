@@ -68,6 +68,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetCampaigns(
 			string name = null,
 			string description = null,
+			DateOnly? startDate = null,
+			DateOnly? endDate = null,
 			decimal? fundRaisingGoal = null,
 			string notes = null,
 			int? iconId = null,
@@ -185,18 +187,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(c => c.name).ThenBy(c => c.description).ThenBy(c => c.color);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.icon);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Campaign, or on an any of the string fields on its immediate relations
@@ -215,6 +205,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.icon);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.Campaign> materialized = await query.ToListAsync(cancellationToken);
@@ -256,6 +258,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string description = null,
+			DateOnly? startDate = null,
+			DateOnly? endDate = null,
 			decimal? fundRaisingGoal = null,
 			string notes = null,
 			int? iconId = null,
@@ -1365,6 +1369,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string name = null,
 			string description = null,
+			DateOnly? startDate = null,
+			DateOnly? endDate = null,
 			decimal? fundRaisingGoal = null,
 			string notes = null,
 			int? iconId = null,

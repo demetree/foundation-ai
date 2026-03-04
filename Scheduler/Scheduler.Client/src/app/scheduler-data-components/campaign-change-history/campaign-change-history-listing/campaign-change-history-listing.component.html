@@ -82,6 +82,7 @@
   <app-campaign-change-history-table
     *ngIf="userIsSchedulerCampaignChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCampaignChangeHistoryCount$ | async) ?? 0">
   </app-campaign-change-history-table>
 </div>

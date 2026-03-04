@@ -134,11 +134,17 @@ export class ChargeStatusData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeStatusId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeStatusId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class ChargeStatusData {
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class ChargeStatusService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeStatusId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventChargesCount$ = null;
 
 
 

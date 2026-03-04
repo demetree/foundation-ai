@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #recurrenceExceptionModal let-modal>
-   <div class="modal-header bg-dark text-light recurrence-exception-modal-header">
+   <div class="modal-header recurrence-exception-modal-header">
       <h5 class="modal-title mb-0" id="recurrenceExceptionModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Recurrence Exception' : 'Add Recurrence Exception' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body recurrence-exception-modal-body">
       <form [formGroup]="recurrenceExceptionForm" (ngSubmit)="submitForm()">

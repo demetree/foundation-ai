@@ -210,10 +210,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-office-change-history-table [queryParams]="{ officeId: officeData?.id }"></app-office-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-office-change-history-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-office-change-history-add-edit>
+                                    <app-office-change-history-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-office-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -227,10 +224,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-office-contact-table [queryParams]="{ officeId: officeData?.id }"></app-office-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-office-contact-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-office-contact-add-edit>
+                                    <app-office-contact-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-office-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -244,10 +238,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-calendar-table [queryParams]="{ officeId: officeData?.id }"></app-calendar-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-calendar-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-calendar-add-edit>
+                                    <app-calendar-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-calendar-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -261,10 +252,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-table [queryParams]="{ officeId: officeData?.id }"></app-scheduling-target-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-scheduling-target-add-edit>
+                                    <app-scheduling-target-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-scheduling-target-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -278,10 +266,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-table [queryParams]="{ officeId: officeData?.id }"></app-resource-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-resource-add-edit>
+                                    <app-resource-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-resource-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -295,10 +280,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-rate-sheet-table [queryParams]="{ officeId: officeData?.id }"></app-rate-sheet-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-rate-sheet-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-rate-sheet-add-edit>
+                                    <app-rate-sheet-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-rate-sheet-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -312,10 +294,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-table [queryParams]="{ officeId: officeData?.id }"></app-crew-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-crew-add-edit>
+                                    <app-crew-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-crew-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -329,10 +308,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-table [queryParams]="{ officeId: officeData?.id }"></app-scheduled-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-scheduled-event-add-edit>
+                                    <app-scheduled-event-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-scheduled-event-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -346,10 +322,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ officeId: officeData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -363,10 +336,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-group-table [queryParams]="{ officeId: officeData?.id }"></app-volunteer-group-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-group-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-volunteer-group-add-edit>
+                                    <app-volunteer-group-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-volunteer-group-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -380,10 +350,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-resource-assignment-table [queryParams]="{ officeId: officeData?.id }"></app-event-resource-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-add-edit [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-event-resource-assignment-add-edit>
+                                    <app-event-resource-assignment-table [queryParams]="{ officeId: officeData?.id }" [showAddButton]="true" [preSeededData]="{ officeId: officeData?.id }" [hiddenFields]="['officeId']"></app-event-resource-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

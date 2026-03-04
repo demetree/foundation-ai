@@ -198,6 +198,12 @@ import { CurrencyListingComponent } from './scheduler-data-components/currency/c
 import { CurrencyDetailComponent } from './scheduler-data-components/currency/currency-detail/currency-detail.component';
 import { DependencyTypeListingComponent } from './scheduler-data-components/dependency-type/dependency-type-listing/dependency-type-listing.component';
 import { DependencyTypeDetailComponent } from './scheduler-data-components/dependency-type/dependency-type-detail/dependency-type-detail.component';
+import { DocumentListingComponent } from './scheduler-data-components/document/document-listing/document-listing.component';
+import { DocumentDetailComponent } from './scheduler-data-components/document/document-detail/document-detail.component';
+import { DocumentChangeHistoryListingComponent } from './scheduler-data-components/document-change-history/document-change-history-listing/document-change-history-listing.component';
+import { DocumentChangeHistoryDetailComponent } from './scheduler-data-components/document-change-history/document-change-history-detail/document-change-history-detail.component';
+import { DocumentTypeListingComponent } from './scheduler-data-components/document-type/document-type-listing/document-type-listing.component';
+import { DocumentTypeDetailComponent } from './scheduler-data-components/document-type/document-type-detail/document-type-detail.component';
 import { EventCalendarListingComponent } from './scheduler-data-components/event-calendar/event-calendar-listing/event-calendar-listing.component';
 import { EventCalendarDetailComponent } from './scheduler-data-components/event-calendar/event-calendar-detail/event-calendar-detail.component';
 import { EventChargeListingComponent } from './scheduler-data-components/event-charge/event-charge-listing/event-charge-listing.component';
@@ -210,6 +216,14 @@ import { EventResourceAssignmentChangeHistoryListingComponent } from './schedule
 import { EventResourceAssignmentChangeHistoryDetailComponent } from './scheduler-data-components/event-resource-assignment-change-history/event-resource-assignment-change-history-detail/event-resource-assignment-change-history-detail.component';
 import { EventStatusListingComponent } from './scheduler-data-components/event-status/event-status-listing/event-status-listing.component';
 import { EventStatusDetailComponent } from './scheduler-data-components/event-status/event-status-detail/event-status-detail.component';
+import { FinancialCategoryListingComponent } from './scheduler-data-components/financial-category/financial-category-listing/financial-category-listing.component';
+import { FinancialCategoryDetailComponent } from './scheduler-data-components/financial-category/financial-category-detail/financial-category-detail.component';
+import { FinancialCategoryChangeHistoryListingComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-listing/financial-category-change-history-listing.component';
+import { FinancialCategoryChangeHistoryDetailComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-detail/financial-category-change-history-detail.component';
+import { FinancialTransactionListingComponent } from './scheduler-data-components/financial-transaction/financial-transaction-listing/financial-transaction-listing.component';
+import { FinancialTransactionDetailComponent } from './scheduler-data-components/financial-transaction/financial-transaction-detail/financial-transaction-detail.component';
+import { FinancialTransactionChangeHistoryListingComponent } from './scheduler-data-components/financial-transaction-change-history/financial-transaction-change-history-listing/financial-transaction-change-history-listing.component';
+import { FinancialTransactionChangeHistoryDetailComponent } from './scheduler-data-components/financial-transaction-change-history/financial-transaction-change-history-detail/financial-transaction-change-history-detail.component';
 import { FundListingComponent } from './scheduler-data-components/fund/fund-listing/fund-listing.component';
 import { FundDetailComponent } from './scheduler-data-components/fund/fund-detail/fund-detail.component';
 import { FundChangeHistoryListingComponent } from './scheduler-data-components/fund-change-history/fund-change-history-listing/fund-change-history-listing.component';
@@ -242,6 +256,16 @@ import { OfficeContactChangeHistoryListingComponent } from './scheduler-data-com
 import { OfficeContactChangeHistoryDetailComponent } from './scheduler-data-components/office-contact-change-history/office-contact-change-history-detail/office-contact-change-history-detail.component';
 import { OfficeTypeListingComponent } from './scheduler-data-components/office-type/office-type-listing/office-type-listing.component';
 import { OfficeTypeDetailComponent } from './scheduler-data-components/office-type/office-type-detail/office-type-detail.component';
+import { PaymentMethodListingComponent } from './scheduler-data-components/payment-method/payment-method-listing/payment-method-listing.component';
+import { PaymentMethodDetailComponent } from './scheduler-data-components/payment-method/payment-method-detail/payment-method-detail.component';
+import { PaymentProviderListingComponent } from './scheduler-data-components/payment-provider/payment-provider-listing/payment-provider-listing.component';
+import { PaymentProviderDetailComponent } from './scheduler-data-components/payment-provider/payment-provider-detail/payment-provider-detail.component';
+import { PaymentProviderChangeHistoryListingComponent } from './scheduler-data-components/payment-provider-change-history/payment-provider-change-history-listing/payment-provider-change-history-listing.component';
+import { PaymentProviderChangeHistoryDetailComponent } from './scheduler-data-components/payment-provider-change-history/payment-provider-change-history-detail/payment-provider-change-history-detail.component';
+import { PaymentTransactionListingComponent } from './scheduler-data-components/payment-transaction/payment-transaction-listing/payment-transaction-listing.component';
+import { PaymentTransactionDetailComponent } from './scheduler-data-components/payment-transaction/payment-transaction-detail/payment-transaction-detail.component';
+import { PaymentTransactionChangeHistoryListingComponent } from './scheduler-data-components/payment-transaction-change-history/payment-transaction-change-history-listing/payment-transaction-change-history-listing.component';
+import { PaymentTransactionChangeHistoryDetailComponent } from './scheduler-data-components/payment-transaction-change-history/payment-transaction-change-history-detail/payment-transaction-change-history-detail.component';
 import { PaymentTypeListingComponent } from './scheduler-data-components/payment-type/payment-type-listing/payment-type-listing.component';
 import { PaymentTypeDetailComponent } from './scheduler-data-components/payment-type/payment-type-detail/payment-type-detail.component';
 import { PledgeListingComponent } from './scheduler-data-components/pledge/pledge-listing/pledge-listing.component';
@@ -736,6 +760,21 @@ const routes: Routes = [
   {path: 'dependencytypes/:dependencyTypeId', component: DependencyTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Dependency Type' },
   {path: 'dependencytype/:dependencyTypeId', component: DependencyTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Dependency Type' },
   {path: 'dependencytype',  redirectTo: 'dependencytypes'},
+  {path: 'documents', component: DocumentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Documents' },
+  {path: 'documents/new', component: DocumentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document' },
+  {path: 'documents/:documentId', component: DocumentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document' },
+  {path: 'document/:documentId', component: DocumentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document' },
+  {path: 'document',  redirectTo: 'documents'},
+  {path: 'documentchangehistories', component: DocumentChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Change Histories' },
+  {path: 'documentchangehistories/new', component: DocumentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Change History' },
+  {path: 'documentchangehistories/:documentChangeHistoryId', component: DocumentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Change History' },
+  {path: 'documentchangehistory/:documentChangeHistoryId', component: DocumentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Change History' },
+  {path: 'documentchangehistory',  redirectTo: 'documentchangehistories'},
+  {path: 'documenttypes', component: DocumentTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Types' },
+  {path: 'documenttypes/new', component: DocumentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Type' },
+  {path: 'documenttypes/:documentTypeId', component: DocumentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Type' },
+  {path: 'documenttype/:documentTypeId', component: DocumentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Type' },
+  {path: 'documenttype',  redirectTo: 'documenttypes'},
   {path: 'eventcalendars', component: EventCalendarListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Calendars' },
   {path: 'eventcalendars/new', component: EventCalendarDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Calendar' },
   {path: 'eventcalendars/:eventCalendarId', component: EventCalendarDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Calendar' },
@@ -766,6 +805,26 @@ const routes: Routes = [
   {path: 'eventstatuses/:eventStatusId', component: EventStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Status' },
   {path: 'eventstatus/:eventStatusId', component: EventStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Status' },
   {path: 'eventstatus',  redirectTo: 'eventstatuses'},
+  {path: 'financialcategories', component: FinancialCategoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Categories' },
+  {path: 'financialcategories/new', component: FinancialCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Category' },
+  {path: 'financialcategories/:financialCategoryId', component: FinancialCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category' },
+  {path: 'financialcategory/:financialCategoryId', component: FinancialCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category' },
+  {path: 'financialcategory',  redirectTo: 'financialcategories'},
+  {path: 'financialcategorychangehistories', component: FinancialCategoryChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Category Change Histories' },
+  {path: 'financialcategorychangehistories/new', component: FinancialCategoryChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Category Change History' },
+  {path: 'financialcategorychangehistories/:financialCategoryChangeHistoryId', component: FinancialCategoryChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category Change History' },
+  {path: 'financialcategorychangehistory/:financialCategoryChangeHistoryId', component: FinancialCategoryChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category Change History' },
+  {path: 'financialcategorychangehistory',  redirectTo: 'financialcategorychangehistories'},
+  {path: 'financialtransactions', component: FinancialTransactionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Transactions' },
+  {path: 'financialtransactions/new', component: FinancialTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Transaction' },
+  {path: 'financialtransactions/:financialTransactionId', component: FinancialTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction' },
+  {path: 'financialtransaction/:financialTransactionId', component: FinancialTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction' },
+  {path: 'financialtransaction',  redirectTo: 'financialtransactions'},
+  {path: 'financialtransactionchangehistories', component: FinancialTransactionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Transaction Change Histories' },
+  {path: 'financialtransactionchangehistories/new', component: FinancialTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Transaction Change History' },
+  {path: 'financialtransactionchangehistories/:financialTransactionChangeHistoryId', component: FinancialTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction Change History' },
+  {path: 'financialtransactionchangehistory/:financialTransactionChangeHistoryId', component: FinancialTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction Change History' },
+  {path: 'financialtransactionchangehistory',  redirectTo: 'financialtransactionchangehistories'},
   {path: 'funds', component: FundListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Funds' },
   {path: 'funds/new', component: FundDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Fund' },
   {path: 'funds/:fundId', component: FundDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fund' },
@@ -846,6 +905,31 @@ const routes: Routes = [
   {path: 'officetypes/:officeTypeId', component: OfficeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Office Type' },
   {path: 'officetype/:officeTypeId', component: OfficeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Office Type' },
   {path: 'officetype',  redirectTo: 'officetypes'},
+  {path: 'paymentmethods', component: PaymentMethodListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Methods' },
+  {path: 'paymentmethods/new', component: PaymentMethodDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Method' },
+  {path: 'paymentmethods/:paymentMethodId', component: PaymentMethodDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Method' },
+  {path: 'paymentmethod/:paymentMethodId', component: PaymentMethodDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Method' },
+  {path: 'paymentmethod',  redirectTo: 'paymentmethods'},
+  {path: 'paymentproviders', component: PaymentProviderListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Providers' },
+  {path: 'paymentproviders/new', component: PaymentProviderDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Provider' },
+  {path: 'paymentproviders/:paymentProviderId', component: PaymentProviderDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Provider' },
+  {path: 'paymentprovider/:paymentProviderId', component: PaymentProviderDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Provider' },
+  {path: 'paymentprovider',  redirectTo: 'paymentproviders'},
+  {path: 'paymentproviderchangehistories', component: PaymentProviderChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Provider Change Histories' },
+  {path: 'paymentproviderchangehistories/new', component: PaymentProviderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Provider Change History' },
+  {path: 'paymentproviderchangehistories/:paymentProviderChangeHistoryId', component: PaymentProviderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Provider Change History' },
+  {path: 'paymentproviderchangehistory/:paymentProviderChangeHistoryId', component: PaymentProviderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Provider Change History' },
+  {path: 'paymentproviderchangehistory',  redirectTo: 'paymentproviderchangehistories'},
+  {path: 'paymenttransactions', component: PaymentTransactionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Transactions' },
+  {path: 'paymenttransactions/new', component: PaymentTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Transaction' },
+  {path: 'paymenttransactions/:paymentTransactionId', component: PaymentTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Transaction' },
+  {path: 'paymenttransaction/:paymentTransactionId', component: PaymentTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Transaction' },
+  {path: 'paymenttransaction',  redirectTo: 'paymenttransactions'},
+  {path: 'paymenttransactionchangehistories', component: PaymentTransactionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Transaction Change Histories' },
+  {path: 'paymenttransactionchangehistories/new', component: PaymentTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Transaction Change History' },
+  {path: 'paymenttransactionchangehistories/:paymentTransactionChangeHistoryId', component: PaymentTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Transaction Change History' },
+  {path: 'paymenttransactionchangehistory/:paymentTransactionChangeHistoryId', component: PaymentTransactionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Transaction Change History' },
+  {path: 'paymenttransactionchangehistory',  redirectTo: 'paymenttransactionchangehistories'},
   {path: 'paymenttypes', component: PaymentTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Types' },
   {path: 'paymenttypes/new', component: PaymentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Type' },
   {path: 'paymenttypes/:paymentTypeId', component: PaymentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Type' },

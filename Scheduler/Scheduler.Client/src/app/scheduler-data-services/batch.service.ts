@@ -201,11 +201,17 @@ export class BatchData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BatchChangeHistoriesCount$ = BatchChangeHistoryService.Instance.GetBatchChangeHistoriesRowCount({batchId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _batchChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BatchChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._batchChangeHistoriesCount$ === null) {
+            this._batchChangeHistoriesCount$ = BatchChangeHistoryService.Instance.GetBatchChangeHistoriesRowCount({batchId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._batchChangeHistoriesCount$;
+    }
 
 
 
@@ -220,11 +226,17 @@ export class BatchData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({batchId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({batchId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -269,10 +281,12 @@ export class BatchData {
      this._batchChangeHistories = null;
      this._batchChangeHistoriesPromise = null;
      this._batchChangeHistoriesSubject.next(null);
+     this._batchChangeHistoriesCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1046,11 +1060,7 @@ export class BatchService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).BatchChangeHistoriesCount$ = BatchChangeHistoryService.Instance.GetBatchChangeHistoriesRowCount({batchId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._batchChangeHistoriesCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1062,11 +1072,7 @@ export class BatchService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({batchId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

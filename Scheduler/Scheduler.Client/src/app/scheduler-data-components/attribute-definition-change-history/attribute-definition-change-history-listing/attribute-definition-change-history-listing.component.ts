@@ -165,6 +165,7 @@ export class AttributeDefinitionChangeHistoryListingComponent implements OnInit,
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.attributeDefinitionChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.attributeDefinitionChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

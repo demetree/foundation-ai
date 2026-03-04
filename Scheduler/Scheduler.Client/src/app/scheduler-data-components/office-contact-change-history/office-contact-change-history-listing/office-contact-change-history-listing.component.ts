@@ -165,6 +165,7 @@ export class OfficeContactChangeHistoryListingComponent implements OnInit, After
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.officeContactChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.officeContactChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

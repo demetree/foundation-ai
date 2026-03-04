@@ -200,11 +200,17 @@ export class FundData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public FundChangeHistoriesCount$ = FundChangeHistoryService.Instance.GetFundChangeHistoriesRowCount({fundId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _fundChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get FundChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._fundChangeHistoriesCount$ === null) {
+            this._fundChangeHistoriesCount$ = FundChangeHistoryService.Instance.GetFundChangeHistoriesRowCount({fundId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._fundChangeHistoriesCount$;
+    }
 
 
 
@@ -219,11 +225,17 @@ export class FundData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({fundId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _pledgesCount$: Observable<bigint | number> | null = null;
+    public get PledgesCount$(): Observable<bigint | number> {
+        if (this._pledgesCount$ === null) {
+            this._pledgesCount$ = PledgeService.Instance.GetPledgesRowCount({fundId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._pledgesCount$;
+    }
 
 
 
@@ -238,11 +250,17 @@ export class FundData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BatchDefaultFundsCount$ = BatchService.Instance.GetBatchesRowCount({defaultFundId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _batchDefaultFundsCount$: Observable<bigint | number> | null = null;
+    public get BatchDefaultFundsCount$(): Observable<bigint | number> {
+        if (this._batchDefaultFundsCount$ === null) {
+            this._batchDefaultFundsCount$ = BatchService.Instance.GetBatchesRowCount({defaultFundId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._batchDefaultFundsCount$;
+    }
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -256,11 +274,17 @@ export class FundData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({fundId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({fundId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -305,18 +329,22 @@ export class FundData {
      this._fundChangeHistories = null;
      this._fundChangeHistoriesPromise = null;
      this._fundChangeHistoriesSubject.next(null);
+     this._fundChangeHistoriesCount$ = null;
 
      this._pledges = null;
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
+     this._pledgesCount$ = null;
 
      this._batchDefaultFunds = null;
      this._batchDefaultFundsPromise = null;
      this._batchDefaultFundsSubject.next(null);
+     this._batchDefaultFundsCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1219,9 +1247,9 @@ export class FundService extends SecureEndpointBase {
     (revived as any)._pledgesPromise = null;
     (revived as any)._pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    (revived as any)._batches = null;
-    (revived as any)._batchesPromise = null;
-    (revived as any)._batchesSubject = new BehaviorSubject<BatchData[] | null>(null);
+    (revived as any)._batchDefaultFunds = null;
+    (revived as any)._batchDefaultFundsPromise = null;
+    (revived as any)._batchDefaultFundsSubject = new BehaviorSubject<BatchData[] | null>(null);
 
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
@@ -1248,11 +1276,7 @@ export class FundService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).FundChangeHistoriesCount$ = FundChangeHistoryService.Instance.GetFundChangeHistoriesRowCount({fundId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._fundChangeHistoriesCount$ = null;
 
 
     (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
@@ -1264,27 +1288,19 @@ export class FundService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({fundId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._pledgesCount$ = null;
 
 
-
-    (revived as any).Batches$ = (revived as any)._batchesSubject.asObservable().pipe(
+    (revived as any).BatchDefaultFunds$ = (revived as any)._batchDefaultFundsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._batches === null && (revived as any)._batchesPromise === null) {
-                (revived as any).loadBatches();        // Need to cast to any to invoke private load method
+              if ((revived as any)._batchDefaultFunds === null && (revived as any)._batchDefaultFundsPromise === null) {
+                (revived as any).loadBatchDefaultFunds();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any).BatchesCount$ = BatchService.Instance.GetBatchesRowCount({fundId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._batchDefaultFundsCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1296,11 +1312,7 @@ export class FundService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({fundId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

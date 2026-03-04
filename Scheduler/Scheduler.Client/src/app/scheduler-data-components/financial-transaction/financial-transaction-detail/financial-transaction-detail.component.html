@@ -1,0 +1,197 @@
+<div class="container-fluid p-1 m-0 financial-transaction-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="financial-transaction-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Financial Transaction</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Financial Transaction' : 'Add Financial Transaction'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerFinancialTransactionReader()">
+                <div class="col m-2 financial-transaction-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="financialTransactionForm" (ngSubmit)="submitForm()" class="financial-transaction-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('financialCategoryId')">
+                                <label for="FinancialTransaction-financialCategoryId" id="label-FinancialTransaction-financialCategoryId"><span class="text-danger">*</span>Financial Category</label>
+                                <select id="FinancialTransaction-financialCategoryId" formControlName="financialCategoryId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                                    <option [ngValue]="null">Select Financial Category</option>
+                                    <option *ngFor="let financialCategory of financialCategories$ | async" [ngValue]="financialCategory.id">{{financialCategory.name}}</option>
+                                </select>
+                                <div *ngIf="financialTransactionForm.get('financialCategoryId')?.invalid && financialTransactionForm.get('financialCategoryId')?.touched" class="text-danger">
+                                    Financial Category is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                                <label for="FinancialTransaction-scheduledEventId" id="label-FinancialTransaction-scheduledEventId">Scheduled Event</label>
+                                <select id="FinancialTransaction-scheduledEventId" formControlName="scheduledEventId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event</option>
+                                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                                <label for="FinancialTransaction-contactId" id="label-FinancialTransaction-contactId">Contact</label>
+                                <select id="FinancialTransaction-contactId" formControlName="contactId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                                <label for="FinancialTransaction-transactionDate" id="label-FinancialTransaction-transactionDate"><span class="text-danger">*</span>Transaction Date</label>
+                                <input type="datetime-local" id="FinancialTransaction-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-transactionDate" />
+                                <div *ngIf="financialTransactionForm.get('transactionDate')?.invalid && financialTransactionForm.get('transactionDate')?.touched" class="text-danger">
+                                    Transaction Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="FinancialTransaction-description" id="label-FinancialTransaction-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="FinancialTransaction-description" formControlName="description" placeholder="Enter Description" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()"></textarea>
+                                <div *ngIf="financialTransactionForm.get('description')?.invalid && financialTransactionForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('amount')">
+                                <label for="FinancialTransaction-amount" id="label-FinancialTransaction-amount"><span class="text-danger">*</span>Amount</label>
+                                <input type="number" id="FinancialTransaction-amount" formControlName="amount" placeholder="Enter Amount" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-amount" />
+                                <div *ngIf="financialTransactionForm.get('amount')?.invalid && financialTransactionForm.get('amount')?.touched" class="text-danger">
+                                    Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('taxAmount')">
+                                <label for="FinancialTransaction-taxAmount" id="label-FinancialTransaction-taxAmount"><span class="text-danger">*</span>Tax Amount</label>
+                                <input type="number" id="FinancialTransaction-taxAmount" formControlName="taxAmount" placeholder="Enter Tax Amount" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-taxAmount" />
+                                <div *ngIf="financialTransactionForm.get('taxAmount')?.invalid && financialTransactionForm.get('taxAmount')?.touched" class="text-danger">
+                                    Tax Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalAmount')">
+                                <label for="FinancialTransaction-totalAmount" id="label-FinancialTransaction-totalAmount"><span class="text-danger">*</span>Total Amount</label>
+                                <input type="number" id="FinancialTransaction-totalAmount" formControlName="totalAmount" placeholder="Enter Total Amount" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-totalAmount" />
+                                <div *ngIf="financialTransactionForm.get('totalAmount')?.invalid && financialTransactionForm.get('totalAmount')?.touched" class="text-danger">
+                                    Total Amount is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevenue')">
+                                <input type="checkbox" id="FinancialTransaction-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" />
+                                <label for="FinancialTransaction-isRevenue" class="form-check-label" id="label-FinancialTransaction-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('paymentMethod')">
+                                <label for="FinancialTransaction-paymentMethod" id="label-FinancialTransaction-paymentMethod">Payment Method</label>
+                                <input type="text" id="FinancialTransaction-paymentMethod" formControlName="paymentMethod" placeholder="Enter Payment Method" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-paymentMethod" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('referenceNumber')">
+                                <label for="FinancialTransaction-referenceNumber" id="label-FinancialTransaction-referenceNumber">Reference Number</label>
+                                <input type="text" id="FinancialTransaction-referenceNumber" formControlName="referenceNumber" placeholder="Enter Reference Number" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-referenceNumber" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="FinancialTransaction-notes" id="label-FinancialTransaction-notes">Notes</label>
+                                <textarea id="FinancialTransaction-notes" formControlName="notes" placeholder="Enter Notes" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                                <label for="FinancialTransaction-currencyId" id="label-FinancialTransaction-currencyId"><span class="text-danger">*</span>Currency</label>
+                                <select id="FinancialTransaction-currencyId" formControlName="currencyId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                                    <option [ngValue]="null">Select Currency</option>
+                                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                                </select>
+                                <div *ngIf="financialTransactionForm.get('currencyId')?.invalid && financialTransactionForm.get('currencyId')?.touched" class="text-danger">
+                                    Currency is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exportedDate')">
+                                <label for="FinancialTransaction-exportedDate" id="label-FinancialTransaction-exportedDate">Exported Date</label>
+                                <input type="datetime-local" id="FinancialTransaction-exportedDate" formControlName="exportedDate" placeholder="Enter Exported Date" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-exportedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="FinancialTransaction-externalId" id="label-FinancialTransaction-externalId">External Id</label>
+                                <input type="text" id="FinancialTransaction-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="FinancialTransaction-versionNumber" id="label-FinancialTransaction-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="FinancialTransaction-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control financial-transaction-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FinancialTransaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" />
+                                <label for="FinancialTransaction-active" class="form-check-label" id="label-FinancialTransaction-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FinancialTransaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" />
+                                <label for="FinancialTransaction-deleted" class="form-check-label" id="label-FinancialTransaction-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="financial-transaction-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="financialTransactionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Financial Transaction">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !financialTransactionForm.valid || !financialTransactionForm.dirty || financialTransactionForm.pristine  || userIsSchedulerFinancialTransactionWriter() == false " ngbTooltip="Save the Financial Transaction changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Financial Transaction' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerFinancialTransactionReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 financial-transaction-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="financialTransactionChangeHistoryService.userIsSchedulerFinancialTransactionChangeHistoryReader()">
+                            <button ngbNavLink>Financial Transaction Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialTransactionData?.FinancialTransactionChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-change-history-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-financial-transaction-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialTransactionData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-document-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
+                            <button ngbNavLink>Payment Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialTransactionData?.PaymentTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-payment-transaction-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-payment-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

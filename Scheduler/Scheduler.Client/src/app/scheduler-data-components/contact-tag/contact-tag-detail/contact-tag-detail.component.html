@@ -81,10 +81,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-tag-change-history-table [queryParams]="{ contactTagId: contactTagData?.id }"></app-contact-tag-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-tag-change-history-add-edit [preSeededData]="{ contactTagId: contactTagData?.id }" [hiddenFields]="['contactTagId']"></app-contact-tag-change-history-add-edit>
+                                    <app-contact-tag-change-history-table [queryParams]="{ contactTagId: contactTagData?.id }" [showAddButton]="true" [preSeededData]="{ contactTagId: contactTagData?.id }" [hiddenFields]="['contactTagId']"></app-contact-tag-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

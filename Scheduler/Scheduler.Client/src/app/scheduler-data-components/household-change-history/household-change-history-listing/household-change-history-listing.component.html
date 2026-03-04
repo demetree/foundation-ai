@@ -82,6 +82,7 @@
   <app-household-change-history-table
     *ngIf="userIsSchedulerHouseholdChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredHouseholdChangeHistoryCount$ | async) ?? 0">
   </app-household-change-history-table>
 </div>

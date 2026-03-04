@@ -165,6 +165,7 @@ export class GiftListingComponent implements OnInit, AfterViewInit, CanComponent
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.giftTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.giftTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

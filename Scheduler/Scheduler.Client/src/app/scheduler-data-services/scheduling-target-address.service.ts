@@ -198,11 +198,17 @@ export class SchedulingTargetAddressData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetAddressChangeHistoriesCount$ = SchedulingTargetAddressChangeHistoryService.Instance.GetSchedulingTargetAddressChangeHistoriesRowCount({schedulingTargetAddressId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetAddressChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetAddressChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetAddressChangeHistoriesCount$ === null) {
+            this._schedulingTargetAddressChangeHistoriesCount$ = SchedulingTargetAddressChangeHistoryService.Instance.GetSchedulingTargetAddressChangeHistoriesRowCount({schedulingTargetAddressId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetAddressChangeHistoriesCount$;
+    }
 
 
 
@@ -247,6 +253,7 @@ export class SchedulingTargetAddressData {
      this._schedulingTargetAddressChangeHistories = null;
      this._schedulingTargetAddressChangeHistoriesPromise = null;
      this._schedulingTargetAddressChangeHistoriesSubject.next(null);
+     this._schedulingTargetAddressChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -941,11 +948,7 @@ export class SchedulingTargetAddressService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetAddressChangeHistoriesCount$ = SchedulingTargetAddressChangeHistoryService.Instance.GetSchedulingTargetAddressChangeHistoriesRowCount({schedulingTargetAddressId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetAddressChangeHistoriesCount$ = null;
 
 
 

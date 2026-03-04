@@ -97,10 +97,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-dependency-table [queryParams]="{ dependencyTypeId: dependencyTypeData?.id }"></app-scheduled-event-dependency-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-dependency-add-edit [preSeededData]="{ dependencyTypeId: dependencyTypeData?.id }" [hiddenFields]="['dependencyTypeId']"></app-scheduled-event-dependency-add-edit>
+                                    <app-scheduled-event-dependency-table [queryParams]="{ dependencyTypeId: dependencyTypeData?.id }" [showAddButton]="true" [preSeededData]="{ dependencyTypeId: dependencyTypeData?.id }" [hiddenFields]="['dependencyTypeId']"></app-scheduled-event-dependency-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -36,6 +36,9 @@ import { PriorityService } from '../../../scheduler-data-services/priority.servi
 import { BookingSourceTypeService } from '../../../scheduler-data-services/booking-source-type.service';
 import { ScheduledEventChangeHistoryService } from '../../../scheduler-data-services/scheduled-event-change-history.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
+import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
+import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
 import { ContactInteractionService } from '../../../scheduler-data-services/contact-interaction.service';
 import { EventCalendarService } from '../../../scheduler-data-services/event-calendar.service';
 import { ScheduledEventDependencyService } from '../../../scheduler-data-services/scheduled-event-dependency.service';
@@ -161,6 +164,9 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
   public bookingSourceTypes$ = this.bookingSourceTypeService.GetBookingSourceTypeList();
   public scheduledEventChangeHistories$ = this.scheduledEventChangeHistoryService.GetScheduledEventChangeHistoryList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
+  public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public documents$ = this.documentService.GetDocumentList();
+  public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
   public contactInteractions$ = this.contactInteractionService.GetContactInteractionList();
   public eventCalendars$ = this.eventCalendarService.GetEventCalendarList();
   public scheduledEventDependencies$ = this.scheduledEventDependencyService.GetScheduledEventDependencyList();
@@ -185,6 +191,9 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
     public bookingSourceTypeService: BookingSourceTypeService,
     public scheduledEventChangeHistoryService: ScheduledEventChangeHistoryService,
     public eventChargeService: EventChargeService,
+    public financialTransactionService: FinancialTransactionService,
+    public documentService: DocumentService,
+    public paymentTransactionService: PaymentTransactionService,
     public contactInteractionService: ContactInteractionService,
     public eventCalendarService: EventCalendarService,
     public scheduledEventDependencyService: ScheduledEventDependencyService,

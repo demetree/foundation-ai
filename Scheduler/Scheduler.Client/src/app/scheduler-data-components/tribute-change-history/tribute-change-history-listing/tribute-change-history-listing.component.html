@@ -82,6 +82,7 @@
   <app-tribute-change-history-table
     *ngIf="userIsSchedulerTributeChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTributeChangeHistoryCount$ | async) ?? 0">
   </app-tribute-change-history-table>
 </div>

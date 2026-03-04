@@ -82,6 +82,7 @@
   <app-payment-type-table
     *ngIf="userIsSchedulerPaymentTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPaymentTypeCount$ | async) ?? 0">
   </app-payment-type-table>
 </div>

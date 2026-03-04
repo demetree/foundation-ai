@@ -292,11 +292,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficeChangeHistoriesCount$ = OfficeChangeHistoryService.Instance.GetOfficeChangeHistoriesRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get OfficeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._officeChangeHistoriesCount$ === null) {
+            this._officeChangeHistoriesCount$ = OfficeChangeHistoryService.Instance.GetOfficeChangeHistoriesRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officeChangeHistoriesCount$;
+    }
 
 
 
@@ -311,11 +317,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officeContactsCount$: Observable<bigint | number> | null = null;
+    public get OfficeContactsCount$(): Observable<bigint | number> {
+        if (this._officeContactsCount$ === null) {
+            this._officeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officeContactsCount$;
+    }
 
 
 
@@ -330,11 +342,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _calendarsCount$: Observable<bigint | number> | null = null;
+    public get CalendarsCount$(): Observable<bigint | number> {
+        if (this._calendarsCount$ === null) {
+            this._calendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._calendarsCount$;
+    }
 
 
 
@@ -349,11 +367,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetsCount$ === null) {
+            this._schedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetsCount$;
+    }
 
 
 
@@ -368,11 +392,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourcesCount$: Observable<bigint | number> | null = null;
+    public get ResourcesCount$(): Observable<bigint | number> {
+        if (this._resourcesCount$ === null) {
+            this._resourcesCount$ = ResourceService.Instance.GetResourcesRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourcesCount$;
+    }
 
 
 
@@ -387,11 +417,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetsCount$: Observable<bigint | number> | null = null;
+    public get RateSheetsCount$(): Observable<bigint | number> {
+        if (this._rateSheetsCount$ === null) {
+            this._rateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetsCount$;
+    }
 
 
 
@@ -406,11 +442,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewsCount$ = CrewService.Instance.GetCrewsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewsCount$: Observable<bigint | number> | null = null;
+    public get CrewsCount$(): Observable<bigint | number> {
+        if (this._crewsCount$ === null) {
+            this._crewsCount$ = CrewService.Instance.GetCrewsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewsCount$;
+    }
 
 
 
@@ -425,11 +467,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -444,11 +492,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -463,11 +517,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupsCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupsCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupsCount$ === null) {
+            this._volunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupsCount$;
+    }
 
 
 
@@ -482,11 +542,17 @@ export class OfficeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -531,46 +597,57 @@ export class OfficeData {
      this._officeChangeHistories = null;
      this._officeChangeHistoriesPromise = null;
      this._officeChangeHistoriesSubject.next(null);
+     this._officeChangeHistoriesCount$ = null;
 
      this._officeContacts = null;
      this._officeContactsPromise = null;
      this._officeContactsSubject.next(null);
+     this._officeContactsCount$ = null;
 
      this._calendars = null;
      this._calendarsPromise = null;
      this._calendarsSubject.next(null);
+     this._calendarsCount$ = null;
 
      this._schedulingTargets = null;
      this._schedulingTargetsPromise = null;
      this._schedulingTargetsSubject.next(null);
+     this._schedulingTargetsCount$ = null;
 
      this._resources = null;
      this._resourcesPromise = null;
      this._resourcesSubject.next(null);
+     this._resourcesCount$ = null;
 
      this._rateSheets = null;
      this._rateSheetsPromise = null;
      this._rateSheetsSubject.next(null);
+     this._rateSheetsCount$ = null;
 
      this._crews = null;
      this._crewsPromise = null;
      this._crewsSubject.next(null);
+     this._crewsCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._volunteerGroups = null;
      this._volunteerGroupsPromise = null;
      this._volunteerGroupsSubject.next(null);
+     this._volunteerGroupsCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -2076,11 +2153,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficeChangeHistoriesCount$ = OfficeChangeHistoryService.Instance.GetOfficeChangeHistoriesRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officeChangeHistoriesCount$ = null;
 
 
     (revived as any).OfficeContacts$ = (revived as any)._officeContactsSubject.asObservable().pipe(
@@ -2092,11 +2165,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officeContactsCount$ = null;
 
 
     (revived as any).Calendars$ = (revived as any)._calendarsSubject.asObservable().pipe(
@@ -2108,11 +2177,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._calendarsCount$ = null;
 
 
     (revived as any).SchedulingTargets$ = (revived as any)._schedulingTargetsSubject.asObservable().pipe(
@@ -2124,11 +2189,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetsCount$ = null;
 
 
     (revived as any).Resources$ = (revived as any)._resourcesSubject.asObservable().pipe(
@@ -2140,11 +2201,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourcesCount$ = null;
 
 
     (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
@@ -2156,11 +2213,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetsCount$ = null;
 
 
     (revived as any).Crews$ = (revived as any)._crewsSubject.asObservable().pipe(
@@ -2172,11 +2225,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewsCount$ = CrewService.Instance.GetCrewsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewsCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -2188,11 +2237,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -2204,11 +2249,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
     (revived as any).VolunteerGroups$ = (revived as any)._volunteerGroupsSubject.asObservable().pipe(
@@ -2220,11 +2261,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupsCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -2236,11 +2273,7 @@ export class OfficeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

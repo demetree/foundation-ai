@@ -82,6 +82,7 @@
   <app-event-status-table
     *ngIf="userIsSchedulerEventStatusReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredEventStatusCount$ | async) ?? 0">
   </app-event-status-table>
 </div>

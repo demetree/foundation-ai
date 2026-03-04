@@ -92,10 +92,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-soft-credit-change-history-table [queryParams]="{ softCreditId: softCreditData?.id }"></app-soft-credit-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-soft-credit-change-history-add-edit [preSeededData]="{ softCreditId: softCreditData?.id }" [hiddenFields]="['softCreditId']"></app-soft-credit-change-history-add-edit>
+                                    <app-soft-credit-change-history-table [queryParams]="{ softCreditId: softCreditData?.id }" [showAddButton]="true" [preSeededData]="{ softCreditId: softCreditData?.id }" [hiddenFields]="['softCreditId']"></app-soft-credit-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

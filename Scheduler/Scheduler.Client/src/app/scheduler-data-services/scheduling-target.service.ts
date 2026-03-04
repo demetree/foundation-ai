@@ -244,11 +244,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetChangeHistoriesCount$ = SchedulingTargetChangeHistoryService.Instance.GetSchedulingTargetChangeHistoriesRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetChangeHistoriesCount$ === null) {
+            this._schedulingTargetChangeHistoriesCount$ = SchedulingTargetChangeHistoryService.Instance.GetSchedulingTargetChangeHistoriesRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetChangeHistoriesCount$;
+    }
 
 
 
@@ -263,11 +269,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetContactsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetContactsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetContactsCount$ === null) {
+            this._schedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetContactsCount$;
+    }
 
 
 
@@ -282,11 +294,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetAddressesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetAddressesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetAddressesCount$ === null) {
+            this._schedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetAddressesCount$;
+    }
 
 
 
@@ -301,11 +319,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetQualificationRequirementsCount$ === null) {
+            this._schedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetQualificationRequirementsCount$;
+    }
 
 
 
@@ -320,11 +344,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _rateSheetsCount$: Observable<bigint | number> | null = null;
+    public get RateSheetsCount$(): Observable<bigint | number> {
+        if (this._rateSheetsCount$ === null) {
+            this._rateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._rateSheetsCount$;
+    }
 
 
 
@@ -339,11 +369,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -358,11 +394,17 @@ export class SchedulingTargetData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({schedulingTargetId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _householdsCount$: Observable<bigint | number> | null = null;
+    public get HouseholdsCount$(): Observable<bigint | number> {
+        if (this._householdsCount$ === null) {
+            this._householdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._householdsCount$;
+    }
 
 
 
@@ -407,30 +449,37 @@ export class SchedulingTargetData {
      this._schedulingTargetChangeHistories = null;
      this._schedulingTargetChangeHistoriesPromise = null;
      this._schedulingTargetChangeHistoriesSubject.next(null);
+     this._schedulingTargetChangeHistoriesCount$ = null;
 
      this._schedulingTargetContacts = null;
      this._schedulingTargetContactsPromise = null;
      this._schedulingTargetContactsSubject.next(null);
+     this._schedulingTargetContactsCount$ = null;
 
      this._schedulingTargetAddresses = null;
      this._schedulingTargetAddressesPromise = null;
      this._schedulingTargetAddressesSubject.next(null);
+     this._schedulingTargetAddressesCount$ = null;
 
      this._schedulingTargetQualificationRequirements = null;
      this._schedulingTargetQualificationRequirementsPromise = null;
      this._schedulingTargetQualificationRequirementsSubject.next(null);
+     this._schedulingTargetQualificationRequirementsCount$ = null;
 
      this._rateSheets = null;
      this._rateSheetsPromise = null;
      this._rateSheetsSubject.next(null);
+     this._rateSheetsCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._households = null;
      this._householdsPromise = null;
      this._householdsSubject.next(null);
+     this._householdsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1608,11 +1657,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetChangeHistoriesCount$ = SchedulingTargetChangeHistoryService.Instance.GetSchedulingTargetChangeHistoriesRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetChangeHistoriesCount$ = null;
 
 
     (revived as any).SchedulingTargetContacts$ = (revived as any)._schedulingTargetContactsSubject.asObservable().pipe(
@@ -1624,11 +1669,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetContactsCount$ = null;
 
 
     (revived as any).SchedulingTargetAddresses$ = (revived as any)._schedulingTargetAddressesSubject.asObservable().pipe(
@@ -1640,11 +1681,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetAddressesCount$ = null;
 
 
     (revived as any).SchedulingTargetQualificationRequirements$ = (revived as any)._schedulingTargetQualificationRequirementsSubject.asObservable().pipe(
@@ -1656,11 +1693,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetQualificationRequirementsCount$ = null;
 
 
     (revived as any).RateSheets$ = (revived as any)._rateSheetsSubject.asObservable().pipe(
@@ -1672,11 +1705,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._rateSheetsCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1688,11 +1717,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
     (revived as any).Households$ = (revived as any)._householdsSubject.asObservable().pipe(
@@ -1704,11 +1729,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({schedulingTargetId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._householdsCount$ = null;
 
 
 

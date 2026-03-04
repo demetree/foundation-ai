@@ -82,6 +82,7 @@
   <app-assignment-role-qualification-requirement-table
     *ngIf="userIsSchedulerAssignmentRoleQualificationRequirementReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAssignmentRoleQualificationRequirementCount$ | async) ?? 0">
   </app-assignment-role-qualification-requirement-table>
 </div>

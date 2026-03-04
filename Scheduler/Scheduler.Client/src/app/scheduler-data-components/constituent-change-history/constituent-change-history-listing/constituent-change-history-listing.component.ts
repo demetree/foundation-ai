@@ -165,6 +165,7 @@ export class ConstituentChangeHistoryListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.constituentChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.constituentChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

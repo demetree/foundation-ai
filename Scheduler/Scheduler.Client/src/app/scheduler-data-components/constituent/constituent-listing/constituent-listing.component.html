@@ -82,6 +82,7 @@
   <app-constituent-table
     *ngIf="userIsSchedulerConstituentReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredConstituentCount$ | async) ?? 0">
   </app-constituent-table>
 </div>

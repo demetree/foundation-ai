@@ -82,6 +82,7 @@
   <app-recurrence-frequency-table
     *ngIf="userIsSchedulerRecurrenceFrequencyReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRecurrenceFrequencyCount$ | async) ?? 0">
   </app-recurrence-frequency-table>
 </div>

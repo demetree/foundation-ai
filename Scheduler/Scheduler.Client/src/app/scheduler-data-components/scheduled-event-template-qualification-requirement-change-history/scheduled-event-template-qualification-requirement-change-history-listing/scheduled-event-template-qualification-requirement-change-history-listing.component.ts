@@ -165,6 +165,7 @@ export class ScheduledEventTemplateQualificationRequirementChangeHistoryListingC
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventTemplateQualificationRequirementChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventTemplateQualificationRequirementChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

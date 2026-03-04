@@ -1,0 +1,481 @@
+<app-document-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-document-add-edit>
+<div class="row" *ngIf="userIsSchedulerDocumentReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerDocumentWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Document">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerDocumentWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('documentType.name')">
+                Document  Type
+                <span *ngIf="sortColumn === 'documentType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileName')">
+                File  Name
+                <span *ngIf="sortColumn === 'fileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('mimeType')">
+                Mime  Type
+                <span *ngIf="sortColumn === 'mimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileSizeBytes')">
+                File  Size  Bytes
+                <span *ngIf="sortColumn === 'fileSizeBytes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileDataFileName')">
+                File  Data  File  Name
+                <span *ngIf="sortColumn === 'fileDataFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileDataSize')">
+                File  Data  Size
+                <span *ngIf="sortColumn === 'fileDataSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileDataData')">
+                File  Data  Data
+                <span *ngIf="sortColumn === 'fileDataData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileDataMimeType')">
+                File  Data  Mime  Type
+                <span *ngIf="sortColumn === 'fileDataMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scheduledEvent.name')">
+                Scheduled  Event
+                <span *ngIf="sortColumn === 'scheduledEvent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialTransaction.name')">
+                Financial  Transaction
+                <span *ngIf="sortColumn === 'financialTransaction.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('contact.name')">
+                Contact
+                <span *ngIf="sortColumn === 'contact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('resource.name')">
+                Resource
+                <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('status')">
+                Status
+                <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('statusDate')">
+                Status  Date
+                <span *ngIf="sortColumn === 'statusDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('statusChangedBy')">
+                Status  Changed  By
+                <span *ngIf="sortColumn === 'statusChangedBy'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('uploadedDate')">
+                Uploaded  Date
+                <span *ngIf="sortColumn === 'uploadedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('uploadedBy')">
+                Uploaded  By
+                <span *ngIf="sortColumn === 'uploadedBy'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let document of filteredDocuments; trackBy: getDocumentId"
+              [ngClass]="{
+                 'row-inactive': document.active == false,
+                 'row-deleted': document.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerDocumentWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(document)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerDocumentWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(document)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="document.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(document)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="document.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(document, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(document, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(document, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(document, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(document, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(document, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(document, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(document, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/documenttype', document.documentTypeId]" class="btn btn-link text-left" ngbTooltip="Open Document Type details">{{document.documentType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/document', document.id]" class="btn btn-link text-left" ngbTooltip="Open Document details">{{document.name}}</a></td>
+            <td class="text-truncate">{{document.description}}</td>
+            <td class="text-truncate">{{document.fileName}}</td>
+            <td class="text-truncate">{{document.mimeType}}</td>
+            <td class="text-truncate">{{document.fileSizeBytes | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{document.fileDataFileName}}</td>
+            <td class="text-truncate">{{document.fileDataSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{document.fileDataData}}</td>
+            <td class="text-truncate">{{document.fileDataMimeType}}</td>
+            <td class="text-truncate"><a [routerLink]="['/scheduledevent', document.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{document.scheduledEvent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialtransaction', document.financialTransactionId]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{document.financialTransaction?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/contact', document.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{document.contact?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/resource', document.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{document.resource?.name}}</a></td>
+            <td class="text-truncate">{{document.status}}</td>
+            <td class="text-truncate">{{document.statusDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{document.statusChangedBy}}</td>
+            <td class="text-truncate">{{document.uploadedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{document.uploadedBy}}</td>
+            <td class="text-truncate">{{document.notes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let document of filteredDocuments; trackBy: getDocumentId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': document.active == false,
+                 'row-deleted': document.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(document, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(document, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(document, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(document, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(document, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(document, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(document, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(document, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(document, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(document, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(document, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(document, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(document, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/document', document.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(document)" *ngIf="userIsSchedulerDocumentWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(document)" *ngIf="userIsSchedulerDocumentWriter() && document.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(document)" *ngIf="userIsSchedulerDocumentWriter() && document.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{document.name}}</strong>
+               <small class="text-muted d-block">{{document.documentType?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/document', document.id]"
+                        ngbTooltip="Document Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(document)"
+                        ngbTooltip="Edit Document">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(document)"
+                      ngbTooltip="Delete Document" 
+                      placement="top"
+                      *ngIf="document.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(document)"
+                      ngbTooltip="Undelete Document" 
+                      placement="top"
+                      *ngIf="document.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="document-info" *ngIf="document.documentTypeId != null">
+              <strong>Document Type: </strong>
+              <a [routerLink]="['/documenttype', document.documentTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Document Type details">{{document.documentType?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.name != null">
+              <strong>Name: </strong>
+              {{document.name}}
+            </p>
+            <p class="document-info" *ngIf="document.description != null">
+              <strong>Description: </strong>
+              {{document.description}}
+            </p>
+            <p class="document-info" *ngIf="document.fileName != null">
+              <strong>File Name: </strong>
+              {{document.fileName}}
+            </p>
+            <p class="document-info" *ngIf="document.mimeType != null">
+              <strong>Mime Type: </strong>
+              {{document.mimeType}}
+            </p>
+            <p class="document-info" *ngIf="document.fileSizeBytes != null">
+              <strong>File Size Bytes: </strong>
+              {{document.fileSizeBytes | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="document-info" *ngIf="document.fileDataFileName != null">
+              <strong>File Data File Name: </strong>
+              {{document.fileDataFileName}}
+            </p>
+            <p class="document-info" *ngIf="document.fileDataSize != null">
+              <strong>File Data Size: </strong>
+              {{document.fileDataSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="document-info" *ngIf="document.fileDataData != null">
+              <strong>File Data Data: </strong>
+              {{document.fileDataData}}
+            </p>
+            <p class="document-info" *ngIf="document.fileDataMimeType != null">
+              <strong>File Data Mime Type: </strong>
+              {{document.fileDataMimeType}}
+            </p>
+            <p class="document-info" *ngIf="document.scheduledEventId != null">
+              <strong>Scheduled Event: </strong>
+              <a [routerLink]="['/scheduledevent', document.scheduledEventId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduled Event details">{{document.scheduledEvent?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.financialTransactionId != null">
+              <strong>Financial Transaction: </strong>
+              <a [routerLink]="['/financialtransaction', document.financialTransactionId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Transaction details">{{document.financialTransaction?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.contactId != null">
+              <strong>Contact: </strong>
+              <a [routerLink]="['/contact', document.contactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{document.contact?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.resourceId != null">
+              <strong>Resource: </strong>
+              <a [routerLink]="['/resource', document.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{document.resource?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.status != null">
+              <strong>Status: </strong>
+              {{document.status}}
+            </p>
+            <p class="document-info" *ngIf="document.statusDate != null">
+              <strong>Status Date: </strong>
+              {{document.statusDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="document-info" *ngIf="document.statusChangedBy != null">
+              <strong>Status Changed By: </strong>
+              {{document.statusChangedBy}}
+            </p>
+            <p class="document-info" *ngIf="document.uploadedDate != null">
+              <strong>Uploaded Date: </strong>
+              {{document.uploadedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="document-info" *ngIf="document.uploadedBy != null">
+              <strong>Uploaded By: </strong>
+              {{document.uploadedBy}}
+            </p>
+            <p class="document-info" *ngIf="document.notes != null">
+              <strong>Notes: </strong>
+              {{document.notes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

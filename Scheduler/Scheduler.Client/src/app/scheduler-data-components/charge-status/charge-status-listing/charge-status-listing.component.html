@@ -82,6 +82,7 @@
   <app-charge-status-table
     *ngIf="userIsSchedulerChargeStatusReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredChargeStatusCount$ | async) ?? 0">
   </app-charge-status-table>
 </div>

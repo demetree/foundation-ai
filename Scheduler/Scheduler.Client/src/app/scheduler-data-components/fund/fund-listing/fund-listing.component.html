@@ -82,6 +82,7 @@
   <app-fund-table
     *ngIf="userIsSchedulerFundReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredFundCount$ | async) ?? 0">
   </app-fund-table>
 </div>

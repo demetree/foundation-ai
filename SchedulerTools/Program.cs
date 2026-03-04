@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Spreadsheet;
+using ExcelDataReader;
 using Foundation.CodeGeneration;
 using Foundation.Scheduler.Database;
 using Foundation.Security;
@@ -6,9 +7,11 @@ using Foundation.Security.Database;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Foundation.Scheduler.CodeGeneration
 {
@@ -75,6 +78,16 @@ namespace Foundation.Scheduler.CodeGeneration
                         // This creates a Petty Harbour tenant, and configures the scheduler database to have an instance for Petty Harbour usage
                         //
                         ConfigurePettyHarbour();
+
+                        break;
+
+                    case ConsoleKey.D4:
+                    case ConsoleKey.NumPad4:
+
+                        //
+                        // Load 2025 rec committee data (bookings + financials) from Excel files
+                        //
+                        LoadPettyHarbourData();
 
                         break;
 
@@ -1079,6 +1092,11 @@ namespace Foundation.Scheduler.CodeGeneration
             }
         }
 
+        private static void LoadPettyHarbourData()
+        {
+            PettyHarbourDataLoader.LoadAll();
+        }
+
         private static void ShowMenu()
         {
             // Display the menu
@@ -1087,9 +1105,10 @@ namespace Foundation.Scheduler.CodeGeneration
             Console.WriteLine("1. Option 1 - Generation Scheduler Database Scripts.");
             Console.WriteLine("2. Option 2 - Generate Scheduler Application Entity Code");
             Console.WriteLine("3. Option 3 - Configure Petty Harbour Tenant");
+            Console.WriteLine("4. Option 4 - Load Petty Harbour 2025 Data");
             Console.WriteLine("X. Option X - Exit");
             Console.WriteLine();
-            Console.Write("Please select an option (1-3, or X): ");
+            Console.Write("Please select an option (1-4, or X): ");
         }
 
 
@@ -1199,6 +1218,1014 @@ namespace Foundation.Scheduler.CodeGeneration
             }
 
         }
+    }
+
+
+    /// <summary>
+    /// Loads 2025 PHMC Recreation Committee data from Excel spreadsheets into the Scheduler database.
+    /// 
+    /// Reads from two files in the 'Example Scheduler Data' folder:
+    ///   - 2026-RecBookings.xlsx  → ScheduledEvents + EventCharges + EventCalendar links
+    ///   - Rec_Finances.xls       → FinancialCategories + FinancialTransactions
+    ///
+    /// Prerequisites:
+    ///   - Option 3 (ConfigurePettyHarbour) must have been run first to create the tenant, calendars, etc.
+    ///   - The Excel files must exist in the 'Example Scheduler Data' folder relative to the repo root.
+    /// 
+    /// AI-generated code.
+    /// </summary>
+    internal class PettyHarbourDataLoader
+    {
+        // Same tenant GUID as ConfigurePettyHarbour
+        private static readonly Guid PHMCTenantGuid = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+
+        // Path to the data files (relative to repo root)
+        private static readonly string DataFolder = Path.Combine(
+            Directory.GetCurrentDirectory(), "..", "..", "..", "..", "Example Scheduler Data");
+
+
+        /// <summary>
+        /// Main entry point for loading all PHMC 2025 data.
+        /// </summary>
+        public static void LoadAll()
+        {
+            // Required for ExcelDataReader to read .xls files (legacy BIFF format)
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            Console.WriteLine();
+            Console.WriteLine("=== Loading Petty Harbour 2025 Data ===");
+            Console.WriteLine();
+
+            string bookingsFile = Path.GetFullPath(Path.Combine(DataFolder, "2026-RecBookings.xlsx"));
+            string financesFile = Path.GetFullPath(Path.Combine(DataFolder, "Rec_Finances.xls"));
+
+            if (!File.Exists(bookingsFile))
+            {
+                Console.WriteLine($"ERROR: Bookings file not found: {bookingsFile}");
+                return;
+            }
+
+            if (!File.Exists(financesFile))
+            {
+                Console.WriteLine($"ERROR: Finances file not found: {financesFile}");
+                return;
+            }
+
+            using (SchedulerContext context = new SchedulerContext())
+            {
+                //
+                // Resolve required reference data
+                //
+                Currency cad = (from c in context.Currencies
+                                where c.tenantGuid == PHMCTenantGuid && c.code == "CAD"
+                                select c).FirstOrDefault();
+
+                if (cad == null)
+                {
+                    // Try to find any default currency for this tenant
+                    cad = (from c in context.Currencies
+                           where c.tenantGuid == PHMCTenantGuid && c.isDefault
+                           select c).FirstOrDefault();
+                }
+
+                if (cad == null)
+                {
+                    Console.WriteLine("ERROR: No currency found for PHMC tenant. Run Option 3 first and ensure a CAD currency exists.");
+                    return;
+                }
+
+                Calendar recCalendar = (from c in context.Calendars
+                                       where c.tenantGuid == PHMCTenantGuid && c.name == "Recreation"
+                                       select c).FirstOrDefault();
+
+                if (recCalendar == null)
+                {
+                    Console.WriteLine("ERROR: Recreation calendar not found. Run Option 3 first.");
+                    return;
+                }
+
+                // EventStatus: use "Completed" for past events, "Planned" for future
+                EventStatus completedStatus = (from es in context.EventStatuses
+                                               where es.name == "Completed"
+                                               select es).FirstOrDefault();
+
+                EventStatus plannedStatus = (from es in context.EventStatuses
+                                             where es.name == "Planned"
+                                             select es).FirstOrDefault();
+
+                if (completedStatus == null || plannedStatus == null)
+                {
+                    Console.WriteLine("ERROR: EventStatus seed data not found. Ensure database is properly initialized.");
+                    return;
+                }
+
+                Console.WriteLine($"  Currency: {cad.name} (id={cad.id})");
+                Console.WriteLine($"  Calendar: {recCalendar.name} (id={recCalendar.id})");
+                Console.WriteLine();
+
+                //
+                // Step 1: Load financial categories from the Events Code sheet
+                //
+                Console.WriteLine("--- Step 1: Loading Financial Categories ---");
+                Dictionary<string, int> categoryIdByCode = LoadFinancialCategories(context, financesFile, cad.id);
+                Console.WriteLine($"  {categoryIdByCode.Count} categories loaded.");
+                Console.WriteLine();
+
+                //
+                // Step 2: Load income transactions
+                //
+                Console.WriteLine("--- Step 2: Loading Income Transactions ---");
+                int incomeCount = LoadFinancialTransactions(context, financesFile, "Income", true, categoryIdByCode, cad.id);
+                Console.WriteLine($"  {incomeCount} income transactions loaded.");
+                Console.WriteLine();
+
+                //
+                // Step 3: Load expense transactions
+                //
+                Console.WriteLine("--- Step 3: Loading Expense Transactions ---");
+                int expenseCount = LoadFinancialTransactions(context, financesFile, "Expenses", false, categoryIdByCode, cad.id);
+                Console.WriteLine($"  {expenseCount} expense transactions loaded.");
+                Console.WriteLine();
+
+                //
+                // Step 4: Load bookings as ScheduledEvents
+                //
+                Console.WriteLine("--- Step 4: Loading Bookings ---");
+                int bookingCount = LoadBookings(context, bookingsFile, recCalendar.id, completedStatus.id, plannedStatus.id, cad.id);
+                Console.WriteLine($"  {bookingCount} bookings loaded.");
+                Console.WriteLine();
+
+                Console.WriteLine("=== Data loading complete ===");
+                Console.WriteLine();
+            }
+        }
+
+
+        /// <summary>
+        /// Reads the 'Events Code' sheet from Rec_Finances.xls and creates FinancialCategory records.
+        /// Returns a dictionary mapping category codes to their database IDs.
+        /// </summary>
+        private static Dictionary<string, int> LoadFinancialCategories(
+            SchedulerContext context,
+            string financesFilePath,
+            int currencyId)
+        {
+            Dictionary<string, int> result = new Dictionary<string, int>();
+
+            // Check if categories already exist for this tenant
+            int existingCount = context.FinancialCategories
+                .Where(fc => fc.tenantGuid == PHMCTenantGuid)
+                .Count();
+
+            if (existingCount > 0)
+            {
+                Console.WriteLine($"  Financial categories already exist ({existingCount} found). Loading IDs...");
+
+                var existing = context.FinancialCategories
+                    .Where(fc => fc.tenantGuid == PHMCTenantGuid)
+                    .ToList();
+
+                foreach (var fc in existing)
+                {
+                    if (!string.IsNullOrEmpty(fc.code))
+                    {
+                        result[fc.code] = fc.id;
+                    }
+                }
+
+                return result;
+            }
+
+            DataSet ds = ReadExcelFile(financesFilePath);
+
+            // Find the 'Events Code' sheet
+            DataTable eventsCodeSheet = null;
+
+            foreach (DataTable dt in ds.Tables)
+            {
+                if (dt.TableName.Contains("Events", StringComparison.OrdinalIgnoreCase) ||
+                    dt.TableName.Contains("Code", StringComparison.OrdinalIgnoreCase))
+                {
+                    eventsCodeSheet = dt;
+                    break;
+                }
+            }
+
+            if (eventsCodeSheet == null)
+            {
+                Console.WriteLine("  WARNING: Could not find 'Events Code' sheet. Skipping categories.");
+                return result;
+            }
+
+            Console.WriteLine($"  Reading sheet: {eventsCodeSheet.TableName} ({eventsCodeSheet.Rows.Count} rows)");
+
+            //
+            // The Events Code sheet has revenue codes and expense codes.
+            // Typical layout:
+            //   Column 0: Revenue code number
+            //   Column 1: Revenue description
+            //   Column 2: (gap or heading)
+            //   Column 3: Expense code number
+            //   Column 4: Expense description
+            //
+            // We parse both sides.
+            //
+            int sequence = 1;
+            bool headerSkipped = false;
+
+            foreach (DataRow row in eventsCodeSheet.Rows)
+            {
+                // Skip header row(s)
+                if (!headerSkipped)
+                {
+                    string firstCell = row[0]?.ToString()?.Trim() ?? "";
+
+                    if (firstCell.Contains("Revenue", StringComparison.OrdinalIgnoreCase) ||
+                        firstCell.Contains("Code", StringComparison.OrdinalIgnoreCase) ||
+                        firstCell.Contains("Event", StringComparison.OrdinalIgnoreCase))
+                    {
+                        headerSkipped = true;
+                        continue;
+                    }
+
+                    // If first cell is a number, it's data — don't skip
+                    if (double.TryParse(firstCell, out _))
+                    {
+                        headerSkipped = true;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+                // Revenue side (columns 0-1)
+                string revCode = GetCellString(row, 0);
+                string revName = GetCellString(row, 1);
+
+                if (!string.IsNullOrEmpty(revCode) && !string.IsNullOrEmpty(revName))
+                {
+                    string cleanCode = revCode.Replace(".0", "").Trim();
+
+                    if (!result.ContainsKey(cleanCode))
+                    {
+                        FinancialCategory fc = new FinancialCategory();
+
+                        fc.tenantGuid = PHMCTenantGuid;
+                        fc.code = cleanCode;
+                        fc.name = revName.Trim();
+                        fc.description = $"Revenue: {revName.Trim()}";
+                        fc.isRevenue = true;
+                        fc.isTaxApplicable = false;
+                        fc.sequence = sequence++;
+                        fc.versionNumber = 0;
+                        fc.objectGuid = Guid.NewGuid();
+                        fc.active = true;
+                        fc.deleted = false;
+
+                        context.FinancialCategories.Add(fc);
+                        context.SaveChanges();
+
+                        result[cleanCode] = fc.id;
+
+                        Console.WriteLine($"    + Revenue [{cleanCode}] {revName.Trim()}");
+                    }
+                }
+
+                // Expense side (columns 3-4, or 2-3 depending on sheet layout)
+                // Try columns 3-4 first, then fall back to 2-3
+                string expCode = null;
+                string expName = null;
+                int expCodeCol = -1;
+
+                if (row.Table.Columns.Count > 4)
+                {
+                    expCode = GetCellString(row, 3);
+                    expName = GetCellString(row, 4);
+                    expCodeCol = 3;
+                }
+
+                if (string.IsNullOrEmpty(expCode) && row.Table.Columns.Count > 3)
+                {
+                    expCode = GetCellString(row, 2);
+                    expName = GetCellString(row, 3);
+                    expCodeCol = 2;
+                }
+
+                if (!string.IsNullOrEmpty(expCode) && !string.IsNullOrEmpty(expName))
+                {
+                    string cleanCode = expCode.Replace(".0", "").Trim();
+
+                    // Only process if it looks like a numeric code
+                    if (double.TryParse(cleanCode, out _) && !result.ContainsKey(cleanCode))
+                    {
+                        FinancialCategory fc = new FinancialCategory();
+
+                        fc.tenantGuid = PHMCTenantGuid;
+                        fc.code = cleanCode;
+                        fc.name = expName.Trim();
+                        fc.description = $"Expense: {expName.Trim()}";
+                        fc.isRevenue = false;
+                        fc.isTaxApplicable = false;
+                        fc.sequence = sequence++;
+                        fc.versionNumber = 0;
+                        fc.objectGuid = Guid.NewGuid();
+                        fc.active = true;
+                        fc.deleted = false;
+
+                        context.FinancialCategories.Add(fc);
+                        context.SaveChanges();
+
+                        result[cleanCode] = fc.id;
+
+                        Console.WriteLine($"    + Expense [{cleanCode}] {expName.Trim()}");
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Loads financial transactions from either the Income or Expenses sheet.
+        /// </summary>
+        private static int LoadFinancialTransactions(
+            SchedulerContext context,
+            string financesFilePath,
+            string sheetName,
+            bool isRevenue,
+            Dictionary<string, int> categoryIdByCode,
+            int currencyId)
+        {
+            // Check if transactions already exist
+            int existingCount = context.FinancialTransactions
+                .Where(ft => ft.tenantGuid == PHMCTenantGuid && ft.isRevenue == isRevenue)
+                .Count();
+
+            if (existingCount > 0)
+            {
+                Console.WriteLine($"  {sheetName} transactions already exist ({existingCount} found). Skipping.");
+                return 0;
+            }
+
+            DataSet ds = ReadExcelFile(financesFilePath);
+
+            DataTable sheet = null;
+
+            foreach (DataTable dt in ds.Tables)
+            {
+                if (dt.TableName.Contains(sheetName, StringComparison.OrdinalIgnoreCase))
+                {
+                    sheet = dt;
+                    break;
+                }
+            }
+
+            if (sheet == null)
+            {
+                Console.WriteLine($"  WARNING: Could not find '{sheetName}' sheet.");
+                return 0;
+            }
+
+            Console.WriteLine($"  Reading sheet: {sheet.TableName} ({sheet.Rows.Count} rows)");
+
+            //
+            // Typical layout for Income/Expenses sheets:
+            //   Column 0: Code (numeric, maps to FinancialCategory)
+            //   Column 1: Date
+            //   Column 2: Description
+            //   Column 3: Amount
+            //
+            int loadedCount = 0;
+            int skippedCount = 0;
+            int batchSize = 0;
+            string fallbackCategoryCode = isRevenue ? "99" : "98"; // Misc category code
+
+            for (int rowIndex = 0; rowIndex < sheet.Rows.Count; rowIndex++)
+            {
+                DataRow row = sheet.Rows[rowIndex];
+
+                // Skip empty rows and headers
+                string col0 = GetCellString(row, 0);
+
+                if (string.IsNullOrWhiteSpace(col0))
+                {
+                    continue;
+                }
+
+                // Skip header-like rows
+                if (col0.Contains("Code", StringComparison.OrdinalIgnoreCase) ||
+                    col0.Contains("Total", StringComparison.OrdinalIgnoreCase) ||
+                    col0.Contains("Event", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // Parse the category code
+                string categoryCode = col0.Replace(".0", "").Trim();
+                int categoryId = 0;
+
+                if (!categoryIdByCode.TryGetValue(categoryCode, out categoryId))
+                {
+                    // Try to find a close match
+                    if (double.TryParse(categoryCode, out double codeNum))
+                    {
+                        string intCode = ((int)codeNum).ToString();
+
+                        if (!categoryIdByCode.TryGetValue(intCode, out categoryId))
+                        {
+                            // Create a catch-all category for unmatched codes
+                            if (!categoryIdByCode.ContainsKey($"misc-{categoryCode}"))
+                            {
+                                FinancialCategory miscCategory = new FinancialCategory();
+
+                                miscCategory.tenantGuid = PHMCTenantGuid;
+                                miscCategory.code = categoryCode;
+                                miscCategory.name = $"Category {categoryCode}";
+                                miscCategory.description = $"{(isRevenue ? "Revenue" : "Expense")}: Auto-created for code {categoryCode}";
+                                miscCategory.isRevenue = isRevenue;
+                                miscCategory.isTaxApplicable = false;
+                                miscCategory.sequence = 900 + int.Parse(categoryCode.Length > 3 ? categoryCode.Substring(0, 3) : categoryCode, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture);
+                                miscCategory.versionNumber = 0;
+                                miscCategory.objectGuid = Guid.NewGuid();
+                                miscCategory.active = true;
+                                miscCategory.deleted = false;
+
+                                context.FinancialCategories.Add(miscCategory);
+                                context.SaveChanges();
+
+                                categoryIdByCode[$"misc-{categoryCode}"] = miscCategory.id;
+                                categoryIdByCode[categoryCode] = miscCategory.id;
+                                categoryId = miscCategory.id;
+
+                                Console.WriteLine($"    Auto-created category [{categoryCode}]");
+                            }
+                            else
+                            {
+                                categoryId = categoryIdByCode[$"misc-{categoryCode}"];
+                            }
+                        }
+                    }
+                    else
+                    {
+                        skippedCount++;
+                        continue;
+                    }
+                }
+
+                // Parse the date (column 1)
+                DateTime transactionDate = DateTime.UtcNow;
+                string dateStr = GetCellString(row, 1);
+
+                if (!string.IsNullOrEmpty(dateStr))
+                {
+                    if (!TryParseFlexibleDate(dateStr, out transactionDate))
+                    {
+                        // If we can't parse the date, use a reasonable default
+                        transactionDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                    }
+                }
+
+                // Parse description (column 2)
+                string description = GetCellString(row, 2);
+
+                if (string.IsNullOrWhiteSpace(description))
+                {
+                    description = $"{(isRevenue ? "Income" : "Expense")} - Row {rowIndex + 1}";
+                }
+
+                // Parse amount (column 3)
+                decimal amount = 0;
+                string amountStr = GetCellString(row, 3);
+
+                if (!string.IsNullOrEmpty(amountStr))
+                {
+                    amountStr = amountStr.Replace("$", "").Replace(",", "").Trim();
+
+                    if (!decimal.TryParse(amountStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out amount))
+                    {
+                        skippedCount++;
+                        continue;
+                    }
+                }
+
+                if (amount == 0)
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                // Always store as positive
+                amount = Math.Abs(amount);
+
+                // Create the transaction
+                FinancialTransaction ft = new FinancialTransaction();
+
+                ft.tenantGuid = PHMCTenantGuid;
+                ft.financialCategoryId = categoryId;
+                ft.transactionDate = transactionDate;
+                ft.description = description.Length > 500 ? description.Substring(0, 500) : description;
+                ft.amount = amount;
+                ft.taxAmount = 0;
+                ft.totalAmount = amount;
+                ft.isRevenue = isRevenue;
+                ft.currencyId = currencyId;
+                ft.versionNumber = 0;
+                ft.objectGuid = Guid.NewGuid();
+                ft.active = true;
+                ft.deleted = false;
+
+                context.FinancialTransactions.Add(ft);
+                loadedCount++;
+                batchSize++;
+
+                // Save in batches for performance
+                if (batchSize >= 50)
+                {
+                    context.SaveChanges();
+                    batchSize = 0;
+                }
+            }
+
+            // Save any remaining
+            if (batchSize > 0)
+            {
+                context.SaveChanges();
+            }
+
+            if (skippedCount > 0)
+            {
+                Console.WriteLine($"  ({skippedCount} rows skipped due to empty/unparseable data)");
+            }
+
+            return loadedCount;
+        }
+
+
+        /// <summary>
+        /// Loads bookings from 2026-RecBookings.xlsx as ScheduledEvents with EventCharges.
+        /// </summary>
+        private static int LoadBookings(
+            SchedulerContext context,
+            string bookingsFilePath,
+            int calendarId,
+            int completedStatusId,
+            int plannedStatusId,
+            int currencyId)
+        {
+            // Check if bookings already exist
+            int existingCount = context.ScheduledEvents
+                .Where(se => se.tenantGuid == PHMCTenantGuid && se.externalId != null && se.externalId.StartsWith("PHMC-BOOKING-"))
+                .Count();
+
+            if (existingCount > 0)
+            {
+                Console.WriteLine($"  Bookings already exist ({existingCount} found). Skipping.");
+                return 0;
+            }
+
+            // Resolve ChargeType and ChargeStatus for EventCharges
+            ChargeType rentalChargeType = context.ChargeTypes
+                .Where(ct => ct.tenantGuid == PHMCTenantGuid && ct.isRevenue)
+                .FirstOrDefault();
+
+            if (rentalChargeType == null)
+            {
+                // Create a basic rental charge type
+                rentalChargeType = new ChargeType();
+
+                rentalChargeType.tenantGuid = PHMCTenantGuid;
+                rentalChargeType.name = "Hall Rental";
+                rentalChargeType.description = "Recreation centre hall rental fee";
+                rentalChargeType.isRevenue = true;
+                rentalChargeType.isTaxable = false;
+                rentalChargeType.currencyId = currencyId;
+                rentalChargeType.sequence = 1;
+                rentalChargeType.versionNumber = 0;
+                rentalChargeType.objectGuid = Guid.NewGuid();
+                rentalChargeType.active = true;
+                rentalChargeType.deleted = false;
+
+                context.ChargeTypes.Add(rentalChargeType);
+                context.SaveChanges();
+
+                Console.WriteLine($"  Created ChargeType: {rentalChargeType.name} (id={rentalChargeType.id})");
+            }
+
+            ChargeStatus paidStatus = context.ChargeStatuses
+                .Where(cs => cs.name == "Invoiced" || cs.name == "Paid")
+                .FirstOrDefault();
+
+            ChargeStatus pendingStatus = context.ChargeStatuses
+                .Where(cs => cs.name == "Pending")
+                .FirstOrDefault();
+
+            if (paidStatus == null || pendingStatus == null)
+            {
+                Console.WriteLine("ERROR: ChargeStatus seed data not found.");
+                return 0;
+            }
+
+            DataSet ds = ReadExcelFile(bookingsFilePath);
+
+            if (ds.Tables.Count == 0)
+            {
+                Console.WriteLine("ERROR: No sheets found in bookings file.");
+                return 0;
+            }
+
+            DataTable sheet = ds.Tables[0]; // First sheet
+
+            Console.WriteLine($"  Reading sheet: {sheet.TableName} ({sheet.Rows.Count} rows)");
+
+            //
+            // Bookings layout:
+            //   Col 0: Date
+            //   Col 1: Name (contact)
+            //   Col 2: Event (description, sometimes includes time)
+            //   Col 3: Payment (fee amount + status)
+            //   Col 4: Contact Info (email/phone)
+            //   Col 5: Rental Agreement (signed/pending)
+            //   Col 6: DD Refunded
+            //
+            int loadedCount = 0;
+            bool headerSkipped = false;
+
+            foreach (DataRow row in sheet.Rows)
+            {
+                // Skip header
+                if (!headerSkipped)
+                {
+                    string col0 = GetCellString(row, 0);
+
+                    if (col0.Contains("Date", StringComparison.OrdinalIgnoreCase) ||
+                        col0.Contains("2025", StringComparison.OrdinalIgnoreCase) ||
+                        col0.Contains("2026", StringComparison.OrdinalIgnoreCase))
+                    {
+                        headerSkipped = true;
+
+                        // If it looks like a year, it might be data
+                        if (!col0.Contains("Date", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Fall through to process this row
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else if (!TryParseFlexibleDate(col0, out _))
+                    {
+                        continue; // Skip non-date header rows
+                    }
+                    else
+                    {
+                        headerSkipped = true;
+                    }
+                }
+
+                string dateStr = GetCellString(row, 0);
+                string contactName = GetCellString(row, 1);
+                string eventDesc = GetCellString(row, 2);
+                string paymentStr = GetCellString(row, 3);
+                string contactInfo = GetCellString(row, 4);
+                string rentalAgreement = GetCellString(row, 5);
+                string ddRefunded = GetCellString(row, 6);
+
+                // Skip completely empty rows
+                if (string.IsNullOrWhiteSpace(dateStr) && string.IsNullOrWhiteSpace(eventDesc))
+                {
+                    continue;
+                }
+
+                // Parse the date
+                DateTime eventDate;
+
+                if (!TryParseFlexibleDate(dateStr, out eventDate))
+                {
+                    Console.WriteLine($"    SKIP: Could not parse date '{dateStr}' for event '{eventDesc}'");
+                    continue;
+                }
+
+                // Build the event name from contact + event description
+                string eventName = !string.IsNullOrEmpty(eventDesc) ? eventDesc : contactName;
+
+                if (string.IsNullOrWhiteSpace(eventName))
+                {
+                    eventName = $"Booking on {eventDate:yyyy-MM-dd}";
+                }
+
+                // Truncate to field limit
+                if (eventName.Length > 200)
+                {
+                    eventName = eventName.Substring(0, 200);
+                }
+
+                // Determine status based on date
+                bool isPast = eventDate < DateTime.UtcNow;
+                int statusId = isPast ? completedStatusId : plannedStatusId;
+
+                // Try to extract time from event description
+                DateTime startTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, 10, 0, 0, DateTimeKind.Utc);
+                DateTime endTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, 14, 0, 0, DateTimeKind.Utc);
+
+                // Build notes from all the extra columns
+                string notes = "";
+
+                if (!string.IsNullOrEmpty(contactName))
+                {
+                    notes += $"Contact: {contactName}\n";
+                }
+
+                if (!string.IsNullOrEmpty(contactInfo))
+                {
+                    notes += $"Contact Info: {contactInfo}\n";
+                }
+
+                if (!string.IsNullOrEmpty(rentalAgreement))
+                {
+                    notes += $"Rental Agreement: {rentalAgreement}\n";
+                }
+
+                if (!string.IsNullOrEmpty(ddRefunded))
+                {
+                    notes += $"DD Refunded: {ddRefunded}\n";
+                }
+
+                if (!string.IsNullOrEmpty(paymentStr))
+                {
+                    notes += $"Payment: {paymentStr}\n";
+                }
+
+                // Create the ScheduledEvent
+                ScheduledEvent se = new ScheduledEvent();
+
+                se.tenantGuid = PHMCTenantGuid;
+                se.name = eventName;
+                se.description = eventDesc;
+                se.startDateTime = startTime;
+                se.endDateTime = endTime;
+                se.eventStatusId = statusId;
+                se.location = "Recreation Centre";
+                se.notes = notes.Trim();
+                se.externalId = $"PHMC-BOOKING-{loadedCount + 1:D4}";
+                se.versionNumber = 0;
+                se.objectGuid = Guid.NewGuid();
+                se.active = true;
+                se.deleted = false;
+
+                context.ScheduledEvents.Add(se);
+                context.SaveChanges();
+
+                // Link to the Recreation calendar
+                EventCalendar ec = new EventCalendar();
+
+                ec.tenantGuid = PHMCTenantGuid;
+                ec.scheduledEventId = se.id;
+                ec.calendarId = calendarId;
+                ec.objectGuid = Guid.NewGuid();
+                ec.active = true;
+                ec.deleted = false;
+
+                context.EventCalendars.Add(ec);
+
+                // Try to parse a rental fee from the payment column
+                decimal fee = ParseFeeFromPaymentColumn(paymentStr);
+
+                if (fee > 0)
+                {
+                    bool isPaid = paymentStr != null &&
+                                  (paymentStr.Contains("paid", StringComparison.OrdinalIgnoreCase) ||
+                                   paymentStr.Contains("etransfer", StringComparison.OrdinalIgnoreCase) ||
+                                   paymentStr.Contains("e-transfer", StringComparison.OrdinalIgnoreCase));
+
+                    EventCharge charge = new EventCharge();
+
+                    charge.tenantGuid = PHMCTenantGuid;
+                    charge.scheduledEventId = se.id;
+                    charge.chargeTypeId = rentalChargeType.id;
+                    charge.chargeStatusId = isPaid ? paidStatus.id : pendingStatus.id;
+                    charge.quantity = 1;
+                    charge.unitPrice = fee;
+                    charge.extendedAmount = fee;
+                    charge.taxAmount = 0;
+                    charge.currencyId = currencyId;
+                    charge.isAutomatic = false;
+                    charge.isDeposit = false;
+                    charge.notes = paymentStr;
+                    charge.versionNumber = 0;
+                    charge.objectGuid = Guid.NewGuid();
+                    charge.active = true;
+                    charge.deleted = false;
+
+                    context.EventCharges.Add(charge);
+                }
+
+                context.SaveChanges();
+                loadedCount++;
+
+                Console.WriteLine($"    + [{eventDate:yyyy-MM-dd}] {eventName}");
+            }
+
+            return loadedCount;
+        }
+
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Reads an Excel file (.xlsx or .xls) and returns the data as a DataSet.
+        /// </summary>
+        private static DataSet ReadExcelFile(string filePath)
+        {
+            using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                using (IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    return reader.AsDataSet();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Safely gets a cell value as a trimmed string.
+        /// </summary>
+        private static string GetCellString(DataRow row, int columnIndex)
+        {
+            if (columnIndex >= row.Table.Columns.Count)
+            {
+                return "";
+            }
+
+            object val = row[columnIndex];
+
+            if (val == null || val == DBNull.Value)
+            {
+                return "";
+            }
+
+            // Handle OLE Automation dates from Excel
+            if (val is double d && columnIndex <= 1)
+            {
+                try
+                {
+                    DateTime dt = DateTime.FromOADate(d);
+                    return dt.ToString("yyyy-MM-dd");
+                }
+                catch
+                {
+                    return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+
+            return val.ToString().Trim();
+        }
+
+
+        /// <summary>
+        /// Tries to parse a date from various formats found in the rec committee data.
+        /// Handles: yyyy-MM-dd, MM/dd/yyyy, dd-MMM-yy, Month Day, Year, etc.
+        /// </summary>
+        private static bool TryParseFlexibleDate(string dateStr, out DateTime result)
+        {
+            result = DateTime.MinValue;
+
+            if (string.IsNullOrWhiteSpace(dateStr))
+            {
+                return false;
+            }
+
+            dateStr = dateStr.Trim();
+
+            // Handle OLE date as number string
+            if (double.TryParse(dateStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double oaDate))
+            {
+                if (oaDate > 1 && oaDate < 100000) // Reasonable OLE date range
+                {
+                    try
+                    {
+                        result = DateTime.FromOADate(oaDate);
+                        result = DateTime.SpecifyKind(result, DateTimeKind.Utc);
+                        return true;
+                    }
+                    catch
+                    {
+                        // Fall through to string parsing
+                    }
+                }
+            }
+
+            // Try standard formats
+            string[] formats = new[]
+            {
+                "yyyy-MM-dd",
+                "MM/dd/yyyy",
+                "dd/MM/yyyy",
+                "M/d/yyyy",
+                "d-MMM-yy",
+                "dd-MMM-yy",
+                "MMM d, yyyy",
+                "MMMM d, yyyy",
+                "MMMM d yyyy",
+                "MMM dd, yyyy",
+                "d MMM yyyy",
+                "dd MMM yyyy",
+            };
+
+            if (DateTime.TryParseExact(dateStr, formats, System.Globalization.CultureInfo.InvariantCulture,
+                                       System.Globalization.DateTimeStyles.AllowWhiteSpaces | System.Globalization.DateTimeStyles.AssumeUniversal, out result))
+            {
+                result = DateTime.SpecifyKind(result, DateTimeKind.Utc);
+                return true;
+            }
+
+            // Last resort: generic parse
+            if (DateTime.TryParse(dateStr, System.Globalization.CultureInfo.InvariantCulture,
+                                  System.Globalization.DateTimeStyles.AllowWhiteSpaces | System.Globalization.DateTimeStyles.AssumeUniversal, out result))
+            {
+                result = DateTime.SpecifyKind(result, DateTimeKind.Utc);
+                return true;
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// Extracts a dollar amount from the payment column text.
+        /// Handles formats like: "$150", "$225 - paid", "$400 deposit paid", etc.
+        /// </summary>
+        private static decimal ParseFeeFromPaymentColumn(string paymentStr)
+        {
+            if (string.IsNullOrWhiteSpace(paymentStr))
+            {
+                return 0;
+            }
+
+            // Look for dollar amounts
+            string cleaned = paymentStr.Trim();
+
+            // Remove common non-numeric suffixes
+            int dollarIndex = cleaned.IndexOf('$');
+
+            if (dollarIndex >= 0)
+            {
+                string afterDollar = cleaned.Substring(dollarIndex + 1);
+
+                // Take characters until we hit something that's not a digit, comma, or period
+                string numericPart = "";
+
+                foreach (char c in afterDollar)
+                {
+                    if (char.IsDigit(c) || c == '.' || c == ',')
+                    {
+                        numericPart += c;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                numericPart = numericPart.Replace(",", "");
+
+                if (decimal.TryParse(numericPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal fee))
+                {
+                    return fee;
+                }
+            }
+
+            // Try parsing the whole thing as a number
+            string numbersOnly = cleaned.Replace("$", "").Replace(",", "");
+
+            // Take the first number we find
+            string firstNumber = "";
+            bool foundDigit = false;
+
+            foreach (char c in numbersOnly)
+            {
+                if (char.IsDigit(c) || c == '.')
+                {
+                    firstNumber += c;
+                    foundDigit = true;
+                }
+                else if (foundDigit)
+                {
+                    break;
+                }
+            }
+
+            if (decimal.TryParse(firstNumber, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal result))
+            {
+                return result;
+            }
+
+            return 0;
+        }
+
+        #endregion
     }
 }
 

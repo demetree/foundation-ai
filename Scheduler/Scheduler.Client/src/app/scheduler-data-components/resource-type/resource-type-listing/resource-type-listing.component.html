@@ -82,6 +82,7 @@
   <app-resource-type-table
     *ngIf="userIsSchedulerResourceTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredResourceTypeCount$ | async) ?? 0">
   </app-resource-type-table>
 </div>

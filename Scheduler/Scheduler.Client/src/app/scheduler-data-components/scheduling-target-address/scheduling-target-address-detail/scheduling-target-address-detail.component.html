@@ -136,10 +136,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-address-change-history-table [queryParams]="{ schedulingTargetAddressId: schedulingTargetAddressData?.id }"></app-scheduling-target-address-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-address-change-history-add-edit [preSeededData]="{ schedulingTargetAddressId: schedulingTargetAddressData?.id }" [hiddenFields]="['schedulingTargetAddressId']"></app-scheduling-target-address-change-history-add-edit>
+                                    <app-scheduling-target-address-change-history-table [queryParams]="{ schedulingTargetAddressId: schedulingTargetAddressData?.id }" [showAddButton]="true" [preSeededData]="{ schedulingTargetAddressId: schedulingTargetAddressData?.id }" [hiddenFields]="['schedulingTargetAddressId']"></app-scheduling-target-address-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -82,6 +82,7 @@
   <app-rate-sheet-table
     *ngIf="userIsSchedulerRateSheetReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRateSheetCount$ | async) ?? 0">
   </app-rate-sheet-table>
 </div>

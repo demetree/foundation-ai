@@ -165,6 +165,7 @@ export class CalendarListingComponent implements OnInit, AfterViewInit, CanCompo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.calendarTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.calendarTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

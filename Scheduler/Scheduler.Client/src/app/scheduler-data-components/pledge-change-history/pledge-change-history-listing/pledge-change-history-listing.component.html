@@ -82,6 +82,7 @@
   <app-pledge-change-history-table
     *ngIf="userIsSchedulerPledgeChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPledgeChangeHistoryCount$ | async) ?? 0">
   </app-pledge-change-history-table>
 </div>

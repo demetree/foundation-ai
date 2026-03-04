@@ -82,6 +82,7 @@
   <app-recurrence-exception-table
     *ngIf="userIsSchedulerRecurrenceExceptionReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRecurrenceExceptionCount$ | async) ?? 0">
   </app-recurrence-exception-table>
 </div>

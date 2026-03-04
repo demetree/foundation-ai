@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #resourceTypeModal let-modal>
-   <div class="modal-header bg-dark text-light resource-type-modal-header">
+   <div class="modal-header resource-type-modal-header">
       <h5 class="modal-title mb-0" id="resourceTypeModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Resource Type' : 'Add Resource Type' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body resource-type-modal-body">
       <form [formGroup]="resourceTypeForm" (ngSubmit)="submitForm()">

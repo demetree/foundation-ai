@@ -82,6 +82,7 @@
   <app-appeal-change-history-table
     *ngIf="userIsSchedulerAppealChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAppealChangeHistoryCount$ | async) ?? 0">
   </app-appeal-change-history-table>
 </div>

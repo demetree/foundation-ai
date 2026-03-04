@@ -77,6 +77,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string lastName = null,
 			int? salutationId = null,
 			string title = null,
+			DateOnly? birthDate = null,
 			string company = null,
 			string email = null,
 			string phone = null,
@@ -270,22 +271,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(c => c.firstName).ThenBy(c => c.middleName).ThenBy(c => c.lastName);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.contactMethod);
-				query = query.Include(x => x.contactType);
-				query = query.Include(x => x.icon);
-				query = query.Include(x => x.salutation);
-				query = query.Include(x => x.timeZone);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Contact, or on an any of the string fields on its immediate relations
@@ -329,6 +314,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.contactMethod);
+				query = query.Include(x => x.contactType);
+				query = query.Include(x => x.icon);
+				query = query.Include(x => x.salutation);
+				query = query.Include(x => x.timeZone);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.Contact> materialized = await query.ToListAsync(cancellationToken);
@@ -394,6 +395,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string lastName = null,
 			int? salutationId = null,
 			string title = null,
+			DateOnly? birthDate = null,
 			string company = null,
 			string email = null,
 			string phone = null,
@@ -1213,7 +1215,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					contact.ContactInteractioncontacts = null;
 					contact.ContactInteractioninitiatingContacts = null;
 					contact.ContactTags = null;
+					contact.Documents = null;
 					contact.EventResourceAssignments = null;
+					contact.FinancialTransactions = null;
 					contact.NotificationSubscriptions = null;
 					contact.OfficeContacts = null;
 					contact.ResourceContacts = null;
@@ -1357,7 +1361,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.ContactInteractioncontacts = null;
 				cloneOfExisting.ContactInteractioninitiatingContacts = null;
 				cloneOfExisting.ContactTags = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.EventResourceAssignments = null;
+				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.NotificationSubscriptions = null;
 				cloneOfExisting.OfficeContacts = null;
 				cloneOfExisting.ResourceContacts = null;
@@ -1894,6 +1900,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string lastName = null,
 			int? salutationId = null,
 			string title = null,
+			DateOnly? birthDate = null,
 			string company = null,
 			string email = null,
 			string phone = null,

@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #iconModal let-modal>
-   <div class="modal-header bg-dark text-light icon-modal-header">
+   <div class="modal-header icon-modal-header">
       <h5 class="modal-title mb-0" id="iconModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Icon' : 'Add Icon' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body icon-modal-body">
       <form [formGroup]="iconForm" (ngSubmit)="submitForm()">

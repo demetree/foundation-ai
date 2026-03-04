@@ -70,6 +70,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? resourceId = null,
 			int? assignmentRoleId = null,
 			int? sequence = null,
+			DateOnly? joinedDate = null,
+			DateOnly? leftDate = null,
 			string notes = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
@@ -77,7 +79,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -180,12 +181,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(vgm => vgm.sequence).ThenBy(vgm => vgm.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.assignmentRole);
@@ -194,37 +189,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Group Member, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || (includeRelations == true && x.assignmentRole.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.assignmentRole.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.assignmentRole.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.purpose.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerGroup.avatarMimeType.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.VolunteerGroupMember> materialized = await query.ToListAsync(cancellationToken);
@@ -268,12 +238,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? resourceId = null,
 			int? assignmentRoleId = null,
 			int? sequence = null,
+			DateOnly? joinedDate = null,
+			DateOnly? leftDate = null,
 			string notes = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -355,37 +326,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(vgm => vgm.active == true);
 				query = query.Where(vgm => vgm.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Group Member, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || x.assignmentRole.name.Contains(anyStringContains)
-			       || x.assignmentRole.description.Contains(anyStringContains)
-			       || x.assignmentRole.color.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			       || x.volunteerGroup.name.Contains(anyStringContains)
-			       || x.volunteerGroup.description.Contains(anyStringContains)
-			       || x.volunteerGroup.purpose.Contains(anyStringContains)
-			       || x.volunteerGroup.color.Contains(anyStringContains)
-			       || x.volunteerGroup.notes.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarFileName.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarMimeType.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1352,12 +1292,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? resourceId = null,
 			int? assignmentRoleId = null,
 			int? sequence = null,
+			DateOnly? joinedDate = null,
+			DateOnly? leftDate = null,
 			string notes = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1457,37 +1398,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(vgm => vgm.active == true);
 				query = query.Where(vgm => vgm.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Group Member, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
-			       || x.assignmentRole.name.Contains(anyStringContains)
-			       || x.assignmentRole.description.Contains(anyStringContains)
-			       || x.assignmentRole.color.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			       || x.volunteerGroup.name.Contains(anyStringContains)
-			       || x.volunteerGroup.description.Contains(anyStringContains)
-			       || x.volunteerGroup.purpose.Contains(anyStringContains)
-			       || x.volunteerGroup.color.Contains(anyStringContains)
-			       || x.volunteerGroup.notes.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarFileName.Contains(anyStringContains)
-			       || x.volunteerGroup.avatarMimeType.Contains(anyStringContains)
-			   );
 			}
 
 

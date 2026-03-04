@@ -128,10 +128,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-change-history-table [queryParams]="{ crewId: crewData?.id }"></app-crew-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-change-history-add-edit [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-crew-change-history-add-edit>
+                                    <app-crew-change-history-table [queryParams]="{ crewId: crewData?.id }" [showAddButton]="true" [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-crew-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -145,10 +142,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-member-table [queryParams]="{ crewId: crewData?.id }"></app-crew-member-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-member-add-edit [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-crew-member-add-edit>
+                                    <app-crew-member-table [queryParams]="{ crewId: crewData?.id }" [showAddButton]="true" [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-crew-member-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -162,10 +156,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-table [queryParams]="{ crewId: crewData?.id }"></app-scheduled-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-add-edit [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-scheduled-event-add-edit>
+                                    <app-scheduled-event-table [queryParams]="{ crewId: crewData?.id }" [showAddButton]="true" [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-scheduled-event-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -179,10 +170,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-resource-assignment-table [queryParams]="{ crewId: crewData?.id }"></app-event-resource-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-add-edit [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-event-resource-assignment-add-edit>
+                                    <app-event-resource-assignment-table [queryParams]="{ crewId: crewData?.id }" [showAddButton]="true" [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-event-resource-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

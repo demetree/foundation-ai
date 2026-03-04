@@ -2301,6 +2301,33 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             brickOwlTransactionTable.AddControlFields();
 
+
+            // ─────────────────────────────────────────────────────────────
+            //  MarketDataCache — Cached API responses for Brickberg Terminal
+            // ─────────────────────────────────────────────────────────────
+
+            Database.Table marketDataCacheTable = database.AddTable("MarketDataCache");
+            marketDataCacheTable.comment = "Caches API responses from external marketplaces (BrickLink, BrickEconomy, BrickOwl) to reduce external calls and improve Brickberg Terminal performance. TTL-based expiry with configurable per-source cache durations. Not multi-tenant — cache is shared across all users for the same item.";
+            marketDataCacheTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            marketDataCacheTable.AddIdField();
+
+            // Cache key fields
+            marketDataCacheTable.AddString50Field("source", false).AddScriptComments("Marketplace source: BrickLink, BrickEconomy, BrickOwl");
+            marketDataCacheTable.AddString50Field("itemType", false).AddScriptComments("Item type: SET, MINIFIG, PART");
+            marketDataCacheTable.AddString100Field("itemNumber", false).AddScriptComments("Item identifier (e.g. '42131-1', 'fig-001234')");
+            marketDataCacheTable.AddString50Field("condition").AddScriptComments("Condition qualifier: N (new), U (used), null for non-BrickLink sources");
+
+            // Cached response
+            marketDataCacheTable.AddTextField("responseJson").AddScriptComments("Serialized JSON API response payload");
+            marketDataCacheTable.AddDateTimeField("fetchedDate", false).AddScriptComments("UTC timestamp when the response was fetched from the source API");
+            marketDataCacheTable.AddDateTimeField("expiresDate", false).AddScriptComments("UTC timestamp when this cache entry expires and should be refreshed");
+            marketDataCacheTable.AddIntField("ttlMinutes", false).AddScriptComments("TTL in minutes that was used when caching this entry (for diagnostics/auditing)");
+
+            marketDataCacheTable.AddControlFields();
+
+            // Composite unique constraint for cache lookups — ensures one cached entry per source+item+condition
+            marketDataCacheTable.AddUniqueConstraint(new List<string>() { "source", "itemType", "itemNumber", "condition" }, true);
+
             #endregion
         }
     }

@@ -165,6 +165,7 @@ export class ScheduledEventTemplateChangeHistoryListingComponent implements OnIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventTemplateChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventTemplateChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

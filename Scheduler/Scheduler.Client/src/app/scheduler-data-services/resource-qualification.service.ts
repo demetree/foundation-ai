@@ -176,11 +176,17 @@ export class ResourceQualificationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceQualificationChangeHistoriesCount$ = ResourceQualificationChangeHistoryService.Instance.GetResourceQualificationChangeHistoriesRowCount({resourceQualificationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceQualificationChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ResourceQualificationChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._resourceQualificationChangeHistoriesCount$ === null) {
+            this._resourceQualificationChangeHistoriesCount$ = ResourceQualificationChangeHistoryService.Instance.GetResourceQualificationChangeHistoriesRowCount({resourceQualificationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceQualificationChangeHistoriesCount$;
+    }
 
 
 
@@ -225,6 +231,7 @@ export class ResourceQualificationData {
      this._resourceQualificationChangeHistories = null;
      this._resourceQualificationChangeHistoriesPromise = null;
      this._resourceQualificationChangeHistoriesSubject.next(null);
+     this._resourceQualificationChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -913,11 +920,7 @@ export class ResourceQualificationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceQualificationChangeHistoriesCount$ = ResourceQualificationChangeHistoryService.Instance.GetResourceQualificationChangeHistoriesRowCount({resourceQualificationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceQualificationChangeHistoriesCount$ = null;
 
 
 

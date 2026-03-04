@@ -207,6 +207,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[Document]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentType]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[EventCalendar]",
          "ObjectType": 0
       },
@@ -228,6 +240,22 @@
       },
       {
          "Name": "[Scheduler].[EventStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FinancialCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FinancialCategoryChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FinancialTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FinancialTransactionChangeHistory]",
          "ObjectType": 0
       },
       {
@@ -292,6 +320,26 @@
       },
       {
          "Name": "[Scheduler].[OfficeType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PaymentMethod]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PaymentProvider]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PaymentProviderChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PaymentTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PaymentTransactionChangeHistory]",
          "ObjectType": 0
       },
       {

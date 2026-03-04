@@ -82,6 +82,7 @@
   <app-attribute-definition-change-history-table
     *ngIf="userIsSchedulerAttributeDefinitionChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAttributeDefinitionChangeHistoryCount$ | async) ?? 0">
   </app-attribute-definition-change-history-table>
 </div>

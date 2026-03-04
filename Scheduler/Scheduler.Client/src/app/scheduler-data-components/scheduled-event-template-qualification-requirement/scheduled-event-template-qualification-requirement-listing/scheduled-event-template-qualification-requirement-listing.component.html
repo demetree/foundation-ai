@@ -82,6 +82,7 @@
   <app-scheduled-event-template-qualification-requirement-table
     *ngIf="userIsSchedulerScheduledEventTemplateQualificationRequirementReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredScheduledEventTemplateQualificationRequirementCount$ | async) ?? 0">
   </app-scheduled-event-template-qualification-requirement-table>
 </div>

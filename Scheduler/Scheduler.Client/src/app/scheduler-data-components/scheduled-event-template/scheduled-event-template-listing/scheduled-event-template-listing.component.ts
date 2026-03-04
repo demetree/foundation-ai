@@ -165,6 +165,7 @@ export class ScheduledEventTemplateListingComponent implements OnInit, AfterView
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventTemplateTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventTemplateTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

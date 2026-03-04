@@ -85,10 +85,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-assignment-role-qualification-requirement-change-history-table [queryParams]="{ assignmentRoleQualificationRequirementId: assignmentRoleQualificationRequirementData?.id }"></app-assignment-role-qualification-requirement-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-assignment-role-qualification-requirement-change-history-add-edit [preSeededData]="{ assignmentRoleQualificationRequirementId: assignmentRoleQualificationRequirementData?.id }" [hiddenFields]="['assignmentRoleQualificationRequirementId']"></app-assignment-role-qualification-requirement-change-history-add-edit>
+                                    <app-assignment-role-qualification-requirement-change-history-table [queryParams]="{ assignmentRoleQualificationRequirementId: assignmentRoleQualificationRequirementData?.id }" [showAddButton]="true" [preSeededData]="{ assignmentRoleQualificationRequirementId: assignmentRoleQualificationRequirementData?.id }" [hiddenFields]="['assignmentRoleQualificationRequirementId']"></app-assignment-role-qualification-requirement-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

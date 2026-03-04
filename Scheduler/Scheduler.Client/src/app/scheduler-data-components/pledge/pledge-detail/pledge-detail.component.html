@@ -146,10 +146,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-pledge-change-history-table [queryParams]="{ pledgeId: pledgeData?.id }"></app-pledge-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-pledge-change-history-add-edit [preSeededData]="{ pledgeId: pledgeData?.id }" [hiddenFields]="['pledgeId']"></app-pledge-change-history-add-edit>
+                                    <app-pledge-change-history-table [queryParams]="{ pledgeId: pledgeData?.id }" [showAddButton]="true" [preSeededData]="{ pledgeId: pledgeData?.id }" [hiddenFields]="['pledgeId']"></app-pledge-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -163,10 +160,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ pledgeId: pledgeData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ pledgeId: pledgeData?.id }" [hiddenFields]="['pledgeId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ pledgeId: pledgeData?.id }" [showAddButton]="true" [preSeededData]="{ pledgeId: pledgeData?.id }" [hiddenFields]="['pledgeId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>

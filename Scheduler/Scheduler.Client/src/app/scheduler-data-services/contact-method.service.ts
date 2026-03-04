@@ -139,11 +139,17 @@ export class ContactMethodData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({contactMethodId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactsCount$: Observable<bigint | number> | null = null;
+    public get ContactsCount$(): Observable<bigint | number> {
+        if (this._contactsCount$ === null) {
+            this._contactsCount$ = ContactService.Instance.GetContactsRowCount({contactMethodId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactsCount$;
+    }
 
 
 
@@ -188,6 +194,7 @@ export class ContactMethodData {
      this._contacts = null;
      this._contactsPromise = null;
      this._contactsSubject.next(null);
+     this._contactsCount$ = null;
 
   }
 
@@ -726,11 +733,7 @@ export class ContactMethodService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactsCount$ = ContactService.Instance.GetContactsRowCount({contactMethodId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactsCount$ = null;
 
 
 

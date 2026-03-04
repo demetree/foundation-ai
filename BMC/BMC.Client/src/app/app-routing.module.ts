@@ -125,6 +125,8 @@ import { LegoSetSubsetListingComponent } from './bmc-data-components/lego-set-su
 import { LegoSetSubsetDetailComponent } from './bmc-data-components/lego-set-subset/lego-set-subset-detail/lego-set-subset-detail.component';
 import { LegoThemeListingComponent } from './bmc-data-components/lego-theme/lego-theme-listing/lego-theme-listing.component';
 import { LegoThemeDetailComponent } from './bmc-data-components/lego-theme/lego-theme-detail/lego-theme-detail.component';
+import { MarketDataCacheListingComponent } from './bmc-data-components/market-data-cache/market-data-cache-listing/market-data-cache-listing.component';
+import { MarketDataCacheDetailComponent } from './bmc-data-components/market-data-cache/market-data-cache-detail/market-data-cache-detail.component';
 import { MocCommentListingComponent } from './bmc-data-components/moc-comment/moc-comment-listing/moc-comment-listing.component';
 import { MocCommentDetailComponent } from './bmc-data-components/moc-comment/moc-comment-detail/moc-comment-detail.component';
 import { MocFavouriteListingComponent } from './bmc-data-components/moc-favourite/moc-favourite-listing/moc-favourite-listing.component';
@@ -525,6 +527,11 @@ const routes: Routes = [
   {path: 'legothemes/:legoThemeId', component: LegoThemeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Lego Theme' },
   {path: 'legotheme/:legoThemeId', component: LegoThemeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Lego Theme' },
   {path: 'legotheme',  redirectTo: 'legothemes'},
+  {path: 'marketdatacaches', component: MarketDataCacheListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Market Data Caches' },
+  {path: 'marketdatacaches/new', component: MarketDataCacheDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Market Data Cache' },
+  {path: 'marketdatacaches/:marketDataCacheId', component: MarketDataCacheDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Market Data Cache' },
+  {path: 'marketdatacache/:marketDataCacheId', component: MarketDataCacheDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Market Data Cache' },
+  {path: 'marketdatacache',  redirectTo: 'marketdatacaches'},
   {path: 'moccomments', component: MocCommentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Comments' },
   {path: 'moccomments/new', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Comment' },
   {path: 'moccomments/:mocCommentId', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Comment' },

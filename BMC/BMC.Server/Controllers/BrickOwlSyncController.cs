@@ -345,7 +345,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 using (client)
                 {
-                    var lots = await client.GetOrdersListAsync();
+                    var lots = await client.GetOrderListAsync();
 
                     await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Brick Owl collection lots");
 

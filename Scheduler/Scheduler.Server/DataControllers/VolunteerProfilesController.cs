@@ -68,9 +68,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetVolunteerProfiles(
 			int? resourceId = null,
 			int? volunteerStatusId = null,
+			DateOnly? onboardedDate = null,
+			DateOnly? inactiveSince = null,
 			float? totalHoursServed = null,
+			DateOnly? lastActivityDate = null,
 			bool? backgroundCheckCompleted = null,
+			DateOnly? backgroundCheckDate = null,
+			DateOnly? backgroundCheckExpiry = null,
 			bool? confidentialityAgreementSigned = null,
+			DateOnly? confidentialityAgreementDate = null,
 			string availabilityPreferences = null,
 			string interestsAndSkillsNotes = null,
 			string emergencyContactNotes = null,
@@ -85,7 +91,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -220,12 +225,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(vp => vp.color);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.constituent);
@@ -235,43 +234,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Profile, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       x.availabilityPreferences.Contains(anyStringContains)
-			       || x.interestsAndSkillsNotes.Contains(anyStringContains)
-			       || x.emergencyContactNotes.Contains(anyStringContains)
-			       || x.color.Contains(anyStringContains)
-			       || x.attributes.Contains(anyStringContains)
-			       || (includeRelations == true && x.constituent.constituentNumber.Contains(anyStringContains))
-			       || (includeRelations == true && x.constituent.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.constituent.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.constituent.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.constituent.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.constituent.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.constituent.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.icon.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.icon.fontAwesomeCode.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerStatus.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerStatus.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.volunteerStatus.color.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.VolunteerProfile> materialized = await query.ToListAsync(cancellationToken);
@@ -313,9 +281,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			int? resourceId = null,
 			int? volunteerStatusId = null,
+			DateOnly? onboardedDate = null,
+			DateOnly? inactiveSince = null,
 			float? totalHoursServed = null,
+			DateOnly? lastActivityDate = null,
 			bool? backgroundCheckCompleted = null,
+			DateOnly? backgroundCheckDate = null,
+			DateOnly? backgroundCheckExpiry = null,
 			bool? confidentialityAgreementSigned = null,
+			DateOnly? confidentialityAgreementDate = null,
 			string availabilityPreferences = null,
 			string interestsAndSkillsNotes = null,
 			string emergencyContactNotes = null,
@@ -328,7 +302,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -442,43 +415,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(vp => vp.active == true);
 				query = query.Where(vp => vp.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Profile, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.availabilityPreferences.Contains(anyStringContains)
-			       || x.interestsAndSkillsNotes.Contains(anyStringContains)
-			       || x.emergencyContactNotes.Contains(anyStringContains)
-			       || x.color.Contains(anyStringContains)
-			       || x.attributes.Contains(anyStringContains)
-			       || x.constituent.constituentNumber.Contains(anyStringContains)
-			       || x.constituent.externalId.Contains(anyStringContains)
-			       || x.constituent.notes.Contains(anyStringContains)
-			       || x.constituent.attributes.Contains(anyStringContains)
-			       || x.constituent.color.Contains(anyStringContains)
-			       || x.constituent.avatarFileName.Contains(anyStringContains)
-			       || x.constituent.avatarMimeType.Contains(anyStringContains)
-			       || x.icon.name.Contains(anyStringContains)
-			       || x.icon.fontAwesomeCode.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			       || x.volunteerStatus.name.Contains(anyStringContains)
-			       || x.volunteerStatus.description.Contains(anyStringContains)
-			       || x.volunteerStatus.color.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1468,9 +1404,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			int? resourceId = null,
 			int? volunteerStatusId = null,
+			DateOnly? onboardedDate = null,
+			DateOnly? inactiveSince = null,
 			float? totalHoursServed = null,
+			DateOnly? lastActivityDate = null,
 			bool? backgroundCheckCompleted = null,
+			DateOnly? backgroundCheckDate = null,
+			DateOnly? backgroundCheckExpiry = null,
 			bool? confidentialityAgreementSigned = null,
+			DateOnly? confidentialityAgreementDate = null,
 			string availabilityPreferences = null,
 			string interestsAndSkillsNotes = null,
 			string emergencyContactNotes = null,
@@ -1483,7 +1425,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1615,43 +1556,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(vp => vp.active == true);
 				query = query.Where(vp => vp.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Volunteer Profile, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.availabilityPreferences.Contains(anyStringContains)
-			       || x.interestsAndSkillsNotes.Contains(anyStringContains)
-			       || x.emergencyContactNotes.Contains(anyStringContains)
-			       || x.color.Contains(anyStringContains)
-			       || x.attributes.Contains(anyStringContains)
-			       || x.constituent.constituentNumber.Contains(anyStringContains)
-			       || x.constituent.externalId.Contains(anyStringContains)
-			       || x.constituent.notes.Contains(anyStringContains)
-			       || x.constituent.attributes.Contains(anyStringContains)
-			       || x.constituent.color.Contains(anyStringContains)
-			       || x.constituent.avatarFileName.Contains(anyStringContains)
-			       || x.constituent.avatarMimeType.Contains(anyStringContains)
-			       || x.icon.name.Contains(anyStringContains)
-			       || x.icon.fontAwesomeCode.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			       || x.volunteerStatus.name.Contains(anyStringContains)
-			       || x.volunteerStatus.description.Contains(anyStringContains)
-			       || x.volunteerStatus.color.Contains(anyStringContains)
-			   );
 			}
 
 

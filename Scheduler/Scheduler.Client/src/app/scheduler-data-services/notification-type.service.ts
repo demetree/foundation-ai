@@ -134,11 +134,17 @@ export class NotificationTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({notificationTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _notificationSubscriptionsCount$: Observable<bigint | number> | null = null;
+    public get NotificationSubscriptionsCount$(): Observable<bigint | number> {
+        if (this._notificationSubscriptionsCount$ === null) {
+            this._notificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({notificationTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._notificationSubscriptionsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class NotificationTypeData {
      this._notificationSubscriptions = null;
      this._notificationSubscriptionsPromise = null;
      this._notificationSubscriptionsSubject.next(null);
+     this._notificationSubscriptionsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class NotificationTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({notificationTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._notificationSubscriptionsCount$ = null;
 
 
 

@@ -133,10 +133,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-journey-stage-change-history-table [queryParams]="{ constituentJourneyStageId: constituentJourneyStageData?.id }"></app-constituent-journey-stage-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-journey-stage-change-history-add-edit [preSeededData]="{ constituentJourneyStageId: constituentJourneyStageData?.id }" [hiddenFields]="['constituentJourneyStageId']"></app-constituent-journey-stage-change-history-add-edit>
+                                    <app-constituent-journey-stage-change-history-table [queryParams]="{ constituentJourneyStageId: constituentJourneyStageData?.id }" [showAddButton]="true" [preSeededData]="{ constituentJourneyStageId: constituentJourneyStageData?.id }" [hiddenFields]="['constituentJourneyStageId']"></app-constituent-journey-stage-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -150,10 +147,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-table [queryParams]="{ constituentJourneyStageId: constituentJourneyStageData?.id }"></app-constituent-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-add-edit [preSeededData]="{ constituentJourneyStageId: constituentJourneyStageData?.id }" [hiddenFields]="['constituentJourneyStageId']"></app-constituent-add-edit>
+                                    <app-constituent-table [queryParams]="{ constituentJourneyStageId: constituentJourneyStageData?.id }" [showAddButton]="true" [preSeededData]="{ constituentJourneyStageId: constituentJourneyStageData?.id }" [hiddenFields]="['constituentJourneyStageId']"></app-constituent-table>
                                 </div>
                             </div>
                             </ng-template>

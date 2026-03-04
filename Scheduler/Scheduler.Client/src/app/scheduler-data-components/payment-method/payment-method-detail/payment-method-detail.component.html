@@ -1,0 +1,116 @@
+<div class="container-fluid p-1 m-0 payment-method-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="payment-method-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Payment Method</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Payment Method' : 'Add Payment Method'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPaymentMethodReader()">
+                <div class="col m-2 payment-method-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="paymentMethodForm" (ngSubmit)="submitForm()" class="payment-method-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="PaymentMethod-name" id="label-PaymentMethod-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="PaymentMethod-name" formControlName="name" placeholder="Enter Name" class="form-control payment-method-input" [disabled]="!userIsSchedulerPaymentMethodWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="paymentMethodForm.get('name')?.invalid && paymentMethodForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="PaymentMethod-description" id="label-PaymentMethod-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="PaymentMethod-description" formControlName="description" placeholder="Enter Description" class="form-control payment-method-input" [disabled]="!userIsSchedulerPaymentMethodWriter()"></textarea>
+                                <div *ngIf="paymentMethodForm.get('description')?.invalid && paymentMethodForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isElectronic')">
+                                <input type="checkbox" id="PaymentMethod-isElectronic" formControlName="isElectronic" class="form-check-input" [disabled]="!userIsSchedulerPaymentMethodWriter()" />
+                                <label for="PaymentMethod-isElectronic" class="form-check-label" id="label-PaymentMethod-isElectronic"><span class="text-danger">*</span>Is Electronic</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="PaymentMethod-sequence" id="label-PaymentMethod-sequence">Sequence</label>
+                                <input type="number" id="PaymentMethod-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control payment-method-input" [disabled]="!userIsSchedulerPaymentMethodWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="PaymentMethod-color" id="label-PaymentMethod-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="PaymentMethod-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerPaymentMethodWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="paymentMethodForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PaymentMethod-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPaymentMethodWriter()" />
+                                <label for="PaymentMethod-active" class="form-check-label" id="label-PaymentMethod-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PaymentMethod-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPaymentMethodWriter()" />
+                                <label for="PaymentMethod-deleted" class="form-check-label" id="label-PaymentMethod-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="payment-method-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="paymentMethodForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Payment Method">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !paymentMethodForm.valid || !paymentMethodForm.dirty || paymentMethodForm.pristine  || userIsSchedulerPaymentMethodWriter() == false " ngbTooltip="Save the Payment Method changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Payment Method' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerPaymentMethodReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 payment-method-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
+                            <button ngbNavLink>Payment Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (paymentMethodData?.PaymentTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-payment-transaction-table [queryParams]="{ paymentMethodId: paymentMethodData?.id }" [showAddButton]="true" [preSeededData]="{ paymentMethodId: paymentMethodData?.id }" [hiddenFields]="['paymentMethodId']"></app-payment-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

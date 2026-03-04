@@ -165,6 +165,7 @@ export class RecurrenceExceptionChangeHistoryListingComponent implements OnInit,
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.recurrenceExceptionChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.recurrenceExceptionChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -82,6 +82,7 @@
   <app-attribute-definition-type-table
     *ngIf="userIsSchedulerAttributeDefinitionTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredAttributeDefinitionTypeCount$ | async) ?? 0">
   </app-attribute-definition-type-table>
 </div>

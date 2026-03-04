@@ -99,10 +99,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-notification-subscription-change-history-table [queryParams]="{ notificationSubscriptionId: notificationSubscriptionData?.id }"></app-notification-subscription-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-notification-subscription-change-history-add-edit [preSeededData]="{ notificationSubscriptionId: notificationSubscriptionData?.id }" [hiddenFields]="['notificationSubscriptionId']"></app-notification-subscription-change-history-add-edit>
+                                    <app-notification-subscription-change-history-table [queryParams]="{ notificationSubscriptionId: notificationSubscriptionData?.id }" [showAddButton]="true" [preSeededData]="{ notificationSubscriptionId: notificationSubscriptionData?.id }" [hiddenFields]="['notificationSubscriptionId']"></app-notification-subscription-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

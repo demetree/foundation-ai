@@ -165,6 +165,7 @@ export class RateSheetListingComponent implements OnInit, AfterViewInit, CanComp
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.rateSheetTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.rateSheetTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

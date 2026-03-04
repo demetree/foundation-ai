@@ -165,6 +165,7 @@ export class AttributeDefinitionEntityListingComponent implements OnInit, AfterV
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.attributeDefinitionEntityTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.attributeDefinitionEntityTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

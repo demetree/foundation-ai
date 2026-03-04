@@ -139,11 +139,17 @@ export class OfficeTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({officeTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officesCount$: Observable<bigint | number> | null = null;
+    public get OfficesCount$(): Observable<bigint | number> {
+        if (this._officesCount$ === null) {
+            this._officesCount$ = OfficeService.Instance.GetOfficesRowCount({officeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officesCount$;
+    }
 
 
 
@@ -188,6 +194,7 @@ export class OfficeTypeData {
      this._offices = null;
      this._officesPromise = null;
      this._officesSubject.next(null);
+     this._officesCount$ = null;
 
   }
 
@@ -726,11 +733,7 @@ export class OfficeTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({officeTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officesCount$ = null;
 
 
 

@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #scheduledEventQualificationRequirementChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light scheduled-event-qualification-requirement-change-history-modal-header">
+   <div class="modal-header scheduled-event-qualification-requirement-change-history-modal-header">
       <h5 class="modal-title mb-0" id="scheduledEventQualificationRequirementChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Scheduled Event Qualification Requirement Change History' : 'Add Scheduled Event Qualification Requirement Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body scheduled-event-qualification-requirement-change-history-modal-body">
       <form [formGroup]="scheduledEventQualificationRequirementChangeHistoryForm" (ngSubmit)="submitForm()">

@@ -161,11 +161,17 @@ export class QualificationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({qualificationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _assignmentRoleQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get AssignmentRoleQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._assignmentRoleQualificationRequirementsCount$ === null) {
+            this._assignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({qualificationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._assignmentRoleQualificationRequirementsCount$;
+    }
 
 
 
@@ -180,11 +186,17 @@ export class QualificationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({qualificationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetQualificationRequirementsCount$ === null) {
+            this._schedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({qualificationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetQualificationRequirementsCount$;
+    }
 
 
 
@@ -199,11 +211,17 @@ export class QualificationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({qualificationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceQualificationsCount$: Observable<bigint | number> | null = null;
+    public get ResourceQualificationsCount$(): Observable<bigint | number> {
+        if (this._resourceQualificationsCount$ === null) {
+            this._resourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({qualificationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceQualificationsCount$;
+    }
 
 
 
@@ -218,11 +236,17 @@ export class QualificationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({qualificationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplateQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplateQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplateQualificationRequirementsCount$ === null) {
+            this._scheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({qualificationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplateQualificationRequirementsCount$;
+    }
 
 
 
@@ -237,11 +261,17 @@ export class QualificationData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({qualificationId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventQualificationRequirementsCount$ === null) {
+            this._scheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({qualificationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventQualificationRequirementsCount$;
+    }
 
 
 
@@ -286,22 +316,27 @@ export class QualificationData {
      this._assignmentRoleQualificationRequirements = null;
      this._assignmentRoleQualificationRequirementsPromise = null;
      this._assignmentRoleQualificationRequirementsSubject.next(null);
+     this._assignmentRoleQualificationRequirementsCount$ = null;
 
      this._schedulingTargetQualificationRequirements = null;
      this._schedulingTargetQualificationRequirementsPromise = null;
      this._schedulingTargetQualificationRequirementsSubject.next(null);
+     this._schedulingTargetQualificationRequirementsCount$ = null;
 
      this._resourceQualifications = null;
      this._resourceQualificationsPromise = null;
      this._resourceQualificationsSubject.next(null);
+     this._resourceQualificationsCount$ = null;
 
      this._scheduledEventTemplateQualificationRequirements = null;
      this._scheduledEventTemplateQualificationRequirementsPromise = null;
      this._scheduledEventTemplateQualificationRequirementsSubject.next(null);
+     this._scheduledEventTemplateQualificationRequirementsCount$ = null;
 
      this._scheduledEventQualificationRequirements = null;
      this._scheduledEventQualificationRequirementsPromise = null;
      this._scheduledEventQualificationRequirementsSubject.next(null);
+     this._scheduledEventQualificationRequirementsCount$ = null;
 
   }
 
@@ -1160,11 +1195,7 @@ export class QualificationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({qualificationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._assignmentRoleQualificationRequirementsCount$ = null;
 
 
     (revived as any).SchedulingTargetQualificationRequirements$ = (revived as any)._schedulingTargetQualificationRequirementsSubject.asObservable().pipe(
@@ -1176,11 +1207,7 @@ export class QualificationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({qualificationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetQualificationRequirementsCount$ = null;
 
 
     (revived as any).ResourceQualifications$ = (revived as any)._resourceQualificationsSubject.asObservable().pipe(
@@ -1192,11 +1219,7 @@ export class QualificationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({qualificationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceQualificationsCount$ = null;
 
 
     (revived as any).ScheduledEventTemplateQualificationRequirements$ = (revived as any)._scheduledEventTemplateQualificationRequirementsSubject.asObservable().pipe(
@@ -1208,11 +1231,7 @@ export class QualificationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({qualificationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplateQualificationRequirementsCount$ = null;
 
 
     (revived as any).ScheduledEventQualificationRequirements$ = (revived as any)._scheduledEventQualificationRequirementsSubject.asObservable().pipe(
@@ -1224,11 +1243,7 @@ export class QualificationService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({qualificationId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventQualificationRequirementsCount$ = null;
 
 
 

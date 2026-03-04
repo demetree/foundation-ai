@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #recurrenceRuleModal let-modal>
-   <div class="modal-header bg-dark text-light recurrence-rule-modal-header">
+   <div class="modal-header recurrence-rule-modal-header">
       <h5 class="modal-title mb-0" id="recurrenceRuleModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Recurrence Rule' : 'Add Recurrence Rule' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body recurrence-rule-modal-body">
       <form [formGroup]="recurrenceRuleForm" (ngSubmit)="submitForm()">

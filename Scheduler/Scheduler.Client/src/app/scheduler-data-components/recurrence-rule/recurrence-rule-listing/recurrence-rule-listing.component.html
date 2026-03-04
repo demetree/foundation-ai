@@ -82,6 +82,7 @@
   <app-recurrence-rule-table
     *ngIf="userIsSchedulerRecurrenceRuleReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRecurrenceRuleCount$ | async) ?? 0">
   </app-recurrence-rule-table>
 </div>

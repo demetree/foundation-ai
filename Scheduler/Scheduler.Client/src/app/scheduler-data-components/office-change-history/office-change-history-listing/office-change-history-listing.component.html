@@ -82,6 +82,7 @@
   <app-office-change-history-table
     *ngIf="userIsSchedulerOfficeChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredOfficeChangeHistoryCount$ | async) ?? 0">
   </app-office-change-history-table>
 </div>

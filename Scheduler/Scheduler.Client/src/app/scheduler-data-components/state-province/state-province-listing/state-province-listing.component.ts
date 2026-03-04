@@ -165,6 +165,7 @@ export class StateProvinceListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.stateProvinceTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.stateProvinceTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

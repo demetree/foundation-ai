@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #scheduledEventChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light scheduled-event-change-history-modal-header">
+   <div class="modal-header scheduled-event-change-history-modal-header">
       <h5 class="modal-title mb-0" id="scheduledEventChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Scheduled Event Change History' : 'Add Scheduled Event Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body scheduled-event-change-history-modal-body">
       <form [formGroup]="scheduledEventChangeHistoryForm" (ngSubmit)="submitForm()">

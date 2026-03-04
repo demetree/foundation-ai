@@ -82,6 +82,7 @@
   <app-country-table
     *ngIf="userIsSchedulerCountryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCountryCount$ | async) ?? 0">
   </app-country-table>
 </div>

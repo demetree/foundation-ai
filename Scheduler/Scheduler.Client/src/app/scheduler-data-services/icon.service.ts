@@ -275,11 +275,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceTypesCount$ = ResourceTypeService.Instance.GetResourceTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceTypesCount$: Observable<bigint | number> | null = null;
+    public get ResourceTypesCount$(): Observable<bigint | number> {
+        if (this._resourceTypesCount$ === null) {
+            this._resourceTypesCount$ = ResourceTypeService.Instance.GetResourceTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceTypesCount$;
+    }
 
 
 
@@ -294,11 +300,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PrioritiesCount$ = PriorityService.Instance.GetPrioritiesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _prioritiesCount$: Observable<bigint | number> | null = null;
+    public get PrioritiesCount$(): Observable<bigint | number> {
+        if (this._prioritiesCount$ === null) {
+            this._prioritiesCount$ = PriorityService.Instance.GetPrioritiesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._prioritiesCount$;
+    }
 
 
 
@@ -313,11 +325,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactMethodsCount$ = ContactMethodService.Instance.GetContactMethodsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactMethodsCount$: Observable<bigint | number> | null = null;
+    public get ContactMethodsCount$(): Observable<bigint | number> {
+        if (this._contactMethodsCount$ === null) {
+            this._contactMethodsCount$ = ContactMethodService.Instance.GetContactMethodsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactMethodsCount$;
+    }
 
 
 
@@ -332,11 +350,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public InteractionTypesCount$ = InteractionTypeService.Instance.GetInteractionTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _interactionTypesCount$: Observable<bigint | number> | null = null;
+    public get InteractionTypesCount$(): Observable<bigint | number> {
+        if (this._interactionTypesCount$ === null) {
+            this._interactionTypesCount$ = InteractionTypeService.Instance.GetInteractionTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._interactionTypesCount$;
+    }
 
 
 
@@ -351,11 +375,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TagsCount$ = TagService.Instance.GetTagsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tagsCount$: Observable<bigint | number> | null = null;
+    public get TagsCount$(): Observable<bigint | number> {
+        if (this._tagsCount$ === null) {
+            this._tagsCount$ = TagService.Instance.GetTagsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tagsCount$;
+    }
 
 
 
@@ -370,11 +400,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerStatusesCount$ = VolunteerStatusService.Instance.GetVolunteerStatusesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerStatusesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerStatusesCount$(): Observable<bigint | number> {
+        if (this._volunteerStatusesCount$ === null) {
+            this._volunteerStatusesCount$ = VolunteerStatusService.Instance.GetVolunteerStatusesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerStatusesCount$;
+    }
 
 
 
@@ -389,11 +425,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactTypesCount$ = ContactTypeService.Instance.GetContactTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactTypesCount$: Observable<bigint | number> | null = null;
+    public get ContactTypesCount$(): Observable<bigint | number> {
+        if (this._contactTypesCount$ === null) {
+            this._contactTypesCount$ = ContactTypeService.Instance.GetContactTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactTypesCount$;
+    }
 
 
 
@@ -408,11 +450,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactsCount$: Observable<bigint | number> | null = null;
+    public get ContactsCount$(): Observable<bigint | number> {
+        if (this._contactsCount$ === null) {
+            this._contactsCount$ = ContactService.Instance.GetContactsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactsCount$;
+    }
 
 
 
@@ -427,11 +475,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RelationshipTypesCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _relationshipTypesCount$: Observable<bigint | number> | null = null;
+    public get RelationshipTypesCount$(): Observable<bigint | number> {
+        if (this._relationshipTypesCount$ === null) {
+            this._relationshipTypesCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._relationshipTypesCount$;
+    }
 
 
 
@@ -446,11 +500,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficeTypesCount$ = OfficeTypeService.Instance.GetOfficeTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officeTypesCount$: Observable<bigint | number> | null = null;
+    public get OfficeTypesCount$(): Observable<bigint | number> {
+        if (this._officeTypesCount$ === null) {
+            this._officeTypesCount$ = OfficeTypeService.Instance.GetOfficeTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officeTypesCount$;
+    }
 
 
 
@@ -465,11 +525,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _calendarsCount$: Observable<bigint | number> | null = null;
+    public get CalendarsCount$(): Observable<bigint | number> {
+        if (this._calendarsCount$ === null) {
+            this._calendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._calendarsCount$;
+    }
 
 
 
@@ -484,11 +550,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientTypesCount$ = ClientTypeService.Instance.GetClientTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientTypesCount$: Observable<bigint | number> | null = null;
+    public get ClientTypesCount$(): Observable<bigint | number> {
+        if (this._clientTypesCount$ === null) {
+            this._clientTypesCount$ = ClientTypeService.Instance.GetClientTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientTypesCount$;
+    }
 
 
 
@@ -503,11 +575,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AssignmentRolesCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _assignmentRolesCount$: Observable<bigint | number> | null = null;
+    public get AssignmentRolesCount$(): Observable<bigint | number> {
+        if (this._assignmentRolesCount$ === null) {
+            this._assignmentRolesCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._assignmentRolesCount$;
+    }
 
 
 
@@ -522,11 +600,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetTypesCount$ = SchedulingTargetTypeService.Instance.GetSchedulingTargetTypesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetTypesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetTypesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetTypesCount$ === null) {
+            this._schedulingTargetTypesCount$ = SchedulingTargetTypeService.Instance.GetSchedulingTargetTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetTypesCount$;
+    }
 
 
 
@@ -541,11 +625,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewsCount$ = CrewService.Instance.GetCrewsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewsCount$: Observable<bigint | number> | null = null;
+    public get CrewsCount$(): Observable<bigint | number> {
+        if (this._crewsCount$ === null) {
+            this._crewsCount$ = CrewService.Instance.GetCrewsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewsCount$;
+    }
 
 
 
@@ -560,11 +650,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewMembersCount$: Observable<bigint | number> | null = null;
+    public get CrewMembersCount$(): Observable<bigint | number> {
+        if (this._crewMembersCount$ === null) {
+            this._crewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewMembersCount$;
+    }
 
 
 
@@ -579,11 +675,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public FundsCount$ = FundService.Instance.GetFundsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _fundsCount$: Observable<bigint | number> | null = null;
+    public get FundsCount$(): Observable<bigint | number> {
+        if (this._fundsCount$ === null) {
+            this._fundsCount$ = FundService.Instance.GetFundsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._fundsCount$;
+    }
 
 
 
@@ -598,11 +700,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CampaignsCount$ = CampaignService.Instance.GetCampaignsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _campaignsCount$: Observable<bigint | number> | null = null;
+    public get CampaignsCount$(): Observable<bigint | number> {
+        if (this._campaignsCount$ === null) {
+            this._campaignsCount$ = CampaignService.Instance.GetCampaignsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._campaignsCount$;
+    }
 
 
 
@@ -617,11 +725,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AppealsCount$ = AppealService.Instance.GetAppealsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _appealsCount$: Observable<bigint | number> | null = null;
+    public get AppealsCount$(): Observable<bigint | number> {
+        if (this._appealsCount$ === null) {
+            this._appealsCount$ = AppealService.Instance.GetAppealsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._appealsCount$;
+    }
 
 
 
@@ -636,11 +750,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _householdsCount$: Observable<bigint | number> | null = null;
+    public get HouseholdsCount$(): Observable<bigint | number> {
+        if (this._householdsCount$ === null) {
+            this._householdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._householdsCount$;
+    }
 
 
 
@@ -655,11 +775,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentJourneyStagesCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentJourneyStagesCount$: Observable<bigint | number> | null = null;
+    public get ConstituentJourneyStagesCount$(): Observable<bigint | number> {
+        if (this._constituentJourneyStagesCount$ === null) {
+            this._constituentJourneyStagesCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentJourneyStagesCount$;
+    }
 
 
 
@@ -674,11 +800,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentsCount$: Observable<bigint | number> | null = null;
+    public get ConstituentsCount$(): Observable<bigint | number> {
+        if (this._constituentsCount$ === null) {
+            this._constituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentsCount$;
+    }
 
 
 
@@ -693,11 +825,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TributesCount$ = TributeService.Instance.GetTributesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tributesCount$: Observable<bigint | number> | null = null;
+    public get TributesCount$(): Observable<bigint | number> {
+        if (this._tributesCount$ === null) {
+            this._tributesCount$ = TributeService.Instance.GetTributesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tributesCount$;
+    }
 
 
 
@@ -712,11 +850,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerProfilesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerProfilesCount$(): Observable<bigint | number> {
+        if (this._volunteerProfilesCount$ === null) {
+            this._volunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerProfilesCount$;
+    }
 
 
 
@@ -731,11 +875,17 @@ export class IconData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({iconId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupsCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupsCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupsCount$ === null) {
+            this._volunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupsCount$;
+    }
 
 
 
@@ -780,102 +930,127 @@ export class IconData {
      this._resourceTypes = null;
      this._resourceTypesPromise = null;
      this._resourceTypesSubject.next(null);
+     this._resourceTypesCount$ = null;
 
      this._priorities = null;
      this._prioritiesPromise = null;
      this._prioritiesSubject.next(null);
+     this._prioritiesCount$ = null;
 
      this._contactMethods = null;
      this._contactMethodsPromise = null;
      this._contactMethodsSubject.next(null);
+     this._contactMethodsCount$ = null;
 
      this._interactionTypes = null;
      this._interactionTypesPromise = null;
      this._interactionTypesSubject.next(null);
+     this._interactionTypesCount$ = null;
 
      this._tags = null;
      this._tagsPromise = null;
      this._tagsSubject.next(null);
+     this._tagsCount$ = null;
 
      this._volunteerStatuses = null;
      this._volunteerStatusesPromise = null;
      this._volunteerStatusesSubject.next(null);
+     this._volunteerStatusesCount$ = null;
 
      this._contactTypes = null;
      this._contactTypesPromise = null;
      this._contactTypesSubject.next(null);
+     this._contactTypesCount$ = null;
 
      this._contacts = null;
      this._contactsPromise = null;
      this._contactsSubject.next(null);
+     this._contactsCount$ = null;
 
      this._relationshipTypes = null;
      this._relationshipTypesPromise = null;
      this._relationshipTypesSubject.next(null);
+     this._relationshipTypesCount$ = null;
 
      this._officeTypes = null;
      this._officeTypesPromise = null;
      this._officeTypesSubject.next(null);
+     this._officeTypesCount$ = null;
 
      this._calendars = null;
      this._calendarsPromise = null;
      this._calendarsSubject.next(null);
+     this._calendarsCount$ = null;
 
      this._clientTypes = null;
      this._clientTypesPromise = null;
      this._clientTypesSubject.next(null);
+     this._clientTypesCount$ = null;
 
      this._assignmentRoles = null;
      this._assignmentRolesPromise = null;
      this._assignmentRolesSubject.next(null);
+     this._assignmentRolesCount$ = null;
 
      this._schedulingTargetTypes = null;
      this._schedulingTargetTypesPromise = null;
      this._schedulingTargetTypesSubject.next(null);
+     this._schedulingTargetTypesCount$ = null;
 
      this._crews = null;
      this._crewsPromise = null;
      this._crewsSubject.next(null);
+     this._crewsCount$ = null;
 
      this._crewMembers = null;
      this._crewMembersPromise = null;
      this._crewMembersSubject.next(null);
+     this._crewMembersCount$ = null;
 
      this._funds = null;
      this._fundsPromise = null;
      this._fundsSubject.next(null);
+     this._fundsCount$ = null;
 
      this._campaigns = null;
      this._campaignsPromise = null;
      this._campaignsSubject.next(null);
+     this._campaignsCount$ = null;
 
      this._appeals = null;
      this._appealsPromise = null;
      this._appealsSubject.next(null);
+     this._appealsCount$ = null;
 
      this._households = null;
      this._householdsPromise = null;
      this._householdsSubject.next(null);
+     this._householdsCount$ = null;
 
      this._constituentJourneyStages = null;
      this._constituentJourneyStagesPromise = null;
      this._constituentJourneyStagesSubject.next(null);
+     this._constituentJourneyStagesCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
+     this._constituentsCount$ = null;
 
      this._tributes = null;
      this._tributesPromise = null;
      this._tributesSubject.next(null);
+     this._tributesCount$ = null;
 
      this._volunteerProfiles = null;
      this._volunteerProfilesPromise = null;
      this._volunteerProfilesSubject.next(null);
+     this._volunteerProfilesCount$ = null;
 
      this._volunteerGroups = null;
      this._volunteerGroupsPromise = null;
      this._volunteerGroupsSubject.next(null);
+     this._volunteerGroupsCount$ = null;
 
   }
 
@@ -3332,11 +3507,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceTypesCount$ = ResourceTypeService.Instance.GetResourceTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceTypesCount$ = null;
 
 
     (revived as any).Priorities$ = (revived as any)._prioritiesSubject.asObservable().pipe(
@@ -3348,11 +3519,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PrioritiesCount$ = PriorityService.Instance.GetPrioritiesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._prioritiesCount$ = null;
 
 
     (revived as any).ContactMethods$ = (revived as any)._contactMethodsSubject.asObservable().pipe(
@@ -3364,11 +3531,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactMethodsCount$ = ContactMethodService.Instance.GetContactMethodsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactMethodsCount$ = null;
 
 
     (revived as any).InteractionTypes$ = (revived as any)._interactionTypesSubject.asObservable().pipe(
@@ -3380,11 +3543,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).InteractionTypesCount$ = InteractionTypeService.Instance.GetInteractionTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._interactionTypesCount$ = null;
 
 
     (revived as any).Tags$ = (revived as any)._tagsSubject.asObservable().pipe(
@@ -3396,11 +3555,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TagsCount$ = TagService.Instance.GetTagsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tagsCount$ = null;
 
 
     (revived as any).VolunteerStatuses$ = (revived as any)._volunteerStatusesSubject.asObservable().pipe(
@@ -3412,11 +3567,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerStatusesCount$ = VolunteerStatusService.Instance.GetVolunteerStatusesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerStatusesCount$ = null;
 
 
     (revived as any).ContactTypes$ = (revived as any)._contactTypesSubject.asObservable().pipe(
@@ -3428,11 +3579,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactTypesCount$ = ContactTypeService.Instance.GetContactTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactTypesCount$ = null;
 
 
     (revived as any).Contacts$ = (revived as any)._contactsSubject.asObservable().pipe(
@@ -3444,11 +3591,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactsCount$ = ContactService.Instance.GetContactsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactsCount$ = null;
 
 
     (revived as any).RelationshipTypes$ = (revived as any)._relationshipTypesSubject.asObservable().pipe(
@@ -3460,11 +3603,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RelationshipTypesCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._relationshipTypesCount$ = null;
 
 
     (revived as any).OfficeTypes$ = (revived as any)._officeTypesSubject.asObservable().pipe(
@@ -3476,11 +3615,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficeTypesCount$ = OfficeTypeService.Instance.GetOfficeTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officeTypesCount$ = null;
 
 
     (revived as any).Calendars$ = (revived as any)._calendarsSubject.asObservable().pipe(
@@ -3492,11 +3627,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._calendarsCount$ = null;
 
 
     (revived as any).ClientTypes$ = (revived as any)._clientTypesSubject.asObservable().pipe(
@@ -3508,11 +3639,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientTypesCount$ = ClientTypeService.Instance.GetClientTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientTypesCount$ = null;
 
 
     (revived as any).AssignmentRoles$ = (revived as any)._assignmentRolesSubject.asObservable().pipe(
@@ -3524,11 +3651,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AssignmentRolesCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._assignmentRolesCount$ = null;
 
 
     (revived as any).SchedulingTargetTypes$ = (revived as any)._schedulingTargetTypesSubject.asObservable().pipe(
@@ -3540,11 +3663,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetTypesCount$ = SchedulingTargetTypeService.Instance.GetSchedulingTargetTypesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetTypesCount$ = null;
 
 
     (revived as any).Crews$ = (revived as any)._crewsSubject.asObservable().pipe(
@@ -3556,11 +3675,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewsCount$ = CrewService.Instance.GetCrewsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewsCount$ = null;
 
 
     (revived as any).CrewMembers$ = (revived as any)._crewMembersSubject.asObservable().pipe(
@@ -3572,11 +3687,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewMembersCount$ = null;
 
 
     (revived as any).Funds$ = (revived as any)._fundsSubject.asObservable().pipe(
@@ -3588,11 +3699,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).FundsCount$ = FundService.Instance.GetFundsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._fundsCount$ = null;
 
 
     (revived as any).Campaigns$ = (revived as any)._campaignsSubject.asObservable().pipe(
@@ -3604,11 +3711,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CampaignsCount$ = CampaignService.Instance.GetCampaignsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._campaignsCount$ = null;
 
 
     (revived as any).Appeals$ = (revived as any)._appealsSubject.asObservable().pipe(
@@ -3620,11 +3723,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AppealsCount$ = AppealService.Instance.GetAppealsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._appealsCount$ = null;
 
 
     (revived as any).Households$ = (revived as any)._householdsSubject.asObservable().pipe(
@@ -3636,11 +3735,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._householdsCount$ = null;
 
 
     (revived as any).ConstituentJourneyStages$ = (revived as any)._constituentJourneyStagesSubject.asObservable().pipe(
@@ -3652,11 +3747,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentJourneyStagesCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentJourneyStagesCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(
@@ -3668,11 +3759,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentsCount$ = null;
 
 
     (revived as any).Tributes$ = (revived as any)._tributesSubject.asObservable().pipe(
@@ -3684,11 +3771,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TributesCount$ = TributeService.Instance.GetTributesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tributesCount$ = null;
 
 
     (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
@@ -3700,11 +3783,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerProfilesCount$ = null;
 
 
     (revived as any).VolunteerGroups$ = (revived as any)._volunteerGroupsSubject.asObservable().pipe(
@@ -3716,11 +3795,7 @@ export class IconService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({iconId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupsCount$ = null;
 
 
 

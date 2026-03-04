@@ -82,6 +82,7 @@
   <app-tribute-table
     *ngIf="userIsSchedulerTributeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTributeCount$ | async) ?? 0">
   </app-tribute-table>
 </div>

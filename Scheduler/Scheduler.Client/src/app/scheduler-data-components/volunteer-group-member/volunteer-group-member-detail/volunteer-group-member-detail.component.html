@@ -107,10 +107,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-group-member-change-history-table [queryParams]="{ volunteerGroupMemberId: volunteerGroupMemberData?.id }"></app-volunteer-group-member-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-group-member-change-history-add-edit [preSeededData]="{ volunteerGroupMemberId: volunteerGroupMemberData?.id }" [hiddenFields]="['volunteerGroupMemberId']"></app-volunteer-group-member-change-history-add-edit>
+                                    <app-volunteer-group-member-change-history-table [queryParams]="{ volunteerGroupMemberId: volunteerGroupMemberData?.id }" [showAddButton]="true" [preSeededData]="{ volunteerGroupMemberId: volunteerGroupMemberData?.id }" [hiddenFields]="['volunteerGroupMemberId']"></app-volunteer-group-member-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -82,6 +82,7 @@
   <app-constituent-journey-stage-change-history-table
     *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredConstituentJourneyStageChangeHistoryCount$ | async) ?? 0">
   </app-constituent-journey-stage-change-history-table>
 </div>

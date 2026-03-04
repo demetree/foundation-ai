@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #rateSheetModal let-modal>
-   <div class="modal-header bg-dark text-light rate-sheet-modal-header">
+   <div class="modal-header rate-sheet-modal-header">
       <h5 class="modal-title mb-0" id="rateSheetModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Rate Sheet' : 'Add Rate Sheet' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body rate-sheet-modal-body">
       <form [formGroup]="rateSheetForm" (ngSubmit)="submitForm()">

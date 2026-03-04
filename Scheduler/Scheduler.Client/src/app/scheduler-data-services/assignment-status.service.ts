@@ -134,11 +134,17 @@ export class AssignmentStatusData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentStatusId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentStatusId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -183,6 +189,7 @@ export class AssignmentStatusData {
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
   }
 
@@ -720,11 +727,7 @@ export class AssignmentStatusService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentStatusId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

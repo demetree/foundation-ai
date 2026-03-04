@@ -199,10 +199,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-change-history-table [queryParams]="{ constituentId: constituentData?.id }"></app-constituent-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-change-history-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-constituent-change-history-add-edit>
+                                    <app-constituent-change-history-table [queryParams]="{ constituentId: constituentData?.id }" [showAddButton]="true" [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-constituent-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -216,10 +213,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-pledge-table [queryParams]="{ constituentId: constituentData?.id }"></app-pledge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-pledge-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-pledge-add-edit>
+                                    <app-pledge-table [queryParams]="{ constituentId: constituentData?.id }" [showAddButton]="true" [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-pledge-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -233,10 +227,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tribute-table [queryParams]="{ defaultAcknowledgeeId: constituentData?.id }"></app-tribute-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tribute-add-edit [preSeededData]="{ defaultAcknowledgeeId: constituentData?.id }" [hiddenFields]="['defaultAcknowledgeeId']"></app-tribute-add-edit>
+                                    <app-tribute-table [queryParams]="{ defaultAcknowledgeeId: constituentData?.id }" [showAddButton]="true" [preSeededData]="{ defaultAcknowledgeeId: constituentData?.id }" [hiddenFields]="['defaultAcknowledgeeId']"></app-tribute-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -250,10 +241,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ constituentId: constituentData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ constituentId: constituentData?.id }" [showAddButton]="true" [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -267,10 +255,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-soft-credit-table [queryParams]="{ constituentId: constituentData?.id }"></app-soft-credit-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-soft-credit-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-soft-credit-add-edit>
+                                    <app-soft-credit-table [queryParams]="{ constituentId: constituentData?.id }" [showAddButton]="true" [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-soft-credit-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -284,10 +269,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-profile-table [queryParams]="{ constituentId: constituentData?.id }"></app-volunteer-profile-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-profile-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-volunteer-profile-add-edit>
+                                    <app-volunteer-profile-table [queryParams]="{ constituentId: constituentData?.id }" [showAddButton]="true" [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-volunteer-profile-table>
                                 </div>
                             </div>
                             </ng-template>

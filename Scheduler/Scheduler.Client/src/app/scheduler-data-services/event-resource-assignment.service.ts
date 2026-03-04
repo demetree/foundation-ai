@@ -250,11 +250,17 @@ export class EventResourceAssignmentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentChangeHistoriesCount$ = EventResourceAssignmentChangeHistoryService.Instance.GetEventResourceAssignmentChangeHistoriesRowCount({eventResourceAssignmentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentChangeHistoriesCount$ === null) {
+            this._eventResourceAssignmentChangeHistoriesCount$ = EventResourceAssignmentChangeHistoryService.Instance.GetEventResourceAssignmentChangeHistoriesRowCount({eventResourceAssignmentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentChangeHistoriesCount$;
+    }
 
 
 
@@ -299,6 +305,7 @@ export class EventResourceAssignmentData {
      this._eventResourceAssignmentChangeHistories = null;
      this._eventResourceAssignmentChangeHistoriesPromise = null;
      this._eventResourceAssignmentChangeHistoriesSubject.next(null);
+     this._eventResourceAssignmentChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1007,11 +1014,7 @@ export class EventResourceAssignmentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentChangeHistoriesCount$ = EventResourceAssignmentChangeHistoryService.Instance.GetEventResourceAssignmentChangeHistoriesRowCount({eventResourceAssignmentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentChangeHistoriesCount$ = null;
 
 
 

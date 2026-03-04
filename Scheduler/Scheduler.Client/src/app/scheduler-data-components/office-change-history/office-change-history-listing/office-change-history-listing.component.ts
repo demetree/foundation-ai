@@ -165,6 +165,7 @@ export class OfficeChangeHistoryListingComponent implements OnInit, AfterViewIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.officeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.officeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

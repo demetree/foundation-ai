@@ -165,6 +165,7 @@ export class RecurrenceRuleChangeHistoryListingComponent implements OnInit, Afte
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.recurrenceRuleChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.recurrenceRuleChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

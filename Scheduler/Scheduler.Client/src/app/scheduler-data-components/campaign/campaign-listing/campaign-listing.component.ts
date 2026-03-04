@@ -165,6 +165,7 @@ export class CampaignListingComponent implements OnInit, AfterViewInit, CanCompo
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.campaignTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.campaignTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -82,6 +82,7 @@
   <app-calendar-change-history-table
     *ngIf="userIsSchedulerCalendarChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCalendarChangeHistoryCount$ | async) ?? 0">
   </app-calendar-change-history-table>
 </div>

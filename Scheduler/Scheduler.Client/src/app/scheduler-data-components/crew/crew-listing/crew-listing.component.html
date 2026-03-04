@@ -82,6 +82,7 @@
   <app-crew-table
     *ngIf="userIsSchedulerCrewReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCrewCount$ | async) ?? 0">
   </app-crew-table>
 </div>

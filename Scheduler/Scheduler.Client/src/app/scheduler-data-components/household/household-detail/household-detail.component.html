@@ -151,10 +151,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-household-change-history-table [queryParams]="{ householdId: householdData?.id }"></app-household-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-household-change-history-add-edit [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-household-change-history-add-edit>
+                                    <app-household-change-history-table [queryParams]="{ householdId: householdData?.id }" [showAddButton]="true" [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-household-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -168,10 +165,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-table [queryParams]="{ householdId: householdData?.id }"></app-constituent-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-add-edit [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-constituent-add-edit>
+                                    <app-constituent-table [queryParams]="{ householdId: householdData?.id }" [showAddButton]="true" [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-constituent-table>
                                 </div>
                             </div>
                             </ng-template>

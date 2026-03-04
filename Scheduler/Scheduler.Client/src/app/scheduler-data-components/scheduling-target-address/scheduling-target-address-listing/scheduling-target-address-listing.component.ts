@@ -165,6 +165,7 @@ export class SchedulingTargetAddressListingComponent implements OnInit, AfterVie
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.schedulingTargetAddressTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.schedulingTargetAddressTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

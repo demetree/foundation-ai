@@ -165,6 +165,7 @@ export class OfficeTypeListingComponent implements OnInit, AfterViewInit, CanCom
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.officeTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.officeTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

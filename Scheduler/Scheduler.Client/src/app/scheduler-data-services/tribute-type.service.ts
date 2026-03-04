@@ -131,11 +131,17 @@ export class TributeTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TributesCount$ = TributeService.Instance.GetTributesRowCount({tributeTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tributesCount$: Observable<bigint | number> | null = null;
+    public get TributesCount$(): Observable<bigint | number> {
+        if (this._tributesCount$ === null) {
+            this._tributesCount$ = TributeService.Instance.GetTributesRowCount({tributeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tributesCount$;
+    }
 
 
 
@@ -180,6 +186,7 @@ export class TributeTypeData {
      this._tributes = null;
      this._tributesPromise = null;
      this._tributesSubject.next(null);
+     this._tributesCount$ = null;
 
   }
 
@@ -716,11 +723,7 @@ export class TributeTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TributesCount$ = TributeService.Instance.GetTributesRowCount({tributeTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tributesCount$ = null;
 
 
 

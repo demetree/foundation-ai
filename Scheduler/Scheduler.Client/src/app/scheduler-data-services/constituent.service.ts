@@ -264,11 +264,17 @@ export class ConstituentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentChangeHistoriesCount$ = ConstituentChangeHistoryService.Instance.GetConstituentChangeHistoriesRowCount({constituentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _constituentChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ConstituentChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._constituentChangeHistoriesCount$ === null) {
+            this._constituentChangeHistoriesCount$ = ConstituentChangeHistoryService.Instance.GetConstituentChangeHistoriesRowCount({constituentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._constituentChangeHistoriesCount$;
+    }
 
 
 
@@ -283,11 +289,17 @@ export class ConstituentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({constituentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _pledgesCount$: Observable<bigint | number> | null = null;
+    public get PledgesCount$(): Observable<bigint | number> {
+        if (this._pledgesCount$ === null) {
+            this._pledgesCount$ = PledgeService.Instance.GetPledgesRowCount({constituentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._pledgesCount$;
+    }
 
 
 
@@ -302,11 +314,17 @@ export class ConstituentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TributeDefaultAcknowledgeesCount$ = TributeService.Instance.GetTributesRowCount({defaultAcknowledgeeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tributeDefaultAcknowledgeesCount$: Observable<bigint | number> | null = null;
+    public get TributeDefaultAcknowledgeesCount$(): Observable<bigint | number> {
+        if (this._tributeDefaultAcknowledgeesCount$ === null) {
+            this._tributeDefaultAcknowledgeesCount$ = TributeService.Instance.GetTributesRowCount({defaultAcknowledgeeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tributeDefaultAcknowledgeesCount$;
+    }
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -320,11 +338,17 @@ export class ConstituentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({constituentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({constituentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -339,11 +363,17 @@ export class ConstituentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({constituentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _softCreditsCount$: Observable<bigint | number> | null = null;
+    public get SoftCreditsCount$(): Observable<bigint | number> {
+        if (this._softCreditsCount$ === null) {
+            this._softCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({constituentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._softCreditsCount$;
+    }
 
 
 
@@ -358,11 +388,17 @@ export class ConstituentData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({constituentId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerProfilesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerProfilesCount$(): Observable<bigint | number> {
+        if (this._volunteerProfilesCount$ === null) {
+            this._volunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({constituentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerProfilesCount$;
+    }
 
 
 
@@ -407,26 +443,32 @@ export class ConstituentData {
      this._constituentChangeHistories = null;
      this._constituentChangeHistoriesPromise = null;
      this._constituentChangeHistoriesSubject.next(null);
+     this._constituentChangeHistoriesCount$ = null;
 
      this._pledges = null;
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
+     this._pledgesCount$ = null;
 
      this._tributeDefaultAcknowledgees = null;
      this._tributeDefaultAcknowledgeesPromise = null;
      this._tributeDefaultAcknowledgeesSubject.next(null);
+     this._tributeDefaultAcknowledgeesCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._softCredits = null;
      this._softCreditsPromise = null;
      this._softCreditsSubject.next(null);
+     this._softCreditsCount$ = null;
 
      this._volunteerProfiles = null;
      this._volunteerProfilesPromise = null;
      this._volunteerProfilesSubject.next(null);
+     this._volunteerProfilesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1496,9 +1538,9 @@ export class ConstituentService extends SecureEndpointBase {
     (revived as any)._pledgesPromise = null;
     (revived as any)._pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    (revived as any)._tributes = null;
-    (revived as any)._tributesPromise = null;
-    (revived as any)._tributesSubject = new BehaviorSubject<TributeData[] | null>(null);
+    (revived as any)._tributeDefaultAcknowledgees = null;
+    (revived as any)._tributeDefaultAcknowledgeesPromise = null;
+    (revived as any)._tributeDefaultAcknowledgeesSubject = new BehaviorSubject<TributeData[] | null>(null);
 
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
@@ -1533,11 +1575,7 @@ export class ConstituentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ConstituentChangeHistoriesCount$ = ConstituentChangeHistoryService.Instance.GetConstituentChangeHistoriesRowCount({constituentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._constituentChangeHistoriesCount$ = null;
 
 
     (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
@@ -1549,27 +1587,19 @@ export class ConstituentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({constituentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._pledgesCount$ = null;
 
 
-
-    (revived as any).Tributes$ = (revived as any)._tributesSubject.asObservable().pipe(
+    (revived as any).TributeDefaultAcknowledgees$ = (revived as any)._tributeDefaultAcknowledgeesSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._tributes === null && (revived as any)._tributesPromise === null) {
-                (revived as any).loadTributes();        // Need to cast to any to invoke private load method
+              if ((revived as any)._tributeDefaultAcknowledgees === null && (revived as any)._tributeDefaultAcknowledgeesPromise === null) {
+                (revived as any).loadTributeDefaultAcknowledgees();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any).TributesCount$ = TributeService.Instance.GetTributesRowCount({constituentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tributeDefaultAcknowledgeesCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1581,11 +1611,7 @@ export class ConstituentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({constituentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
     (revived as any).SoftCredits$ = (revived as any)._softCreditsSubject.asObservable().pipe(
@@ -1597,11 +1623,7 @@ export class ConstituentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({constituentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._softCreditsCount$ = null;
 
 
     (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
@@ -1613,11 +1635,7 @@ export class ConstituentService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({constituentId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerProfilesCount$ = null;
 
 
 

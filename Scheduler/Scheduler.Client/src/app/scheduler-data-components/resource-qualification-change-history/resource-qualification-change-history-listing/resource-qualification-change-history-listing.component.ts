@@ -165,6 +165,7 @@ export class ResourceQualificationChangeHistoryListingComponent implements OnIni
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.resourceQualificationChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.resourceQualificationChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

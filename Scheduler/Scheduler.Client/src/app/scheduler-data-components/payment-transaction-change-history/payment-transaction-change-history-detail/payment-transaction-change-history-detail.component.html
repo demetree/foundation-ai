@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 payment-transaction-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="payment-transaction-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Payment Transaction Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Payment Transaction Change History' : 'Add Payment Transaction Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPaymentTransactionChangeHistoryReader()">
+                <div class="col m-2 payment-transaction-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="paymentTransactionChangeHistoryForm" (ngSubmit)="submitForm()" class="payment-transaction-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('paymentTransactionId')">
+                                <label for="PaymentTransactionChangeHistory-paymentTransactionId" id="label-PaymentTransactionChangeHistory-paymentTransactionId"><span class="text-danger">*</span>Payment Transaction</label>
+                                <select id="PaymentTransactionChangeHistory-paymentTransactionId" formControlName="paymentTransactionId" class="form-select payment-transaction-change-history-select" [disabled]="!userIsSchedulerPaymentTransactionChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Payment Transaction</option>
+                                    <option *ngFor="let paymentTransaction of paymentTransactions$ | async" [ngValue]="paymentTransaction.id">{{paymentTransaction.status}}</option>
+                                </select>
+                                <div *ngIf="paymentTransactionChangeHistoryForm.get('paymentTransactionId')?.invalid && paymentTransactionChangeHistoryForm.get('paymentTransactionId')?.touched" class="text-danger">
+                                    Payment Transaction is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="PaymentTransactionChangeHistory-versionNumber" id="label-PaymentTransactionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="PaymentTransactionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control payment-transaction-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="PaymentTransactionChangeHistory-timeStamp" id="label-PaymentTransactionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="PaymentTransactionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control payment-transaction-change-history-input" [disabled]="!userIsSchedulerPaymentTransactionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="paymentTransactionChangeHistoryForm.get('timeStamp')?.invalid && paymentTransactionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="PaymentTransactionChangeHistory-userId" id="label-PaymentTransactionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="PaymentTransactionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control payment-transaction-change-history-input" [disabled]="!userIsSchedulerPaymentTransactionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="paymentTransactionChangeHistoryForm.get('userId')?.invalid && paymentTransactionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="PaymentTransactionChangeHistory-data" id="label-PaymentTransactionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="PaymentTransactionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control payment-transaction-change-history-input" [disabled]="!userIsSchedulerPaymentTransactionChangeHistoryWriter()"></textarea>
+                                <div *ngIf="paymentTransactionChangeHistoryForm.get('data')?.invalid && paymentTransactionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="payment-transaction-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="paymentTransactionChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Payment Transaction Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !paymentTransactionChangeHistoryForm.valid || !paymentTransactionChangeHistoryForm.dirty || paymentTransactionChangeHistoryForm.pristine  || userIsSchedulerPaymentTransactionChangeHistoryWriter() == false " ngbTooltip="Save the Payment Transaction Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Payment Transaction Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

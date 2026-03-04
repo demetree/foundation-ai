@@ -165,6 +165,7 @@ export class SalutationListingComponent implements OnInit, AfterViewInit, CanCom
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.salutationTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.salutationTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

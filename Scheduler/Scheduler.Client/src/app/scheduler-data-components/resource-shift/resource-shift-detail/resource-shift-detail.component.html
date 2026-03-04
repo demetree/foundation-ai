@@ -103,10 +103,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-shift-change-history-table [queryParams]="{ resourceShiftId: resourceShiftData?.id }"></app-resource-shift-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-shift-change-history-add-edit [preSeededData]="{ resourceShiftId: resourceShiftData?.id }" [hiddenFields]="['resourceShiftId']"></app-resource-shift-change-history-add-edit>
+                                    <app-resource-shift-change-history-table [queryParams]="{ resourceShiftId: resourceShiftData?.id }" [showAddButton]="true" [preSeededData]="{ resourceShiftId: resourceShiftData?.id }" [hiddenFields]="['resourceShiftId']"></app-resource-shift-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

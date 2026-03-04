@@ -165,6 +165,7 @@ export class ResourceAvailabilityChangeHistoryListingComponent implements OnInit
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.resourceAvailabilityChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.resourceAvailabilityChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

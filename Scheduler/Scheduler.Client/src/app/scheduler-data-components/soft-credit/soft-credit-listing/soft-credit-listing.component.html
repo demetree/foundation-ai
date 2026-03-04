@@ -82,6 +82,7 @@
   <app-soft-credit-table
     *ngIf="userIsSchedulerSoftCreditReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSoftCreditCount$ | async) ?? 0">
   </app-soft-credit-table>
 </div>

@@ -165,6 +165,7 @@ export class ClientListingComponent implements OnInit, AfterViewInit, CanCompone
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.clientTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.clientTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

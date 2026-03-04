@@ -313,26 +313,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(era => era.startLocation);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.assignmentRole);
-				query = query.Include(x => x.assignmentStatus);
-				query = query.Include(x => x.chargeType);
-				query = query.Include(x => x.crew);
-				query = query.Include(x => x.hoursApprovedByContact);
-				query = query.Include(x => x.office);
-				query = query.Include(x => x.resource);
-				query = query.Include(x => x.scheduledEvent);
-				query = query.Include(x => x.volunteerGroup);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Event Resource Assignment, or on an any of the string fields on its immediate relations
@@ -418,6 +398,26 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.assignmentRole);
+				query = query.Include(x => x.assignmentStatus);
+				query = query.Include(x => x.chargeType);
+				query = query.Include(x => x.crew);
+				query = query.Include(x => x.hoursApprovedByContact);
+				query = query.Include(x => x.office);
+				query = query.Include(x => x.resource);
+				query = query.Include(x => x.scheduledEvent);
+				query = query.Include(x => x.volunteerGroup);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.EventResourceAssignment> materialized = await query.ToListAsync(cancellationToken);

@@ -165,6 +165,7 @@ export class ScheduledEventDependencyListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventDependencyTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventDependencyTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

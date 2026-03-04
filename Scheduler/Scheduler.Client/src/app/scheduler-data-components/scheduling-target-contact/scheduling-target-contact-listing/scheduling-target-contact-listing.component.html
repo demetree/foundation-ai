@@ -82,6 +82,7 @@
   <app-scheduling-target-contact-table
     *ngIf="userIsSchedulerSchedulingTargetContactReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSchedulingTargetContactCount$ | async) ?? 0">
   </app-scheduling-target-contact-table>
 </div>

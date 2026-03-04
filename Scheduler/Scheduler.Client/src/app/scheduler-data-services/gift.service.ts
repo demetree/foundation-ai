@@ -228,11 +228,17 @@ export class GiftData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftChangeHistoriesCount$ = GiftChangeHistoryService.Instance.GetGiftChangeHistoriesRowCount({giftId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get GiftChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._giftChangeHistoriesCount$ === null) {
+            this._giftChangeHistoriesCount$ = GiftChangeHistoryService.Instance.GetGiftChangeHistoriesRowCount({giftId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftChangeHistoriesCount$;
+    }
 
 
 
@@ -247,11 +253,17 @@ export class GiftData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({giftId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _softCreditsCount$: Observable<bigint | number> | null = null;
+    public get SoftCreditsCount$(): Observable<bigint | number> {
+        if (this._softCreditsCount$ === null) {
+            this._softCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({giftId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._softCreditsCount$;
+    }
 
 
 
@@ -296,10 +308,12 @@ export class GiftData {
      this._giftChangeHistories = null;
      this._giftChangeHistoriesPromise = null;
      this._giftChangeHistoriesSubject.next(null);
+     this._giftChangeHistoriesCount$ = null;
 
      this._softCredits = null;
      this._softCreditsPromise = null;
      this._softCreditsSubject.next(null);
+     this._softCreditsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1078,11 +1092,7 @@ export class GiftService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftChangeHistoriesCount$ = GiftChangeHistoryService.Instance.GetGiftChangeHistoriesRowCount({giftId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftChangeHistoriesCount$ = null;
 
 
     (revived as any).SoftCredits$ = (revived as any)._softCreditsSubject.asObservable().pipe(
@@ -1094,11 +1104,7 @@ export class GiftService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({giftId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._softCreditsCount$ = null;
 
 
 

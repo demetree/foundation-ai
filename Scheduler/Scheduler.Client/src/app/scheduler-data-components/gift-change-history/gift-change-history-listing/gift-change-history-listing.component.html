@@ -82,6 +82,7 @@
   <app-gift-change-history-table
     *ngIf="userIsSchedulerGiftChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredGiftChangeHistoryCount$ | async) ?? 0">
   </app-gift-change-history-table>
 </div>

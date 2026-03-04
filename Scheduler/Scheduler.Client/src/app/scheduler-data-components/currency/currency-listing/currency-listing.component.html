@@ -82,6 +82,7 @@
   <app-currency-table
     *ngIf="userIsSchedulerCurrencyReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCurrencyCount$ | async) ?? 0">
   </app-currency-table>
 </div>

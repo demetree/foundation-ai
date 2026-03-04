@@ -82,6 +82,7 @@
   <app-constituent-journey-stage-table
     *ngIf="userIsSchedulerConstituentJourneyStageReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredConstituentJourneyStageCount$ | async) ?? 0">
   </app-constituent-journey-stage-table>
 </div>

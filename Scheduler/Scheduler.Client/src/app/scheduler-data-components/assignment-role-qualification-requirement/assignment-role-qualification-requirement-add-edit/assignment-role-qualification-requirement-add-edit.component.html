@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #assignmentRoleQualificationRequirementModal let-modal>
-   <div class="modal-header bg-dark text-light assignment-role-qualification-requirement-modal-header">
+   <div class="modal-header assignment-role-qualification-requirement-modal-header">
       <h5 class="modal-title mb-0" id="assignmentRoleQualificationRequirementModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Assignment Role Qualification Requirement' : 'Add Assignment Role Qualification Requirement' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body assignment-role-qualification-requirement-modal-body">
       <form [formGroup]="assignmentRoleQualificationRequirementForm" (ngSubmit)="submitForm()">

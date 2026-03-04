@@ -82,6 +82,7 @@
   <app-state-province-table
     *ngIf="userIsSchedulerStateProvinceReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredStateProvinceCount$ | async) ?? 0">
   </app-state-province-table>
 </div>

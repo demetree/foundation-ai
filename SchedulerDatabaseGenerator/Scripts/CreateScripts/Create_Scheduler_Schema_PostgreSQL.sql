@@ -67,6 +67,18 @@ CREATE SCHEMA "Scheduler"
 -- DROP TABLE "Scheduler"."EventCalendar"
 -- DROP TABLE "Scheduler"."ContactInteractionChangeHistory"
 -- DROP TABLE "Scheduler"."ContactInteraction"
+-- DROP TABLE "Scheduler"."PaymentTransactionChangeHistory"
+-- DROP TABLE "Scheduler"."PaymentTransaction"
+-- DROP TABLE "Scheduler"."PaymentProviderChangeHistory"
+-- DROP TABLE "Scheduler"."PaymentProvider"
+-- DROP TABLE "Scheduler"."PaymentMethod"
+-- DROP TABLE "Scheduler"."DocumentChangeHistory"
+-- DROP TABLE "Scheduler"."Document"
+-- DROP TABLE "Scheduler"."DocumentType"
+-- DROP TABLE "Scheduler"."FinancialTransactionChangeHistory"
+-- DROP TABLE "Scheduler"."FinancialTransaction"
+-- DROP TABLE "Scheduler"."FinancialCategoryChangeHistory"
+-- DROP TABLE "Scheduler"."FinancialCategory"
 -- DROP TABLE "Scheduler"."EventChargeChangeHistory"
 -- DROP TABLE "Scheduler"."EventCharge"
 -- DROP TABLE "Scheduler"."ChargeStatus"
@@ -207,6 +219,18 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "EventCalendar" DISABLE
 -- ALTER INDEX ALL ON "ContactInteractionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ContactInteraction" DISABLE
+-- ALTER INDEX ALL ON "PaymentTransactionChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "PaymentTransaction" DISABLE
+-- ALTER INDEX ALL ON "PaymentProviderChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "PaymentProvider" DISABLE
+-- ALTER INDEX ALL ON "PaymentMethod" DISABLE
+-- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "Document" DISABLE
+-- ALTER INDEX ALL ON "DocumentType" DISABLE
+-- ALTER INDEX ALL ON "FinancialTransactionChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "FinancialTransaction" DISABLE
+-- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "FinancialCategory" DISABLE
 -- ALTER INDEX ALL ON "EventChargeChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "EventCharge" DISABLE
 -- ALTER INDEX ALL ON "ChargeStatus" DISABLE
@@ -347,6 +371,18 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "EventCalendar" REBUILD
 -- ALTER INDEX ALL ON "ContactInteractionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ContactInteraction" REBUILD
+-- ALTER INDEX ALL ON "PaymentTransactionChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "PaymentTransaction" REBUILD
+-- ALTER INDEX ALL ON "PaymentProviderChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "PaymentProvider" REBUILD
+-- ALTER INDEX ALL ON "PaymentMethod" REBUILD
+-- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "Document" REBUILD
+-- ALTER INDEX ALL ON "DocumentType" REBUILD
+-- ALTER INDEX ALL ON "FinancialTransactionChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "FinancialTransaction" REBUILD
+-- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "FinancialCategory" REBUILD
 -- ALTER INDEX ALL ON "EventChargeChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "EventCharge" REBUILD
 -- ALTER INDEX ALL ON "ChargeStatus" REBUILD
@@ -4562,6 +4598,8 @@ CREATE TABLE "Scheduler"."EventCharge"
 	"rateTypeId" INT NULL,		-- Optional link to RateType (e.g., 'Overtime').
 	"notes" TEXT NULL,		-- Optional notes about the charge
 	"isAutomatic" BOOLEAN NOT NULL DEFAULT true,		-- 1 = auto-dropped from event type, 0 = manual add/edit.
+	"isDeposit" BOOLEAN NOT NULL DEFAULT false,		-- Marks this charge as a refundable deposit (e.g., damage deposit for hall rental).
+	"depositRefundedDate" TIMESTAMP NULL,		-- When the deposit was refunded (null = not yet refunded). Only applicable when isDeposit = true.
 	"exportedDate" TIMESTAMP NULL,		-- When this charge was last exported (null = not exported yet).
 	"externalId" VARCHAR(100) NULL,		-- Identifier from extenral system - possibly invoice number or some other billing grouper
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -4646,6 +4684,596 @@ CREATE INDEX "I_EventChargeChangeHistory_tenantGuid_userId" ON "Scheduler"."Even
 
 -- Index on the EventChargeChangeHistory table's tenantGuid,eventChargeId fields.
 CREATE INDEX "I_EventChargeChangeHistory_tenantGuid_eventChargeId" ON "Scheduler"."EventChargeChangeHistory" ("tenantGuid", "eventChargeId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+/*
+====================================================================================================
+ FINANCIAL CATEGORY (Chart of Accounts)
+ Tenant-specific chart of accounts for categorizing all income and expense transactions.
+ Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
+ general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+
+ DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
+ sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."FinancialCategory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL,
+	"description" VARCHAR(500) NOT NULL,
+	"code" VARCHAR(50) NOT NULL,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
+	"isRevenue" BOOLEAN NOT NULL DEFAULT true,		-- True = income category, False = expense category.
+	"parentFinancialCategoryId" INT NULL,		-- Optional parent for sub-categories.
+	"isTaxApplicable" BOOLEAN NOT NULL DEFAULT false,		-- Whether HST/tax typically applies to transactions in this category.
+	"defaultAmount" DECIMAL(11,2) NULL,		-- Optional default amount for common transactions in this category.
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "parentFinancialCategoryId" FOREIGN KEY ("parentFinancialCategoryId") REFERENCES "Scheduler"."FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT "UC_FinancialCategory_tenantGuid_name" UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
+	CONSTRAINT "UC_FinancialCategory_tenantGuid_code" UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
+);
+-- Index on the FinancialCategory table's tenantGuid field.
+CREATE INDEX "I_FinancialCategory_tenantGuid" ON "Scheduler"."FinancialCategory" ("tenantGuid")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,name fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_name" ON "Scheduler"."FinancialCategory" ("tenantGuid", "name")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_parentFinancialCategoryId" ON "Scheduler"."FinancialCategory" ("tenantGuid", "parentFinancialCategoryId")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,active fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_active" ON "Scheduler"."FinancialCategory" ("tenantGuid", "active")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,deleted fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_deleted" ON "Scheduler"."FinancialCategory" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the FinancialCategory table.
+CREATE TABLE "Scheduler"."FinancialCategoryChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"financialCategoryId" INT NOT NULL,		-- Link to the FinancialCategory table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "financialCategoryId" FOREIGN KEY ("financialCategoryId") REFERENCES "Scheduler"."FinancialCategory"("id")		-- Foreign key to the FinancialCategory table.
+);
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid field.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid" ON "Scheduler"."FinancialCategoryChangeHistory" ("tenantGuid")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."FinancialCategoryChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."FinancialCategoryChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_userId" ON "Scheduler"."FinancialCategoryChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,financialCategoryId fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_financialCategoryId" ON "Scheduler"."FinancialCategoryChangeHistory" ("tenantGuid", "financialCategoryId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+/*
+====================================================================================================
+ FINANCIAL TRANSACTION (General Ledger)
+ Records individual income and expense transactions. Unlike EventCharge (which always requires a
+ ScheduledEvent), FinancialTransaction can exist independently for items like cleaning labour,
+ supply purchases, bank fees, grants received, bar sales, etc.
+
+ Optionally links to a ScheduledEvent when the transaction relates to a booking.
+
+ DESIGN NOTE: isRevenue is denormalized from FinancialCategory for query performance.
+ Amount is always stored as a positive value; isRevenue determines the direction.
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."FinancialTransaction"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"financialCategoryId" INT NOT NULL,		-- Link to the FinancialCategory (chart of accounts entry).
+	"scheduledEventId" INT NULL,		-- Optional link to a ScheduledEvent when the transaction relates to a booking.
+	"contactId" INT NULL,		-- Optional link to the Contact who paid or was paid.
+	"transactionDate" TIMESTAMP NOT NULL,		-- When the transaction occurred (UTC).
+	"description" VARCHAR(500) NOT NULL,		-- Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').
+	"amount" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Transaction amount before tax. Always positive — direction determined by isRevenue.
+	"taxAmount" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Tax amount (e.g., HST).
+	"totalAmount" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Total amount inclusive of tax (amount + taxAmount).
+	"isRevenue" BOOLEAN NOT NULL DEFAULT true,		-- Denormalized from FinancialCategory. True = income, False = expense.
+	"paymentMethod" VARCHAR(50) NULL,		-- How payment was made: e-transfer, cash, cheque, card, etc.
+	"referenceNumber" VARCHAR(100) NULL,		-- Cheque number, e-transfer reference, receipt number, etc.
+	"notes" TEXT NULL,		-- Optional notes about the transaction.
+	"currencyId" INT NOT NULL,		-- Link to Currency table.
+	"exportedDate" TIMESTAMP NULL,		-- When this transaction was last exported for reporting (null = not exported yet).
+	"externalId" VARCHAR(100) NULL,		-- Identifier from external system.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "financialCategoryId" FOREIGN KEY ("financialCategoryId") REFERENCES "Scheduler"."FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT "scheduledEventId" FOREIGN KEY ("scheduledEventId") REFERENCES "Scheduler"."ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT "contactId" FOREIGN KEY ("contactId") REFERENCES "Scheduler"."Contact"("id"),		-- Foreign key to the Contact table.
+	CONSTRAINT "currencyId" FOREIGN KEY ("currencyId") REFERENCES "Scheduler"."Currency"("id")		-- Foreign key to the Currency table.
+);
+-- Index on the FinancialTransaction table's tenantGuid field.
+CREATE INDEX "I_FinancialTransaction_tenantGuid" ON "Scheduler"."FinancialTransaction" ("tenantGuid")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,financialCategoryId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_financialCategoryId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "financialCategoryId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,scheduledEventId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_scheduledEventId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "scheduledEventId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,contactId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_contactId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "contactId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,transactionDate fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_transactionDate" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "transactionDate")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,currencyId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_currencyId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "currencyId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,externalId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_externalId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "externalId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,active fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_active" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "active")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,deleted fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_deleted" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the FinancialTransaction table.
+CREATE TABLE "Scheduler"."FinancialTransactionChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"financialTransactionId" INT NOT NULL,		-- Link to the FinancialTransaction table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "financialTransactionId" FOREIGN KEY ("financialTransactionId") REFERENCES "Scheduler"."FinancialTransaction"("id")		-- Foreign key to the FinancialTransaction table.
+);
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid field.
+CREATE INDEX "I_FinancialTransactionChangeHistory_tenantGuid" ON "Scheduler"."FinancialTransactionChangeHistory" ("tenantGuid")
+;
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_FinancialTransactionChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."FinancialTransactionChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_FinancialTransactionChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."FinancialTransactionChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_FinancialTransactionChangeHistory_tenantGuid_userId" ON "Scheduler"."FinancialTransactionChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,financialTransactionId fields.
+CREATE INDEX "I_FinancialTransactionChangeHistory_tenantGuid_financialTransac" ON "Scheduler"."FinancialTransactionChangeHistory" ("tenantGuid", "financialTransactionId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+-- Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).
+CREATE TABLE "Scheduler"."DocumentType"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE,
+	"description" VARCHAR(500) NOT NULL,
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
+
+);
+-- Index on the DocumentType table's name field.
+CREATE INDEX "I_DocumentType_name" ON "Scheduler"."DocumentType" ("name")
+;
+
+-- Index on the DocumentType table's active field.
+CREATE INDEX "I_DocumentType_active" ON "Scheduler"."DocumentType" ("active")
+;
+
+-- Index on the DocumentType table's deleted field.
+CREATE INDEX "I_DocumentType_deleted" ON "Scheduler"."DocumentType" ("deleted")
+;
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Rental Agreement', 'Signed rental or usage agreement', 1, 'f1a1b2c3-d4e5-6789-abcd-ef0123456701' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Receipt', 'Purchase receipt or proof of payment', 2, 'f1a1b2c3-d4e5-6789-abcd-ef0123456702' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Invoice', 'Invoice issued or received', 3, 'f1a1b2c3-d4e5-6789-abcd-ef0123456703' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Photo', 'Photograph or image', 4, 'f1a1b2c3-d4e5-6789-abcd-ef0123456704' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' );
+
+
+/*
+====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."Document"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"documentTypeId" INT NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
+	"name" VARCHAR(250) NOT NULL,		-- Display name for the document.
+	"description" VARCHAR(500) NULL,		-- Optional description of the document.
+	"fileName" VARCHAR(500) NOT NULL,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
+	"mimeType" VARCHAR(100) NOT NULL,		-- MIME type of the file (e.g., 'application/pdf', 'image/jpeg').
+	"fileSizeBytes" BIGINT NOT NULL,		-- File size in bytes for UI display.
+	"fileDataFileName" VARCHAR(250) NULL,		-- Part of the binary data field setup
+	"fileDataSize" BIGINT NULL,		-- Part of the binary data field setup
+	"fileDataData" BYTEA NULL,		-- Part of the binary data field setup
+	"fileDataMimeType" VARCHAR(100) NULL,		-- Part of the binary data field setup
+	"scheduledEventId" INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
+	"financialTransactionId" INT NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
+	"contactId" INT NULL,		-- Optional link to a Contact.
+	"resourceId" INT NULL,		-- Optional link to a Resource.
+	"status" VARCHAR(50) NULL,		-- Document workflow status: pending, signed, verified, etc.
+	"statusDate" TIMESTAMP NULL,		-- When the status was last changed.
+	"statusChangedBy" VARCHAR(100) NULL,		-- Who changed the status.
+	"uploadedDate" TIMESTAMP NOT NULL,		-- When the document was uploaded (UTC).
+	"uploadedBy" VARCHAR(100) NULL,		-- User who uploaded the document.
+	"notes" TEXT NULL,		-- Optional notes about the document.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "documentTypeId" FOREIGN KEY ("documentTypeId") REFERENCES "Scheduler"."DocumentType"("id"),		-- Foreign key to the DocumentType table.
+	CONSTRAINT "scheduledEventId" FOREIGN KEY ("scheduledEventId") REFERENCES "Scheduler"."ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT "financialTransactionId" FOREIGN KEY ("financialTransactionId") REFERENCES "Scheduler"."FinancialTransaction"("id"),		-- Foreign key to the FinancialTransaction table.
+	CONSTRAINT "contactId" FOREIGN KEY ("contactId") REFERENCES "Scheduler"."Contact"("id"),		-- Foreign key to the Contact table.
+	CONSTRAINT "resourceId" FOREIGN KEY ("resourceId") REFERENCES "Scheduler"."Resource"("id")		-- Foreign key to the Resource table.
+);
+-- Index on the Document table's tenantGuid field.
+CREATE INDEX "I_Document_tenantGuid" ON "Scheduler"."Document" ("tenantGuid")
+;
+
+-- Index on the Document table's tenantGuid,documentTypeId fields.
+CREATE INDEX "I_Document_tenantGuid_documentTypeId" ON "Scheduler"."Document" ("tenantGuid", "documentTypeId")
+;
+
+-- Index on the Document table's tenantGuid,scheduledEventId fields.
+CREATE INDEX "I_Document_tenantGuid_scheduledEventId" ON "Scheduler"."Document" ("tenantGuid", "scheduledEventId")
+;
+
+-- Index on the Document table's tenantGuid,financialTransactionId fields.
+CREATE INDEX "I_Document_tenantGuid_financialTransactionId" ON "Scheduler"."Document" ("tenantGuid", "financialTransactionId")
+;
+
+-- Index on the Document table's tenantGuid,contactId fields.
+CREATE INDEX "I_Document_tenantGuid_contactId" ON "Scheduler"."Document" ("tenantGuid", "contactId")
+;
+
+-- Index on the Document table's tenantGuid,resourceId fields.
+CREATE INDEX "I_Document_tenantGuid_resourceId" ON "Scheduler"."Document" ("tenantGuid", "resourceId")
+;
+
+-- Index on the Document table's tenantGuid,active fields.
+CREATE INDEX "I_Document_tenantGuid_active" ON "Scheduler"."Document" ("tenantGuid", "active")
+;
+
+-- Index on the Document table's tenantGuid,deleted fields.
+CREATE INDEX "I_Document_tenantGuid_deleted" ON "Scheduler"."Document" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the Document table.
+CREATE TABLE "Scheduler"."DocumentChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"documentId" INT NOT NULL,		-- Link to the Document table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "documentId" FOREIGN KEY ("documentId") REFERENCES "Scheduler"."Document"("id")		-- Foreign key to the Document table.
+);
+-- Index on the DocumentChangeHistory table's tenantGuid field.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_userId" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_documentId" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "documentId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+-- Master list of payment methods (Cash, E-Transfer, Credit Card, Debit Card, Cheque).
+CREATE TABLE "Scheduler"."PaymentMethod"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE,
+	"description" VARCHAR(500) NOT NULL,
+	"isElectronic" BOOLEAN NOT NULL DEFAULT false,		-- True for card and e-transfer, false for cash and cheque.
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
+
+);
+-- Index on the PaymentMethod table's name field.
+CREATE INDEX "I_PaymentMethod_name" ON "Scheduler"."PaymentMethod" ("name")
+;
+
+-- Index on the PaymentMethod table's active field.
+CREATE INDEX "I_PaymentMethod_active" ON "Scheduler"."PaymentMethod" ("active")
+;
+
+-- Index on the PaymentMethod table's deleted field.
+CREATE INDEX "I_PaymentMethod_deleted" ON "Scheduler"."PaymentMethod" ("deleted")
+;
+
+INSERT INTO "Scheduler"."PaymentMethod" ( "name", "description", "isElectronic", "sequence", "objectGuid" ) VALUES  ( 'Cash', 'Cash payment', false, 1, 'b1a1b2c3-d4e5-6789-abcd-ef0123456701' );
+
+INSERT INTO "Scheduler"."PaymentMethod" ( "name", "description", "isElectronic", "sequence", "objectGuid" ) VALUES  ( 'E-Transfer', 'Interac e-Transfer', true, 2, 'b1a1b2c3-d4e5-6789-abcd-ef0123456702' );
+
+INSERT INTO "Scheduler"."PaymentMethod" ( "name", "description", "isElectronic", "sequence", "objectGuid" ) VALUES  ( 'Cheque', 'Cheque payment', false, 3, 'b1a1b2c3-d4e5-6789-abcd-ef0123456703' );
+
+INSERT INTO "Scheduler"."PaymentMethod" ( "name", "description", "isElectronic", "sequence", "objectGuid" ) VALUES  ( 'Credit Card', 'Credit card payment', true, 4, 'b1a1b2c3-d4e5-6789-abcd-ef0123456704' );
+
+INSERT INTO "Scheduler"."PaymentMethod" ( "name", "description", "isElectronic", "sequence", "objectGuid" ) VALUES  ( 'Debit Card', 'Debit card payment', true, 5, 'b1a1b2c3-d4e5-6789-abcd-ef0123456705' );
+
+
+/*
+====================================================================================================
+ PAYMENT PROVIDER
+ Configuration for electronic payment processor integrations (Stripe, Square, or Manual).
+ Stores encrypted API keys and merchant account details.
+
+ DESIGN NOTE: Starts with a 'Manual' provider for recording cash/cheque payments.
+ Add Stripe/Square providers when ready for electronic payment acceptance.
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."PaymentProvider"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL,
+	"description" VARCHAR(500) NOT NULL,
+	"providerType" VARCHAR(50) NOT NULL,		-- Provider type identifier: 'manual', 'stripe', 'square', 'moneris'.
+	"isActive" BOOLEAN NOT NULL DEFAULT true,		-- Whether this provider is currently active.
+	"apiKeyEncrypted" TEXT NULL,		-- Encrypted API key for the payment provider.
+	"merchantId" VARCHAR(100) NULL,		-- Merchant account identifier with the provider.
+	"webhookSecret" TEXT NULL,		-- Encrypted webhook validation secret for the provider.
+	"processingFeePercent" NUMERIC(38,22) NULL,		-- Provider processing fee percentage (e.g., 2.9 for Stripe).
+	"processingFeeFixed" DECIMAL(11,2) NULL,		-- Provider fixed processing fee per transaction (e.g., $0.30).
+	"notes" TEXT NULL,		-- Optional notes about the provider configuration.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "UC_PaymentProvider_tenantGuid_name" UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the PaymentProvider table's tenantGuid and name fields.
+);
+-- Index on the PaymentProvider table's tenantGuid field.
+CREATE INDEX "I_PaymentProvider_tenantGuid" ON "Scheduler"."PaymentProvider" ("tenantGuid")
+;
+
+-- Index on the PaymentProvider table's tenantGuid,name fields.
+CREATE INDEX "I_PaymentProvider_tenantGuid_name" ON "Scheduler"."PaymentProvider" ("tenantGuid", "name")
+;
+
+-- Index on the PaymentProvider table's tenantGuid,active fields.
+CREATE INDEX "I_PaymentProvider_tenantGuid_active" ON "Scheduler"."PaymentProvider" ("tenantGuid", "active")
+;
+
+-- Index on the PaymentProvider table's tenantGuid,deleted fields.
+CREATE INDEX "I_PaymentProvider_tenantGuid_deleted" ON "Scheduler"."PaymentProvider" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the PaymentProvider table.
+CREATE TABLE "Scheduler"."PaymentProviderChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"paymentProviderId" INT NOT NULL,		-- Link to the PaymentProvider table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "paymentProviderId" FOREIGN KEY ("paymentProviderId") REFERENCES "Scheduler"."PaymentProvider"("id")		-- Foreign key to the PaymentProvider table.
+);
+-- Index on the PaymentProviderChangeHistory table's tenantGuid field.
+CREATE INDEX "I_PaymentProviderChangeHistory_tenantGuid" ON "Scheduler"."PaymentProviderChangeHistory" ("tenantGuid")
+;
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_PaymentProviderChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."PaymentProviderChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_PaymentProviderChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."PaymentProviderChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_PaymentProviderChangeHistory_tenantGuid_userId" ON "Scheduler"."PaymentProviderChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,paymentProviderId fields.
+CREATE INDEX "I_PaymentProviderChangeHistory_tenantGuid_paymentProviderId" ON "Scheduler"."PaymentProviderChangeHistory" ("tenantGuid", "paymentProviderId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+/*
+====================================================================================================
+ PAYMENT TRANSACTION
+ Records individual payments received or made. Links to PaymentMethod (how) and optionally to
+ PaymentProvider (which processor). Can be associated with a ScheduledEvent, FinancialTransaction,
+ or EventCharge.
+
+ DESIGN NOTE: Supports both manual recording (cash register replacement) and electronic payment
+ processing (Stripe/Square integration). The providerTransactionId and providerResponse fields
+ store the raw response from electronic providers for audit purposes.
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."PaymentTransaction"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"paymentMethodId" INT NOT NULL,		-- How the payment was made (Cash, E-Transfer, Credit Card, etc.).
+	"paymentProviderId" INT NULL,		-- Optional link to payment processor (null for cash/cheque).
+	"scheduledEventId" INT NULL,		-- Optional link to a ScheduledEvent (e.g., booking payment).
+	"financialTransactionId" INT NULL,		-- Optional link to a FinancialTransaction (e.g., bar tab payment).
+	"eventChargeId" INT NULL,		-- Optional link to a specific EventCharge (e.g., damage deposit payment).
+	"transactionDate" TIMESTAMP NOT NULL,		-- When the payment occurred (UTC).
+	"amount" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Gross payment amount.
+	"processingFee" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Fee deducted by the payment provider.
+	"netAmount" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Net amount received (amount - processingFee).
+	"currencyId" INT NOT NULL,		-- Link to Currency table.
+	"status" VARCHAR(50) NOT NULL,		-- Payment status: pending, completed, failed, refunded.
+	"providerTransactionId" VARCHAR(250) NULL,		-- Transaction ID from the payment provider (e.g., Stripe charge ID).
+	"providerResponse" TEXT NULL,		-- JSON response from the payment provider for audit purposes.
+	"payerName" VARCHAR(250) NULL,		-- Name of the person who paid.
+	"payerEmail" VARCHAR(250) NULL,		-- Email of the payer.
+	"payerPhone" VARCHAR(50) NULL,		-- Phone number of the payer.
+	"receiptNumber" VARCHAR(100) NULL,		-- Generated receipt number.
+	"notes" TEXT NULL,		-- Optional notes about the payment.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "paymentMethodId" FOREIGN KEY ("paymentMethodId") REFERENCES "Scheduler"."PaymentMethod"("id"),		-- Foreign key to the PaymentMethod table.
+	CONSTRAINT "paymentProviderId" FOREIGN KEY ("paymentProviderId") REFERENCES "Scheduler"."PaymentProvider"("id"),		-- Foreign key to the PaymentProvider table.
+	CONSTRAINT "scheduledEventId" FOREIGN KEY ("scheduledEventId") REFERENCES "Scheduler"."ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT "financialTransactionId" FOREIGN KEY ("financialTransactionId") REFERENCES "Scheduler"."FinancialTransaction"("id"),		-- Foreign key to the FinancialTransaction table.
+	CONSTRAINT "eventChargeId" FOREIGN KEY ("eventChargeId") REFERENCES "Scheduler"."EventCharge"("id"),		-- Foreign key to the EventCharge table.
+	CONSTRAINT "currencyId" FOREIGN KEY ("currencyId") REFERENCES "Scheduler"."Currency"("id")		-- Foreign key to the Currency table.
+);
+-- Index on the PaymentTransaction table's tenantGuid field.
+CREATE INDEX "I_PaymentTransaction_tenantGuid" ON "Scheduler"."PaymentTransaction" ("tenantGuid")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,paymentMethodId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_paymentMethodId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "paymentMethodId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,paymentProviderId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_paymentProviderId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "paymentProviderId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,scheduledEventId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_scheduledEventId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "scheduledEventId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,financialTransactionId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_financialTransactionId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "financialTransactionId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,eventChargeId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_eventChargeId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "eventChargeId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,transactionDate fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_transactionDate" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "transactionDate")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,currencyId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_currencyId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "currencyId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,providerTransactionId fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_providerTransactionId" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "providerTransactionId")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,receiptNumber fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_receiptNumber" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "receiptNumber")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,active fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_active" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "active")
+;
+
+-- Index on the PaymentTransaction table's tenantGuid,deleted fields.
+CREATE INDEX "I_PaymentTransaction_tenantGuid_deleted" ON "Scheduler"."PaymentTransaction" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the PaymentTransaction table.
+CREATE TABLE "Scheduler"."PaymentTransactionChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"paymentTransactionId" INT NOT NULL,		-- Link to the PaymentTransaction table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "paymentTransactionId" FOREIGN KEY ("paymentTransactionId") REFERENCES "Scheduler"."PaymentTransaction"("id")		-- Foreign key to the PaymentTransaction table.
+);
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid field.
+CREATE INDEX "I_PaymentTransactionChangeHistory_tenantGuid" ON "Scheduler"."PaymentTransactionChangeHistory" ("tenantGuid")
+;
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_PaymentTransactionChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."PaymentTransactionChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_PaymentTransactionChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."PaymentTransactionChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_PaymentTransactionChangeHistory_tenantGuid_userId" ON "Scheduler"."PaymentTransactionChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,paymentTransactionId fields.
+CREATE INDEX "I_PaymentTransactionChangeHistory_tenantGuid_paymentTransaction" ON "Scheduler"."PaymentTransactionChangeHistory" ("tenantGuid", "paymentTransactionId") INCLUDE ( versionNumber, timeStamp, userId )
 ;
 
 

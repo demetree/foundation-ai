@@ -82,6 +82,7 @@
   <app-recurrence-exception-change-history-table
     *ngIf="userIsSchedulerRecurrenceExceptionChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRecurrenceExceptionChangeHistoryCount$ | async) ?? 0">
   </app-recurrence-exception-change-history-table>
 </div>

@@ -194,11 +194,17 @@ export class CalendarData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CalendarChangeHistoriesCount$ = CalendarChangeHistoryService.Instance.GetCalendarChangeHistoriesRowCount({calendarId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _calendarChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get CalendarChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._calendarChangeHistoriesCount$ === null) {
+            this._calendarChangeHistoriesCount$ = CalendarChangeHistoryService.Instance.GetCalendarChangeHistoriesRowCount({calendarId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._calendarChangeHistoriesCount$;
+    }
 
 
 
@@ -213,11 +219,17 @@ export class CalendarData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({calendarId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientsCount$: Observable<bigint | number> | null = null;
+    public get ClientsCount$(): Observable<bigint | number> {
+        if (this._clientsCount$ === null) {
+            this._clientsCount$ = ClientService.Instance.GetClientsRowCount({calendarId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientsCount$;
+    }
 
 
 
@@ -232,11 +244,17 @@ export class CalendarData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({calendarId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetsCount$ === null) {
+            this._schedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({calendarId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetsCount$;
+    }
 
 
 
@@ -251,11 +269,17 @@ export class CalendarData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({calendarId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventCalendarsCount$: Observable<bigint | number> | null = null;
+    public get EventCalendarsCount$(): Observable<bigint | number> {
+        if (this._eventCalendarsCount$ === null) {
+            this._eventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({calendarId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventCalendarsCount$;
+    }
 
 
 
@@ -300,18 +324,22 @@ export class CalendarData {
      this._calendarChangeHistories = null;
      this._calendarChangeHistoriesPromise = null;
      this._calendarChangeHistoriesSubject.next(null);
+     this._calendarChangeHistoriesCount$ = null;
 
      this._clients = null;
      this._clientsPromise = null;
      this._clientsSubject.next(null);
+     this._clientsCount$ = null;
 
      this._schedulingTargets = null;
      this._schedulingTargetsPromise = null;
      this._schedulingTargetsSubject.next(null);
+     this._schedulingTargetsCount$ = null;
 
      this._eventCalendars = null;
      this._eventCalendarsPromise = null;
      this._eventCalendarsSubject.next(null);
+     this._eventCalendarsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1240,11 +1268,7 @@ export class CalendarService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CalendarChangeHistoriesCount$ = CalendarChangeHistoryService.Instance.GetCalendarChangeHistoriesRowCount({calendarId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._calendarChangeHistoriesCount$ = null;
 
 
     (revived as any).Clients$ = (revived as any)._clientsSubject.asObservable().pipe(
@@ -1256,11 +1280,7 @@ export class CalendarService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientsCount$ = ClientService.Instance.GetClientsRowCount({calendarId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientsCount$ = null;
 
 
     (revived as any).SchedulingTargets$ = (revived as any)._schedulingTargetsSubject.asObservable().pipe(
@@ -1272,11 +1292,7 @@ export class CalendarService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({calendarId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetsCount$ = null;
 
 
     (revived as any).EventCalendars$ = (revived as any)._eventCalendarsSubject.asObservable().pipe(
@@ -1288,11 +1304,7 @@ export class CalendarService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({calendarId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventCalendarsCount$ = null;
 
 
 

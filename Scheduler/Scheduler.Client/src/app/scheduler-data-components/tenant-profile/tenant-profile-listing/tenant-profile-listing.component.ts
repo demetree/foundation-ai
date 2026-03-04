@@ -165,6 +165,7 @@ export class TenantProfileListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.tenantProfileTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.tenantProfileTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

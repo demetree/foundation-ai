@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #assignmentRoleQualificationRequirementChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light assignment-role-qualification-requirement-change-history-modal-header">
+   <div class="modal-header assignment-role-qualification-requirement-change-history-modal-header">
       <h5 class="modal-title mb-0" id="assignmentRoleQualificationRequirementChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Assignment Role Qualification Requirement Change History' : 'Add Assignment Role Qualification Requirement Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body assignment-role-qualification-requirement-change-history-modal-body">
       <form [formGroup]="assignmentRoleQualificationRequirementChangeHistoryForm" (ngSubmit)="submitForm()">

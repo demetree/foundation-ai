@@ -63,6 +63,18 @@ GO
 -- DROP TABLE [Scheduler].[EventCalendar]
 -- DROP TABLE [Scheduler].[ContactInteractionChangeHistory]
 -- DROP TABLE [Scheduler].[ContactInteraction]
+-- DROP TABLE [Scheduler].[PaymentTransactionChangeHistory]
+-- DROP TABLE [Scheduler].[PaymentTransaction]
+-- DROP TABLE [Scheduler].[PaymentProviderChangeHistory]
+-- DROP TABLE [Scheduler].[PaymentProvider]
+-- DROP TABLE [Scheduler].[PaymentMethod]
+-- DROP TABLE [Scheduler].[DocumentChangeHistory]
+-- DROP TABLE [Scheduler].[Document]
+-- DROP TABLE [Scheduler].[DocumentType]
+-- DROP TABLE [Scheduler].[FinancialTransactionChangeHistory]
+-- DROP TABLE [Scheduler].[FinancialTransaction]
+-- DROP TABLE [Scheduler].[FinancialCategoryChangeHistory]
+-- DROP TABLE [Scheduler].[FinancialCategory]
 -- DROP TABLE [Scheduler].[EventChargeChangeHistory]
 -- DROP TABLE [Scheduler].[EventCharge]
 -- DROP TABLE [Scheduler].[ChargeStatus]
@@ -203,6 +215,18 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[EventCalendar] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ContactInteractionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ContactInteraction] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PaymentTransactionChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PaymentTransaction] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PaymentProviderChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PaymentProvider] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PaymentMethod] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[Document] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[FinancialTransactionChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[FinancialTransaction] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategoryChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventChargeChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventCharge] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ChargeStatus] DISABLE
@@ -343,6 +367,18 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[EventCalendar] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ContactInteractionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ContactInteraction] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PaymentTransactionChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PaymentTransaction] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PaymentProviderChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PaymentProvider] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PaymentMethod] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[Document] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[FinancialTransactionChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[FinancialTransaction] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategoryChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventChargeChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventCharge] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ChargeStatus] REBUILD
@@ -5090,6 +5126,8 @@ CREATE TABLE [Scheduler].[EventCharge]
 	[rateTypeId] INT NULL,		-- Optional link to RateType (e.g., 'Overtime').
 	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the charge
 	[isAutomatic] BIT NOT NULL DEFAULT 1,		-- 1 = auto-dropped from event type, 0 = manual add/edit.
+	[isDeposit] BIT NOT NULL DEFAULT 0,		-- Marks this charge as a refundable deposit (e.g., damage deposit for hall rental).
+	[depositRefundedDate] DATETIME2(7) NULL,		-- When the deposit was refunded (null = not yet refunded). Only applicable when isDeposit = true.
 	[exportedDate] DATETIME2(7) NULL,		-- When this charge was last exported (null = not exported yet).
 	[externalId] NVARCHAR(100) NULL,		-- Identifier from extenral system - possibly invoice number or some other billing grouper
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -5180,6 +5218,640 @@ GO
 
 -- Index on the EventChargeChangeHistory table's tenantGuid,eventChargeId fields.
 CREATE INDEX [I_EventChargeChangeHistory_tenantGuid_eventChargeId] ON [Scheduler].[EventChargeChangeHistory] ([tenantGuid], [eventChargeId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
+ FINANCIAL CATEGORY (Chart of Accounts)
+ Tenant-specific chart of accounts for categorizing all income and expense transactions.
+ Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
+ general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+
+ DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
+ sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[FinancialCategory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[description] NVARCHAR(500) NOT NULL,
+	[code] NVARCHAR(50) NOT NULL,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
+	[isRevenue] BIT NOT NULL DEFAULT 1,		-- True = income category, False = expense category.
+	[parentFinancialCategoryId] INT NULL,		-- Optional parent for sub-categories.
+	[isTaxApplicable] BIT NOT NULL DEFAULT 0,		-- Whether HST/tax typically applies to transactions in this category.
+	[defaultAmount] MONEY NULL,		-- Optional default amount for common transactions in this category.
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_FinancialCategory_FinancialCategory_parentFinancialCategoryId] FOREIGN KEY ([parentFinancialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT [UC_FinancialCategory_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
+	CONSTRAINT [UC_FinancialCategory_tenantGuid_code] UNIQUE ( [tenantGuid], [code]) 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
+)
+GO
+
+-- Index on the FinancialCategory table's tenantGuid field.
+CREATE INDEX [I_FinancialCategory_tenantGuid] ON [Scheduler].[FinancialCategory] ([tenantGuid])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,name fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_name] ON [Scheduler].[FinancialCategory] ([tenantGuid], [name])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_parentFinancialCategoryId] ON [Scheduler].[FinancialCategory] ([tenantGuid], [parentFinancialCategoryId])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,active fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_active] ON [Scheduler].[FinancialCategory] ([tenantGuid], [active])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,deleted fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_deleted] ON [Scheduler].[FinancialCategory] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the FinancialCategory table.
+CREATE TABLE [Scheduler].[FinancialCategoryChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[financialCategoryId] INT NOT NULL,		-- Link to the FinancialCategory table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_FinancialCategoryChangeHistory_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id])		-- Foreign key to the FinancialCategory table.
+)
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid field.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_userId] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,financialCategoryId fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_financialCategoryId] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [financialCategoryId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
+ FINANCIAL TRANSACTION (General Ledger)
+ Records individual income and expense transactions. Unlike EventCharge (which always requires a
+ ScheduledEvent), FinancialTransaction can exist independently for items like cleaning labour,
+ supply purchases, bank fees, grants received, bar sales, etc.
+
+ Optionally links to a ScheduledEvent when the transaction relates to a booking.
+
+ DESIGN NOTE: isRevenue is denormalized from FinancialCategory for query performance.
+ Amount is always stored as a positive value; isRevenue determines the direction.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[FinancialTransaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[financialCategoryId] INT NOT NULL,		-- Link to the FinancialCategory (chart of accounts entry).
+	[scheduledEventId] INT NULL,		-- Optional link to a ScheduledEvent when the transaction relates to a booking.
+	[contactId] INT NULL,		-- Optional link to the Contact who paid or was paid.
+	[transactionDate] DATETIME2(7) NOT NULL,		-- When the transaction occurred (UTC).
+	[description] NVARCHAR(500) NOT NULL,		-- Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').
+	[amount] MONEY NOT NULL DEFAULT 0,		-- Transaction amount before tax. Always positive — direction determined by isRevenue.
+	[taxAmount] MONEY NOT NULL DEFAULT 0,		-- Tax amount (e.g., HST).
+	[totalAmount] MONEY NOT NULL DEFAULT 0,		-- Total amount inclusive of tax (amount + taxAmount).
+	[isRevenue] BIT NOT NULL DEFAULT 1,		-- Denormalized from FinancialCategory. True = income, False = expense.
+	[paymentMethod] NVARCHAR(50) NULL,		-- How payment was made: e-transfer, cash, cheque, card, etc.
+	[referenceNumber] NVARCHAR(100) NULL,		-- Cheque number, e-transfer reference, receipt number, etc.
+	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the transaction.
+	[currencyId] INT NOT NULL,		-- Link to Currency table.
+	[exportedDate] DATETIME2(7) NULL,		-- When this transaction was last exported for reporting (null = not exported yet).
+	[externalId] NVARCHAR(100) NULL,		-- Identifier from external system.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_FinancialTransaction_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT [FK_FinancialTransaction_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT [FK_FinancialTransaction_Contact_contactId] FOREIGN KEY ([contactId]) REFERENCES [Scheduler].[Contact] ([id]),		-- Foreign key to the Contact table.
+	CONSTRAINT [FK_FinancialTransaction_Currency_currencyId] FOREIGN KEY ([currencyId]) REFERENCES [Scheduler].[Currency] ([id])		-- Foreign key to the Currency table.
+)
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid field.
+CREATE INDEX [I_FinancialTransaction_tenantGuid] ON [Scheduler].[FinancialTransaction] ([tenantGuid])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,financialCategoryId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_financialCategoryId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [financialCategoryId])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,scheduledEventId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_scheduledEventId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [scheduledEventId])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,contactId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_contactId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [contactId])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,transactionDate fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_transactionDate] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [transactionDate])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,currencyId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_currencyId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [currencyId])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,externalId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_externalId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [externalId])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,active fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_active] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [active])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_deleted] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the FinancialTransaction table.
+CREATE TABLE [Scheduler].[FinancialTransactionChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[financialTransactionId] INT NOT NULL,		-- Link to the FinancialTransaction table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_FinancialTransactionChangeHistory_FinancialTransaction_financialTransactionId] FOREIGN KEY ([financialTransactionId]) REFERENCES [Scheduler].[FinancialTransaction] ([id])		-- Foreign key to the FinancialTransaction table.
+)
+GO
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid field.
+CREATE INDEX [I_FinancialTransactionChangeHistory_tenantGuid] ON [Scheduler].[FinancialTransactionChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_FinancialTransactionChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[FinancialTransactionChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_FinancialTransactionChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[FinancialTransactionChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_FinancialTransactionChangeHistory_tenantGuid_userId] ON [Scheduler].[FinancialTransactionChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the FinancialTransactionChangeHistory table's tenantGuid,financialTransactionId fields.
+CREATE INDEX [I_FinancialTransactionChangeHistory_tenantGuid_financialTransactionId] ON [Scheduler].[FinancialTransactionChangeHistory] ([tenantGuid], [financialTransactionId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).
+CREATE TABLE [Scheduler].[DocumentType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the DocumentType table's name field.
+CREATE INDEX [I_DocumentType_name] ON [Scheduler].[DocumentType] ([name])
+GO
+
+-- Index on the DocumentType table's active field.
+CREATE INDEX [I_DocumentType_active] ON [Scheduler].[DocumentType] ([active])
+GO
+
+-- Index on the DocumentType table's deleted field.
+CREATE INDEX [I_DocumentType_deleted] ON [Scheduler].[DocumentType] ([deleted])
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Rental Agreement', 'Signed rental or usage agreement', 1, 'f1a1b2c3-d4e5-6789-abcd-ef0123456701' )
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Receipt', 'Purchase receipt or proof of payment', 2, 'f1a1b2c3-d4e5-6789-abcd-ef0123456702' )
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Invoice', 'Invoice issued or received', 3, 'f1a1b2c3-d4e5-6789-abcd-ef0123456703' )
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Photo', 'Photograph or image', 4, 'f1a1b2c3-d4e5-6789-abcd-ef0123456704' )
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' )
+GO
+
+
+/*
+====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[Document]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[documentTypeId] INT NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
+	[name] NVARCHAR(250) NOT NULL,		-- Display name for the document.
+	[description] NVARCHAR(500) NULL,		-- Optional description of the document.
+	[fileName] NVARCHAR(500) NOT NULL,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
+	[mimeType] NVARCHAR(100) NOT NULL,		-- MIME type of the file (e.g., 'application/pdf', 'image/jpeg').
+	[fileSizeBytes] BIGINT NOT NULL,		-- File size in bytes for UI display.
+	[fileDataFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
+	[fileDataSize] BIGINT NULL,		-- Part of the binary data field setup
+	[fileDataData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
+	[fileDataMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[scheduledEventId] INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
+	[financialTransactionId] INT NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
+	[contactId] INT NULL,		-- Optional link to a Contact.
+	[resourceId] INT NULL,		-- Optional link to a Resource.
+	[status] NVARCHAR(50) NULL,		-- Document workflow status: pending, signed, verified, etc.
+	[statusDate] DATETIME2(7) NULL,		-- When the status was last changed.
+	[statusChangedBy] NVARCHAR(100) NULL,		-- Who changed the status.
+	[uploadedDate] DATETIME2(7) NOT NULL,		-- When the document was uploaded (UTC).
+	[uploadedBy] NVARCHAR(100) NULL,		-- User who uploaded the document.
+	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the document.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_Document_DocumentType_documentTypeId] FOREIGN KEY ([documentTypeId]) REFERENCES [Scheduler].[DocumentType] ([id]),		-- Foreign key to the DocumentType table.
+	CONSTRAINT [FK_Document_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT [FK_Document_FinancialTransaction_financialTransactionId] FOREIGN KEY ([financialTransactionId]) REFERENCES [Scheduler].[FinancialTransaction] ([id]),		-- Foreign key to the FinancialTransaction table.
+	CONSTRAINT [FK_Document_Contact_contactId] FOREIGN KEY ([contactId]) REFERENCES [Scheduler].[Contact] ([id]),		-- Foreign key to the Contact table.
+	CONSTRAINT [FK_Document_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id])		-- Foreign key to the Resource table.
+)
+GO
+
+-- Index on the Document table's tenantGuid field.
+CREATE INDEX [I_Document_tenantGuid] ON [Scheduler].[Document] ([tenantGuid])
+GO
+
+-- Index on the Document table's tenantGuid,documentTypeId fields.
+CREATE INDEX [I_Document_tenantGuid_documentTypeId] ON [Scheduler].[Document] ([tenantGuid], [documentTypeId])
+GO
+
+-- Index on the Document table's tenantGuid,scheduledEventId fields.
+CREATE INDEX [I_Document_tenantGuid_scheduledEventId] ON [Scheduler].[Document] ([tenantGuid], [scheduledEventId])
+GO
+
+-- Index on the Document table's tenantGuid,financialTransactionId fields.
+CREATE INDEX [I_Document_tenantGuid_financialTransactionId] ON [Scheduler].[Document] ([tenantGuid], [financialTransactionId])
+GO
+
+-- Index on the Document table's tenantGuid,contactId fields.
+CREATE INDEX [I_Document_tenantGuid_contactId] ON [Scheduler].[Document] ([tenantGuid], [contactId])
+GO
+
+-- Index on the Document table's tenantGuid,resourceId fields.
+CREATE INDEX [I_Document_tenantGuid_resourceId] ON [Scheduler].[Document] ([tenantGuid], [resourceId])
+GO
+
+-- Index on the Document table's tenantGuid,active fields.
+CREATE INDEX [I_Document_tenantGuid_active] ON [Scheduler].[Document] ([tenantGuid], [active])
+GO
+
+-- Index on the Document table's tenantGuid,deleted fields.
+CREATE INDEX [I_Document_tenantGuid_deleted] ON [Scheduler].[Document] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the Document table.
+CREATE TABLE [Scheduler].[DocumentChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[documentId] INT NOT NULL,		-- Link to the Document table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_DocumentChangeHistory_Document_documentId] FOREIGN KEY ([documentId]) REFERENCES [Scheduler].[Document] ([id])		-- Foreign key to the Document table.
+)
+GO
+
+-- Index on the DocumentChangeHistory table's tenantGuid field.
+CREATE INDEX [I_DocumentChangeHistory_tenantGuid] ON [Scheduler].[DocumentChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the DocumentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_DocumentChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[DocumentChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the DocumentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_DocumentChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[DocumentChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the DocumentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_DocumentChangeHistory_tenantGuid_userId] ON [Scheduler].[DocumentChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
+CREATE INDEX [I_DocumentChangeHistory_tenantGuid_documentId] ON [Scheduler].[DocumentChangeHistory] ([tenantGuid], [documentId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Master list of payment methods (Cash, E-Transfer, Credit Card, Debit Card, Cheque).
+CREATE TABLE [Scheduler].[PaymentMethod]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[isElectronic] BIT NOT NULL DEFAULT 0,		-- True for card and e-transfer, false for cash and cheque.
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the PaymentMethod table's name field.
+CREATE INDEX [I_PaymentMethod_name] ON [Scheduler].[PaymentMethod] ([name])
+GO
+
+-- Index on the PaymentMethod table's active field.
+CREATE INDEX [I_PaymentMethod_active] ON [Scheduler].[PaymentMethod] ([active])
+GO
+
+-- Index on the PaymentMethod table's deleted field.
+CREATE INDEX [I_PaymentMethod_deleted] ON [Scheduler].[PaymentMethod] ([deleted])
+GO
+
+INSERT INTO [Scheduler].[PaymentMethod] ( [name], [description], [isElectronic], [sequence], [objectGuid] ) VALUES  ( 'Cash', 'Cash payment', 0, 1, 'b1a1b2c3-d4e5-6789-abcd-ef0123456701' )
+GO
+
+INSERT INTO [Scheduler].[PaymentMethod] ( [name], [description], [isElectronic], [sequence], [objectGuid] ) VALUES  ( 'E-Transfer', 'Interac e-Transfer', 1, 2, 'b1a1b2c3-d4e5-6789-abcd-ef0123456702' )
+GO
+
+INSERT INTO [Scheduler].[PaymentMethod] ( [name], [description], [isElectronic], [sequence], [objectGuid] ) VALUES  ( 'Cheque', 'Cheque payment', 0, 3, 'b1a1b2c3-d4e5-6789-abcd-ef0123456703' )
+GO
+
+INSERT INTO [Scheduler].[PaymentMethod] ( [name], [description], [isElectronic], [sequence], [objectGuid] ) VALUES  ( 'Credit Card', 'Credit card payment', 1, 4, 'b1a1b2c3-d4e5-6789-abcd-ef0123456704' )
+GO
+
+INSERT INTO [Scheduler].[PaymentMethod] ( [name], [description], [isElectronic], [sequence], [objectGuid] ) VALUES  ( 'Debit Card', 'Debit card payment', 1, 5, 'b1a1b2c3-d4e5-6789-abcd-ef0123456705' )
+GO
+
+
+/*
+====================================================================================================
+ PAYMENT PROVIDER
+ Configuration for electronic payment processor integrations (Stripe, Square, or Manual).
+ Stores encrypted API keys and merchant account details.
+
+ DESIGN NOTE: Starts with a 'Manual' provider for recording cash/cheque payments.
+ Add Stripe/Square providers when ready for electronic payment acceptance.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[PaymentProvider]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[description] NVARCHAR(500) NOT NULL,
+	[providerType] NVARCHAR(50) NOT NULL,		-- Provider type identifier: 'manual', 'stripe', 'square', 'moneris'.
+	[isActive] BIT NOT NULL DEFAULT 1,		-- Whether this provider is currently active.
+	[apiKeyEncrypted] NVARCHAR(MAX) NULL,		-- Encrypted API key for the payment provider.
+	[merchantId] NVARCHAR(100) NULL,		-- Merchant account identifier with the provider.
+	[webhookSecret] NVARCHAR(MAX) NULL,		-- Encrypted webhook validation secret for the provider.
+	[processingFeePercent] NUMERIC(38,22) NULL,		-- Provider processing fee percentage (e.g., 2.9 for Stripe).
+	[processingFeeFixed] MONEY NULL,		-- Provider fixed processing fee per transaction (e.g., $0.30).
+	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the provider configuration.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_PaymentProvider_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the PaymentProvider table's tenantGuid and name fields.
+)
+GO
+
+-- Index on the PaymentProvider table's tenantGuid field.
+CREATE INDEX [I_PaymentProvider_tenantGuid] ON [Scheduler].[PaymentProvider] ([tenantGuid])
+GO
+
+-- Index on the PaymentProvider table's tenantGuid,name fields.
+CREATE INDEX [I_PaymentProvider_tenantGuid_name] ON [Scheduler].[PaymentProvider] ([tenantGuid], [name])
+GO
+
+-- Index on the PaymentProvider table's tenantGuid,active fields.
+CREATE INDEX [I_PaymentProvider_tenantGuid_active] ON [Scheduler].[PaymentProvider] ([tenantGuid], [active])
+GO
+
+-- Index on the PaymentProvider table's tenantGuid,deleted fields.
+CREATE INDEX [I_PaymentProvider_tenantGuid_deleted] ON [Scheduler].[PaymentProvider] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the PaymentProvider table.
+CREATE TABLE [Scheduler].[PaymentProviderChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[paymentProviderId] INT NOT NULL,		-- Link to the PaymentProvider table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_PaymentProviderChangeHistory_PaymentProvider_paymentProviderId] FOREIGN KEY ([paymentProviderId]) REFERENCES [Scheduler].[PaymentProvider] ([id])		-- Foreign key to the PaymentProvider table.
+)
+GO
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid field.
+CREATE INDEX [I_PaymentProviderChangeHistory_tenantGuid] ON [Scheduler].[PaymentProviderChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_PaymentProviderChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[PaymentProviderChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_PaymentProviderChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[PaymentProviderChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_PaymentProviderChangeHistory_tenantGuid_userId] ON [Scheduler].[PaymentProviderChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the PaymentProviderChangeHistory table's tenantGuid,paymentProviderId fields.
+CREATE INDEX [I_PaymentProviderChangeHistory_tenantGuid_paymentProviderId] ON [Scheduler].[PaymentProviderChangeHistory] ([tenantGuid], [paymentProviderId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
+ PAYMENT TRANSACTION
+ Records individual payments received or made. Links to PaymentMethod (how) and optionally to
+ PaymentProvider (which processor). Can be associated with a ScheduledEvent, FinancialTransaction,
+ or EventCharge.
+
+ DESIGN NOTE: Supports both manual recording (cash register replacement) and electronic payment
+ processing (Stripe/Square integration). The providerTransactionId and providerResponse fields
+ store the raw response from electronic providers for audit purposes.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[PaymentTransaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[paymentMethodId] INT NOT NULL,		-- How the payment was made (Cash, E-Transfer, Credit Card, etc.).
+	[paymentProviderId] INT NULL,		-- Optional link to payment processor (null for cash/cheque).
+	[scheduledEventId] INT NULL,		-- Optional link to a ScheduledEvent (e.g., booking payment).
+	[financialTransactionId] INT NULL,		-- Optional link to a FinancialTransaction (e.g., bar tab payment).
+	[eventChargeId] INT NULL,		-- Optional link to a specific EventCharge (e.g., damage deposit payment).
+	[transactionDate] DATETIME2(7) NOT NULL,		-- When the payment occurred (UTC).
+	[amount] MONEY NOT NULL DEFAULT 0,		-- Gross payment amount.
+	[processingFee] MONEY NOT NULL DEFAULT 0,		-- Fee deducted by the payment provider.
+	[netAmount] MONEY NOT NULL DEFAULT 0,		-- Net amount received (amount - processingFee).
+	[currencyId] INT NOT NULL,		-- Link to Currency table.
+	[status] NVARCHAR(50) NOT NULL,		-- Payment status: pending, completed, failed, refunded.
+	[providerTransactionId] NVARCHAR(250) NULL,		-- Transaction ID from the payment provider (e.g., Stripe charge ID).
+	[providerResponse] NVARCHAR(MAX) NULL,		-- JSON response from the payment provider for audit purposes.
+	[payerName] NVARCHAR(250) NULL,		-- Name of the person who paid.
+	[payerEmail] NVARCHAR(250) NULL,		-- Email of the payer.
+	[payerPhone] NVARCHAR(50) NULL,		-- Phone number of the payer.
+	[receiptNumber] NVARCHAR(100) NULL,		-- Generated receipt number.
+	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the payment.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_PaymentTransaction_PaymentMethod_paymentMethodId] FOREIGN KEY ([paymentMethodId]) REFERENCES [Scheduler].[PaymentMethod] ([id]),		-- Foreign key to the PaymentMethod table.
+	CONSTRAINT [FK_PaymentTransaction_PaymentProvider_paymentProviderId] FOREIGN KEY ([paymentProviderId]) REFERENCES [Scheduler].[PaymentProvider] ([id]),		-- Foreign key to the PaymentProvider table.
+	CONSTRAINT [FK_PaymentTransaction_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT [FK_PaymentTransaction_FinancialTransaction_financialTransactionId] FOREIGN KEY ([financialTransactionId]) REFERENCES [Scheduler].[FinancialTransaction] ([id]),		-- Foreign key to the FinancialTransaction table.
+	CONSTRAINT [FK_PaymentTransaction_EventCharge_eventChargeId] FOREIGN KEY ([eventChargeId]) REFERENCES [Scheduler].[EventCharge] ([id]),		-- Foreign key to the EventCharge table.
+	CONSTRAINT [FK_PaymentTransaction_Currency_currencyId] FOREIGN KEY ([currencyId]) REFERENCES [Scheduler].[Currency] ([id])		-- Foreign key to the Currency table.
+)
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid field.
+CREATE INDEX [I_PaymentTransaction_tenantGuid] ON [Scheduler].[PaymentTransaction] ([tenantGuid])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,paymentMethodId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_paymentMethodId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [paymentMethodId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,paymentProviderId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_paymentProviderId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [paymentProviderId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,scheduledEventId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_scheduledEventId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [scheduledEventId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,financialTransactionId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_financialTransactionId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [financialTransactionId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,eventChargeId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_eventChargeId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [eventChargeId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,transactionDate fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_transactionDate] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [transactionDate])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,currencyId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_currencyId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [currencyId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,providerTransactionId fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_providerTransactionId] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [providerTransactionId])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,receiptNumber fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_receiptNumber] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [receiptNumber])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,active fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_active] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [active])
+GO
+
+-- Index on the PaymentTransaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_PaymentTransaction_tenantGuid_deleted] ON [Scheduler].[PaymentTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the PaymentTransaction table.
+CREATE TABLE [Scheduler].[PaymentTransactionChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[paymentTransactionId] INT NOT NULL,		-- Link to the PaymentTransaction table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_PaymentTransactionChangeHistory_PaymentTransaction_paymentTransactionId] FOREIGN KEY ([paymentTransactionId]) REFERENCES [Scheduler].[PaymentTransaction] ([id])		-- Foreign key to the PaymentTransaction table.
+)
+GO
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid field.
+CREATE INDEX [I_PaymentTransactionChangeHistory_tenantGuid] ON [Scheduler].[PaymentTransactionChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_PaymentTransactionChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[PaymentTransactionChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_PaymentTransactionChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[PaymentTransactionChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_PaymentTransactionChangeHistory_tenantGuid_userId] ON [Scheduler].[PaymentTransactionChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the PaymentTransactionChangeHistory table's tenantGuid,paymentTransactionId fields.
+CREATE INDEX [I_PaymentTransactionChangeHistory_tenantGuid_paymentTransactionId] ON [Scheduler].[PaymentTransactionChangeHistory] ([tenantGuid], [paymentTransactionId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

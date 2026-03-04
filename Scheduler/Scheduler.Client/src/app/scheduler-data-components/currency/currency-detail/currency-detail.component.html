@@ -108,10 +108,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-charge-type-table [queryParams]="{ currencyId: currencyData?.id }"></app-charge-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-charge-type-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-charge-type-add-edit>
+                                    <app-charge-type-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-charge-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -125,10 +122,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-office-table [queryParams]="{ currencyId: currencyData?.id }"></app-office-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-office-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-office-add-edit>
+                                    <app-office-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-office-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -142,10 +136,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-client-table [queryParams]="{ currencyId: currencyData?.id }"></app-client-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-client-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-client-add-edit>
+                                    <app-client-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-client-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -159,10 +150,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-rate-sheet-table [queryParams]="{ currencyId: currencyData?.id }"></app-rate-sheet-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-rate-sheet-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-rate-sheet-add-edit>
+                                    <app-rate-sheet-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-rate-sheet-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -176,10 +164,35 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-charge-table [queryParams]="{ currencyId: currencyData?.id }"></app-event-charge-table>
+                                    <app-event-charge-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-event-charge-table>
                                 </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-charge-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-event-charge-add-edit>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
+                            <button ngbNavLink>Payment Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.PaymentTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-payment-transaction-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-payment-transaction-table>
                                 </div>
                             </div>
                             </ng-template>

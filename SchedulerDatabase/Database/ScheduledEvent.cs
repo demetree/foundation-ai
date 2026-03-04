@@ -69,13 +69,19 @@ public partial class ScheduledEvent
 
     public virtual ICollection<ContactInteraction> ContactInteractions { get; set; } = new List<ContactInteraction>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<EventCalendar> EventCalendars { get; set; } = new List<EventCalendar>();
 
     public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
 
     public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
 
+    public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
+
     public virtual ICollection<ScheduledEvent> InverseparentScheduledEvent { get; set; } = new List<ScheduledEvent>();
+
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ICollection<RecurrenceException> RecurrenceExceptions { get; set; } = new List<RecurrenceException>();
 

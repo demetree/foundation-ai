@@ -97,10 +97,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-charge-table [queryParams]="{ chargeStatusId: chargeStatusData?.id }"></app-event-charge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-charge-add-edit [preSeededData]="{ chargeStatusId: chargeStatusData?.id }" [hiddenFields]="['chargeStatusId']"></app-event-charge-add-edit>
+                                    <app-event-charge-table [queryParams]="{ chargeStatusId: chargeStatusData?.id }" [showAddButton]="true" [preSeededData]="{ chargeStatusId: chargeStatusData?.id }" [hiddenFields]="['chargeStatusId']"></app-event-charge-table>
                                 </div>
                             </div>
                             </ng-template>

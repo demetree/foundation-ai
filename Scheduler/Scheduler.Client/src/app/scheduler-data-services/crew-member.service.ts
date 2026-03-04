@@ -180,11 +180,17 @@ export class CrewMemberData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewMemberChangeHistoriesCount$ = CrewMemberChangeHistoryService.Instance.GetCrewMemberChangeHistoriesRowCount({crewMemberId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewMemberChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get CrewMemberChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._crewMemberChangeHistoriesCount$ === null) {
+            this._crewMemberChangeHistoriesCount$ = CrewMemberChangeHistoryService.Instance.GetCrewMemberChangeHistoriesRowCount({crewMemberId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewMemberChangeHistoriesCount$;
+    }
 
 
 
@@ -229,6 +235,7 @@ export class CrewMemberData {
      this._crewMemberChangeHistories = null;
      this._crewMemberChangeHistoriesPromise = null;
      this._crewMemberChangeHistoriesSubject.next(null);
+     this._crewMemberChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -917,11 +924,7 @@ export class CrewMemberService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewMemberChangeHistoriesCount$ = CrewMemberChangeHistoryService.Instance.GetCrewMemberChangeHistoriesRowCount({crewMemberId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewMemberChangeHistoriesCount$ = null;
 
 
 

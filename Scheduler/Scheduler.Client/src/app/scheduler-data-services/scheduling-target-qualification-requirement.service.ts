@@ -167,11 +167,17 @@ export class SchedulingTargetQualificationRequirementData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetQualificationRequirementChangeHistoriesCount$ = SchedulingTargetQualificationRequirementChangeHistoryService.Instance.GetSchedulingTargetQualificationRequirementChangeHistoriesRowCount({schedulingTargetQualificationRequirementId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetQualificationRequirementChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetQualificationRequirementChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetQualificationRequirementChangeHistoriesCount$ === null) {
+            this._schedulingTargetQualificationRequirementChangeHistoriesCount$ = SchedulingTargetQualificationRequirementChangeHistoryService.Instance.GetSchedulingTargetQualificationRequirementChangeHistoriesRowCount({schedulingTargetQualificationRequirementId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetQualificationRequirementChangeHistoriesCount$;
+    }
 
 
 
@@ -216,6 +222,7 @@ export class SchedulingTargetQualificationRequirementData {
      this._schedulingTargetQualificationRequirementChangeHistories = null;
      this._schedulingTargetQualificationRequirementChangeHistoriesPromise = null;
      this._schedulingTargetQualificationRequirementChangeHistoriesSubject.next(null);
+     this._schedulingTargetQualificationRequirementChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -901,11 +908,7 @@ export class SchedulingTargetQualificationRequirementService extends SecureEndpo
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetQualificationRequirementChangeHistoriesCount$ = SchedulingTargetQualificationRequirementChangeHistoryService.Instance.GetSchedulingTargetQualificationRequirementChangeHistoriesRowCount({schedulingTargetQualificationRequirementId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetQualificationRequirementChangeHistoriesCount$ = null;
 
 
 

@@ -82,6 +82,7 @@
   <app-constituent-change-history-table
     *ngIf="userIsSchedulerConstituentChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredConstituentChangeHistoryCount$ | async) ?? 0">
   </app-constituent-change-history-table>
 </div>

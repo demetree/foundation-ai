@@ -82,6 +82,7 @@
   <app-tenant-profile-table
     *ngIf="userIsSchedulerTenantProfileReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTenantProfileCount$ | async) ?? 0">
   </app-tenant-profile-table>
 </div>

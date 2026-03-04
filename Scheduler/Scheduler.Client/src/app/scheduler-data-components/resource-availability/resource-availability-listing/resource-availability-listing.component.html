@@ -82,6 +82,7 @@
   <app-resource-availability-table
     *ngIf="userIsSchedulerResourceAvailabilityReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredResourceAvailabilityCount$ | async) ?? 0">
   </app-resource-availability-table>
 </div>

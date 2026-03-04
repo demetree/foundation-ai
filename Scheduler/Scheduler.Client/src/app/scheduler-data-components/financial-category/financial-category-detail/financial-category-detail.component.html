@@ -1,0 +1,156 @@
+<div class="container-fluid p-1 m-0 financial-category-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="financial-category-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Financial Category</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Financial Category' : 'Add Financial Category'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerFinancialCategoryReader()">
+                <div class="col m-2 financial-category-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="financialCategoryForm" (ngSubmit)="submitForm()" class="financial-category-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="FinancialCategory-name" id="label-FinancialCategory-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="FinancialCategory-name" formControlName="name" placeholder="Enter Name" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="financialCategoryForm.get('name')?.invalid && financialCategoryForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="FinancialCategory-description" id="label-FinancialCategory-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="FinancialCategory-description" formControlName="description" placeholder="Enter Description" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()"></textarea>
+                                <div *ngIf="financialCategoryForm.get('description')?.invalid && financialCategoryForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('code')">
+                                <label for="FinancialCategory-code" id="label-FinancialCategory-code"><span class="text-danger">*</span>Code</label>
+                                <input type="text" id="FinancialCategory-code" formControlName="code" placeholder="Enter Code" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-code" />
+                                <div *ngIf="financialCategoryForm.get('code')?.invalid && financialCategoryForm.get('code')?.touched" class="text-danger">
+                                    Code is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevenue')">
+                                <input type="checkbox" id="FinancialCategory-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" />
+                                <label for="FinancialCategory-isRevenue" class="form-check-label" id="label-FinancialCategory-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('parentFinancialCategoryId')">
+                                <label for="FinancialCategory-parentFinancialCategoryId" id="label-FinancialCategory-parentFinancialCategoryId">Parent Financial Category</label>
+                                <select id="FinancialCategory-parentFinancialCategoryId" formControlName="parentFinancialCategoryId" class="form-select financial-category-select" [disabled]="!userIsSchedulerFinancialCategoryWriter()">
+                                    <option [ngValue]="null">Select Financial Category</option>
+                                    <option *ngFor="let financialCategory of financialCategories$ | async" [ngValue]="financialCategory.id">{{financialCategory.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isTaxApplicable')">
+                                <input type="checkbox" id="FinancialCategory-isTaxApplicable" formControlName="isTaxApplicable" class="form-check-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" />
+                                <label for="FinancialCategory-isTaxApplicable" class="form-check-label" id="label-FinancialCategory-isTaxApplicable"><span class="text-danger">*</span>Is Tax Applicable</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('defaultAmount')">
+                                <label for="FinancialCategory-defaultAmount" id="label-FinancialCategory-defaultAmount">Default Amount</label>
+                                <input type="number" id="FinancialCategory-defaultAmount" formControlName="defaultAmount" placeholder="Enter Default Amount" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-defaultAmount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="FinancialCategory-sequence" id="label-FinancialCategory-sequence">Sequence</label>
+                                <input type="number" id="FinancialCategory-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="FinancialCategory-color" id="label-FinancialCategory-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="FinancialCategory-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerFinancialCategoryWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="financialCategoryForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="FinancialCategory-versionNumber" id="label-FinancialCategory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="FinancialCategory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control financial-category-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FinancialCategory-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" />
+                                <label for="FinancialCategory-active" class="form-check-label" id="label-FinancialCategory-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FinancialCategory-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" />
+                                <label for="FinancialCategory-deleted" class="form-check-label" id="label-FinancialCategory-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="financial-category-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="financialCategoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Financial Category">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !financialCategoryForm.valid || !financialCategoryForm.dirty || financialCategoryForm.pristine  || userIsSchedulerFinancialCategoryWriter() == false " ngbTooltip="Save the Financial Category changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Financial Category' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerFinancialCategoryReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 financial-category-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="financialCategoryChangeHistoryService.userIsSchedulerFinancialCategoryChangeHistoryReader()">
+                            <button ngbNavLink>Financial Category Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialCategoryData?.FinancialCategoryChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-category-change-history-table [queryParams]="{ financialCategoryId: financialCategoryData?.id }" [showAddButton]="true" [preSeededData]="{ financialCategoryId: financialCategoryData?.id }" [hiddenFields]="['financialCategoryId']"></app-financial-category-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialCategoryData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ financialCategoryId: financialCategoryData?.id }" [showAddButton]="true" [preSeededData]="{ financialCategoryId: financialCategoryData?.id }" [hiddenFields]="['financialCategoryId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

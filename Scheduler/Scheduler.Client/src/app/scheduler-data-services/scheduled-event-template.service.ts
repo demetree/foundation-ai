@@ -197,11 +197,17 @@ export class ScheduledEventTemplateData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplateChangeHistoriesCount$ = ScheduledEventTemplateChangeHistoryService.Instance.GetScheduledEventTemplateChangeHistoriesRowCount({scheduledEventTemplateId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplateChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplateChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplateChangeHistoriesCount$ === null) {
+            this._scheduledEventTemplateChangeHistoriesCount$ = ScheduledEventTemplateChangeHistoryService.Instance.GetScheduledEventTemplateChangeHistoriesRowCount({scheduledEventTemplateId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplateChangeHistoriesCount$;
+    }
 
 
 
@@ -216,11 +222,17 @@ export class ScheduledEventTemplateData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({scheduledEventTemplateId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplateChargesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplateChargesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplateChargesCount$ === null) {
+            this._scheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({scheduledEventTemplateId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplateChargesCount$;
+    }
 
 
 
@@ -235,11 +247,17 @@ export class ScheduledEventTemplateData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({scheduledEventTemplateId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplateQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplateQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplateQualificationRequirementsCount$ === null) {
+            this._scheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({scheduledEventTemplateId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplateQualificationRequirementsCount$;
+    }
 
 
 
@@ -254,11 +272,17 @@ export class ScheduledEventTemplateData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventTemplateId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventTemplateId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -303,18 +327,22 @@ export class ScheduledEventTemplateData {
      this._scheduledEventTemplateChangeHistories = null;
      this._scheduledEventTemplateChangeHistoriesPromise = null;
      this._scheduledEventTemplateChangeHistoriesSubject.next(null);
+     this._scheduledEventTemplateChangeHistoriesCount$ = null;
 
      this._scheduledEventTemplateCharges = null;
      this._scheduledEventTemplateChargesPromise = null;
      this._scheduledEventTemplateChargesSubject.next(null);
+     this._scheduledEventTemplateChargesCount$ = null;
 
      this._scheduledEventTemplateQualificationRequirements = null;
      this._scheduledEventTemplateQualificationRequirementsPromise = null;
      this._scheduledEventTemplateQualificationRequirementsSubject.next(null);
+     this._scheduledEventTemplateQualificationRequirementsCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1244,11 +1272,7 @@ export class ScheduledEventTemplateService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplateChangeHistoriesCount$ = ScheduledEventTemplateChangeHistoryService.Instance.GetScheduledEventTemplateChangeHistoriesRowCount({scheduledEventTemplateId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplateChangeHistoriesCount$ = null;
 
 
     (revived as any).ScheduledEventTemplateCharges$ = (revived as any)._scheduledEventTemplateChargesSubject.asObservable().pipe(
@@ -1260,11 +1284,7 @@ export class ScheduledEventTemplateService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({scheduledEventTemplateId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplateChargesCount$ = null;
 
 
     (revived as any).ScheduledEventTemplateQualificationRequirements$ = (revived as any)._scheduledEventTemplateQualificationRequirementsSubject.asObservable().pipe(
@@ -1276,11 +1296,7 @@ export class ScheduledEventTemplateService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({scheduledEventTemplateId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplateQualificationRequirementsCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1292,11 +1308,7 @@ export class ScheduledEventTemplateService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventTemplateId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
 

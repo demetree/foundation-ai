@@ -165,6 +165,7 @@ export class SoftCreditListingComponent implements OnInit, AfterViewInit, CanCom
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.softCreditTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.softCreditTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

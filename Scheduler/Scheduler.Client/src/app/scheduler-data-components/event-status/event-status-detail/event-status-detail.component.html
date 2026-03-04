@@ -97,10 +97,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-table [queryParams]="{ eventStatusId: eventStatusData?.id }"></app-scheduled-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-add-edit [preSeededData]="{ eventStatusId: eventStatusData?.id }" [hiddenFields]="['eventStatusId']"></app-scheduled-event-add-edit>
+                                    <app-scheduled-event-table [queryParams]="{ eventStatusId: eventStatusData?.id }" [showAddButton]="true" [preSeededData]="{ eventStatusId: eventStatusData?.id }" [hiddenFields]="['eventStatusId']"></app-scheduled-event-table>
                                 </div>
                             </div>
                             </ng-template>

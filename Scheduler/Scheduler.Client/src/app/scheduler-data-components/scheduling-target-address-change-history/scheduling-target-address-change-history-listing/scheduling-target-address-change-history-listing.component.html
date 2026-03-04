@@ -82,6 +82,7 @@
   <app-scheduling-target-address-change-history-table
     *ngIf="userIsSchedulerSchedulingTargetAddressChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSchedulingTargetAddressChangeHistoryCount$ | async) ?? 0">
   </app-scheduling-target-address-change-history-table>
 </div>

@@ -104,10 +104,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-table [queryParams]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }"></app-scheduling-target-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-add-edit [preSeededData]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [hiddenFields]="['schedulingTargetTypeId']"></app-scheduling-target-add-edit>
+                                    <app-scheduling-target-table [queryParams]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [showAddButton]="true" [preSeededData]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [hiddenFields]="['schedulingTargetTypeId']"></app-scheduling-target-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -121,10 +118,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-table [queryParams]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }"></app-scheduled-event-template-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-add-edit [preSeededData]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [hiddenFields]="['schedulingTargetTypeId']"></app-scheduled-event-template-add-edit>
+                                    <app-scheduled-event-template-table [queryParams]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [showAddButton]="true" [preSeededData]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [hiddenFields]="['schedulingTargetTypeId']"></app-scheduled-event-template-table>
                                 </div>
                             </div>
                             </ng-template>

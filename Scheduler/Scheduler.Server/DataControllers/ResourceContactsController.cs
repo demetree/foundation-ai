@@ -76,7 +76,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -175,12 +174,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(rc => rc.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.contact);
@@ -189,45 +182,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Resource Contact, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.contact.firstName.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.middleName.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.lastName.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.title.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.company.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.email.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.phone.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.mobile.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.position.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.webSite.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.avatarMimeType.Contains(anyStringContains))
-			       || (includeRelations == true && x.contact.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.relationshipType.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.relationshipType.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.relationshipType.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.notes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.externalId.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.attributes.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarFileName.Contains(anyStringContains))
-			       || (includeRelations == true && x.resource.avatarMimeType.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ResourceContact> materialized = await query.ToListAsync(cancellationToken);
@@ -275,7 +235,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -353,45 +312,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(rc => rc.active == true);
 				query = query.Where(rc => rc.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Resource Contact, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.contact.firstName.Contains(anyStringContains)
-			       || x.contact.middleName.Contains(anyStringContains)
-			       || x.contact.lastName.Contains(anyStringContains)
-			       || x.contact.title.Contains(anyStringContains)
-			       || x.contact.company.Contains(anyStringContains)
-			       || x.contact.email.Contains(anyStringContains)
-			       || x.contact.phone.Contains(anyStringContains)
-			       || x.contact.mobile.Contains(anyStringContains)
-			       || x.contact.position.Contains(anyStringContains)
-			       || x.contact.webSite.Contains(anyStringContains)
-			       || x.contact.notes.Contains(anyStringContains)
-			       || x.contact.attributes.Contains(anyStringContains)
-			       || x.contact.color.Contains(anyStringContains)
-			       || x.contact.avatarFileName.Contains(anyStringContains)
-			       || x.contact.avatarMimeType.Contains(anyStringContains)
-			       || x.contact.externalId.Contains(anyStringContains)
-			       || x.relationshipType.name.Contains(anyStringContains)
-			       || x.relationshipType.description.Contains(anyStringContains)
-			       || x.relationshipType.color.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1359,7 +1279,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1455,45 +1374,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(rc => rc.active == true);
 				query = query.Where(rc => rc.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Resource Contact, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.contact.firstName.Contains(anyStringContains)
-			       || x.contact.middleName.Contains(anyStringContains)
-			       || x.contact.lastName.Contains(anyStringContains)
-			       || x.contact.title.Contains(anyStringContains)
-			       || x.contact.company.Contains(anyStringContains)
-			       || x.contact.email.Contains(anyStringContains)
-			       || x.contact.phone.Contains(anyStringContains)
-			       || x.contact.mobile.Contains(anyStringContains)
-			       || x.contact.position.Contains(anyStringContains)
-			       || x.contact.webSite.Contains(anyStringContains)
-			       || x.contact.notes.Contains(anyStringContains)
-			       || x.contact.attributes.Contains(anyStringContains)
-			       || x.contact.color.Contains(anyStringContains)
-			       || x.contact.avatarFileName.Contains(anyStringContains)
-			       || x.contact.avatarMimeType.Contains(anyStringContains)
-			       || x.contact.externalId.Contains(anyStringContains)
-			       || x.relationshipType.name.Contains(anyStringContains)
-			       || x.relationshipType.description.Contains(anyStringContains)
-			       || x.relationshipType.color.Contains(anyStringContains)
-			       || x.resource.name.Contains(anyStringContains)
-			       || x.resource.description.Contains(anyStringContains)
-			       || x.resource.notes.Contains(anyStringContains)
-			       || x.resource.externalId.Contains(anyStringContains)
-			       || x.resource.color.Contains(anyStringContains)
-			       || x.resource.attributes.Contains(anyStringContains)
-			       || x.resource.avatarFileName.Contains(anyStringContains)
-			       || x.resource.avatarMimeType.Contains(anyStringContains)
-			   );
 			}
 
 

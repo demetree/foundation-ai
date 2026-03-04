@@ -165,6 +165,7 @@ export class HouseholdChangeHistoryListingComponent implements OnInit, AfterView
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.householdChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.householdChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

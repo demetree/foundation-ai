@@ -142,11 +142,17 @@ export class ResourceTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourcesCount$: Observable<bigint | number> | null = null;
+    public get ResourcesCount$(): Observable<bigint | number> {
+        if (this._resourcesCount$ === null) {
+            this._resourcesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourcesCount$;
+    }
 
 
 
@@ -191,6 +197,7 @@ export class ResourceTypeData {
      this._resources = null;
      this._resourcesPromise = null;
      this._resourcesSubject.next(null);
+     this._resourcesCount$ = null;
 
   }
 
@@ -730,11 +737,7 @@ export class ResourceTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourcesCount$ = null;
 
 
 

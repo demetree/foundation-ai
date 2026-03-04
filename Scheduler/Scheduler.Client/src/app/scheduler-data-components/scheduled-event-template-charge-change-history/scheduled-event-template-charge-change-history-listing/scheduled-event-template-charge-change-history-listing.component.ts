@@ -165,6 +165,7 @@ export class ScheduledEventTemplateChargeChangeHistoryListingComponent implement
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventTemplateChargeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventTemplateChargeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

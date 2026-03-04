@@ -82,6 +82,7 @@
   <app-interaction-type-table
     *ngIf="userIsSchedulerInteractionTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredInteractionTypeCount$ | async) ?? 0">
   </app-interaction-type-table>
 </div>

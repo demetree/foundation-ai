@@ -82,6 +82,7 @@
   <app-client-table
     *ngIf="userIsSchedulerClientReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredClientCount$ | async) ?? 0">
   </app-client-table>
 </div>

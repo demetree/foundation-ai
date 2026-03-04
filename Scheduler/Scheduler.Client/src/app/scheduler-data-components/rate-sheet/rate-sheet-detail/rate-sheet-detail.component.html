@@ -134,10 +134,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-rate-sheet-change-history-table [queryParams]="{ rateSheetId: rateSheetData?.id }"></app-rate-sheet-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-rate-sheet-change-history-add-edit [preSeededData]="{ rateSheetId: rateSheetData?.id }" [hiddenFields]="['rateSheetId']"></app-rate-sheet-change-history-add-edit>
+                                    <app-rate-sheet-change-history-table [queryParams]="{ rateSheetId: rateSheetData?.id }" [showAddButton]="true" [preSeededData]="{ rateSheetId: rateSheetData?.id }" [hiddenFields]="['rateSheetId']"></app-rate-sheet-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

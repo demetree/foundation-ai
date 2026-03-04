@@ -92,10 +92,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-office-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }"></app-office-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-office-add-edit [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-office-add-edit>
+                                    <app-office-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }" [showAddButton]="true" [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-office-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -109,10 +106,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-client-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }"></app-client-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-client-add-edit [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-client-add-edit>
+                                    <app-client-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }" [showAddButton]="true" [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-client-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -126,10 +120,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tenant-profile-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }"></app-tenant-profile-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tenant-profile-add-edit [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-tenant-profile-add-edit>
+                                    <app-tenant-profile-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }" [showAddButton]="true" [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-tenant-profile-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -143,10 +134,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-address-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }"></app-scheduling-target-address-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-address-add-edit [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-scheduling-target-address-add-edit>
+                                    <app-scheduling-target-address-table [queryParams]="{ stateProvinceId: stateProvinceData?.id }" [showAddButton]="true" [preSeededData]="{ stateProvinceId: stateProvinceData?.id }" [hiddenFields]="['stateProvinceId']"></app-scheduling-target-address-table>
                                 </div>
                             </div>
                             </ng-template>

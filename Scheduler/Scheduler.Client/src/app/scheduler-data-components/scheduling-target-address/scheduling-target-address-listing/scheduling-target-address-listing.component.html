@@ -82,6 +82,7 @@
   <app-scheduling-target-address-table
     *ngIf="userIsSchedulerSchedulingTargetAddressReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSchedulingTargetAddressCount$ | async) ?? 0">
   </app-scheduling-target-address-table>
 </div>

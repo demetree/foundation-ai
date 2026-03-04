@@ -209,11 +209,17 @@ export class ChargeTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ChargeTypeChangeHistoriesCount$ = ChargeTypeChangeHistoryService.Instance.GetChargeTypeChangeHistoriesRowCount({chargeTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _chargeTypeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ChargeTypeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._chargeTypeChangeHistoriesCount$ === null) {
+            this._chargeTypeChangeHistoriesCount$ = ChargeTypeChangeHistoryService.Instance.GetChargeTypeChangeHistoriesRowCount({chargeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._chargeTypeChangeHistoriesCount$;
+    }
 
 
 
@@ -228,11 +234,17 @@ export class ChargeTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({chargeTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplateChargesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplateChargesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplateChargesCount$ === null) {
+            this._scheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({chargeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplateChargesCount$;
+    }
 
 
 
@@ -247,11 +259,17 @@ export class ChargeTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
 
 
 
@@ -266,11 +284,17 @@ export class ChargeTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({chargeTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({chargeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -315,18 +339,22 @@ export class ChargeTypeData {
      this._chargeTypeChangeHistories = null;
      this._chargeTypeChangeHistoriesPromise = null;
      this._chargeTypeChangeHistoriesSubject.next(null);
+     this._chargeTypeChangeHistoriesCount$ = null;
 
      this._scheduledEventTemplateCharges = null;
      this._scheduledEventTemplateChargesPromise = null;
      this._scheduledEventTemplateChargesSubject.next(null);
+     this._scheduledEventTemplateChargesCount$ = null;
 
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1260,11 +1288,7 @@ export class ChargeTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ChargeTypeChangeHistoriesCount$ = ChargeTypeChangeHistoryService.Instance.GetChargeTypeChangeHistoriesRowCount({chargeTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._chargeTypeChangeHistoriesCount$ = null;
 
 
     (revived as any).ScheduledEventTemplateCharges$ = (revived as any)._scheduledEventTemplateChargesSubject.asObservable().pipe(
@@ -1276,11 +1300,7 @@ export class ChargeTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({chargeTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplateChargesCount$ = null;
 
 
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
@@ -1292,11 +1312,7 @@ export class ChargeTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventChargesCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -1308,11 +1324,7 @@ export class ChargeTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({chargeTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

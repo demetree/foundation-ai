@@ -68,6 +68,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetShiftPatternDays(
 			int? shiftPatternId = null,
 			int? dayOfWeek = null,
+			TimeOnly? startTime = null,
 			float? hours = null,
 			string label = null,
 			int? versionNumber = null,
@@ -175,18 +176,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(spd => spd.label);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.shiftPattern);
-				query = query.AsSplitQuery();
-			}
-
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Shift Pattern Day, or on an any of the string fields on its immediate relations
@@ -203,6 +192,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.shiftPattern);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.ShiftPatternDay> materialized = await query.ToListAsync(cancellationToken);
@@ -244,6 +245,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			int? shiftPatternId = null,
 			int? dayOfWeek = null,
+			TimeOnly? startTime = null,
 			float? hours = null,
 			string label = null,
 			int? versionNumber = null,
@@ -1310,6 +1312,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			int? shiftPatternId = null,
 			int? dayOfWeek = null,
+			TimeOnly? startTime = null,
 			float? hours = null,
 			string label = null,
 			int? versionNumber = null,

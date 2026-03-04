@@ -1,0 +1,372 @@
+<app-market-data-cache-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-market-data-cache-add-edit>
+<div class="row" *ngIf="userIsBMCMarketDataCacheReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCMarketDataCacheWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Market Data Cache">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCMarketDataCacheWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('source')">
+                Source
+                <span *ngIf="sortColumn === 'source'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('itemType')">
+                Item  Type
+                <span *ngIf="sortColumn === 'itemType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('itemNumber')">
+                Item  Number
+                <span *ngIf="sortColumn === 'itemNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('condition')">
+                Condition
+                <span *ngIf="sortColumn === 'condition'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('responseJson')">
+                Response  Json
+                <span *ngIf="sortColumn === 'responseJson'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fetchedDate')">
+                Fetched  Date
+                <span *ngIf="sortColumn === 'fetchedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('expiresDate')">
+                Expires  Date
+                <span *ngIf="sortColumn === 'expiresDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('ttlMinutes')">
+                Ttl  Minutes
+                <span *ngIf="sortColumn === 'ttlMinutes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let marketDataCache of filteredMarketDataCaches; trackBy: getMarketDataCacheId"
+              [ngClass]="{
+                 'row-inactive': marketDataCache.active == false,
+                 'row-deleted': marketDataCache.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCMarketDataCacheWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(marketDataCache)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCMarketDataCacheWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(marketDataCache)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="marketDataCache.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(marketDataCache)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="marketDataCache.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(marketDataCache, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(marketDataCache, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(marketDataCache, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(marketDataCache, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(marketDataCache, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(marketDataCache, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(marketDataCache, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(marketDataCache, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/marketdatacache', marketDataCache.id]" class="btn btn-link text-left" ngbTooltip="Open Market Data Cache details">{{marketDataCache.source}}</a></td>
+            <td class="text-truncate">{{marketDataCache.itemType}}</td>
+            <td class="text-truncate">{{marketDataCache.itemNumber}}</td>
+            <td class="text-truncate">{{marketDataCache.condition}}</td>
+            <td class="text-truncate">{{marketDataCache.responseJson}}</td>
+            <td class="text-truncate">{{marketDataCache.fetchedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{marketDataCache.expiresDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{marketDataCache.ttlMinutes | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let marketDataCache of filteredMarketDataCaches; trackBy: getMarketDataCacheId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': marketDataCache.active == false,
+                 'row-deleted': marketDataCache.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(marketDataCache, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(marketDataCache, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(marketDataCache, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(marketDataCache, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(marketDataCache, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(marketDataCache, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(marketDataCache, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(marketDataCache, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(marketDataCache, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(marketDataCache, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(marketDataCache, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(marketDataCache, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(marketDataCache, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/marketdatacache', marketDataCache.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(marketDataCache)" *ngIf="userIsBMCMarketDataCacheWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(marketDataCache)" *ngIf="userIsBMCMarketDataCacheWriter() && marketDataCache.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(marketDataCache)" *ngIf="userIsBMCMarketDataCacheWriter() && marketDataCache.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{marketDataCache.id}}</strong>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/marketdatacache', marketDataCache.id]"
+                        ngbTooltip="Market Data Cache Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(marketDataCache)"
+                        ngbTooltip="Edit Market Data Cache">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(marketDataCache)"
+                      ngbTooltip="Delete Market Data Cache" 
+                      placement="top"
+                      *ngIf="marketDataCache.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(marketDataCache)"
+                      ngbTooltip="Undelete Market Data Cache" 
+                      placement="top"
+                      *ngIf="marketDataCache.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="market-data-cache-info" *ngIf="marketDataCache.source != null">
+              <strong>Source: </strong>
+              {{marketDataCache.source}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.itemType != null">
+              <strong>Item Type: </strong>
+              {{marketDataCache.itemType}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.itemNumber != null">
+              <strong>Item Number: </strong>
+              {{marketDataCache.itemNumber}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.condition != null">
+              <strong>Condition: </strong>
+              {{marketDataCache.condition}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.responseJson != null">
+              <strong>Response Json: </strong>
+              {{marketDataCache.responseJson}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.fetchedDate != null">
+              <strong>Fetched Date: </strong>
+              {{marketDataCache.fetchedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.expiresDate != null">
+              <strong>Expires Date: </strong>
+              {{marketDataCache.expiresDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="market-data-cache-info" *ngIf="marketDataCache.ttlMinutes != null">
+              <strong>Ttl Minutes: </strong>
+              {{marketDataCache.ttlMinutes | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

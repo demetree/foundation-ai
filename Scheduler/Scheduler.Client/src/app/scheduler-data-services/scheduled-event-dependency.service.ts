@@ -171,11 +171,17 @@ export class ScheduledEventDependencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventDependencyChangeHistoriesCount$ = ScheduledEventDependencyChangeHistoryService.Instance.GetScheduledEventDependencyChangeHistoriesRowCount({scheduledEventDependencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventDependencyChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventDependencyChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventDependencyChangeHistoriesCount$ === null) {
+            this._scheduledEventDependencyChangeHistoriesCount$ = ScheduledEventDependencyChangeHistoryService.Instance.GetScheduledEventDependencyChangeHistoriesRowCount({scheduledEventDependencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventDependencyChangeHistoriesCount$;
+    }
 
 
 
@@ -220,6 +226,7 @@ export class ScheduledEventDependencyData {
      this._scheduledEventDependencyChangeHistories = null;
      this._scheduledEventDependencyChangeHistoriesPromise = null;
      this._scheduledEventDependencyChangeHistoriesSubject.next(null);
+     this._scheduledEventDependencyChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -906,11 +913,7 @@ export class ScheduledEventDependencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventDependencyChangeHistoriesCount$ = ScheduledEventDependencyChangeHistoryService.Instance.GetScheduledEventDependencyChangeHistoriesRowCount({scheduledEventDependencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventDependencyChangeHistoriesCount$ = null;
 
 
 

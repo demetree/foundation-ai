@@ -165,6 +165,7 @@ export class AssignmentStatusListingComponent implements OnInit, AfterViewInit, 
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.assignmentStatusTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.assignmentStatusTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

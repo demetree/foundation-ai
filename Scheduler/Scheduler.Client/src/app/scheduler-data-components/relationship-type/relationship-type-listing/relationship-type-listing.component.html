@@ -82,6 +82,7 @@
   <app-relationship-type-table
     *ngIf="userIsSchedulerRelationshipTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRelationshipTypeCount$ | async) ?? 0">
   </app-relationship-type-table>
 </div>

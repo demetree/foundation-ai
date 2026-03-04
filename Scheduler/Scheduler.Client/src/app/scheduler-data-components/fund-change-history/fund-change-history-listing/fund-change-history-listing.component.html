@@ -82,6 +82,7 @@
   <app-fund-change-history-table
     *ngIf="userIsSchedulerFundChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredFundChangeHistoryCount$ | async) ?? 0">
   </app-fund-change-history-table>
 </div>

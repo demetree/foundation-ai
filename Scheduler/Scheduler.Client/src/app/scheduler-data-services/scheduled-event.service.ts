@@ -29,6 +29,9 @@ import { PriorityData } from './priority.service';
 import { BookingSourceTypeData } from './booking-source-type.service';
 import { ScheduledEventChangeHistoryService, ScheduledEventChangeHistoryData } from './scheduled-event-change-history.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
+import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
+import { DocumentService, DocumentData } from './document.service';
+import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
 import { ContactInteractionService, ContactInteractionData } from './contact-interaction.service';
 import { EventCalendarService, EventCalendarData } from './event-calendar.service';
 import { ScheduledEventDependencyService, ScheduledEventDependencyData } from './scheduled-event-dependency.service';
@@ -234,6 +237,21 @@ export class ScheduledEventData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
+    private _financialTransactions: FinancialTransactionData[] | null = null;
+    private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
+    private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
+
+                
+    private _paymentTransactions: PaymentTransactionData[] | null = null;
+    private _paymentTransactionsPromise: Promise<PaymentTransactionData[]> | null  = null;
+    private _paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
+                
     private _contactInteractions: ContactInteractionData[] | null = null;
     private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
@@ -294,11 +312,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventChangeHistoriesCount$ === null) {
+            this._scheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventChangeHistoriesCount$;
+    }
 
 
 
@@ -313,11 +337,92 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
+
+
+
+    public FinancialTransactions$ = this._financialTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._financialTransactions === null && this._financialTransactionsPromise === null) {
+            this.loadFinancialTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _financialTransactionsCount$: Observable<bigint | number> | null = null;
+    public get FinancialTransactionsCount$(): Observable<bigint | number> {
+        if (this._financialTransactionsCount$ === null) {
+            this._financialTransactionsCount$ = FinancialTransactionService.Instance.GetFinancialTransactionsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._financialTransactionsCount$;
+    }
+
+
+
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
+    }
+
+
+
+    public PaymentTransactions$ = this._paymentTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._paymentTransactions === null && this._paymentTransactionsPromise === null) {
+            this.loadPaymentTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _paymentTransactionsCount$: Observable<bigint | number> | null = null;
+    public get PaymentTransactionsCount$(): Observable<bigint | number> {
+        if (this._paymentTransactionsCount$ === null) {
+            this._paymentTransactionsCount$ = PaymentTransactionService.Instance.GetPaymentTransactionsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._paymentTransactionsCount$;
+    }
 
 
 
@@ -332,11 +437,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactInteractionsCount$: Observable<bigint | number> | null = null;
+    public get ContactInteractionsCount$(): Observable<bigint | number> {
+        if (this._contactInteractionsCount$ === null) {
+            this._contactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactInteractionsCount$;
+    }
 
 
 
@@ -351,11 +462,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventCalendarsCount$: Observable<bigint | number> | null = null;
+    public get EventCalendarsCount$(): Observable<bigint | number> {
+        if (this._eventCalendarsCount$ === null) {
+            this._eventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventCalendarsCount$;
+    }
 
 
 
@@ -370,11 +487,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventDependencyPredecessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({predecessorEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventDependencyPredecessorEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventDependencyPredecessorEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventDependencyPredecessorEventsCount$ === null) {
+            this._scheduledEventDependencyPredecessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({predecessorEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventDependencyPredecessorEventsCount$;
+    }
 
 
     public ScheduledEventDependencySuccessorEvents$ = this._scheduledEventDependencySuccessorEventsSubject.asObservable().pipe(
@@ -388,11 +511,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventDependencySuccessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({successorEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventDependencySuccessorEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventDependencySuccessorEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventDependencySuccessorEventsCount$ === null) {
+            this._scheduledEventDependencySuccessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({successorEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventDependencySuccessorEventsCount$;
+    }
 
 
     public ScheduledEventQualificationRequirements$ = this._scheduledEventQualificationRequirementsSubject.asObservable().pipe(
@@ -406,11 +535,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventQualificationRequirementsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventQualificationRequirementsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventQualificationRequirementsCount$ === null) {
+            this._scheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventQualificationRequirementsCount$;
+    }
 
 
 
@@ -425,11 +560,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _recurrenceExceptionsCount$: Observable<bigint | number> | null = null;
+    public get RecurrenceExceptionsCount$(): Observable<bigint | number> {
+        if (this._recurrenceExceptionsCount$ === null) {
+            this._recurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._recurrenceExceptionsCount$;
+    }
 
 
 
@@ -444,11 +585,17 @@ export class ScheduledEventData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({scheduledEventId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({scheduledEventId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -493,38 +640,62 @@ export class ScheduledEventData {
      this._scheduledEventChangeHistories = null;
      this._scheduledEventChangeHistoriesPromise = null;
      this._scheduledEventChangeHistoriesSubject.next(null);
+     this._scheduledEventChangeHistoriesCount$ = null;
 
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
+
+     this._financialTransactions = null;
+     this._financialTransactionsPromise = null;
+     this._financialTransactionsSubject.next(null);
+     this._financialTransactionsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
+
+     this._paymentTransactions = null;
+     this._paymentTransactionsPromise = null;
+     this._paymentTransactionsSubject.next(null);
+     this._paymentTransactionsCount$ = null;
 
      this._contactInteractions = null;
      this._contactInteractionsPromise = null;
      this._contactInteractionsSubject.next(null);
+     this._contactInteractionsCount$ = null;
 
      this._eventCalendars = null;
      this._eventCalendarsPromise = null;
      this._eventCalendarsSubject.next(null);
+     this._eventCalendarsCount$ = null;
 
      this._scheduledEventDependencyPredecessorEvents = null;
      this._scheduledEventDependencyPredecessorEventsPromise = null;
      this._scheduledEventDependencyPredecessorEventsSubject.next(null);
+     this._scheduledEventDependencyPredecessorEventsCount$ = null;
 
      this._scheduledEventDependencySuccessorEvents = null;
      this._scheduledEventDependencySuccessorEventsPromise = null;
      this._scheduledEventDependencySuccessorEventsSubject.next(null);
+     this._scheduledEventDependencySuccessorEventsCount$ = null;
 
      this._scheduledEventQualificationRequirements = null;
      this._scheduledEventQualificationRequirementsPromise = null;
      this._scheduledEventQualificationRequirementsSubject.next(null);
+     this._scheduledEventQualificationRequirementsCount$ = null;
 
      this._recurrenceExceptions = null;
      this._recurrenceExceptionsPromise = null;
      this._recurrenceExceptionsSubject.next(null);
+     this._recurrenceExceptionsCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -662,6 +833,201 @@ export class ScheduledEventData {
 
     public get HasEventCharges(): Promise<boolean> {
         return this.EventCharges.then(eventCharges => eventCharges.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the FinancialTransactions for this ScheduledEvent.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.scheduledEvent.FinancialTransactions.then(scheduledEvents => { ... })
+     *   or
+     *   await this.scheduledEvent.scheduledEvents
+     *
+    */
+    public get FinancialTransactions(): Promise<FinancialTransactionData[]> {
+        if (this._financialTransactions !== null) {
+            return Promise.resolve(this._financialTransactions);
+        }
+
+        if (this._financialTransactionsPromise !== null) {
+            return this._financialTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadFinancialTransactions();
+
+        return this._financialTransactionsPromise!;
+    }
+
+
+
+    private loadFinancialTransactions(): void {
+
+        this._financialTransactionsPromise = lastValueFrom(
+            ScheduledEventService.Instance.GetFinancialTransactionsForScheduledEvent(this.id)
+        )
+        .then(FinancialTransactions => {
+            this._financialTransactions = FinancialTransactions ?? [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            return this._financialTransactions;
+         })
+        .catch(err => {
+            this._financialTransactions = [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._financialTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached FinancialTransaction. Call after mutations to force refresh.
+     */
+    public ClearFinancialTransactionsCache(): void {
+        this._financialTransactions = null;
+        this._financialTransactionsPromise = null;
+        this._financialTransactionsSubject.next(this._financialTransactions);      // Emit to observable
+    }
+
+    public get HasFinancialTransactions(): Promise<boolean> {
+        return this.FinancialTransactions.then(financialTransactions => financialTransactions.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Documents for this ScheduledEvent.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.scheduledEvent.Documents.then(scheduledEvents => { ... })
+     *   or
+     *   await this.scheduledEvent.scheduledEvents
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            ScheduledEventService.Instance.GetDocumentsForScheduledEvent(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the PaymentTransactions for this ScheduledEvent.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.scheduledEvent.PaymentTransactions.then(scheduledEvents => { ... })
+     *   or
+     *   await this.scheduledEvent.scheduledEvents
+     *
+    */
+    public get PaymentTransactions(): Promise<PaymentTransactionData[]> {
+        if (this._paymentTransactions !== null) {
+            return Promise.resolve(this._paymentTransactions);
+        }
+
+        if (this._paymentTransactionsPromise !== null) {
+            return this._paymentTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadPaymentTransactions();
+
+        return this._paymentTransactionsPromise!;
+    }
+
+
+
+    private loadPaymentTransactions(): void {
+
+        this._paymentTransactionsPromise = lastValueFrom(
+            ScheduledEventService.Instance.GetPaymentTransactionsForScheduledEvent(this.id)
+        )
+        .then(PaymentTransactions => {
+            this._paymentTransactions = PaymentTransactions ?? [];
+            this._paymentTransactionsSubject.next(this._paymentTransactions);
+            return this._paymentTransactions;
+         })
+        .catch(err => {
+            this._paymentTransactions = [];
+            this._paymentTransactionsSubject.next(this._paymentTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._paymentTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached PaymentTransaction. Call after mutations to force refresh.
+     */
+    public ClearPaymentTransactionsCache(): void {
+        this._paymentTransactions = null;
+        this._paymentTransactionsPromise = null;
+        this._paymentTransactionsSubject.next(this._paymentTransactions);      // Emit to observable
+    }
+
+    public get HasPaymentTransactions(): Promise<boolean> {
+        return this.PaymentTransactions.then(paymentTransactions => paymentTransactions.length > 0);
     }
 
 
@@ -1200,6 +1566,9 @@ export class ScheduledEventService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private scheduledEventChangeHistoryService: ScheduledEventChangeHistoryService,
         private eventChargeService: EventChargeService,
+        private financialTransactionService: FinancialTransactionService,
+        private documentService: DocumentService,
+        private paymentTransactionService: PaymentTransactionService,
         private contactInteractionService: ContactInteractionService,
         private eventCalendarService: EventCalendarService,
         private scheduledEventDependencyService: ScheduledEventDependencyService,
@@ -1708,6 +2077,36 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
+    public GetFinancialTransactionsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FinancialTransactionData[]> {
+        return this.financialTransactionService.GetFinancialTransactionList({
+            scheduledEventId: scheduledEventId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetDocumentsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
+            scheduledEventId: scheduledEventId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetPaymentTransactionsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
+        return this.paymentTransactionService.GetPaymentTransactionList({
+            scheduledEventId: scheduledEventId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetContactInteractionsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactInteractionData[]> {
         return this.contactInteractionService.GetContactInteractionList({
             scheduledEventId: scheduledEventId,
@@ -1813,10 +2212,6 @@ export class ScheduledEventService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
-    (revived as any)._scheduledEvents = null;
-    (revived as any)._scheduledEventsPromise = null;
-    (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
-
     (revived as any)._scheduledEventChangeHistories = null;
     (revived as any)._scheduledEventChangeHistoriesPromise = null;
     (revived as any)._scheduledEventChangeHistoriesSubject = new BehaviorSubject<ScheduledEventChangeHistoryData[] | null>(null);
@@ -1824,6 +2219,18 @@ export class ScheduledEventService extends SecureEndpointBase {
     (revived as any)._eventCharges = null;
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
+
+    (revived as any)._financialTransactions = null;
+    (revived as any)._financialTransactionsPromise = null;
+    (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
+
+    (revived as any)._paymentTransactions = null;
+    (revived as any)._paymentTransactionsPromise = null;
+    (revived as any)._paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
 
     (revived as any)._contactInteractions = null;
     (revived as any)._contactInteractionsPromise = null;
@@ -1833,9 +2240,13 @@ export class ScheduledEventService extends SecureEndpointBase {
     (revived as any)._eventCalendarsPromise = null;
     (revived as any)._eventCalendarsSubject = new BehaviorSubject<EventCalendarData[] | null>(null);
 
-    (revived as any)._scheduledEventDependencies = null;
-    (revived as any)._scheduledEventDependenciesPromise = null;
-    (revived as any)._scheduledEventDependenciesSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
+    (revived as any)._scheduledEventDependencyPredecessorEvents = null;
+    (revived as any)._scheduledEventDependencyPredecessorEventsPromise = null;
+    (revived as any)._scheduledEventDependencyPredecessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
+
+    (revived as any)._scheduledEventDependencySuccessorEvents = null;
+    (revived as any)._scheduledEventDependencySuccessorEventsPromise = null;
+    (revived as any)._scheduledEventDependencySuccessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
 
     (revived as any)._scheduledEventQualificationRequirements = null;
     (revived as any)._scheduledEventQualificationRequirementsPromise = null;
@@ -1861,22 +2272,6 @@ export class ScheduledEventService extends SecureEndpointBase {
     // 2. But private methods (loadScheduledEventXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
-    (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._scheduledEvents === null && (revived as any)._scheduledEventsPromise === null) {
-                (revived as any).loadScheduledEvents();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
     (revived as any).ScheduledEventChangeHistories$ = (revived as any)._scheduledEventChangeHistoriesSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._scheduledEventChangeHistories === null && (revived as any)._scheduledEventChangeHistoriesPromise === null) {
@@ -1886,11 +2281,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventChangeHistoriesCount$ = null;
 
 
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
@@ -1902,11 +2293,43 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._eventChargesCount$ = null;
 
+
+    (revived as any).FinancialTransactions$ = (revived as any)._financialTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._financialTransactions === null && (revived as any)._financialTransactionsPromise === null) {
+                (revived as any).loadFinancialTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._financialTransactionsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
+
+
+    (revived as any).PaymentTransactions$ = (revived as any)._paymentTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._paymentTransactions === null && (revived as any)._paymentTransactionsPromise === null) {
+                (revived as any).loadPaymentTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._paymentTransactionsCount$ = null;
 
 
     (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
@@ -1918,11 +2341,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactInteractionsCount$ = null;
 
 
     (revived as any).EventCalendars$ = (revived as any)._eventCalendarsSubject.asObservable().pipe(
@@ -1934,27 +2353,31 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._eventCalendarsCount$ = null;
 
 
-
-    (revived as any).ScheduledEventDependencies$ = (revived as any)._scheduledEventDependenciesSubject.asObservable().pipe(
+    (revived as any).ScheduledEventDependencyPredecessorEvents$ = (revived as any)._scheduledEventDependencyPredecessorEventsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._scheduledEventDependencies === null && (revived as any)._scheduledEventDependenciesPromise === null) {
-                (revived as any).loadScheduledEventDependencies();        // Need to cast to any to invoke private load method
+              if ((revived as any)._scheduledEventDependencyPredecessorEvents === null && (revived as any)._scheduledEventDependencyPredecessorEventsPromise === null) {
+                (revived as any).loadScheduledEventDependencyPredecessorEvents();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventDependenciesCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._scheduledEventDependencyPredecessorEventsCount$ = null;
 
+
+    (revived as any).ScheduledEventDependencySuccessorEvents$ = (revived as any)._scheduledEventDependencySuccessorEventsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduledEventDependencySuccessorEvents === null && (revived as any)._scheduledEventDependencySuccessorEventsPromise === null) {
+                (revived as any).loadScheduledEventDependencySuccessorEvents();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._scheduledEventDependencySuccessorEventsCount$ = null;
 
 
     (revived as any).ScheduledEventQualificationRequirements$ = (revived as any)._scheduledEventQualificationRequirementsSubject.asObservable().pipe(
@@ -1966,11 +2389,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventQualificationRequirementsCount$ = null;
 
 
     (revived as any).RecurrenceExceptions$ = (revived as any)._recurrenceExceptionsSubject.asObservable().pipe(
@@ -1982,11 +2401,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._recurrenceExceptionsCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -1998,11 +2413,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({scheduledEventId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

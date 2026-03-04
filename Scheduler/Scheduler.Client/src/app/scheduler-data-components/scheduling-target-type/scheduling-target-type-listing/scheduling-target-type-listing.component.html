@@ -82,6 +82,7 @@
   <app-scheduling-target-type-table
     *ngIf="userIsSchedulerSchedulingTargetTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredSchedulingTargetTypeCount$ | async) ?? 0">
   </app-scheduling-target-type-table>
 </div>

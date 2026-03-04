@@ -75,10 +75,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-gift-table [queryParams]="{ receiptTypeId: receiptTypeData?.id }"></app-gift-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-gift-add-edit [preSeededData]="{ receiptTypeId: receiptTypeData?.id }" [hiddenFields]="['receiptTypeId']"></app-gift-add-edit>
+                                    <app-gift-table [queryParams]="{ receiptTypeId: receiptTypeData?.id }" [showAddButton]="true" [preSeededData]="{ receiptTypeId: receiptTypeData?.id }" [hiddenFields]="['receiptTypeId']"></app-gift-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -170,11 +170,17 @@ export class SoftCreditData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SoftCreditChangeHistoriesCount$ = SoftCreditChangeHistoryService.Instance.GetSoftCreditChangeHistoriesRowCount({softCreditId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _softCreditChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SoftCreditChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._softCreditChangeHistoriesCount$ === null) {
+            this._softCreditChangeHistoriesCount$ = SoftCreditChangeHistoryService.Instance.GetSoftCreditChangeHistoriesRowCount({softCreditId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._softCreditChangeHistoriesCount$;
+    }
 
 
 
@@ -219,6 +225,7 @@ export class SoftCreditData {
      this._softCreditChangeHistories = null;
      this._softCreditChangeHistoriesPromise = null;
      this._softCreditChangeHistoriesSubject.next(null);
+     this._softCreditChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -905,11 +912,7 @@ export class SoftCreditService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SoftCreditChangeHistoriesCount$ = SoftCreditChangeHistoryService.Instance.GetSoftCreditChangeHistoriesRowCount({softCreditId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._softCreditChangeHistoriesCount$ = null;
 
 
 

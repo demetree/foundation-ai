@@ -82,6 +82,7 @@
   <app-batch-change-history-table
     *ngIf="userIsSchedulerBatchChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredBatchChangeHistoryCount$ | async) ?? 0">
   </app-batch-change-history-table>
 </div>

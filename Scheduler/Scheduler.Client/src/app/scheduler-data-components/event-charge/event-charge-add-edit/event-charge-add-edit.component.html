@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #eventChargeModal let-modal>
-   <div class="modal-header bg-dark text-light event-charge-modal-header">
+   <div class="modal-header event-charge-modal-header">
       <h5 class="modal-title mb-0" id="eventChargeModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Event Charge' : 'Add Event Charge' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body event-charge-modal-body">
       <form [formGroup]="eventChargeForm" (ngSubmit)="submitForm()">
@@ -104,6 +103,14 @@
             <div class="form-check my-2" *ngIf="!isFieldHidden('isAutomatic')">
                 <input type="checkbox" id="EventCharge-isAutomatic" formControlName="isAutomatic" class="form-check-input" [disabled]="!userIsSchedulerEventChargeWriter()" />
                 <label for="EventCharge-isAutomatic" class="form-check-label" id="label-EventCharge-isAutomatic"><span class="text-danger">*</span>Is Automatic</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDeposit')">
+                <input type="checkbox" id="EventCharge-isDeposit" formControlName="isDeposit" class="form-check-input" [disabled]="!userIsSchedulerEventChargeWriter()" />
+                <label for="EventCharge-isDeposit" class="form-check-label" id="label-EventCharge-isDeposit"><span class="text-danger">*</span>Is Deposit</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('depositRefundedDate')">
+                <label for="EventCharge-depositRefundedDate" id="label-EventCharge-depositRefundedDate">Deposit Refunded Date</label>
+                <input type="datetime-local" id="EventCharge-depositRefundedDate" formControlName="depositRefundedDate" placeholder="Enter Deposit Refunded Date" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-depositRefundedDate" />
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('exportedDate')">
                 <label for="EventCharge-exportedDate" id="label-EventCharge-exportedDate">Exported Date</label>

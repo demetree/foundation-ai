@@ -173,10 +173,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-profile-change-history-table [queryParams]="{ volunteerProfileId: volunteerProfileData?.id }"></app-volunteer-profile-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-profile-change-history-add-edit [preSeededData]="{ volunteerProfileId: volunteerProfileData?.id }" [hiddenFields]="['volunteerProfileId']"></app-volunteer-profile-change-history-add-edit>
+                                    <app-volunteer-profile-change-history-table [queryParams]="{ volunteerProfileId: volunteerProfileData?.id }" [showAddButton]="true" [preSeededData]="{ volunteerProfileId: volunteerProfileData?.id }" [hiddenFields]="['volunteerProfileId']"></app-volunteer-profile-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #officeChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light office-change-history-modal-header">
+   <div class="modal-header office-change-history-modal-header">
       <h5 class="modal-title mb-0" id="officeChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Office Change History' : 'Add Office Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body office-change-history-modal-body">
       <form [formGroup]="officeChangeHistoryForm" (ngSubmit)="submitForm()">

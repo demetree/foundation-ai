@@ -85,10 +85,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-qualification-requirement-change-history-table [queryParams]="{ schedulingTargetQualificationRequirementId: schedulingTargetQualificationRequirementData?.id }"></app-scheduling-target-qualification-requirement-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-qualification-requirement-change-history-add-edit [preSeededData]="{ schedulingTargetQualificationRequirementId: schedulingTargetQualificationRequirementData?.id }" [hiddenFields]="['schedulingTargetQualificationRequirementId']"></app-scheduling-target-qualification-requirement-change-history-add-edit>
+                                    <app-scheduling-target-qualification-requirement-change-history-table [queryParams]="{ schedulingTargetQualificationRequirementId: schedulingTargetQualificationRequirementData?.id }" [showAddButton]="true" [preSeededData]="{ schedulingTargetQualificationRequirementId: schedulingTargetQualificationRequirementData?.id }" [hiddenFields]="['schedulingTargetQualificationRequirementId']"></app-scheduling-target-qualification-requirement-change-history-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -78,6 +78,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? rateTypeId = null,
 			string notes = null,
 			bool? isAutomatic = null,
+			bool? isDeposit = null,
+			DateTime? depositRefundedDate = null,
 			DateTime? exportedDate = null,
 			string externalId = null,
 			int? versionNumber = null,
@@ -133,6 +135,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
+			if (depositRefundedDate.HasValue == true && depositRefundedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				depositRefundedDate = depositRefundedDate.Value.ToUniversalTime();
+			}
+
 			if (exportedDate.HasValue == true && exportedDate.Value.Kind != DateTimeKind.Utc)
 			{
 				exportedDate = exportedDate.Value.ToUniversalTime();
@@ -190,6 +197,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ec => ec.isAutomatic == isAutomatic.Value);
 			}
+			if (isDeposit.HasValue == true)
+			{
+				query = query.Where(ec => ec.isDeposit == isDeposit.Value);
+			}
+			if (depositRefundedDate.HasValue == true)
+			{
+				query = query.Where(ec => ec.depositRefundedDate == depositRefundedDate.Value);
+			}
 			if (exportedDate.HasValue == true)
 			{
 				query = query.Where(ec => ec.exportedDate == exportedDate.Value);
@@ -232,23 +247,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 			query = query.OrderBy(ec => ec.externalId);
-
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
-			if (includeRelations == true)
-			{
-				query = query.Include(x => x.chargeStatus);
-				query = query.Include(x => x.chargeType);
-				query = query.Include(x => x.currency);
-				query = query.Include(x => x.rateType);
-				query = query.Include(x => x.resource);
-				query = query.Include(x => x.scheduledEvent);
-				query = query.AsSplitQuery();
-			}
 
 
 			//
@@ -294,6 +292,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   );
 			}
 
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.chargeStatus);
+				query = query.Include(x => x.chargeType);
+				query = query.Include(x => x.currency);
+				query = query.Include(x => x.rateType);
+				query = query.Include(x => x.resource);
+				query = query.Include(x => x.scheduledEvent);
+				query = query.AsSplitQuery();
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
 			query = query.AsNoTracking();
 			
 			List<Database.EventCharge> materialized = await query.ToListAsync(cancellationToken);
@@ -345,6 +360,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? rateTypeId = null,
 			string notes = null,
 			bool? isAutomatic = null,
+			bool? isDeposit = null,
+			DateTime? depositRefundedDate = null,
 			DateTime? exportedDate = null,
 			string externalId = null,
 			int? versionNumber = null,
@@ -382,6 +399,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
+			if (depositRefundedDate.HasValue == true && depositRefundedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				depositRefundedDate = depositRefundedDate.Value.ToUniversalTime();
+			}
+
 			if (exportedDate.HasValue == true && exportedDate.Value.Kind != DateTimeKind.Utc)
 			{
 				exportedDate = exportedDate.Value.ToUniversalTime();
@@ -436,6 +458,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (isAutomatic.HasValue == true)
 			{
 				query = query.Where(ec => ec.isAutomatic == isAutomatic.Value);
+			}
+			if (isDeposit.HasValue == true)
+			{
+				query = query.Where(ec => ec.isDeposit == isDeposit.Value);
+			}
+			if (depositRefundedDate.HasValue == true)
+			{
+				query = query.Where(ec => ec.depositRefundedDate == depositRefundedDate.Value);
 			}
 			if (exportedDate.HasValue == true)
 			{
@@ -758,6 +788,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					return Forbid();
 				}
 
+				if (eventCharge.depositRefundedDate.HasValue == true && eventCharge.depositRefundedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					eventCharge.depositRefundedDate = eventCharge.depositRefundedDate.Value.ToUniversalTime();
+				}
+
 				if (eventCharge.exportedDate.HasValue == true && eventCharge.exportedDate.Value.Kind != DateTimeKind.Utc)
 				{
 					eventCharge.exportedDate = eventCharge.exportedDate.Value.ToUniversalTime();
@@ -876,6 +911,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				eventCharge.tenantGuid = userTenantGuid;
 
+				if (eventCharge.depositRefundedDate.HasValue == true && eventCharge.depositRefundedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					eventCharge.depositRefundedDate = eventCharge.depositRefundedDate.Value.ToUniversalTime();
+				}
+
 				if (eventCharge.exportedDate.HasValue == true && eventCharge.exportedDate.Value.Kind != DateTimeKind.Utc)
 				{
 					eventCharge.exportedDate = eventCharge.exportedDate.Value.ToUniversalTime();
@@ -908,6 +948,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					eventCharge.EventChargeChangeHistories = null;
+					eventCharge.PaymentTransactions = null;
 					eventCharge.chargeStatus = null;
 					eventCharge.chargeType = null;
 					eventCharge.currency = null;
@@ -1029,6 +1070,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.EventChargeChangeHistories = null;
+				cloneOfExisting.PaymentTransactions = null;
 				cloneOfExisting.chargeStatus = null;
 				cloneOfExisting.chargeType = null;
 				cloneOfExisting.currency = null;
@@ -1075,6 +1117,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    eventCharge.rateTypeId = oldEventCharge.rateTypeId;
 				    eventCharge.notes = oldEventCharge.notes;
 				    eventCharge.isAutomatic = oldEventCharge.isAutomatic;
+				    eventCharge.isDeposit = oldEventCharge.isDeposit;
+				    eventCharge.depositRefundedDate = oldEventCharge.depositRefundedDate;
 				    eventCharge.exportedDate = oldEventCharge.exportedDate;
 				    eventCharge.externalId = oldEventCharge.externalId;
 				    eventCharge.objectGuid = oldEventCharge.objectGuid;
@@ -1531,6 +1575,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? rateTypeId = null,
 			string notes = null,
 			bool? isAutomatic = null,
+			bool? isDeposit = null,
+			DateTime? depositRefundedDate = null,
 			DateTime? exportedDate = null,
 			string externalId = null,
 			int? versionNumber = null,
@@ -1585,6 +1631,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
+			if (depositRefundedDate.HasValue == true && depositRefundedDate.Value.Kind != DateTimeKind.Utc)
+			{
+				depositRefundedDate = depositRefundedDate.Value.ToUniversalTime();
+			}
+
 			if (exportedDate.HasValue == true && exportedDate.Value.Kind != DateTimeKind.Utc)
 			{
 				exportedDate = exportedDate.Value.ToUniversalTime();
@@ -1641,6 +1692,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (isAutomatic.HasValue == true)
 			{
 				query = query.Where(ec => ec.isAutomatic == isAutomatic.Value);
+			}
+			if (isDeposit.HasValue == true)
+			{
+				query = query.Where(ec => ec.isDeposit == isDeposit.Value);
+			}
+			if (depositRefundedDate.HasValue == true)
+			{
+				query = query.Where(ec => ec.depositRefundedDate == depositRefundedDate.Value);
 			}
 			if (exportedDate.HasValue == true)
 			{

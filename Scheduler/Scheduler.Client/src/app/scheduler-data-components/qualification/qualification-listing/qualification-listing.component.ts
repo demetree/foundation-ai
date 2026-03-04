@@ -165,6 +165,7 @@ export class QualificationListingComponent implements OnInit, AfterViewInit, Can
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.qualificationTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.qualificationTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

@@ -165,6 +165,7 @@ export class VolunteerStatusListingComponent implements OnInit, AfterViewInit, C
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.volunteerStatusTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.volunteerStatusTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

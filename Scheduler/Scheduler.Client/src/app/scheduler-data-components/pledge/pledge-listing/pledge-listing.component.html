@@ -82,6 +82,7 @@
   <app-pledge-table
     *ngIf="userIsSchedulerPledgeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredPledgeCount$ | async) ?? 0">
   </app-pledge-table>
 </div>

@@ -165,6 +165,7 @@ export class ScheduledEventTemplateQualificationRequirementListingComponent impl
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventTemplateQualificationRequirementTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventTemplateQualificationRequirementTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

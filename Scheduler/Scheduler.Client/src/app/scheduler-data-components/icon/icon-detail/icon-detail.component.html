@@ -72,10 +72,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-type-table [queryParams]="{ iconId: iconData?.id }"></app-resource-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-resource-type-add-edit>
+                                    <app-resource-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-resource-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -89,10 +86,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-priority-table [queryParams]="{ iconId: iconData?.id }"></app-priority-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-priority-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-priority-add-edit>
+                                    <app-priority-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-priority-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -106,10 +100,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-method-table [queryParams]="{ iconId: iconData?.id }"></app-contact-method-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-method-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-method-add-edit>
+                                    <app-contact-method-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-method-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -123,10 +114,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-interaction-type-table [queryParams]="{ iconId: iconData?.id }"></app-interaction-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-interaction-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-interaction-type-add-edit>
+                                    <app-interaction-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-interaction-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -140,10 +128,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tag-table [queryParams]="{ iconId: iconData?.id }"></app-tag-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tag-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tag-add-edit>
+                                    <app-tag-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tag-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -157,10 +142,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-status-table [queryParams]="{ iconId: iconData?.id }"></app-volunteer-status-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-status-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-status-add-edit>
+                                    <app-volunteer-status-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-status-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -174,10 +156,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-type-table [queryParams]="{ iconId: iconData?.id }"></app-contact-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-type-add-edit>
+                                    <app-contact-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -191,10 +170,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-table [queryParams]="{ iconId: iconData?.id }"></app-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-add-edit>
+                                    <app-contact-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -208,10 +184,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-relationship-type-table [queryParams]="{ iconId: iconData?.id }"></app-relationship-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-relationship-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-relationship-type-add-edit>
+                                    <app-relationship-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-relationship-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -225,10 +198,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-office-type-table [queryParams]="{ iconId: iconData?.id }"></app-office-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-office-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-office-type-add-edit>
+                                    <app-office-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-office-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -242,10 +212,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-calendar-table [queryParams]="{ iconId: iconData?.id }"></app-calendar-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-calendar-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-calendar-add-edit>
+                                    <app-calendar-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-calendar-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -259,10 +226,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-client-type-table [queryParams]="{ iconId: iconData?.id }"></app-client-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-client-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-client-type-add-edit>
+                                    <app-client-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-client-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -276,10 +240,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-assignment-role-table [queryParams]="{ iconId: iconData?.id }"></app-assignment-role-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-assignment-role-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-assignment-role-add-edit>
+                                    <app-assignment-role-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-assignment-role-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -293,10 +254,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-type-table [queryParams]="{ iconId: iconData?.id }"></app-scheduling-target-type-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-scheduling-target-type-add-edit>
+                                    <app-scheduling-target-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-scheduling-target-type-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -310,10 +268,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-table [queryParams]="{ iconId: iconData?.id }"></app-crew-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-crew-add-edit>
+                                    <app-crew-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-crew-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -327,10 +282,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-crew-member-table [queryParams]="{ iconId: iconData?.id }"></app-crew-member-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-crew-member-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-crew-member-add-edit>
+                                    <app-crew-member-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-crew-member-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -344,10 +296,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-fund-table [queryParams]="{ iconId: iconData?.id }"></app-fund-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-fund-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-fund-add-edit>
+                                    <app-fund-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-fund-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -361,10 +310,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-campaign-table [queryParams]="{ iconId: iconData?.id }"></app-campaign-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-campaign-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-campaign-add-edit>
+                                    <app-campaign-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-campaign-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -378,10 +324,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-appeal-table [queryParams]="{ iconId: iconData?.id }"></app-appeal-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-appeal-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-appeal-add-edit>
+                                    <app-appeal-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-appeal-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -395,10 +338,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-household-table [queryParams]="{ iconId: iconData?.id }"></app-household-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-household-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-household-add-edit>
+                                    <app-household-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-household-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -412,10 +352,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-journey-stage-table [queryParams]="{ iconId: iconData?.id }"></app-constituent-journey-stage-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-journey-stage-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-constituent-journey-stage-add-edit>
+                                    <app-constituent-journey-stage-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-constituent-journey-stage-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -429,10 +366,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-table [queryParams]="{ iconId: iconData?.id }"></app-constituent-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-constituent-add-edit>
+                                    <app-constituent-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-constituent-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -446,10 +380,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-tribute-table [queryParams]="{ iconId: iconData?.id }"></app-tribute-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-tribute-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tribute-add-edit>
+                                    <app-tribute-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tribute-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -463,10 +394,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-profile-table [queryParams]="{ iconId: iconData?.id }"></app-volunteer-profile-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-profile-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-profile-add-edit>
+                                    <app-volunteer-profile-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-profile-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -480,10 +408,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-group-table [queryParams]="{ iconId: iconData?.id }"></app-volunteer-group-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-group-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-group-add-edit>
+                                    <app-volunteer-group-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-group-table>
                                 </div>
                             </div>
                             </ng-template>

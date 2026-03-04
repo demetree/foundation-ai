@@ -105,6 +105,8 @@ public partial class BMCContext : DbContext
 
     public virtual DbSet<LegoTheme> LegoThemes { get; set; }
 
+    public virtual DbSet<MarketDataCache> MarketDataCaches { get; set; }
+
     public virtual DbSet<MocComment> MocComments { get; set; }
 
     public virtual DbSet<MocFavourite> MocFavourites { get; set; }
@@ -225,7 +227,7 @@ public partial class BMCContext : DbContext
     {
         modelBuilder.Entity<Achievement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Achievem__3213E83F31D42639");
+            entity.HasKey(e => e.id).HasName("PK__Achievem__3213E83F7D14E5AA");
 
             entity.ToTable("Achievement", "BMC");
 
@@ -237,9 +239,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_Achievement_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Achievem__3E543F9460F4BD5A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Achievem__3E543F948F22EB3F").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Achievem__72E12F1BE5D25BCC").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Achievem__72E12F1B330A0986").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.criteriaCode).HasMaxLength(250);
@@ -264,7 +266,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<AchievementCategory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Achievem__3213E83FA6E926BF");
+            entity.HasKey(e => e.id).HasName("PK__Achievem__3213E83F03B2439C");
 
             entity.ToTable("AchievementCategory", "BMC");
 
@@ -274,9 +276,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_AchievementCategory_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Achievem__3E543F9460810C61").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Achievem__3E543F947F2C60E6").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Achievem__72E12F1BB23264B9").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Achievem__72E12F1BE8656BB3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -290,7 +292,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ActivityEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Activity__3213E83F3D373DB0");
+            entity.HasKey(e => e.id).HasName("PK__Activity__3213E83F75F1BA19");
 
             entity.ToTable("ActivityEvent", "BMC");
 
@@ -302,7 +304,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_ActivityEvent_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Activity__3E543F94CC9B29C4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Activity__3E543F94E3E30A8F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isPublic).HasDefaultValue(true);
@@ -318,7 +320,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ActivityEventType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Activity__3213E83F76D5E585");
+            entity.HasKey(e => e.id).HasName("PK__Activity__3213E83FAD5A2EDA");
 
             entity.ToTable("ActivityEventType", "BMC");
 
@@ -328,9 +330,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ActivityEventType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Activity__3E543F94BFB5D36D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Activity__3E543F94B75119AF").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Activity__72E12F1B43F706EB").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Activity__72E12F1B329791A9").IsUnique();
 
             entity.Property(e => e.accentColor).HasMaxLength(10);
             entity.Property(e => e.active).HasDefaultValue(true);
@@ -345,7 +347,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ApiKey>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ApiKey__3213E83FC7646BAE");
+            entity.HasKey(e => e.id).HasName("PK__ApiKey__3213E83FCFF532F3");
 
             entity.ToTable("ApiKey", "BMC");
 
@@ -359,7 +361,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ApiKey_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ApiKey__3E543F9459FA0DD0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ApiKey__3E543F9412E4B93D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isActive).HasDefaultValue(true);
@@ -377,7 +379,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ApiRequestLog>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ApiReque__3213E83F57E0B8D3");
+            entity.HasKey(e => e.id).HasName("PK__ApiReque__3213E83FB2C2C3EA");
 
             entity.ToTable("ApiRequestLog", "BMC");
 
@@ -387,7 +389,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.deleted, "I_ApiRequestLog_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ApiReque__3E543F94612C6C5E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ApiReque__3E543F94CE277B66").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.clientIpAddress).HasMaxLength(100);
@@ -405,7 +407,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickCategory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickCat__3213E83F723C12B9");
+            entity.HasKey(e => e.id).HasName("PK__BrickCat__3213E83F900B0D1D");
 
             entity.ToTable("BrickCategory", "BMC");
 
@@ -415,9 +417,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_BrickCategory_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickCat__3E543F94BEA3784C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickCat__3E543F9410399375").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BrickCat__72E12F1B6CE52BFC").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BrickCat__72E12F1B84C873DA").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -430,7 +432,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickColour>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickCol__3213E83F8F5E0289");
+            entity.HasKey(e => e.id).HasName("PK__BrickCol__3213E83F7723C301");
 
             entity.ToTable("BrickColour", "BMC");
 
@@ -444,9 +446,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.rebrickableColorId, "UC_BrickColour_rebrickableColorId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickCol__3E543F94304B2323").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickCol__3E543F940593AD2D").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BrickCol__72E12F1B056850B0").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BrickCol__72E12F1B3D4277BE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.hexEdgeColour).HasMaxLength(10);
@@ -462,7 +464,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickConnection>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickCon__3213E83F27DD4212");
+            entity.HasKey(e => e.id).HasName("PK__BrickCon__3213E83F0E5F9D1F");
 
             entity.ToTable("BrickConnection", "BMC");
 
@@ -482,7 +484,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.targetPlacedBrickId }, "I_BrickConnection_tenantGuid_targetPlacedBrickId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickCon__3E543F9452A9FE00").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickCon__3E543F94116B5079").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.connectionStrength).HasMaxLength(50);
@@ -510,7 +512,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickEconomyTransaction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickEco__3213E83F39BDA842");
+            entity.HasKey(e => e.id).HasName("PK__BrickEco__3213E83FC57BD7D3");
 
             entity.ToTable("BrickEconomyTransaction", "BMC");
 
@@ -520,7 +522,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_BrickEconomyTransaction_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickEco__3E543F9414043A52").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickEco__3E543F94768A0134").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.direction)
@@ -537,7 +539,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickEconomyUserLink>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickEco__3213E83F3C707CE3");
+            entity.HasKey(e => e.id).HasName("PK__BrickEco__3213E83F1AF12102");
 
             entity.ToTable("BrickEconomyUserLink", "BMC");
 
@@ -549,7 +551,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.tenantGuid, "UC_BrickEconomyUserLink_tenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickEco__3E543F946BA1BDE3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickEco__3E543F94385EF231").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.encryptedApiKey).HasMaxLength(500);
@@ -558,7 +560,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickElement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickEle__3213E83F52FC9920");
+            entity.HasKey(e => e.id).HasName("PK__BrickEle__3213E83F1144BFFF");
 
             entity.ToTable("BrickElement", "BMC");
 
@@ -572,7 +574,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.elementId, "UC_BrickElement_elementId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickEle__3E543F947D35816B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickEle__3E543F9450213CFC").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.designId).HasMaxLength(50);
@@ -591,7 +593,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickLinkTransaction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickLin__3213E83F39CDAC8C");
+            entity.HasKey(e => e.id).HasName("PK__BrickLin__3213E83F206BDF1E");
 
             entity.ToTable("BrickLinkTransaction", "BMC");
 
@@ -601,7 +603,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_BrickLinkTransaction_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickLin__3E543F94B9BE961C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickLin__3E543F9405A9F8EB").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.direction)
@@ -618,7 +620,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickLinkUserLink>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickLin__3213E83FF7802219");
+            entity.HasKey(e => e.id).HasName("PK__BrickLin__3213E83F38F4AE97");
 
             entity.ToTable("BrickLinkUserLink", "BMC");
 
@@ -630,7 +632,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.tenantGuid, "UC_BrickLinkUserLink_tenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickLin__3E543F94105B5755").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickLin__3E543F945027BBB1").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.encryptedTokenSecret).HasMaxLength(500);
@@ -641,7 +643,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickOwlTransaction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickOwl__3213E83F40C39399");
+            entity.HasKey(e => e.id).HasName("PK__BrickOwl__3213E83F2D684DAC");
 
             entity.ToTable("BrickOwlTransaction", "BMC");
 
@@ -651,7 +653,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_BrickOwlTransaction_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickOwl__3E543F9492B3BD7A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickOwl__3E543F943C27000F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.direction)
@@ -668,7 +670,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickOwlUserLink>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickOwl__3213E83FE1F1175A");
+            entity.HasKey(e => e.id).HasName("PK__BrickOwl__3213E83FE0D17CFC");
 
             entity.ToTable("BrickOwlUserLink", "BMC");
 
@@ -680,7 +682,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.tenantGuid, "UC_BrickOwlUserLink_tenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickOwl__3E543F94EC4CC1D7").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickOwl__3E543F94E8260976").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.encryptedApiKey).HasMaxLength(500);
@@ -690,7 +692,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickPart>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83FAAB7B701");
+            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F8D01B4D0");
 
             entity.ToTable("BrickPart", "BMC");
 
@@ -706,9 +708,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.rebrickablePartNum, "UC_BrickPart_rebrickablePartNum").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F94EFD1AD4A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F94227C94E3").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BrickPar__72E12F1B385A7164").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BrickPar__72E12F1BD355644F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.author).HasMaxLength(100);
@@ -744,7 +746,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickPartChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83FB93008AC");
+            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F5B8A2257");
 
             entity.ToTable("BrickPartChangeHistory", "BMC");
 
@@ -765,7 +767,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickPartColour>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F1C8003EC");
+            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F9B6463A4");
 
             entity.ToTable("BrickPartColour", "BMC");
 
@@ -779,7 +781,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.brickPartId, e.brickColourId }, "UC_BrickPartColour_brickPartId_brickColourId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F9438E72408").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F94FAC84CFF").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -794,7 +796,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickPartConnector>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F48D0B52C");
+            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F2448E294");
 
             entity.ToTable("BrickPartConnector", "BMC");
 
@@ -806,7 +808,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.deleted, "I_BrickPartConnector_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F945B12F025").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F94037EA011").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -821,7 +823,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickPartRelationship>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83F9107EB37");
+            entity.HasKey(e => e.id).HasName("PK__BrickPar__3213E83FE0AAE628");
 
             entity.ToTable("BrickPartRelationship", "BMC");
 
@@ -833,7 +835,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.parentBrickPartId, "I_BrickPartRelationship_parentBrickPartId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F94E3B9671D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickPar__3E543F940342201B").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.relationshipType)
@@ -851,7 +853,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickSetSetReview>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickSet__3213E83F7FD02D7B");
+            entity.HasKey(e => e.id).HasName("PK__BrickSet__3213E83FC359E9A6");
 
             entity.ToTable("BrickSetSetReview", "BMC");
 
@@ -861,7 +863,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.legoSetId, "I_BrickSetSetReview_legoSetId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickSet__3E543F946E233360").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickSet__3E543F94CEE13818").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.reviewAuthor)
@@ -875,7 +877,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickSetTransaction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickSet__3213E83F9EE7FCD8");
+            entity.HasKey(e => e.id).HasName("PK__BrickSet__3213E83FD68367C3");
 
             entity.ToTable("BrickSetTransaction", "BMC");
 
@@ -885,7 +887,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_BrickSetTransaction_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickSet__3E543F946030C29C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickSet__3E543F9442CFC588").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.direction)
@@ -902,7 +904,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BrickSetUserLink>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BrickSet__3213E83F79F267AC");
+            entity.HasKey(e => e.id).HasName("PK__BrickSet__3213E83F1CC87AFD");
 
             entity.ToTable("BrickSetUserLink", "BMC");
 
@@ -914,7 +916,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.tenantGuid, "UC_BrickSetUserLink_tenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BrickSet__3E543F9413EAEFD0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BrickSet__3E543F94B108850D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.brickSetUsername)
@@ -932,7 +934,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildChallenge>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildCha__3213E83FF95D48B4");
+            entity.HasKey(e => e.id).HasName("PK__BuildCha__3213E83F3FC06EF8");
 
             entity.ToTable("BuildChallenge", "BMC");
 
@@ -942,9 +944,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_BuildChallenge_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildCha__3E543F94DFF5C949").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildCha__3E543F94C74D7775").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BuildCha__72E12F1BF03944E5").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BuildCha__72E12F1B98BEC561").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isActive).HasDefaultValue(true);
@@ -957,7 +959,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildChallengeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildCha__3213E83F540EAB98");
+            entity.HasKey(e => e.id).HasName("PK__BuildCha__3213E83F2B3B0F91");
 
             entity.ToTable("BuildChallengeChangeHistory", "BMC");
 
@@ -978,7 +980,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildChallengeEntry>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildCha__3213E83F89EFFF8B");
+            entity.HasKey(e => e.id).HasName("PK__BuildCha__3213E83FB0E256C1");
 
             entity.ToTable("BuildChallengeEntry", "BMC");
 
@@ -994,7 +996,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.buildChallengeId }, "UC_BuildChallengeEntry_tenantGuid_buildChallengeId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildCha__3E543F9409658FDF").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildCha__3E543F9424467BFF").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1009,7 +1011,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildManual>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83FD62AAE4A");
+            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F906FAC91");
 
             entity.ToTable("BuildManual", "BMC");
 
@@ -1025,7 +1027,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_BuildManual_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildMan__3E543F940D5B31AF").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildMan__3E543F946FAA53D1").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1043,7 +1045,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildManualChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F3D4D4029");
+            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F5754A801");
 
             entity.ToTable("BuildManualChangeHistory", "BMC");
 
@@ -1066,7 +1068,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildManualPage>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F9E9F7B8F");
+            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F1218BBF3");
 
             entity.ToTable("BuildManualPage", "BMC");
 
@@ -1078,7 +1080,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_BuildManualPage_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildMan__3E543F94A07893D4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildMan__3E543F9436CA22AA").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.title).HasMaxLength(250);
@@ -1090,7 +1092,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildManualStep>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F22C9B66A");
+            entity.HasKey(e => e.id).HasName("PK__BuildMan__3213E83F4F4D4B05");
 
             entity.ToTable("BuildManualStep", "BMC");
 
@@ -1102,7 +1104,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_BuildManualStep_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildMan__3E543F940A819A7B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildMan__3E543F949C91C78E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1113,7 +1115,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildStepAnnotation>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildSte__3213E83F0D1D4C7E");
+            entity.HasKey(e => e.id).HasName("PK__BuildSte__3213E83F3B4D4D23");
 
             entity.ToTable("BuildStepAnnotation", "BMC");
 
@@ -1129,7 +1131,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.placedBrickId }, "I_BuildStepAnnotation_tenantGuid_placedBrickId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildSte__3E543F949843D85E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildSte__3E543F94033BBE1D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1146,7 +1148,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildStepAnnotationType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildSte__3213E83F264B7B89");
+            entity.HasKey(e => e.id).HasName("PK__BuildSte__3213E83F8561E87B");
 
             entity.ToTable("BuildStepAnnotationType", "BMC");
 
@@ -1156,9 +1158,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_BuildStepAnnotationType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildSte__3E543F94620F631C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildSte__3E543F94D202D519").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BuildSte__72E12F1BB6034695").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BuildSte__72E12F1BD2267613").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1171,7 +1173,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<BuildStepPart>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BuildSte__3213E83F933A1C3F");
+            entity.HasKey(e => e.id).HasName("PK__BuildSte__3213E83F6D1C65D6");
 
             entity.ToTable("BuildStepPart", "BMC");
 
@@ -1185,7 +1187,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.placedBrickId }, "I_BuildStepPart_tenantGuid_placedBrickId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BuildSte__3E543F9441377E14").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BuildSte__3E543F9404B748E2").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1200,7 +1202,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ColourFinish>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ColourFi__3213E83FB6ED9B41");
+            entity.HasKey(e => e.id).HasName("PK__ColourFi__3213E83F1AEADF9E");
 
             entity.ToTable("ColourFinish", "BMC");
 
@@ -1210,9 +1212,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ColourFinish_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ColourFi__3E543F94718B42B9").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ColourFi__3E543F942FB1C36E").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ColourFi__72E12F1BF0D1E18E").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ColourFi__72E12F1BAF8EBC51").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1225,7 +1227,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ConnectorType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Connecto__3213E83F117E0014");
+            entity.HasKey(e => e.id).HasName("PK__Connecto__3213E83FF34B1049");
 
             entity.ToTable("ConnectorType", "BMC");
 
@@ -1235,9 +1237,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ConnectorType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Connecto__3E543F943CAAD969").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Connecto__3E543F945EC4FDFD").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Connecto__72E12F1BCC7C5E8C").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Connecto__72E12F1B13EFA7D3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1251,7 +1253,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ConnectorTypeCompatibility>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Connecto__3213E83F603AC962");
+            entity.HasKey(e => e.id).HasName("PK__Connecto__3213E83F08F1A58B");
 
             entity.ToTable("ConnectorTypeCompatibility", "BMC");
 
@@ -1265,7 +1267,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.maleConnectorTypeId, e.femaleConnectorTypeId }, "UC_ConnectorTypeCompatibility_maleConnectorTypeId_femaleConnectorTypeId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Connecto__3E543F94A57A89C7").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Connecto__3E543F948D52D29F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.connectionStrength)
@@ -1283,7 +1285,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ContentReport>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContentR__3213E83FE95F45CC");
+            entity.HasKey(e => e.id).HasName("PK__ContentR__3213E83F49999F11");
 
             entity.ToTable("ContentReport", "BMC");
 
@@ -1293,7 +1295,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.deleted, "I_ContentReport_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContentR__3E543F942D3F902A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContentR__3E543F948C1870DE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.reportedEntityType)
@@ -1310,7 +1312,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ContentReportReason>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContentR__3213E83F5578348C");
+            entity.HasKey(e => e.id).HasName("PK__ContentR__3213E83F92AB8DF8");
 
             entity.ToTable("ContentReportReason", "BMC");
 
@@ -1320,9 +1322,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ContentReportReason_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContentR__3E543F94DFBE52C2").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContentR__3E543F948BFF4066").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ContentR__72E12F1B6A058D6C").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ContentR__72E12F1B7AF736D1").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1335,7 +1337,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ExportFormat>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ExportFo__3213E83FF528F347");
+            entity.HasKey(e => e.id).HasName("PK__ExportFo__3213E83F318A180E");
 
             entity.ToTable("ExportFormat", "BMC");
 
@@ -1345,9 +1347,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ExportFormat_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ExportFo__3E543F942C85C8B6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ExportFo__3E543F944581A725").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ExportFo__72E12F1BA3566C68").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ExportFo__72E12F1B8A148B29").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1361,7 +1363,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<LegoMinifig>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LegoMini__3213E83FF7A6D996");
+            entity.HasKey(e => e.id).HasName("PK__LegoMini__3213E83F373E8DB7");
 
             entity.ToTable("LegoMinifig", "BMC");
 
@@ -1371,7 +1373,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.figNumber, "UC_LegoMinifig_figNumber").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__LegoMini__3E543F946F8C3CA3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__LegoMini__3E543F9455676926").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.figNumber)
@@ -1385,7 +1387,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<LegoSet>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LegoSet__3213E83F1E933EE4");
+            entity.HasKey(e => e.id).HasName("PK__LegoSet__3213E83F2E85A0D2");
 
             entity.ToTable("LegoSet", "BMC");
 
@@ -1399,7 +1401,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.setNumber, "UC_LegoSet_setNumber").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__LegoSet__3E543F94D50ED247").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__LegoSet__3E543F94D75BA635").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.availability).HasMaxLength(50);
@@ -1426,7 +1428,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<LegoSetMinifig>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LegoSetM__3213E83FC484F37E");
+            entity.HasKey(e => e.id).HasName("PK__LegoSetM__3213E83FBD7A124B");
 
             entity.ToTable("LegoSetMinifig", "BMC");
 
@@ -1438,7 +1440,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.legoSetId, "I_LegoSetMinifig_legoSetId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__LegoSetM__3E543F94C6632AF1").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__LegoSetM__3E543F94A773E00C").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1453,7 +1455,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<LegoSetPart>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LegoSetP__3213E83F07FCC2AE");
+            entity.HasKey(e => e.id).HasName("PK__LegoSetP__3213E83FB366C0F9");
 
             entity.ToTable("LegoSetPart", "BMC");
 
@@ -1467,7 +1469,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.legoSetId, "I_LegoSetPart_legoSetId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__LegoSetP__3E543F942A12AF83").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__LegoSetP__3E543F9445679D83").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1486,7 +1488,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<LegoSetSubset>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LegoSetS__3213E83F43ACAA33");
+            entity.HasKey(e => e.id).HasName("PK__LegoSetS__3213E83FD7A12A77");
 
             entity.ToTable("LegoSetSubset", "BMC");
 
@@ -1498,7 +1500,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.parentLegoSetId, "I_LegoSetSubset_parentLegoSetId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__LegoSetS__3E543F94EF5AAD0F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__LegoSetS__3E543F94C4E0E277").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1513,7 +1515,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<LegoTheme>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__LegoThem__3213E83FF5DD2EB2");
+            entity.HasKey(e => e.id).HasName("PK__LegoThem__3213E83F7A764FD2");
 
             entity.ToTable("LegoTheme", "BMC");
 
@@ -1525,9 +1527,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_LegoTheme_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__LegoThem__3E543F94A7AC8D1D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__LegoThem__3E543F94F83C950B").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__LegoThem__72E12F1B5B8006E9").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__LegoThem__72E12F1B0B1A41D3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.brickSetThemeName).HasMaxLength(100);
@@ -1541,9 +1543,36 @@ public partial class BMCContext : DbContext
             entity.HasOne(d => d.legoTheme).WithMany(p => p.InverselegoTheme).HasForeignKey(d => d.legoThemeId);
         });
 
+        modelBuilder.Entity<MarketDataCache>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("PK__MarketDa__3213E83F1B0B9901");
+
+            entity.ToTable("MarketDataCache", "BMC");
+
+            entity.HasIndex(e => e.active, "I_MarketDataCache_active");
+
+            entity.HasIndex(e => e.deleted, "I_MarketDataCache_deleted");
+
+            entity.HasIndex(e => new { e.source, e.itemType, e.itemNumber, e.condition }, "UC_MarketDataCache_source_itemType_itemNumber_condition").IsUnique();
+
+            entity.HasIndex(e => e.objectGuid, "UQ__MarketDa__3E543F94EC099570").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.condition).HasMaxLength(50);
+            entity.Property(e => e.itemNumber)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.itemType)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.source)
+                .IsRequired()
+                .HasMaxLength(50);
+        });
+
         modelBuilder.Entity<MocComment>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__MocComme__3213E83F5A8BFCA8");
+            entity.HasKey(e => e.id).HasName("PK__MocComme__3213E83FD84DBA44");
 
             entity.ToTable("MocComment", "BMC");
 
@@ -1555,7 +1584,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.publishedMocId, "I_MocComment_publishedMocId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__MocComme__3E543F940C5E0713").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__MocComme__3E543F94B121A070").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.commentText).IsRequired();
@@ -1569,7 +1598,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<MocFavourite>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__MocFavou__3213E83F08E30A8A");
+            entity.HasKey(e => e.id).HasName("PK__MocFavou__3213E83F4731970C");
 
             entity.ToTable("MocFavourite", "BMC");
 
@@ -1581,7 +1610,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.publishedMocId, e.userTenantGuid }, "UC_MocFavourite_publishedMocId_userTenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__MocFavou__3E543F949653BECA").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__MocFavou__3E543F9454FB11E9").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1592,7 +1621,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<MocLike>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__MocLike__3213E83FA7F408A6");
+            entity.HasKey(e => e.id).HasName("PK__MocLike__3213E83FBC8FA5C0");
 
             entity.ToTable("MocLike", "BMC");
 
@@ -1604,7 +1633,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.publishedMocId, e.likerTenantGuid }, "UC_MocLike_publishedMocId_likerTenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__MocLike__3E543F9416980502").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__MocLike__3E543F94CF2CCEBD").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1615,7 +1644,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ModelBuildStep>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ModelBui__3213E83F893DFF65");
+            entity.HasKey(e => e.id).HasName("PK__ModelBui__3213E83F2CFAAD2C");
 
             entity.ToTable("ModelBuildStep", "BMC");
 
@@ -1627,7 +1656,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.modelSubFileId }, "I_ModelBuildStep_tenantGuid_modelSubFileId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ModelBui__3E543F94A52A5E09").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ModelBui__3E543F94A1C3B8E8").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.rotationType).HasMaxLength(10);
@@ -1639,7 +1668,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ModelDocument>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ModelDoc__3213E83F2375F05D");
+            entity.HasKey(e => e.id).HasName("PK__ModelDoc__3213E83F0AB35AC5");
 
             entity.ToTable("ModelDocument", "BMC");
 
@@ -1653,7 +1682,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.projectId }, "I_ModelDocument_tenantGuid_projectId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ModelDoc__3E543F943CAB6FDF").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ModelDoc__3E543F94F3DF9740").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.author).HasMaxLength(100);
@@ -1673,7 +1702,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ModelDocumentChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ModelDoc__3213E83F30A1B988");
+            entity.HasKey(e => e.id).HasName("PK__ModelDoc__3213E83F15F64A96");
 
             entity.ToTable("ModelDocumentChangeHistory", "BMC");
 
@@ -1696,7 +1725,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ModelStepPart>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ModelSte__3213E83F1FF84DF8");
+            entity.HasKey(e => e.id).HasName("PK__ModelSte__3213E83F60202B20");
 
             entity.ToTable("ModelStepPart", "BMC");
 
@@ -1712,7 +1741,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.modelBuildStepId }, "I_ModelStepPart_tenantGuid_modelBuildStepId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ModelSte__3E543F94DDD2E4BC").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ModelSte__3E543F94BF370F2F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.partFileName)
@@ -1733,7 +1762,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ModelSubFile>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ModelSub__3213E83F81698DA4");
+            entity.HasKey(e => e.id).HasName("PK__ModelSub__3213E83FB2487CA5");
 
             entity.ToTable("ModelSubFile", "BMC");
 
@@ -1749,7 +1778,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.modelDocumentId, e.fileName }, "UC_ModelSubFile_tenantGuid_modelDocumentId_fileName").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ModelSub__3E543F94AE973FA0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ModelSub__3E543F94554FFD9D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.fileName)
@@ -1765,7 +1794,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ModerationAction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Moderati__3213E83FD1F2DE63");
+            entity.HasKey(e => e.id).HasName("PK__Moderati__3213E83F971A0AD5");
 
             entity.ToTable("ModerationAction", "BMC");
 
@@ -1775,7 +1804,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.deleted, "I_ModerationAction_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Moderati__3E543F94FD1947D2").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Moderati__3E543F94B78EE619").IsUnique();
 
             entity.Property(e => e.actionType)
                 .IsRequired()
@@ -1788,7 +1817,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PartSubFileReference>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PartSubF__3213E83F788B5FA0");
+            entity.HasKey(e => e.id).HasName("PK__PartSubF__3213E83F410A83E3");
 
             entity.ToTable("PartSubFileReference", "BMC");
 
@@ -1800,7 +1829,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.referencedBrickPartId, "I_PartSubFileReference_referencedBrickPartId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PartSubF__3E543F9464FFE5D5").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PartSubF__3E543F94E8E19B00").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.referencedFileName)
@@ -1819,7 +1848,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PartType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PartType__3213E83FB5D41359");
+            entity.HasKey(e => e.id).HasName("PK__PartType__3213E83F481012A8");
 
             entity.ToTable("PartType", "BMC");
 
@@ -1829,9 +1858,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_PartType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PartType__3E543F94DB9B46D0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PartType__3E543F949601ADC6").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__PartType__72E12F1B4FCE9DFD").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__PartType__72E12F1B52F973A6").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -1845,7 +1874,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PendingRegistration>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PendingR__3213E83FDF22B6C2");
+            entity.HasKey(e => e.id).HasName("PK__PendingR__3213E83F2A138D1B");
 
             entity.ToTable("PendingRegistration", "BMC");
 
@@ -1867,7 +1896,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.verificationCode, "I_PendingRegistration_verificationCode");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PendingR__3E543F94C4962985").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PendingR__3E543F941C6D9E0E").IsUnique();
 
             entity.Property(e => e.accountName)
                 .IsRequired()
@@ -1894,7 +1923,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PlacedBrick>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PlacedBr__3213E83F20B49BAE");
+            entity.HasKey(e => e.id).HasName("PK__PlacedBr__3213E83FDA5F0943");
 
             entity.ToTable("PlacedBrick", "BMC");
 
@@ -1910,7 +1939,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.projectId }, "I_PlacedBrick_tenantGuid_projectId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PlacedBr__3E543F944C2CFA1A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PlacedBr__3E543F94C8048E54").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -1930,7 +1959,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PlacedBrickChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PlacedBr__3213E83F81DB33CD");
+            entity.HasKey(e => e.id).HasName("PK__PlacedBr__3213E83F880CCBBA");
 
             entity.ToTable("PlacedBrickChangeHistory", "BMC");
 
@@ -1953,7 +1982,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PlatformAnnouncement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Platform__3213E83F7A24DE85");
+            entity.HasKey(e => e.id).HasName("PK__Platform__3213E83F685EE409");
 
             entity.ToTable("PlatformAnnouncement", "BMC");
 
@@ -1963,9 +1992,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_PlatformAnnouncement_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Platform__3E543F945374B578").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Platform__3E543F941695FC52").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Platform__72E12F1BD4F1AB84").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Platform__72E12F1B091A0CDE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.announcementType).HasMaxLength(50);
@@ -1979,7 +2008,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<Project>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Project__3213E83FFEDCB840");
+            entity.HasKey(e => e.id).HasName("PK__Project__3213E83F4EB11964");
 
             entity.ToTable("Project", "BMC");
 
@@ -1993,7 +2022,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Project_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Project__3E543F946088082A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Project__3E543F94EA9FD24B").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2008,7 +2037,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectCameraPreset>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectC__3213E83FB2C230DC");
+            entity.HasKey(e => e.id).HasName("PK__ProjectC__3213E83FCA117FF4");
 
             entity.ToTable("ProjectCameraPreset", "BMC");
 
@@ -2024,7 +2053,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ProjectCameraPreset_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ProjectC__3E543F949E6EE7CC").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ProjectC__3E543F94B7144913").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isPerspective).HasDefaultValue(true);
@@ -2039,7 +2068,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectC__3213E83F08F6EA04");
+            entity.HasKey(e => e.id).HasName("PK__ProjectC__3213E83F2E9A2DD8");
 
             entity.ToTable("ProjectChangeHistory", "BMC");
 
@@ -2062,7 +2091,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectExport>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectE__3213E83F2BCB3361");
+            entity.HasKey(e => e.id).HasName("PK__ProjectE__3213E83FBC4F51D2");
 
             entity.ToTable("ProjectExport", "BMC");
 
@@ -2080,7 +2109,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ProjectExport_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ProjectE__3E543F94728E89C2").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ProjectE__3E543F949D367E94").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.name)
@@ -2099,7 +2128,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectReferenceImage>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectR__3213E83F560B575B");
+            entity.HasKey(e => e.id).HasName("PK__ProjectR__3213E83F38AF81AB");
 
             entity.ToTable("ProjectReferenceImage", "BMC");
 
@@ -2115,7 +2144,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ProjectReferenceImage_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ProjectR__3E543F94817D71CA").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ProjectR__3E543F943F379A93").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.imageFilePath).HasMaxLength(250);
@@ -2131,7 +2160,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectRender>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectR__3213E83FA4BAD4D1");
+            entity.HasKey(e => e.id).HasName("PK__ProjectR__3213E83FA40DF306");
 
             entity.ToTable("ProjectRender", "BMC");
 
@@ -2149,7 +2178,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ProjectRender_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ProjectR__3E543F946A87C4F2").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ProjectR__3E543F947BFA1799").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.name)
@@ -2166,7 +2195,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectTag>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectT__3213E83FC1B4C892");
+            entity.HasKey(e => e.id).HasName("PK__ProjectT__3213E83F490AC237");
 
             entity.ToTable("ProjectTag", "BMC");
 
@@ -2180,7 +2209,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ProjectTag_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ProjectT__3E543F94C6AEF6D0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ProjectT__3E543F9456F1F071").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2193,7 +2222,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<ProjectTagAssignment>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ProjectT__3213E83FC3E44A00");
+            entity.HasKey(e => e.id).HasName("PK__ProjectT__3213E83FA7C467ED");
 
             entity.ToTable("ProjectTagAssignment", "BMC");
 
@@ -2209,7 +2238,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.projectId, e.projectTagId }, "UC_ProjectTagAssignment_tenantGuid_projectId_projectTagId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ProjectT__3E543F942507A200").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ProjectT__3E543F94BF87BA75").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -2224,7 +2253,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PublishedMoc>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Publishe__3213E83F0B8828AB");
+            entity.HasKey(e => e.id).HasName("PK__Publishe__3213E83F2ABAF343");
 
             entity.ToTable("PublishedMoc", "BMC");
 
@@ -2240,7 +2269,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_PublishedMoc_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Publishe__3E543F9477969AA8").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Publishe__3E543F946488715A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.allowForking).HasDefaultValue(true);
@@ -2257,7 +2286,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PublishedMocChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Publishe__3213E83FEF27D8DC");
+            entity.HasKey(e => e.id).HasName("PK__Publishe__3213E83F51FB3744");
 
             entity.ToTable("PublishedMocChangeHistory", "BMC");
 
@@ -2280,7 +2309,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<PublishedMocImage>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Publishe__3213E83F1916DD7A");
+            entity.HasKey(e => e.id).HasName("PK__Publishe__3213E83F02F2895F");
 
             entity.ToTable("PublishedMocImage", "BMC");
 
@@ -2292,7 +2321,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.publishedMocId }, "I_PublishedMocImage_tenantGuid_publishedMocId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Publishe__3E543F945E5A37C6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Publishe__3E543F941166B82F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.caption).HasMaxLength(250);
@@ -2307,7 +2336,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<RebrickableSyncQueue>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Rebricka__3213E83F8613BDBA");
+            entity.HasKey(e => e.id).HasName("PK__Rebricka__3213E83F7CD32A05");
 
             entity.ToTable("RebrickableSyncQueue", "BMC");
 
@@ -2317,7 +2346,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_RebrickableSyncQueue_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Rebricka__3E543F94678C6AC2").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Rebricka__3E543F9490A7D461").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.entityType)
@@ -2333,7 +2362,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<RebrickableTransaction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Rebricka__3213E83FEA07BD2D");
+            entity.HasKey(e => e.id).HasName("PK__Rebricka__3213E83FD66D35A9");
 
             entity.ToTable("RebrickableTransaction", "BMC");
 
@@ -2343,7 +2372,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_RebrickableTransaction_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Rebricka__3E543F943B8D5F37").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Rebricka__3E543F946F1BC224").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.direction)
@@ -2363,7 +2392,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<RebrickableUserLink>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Rebricka__3213E83F2473D817");
+            entity.HasKey(e => e.id).HasName("PK__Rebricka__3213E83F4CA97CE3");
 
             entity.ToTable("RebrickableUserLink", "BMC");
 
@@ -2375,7 +2404,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.tenantGuid, "UC_RebrickableUserLink_tenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Rebricka__3E543F94E6F2E4B7").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Rebricka__3E543F94F5371F06").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.authMode)
@@ -2396,7 +2425,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<RenderPreset>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__RenderPr__3213E83FEDC62A92");
+            entity.HasKey(e => e.id).HasName("PK__RenderPr__3213E83FAE611347");
 
             entity.ToTable("RenderPreset", "BMC");
 
@@ -2410,7 +2439,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_RenderPreset_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__RenderPr__3E543F949CD2338D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__RenderPr__3E543F94650C3D53").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.backgroundColorHex).HasMaxLength(10);
@@ -2426,7 +2455,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<SharedInstruction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__SharedIn__3213E83F68DF0D84");
+            entity.HasKey(e => e.id).HasName("PK__SharedIn__3213E83F4137CBFA");
 
             entity.ToTable("SharedInstruction", "BMC");
 
@@ -2444,7 +2473,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_SharedInstruction_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__SharedIn__3E543F9427C38A8F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__SharedIn__3E543F94DA70438D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.filePath).HasMaxLength(250);
@@ -2463,7 +2492,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<SharedInstructionChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__SharedIn__3213E83F1AA729D0");
+            entity.HasKey(e => e.id).HasName("PK__SharedIn__3213E83F7463F931");
 
             entity.ToTable("SharedInstructionChangeHistory", "BMC");
 
@@ -2486,7 +2515,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<Submodel>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Submodel__3213E83F5D853044");
+            entity.HasKey(e => e.id).HasName("PK__Submodel__3213E83FDCAC072A");
 
             entity.ToTable("Submodel", "BMC");
 
@@ -2504,7 +2533,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Submodel_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Submodel__3E543F949C660DDB").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Submodel__3E543F940569864B").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2524,7 +2553,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<SubmodelChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Submodel__3213E83F768F1C93");
+            entity.HasKey(e => e.id).HasName("PK__Submodel__3213E83FDA469B3C");
 
             entity.ToTable("SubmodelChangeHistory", "BMC");
 
@@ -2547,7 +2576,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<SubmodelPlacedBrick>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Submodel__3213E83FAD2362A5");
+            entity.HasKey(e => e.id).HasName("PK__Submodel__3213E83F9FB8E785");
 
             entity.ToTable("SubmodelPlacedBrick", "BMC");
 
@@ -2563,7 +2592,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.placedBrickId }, "UC_SubmodelPlacedBrick_tenantGuid_placedBrickId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Submodel__3E543F94FC60674E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Submodel__3E543F94B0F6E503").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -2578,7 +2607,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserAchievement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserAchi__3213E83F1D6DD5E6");
+            entity.HasKey(e => e.id).HasName("PK__UserAchi__3213E83F593294D2");
 
             entity.ToTable("UserAchievement", "BMC");
 
@@ -2592,7 +2621,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.achievementId }, "UC_UserAchievement_tenantGuid_achievementId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserAchi__3E543F94AF27CE27").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserAchi__3E543F945A69AB4C").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isDisplayed).HasDefaultValue(true);
@@ -2604,7 +2633,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserBadge>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserBadg__3213E83FE1C0A083");
+            entity.HasKey(e => e.id).HasName("PK__UserBadg__3213E83F2CDA1B1F");
 
             entity.ToTable("UserBadge", "BMC");
 
@@ -2614,9 +2643,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_UserBadge_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserBadg__3E543F94620CDA87").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserBadg__3E543F941EA8BF06").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__UserBadg__72E12F1B9CEFA27B").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__UserBadg__72E12F1B93EA3784").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.automaticCriteriaCode).HasMaxLength(250);
@@ -2633,7 +2662,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserBadgeAssignment>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserBadg__3213E83F823F9F13");
+            entity.HasKey(e => e.id).HasName("PK__UserBadg__3213E83FC948794E");
 
             entity.ToTable("UserBadgeAssignment", "BMC");
 
@@ -2647,7 +2676,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userBadgeId }, "UC_UserBadgeAssignment_tenantGuid_userBadgeId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserBadg__3E543F94B074225F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserBadg__3E543F948C3CE131").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isDisplayed).HasDefaultValue(true);
@@ -2659,7 +2688,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserCollection>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83FA19EAE3B");
+            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83F77E210C9");
 
             entity.ToTable("UserCollection", "BMC");
 
@@ -2673,7 +2702,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_UserCollection_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserColl__3E543F94D8106898").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserColl__3E543F9470CEC797").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2687,7 +2716,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserCollectionChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83F8C4C397A");
+            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83FCBA5A51B");
 
             entity.ToTable("UserCollectionChangeHistory", "BMC");
 
@@ -2710,7 +2739,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserCollectionPart>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83FD012FFDD");
+            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83F369CEEC2");
 
             entity.ToTable("UserCollectionPart", "BMC");
 
@@ -2728,7 +2757,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userCollectionId, e.brickPartId, e.brickColourId }, "UC_UserCollectionPart_tenantGuid_userCollectionId_brickPartId_brickColourId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserColl__3E543F944CE477A1").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserColl__3E543F94EFA5A705").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -2747,7 +2776,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserCollectionSetImport>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83F4C1D2438");
+            entity.HasKey(e => e.id).HasName("PK__UserColl__3213E83F6D1C2490");
 
             entity.ToTable("UserCollectionSetImport", "BMC");
 
@@ -2763,7 +2792,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userCollectionId, e.legoSetId }, "UC_UserCollectionSetImport_tenantGuid_userCollectionId_legoSetId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserColl__3E543F94D57BF736").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserColl__3E543F9402F9994E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -2778,7 +2807,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserFollow>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserFoll__3213E83FB84B190F");
+            entity.HasKey(e => e.id).HasName("PK__UserFoll__3213E83FFB75979F");
 
             entity.ToTable("UserFollow", "BMC");
 
@@ -2788,14 +2817,14 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.followerTenantGuid, e.followedTenantGuid }, "UC_UserFollow_followerTenantGuid_followedTenantGuid").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserFoll__3E543F946D0895F3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserFoll__3E543F94D4AAC762").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<UserLostPart>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserLost__3213E83FD11C3C23");
+            entity.HasKey(e => e.id).HasName("PK__UserLost__3213E83F898FB76E");
 
             entity.ToTable("UserLostPart", "BMC");
 
@@ -2811,7 +2840,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.legoSetId }, "I_UserLostPart_tenantGuid_legoSetId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserLost__3E543F9408D04148").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserLost__3E543F94CD9F9766").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -2828,7 +2857,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserPartList>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserPart__3213E83F4BA6CB29");
+            entity.HasKey(e => e.id).HasName("PK__UserPart__3213E83FDF9E05E3");
 
             entity.ToTable("UserPartList", "BMC");
 
@@ -2842,7 +2871,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_UserPartList_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserPart__3E543F945FDD814C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserPart__3E543F940540897B").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.name)
@@ -2853,7 +2882,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserPartListChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserPart__3213E83F8321E550");
+            entity.HasKey(e => e.id).HasName("PK__UserPart__3213E83F08BBF635");
 
             entity.ToTable("UserPartListChangeHistory", "BMC");
 
@@ -2876,7 +2905,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserPartListItem>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserPart__3213E83F8F4B04EF");
+            entity.HasKey(e => e.id).HasName("PK__UserPart__3213E83F3438C6F4");
 
             entity.ToTable("UserPartListItem", "BMC");
 
@@ -2894,7 +2923,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userPartListId, e.brickPartId, e.brickColourId }, "UC_UserPartListItem_tenantGuid_userPartListId_brickPartId_brickColourId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserPart__3E543F94E94372EB").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserPart__3E543F9456794C2C").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -2913,7 +2942,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserProfile>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F85A1C70C");
+            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F720EE297");
 
             entity.ToTable("UserProfile", "BMC");
 
@@ -2923,7 +2952,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_UserProfile_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F942E3E2990").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F94D2963043").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -2941,7 +2970,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserProfileChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F83EB3317");
+            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F9C92CFE6");
 
             entity.ToTable("UserProfileChangeHistory", "BMC");
 
@@ -2964,7 +2993,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserProfileLink>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F8E3B92A4");
+            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83FB0668FED");
 
             entity.ToTable("UserProfileLink", "BMC");
 
@@ -2978,7 +3007,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userProfileLinkTypeId }, "I_UserProfileLink_tenantGuid_userProfileLinkTypeId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F94CE9B8390").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F9477DB6968").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.displayLabel).HasMaxLength(100);
@@ -2997,7 +3026,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserProfileLinkType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83FD81092A8");
+            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F705F920F");
 
             entity.ToTable("UserProfileLinkType", "BMC");
 
@@ -3007,9 +3036,9 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => e.name, "I_UserProfileLinkType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F947703EF16").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F94196053D7").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__UserProf__72E12F1BE783A316").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__UserProf__72E12F1BEB6E72A3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -3023,7 +3052,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserProfilePreferredTheme>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F9EBF8156");
+            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83FCD6ACA3E");
 
             entity.ToTable("UserProfilePreferredTheme", "BMC");
 
@@ -3039,7 +3068,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userProfileId, e.legoThemeId }, "UC_UserProfilePreferredTheme_tenantGuid_userProfileId_legoThemeId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F94EA426D40").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F94073F6558").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -3054,7 +3083,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserProfileStat>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83FA0EBB15E");
+            entity.HasKey(e => e.id).HasName("PK__UserProf__3213E83F1CC3D79B");
 
             entity.ToTable("UserProfileStat", "BMC");
 
@@ -3066,7 +3095,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userProfileId }, "I_UserProfileStat_tenantGuid_userProfileId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F94771650DE").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserProf__3E543F9480AA99FD").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -3077,7 +3106,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserSetList>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserSetL__3213E83FF511B7C2");
+            entity.HasKey(e => e.id).HasName("PK__UserSetL__3213E83FF92A7A09");
 
             entity.ToTable("UserSetList", "BMC");
 
@@ -3091,7 +3120,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_UserSetList_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserSetL__3E543F94886420C6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserSetL__3E543F944B824A81").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.name)
@@ -3102,7 +3131,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserSetListChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserSetL__3213E83FBBFDBEAC");
+            entity.HasKey(e => e.id).HasName("PK__UserSetL__3213E83FEF077B2E");
 
             entity.ToTable("UserSetListChangeHistory", "BMC");
 
@@ -3125,7 +3154,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserSetListItem>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserSetL__3213E83F18F2F110");
+            entity.HasKey(e => e.id).HasName("PK__UserSetL__3213E83F66745466");
 
             entity.ToTable("UserSetListItem", "BMC");
 
@@ -3141,7 +3170,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userSetListId, e.legoSetId }, "UC_UserSetListItem_tenantGuid_userSetListId_legoSetId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserSetL__3E543F941A9EB1F6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserSetL__3E543F949C95AC9A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.includeSpares).HasDefaultValue(true);
@@ -3158,7 +3187,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserSetOwnership>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserSetO__3213E83FF60705B9");
+            entity.HasKey(e => e.id).HasName("PK__UserSetO__3213E83FACB813D9");
 
             entity.ToTable("UserSetOwnership", "BMC");
 
@@ -3172,7 +3201,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.legoSetId }, "UC_UserSetOwnership_tenantGuid_legoSetId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserSetO__3E543F94BF4E3233").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserSetO__3E543F948C8E39B0").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isPublic).HasDefaultValue(true);
@@ -3188,7 +3217,7 @@ public partial class BMCContext : DbContext
 
         modelBuilder.Entity<UserWishlistItem>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserWish__3213E83FCDE521AE");
+            entity.HasKey(e => e.id).HasName("PK__UserWish__3213E83FE1A52397");
 
             entity.ToTable("UserWishlistItem", "BMC");
 
@@ -3204,7 +3233,7 @@ public partial class BMCContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userCollectionId }, "I_UserWishlistItem_tenantGuid_userCollectionId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserWish__3E543F9447ADEA0F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserWish__3E543F94B2BEEF80").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 

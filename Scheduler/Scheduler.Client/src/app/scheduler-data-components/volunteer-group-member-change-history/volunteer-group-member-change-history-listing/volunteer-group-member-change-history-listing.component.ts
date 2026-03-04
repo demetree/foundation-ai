@@ -165,6 +165,7 @@ export class VolunteerGroupMemberChangeHistoryListingComponent implements OnInit
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.volunteerGroupMemberChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.volunteerGroupMemberChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

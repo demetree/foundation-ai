@@ -75,7 +75,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
-			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -170,12 +169,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.OrderBy(arqr => arqr.id);
 
-			if (pageNumber.HasValue == true &&
-			    pageSize.HasValue == true)
-			{
-			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
-			}
-			
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.assignmentRole);
@@ -183,24 +176,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.AsSplitQuery();
 			}
 
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Assignment Role Qualification Requirement, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
 			{
-			   query = query.Where(x =>
-			       (includeRelations == true && x.assignmentRole.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.assignmentRole.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.assignmentRole.color.Contains(anyStringContains))
-			       || (includeRelations == true && x.qualification.name.Contains(anyStringContains))
-			       || (includeRelations == true && x.qualification.description.Contains(anyStringContains))
-			       || (includeRelations == true && x.qualification.color.Contains(anyStringContains))
-			   );
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-
+			
 			query = query.AsNoTracking();
 			
 			List<Database.AssignmentRoleQualificationRequirement> materialized = await query.ToListAsync(cancellationToken);
@@ -247,7 +228,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -321,24 +301,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(arqr => arqr.active == true);
 				query = query.Where(arqr => arqr.deleted == false);
 			}
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Assignment Role Qualification Requirement, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.assignmentRole.name.Contains(anyStringContains)
-			       || x.assignmentRole.description.Contains(anyStringContains)
-			       || x.assignmentRole.color.Contains(anyStringContains)
-			       || x.qualification.name.Contains(anyStringContains)
-			       || x.qualification.description.Contains(anyStringContains)
-			       || x.qualification.color.Contains(anyStringContains)
-			   );
-			}
-
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -1301,7 +1263,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
-			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -1393,24 +1354,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(arqr => arqr.active == true);
 				query = query.Where(arqr => arqr.deleted == false);
-			}
-
-
-			//
-			// Add the any string contains parameter to span all the string fields on the Assignment Role Qualification Requirement, or on an any of the string fields on its immediate relations
-			//
-			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
-			if (!string.IsNullOrEmpty(anyStringContains))
-			{
-			   query = query.Where(x =>
-			       x.assignmentRole.name.Contains(anyStringContains)
-			       || x.assignmentRole.description.Contains(anyStringContains)
-			       || x.assignmentRole.color.Contains(anyStringContains)
-			       || x.qualification.name.Contains(anyStringContains)
-			       || x.qualification.description.Contains(anyStringContains)
-			       || x.qualification.color.Contains(anyStringContains)
-			   );
 			}
 
 

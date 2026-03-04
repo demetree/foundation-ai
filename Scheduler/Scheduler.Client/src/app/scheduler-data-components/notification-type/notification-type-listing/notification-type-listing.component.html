@@ -82,6 +82,7 @@
   <app-notification-type-table
     *ngIf="userIsSchedulerNotificationTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredNotificationTypeCount$ | async) ?? 0">
   </app-notification-type-table>
 </div>

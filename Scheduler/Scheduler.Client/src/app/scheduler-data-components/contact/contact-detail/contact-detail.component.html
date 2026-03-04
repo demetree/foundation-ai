@@ -199,10 +199,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-change-history-table [queryParams]="{ contactId: contactData?.id }"></app-contact-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-change-history-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-change-history-add-edit>
+                                    <app-contact-change-history-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -216,10 +213,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-tag-table [queryParams]="{ contactId: contactData?.id }"></app-contact-tag-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-tag-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-tag-add-edit>
+                                    <app-contact-tag-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-tag-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -233,10 +227,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-contact-table [queryParams]="{ contactId: contactData?.id }"></app-contact-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-contact-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-contact-add-edit>
+                                    <app-contact-contact-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -250,10 +241,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-contact-table [queryParams]="{ relatedContactId: contactData?.id }"></app-contact-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-contact-add-edit [preSeededData]="{ relatedContactId: contactData?.id }" [hiddenFields]="['relatedContactId']"></app-contact-contact-add-edit>
+                                    <app-contact-contact-table [queryParams]="{ relatedContactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ relatedContactId: contactData?.id }" [hiddenFields]="['relatedContactId']"></app-contact-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -267,10 +255,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-office-contact-table [queryParams]="{ contactId: contactData?.id }"></app-office-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-office-contact-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-office-contact-add-edit>
+                                    <app-office-contact-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-office-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -284,10 +269,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-client-contact-table [queryParams]="{ contactId: contactData?.id }"></app-client-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-client-contact-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-client-contact-add-edit>
+                                    <app-client-contact-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-client-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -301,10 +283,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduling-target-contact-table [queryParams]="{ contactId: contactData?.id }"></app-scheduling-target-contact-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduling-target-contact-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-scheduling-target-contact-add-edit>
+                                    <app-scheduling-target-contact-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-scheduling-target-contact-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -318,10 +297,35 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-resource-contact-table [queryParams]="{ contactId: contactData?.id }"></app-resource-contact-table>
+                                    <app-resource-contact-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-resource-contact-table>
                                 </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-resource-contact-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-resource-contact-add-edit>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (contactData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (contactData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -335,10 +339,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-interaction-table [queryParams]="{ contactId: contactData?.id }"></app-contact-interaction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-interaction-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-interaction-add-edit>
+                                    <app-contact-interaction-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-contact-interaction-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -352,10 +353,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-contact-interaction-table [queryParams]="{ initiatingContactId: contactData?.id }"></app-contact-interaction-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-contact-interaction-add-edit [preSeededData]="{ initiatingContactId: contactData?.id }" [hiddenFields]="['initiatingContactId']"></app-contact-interaction-add-edit>
+                                    <app-contact-interaction-table [queryParams]="{ initiatingContactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ initiatingContactId: contactData?.id }" [hiddenFields]="['initiatingContactId']"></app-contact-interaction-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -369,10 +367,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-notification-subscription-table [queryParams]="{ contactId: contactData?.id }"></app-notification-subscription-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-notification-subscription-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-notification-subscription-add-edit>
+                                    <app-notification-subscription-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-notification-subscription-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -386,10 +381,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-constituent-table [queryParams]="{ contactId: contactData?.id }"></app-constituent-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-constituent-add-edit [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-constituent-add-edit>
+                                    <app-constituent-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-constituent-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -403,10 +395,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-event-resource-assignment-table [queryParams]="{ hoursApprovedByContactId: contactData?.id }"></app-event-resource-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-add-edit [preSeededData]="{ hoursApprovedByContactId: contactData?.id }" [hiddenFields]="['hoursApprovedByContactId']"></app-event-resource-assignment-add-edit>
+                                    <app-event-resource-assignment-table [queryParams]="{ hoursApprovedByContactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ hoursApprovedByContactId: contactData?.id }" [hiddenFields]="['hoursApprovedByContactId']"></app-event-resource-assignment-table>
                                 </div>
                             </div>
                             </ng-template>

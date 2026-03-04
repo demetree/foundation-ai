@@ -30,6 +30,7 @@ import { ChargeStatusService } from '../../../scheduler-data-services/charge-sta
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { RateTypeService } from '../../../scheduler-data-services/rate-type.service';
 import { EventChargeChangeHistoryService } from '../../../scheduler-data-services/event-charge-change-history.service';
+import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -53,6 +54,8 @@ interface EventChargeFormValues {
   rateTypeId: number | bigint | null,       // For FK link number
   notes: string | null,
   isAutomatic: boolean,
+  isDeposit: boolean,
+  depositRefundedDate: string | null,
   exportedDate: string | null,
   externalId: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
@@ -97,6 +100,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         rateTypeId: [null],
         notes: [''],
         isAutomatic: [false],
+        isDeposit: [false],
+        depositRefundedDate: [''],
         exportedDate: [''],
         externalId: [''],
         versionNumber: [''],
@@ -123,6 +128,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
   public currencies$ = this.currencyService.GetCurrencyList();
   public rateTypes$ = this.rateTypeService.GetRateTypeList();
   public eventChargeChangeHistories$ = this.eventChargeChangeHistoryService.GetEventChargeChangeHistoryList();
+  public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
 
   private destroy$ = new Subject<void>();
 
@@ -135,6 +141,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
     public currencyService: CurrencyService,
     public rateTypeService: RateTypeService,
     public eventChargeChangeHistoryService: EventChargeChangeHistoryService,
+    public paymentTransactionService: PaymentTransactionService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -428,6 +435,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         rateTypeId: null,
         notes: '',
         isAutomatic: false,
+        isDeposit: false,
+        depositRefundedDate: '',
         exportedDate: '',
         externalId: '',
         versionNumber: '',
@@ -454,6 +463,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         rateTypeId: eventChargeData.rateTypeId,
         notes: eventChargeData.notes ?? '',
         isAutomatic: eventChargeData.isAutomatic ?? false,
+        isDeposit: eventChargeData.isDeposit ?? false,
+        depositRefundedDate: isoUtcStringToDateTimeLocal(eventChargeData.depositRefundedDate) ?? '',
         exportedDate: isoUtcStringToDateTimeLocal(eventChargeData.exportedDate) ?? '',
         externalId: eventChargeData.externalId ?? '',
         versionNumber: eventChargeData.versionNumber?.toString() ?? '',
@@ -530,6 +541,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         rateTypeId: formValue.rateTypeId ? Number(formValue.rateTypeId) : null,
         notes: formValue.notes?.trim() || null,
         isAutomatic: !!formValue.isAutomatic,
+        isDeposit: !!formValue.isDeposit,
+        depositRefundedDate: formValue.depositRefundedDate ? dateTimeLocalToIsoUtc(formValue.depositRefundedDate.trim()) : null,
         exportedDate: formValue.exportedDate ? dateTimeLocalToIsoUtc(formValue.exportedDate.trim()) : null,
         externalId: formValue.externalId?.trim() || null,
         versionNumber: this.eventChargeData?.versionNumber ?? 0,

@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #fundChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light fund-change-history-modal-header">
+   <div class="modal-header fund-change-history-modal-header">
       <h5 class="modal-title mb-0" id="fundChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Fund Change History' : 'Add Fund Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body fund-change-history-modal-body">
       <form [formGroup]="fundChangeHistoryForm" (ngSubmit)="submitForm()">

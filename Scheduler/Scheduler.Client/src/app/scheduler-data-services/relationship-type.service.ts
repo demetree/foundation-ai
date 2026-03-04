@@ -166,11 +166,17 @@ export class RelationshipTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({relationshipTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _contactContactsCount$: Observable<bigint | number> | null = null;
+    public get ContactContactsCount$(): Observable<bigint | number> {
+        if (this._contactContactsCount$ === null) {
+            this._contactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({relationshipTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._contactContactsCount$;
+    }
 
 
 
@@ -185,11 +191,17 @@ export class RelationshipTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({relationshipTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _officeContactsCount$: Observable<bigint | number> | null = null;
+    public get OfficeContactsCount$(): Observable<bigint | number> {
+        if (this._officeContactsCount$ === null) {
+            this._officeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({relationshipTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._officeContactsCount$;
+    }
 
 
 
@@ -204,11 +216,17 @@ export class RelationshipTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({relationshipTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientContactsCount$: Observable<bigint | number> | null = null;
+    public get ClientContactsCount$(): Observable<bigint | number> {
+        if (this._clientContactsCount$ === null) {
+            this._clientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({relationshipTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientContactsCount$;
+    }
 
 
 
@@ -223,11 +241,17 @@ export class RelationshipTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({relationshipTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetContactsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetContactsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetContactsCount$ === null) {
+            this._schedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({relationshipTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetContactsCount$;
+    }
 
 
 
@@ -242,11 +266,17 @@ export class RelationshipTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({relationshipTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceContactsCount$: Observable<bigint | number> | null = null;
+    public get ResourceContactsCount$(): Observable<bigint | number> {
+        if (this._resourceContactsCount$ === null) {
+            this._resourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({relationshipTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceContactsCount$;
+    }
 
 
 
@@ -291,22 +321,27 @@ export class RelationshipTypeData {
      this._contactContacts = null;
      this._contactContactsPromise = null;
      this._contactContactsSubject.next(null);
+     this._contactContactsCount$ = null;
 
      this._officeContacts = null;
      this._officeContactsPromise = null;
      this._officeContactsSubject.next(null);
+     this._officeContactsCount$ = null;
 
      this._clientContacts = null;
      this._clientContactsPromise = null;
      this._clientContactsSubject.next(null);
+     this._clientContactsCount$ = null;
 
      this._schedulingTargetContacts = null;
      this._schedulingTargetContactsPromise = null;
      this._schedulingTargetContactsSubject.next(null);
+     this._schedulingTargetContactsCount$ = null;
 
      this._resourceContacts = null;
      this._resourceContactsPromise = null;
      this._resourceContactsSubject.next(null);
+     this._resourceContactsCount$ = null;
 
   }
 
@@ -1166,11 +1201,7 @@ export class RelationshipTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({relationshipTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._contactContactsCount$ = null;
 
 
     (revived as any).OfficeContacts$ = (revived as any)._officeContactsSubject.asObservable().pipe(
@@ -1182,11 +1213,7 @@ export class RelationshipTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({relationshipTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._officeContactsCount$ = null;
 
 
     (revived as any).ClientContacts$ = (revived as any)._clientContactsSubject.asObservable().pipe(
@@ -1198,11 +1225,7 @@ export class RelationshipTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({relationshipTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientContactsCount$ = null;
 
 
     (revived as any).SchedulingTargetContacts$ = (revived as any)._schedulingTargetContactsSubject.asObservable().pipe(
@@ -1214,11 +1237,7 @@ export class RelationshipTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({relationshipTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetContactsCount$ = null;
 
 
     (revived as any).ResourceContacts$ = (revived as any)._resourceContactsSubject.asObservable().pipe(
@@ -1230,11 +1249,7 @@ export class RelationshipTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({relationshipTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceContactsCount$ = null;
 
 
 

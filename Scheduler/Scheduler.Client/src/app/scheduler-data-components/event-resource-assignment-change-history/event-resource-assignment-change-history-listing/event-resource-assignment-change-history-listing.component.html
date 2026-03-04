@@ -82,6 +82,7 @@
   <app-event-resource-assignment-change-history-table
     *ngIf="userIsSchedulerEventResourceAssignmentChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredEventResourceAssignmentChangeHistoryCount$ | async) ?? 0">
   </app-event-resource-assignment-change-history-table>
 </div>

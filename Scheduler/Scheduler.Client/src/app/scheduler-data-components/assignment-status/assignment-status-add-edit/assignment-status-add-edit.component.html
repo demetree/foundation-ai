@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #assignmentStatusModal let-modal>
-   <div class="modal-header bg-dark text-light assignment-status-modal-header">
+   <div class="modal-header assignment-status-modal-header">
       <h5 class="modal-title mb-0" id="assignmentStatusModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Assignment Status' : 'Add Assignment Status' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body assignment-status-modal-body">
       <form [formGroup]="assignmentStatusForm" (ngSubmit)="submitForm()">

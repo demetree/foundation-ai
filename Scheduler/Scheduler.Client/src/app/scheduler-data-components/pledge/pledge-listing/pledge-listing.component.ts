@@ -165,6 +165,7 @@ export class PledgeListingComponent implements OnInit, AfterViewInit, CanCompone
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.pledgeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.pledgeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

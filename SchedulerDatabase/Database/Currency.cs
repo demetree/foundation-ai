@@ -35,7 +35,11 @@ public partial class Currency
 
     public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
 
+    public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
+
     public virtual ICollection<Office> Offices { get; set; } = new List<Office>();
+
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ICollection<RateSheet> RateSheets { get; set; } = new List<RateSheet>();
 }

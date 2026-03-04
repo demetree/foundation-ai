@@ -82,6 +82,7 @@
   <app-shift-pattern-table
     *ngIf="userIsSchedulerShiftPatternReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredShiftPatternCount$ | async) ?? 0">
   </app-shift-pattern-table>
 </div>

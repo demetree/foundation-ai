@@ -167,11 +167,17 @@ export class AssignmentRoleQualificationRequirementData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AssignmentRoleQualificationRequirementChangeHistoriesCount$ = AssignmentRoleQualificationRequirementChangeHistoryService.Instance.GetAssignmentRoleQualificationRequirementChangeHistoriesRowCount({assignmentRoleQualificationRequirementId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _assignmentRoleQualificationRequirementChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get AssignmentRoleQualificationRequirementChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._assignmentRoleQualificationRequirementChangeHistoriesCount$ === null) {
+            this._assignmentRoleQualificationRequirementChangeHistoriesCount$ = AssignmentRoleQualificationRequirementChangeHistoryService.Instance.GetAssignmentRoleQualificationRequirementChangeHistoriesRowCount({assignmentRoleQualificationRequirementId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._assignmentRoleQualificationRequirementChangeHistoriesCount$;
+    }
 
 
 
@@ -216,6 +222,7 @@ export class AssignmentRoleQualificationRequirementData {
      this._assignmentRoleQualificationRequirementChangeHistories = null;
      this._assignmentRoleQualificationRequirementChangeHistoriesPromise = null;
      this._assignmentRoleQualificationRequirementChangeHistoriesSubject.next(null);
+     this._assignmentRoleQualificationRequirementChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -901,11 +908,7 @@ export class AssignmentRoleQualificationRequirementService extends SecureEndpoin
         shareReplay(1)
       );
 
-    (revived as any).AssignmentRoleQualificationRequirementChangeHistoriesCount$ = AssignmentRoleQualificationRequirementChangeHistoryService.Instance.GetAssignmentRoleQualificationRequirementChangeHistoriesRowCount({assignmentRoleQualificationRequirementId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._assignmentRoleQualificationRequirementChangeHistoriesCount$ = null;
 
 
 

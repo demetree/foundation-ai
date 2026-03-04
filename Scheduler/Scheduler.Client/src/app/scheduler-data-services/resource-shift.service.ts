@@ -176,11 +176,17 @@ export class ResourceShiftData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceShiftChangeHistoriesCount$ = ResourceShiftChangeHistoryService.Instance.GetResourceShiftChangeHistoriesRowCount({resourceShiftId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _resourceShiftChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ResourceShiftChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._resourceShiftChangeHistoriesCount$ === null) {
+            this._resourceShiftChangeHistoriesCount$ = ResourceShiftChangeHistoryService.Instance.GetResourceShiftChangeHistoriesRowCount({resourceShiftId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._resourceShiftChangeHistoriesCount$;
+    }
 
 
 
@@ -225,6 +231,7 @@ export class ResourceShiftData {
      this._resourceShiftChangeHistories = null;
      this._resourceShiftChangeHistoriesPromise = null;
      this._resourceShiftChangeHistoriesSubject.next(null);
+     this._resourceShiftChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -913,11 +920,7 @@ export class ResourceShiftService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ResourceShiftChangeHistoriesCount$ = ResourceShiftChangeHistoryService.Instance.GetResourceShiftChangeHistoriesRowCount({resourceShiftId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._resourceShiftChangeHistoriesCount$ = null;
 
 
 

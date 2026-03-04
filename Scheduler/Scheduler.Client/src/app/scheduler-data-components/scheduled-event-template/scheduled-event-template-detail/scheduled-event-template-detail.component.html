@@ -101,10 +101,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-change-history-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }"></app-scheduled-event-template-change-history-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-change-history-add-edit [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-template-change-history-add-edit>
+                                    <app-scheduled-event-template-change-history-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-template-change-history-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -118,10 +115,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-charge-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }"></app-scheduled-event-template-charge-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-charge-add-edit [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-template-charge-add-edit>
+                                    <app-scheduled-event-template-charge-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-template-charge-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -135,10 +129,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-template-qualification-requirement-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }"></app-scheduled-event-template-qualification-requirement-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-template-qualification-requirement-add-edit [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-template-qualification-requirement-add-edit>
+                                    <app-scheduled-event-template-qualification-requirement-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-template-qualification-requirement-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -152,10 +143,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-scheduled-event-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }"></app-scheduled-event-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-scheduled-event-add-edit [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-add-edit>
+                                    <app-scheduled-event-table [queryParams]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventTemplateId: scheduledEventTemplateData?.id }" [hiddenFields]="['scheduledEventTemplateId']"></app-scheduled-event-table>
                                 </div>
                             </div>
                             </ng-template>

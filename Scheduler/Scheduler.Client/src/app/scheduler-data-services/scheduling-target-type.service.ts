@@ -145,11 +145,17 @@ export class SchedulingTargetTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetsCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetsCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetsCount$ === null) {
+            this._schedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetsCount$;
+    }
 
 
 
@@ -164,11 +170,17 @@ export class SchedulingTargetTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({schedulingTargetTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventTemplatesCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventTemplatesCount$(): Observable<bigint | number> {
+        if (this._scheduledEventTemplatesCount$ === null) {
+            this._scheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({schedulingTargetTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventTemplatesCount$;
+    }
 
 
 
@@ -213,10 +225,12 @@ export class SchedulingTargetTypeData {
      this._schedulingTargets = null;
      this._schedulingTargetsPromise = null;
      this._schedulingTargetsSubject.next(null);
+     this._schedulingTargetsCount$ = null;
 
      this._scheduledEventTemplates = null;
      this._scheduledEventTemplatesPromise = null;
      this._scheduledEventTemplatesSubject.next(null);
+     this._scheduledEventTemplatesCount$ = null;
 
   }
 
@@ -835,11 +849,7 @@ export class SchedulingTargetTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetsCount$ = null;
 
 
     (revived as any).ScheduledEventTemplates$ = (revived as any)._scheduledEventTemplatesSubject.asObservable().pipe(
@@ -851,11 +861,7 @@ export class SchedulingTargetTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({schedulingTargetTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventTemplatesCount$ = null;
 
 
 

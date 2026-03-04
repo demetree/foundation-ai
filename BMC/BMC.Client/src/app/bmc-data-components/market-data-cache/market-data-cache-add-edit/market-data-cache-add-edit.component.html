@@ -1,0 +1,96 @@
+<div class="add-market-data-cache" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-market-data-cache me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Market Data Cache" 
+        *ngIf="userIsBMCMarketDataCacheWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #marketDataCacheModal let-modal>
+   <div class="modal-header market-data-cache-modal-header">
+      <h5 class="modal-title mb-0" id="marketDataCacheModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Market Data Cache' : 'Add Market Data Cache' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body market-data-cache-modal-body">
+      <form [formGroup]="marketDataCacheForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('source')">
+                <label for="MarketDataCache-source" id="label-MarketDataCache-source"><span class="text-danger">*</span>Source</label>
+                <input type="text" id="MarketDataCache-source" formControlName="source" placeholder="Enter Source" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-source" />
+                <div *ngIf="marketDataCacheForm.get('source')?.invalid && marketDataCacheForm.get('source')?.touched" class="text-danger">
+                    Source is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('itemType')">
+                <label for="MarketDataCache-itemType" id="label-MarketDataCache-itemType"><span class="text-danger">*</span>Item Type</label>
+                <input type="text" id="MarketDataCache-itemType" formControlName="itemType" placeholder="Enter Item Type" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-itemType" />
+                <div *ngIf="marketDataCacheForm.get('itemType')?.invalid && marketDataCacheForm.get('itemType')?.touched" class="text-danger">
+                    Item Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('itemNumber')">
+                <label for="MarketDataCache-itemNumber" id="label-MarketDataCache-itemNumber"><span class="text-danger">*</span>Item Number</label>
+                <input type="text" id="MarketDataCache-itemNumber" formControlName="itemNumber" placeholder="Enter Item Number" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-itemNumber" />
+                <div *ngIf="marketDataCacheForm.get('itemNumber')?.invalid && marketDataCacheForm.get('itemNumber')?.touched" class="text-danger">
+                    Item Number is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('condition')">
+                <label for="MarketDataCache-condition" id="label-MarketDataCache-condition">Condition</label>
+                <input type="text" id="MarketDataCache-condition" formControlName="condition" placeholder="Enter Condition" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-condition" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('responseJson')">
+                <label for="MarketDataCache-responseJson" id="label-MarketDataCache-responseJson">Response Json</label>
+                <textarea id="MarketDataCache-responseJson" formControlName="responseJson" placeholder="Enter Response Json" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fetchedDate')">
+                <label for="MarketDataCache-fetchedDate" id="label-MarketDataCache-fetchedDate"><span class="text-danger">*</span>Fetched Date</label>
+                <input type="datetime-local" id="MarketDataCache-fetchedDate" formControlName="fetchedDate" placeholder="Enter Fetched Date" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-fetchedDate" />
+                <div *ngIf="marketDataCacheForm.get('fetchedDate')?.invalid && marketDataCacheForm.get('fetchedDate')?.touched" class="text-danger">
+                    Fetched Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('expiresDate')">
+                <label for="MarketDataCache-expiresDate" id="label-MarketDataCache-expiresDate"><span class="text-danger">*</span>Expires Date</label>
+                <input type="datetime-local" id="MarketDataCache-expiresDate" formControlName="expiresDate" placeholder="Enter Expires Date" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-expiresDate" />
+                <div *ngIf="marketDataCacheForm.get('expiresDate')?.invalid && marketDataCacheForm.get('expiresDate')?.touched" class="text-danger">
+                    Expires Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('ttlMinutes')">
+                <label for="MarketDataCache-ttlMinutes" id="label-MarketDataCache-ttlMinutes"><span class="text-danger">*</span>Ttl Minutes</label>
+                <input type="number" id="MarketDataCache-ttlMinutes" formControlName="ttlMinutes" placeholder="Enter Ttl Minutes" class="form-control market-data-cache-input" [disabled]="!userIsBMCMarketDataCacheWriter()" aria-labelledby="label-ttlMinutes" />
+                <div *ngIf="marketDataCacheForm.get('ttlMinutes')?.invalid && marketDataCacheForm.get('ttlMinutes')?.touched" class="text-danger">
+                    Ttl Minutes is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MarketDataCache-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMarketDataCacheWriter()" />
+                <label for="MarketDataCache-active" class="form-check-label" id="label-MarketDataCache-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MarketDataCache-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMarketDataCacheWriter()" />
+                <label for="MarketDataCache-deleted" class="form-check-label" id="label-MarketDataCache-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer market-data-cache-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Market Data Cache changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !marketDataCacheForm.valid || marketDataCacheForm.pristine  || userIsBMCMarketDataCacheWriter() == false " ngbTooltip="Save the Market Data Cache changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Market Data Cache' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

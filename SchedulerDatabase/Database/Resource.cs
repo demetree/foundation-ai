@@ -51,6 +51,8 @@ public partial class Resource
 
     public virtual ICollection<CrewMember> CrewMembers { get; set; } = new List<CrewMember>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
 
     public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();

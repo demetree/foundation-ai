@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #shiftPatternDayModal let-modal>
-   <div class="modal-header bg-dark text-light shift-pattern-day-modal-header">
+   <div class="modal-header shift-pattern-day-modal-header">
       <h5 class="modal-title mb-0" id="shiftPatternDayModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Shift Pattern Day' : 'Add Shift Pattern Day' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body shift-pattern-day-modal-body">
       <form [formGroup]="shiftPatternDayForm" (ngSubmit)="submitForm()">

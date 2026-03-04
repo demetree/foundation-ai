@@ -181,11 +181,17 @@ export class VolunteerGroupMemberData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public VolunteerGroupMemberChangeHistoriesCount$ = VolunteerGroupMemberChangeHistoryService.Instance.GetVolunteerGroupMemberChangeHistoriesRowCount({volunteerGroupMemberId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _volunteerGroupMemberChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get VolunteerGroupMemberChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._volunteerGroupMemberChangeHistoriesCount$ === null) {
+            this._volunteerGroupMemberChangeHistoriesCount$ = VolunteerGroupMemberChangeHistoryService.Instance.GetVolunteerGroupMemberChangeHistoriesRowCount({volunteerGroupMemberId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._volunteerGroupMemberChangeHistoriesCount$;
+    }
 
 
 
@@ -230,6 +236,7 @@ export class VolunteerGroupMemberData {
      this._volunteerGroupMemberChangeHistories = null;
      this._volunteerGroupMemberChangeHistoriesPromise = null;
      this._volunteerGroupMemberChangeHistoriesSubject.next(null);
+     this._volunteerGroupMemberChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -919,11 +926,7 @@ export class VolunteerGroupMemberService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).VolunteerGroupMemberChangeHistoriesCount$ = VolunteerGroupMemberChangeHistoryService.Instance.GetVolunteerGroupMemberChangeHistoriesRowCount({volunteerGroupMemberId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._volunteerGroupMemberChangeHistoriesCount$ = null;
 
 
 

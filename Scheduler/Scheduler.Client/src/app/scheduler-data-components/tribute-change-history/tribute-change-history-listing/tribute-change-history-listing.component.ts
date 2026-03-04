@@ -165,6 +165,7 @@ export class TributeChangeHistoryListingComponent implements OnInit, AfterViewIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.tributeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.tributeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

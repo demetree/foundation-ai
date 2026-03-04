@@ -165,6 +165,7 @@ export class ContactTagChangeHistoryListingComponent implements OnInit, AfterVie
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.contactTagChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.contactTagChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

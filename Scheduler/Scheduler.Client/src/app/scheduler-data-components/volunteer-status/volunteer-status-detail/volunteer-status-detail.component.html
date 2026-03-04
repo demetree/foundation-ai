@@ -116,10 +116,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-profile-table [queryParams]="{ volunteerStatusId: volunteerStatusData?.id }"></app-volunteer-profile-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-profile-add-edit [preSeededData]="{ volunteerStatusId: volunteerStatusData?.id }" [hiddenFields]="['volunteerStatusId']"></app-volunteer-profile-add-edit>
+                                    <app-volunteer-profile-table [queryParams]="{ volunteerStatusId: volunteerStatusData?.id }" [showAddButton]="true" [preSeededData]="{ volunteerStatusId: volunteerStatusData?.id }" [hiddenFields]="['volunteerStatusId']"></app-volunteer-profile-table>
                                 </div>
                             </div>
                             </ng-template>
@@ -133,10 +130,7 @@
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-volunteer-group-table [queryParams]="{ volunteerStatusId: volunteerStatusData?.id }"></app-volunteer-group-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-volunteer-group-add-edit [preSeededData]="{ volunteerStatusId: volunteerStatusData?.id }" [hiddenFields]="['volunteerStatusId']"></app-volunteer-group-add-edit>
+                                    <app-volunteer-group-table [queryParams]="{ volunteerStatusId: volunteerStatusData?.id }" [showAddButton]="true" [preSeededData]="{ volunteerStatusId: volunteerStatusData?.id }" [hiddenFields]="['volunteerStatusId']"></app-volunteer-group-table>
                                 </div>
                             </div>
                             </ng-template>

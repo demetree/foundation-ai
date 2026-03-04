@@ -139,11 +139,17 @@ export class ClientTypeData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({clientTypeId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _clientsCount$: Observable<bigint | number> | null = null;
+    public get ClientsCount$(): Observable<bigint | number> {
+        if (this._clientsCount$ === null) {
+            this._clientsCount$ = ClientService.Instance.GetClientsRowCount({clientTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._clientsCount$;
+    }
 
 
 
@@ -188,6 +194,7 @@ export class ClientTypeData {
      this._clients = null;
      this._clientsPromise = null;
      this._clientsSubject.next(null);
+     this._clientsCount$ = null;
 
   }
 
@@ -726,11 +733,7 @@ export class ClientTypeService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ClientsCount$ = ClientService.Instance.GetClientsRowCount({clientTypeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._clientsCount$ = null;
 
 
 

@@ -205,11 +205,17 @@ export class CrewData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewChangeHistoriesCount$ = CrewChangeHistoryService.Instance.GetCrewChangeHistoriesRowCount({crewId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get CrewChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._crewChangeHistoriesCount$ === null) {
+            this._crewChangeHistoriesCount$ = CrewChangeHistoryService.Instance.GetCrewChangeHistoriesRowCount({crewId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewChangeHistoriesCount$;
+    }
 
 
 
@@ -224,11 +230,17 @@ export class CrewData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({crewId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _crewMembersCount$: Observable<bigint | number> | null = null;
+    public get CrewMembersCount$(): Observable<bigint | number> {
+        if (this._crewMembersCount$ === null) {
+            this._crewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({crewId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._crewMembersCount$;
+    }
 
 
 
@@ -243,11 +255,17 @@ export class CrewData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({crewId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _scheduledEventsCount$: Observable<bigint | number> | null = null;
+    public get ScheduledEventsCount$(): Observable<bigint | number> {
+        if (this._scheduledEventsCount$ === null) {
+            this._scheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({crewId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._scheduledEventsCount$;
+    }
 
 
 
@@ -262,11 +280,17 @@ export class CrewData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({crewId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _eventResourceAssignmentsCount$: Observable<bigint | number> | null = null;
+    public get EventResourceAssignmentsCount$(): Observable<bigint | number> {
+        if (this._eventResourceAssignmentsCount$ === null) {
+            this._eventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({crewId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventResourceAssignmentsCount$;
+    }
 
 
 
@@ -311,18 +335,22 @@ export class CrewData {
      this._crewChangeHistories = null;
      this._crewChangeHistoriesPromise = null;
      this._crewChangeHistoriesSubject.next(null);
+     this._crewChangeHistoriesCount$ = null;
 
      this._crewMembers = null;
      this._crewMembersPromise = null;
      this._crewMembersSubject.next(null);
+     this._crewMembersCount$ = null;
 
      this._scheduledEvents = null;
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
+     this._scheduledEventsCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
+     this._eventResourceAssignmentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1255,11 +1283,7 @@ export class CrewService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewChangeHistoriesCount$ = CrewChangeHistoryService.Instance.GetCrewChangeHistoriesRowCount({crewId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewChangeHistoriesCount$ = null;
 
 
     (revived as any).CrewMembers$ = (revived as any)._crewMembersSubject.asObservable().pipe(
@@ -1271,11 +1295,7 @@ export class CrewService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({crewId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._crewMembersCount$ = null;
 
 
     (revived as any).ScheduledEvents$ = (revived as any)._scheduledEventsSubject.asObservable().pipe(
@@ -1287,11 +1307,7 @@ export class CrewService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({crewId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._scheduledEventsCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
@@ -1303,11 +1319,7 @@ export class CrewService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({crewId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._eventResourceAssignmentsCount$ = null;
 
 
 

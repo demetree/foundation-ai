@@ -172,11 +172,17 @@ export class SchedulingTargetContactData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetContactChangeHistoriesCount$ = SchedulingTargetContactChangeHistoryService.Instance.GetSchedulingTargetContactChangeHistoriesRowCount({schedulingTargetContactId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _schedulingTargetContactChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get SchedulingTargetContactChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._schedulingTargetContactChangeHistoriesCount$ === null) {
+            this._schedulingTargetContactChangeHistoriesCount$ = SchedulingTargetContactChangeHistoryService.Instance.GetSchedulingTargetContactChangeHistoriesRowCount({schedulingTargetContactId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._schedulingTargetContactChangeHistoriesCount$;
+    }
 
 
 
@@ -221,6 +227,7 @@ export class SchedulingTargetContactData {
      this._schedulingTargetContactChangeHistories = null;
      this._schedulingTargetContactChangeHistoriesPromise = null;
      this._schedulingTargetContactChangeHistoriesSubject.next(null);
+     this._schedulingTargetContactChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -907,11 +914,7 @@ export class SchedulingTargetContactService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).SchedulingTargetContactChangeHistoriesCount$ = SchedulingTargetContactChangeHistoryService.Instance.GetSchedulingTargetContactChangeHistoriesRowCount({schedulingTargetContactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._schedulingTargetContactChangeHistoriesCount$ = null;
 
 
 

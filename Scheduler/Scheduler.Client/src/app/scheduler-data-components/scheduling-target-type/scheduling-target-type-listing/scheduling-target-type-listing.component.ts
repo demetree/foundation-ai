@@ -165,6 +165,7 @@ export class SchedulingTargetTypeListingComponent implements OnInit, AfterViewIn
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.schedulingTargetTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.schedulingTargetTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

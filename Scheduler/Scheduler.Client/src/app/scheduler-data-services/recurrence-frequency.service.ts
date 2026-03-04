@@ -137,11 +137,17 @@ export class RecurrenceFrequencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceFrequencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _recurrenceRulesCount$: Observable<bigint | number> | null = null;
+    public get RecurrenceRulesCount$(): Observable<bigint | number> {
+        if (this._recurrenceRulesCount$ === null) {
+            this._recurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceFrequencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._recurrenceRulesCount$;
+    }
 
 
 
@@ -156,11 +162,17 @@ export class RecurrenceFrequencyData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({recurrenceFrequencyId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _pledgesCount$: Observable<bigint | number> | null = null;
+    public get PledgesCount$(): Observable<bigint | number> {
+        if (this._pledgesCount$ === null) {
+            this._pledgesCount$ = PledgeService.Instance.GetPledgesRowCount({recurrenceFrequencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._pledgesCount$;
+    }
 
 
 
@@ -205,10 +217,12 @@ export class RecurrenceFrequencyData {
      this._recurrenceRules = null;
      this._recurrenceRulesPromise = null;
      this._recurrenceRulesSubject.next(null);
+     this._recurrenceRulesCount$ = null;
 
      this._pledges = null;
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
+     this._pledgesCount$ = null;
 
   }
 
@@ -825,11 +839,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceFrequencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._recurrenceRulesCount$ = null;
 
 
     (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
@@ -841,11 +851,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({recurrenceFrequencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._pledgesCount$ = null;
 
 
 

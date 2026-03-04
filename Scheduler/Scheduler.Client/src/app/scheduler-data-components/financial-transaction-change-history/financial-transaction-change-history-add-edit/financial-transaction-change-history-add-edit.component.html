@@ -1,0 +1,73 @@
+<div class="add-financial-transaction-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-financial-transaction-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Financial Transaction Change History" 
+        *ngIf="userIsSchedulerFinancialTransactionChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #financialTransactionChangeHistoryModal let-modal>
+   <div class="modal-header financial-transaction-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="financialTransactionChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Financial Transaction Change History' : 'Add Financial Transaction Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body financial-transaction-change-history-modal-body">
+      <form [formGroup]="financialTransactionChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('financialTransactionId')">
+                <label for="FinancialTransactionChangeHistory-financialTransactionId" id="label-FinancialTransactionChangeHistory-financialTransactionId"><span class="text-danger">*</span>Financial Transaction</label>
+                <select id="FinancialTransactionChangeHistory-financialTransactionId" formControlName="financialTransactionId" class="form-select financial-transaction-change-history-select" [disabled]="!userIsSchedulerFinancialTransactionChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Financial Transaction</option>
+                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.description}}</option>
+                </select>
+                <div *ngIf="financialTransactionChangeHistoryForm.get('financialTransactionId')?.invalid && financialTransactionChangeHistoryForm.get('financialTransactionId')?.touched" class="text-danger">
+                    Financial Transaction is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="FinancialTransactionChangeHistory-versionNumber" id="label-FinancialTransactionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="FinancialTransactionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control financial-transaction-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="FinancialTransactionChangeHistory-timeStamp" id="label-FinancialTransactionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="FinancialTransactionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control financial-transaction-change-history-input" [disabled]="!userIsSchedulerFinancialTransactionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="financialTransactionChangeHistoryForm.get('timeStamp')?.invalid && financialTransactionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="FinancialTransactionChangeHistory-userId" id="label-FinancialTransactionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="FinancialTransactionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control financial-transaction-change-history-input" [disabled]="!userIsSchedulerFinancialTransactionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="financialTransactionChangeHistoryForm.get('userId')?.invalid && financialTransactionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="FinancialTransactionChangeHistory-data" id="label-FinancialTransactionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="FinancialTransactionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control financial-transaction-change-history-input" [disabled]="!userIsSchedulerFinancialTransactionChangeHistoryWriter()"></textarea>
+                <div *ngIf="financialTransactionChangeHistoryForm.get('data')?.invalid && financialTransactionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer financial-transaction-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Financial Transaction Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !financialTransactionChangeHistoryForm.valid || financialTransactionChangeHistoryForm.pristine  || userIsSchedulerFinancialTransactionChangeHistoryWriter() == false " ngbTooltip="Save the Financial Transaction Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Financial Transaction Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

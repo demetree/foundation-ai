@@ -82,6 +82,7 @@
   <app-dependency-type-table
     *ngIf="userIsSchedulerDependencyTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredDependencyTypeCount$ | async) ?? 0">
   </app-dependency-type-table>
 </div>

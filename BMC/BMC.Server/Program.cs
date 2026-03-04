@@ -171,6 +171,14 @@ namespace Foundation.BMC
                 //
                 builder.Services.AddScoped<BrickOwlSyncService>();
 
+                //
+                // Market data caching — reduces external API calls for Brickberg Terminal
+                //
+                builder.Services.Configure<MarketDataCacheOptions>(
+                    builder.Configuration.GetSection(MarketDataCacheOptions.SectionName));
+                builder.Services.AddScoped<MarketDataCacheService>();
+                builder.Services.AddHostedService<MarketDataCachePurgeService>();
+
 
                 //
                 // Add HTTP client factory

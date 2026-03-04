@@ -18,6 +18,7 @@ CREATE SCHEMA [BMC]
 GO
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE [BMC].[MarketDataCache]
 -- DROP TABLE [BMC].[BrickOwlTransaction]
 -- DROP TABLE [BMC].[BrickEconomyTransaction]
 -- DROP TABLE [BMC].[BrickLinkTransaction]
@@ -124,6 +125,7 @@ GO
 -- DROP TABLE [BMC].[BrickCategory]
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON [BMC].[MarketDataCache] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickOwlTransaction] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickEconomyTransaction] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickLinkTransaction] DISABLE
@@ -230,6 +232,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON [BMC].[MarketDataCache] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickOwlTransaction] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickEconomyTransaction] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickLinkTransaction] REBUILD
@@ -4575,6 +4578,35 @@ GO
 
 -- Index on the BrickOwlTransaction table's tenantGuid,deleted fields.
 CREATE INDEX [I_BrickOwlTransaction_tenantGuid_deleted] ON [BMC].[BrickOwlTransaction] ([tenantGuid], [deleted])
+GO
+
+
+-- Caches API responses from external marketplaces (BrickLink, BrickEconomy, BrickOwl) to reduce external calls and improve Brickberg Terminal performance. TTL-based expiry with configurable per-source cache durations. Not multi-tenant — cache is shared across all users for the same item.
+CREATE TABLE [BMC].[MarketDataCache]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[source] NVARCHAR(50) NOT NULL,		-- Marketplace source: BrickLink, BrickEconomy, BrickOwl
+	[itemType] NVARCHAR(50) NOT NULL,		-- Item type: SET, MINIFIG, PART
+	[itemNumber] NVARCHAR(100) NOT NULL,		-- Item identifier (e.g. '42131-1', 'fig-001234')
+	[condition] NVARCHAR(50) NULL,		-- Condition qualifier: N (new), U (used), null for non-BrickLink sources
+	[responseJson] NVARCHAR(MAX) NULL,		-- Serialized JSON API response payload
+	[fetchedDate] DATETIME2(7) NOT NULL,		-- UTC timestamp when the response was fetched from the source API
+	[expiresDate] DATETIME2(7) NOT NULL,		-- UTC timestamp when this cache entry expires and should be refreshed
+	[ttlMinutes] INT NOT NULL,		-- TTL in minutes that was used when caching this entry (for diagnostics/auditing)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_MarketDataCache_source_itemType_itemNumber_condition] UNIQUE ( [source], [itemType], [itemNumber], [condition]) 		-- Uniqueness enforced on the MarketDataCache table's source and itemType and itemNumber and condition fields.
+)
+GO
+
+-- Index on the MarketDataCache table's active field.
+CREATE INDEX [I_MarketDataCache_active] ON [BMC].[MarketDataCache] ([active])
+GO
+
+-- Index on the MarketDataCache table's deleted field.
+CREATE INDEX [I_MarketDataCache_deleted] ON [BMC].[MarketDataCache] ([deleted])
 GO
 
 

@@ -196,11 +196,17 @@ export class AppealData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public AppealChangeHistoriesCount$ = AppealChangeHistoryService.Instance.GetAppealChangeHistoriesRowCount({appealId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _appealChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get AppealChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._appealChangeHistoriesCount$ === null) {
+            this._appealChangeHistoriesCount$ = AppealChangeHistoryService.Instance.GetAppealChangeHistoriesRowCount({appealId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._appealChangeHistoriesCount$;
+    }
 
 
 
@@ -215,11 +221,17 @@ export class AppealData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({appealId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _pledgesCount$: Observable<bigint | number> | null = null;
+    public get PledgesCount$(): Observable<bigint | number> {
+        if (this._pledgesCount$ === null) {
+            this._pledgesCount$ = PledgeService.Instance.GetPledgesRowCount({appealId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._pledgesCount$;
+    }
 
 
 
@@ -234,11 +246,17 @@ export class AppealData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public BatchDefaultAppealsCount$ = BatchService.Instance.GetBatchesRowCount({defaultAppealId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _batchDefaultAppealsCount$: Observable<bigint | number> | null = null;
+    public get BatchDefaultAppealsCount$(): Observable<bigint | number> {
+        if (this._batchDefaultAppealsCount$ === null) {
+            this._batchDefaultAppealsCount$ = BatchService.Instance.GetBatchesRowCount({defaultAppealId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._batchDefaultAppealsCount$;
+    }
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -252,11 +270,17 @@ export class AppealData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({appealId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _giftsCount$: Observable<bigint | number> | null = null;
+    public get GiftsCount$(): Observable<bigint | number> {
+        if (this._giftsCount$ === null) {
+            this._giftsCount$ = GiftService.Instance.GetGiftsRowCount({appealId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._giftsCount$;
+    }
 
 
 
@@ -301,18 +325,22 @@ export class AppealData {
      this._appealChangeHistories = null;
      this._appealChangeHistoriesPromise = null;
      this._appealChangeHistoriesSubject.next(null);
+     this._appealChangeHistoriesCount$ = null;
 
      this._pledges = null;
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
+     this._pledgesCount$ = null;
 
      this._batchDefaultAppeals = null;
      this._batchDefaultAppealsPromise = null;
      this._batchDefaultAppealsSubject.next(null);
+     this._batchDefaultAppealsCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+     this._giftsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1213,9 +1241,9 @@ export class AppealService extends SecureEndpointBase {
     (revived as any)._pledgesPromise = null;
     (revived as any)._pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    (revived as any)._batches = null;
-    (revived as any)._batchesPromise = null;
-    (revived as any)._batchesSubject = new BehaviorSubject<BatchData[] | null>(null);
+    (revived as any)._batchDefaultAppeals = null;
+    (revived as any)._batchDefaultAppealsPromise = null;
+    (revived as any)._batchDefaultAppealsSubject = new BehaviorSubject<BatchData[] | null>(null);
 
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
@@ -1242,11 +1270,7 @@ export class AppealService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).AppealChangeHistoriesCount$ = AppealChangeHistoryService.Instance.GetAppealChangeHistoriesRowCount({appealId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._appealChangeHistoriesCount$ = null;
 
 
     (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
@@ -1258,27 +1282,19 @@ export class AppealService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({appealId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+    (revived as any)._pledgesCount$ = null;
 
 
-
-    (revived as any).Batches$ = (revived as any)._batchesSubject.asObservable().pipe(
+    (revived as any).BatchDefaultAppeals$ = (revived as any)._batchDefaultAppealsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._batches === null && (revived as any)._batchesPromise === null) {
-                (revived as any).loadBatches();        // Need to cast to any to invoke private load method
+              if ((revived as any)._batchDefaultAppeals === null && (revived as any)._batchDefaultAppealsPromise === null) {
+                (revived as any).loadBatchDefaultAppeals();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any).BatchesCount$ = BatchService.Instance.GetBatchesRowCount({appealId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._batchDefaultAppealsCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
@@ -1290,11 +1306,7 @@ export class AppealService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({appealId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._giftsCount$ = null;
 
 
 

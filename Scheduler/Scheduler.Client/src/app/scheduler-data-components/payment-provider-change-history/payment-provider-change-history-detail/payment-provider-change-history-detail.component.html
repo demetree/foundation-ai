@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 payment-provider-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="payment-provider-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Payment Provider Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Payment Provider Change History' : 'Add Payment Provider Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPaymentProviderChangeHistoryReader()">
+                <div class="col m-2 payment-provider-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="paymentProviderChangeHistoryForm" (ngSubmit)="submitForm()" class="payment-provider-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('paymentProviderId')">
+                                <label for="PaymentProviderChangeHistory-paymentProviderId" id="label-PaymentProviderChangeHistory-paymentProviderId"><span class="text-danger">*</span>Payment Provider</label>
+                                <select id="PaymentProviderChangeHistory-paymentProviderId" formControlName="paymentProviderId" class="form-select payment-provider-change-history-select" [disabled]="!userIsSchedulerPaymentProviderChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Payment Provider</option>
+                                    <option *ngFor="let paymentProvider of paymentProviders$ | async" [ngValue]="paymentProvider.id">{{paymentProvider.name}}</option>
+                                </select>
+                                <div *ngIf="paymentProviderChangeHistoryForm.get('paymentProviderId')?.invalid && paymentProviderChangeHistoryForm.get('paymentProviderId')?.touched" class="text-danger">
+                                    Payment Provider is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="PaymentProviderChangeHistory-versionNumber" id="label-PaymentProviderChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="PaymentProviderChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control payment-provider-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="PaymentProviderChangeHistory-timeStamp" id="label-PaymentProviderChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="PaymentProviderChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control payment-provider-change-history-input" [disabled]="!userIsSchedulerPaymentProviderChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="paymentProviderChangeHistoryForm.get('timeStamp')?.invalid && paymentProviderChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="PaymentProviderChangeHistory-userId" id="label-PaymentProviderChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="PaymentProviderChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control payment-provider-change-history-input" [disabled]="!userIsSchedulerPaymentProviderChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="paymentProviderChangeHistoryForm.get('userId')?.invalid && paymentProviderChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="PaymentProviderChangeHistory-data" id="label-PaymentProviderChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="PaymentProviderChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control payment-provider-change-history-input" [disabled]="!userIsSchedulerPaymentProviderChangeHistoryWriter()"></textarea>
+                                <div *ngIf="paymentProviderChangeHistoryForm.get('data')?.invalid && paymentProviderChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="payment-provider-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="paymentProviderChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Payment Provider Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !paymentProviderChangeHistoryForm.valid || !paymentProviderChangeHistoryForm.dirty || paymentProviderChangeHistoryForm.pristine  || userIsSchedulerPaymentProviderChangeHistoryWriter() == false " ngbTooltip="Save the Payment Provider Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Payment Provider Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

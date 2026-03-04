@@ -165,6 +165,7 @@ export class EventChargeChangeHistoryListingComponent implements OnInit, AfterVi
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.eventChargeChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.eventChargeChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

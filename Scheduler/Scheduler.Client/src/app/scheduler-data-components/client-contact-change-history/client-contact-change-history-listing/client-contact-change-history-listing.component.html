@@ -82,6 +82,7 @@
   <app-client-contact-change-history-table
     *ngIf="userIsSchedulerClientContactChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredClientContactChangeHistoryCount$ | async) ?? 0">
   </app-client-contact-change-history-table>
 </div>

@@ -82,6 +82,7 @@
   <app-volunteer-profile-table
     *ngIf="userIsSchedulerVolunteerProfileReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredVolunteerProfileCount$ | async) ?? 0">
   </app-volunteer-profile-table>
 </div>

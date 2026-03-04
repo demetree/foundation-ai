@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #attributeDefinitionChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light attribute-definition-change-history-modal-header">
+   <div class="modal-header attribute-definition-change-history-modal-header">
       <h5 class="modal-title mb-0" id="attributeDefinitionChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Attribute Definition Change History' : 'Add Attribute Definition Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body attribute-definition-change-history-modal-body">
       <form [formGroup]="attributeDefinitionChangeHistoryForm" (ngSubmit)="submitForm()">

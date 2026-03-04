@@ -82,6 +82,7 @@
   <app-rate-type-table
     *ngIf="userIsSchedulerRateTypeReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredRateTypeCount$ | async) ?? 0">
   </app-rate-type-table>
 </div>

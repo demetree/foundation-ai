@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #eventResourceAssignmentModal let-modal>
-   <div class="modal-header bg-dark text-light event-resource-assignment-modal-header">
+   <div class="modal-header event-resource-assignment-modal-header">
       <h5 class="modal-title mb-0" id="eventResourceAssignmentModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Event Resource Assignment' : 'Add Event Resource Assignment' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body event-resource-assignment-modal-body">
       <form [formGroup]="eventResourceAssignmentForm" (ngSubmit)="submitForm()">

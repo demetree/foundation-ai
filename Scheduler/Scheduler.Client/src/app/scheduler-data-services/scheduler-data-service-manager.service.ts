@@ -56,12 +56,19 @@ import {CrewMemberService} from  './crew-member.service';
 import {CrewMemberChangeHistoryService} from  './crew-member-change-history.service';
 import {CurrencyService} from  './currency.service';
 import {DependencyTypeService} from  './dependency-type.service';
+import {DocumentService} from  './document.service';
+import {DocumentChangeHistoryService} from  './document-change-history.service';
+import {DocumentTypeService} from  './document-type.service';
 import {EventCalendarService} from  './event-calendar.service';
 import {EventChargeService} from  './event-charge.service';
 import {EventChargeChangeHistoryService} from  './event-charge-change-history.service';
 import {EventResourceAssignmentService} from  './event-resource-assignment.service';
 import {EventResourceAssignmentChangeHistoryService} from  './event-resource-assignment-change-history.service';
 import {EventStatusService} from  './event-status.service';
+import {FinancialCategoryService} from  './financial-category.service';
+import {FinancialCategoryChangeHistoryService} from  './financial-category-change-history.service';
+import {FinancialTransactionService} from  './financial-transaction.service';
+import {FinancialTransactionChangeHistoryService} from  './financial-transaction-change-history.service';
 import {FundService} from  './fund.service';
 import {FundChangeHistoryService} from  './fund-change-history.service';
 import {GiftService} from  './gift.service';
@@ -78,6 +85,11 @@ import {OfficeChangeHistoryService} from  './office-change-history.service';
 import {OfficeContactService} from  './office-contact.service';
 import {OfficeContactChangeHistoryService} from  './office-contact-change-history.service';
 import {OfficeTypeService} from  './office-type.service';
+import {PaymentMethodService} from  './payment-method.service';
+import {PaymentProviderService} from  './payment-provider.service';
+import {PaymentProviderChangeHistoryService} from  './payment-provider-change-history.service';
+import {PaymentTransactionService} from  './payment-transaction.service';
+import {PaymentTransactionChangeHistoryService} from  './payment-transaction-change-history.service';
 import {PaymentTypeService} from  './payment-type.service';
 import {PledgeService} from  './pledge.service';
 import {PledgeChangeHistoryService} from  './pledge-change-history.service';
@@ -201,12 +213,19 @@ export class SchedulerDataServiceManagerService  {
               , public crewMemberChangeHistoryService: CrewMemberChangeHistoryService
               , public currencyService: CurrencyService
               , public dependencyTypeService: DependencyTypeService
+              , public documentService: DocumentService
+              , public documentChangeHistoryService: DocumentChangeHistoryService
+              , public documentTypeService: DocumentTypeService
               , public eventCalendarService: EventCalendarService
               , public eventChargeService: EventChargeService
               , public eventChargeChangeHistoryService: EventChargeChangeHistoryService
               , public eventResourceAssignmentService: EventResourceAssignmentService
               , public eventResourceAssignmentChangeHistoryService: EventResourceAssignmentChangeHistoryService
               , public eventStatusService: EventStatusService
+              , public financialCategoryService: FinancialCategoryService
+              , public financialCategoryChangeHistoryService: FinancialCategoryChangeHistoryService
+              , public financialTransactionService: FinancialTransactionService
+              , public financialTransactionChangeHistoryService: FinancialTransactionChangeHistoryService
               , public fundService: FundService
               , public fundChangeHistoryService: FundChangeHistoryService
               , public giftService: GiftService
@@ -223,6 +242,11 @@ export class SchedulerDataServiceManagerService  {
               , public officeContactService: OfficeContactService
               , public officeContactChangeHistoryService: OfficeContactChangeHistoryService
               , public officeTypeService: OfficeTypeService
+              , public paymentMethodService: PaymentMethodService
+              , public paymentProviderService: PaymentProviderService
+              , public paymentProviderChangeHistoryService: PaymentProviderChangeHistoryService
+              , public paymentTransactionService: PaymentTransactionService
+              , public paymentTransactionChangeHistoryService: PaymentTransactionChangeHistoryService
               , public paymentTypeService: PaymentTypeService
               , public pledgeService: PledgeService
               , public pledgeChangeHistoryService: PledgeChangeHistoryService
@@ -344,12 +368,19 @@ export class SchedulerDataServiceManagerService  {
         this.crewMemberChangeHistoryService.ClearAllCaches();
         this.currencyService.ClearAllCaches();
         this.dependencyTypeService.ClearAllCaches();
+        this.documentService.ClearAllCaches();
+        this.documentChangeHistoryService.ClearAllCaches();
+        this.documentTypeService.ClearAllCaches();
         this.eventCalendarService.ClearAllCaches();
         this.eventChargeService.ClearAllCaches();
         this.eventChargeChangeHistoryService.ClearAllCaches();
         this.eventResourceAssignmentService.ClearAllCaches();
         this.eventResourceAssignmentChangeHistoryService.ClearAllCaches();
         this.eventStatusService.ClearAllCaches();
+        this.financialCategoryService.ClearAllCaches();
+        this.financialCategoryChangeHistoryService.ClearAllCaches();
+        this.financialTransactionService.ClearAllCaches();
+        this.financialTransactionChangeHistoryService.ClearAllCaches();
         this.fundService.ClearAllCaches();
         this.fundChangeHistoryService.ClearAllCaches();
         this.giftService.ClearAllCaches();
@@ -366,6 +397,11 @@ export class SchedulerDataServiceManagerService  {
         this.officeContactService.ClearAllCaches();
         this.officeContactChangeHistoryService.ClearAllCaches();
         this.officeTypeService.ClearAllCaches();
+        this.paymentMethodService.ClearAllCaches();
+        this.paymentProviderService.ClearAllCaches();
+        this.paymentProviderChangeHistoryService.ClearAllCaches();
+        this.paymentTransactionService.ClearAllCaches();
+        this.paymentTransactionChangeHistoryService.ClearAllCaches();
         this.paymentTypeService.ClearAllCaches();
         this.pledgeService.ClearAllCaches();
         this.pledgeChangeHistoryService.ClearAllCaches();

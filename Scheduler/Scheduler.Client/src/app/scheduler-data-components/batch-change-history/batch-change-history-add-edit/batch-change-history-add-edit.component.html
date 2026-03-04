@@ -10,14 +10,13 @@
 
 <!-- ng-bootstrap modal -->
 <ng-template #batchChangeHistoryModal let-modal>
-   <div class="modal-header bg-dark text-light batch-change-history-modal-header">
+   <div class="modal-header batch-change-history-modal-header">
       <h5 class="modal-title mb-0" id="batchChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Batch Change History' : 'Add Batch Change History' }}
       </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
    </div>
    <div class="modal-body batch-change-history-modal-body">
       <form [formGroup]="batchChangeHistoryForm" (ngSubmit)="submitForm()">

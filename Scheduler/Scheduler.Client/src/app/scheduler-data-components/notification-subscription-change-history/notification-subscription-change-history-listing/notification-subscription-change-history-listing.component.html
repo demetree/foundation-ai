@@ -82,6 +82,7 @@
   <app-notification-subscription-change-history-table
     *ngIf="userIsSchedulerNotificationSubscriptionChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredNotificationSubscriptionChangeHistoryCount$ | async) ?? 0">
   </app-notification-subscription-change-history-table>
 </div>

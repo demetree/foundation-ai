@@ -165,6 +165,7 @@ export class CampaignChangeHistoryListingComponent implements OnInit, AfterViewI
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.campaignChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.campaignChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

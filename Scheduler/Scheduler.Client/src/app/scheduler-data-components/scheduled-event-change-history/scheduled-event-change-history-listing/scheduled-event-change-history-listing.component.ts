@@ -165,6 +165,7 @@ export class ScheduledEventChangeHistoryListingComponent implements OnInit, Afte
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.scheduledEventChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.scheduledEventChangeHistoryTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

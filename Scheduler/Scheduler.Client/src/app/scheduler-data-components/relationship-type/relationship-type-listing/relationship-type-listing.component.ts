@@ -165,6 +165,7 @@ export class RelationshipTypeListingComponent implements OnInit, AfterViewInit, 
     clearTimeout(this.debounceTimeout);
 
     this.debounceTimeout = setTimeout(() => {
+      this.relationshipTypeTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
       this.relationshipTypeTableComponent.loadData(); // Refresh table
       this.loadCounts(); // Refresh both counts
     }, 500);           // 500 millisecond debounce

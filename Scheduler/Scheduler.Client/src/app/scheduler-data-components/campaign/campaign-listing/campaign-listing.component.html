@@ -82,6 +82,7 @@
   <app-campaign-table
     *ngIf="userIsSchedulerCampaignReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredCampaignCount$ | async) ?? 0">
   </app-campaign-table>
 </div>

@@ -228,11 +228,17 @@ export class TenantProfileData {
         shareReplay(1) // Cache last emit
     );
 
-  
-    public TenantProfileChangeHistoriesCount$ = TenantProfileChangeHistoryService.Instance.GetTenantProfileChangeHistoriesRowCount({tenantProfileId: this.id,
-      active: true,
-      deleted: false
-    });
+
+    private _tenantProfileChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get TenantProfileChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._tenantProfileChangeHistoriesCount$ === null) {
+            this._tenantProfileChangeHistoriesCount$ = TenantProfileChangeHistoryService.Instance.GetTenantProfileChangeHistoriesRowCount({tenantProfileId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._tenantProfileChangeHistoriesCount$;
+    }
 
 
 
@@ -277,6 +283,7 @@ export class TenantProfileData {
      this._tenantProfileChangeHistories = null;
      this._tenantProfileChangeHistoriesPromise = null;
      this._tenantProfileChangeHistoriesSubject.next(null);
+     this._tenantProfileChangeHistoriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -982,11 +989,7 @@ export class TenantProfileService extends SecureEndpointBase {
         shareReplay(1)
       );
 
-    (revived as any).TenantProfileChangeHistoriesCount$ = TenantProfileChangeHistoryService.Instance.GetTenantProfileChangeHistoriesRowCount({tenantProfileId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
+    (revived as any)._tenantProfileChangeHistoriesCount$ = null;
 
 
 

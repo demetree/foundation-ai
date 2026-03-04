@@ -82,6 +82,7 @@
   <app-tenant-profile-change-history-table
     *ngIf="userIsSchedulerTenantProfileChangeHistoryReader() == true"
     [filterText]="filterText"
-    [isSmallScreen]="isSmallScreen">
+    [isSmallScreen]="isSmallScreen"
+    [totalRowCount]="(filteredTenantProfileChangeHistoryCount$ | async) ?? 0">
   </app-tenant-profile-change-history-table>
 </div>
