@@ -17,6 +17,12 @@
                 </div>
             </div>
             <div class="header-right">
+                <button class="btn btn-glass btn-sm me-2" (click)="goToTransactions()" ngbTooltip="Record Income">
+                    <i class="fa-solid fa-plus-circle me-1"></i> Record Income
+                </button>
+                <button class="btn btn-glass btn-sm me-2" (click)="goToTransactions()" ngbTooltip="Record Expense">
+                    <i class="fa-solid fa-minus-circle me-1"></i> Record Expense
+                </button>
                 <button class="btn btn-glass btn-sm me-2" (click)="goToCategories()">
                     <i class="fa-solid fa-layer-group me-1"></i> Categories
                 </button>
@@ -130,17 +136,38 @@
             <!-- Monthly Breakdown Chart -->
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 py-3">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-semibold">
                             <i class="fa-solid fa-chart-bar text-primary me-2"></i>
-                            {{ currentYear }} Monthly Breakdown
+                            Monthly Breakdown
                         </h6>
+
+                        <!-- Fiscal Year Picker -->
+                        <div class="d-flex align-items-center gap-1" *ngIf="availableYears.length > 0">
+                            <button class="btn btn-sm btn-outline-secondary year-step-btn" (click)="stepYear(-1)"
+                                [disabled]="!canStepYear(-1)" ngbTooltip="Previous Year">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <select class="form-select form-select-sm year-select" [(ngModel)]="selectedYear"
+                                (ngModelChange)="onYearChange($event)">
+                                <option *ngFor="let y of availableYears" [ngValue]="y">{{ y }}</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline-secondary year-step-btn" (click)="stepYear(1)"
+                                [disabled]="!canStepYear(1)" ngbTooltip="Next Year">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Fallback when no fiscal periods exist -->
+                        <span class="badge bg-secondary" *ngIf="availableYears.length === 0">
+                            {{ selectedYear }}
+                        </span>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
                             <div class="chart-bars">
                                 <div class="month-group" *ngFor="let month of months; let i = index"
-                                    [ngClass]="{'current-month': i === getCurrentMonthIndex()}">
+                                    [ngClass]="{'current-month': i === getCurrentMonthIndex() && selectedYear === currentYear}">
                                     <div class="bar-pair">
                                         <div class="bar income-bar" [style.height.%]="getBarHeight(monthlyIncome[i])"
                                             [ngbTooltip]="'Income: ' + (monthlyIncome[i] | currency:'CAD':'symbol':'1.0-0')">
@@ -222,28 +249,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row g-3 mt-3">
-            <div class="col-md-4">
-                <button class="btn btn-outline-success w-100 py-3 quick-action" (click)="goToTransactions()">
-                    <i class="fa-solid fa-plus-circle me-2"></i>
-                    Record Income
-                </button>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-danger w-100 py-3 quick-action" (click)="goToTransactions()">
-                    <i class="fa-solid fa-minus-circle me-2"></i>
-                    Record Expense
-                </button>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-primary w-100 py-3 quick-action" (click)="goToCategories()">
-                    <i class="fa-solid fa-layer-group me-2"></i>
-                    Manage Categories
-                </button>
             </div>
         </div>
 

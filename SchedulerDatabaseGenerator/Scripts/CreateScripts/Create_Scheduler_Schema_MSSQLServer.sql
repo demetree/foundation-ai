@@ -4943,7 +4943,7 @@ CREATE TABLE [Scheduler].[ScheduledEvent]
 	CONSTRAINT [FK_ScheduledEvent_Crew_crewId] FOREIGN KEY ([crewId]) REFERENCES [Scheduler].[Crew] ([id]),		-- Foreign key to the Crew table.
 	CONSTRAINT [FK_ScheduledEvent_Priority_priorityId] FOREIGN KEY ([priorityId]) REFERENCES [Scheduler].[Priority] ([id]),		-- Foreign key to the Priority table.
 	CONSTRAINT [FK_ScheduledEvent_BookingSourceType_bookingSourceTypeId] FOREIGN KEY ([bookingSourceTypeId]) REFERENCES [Scheduler].[BookingSourceType] ([id]),		-- Foreign key to the BookingSourceType table.
-	CONSTRAINT [UC_ScheduledEvent_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the ScheduledEvent table's tenantGuid and name fields.
+	CONSTRAINT [UC_ScheduledEvent_tenantGuid_name_startDateTime] UNIQUE ( [tenantGuid], [name], [startDateTime]) 		-- Uniqueness enforced on the ScheduledEvent table's tenantGuid and name and startDateTime fields.
 )
 GO
 

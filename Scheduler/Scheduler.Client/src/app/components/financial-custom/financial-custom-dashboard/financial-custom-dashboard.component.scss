@@ -128,10 +128,26 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 
 //
-// Monthly Chart
+// Year Picker
+//
+.year-select {
+    width: 90px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.year-step-btn {
+    padding: 0.2rem 0.45rem;
+    line-height: 1;
+    border-radius: 6px;
+}
+
+
+//
+// Monthly Chart — compact height to reduce overall page scroll
 //
 .chart-container {
-    height: 220px;
+    height: 180px;
     display: flex;
     flex-direction: column;
 }
@@ -161,7 +177,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     display: flex;
     align-items: flex-end;
     gap: 2px;
-    height: 170px;
+    height: 140px;
     width: 100%;
     justify-content: center;
 }
@@ -212,10 +228,10 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 
 //
-// Recent Transactions
+// Recent Transactions — reduced height to keep everything visible
 //
 .recent-list {
-    max-height: 450px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
@@ -256,19 +272,4 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 .min-width-0 {
     min-width: 0;
-}
-
-
-//
-// Quick Actions
-//
-.quick-action {
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-
-    &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
 }

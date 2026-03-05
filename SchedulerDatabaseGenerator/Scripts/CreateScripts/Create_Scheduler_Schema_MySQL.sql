@@ -3877,7 +3877,7 @@ CREATE TABLE `ScheduledEvent`(
 	FOREIGN KEY (`crewId`) REFERENCES `Crew`(`id`),		-- Foreign key to the Crew table.
 	FOREIGN KEY (`priorityId`) REFERENCES `Priority`(`id`),		-- Foreign key to the Priority table.
 	FOREIGN KEY (`bookingSourceTypeId`) REFERENCES `BookingSourceType`(`id`),		-- Foreign key to the BookingSourceType table.
-	UNIQUE `UC_ScheduledEvent_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the ScheduledEvent table's tenantGuid and name fields.
+	UNIQUE `UC_ScheduledEvent_tenantGuid_name_startDateTime_Unique`( `tenantGuid`, `name`, `startDateTime` ) 		-- Uniqueness enforced on the ScheduledEvent table's tenantGuid and name and startDateTime fields.
 );
 -- Index on the ScheduledEvent table's tenantGuid field.
 CREATE INDEX `I_ScheduledEvent_tenantGuid` ON `ScheduledEvent` (`tenantGuid`);

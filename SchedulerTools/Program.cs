@@ -1280,7 +1280,7 @@ namespace Foundation.Scheduler.CodeGeneration
     internal class PettyHarbourDataLoader
     {
         // Same tenant GUID as ConfigurePettyHarbour
-        private static readonly Guid PHMCTenantGuid = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+        private static readonly Guid PHMCTenantGuid = new Guid("D58F56C6-E3FB-4D3B-80B3-7053C66491E3");
 
         // Path to the data files (relative to repo root)
         private static readonly string DataFolder = Path.Combine(
@@ -1367,33 +1367,41 @@ namespace Foundation.Scheduler.CodeGeneration
                 Console.WriteLine();
 
                 //
-                // Step 1: Load financial categories from the Events Code sheet
+                // Step 1: Create fiscal periods for 2025 and 2026
                 //
-                Console.WriteLine("--- Step 1: Loading Financial Categories ---");
+                Console.WriteLine("--- Step 1: Loading Fiscal Periods ---");
+                int periodCount = LoadFiscalPeriods(context, 2025, 2026);
+                Console.WriteLine($"  {periodCount} fiscal periods loaded.");
+                Console.WriteLine();
+
+                //
+                // Step 2: Load financial categories from the Events Code sheet
+                //
+                Console.WriteLine("--- Step 2: Loading Financial Categories ---");
                 Dictionary<string, int> categoryIdByCode = LoadFinancialCategories(context, financesFile, cad.id);
                 Console.WriteLine($"  {categoryIdByCode.Count} categories loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 2: Load income transactions
+                // Step 3: Load income transactions
                 //
-                Console.WriteLine("--- Step 2: Loading Income Transactions ---");
+                Console.WriteLine("--- Step 3: Loading Income Transactions ---");
                 int incomeCount = LoadFinancialTransactions(context, financesFile, "Income", true, categoryIdByCode, cad.id);
                 Console.WriteLine($"  {incomeCount} income transactions loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 3: Load expense transactions
+                // Step 4: Load expense transactions
                 //
-                Console.WriteLine("--- Step 3: Loading Expense Transactions ---");
+                Console.WriteLine("--- Step 4: Loading Expense Transactions ---");
                 int expenseCount = LoadFinancialTransactions(context, financesFile, "Expenses", false, categoryIdByCode, cad.id);
                 Console.WriteLine($"  {expenseCount} expense transactions loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 4: Load bookings as ScheduledEvents
+                // Step 5: Load bookings as ScheduledEvents
                 //
-                Console.WriteLine("--- Step 4: Loading Bookings ---");
+                Console.WriteLine("--- Step 5: Loading Bookings ---");
                 int bookingCount = LoadBookings(context, bookingsFile, recCalendar.id, completedStatus.id, plannedStatus.id, cad.id);
                 Console.WriteLine($"  {bookingCount} bookings loaded.");
                 Console.WriteLine();
@@ -1592,6 +1600,24 @@ namespace Foundation.Scheduler.CodeGeneration
 
         /// <summary>
         /// Loads financial transactions from either the Income or Expenses sheet.
+        ///
+        /// IMPORTANT: The two sheets have completely different column layouts:
+        ///
+        ///   Income sheet (6 columns, data starts at row 6):
+        ///     Col 0: Date
+        ///     Col 1: Code (maps to FinancialCategory)
+        ///     Col 2: Description
+        ///     Col 3: Total amount
+        ///
+        ///   Expenses sheet (12 columns, data starts at row 5):
+        ///     Col 0: Code (maps to FinancialCategory)
+        ///     Col 1: Date
+        ///     Col 2: Expense (pre-tax amount)
+        ///     Col 3: HST (tax amount, sometimes NULL)
+        ///     Col 4: Amount Paid (total = expense + HST)
+        ///     Col 7: Description
+        ///
+        /// AI-generated code.
         /// </summary>
         private static int LoadFinancialTransactions(
             SchedulerContext context,
@@ -1631,42 +1657,80 @@ namespace Foundation.Scheduler.CodeGeneration
                 return 0;
             }
 
-            Console.WriteLine($"  Reading sheet: {sheet.TableName} ({sheet.Rows.Count} rows)");
+            Console.WriteLine($"  Reading sheet: {sheet.TableName} ({sheet.Rows.Count} rows, {sheet.Columns.Count} columns)");
 
             //
-            // Typical layout for Income/Expenses sheets:
-            //   Column 0: Code (numeric, maps to FinancialCategory)
-            //   Column 1: Date
-            //   Column 2: Description
-            //   Column 3: Amount
+            // Pre-load fiscal periods for this tenant so we can match by date
             //
+            List<FiscalPeriod> fiscalPeriodList = context.FiscalPeriods
+                .Where(fp => fp.tenantGuid == PHMCTenantGuid)
+                .OrderBy(fp => fp.startDate)
+                .ToList();
+
+            //
+            // Column indices differ between sheets.  Set up per-sheet mappings.
+            //
+            int codeCol;
+            int dateCol;
+            int amountCol;         // Pre-tax (or total if no tax column)
+            int taxCol;            // -1 means no separate tax column
+            int totalCol;          // -1 means calculate from amount + tax
+            int descriptionCol;    // -1 means search remaining columns
+
+            if (isRevenue)
+            {
+                // Income: Date(0) | Code(1) | Description(2) | Total(3)
+                dateCol = 0;
+                codeCol = 1;
+                descriptionCol = 2;
+                amountCol = 3;
+                taxCol = -1;
+                totalCol = -1;
+            }
+            else
+            {
+                // Expenses: Code(0) | Date(1) | Expense(2) | HST(3) | AmountPaid(4) | ... | Description(7)
+                codeCol = 0;
+                dateCol = 1;
+                amountCol = 2;
+                taxCol = 3;
+                totalCol = 4;
+                descriptionCol = 7;
+            }
+
             int loadedCount = 0;
             int skippedCount = 0;
             int batchSize = 0;
-            string fallbackCategoryCode = isRevenue ? "99" : "98"; // Misc category code
 
             for (int rowIndex = 0; rowIndex < sheet.Rows.Count; rowIndex++)
             {
                 DataRow row = sheet.Rows[rowIndex];
 
-                // Skip empty rows and headers
-                string col0 = GetCellString(row, 0);
+                //
+                // Read the code cell — skip blank rows and headers
+                //
+                string codeStr = GetCellString(row, codeCol);
 
-                if (string.IsNullOrWhiteSpace(col0))
+                if (string.IsNullOrWhiteSpace(codeStr))
                 {
                     continue;
                 }
 
                 // Skip header-like rows
-                if (col0.Contains("Code", StringComparison.OrdinalIgnoreCase) ||
-                    col0.Contains("Total", StringComparison.OrdinalIgnoreCase) ||
-                    col0.Contains("Event", StringComparison.OrdinalIgnoreCase))
+                if (codeStr.Contains("Code", StringComparison.OrdinalIgnoreCase) ||
+                    codeStr.Contains("Total", StringComparison.OrdinalIgnoreCase) ||
+                    codeStr.Contains("Event", StringComparison.OrdinalIgnoreCase) ||
+                    codeStr.Contains("Revenue", StringComparison.OrdinalIgnoreCase) ||
+                    codeStr.Contains("Date", StringComparison.OrdinalIgnoreCase) ||
+                    codeStr.Contains("PHRC", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
+                //
                 // Parse the category code
-                string categoryCode = col0.Replace(".0", "").Trim();
+                //
+                string categoryCode = codeStr.Replace(".0", "").Trim();
                 int categoryId = 0;
 
                 if (!categoryIdByCode.TryGetValue(categoryCode, out categoryId))
@@ -1717,30 +1781,25 @@ namespace Foundation.Scheduler.CodeGeneration
                     }
                 }
 
-                // Parse the date (column 1)
+                //
+                // Parse the date
+                //
                 DateTime transactionDate = DateTime.UtcNow;
-                string dateStr = GetCellString(row, 1);
+                string dateStr = GetCellString(row, dateCol);
 
                 if (!string.IsNullOrEmpty(dateStr))
                 {
                     if (!TryParseFlexibleDate(dateStr, out transactionDate))
                     {
-                        // If we can't parse the date, use a reasonable default
                         transactionDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                     }
                 }
 
-                // Parse description (column 2)
-                string description = GetCellString(row, 2);
-
-                if (string.IsNullOrWhiteSpace(description))
-                {
-                    description = $"{(isRevenue ? "Income" : "Expense")} - Row {rowIndex + 1}";
-                }
-
-                // Parse amount (column 3)
+                //
+                // Parse amount (pre-tax or total depending on sheet)
+                //
                 decimal amount = 0;
-                string amountStr = GetCellString(row, 3);
+                string amountStr = GetCellString(row, amountCol);
 
                 if (!string.IsNullOrEmpty(amountStr))
                 {
@@ -1759,19 +1818,87 @@ namespace Foundation.Scheduler.CodeGeneration
                     continue;
                 }
 
-                // Always store as positive
                 amount = Math.Abs(amount);
 
+                //
+                // Parse tax amount (Expenses only — Income has no separate tax column)
+                //
+                decimal taxAmount = 0;
+
+                if (taxCol >= 0)
+                {
+                    string taxStr = GetCellString(row, taxCol);
+
+                    if (!string.IsNullOrEmpty(taxStr))
+                    {
+                        taxStr = taxStr.Replace("$", "").Replace(",", "").Trim();
+                        decimal.TryParse(taxStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out taxAmount);
+                        taxAmount = Math.Abs(taxAmount);
+                    }
+                }
+
+                //
+                // Calculate total (use the explicit total column if available, otherwise amount + tax)
+                //
+                decimal totalAmount = amount + taxAmount;
+
+                if (totalCol >= 0)
+                {
+                    string totalStr = GetCellString(row, totalCol);
+
+                    if (!string.IsNullOrEmpty(totalStr))
+                    {
+                        totalStr = totalStr.Replace("$", "").Replace(",", "").Trim();
+
+                        if (decimal.TryParse(totalStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal parsedTotal))
+                        {
+                            totalAmount = Math.Abs(parsedTotal);
+                        }
+                    }
+                }
+
+                //
+                // Parse description
+                //
+                string description = "";
+
+                if (descriptionCol >= 0 && descriptionCol < row.Table.Columns.Count)
+                {
+                    description = GetCellString(row, descriptionCol);
+                }
+
+                if (string.IsNullOrWhiteSpace(description))
+                {
+                    description = $"{(isRevenue ? "Income" : "Expense")} - Row {rowIndex + 1}";
+                }
+
+                //
+                // Match the transaction date to a fiscal period
+                //
+                int? fiscalPeriodId = null;
+
+                foreach (FiscalPeriod period in fiscalPeriodList)
+                {
+                    if (transactionDate >= period.startDate && transactionDate <= period.endDate)
+                    {
+                        fiscalPeriodId = period.id;
+                        break;
+                    }
+                }
+
+                //
                 // Create the transaction
+                //
                 FinancialTransaction ft = new FinancialTransaction();
 
                 ft.tenantGuid = PHMCTenantGuid;
                 ft.financialCategoryId = categoryId;
+                ft.fiscalPeriodId = fiscalPeriodId;
                 ft.transactionDate = transactionDate;
                 ft.description = description.Length > 500 ? description.Substring(0, 500) : description;
                 ft.amount = amount;
-                ft.taxAmount = 0;
-                ft.totalAmount = amount;
+                ft.taxAmount = taxAmount;
+                ft.totalAmount = totalAmount;
                 ft.isRevenue = isRevenue;
                 ft.currencyId = currencyId;
                 ft.versionNumber = 0;
@@ -1951,7 +2078,9 @@ namespace Foundation.Scheduler.CodeGeneration
                     continue;
                 }
 
+                //
                 // Build the event name from contact + event description
+                //
                 string eventName = !string.IsNullOrEmpty(eventDesc) ? eventDesc : contactName;
 
                 if (string.IsNullOrWhiteSpace(eventName))
@@ -2075,6 +2204,76 @@ namespace Foundation.Scheduler.CodeGeneration
         }
 
 
+        /// <summary>
+        /// Creates monthly fiscal period records for each year in the given range.
+        /// Periods are aligned to calendar month boundaries (Jan 1 – Dec 31).
+        /// Skips any year that already has periods for this tenant.
+        ///
+        /// AI-generated code.
+        /// </summary>
+        private static int LoadFiscalPeriods(SchedulerContext context, int startYear, int endYear)
+        {
+            int createdCount = 0;
+
+            string[] monthNames = new string[]
+            {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            };
+
+            for (int year = startYear; year <= endYear; year++)
+            {
+                //
+                // Check if periods already exist for this year
+                //
+                int existingCount = context.FiscalPeriods
+                    .Where(fp => fp.tenantGuid == PHMCTenantGuid && fp.fiscalYear == year)
+                    .Count();
+
+                if (existingCount > 0)
+                {
+                    Console.WriteLine($"  Fiscal periods for {year} already exist ({existingCount} found). Skipping.");
+                    continue;
+                }
+
+                //
+                // Create 12 monthly periods aligned with calendar months
+                //
+                for (int month = 1; month <= 12; month++)
+                {
+                    DateTime periodStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    DateTime periodEnd = periodStart.AddMonths(1).AddSeconds(-1);
+
+                    FiscalPeriod fp = new FiscalPeriod();
+
+                    fp.tenantGuid = PHMCTenantGuid;
+                    fp.name = $"{monthNames[month - 1]} {year}";
+                    fp.description = $"{monthNames[month - 1]} {year} fiscal period";
+                    fp.startDate = periodStart;
+                    fp.endDate = periodEnd;
+                    fp.periodType = "Month";
+                    fp.fiscalYear = year;
+                    fp.periodNumber = month;
+                    fp.isClosed = false;
+                    fp.sequence = ((year - startYear) * 12) + month;
+                    fp.versionNumber = 0;
+                    fp.objectGuid = Guid.NewGuid();
+                    fp.active = true;
+                    fp.deleted = false;
+
+                    context.FiscalPeriods.Add(fp);
+                    createdCount++;
+
+                    Console.WriteLine($"    + {fp.name}");
+                }
+
+                context.SaveChanges();
+            }
+
+            return createdCount;
+        }
+
+
         #region Helper Methods
 
         /// <summary>
@@ -2109,8 +2308,13 @@ namespace Foundation.Scheduler.CodeGeneration
                 return "";
             }
 
-            // Handle OLE Automation dates from Excel
-            if (val is double d && columnIndex <= 1)
+            //
+            // Handle OLE Automation dates from Excel.
+            // Excel stores dates as doubles (e.g., 45717.0 = 2025-02-25).  Category
+            // codes are small integers (< 1000), so we use a value threshold to
+            // distinguish dates from numeric codes regardless of column position.
+            //
+            if (val is double d && d > 30000)
             {
                 try
                 {

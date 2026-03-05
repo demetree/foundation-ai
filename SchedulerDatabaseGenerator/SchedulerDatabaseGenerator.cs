@@ -2657,7 +2657,13 @@ You attach the specific Crew/Resource to Event B.";
             scheduledEventTable.AddForeignKeyField(timeZoneTable, true, true);
             scheduledEventTable.AddForeignKeyField("parentScheduledEventId", scheduledEventTable, true, true).AddScriptComments("If populated, this Event is a specific \"Detached\" instance of a Series");
             scheduledEventTable.AddDateTimeField("recurrenceInstanceDate", true).AddScriptComments("The original date this instance represented (crucial for matching with RecurrenceException)");
-            scheduledEventTable.AddNameAndDescriptionFields(true, true, true);
+            //
+            // Name uniqueness is scoped to (tenantGuid, name, startDateTime) instead of the
+            // default (tenantGuid, name).  Multiple events can share a name on different dates
+            // (e.g., recurring "Staff Meeting" or two "Kids Birthday Party" bookings), but
+            // the same name at the exact same start time is a likely duplicate.
+            //
+            scheduledEventTable.AddNameAndDescriptionFields(false, true, true);
             scheduledEventTable.AddBoolField("isAllDay", true, false).AddScriptComments("Whether this is an all day event or not");
             scheduledEventTable.AddDateTimeField("startDateTime", false).AddScriptComments("Inclusive start of the event in UTC").CreateIndex();
             scheduledEventTable.AddDateTimeField("endDateTime", false).AddScriptComments("Exclusive end of the event in UTC").CreateIndex();
@@ -2685,6 +2691,7 @@ You attach the specific Crew/Resource to Event B.";
             scheduledEventTable.canBeFavourited = true;
 
             scheduledEventTable.CreateIndexForFields(new List<string> { "tenantGuid", "startDateTime", "endDateTime" });
+            scheduledEventTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "name", "startDateTime" }, false);
 
 
             Database.Table chargeStatusTable = database.AddTable("ChargeStatus");
