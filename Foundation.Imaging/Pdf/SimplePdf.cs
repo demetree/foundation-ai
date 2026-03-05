@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-namespace BMC.LDraw.Render
+namespace Foundation.Imaging.Pdf
 {
     /// <summary>
     /// Minimal PDF 1.4 document writer — zero external dependencies.
@@ -26,6 +26,8 @@ namespace BMC.LDraw.Render
     ///   page.DrawText("Hello", SimplePdfFont.Bold, 32, 100, 100, 255, 255, 255);
     ///   page.DrawImage(pngBytes, 50, 200, 200, 150);
     ///   byte[] pdf = doc.Save();
+    ///
+    /// Relocated from BMC.LDraw.Render to Foundation.Imaging for cross-system reuse.
     /// </summary>
     public class SimplePdfDocument : IDisposable
     {
@@ -107,7 +109,7 @@ namespace BMC.LDraw.Render
             // Info
             WriteObj(writer, infoId,
                 $"<< /Title ({PdfEscape(_title)}) /Author ({PdfEscape(_author)}) " +
-                $"/Creator (BMC Manual Generator) /Producer (SimplePdf) >>");
+                $"/Creator (Foundation.Imaging) /Producer (SimplePdf) >>");
 
             // Fonts
             WriteObj(writer, fontHelveticaId,

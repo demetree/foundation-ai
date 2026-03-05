@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace BMC.LDraw.Render
+namespace Foundation.Imaging.Encoders
 {
     /// <summary>
     /// Minimal GIF89a encoder for animated GIFs from RGBA frames.
@@ -12,6 +12,8 @@ namespace BMC.LDraw.Render
     /// then LZW-compresses each frame per the GIF spec.
     ///
     /// No external dependencies.
+    ///
+    /// Relocated from BMC.LDraw.Render to Foundation.Imaging for cross-system reuse.
     /// </summary>
     public class GifEncoder
     {

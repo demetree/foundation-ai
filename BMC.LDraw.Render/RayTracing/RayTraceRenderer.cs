@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using BMC.LDraw.Models;
 using BMC.LDraw.Render;
+using Foundation.Imaging.Processing;
 
 namespace BMC.LDraw.Render.RayTracing
 {

@@ -116,6 +116,27 @@ namespace Foundation.BMC.Services
                     Directory.CreateDirectory(cachePath);
                     ImportState bootState = await LoadStateAsync(cachePath).ConfigureAwait(false);
 
+                    //
+                    // Safety net: if the state file says bootstrap is done but the
+                    // database is effectively empty, the database was probably deleted
+                    // without cleaning the cache folder.  Reset and re-bootstrap.
+                    //
+                    if (bootState.BootstrapComplete == true)
+                    {
+                        bool dbEmpty = await IsDatabaseEmptyAsync(stoppingToken).ConfigureAwait(false);
+
+                        if (dbEmpty)
+                        {
+                            _logger.LogWarning(
+                                "{Prefix} State file says bootstrap is complete, but database is empty — resetting bootstrap flag.",
+                                LOG_PREFIX
+                            );
+                            bootState.BootstrapComplete = false;
+                            bootState.CompletedSteps.Clear();
+                            await SaveStateAsync(cachePath, bootState).ConfigureAwait(false);
+                        }
+                    }
+
                     if (bootState.BootstrapComplete == false)
                     {
                         int completedCount = bootState.CompletedSteps.Count;
@@ -206,6 +227,33 @@ namespace Foundation.BMC.Services
                     _logger.LogError(ex, "{Prefix} Import cycle failed — will retry next cycle.", LOG_PREFIX);
                 }
             }
+        }
+
+
+        /// <summary>
+        /// AI-developed: Checks whether the database is effectively empty.
+        /// Uses BrickParts count as the indicator — if Rebrickable import has run,
+        /// there should be 50,000+ parts.
+        /// Used as a safety net to detect a wiped database when the state file
+        /// still claims bootstrap is complete.
+        /// </summary>
+        private async Task<bool> IsDatabaseEmptyAsync(CancellationToken ct)
+        {
+            using IServiceScope scope = _scopeFactory.CreateScope();
+
+            BMCContext context = scope.ServiceProvider.GetRequiredService<BMCContext>();
+
+            int partCount = await context.BrickParts
+                .CountAsync(ct)
+                .ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "{Prefix} Database check: {Count} parts in BrickParts table.",
+                LOG_PREFIX, partCount
+            );
+
+            // Threshold of 100 — a handful of manually-added parts doesn't count as "populated"
+            return partCount < 100;
         }
 
 

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using BMC.LDraw.Models;
 using BMC.LDraw.Parsers;
+using Foundation.Imaging;
+using Foundation.Imaging.Processing;
 
 namespace BMC.LDraw.Render
 {

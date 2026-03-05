@@ -1,6 +1,6 @@
 using System;
 
-namespace BMC.LDraw.Render
+namespace Foundation.Imaging.Processing
 {
     /// <summary>
     /// HDR-to-LDR tone mapping and gamma correction utilities.
@@ -9,6 +9,8 @@ namespace BMC.LDraw.Render
     /// colour values.  ACES filmic tone mapping compresses the dynamic range
     /// so that bright highlights roll off naturally instead of hard-clamping,
     /// and sRGB gamma makes mid-tones look correct on standard displays.
+    ///
+    /// Relocated from BMC.LDraw.Render to Foundation.Imaging for cross-system reuse.
     /// </summary>
     public static class ToneMapper
     {

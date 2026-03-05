@@ -1,4 +1,5 @@
 using BMC.LDraw.Models;
+using Foundation.Imaging.Encoders;
 using System.IO;
 
 namespace BMC.LDraw.Render

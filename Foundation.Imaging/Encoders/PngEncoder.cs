@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 
-namespace BMC.LDraw.Render
+namespace Foundation.Imaging.Encoders
 {
     /// <summary>
     /// Minimal PNG encoder for RGBA pixel data.
@@ -10,6 +10,8 @@ namespace BMC.LDraw.Render
     /// Writes a valid PNG file from raw RGBA byte arrays without any
     /// external dependencies — uses .NET's built-in ZLibStream for
     /// DEFLATE compression and manual CRC32 for chunk checksums.
+    ///
+    /// Relocated from BMC.LDraw.Render to Foundation.Imaging for cross-system reuse.
     /// </summary>
     public static class PngEncoder
     {

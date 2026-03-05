@@ -1,12 +1,13 @@
 using System;
 
-namespace BMC.LDraw.Render
+namespace Foundation.Imaging.Processing
 {
     /// <summary>
-    /// Post-processing utilities for the rendered framebuffer.
+    /// Post-processing utilities for RGBA pixel buffers.
     ///
     /// Currently provides SSAA (Super-Sample Anti-Aliasing) downsampling using a box filter.
     ///
+    /// Relocated from BMC.LDraw.Render to Foundation.Imaging for cross-system reuse.
     /// AI-generated — Feb 2026 (Phase 2.2).
     /// </summary>
     public static class PostProcess

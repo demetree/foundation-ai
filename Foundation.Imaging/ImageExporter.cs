@@ -1,6 +1,7 @@
 using System.IO;
+using Foundation.Imaging.Encoders;
 
-namespace BMC.LDraw.Render
+namespace Foundation.Imaging
 {
     /// <summary>
     /// Exports an RGBA pixel buffer to image files (PNG, WebP) using pure .NET encoders.
@@ -8,6 +9,8 @@ namespace BMC.LDraw.Render
     /// Replaces the original ImageSharp-based exporter.
     /// PNG uses a custom ZLib-based encoder.
     /// WebP "format" falls back to PNG output for compatibility (lossless, perfect quality).
+    ///
+    /// Relocated from BMC.LDraw.Render to Foundation.Imaging for cross-system reuse.
     /// </summary>
     public static class ImageExporter
     {
