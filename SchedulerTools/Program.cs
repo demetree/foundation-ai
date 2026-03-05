@@ -1415,6 +1415,15 @@ namespace Foundation.Scheduler.CodeGeneration
         /// <summary>
         /// Reads the 'Events Code' sheet from Rec_Finances.xls and creates FinancialCategory records.
         /// Returns a dictionary mapping category codes to their database IDs.
+        ///
+        /// Sheet layout (columns 0-1 are always empty):
+        ///   Column 2: Category name (e.g., "Rec Centre Rental - Baby")
+        ///   Column 3: Code number (e.g., 11)
+        ///
+        /// Revenue categories appear first, followed by an "Expenses" header row,
+        /// then expense categories.
+        ///
+        /// AI-generated code.
         /// </summary>
         private static Dictionary<string, int> LoadFinancialCategories(
             SchedulerContext context,
@@ -1423,7 +1432,9 @@ namespace Foundation.Scheduler.CodeGeneration
         {
             Dictionary<string, int> result = new Dictionary<string, int>();
 
+            //
             // Check if categories already exist for this tenant
+            //
             int existingCount = context.FinancialCategories
                 .Where(fc => fc.tenantGuid == PHMCTenantGuid)
                 .Count();
@@ -1449,7 +1460,9 @@ namespace Foundation.Scheduler.CodeGeneration
 
             DataSet ds = ReadExcelFile(financesFilePath);
 
+            //
             // Find the 'Events Code' sheet
+            //
             DataTable eventsCodeSheet = null;
 
             foreach (DataTable dt in ds.Tables)
@@ -1471,127 +1484,79 @@ namespace Foundation.Scheduler.CodeGeneration
             Console.WriteLine($"  Reading sheet: {eventsCodeSheet.TableName} ({eventsCodeSheet.Rows.Count} rows)");
 
             //
-            // The Events Code sheet has revenue codes and expense codes.
-            // Typical layout:
-            //   Column 0: Revenue code number
-            //   Column 1: Revenue description
-            //   Column 2: (gap or heading)
-            //   Column 3: Expense code number
-            //   Column 4: Expense description
-            //
-            // We parse both sides.
+            // Parse: column 2 = category name, column 3 = code number.
+            // Revenue entries appear first, then an "Expenses" section header, then expenses.
             //
             int sequence = 1;
-            bool headerSkipped = false;
+            bool isExpenseSection = false;
 
             foreach (DataRow row in eventsCodeSheet.Rows)
             {
-                // Skip header row(s)
-                if (!headerSkipped)
+                string col2 = GetCellString(row, 2);
+                string col3 = GetCellString(row, 3);
+
+                if (string.IsNullOrWhiteSpace(col2) && string.IsNullOrWhiteSpace(col3))
                 {
-                    string firstCell = row[0]?.ToString()?.Trim() ?? "";
-
-                    if (firstCell.Contains("Revenue", StringComparison.OrdinalIgnoreCase) ||
-                        firstCell.Contains("Code", StringComparison.OrdinalIgnoreCase) ||
-                        firstCell.Contains("Event", StringComparison.OrdinalIgnoreCase))
-                    {
-                        headerSkipped = true;
-                        continue;
-                    }
-
-                    // If first cell is a number, it's data — don't skip
-                    if (double.TryParse(firstCell, out _))
-                    {
-                        headerSkipped = true;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
-                // Revenue side (columns 0-1)
-                string revCode = GetCellString(row, 0);
-                string revName = GetCellString(row, 1);
-
-                if (!string.IsNullOrEmpty(revCode) && !string.IsNullOrEmpty(revName))
+                //
+                // Detect the section boundary
+                //
+                if (col2.Equals("Expenses", StringComparison.OrdinalIgnoreCase))
                 {
-                    string cleanCode = revCode.Replace(".0", "").Trim();
-
-                    if (!result.ContainsKey(cleanCode))
-                    {
-                        FinancialCategory fc = new FinancialCategory();
-
-                        fc.tenantGuid = PHMCTenantGuid;
-                        fc.code = cleanCode;
-                        fc.name = revName.Trim();
-                        fc.description = $"Revenue: {revName.Trim()}";
-                        fc.isRevenue = true;
-                        fc.isTaxApplicable = false;
-                        fc.sequence = sequence++;
-                        fc.versionNumber = 0;
-                        fc.objectGuid = Guid.NewGuid();
-                        fc.active = true;
-                        fc.deleted = false;
-
-                        context.FinancialCategories.Add(fc);
-                        context.SaveChanges();
-
-                        result[cleanCode] = fc.id;
-
-                        Console.WriteLine($"    + Revenue [{cleanCode}] {revName.Trim()}");
-                    }
+                    isExpenseSection = true;
+                    continue;
                 }
 
-                // Expense side (columns 3-4, or 2-3 depending on sheet layout)
-                // Try columns 3-4 first, then fall back to 2-3
-                string expCode = null;
-                string expName = null;
-                int expCodeCol = -1;
-
-                if (row.Table.Columns.Count > 4)
+                if (col2.Equals("Revenue", StringComparison.OrdinalIgnoreCase))
                 {
-                    expCode = GetCellString(row, 3);
-                    expName = GetCellString(row, 4);
-                    expCodeCol = 3;
+                    isExpenseSection = false;
+                    continue;
                 }
 
-                if (string.IsNullOrEmpty(expCode) && row.Table.Columns.Count > 3)
+                // Need both a name and a code
+                if (string.IsNullOrWhiteSpace(col2) || string.IsNullOrWhiteSpace(col3))
                 {
-                    expCode = GetCellString(row, 2);
-                    expName = GetCellString(row, 3);
-                    expCodeCol = 2;
+                    continue;
                 }
 
-                if (!string.IsNullOrEmpty(expCode) && !string.IsNullOrEmpty(expName))
+                string categoryName = col2.Trim();
+                string categoryCode = col3.Replace(".0", "").Trim();
+
+                // Normalize to integer string
+                if (double.TryParse(categoryCode, out double codeNum))
                 {
-                    string cleanCode = expCode.Replace(".0", "").Trim();
-
-                    // Only process if it looks like a numeric code
-                    if (double.TryParse(cleanCode, out _) && !result.ContainsKey(cleanCode))
-                    {
-                        FinancialCategory fc = new FinancialCategory();
-
-                        fc.tenantGuid = PHMCTenantGuid;
-                        fc.code = cleanCode;
-                        fc.name = expName.Trim();
-                        fc.description = $"Expense: {expName.Trim()}";
-                        fc.isRevenue = false;
-                        fc.isTaxApplicable = false;
-                        fc.sequence = sequence++;
-                        fc.versionNumber = 0;
-                        fc.objectGuid = Guid.NewGuid();
-                        fc.active = true;
-                        fc.deleted = false;
-
-                        context.FinancialCategories.Add(fc);
-                        context.SaveChanges();
-
-                        result[cleanCode] = fc.id;
-
-                        Console.WriteLine($"    + Expense [{cleanCode}] {expName.Trim()}");
-                    }
+                    categoryCode = ((int)codeNum).ToString();
                 }
+
+                if (result.ContainsKey(categoryCode))
+                {
+                    continue;
+                }
+
+                bool isRevenue = !isExpenseSection;
+
+                FinancialCategory fc = new FinancialCategory();
+
+                fc.tenantGuid = PHMCTenantGuid;
+                fc.code = categoryCode;
+                fc.name = categoryName;
+                fc.description = $"{(isRevenue ? "Revenue" : "Expense")}: {categoryName}";
+                fc.isRevenue = isRevenue;
+                fc.isTaxApplicable = false;
+                fc.sequence = sequence++;
+                fc.versionNumber = 0;
+                fc.objectGuid = Guid.NewGuid();
+                fc.active = true;
+                fc.deleted = false;
+
+                context.FinancialCategories.Add(fc);
+                context.SaveChanges();
+
+                result[categoryCode] = fc.id;
+
+                Console.WriteLine($"    + {(isRevenue ? "Revenue" : "Expense")} [{categoryCode}] {categoryName}");
             }
 
             return result;
