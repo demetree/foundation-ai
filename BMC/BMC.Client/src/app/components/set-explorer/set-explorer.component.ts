@@ -88,11 +88,13 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
         public ownershipCache: SetOwnershipCacheService,
         public comparisonService: SetComparisonService
     ) {
-        this.ownershipCache.ensureLoaded();
-        this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$))
-            .subscribe(ids => this.ownedIds = ids);
-        this.ownershipCache.wantedIds$.pipe(takeUntil(this.destroy$))
-            .subscribe(ids => this.wantedIds = ids);
+        if (this.authService.isLoggedIn) {
+            this.ownershipCache.ensureLoaded();
+            this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$))
+                .subscribe(ids => this.ownedIds = ids);
+            this.ownershipCache.wantedIds$.pipe(takeUntil(this.destroy$))
+                .subscribe(ids => this.wantedIds = ids);
+        }
     }
 
 
@@ -170,7 +172,9 @@ export class SetExplorerComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.loadUserThemes();
+        if (this.authService.isLoggedIn) {
+            this.loadUserThemes();
+        }
     }
 
 

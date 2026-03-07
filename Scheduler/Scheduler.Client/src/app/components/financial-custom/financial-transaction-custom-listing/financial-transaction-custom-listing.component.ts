@@ -6,6 +6,8 @@ import { FinancialTransactionService, FinancialTransactionData } from '../../../
 import { FinancialCategoryService, FinancialCategoryData } from '../../../scheduler-data-services/financial-category.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
+import { FinancialTransactionAddEditComponent } from '../../../scheduler-data-components/financial-transaction/financial-transaction-add-edit/financial-transaction-add-edit.component';
 import { Router } from '@angular/router';
 
 
@@ -39,15 +41,22 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
 
     private debounceTimeout: any;
 
+    // Office filter
+    public offices: FinancialOfficeData[] = [];
+    public selectedOfficeId: number | null = null;
+
     constructor(
         private transactionService: FinancialTransactionService,
         private categoryService: FinancialCategoryService,
+        private financialOfficeService: FinancialOfficeService,
         private alertService: AlertService,
         private authService: AuthService,
         private navigationService: NavigationService,
         private breakpointObserver: BreakpointObserver,
         private router: Router
     ) { }
+
+    @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionAddEditComponent;
 
 
     ngOnInit(): void {
@@ -59,6 +68,7 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
 
         this.loadData();
         this.loadCategories();
+        this.loadOffices();
     }
 
 
@@ -100,8 +110,31 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
     }
 
 
+    private loadOffices(): void {
+        this.financialOfficeService.GetFinancialOfficeList({
+            active: true,
+            deleted: false,
+            pageSize: 100
+        }).subscribe({
+            next: (data: FinancialOfficeData[] | null) => {
+                this.offices = data ?? [];
+            }
+        });
+    }
+
+
+    public onOfficeChange(): void {
+        this.applyFiltersAndSort();
+    }
+
+
     public applyFiltersAndSort(): void {
         let result = [...this.transactions];
+
+        // Office filter
+        if (this.selectedOfficeId !== null) {
+            result = result.filter(t => Number(t.financialOfficeId) === this.selectedOfficeId);
+        }
 
         // Type filter
         if (this.filterType === 'income') {
@@ -121,7 +154,7 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
             result = result.filter(t =>
                 (t.description && t.description.toLowerCase().includes(search)) ||
                 (t.referenceNumber && t.referenceNumber.toLowerCase().includes(search)) ||
-                (t.paymentMethod && t.paymentMethod.toLowerCase().includes(search)) ||
+                (t.paymentType && t.paymentType.name && t.paymentType.name.toLowerCase().includes(search)) ||
                 (t.notes && t.notes.toLowerCase().includes(search)) ||
                 (t.financialCategory && t.financialCategory.name && t.financialCategory.name.toLowerCase().includes(search))
             );
@@ -207,5 +240,27 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
 
     public trackById(index: number, item: FinancialTransactionData): number {
         return Number(item.id);
+    }
+
+
+    public addTransaction(): void {
+        if (this.txAddEdit) {
+            this.txAddEdit.preSeededData = {
+                financialOfficeId: this.selectedOfficeId
+            };
+            this.txAddEdit.openModal();
+        }
+    }
+
+
+    public editTransaction(tx: FinancialTransactionData): void {
+        if (this.txAddEdit) {
+            this.txAddEdit.openModal(tx);
+        }
+    }
+
+
+    public onTransactionChanged(): void {
+        this.loadData();
     }
 }

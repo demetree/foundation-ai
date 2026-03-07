@@ -4,20 +4,23 @@
 </div>
 
 <ngx-toasta></ngx-toasta>
+<app-auth-nudge-modal></app-auth-nudge-modal>
 
 <!-- Desktop Layout -->
 <div *ngIf="!isMobile && isAppLoaded" class="app-layout">
-    <app-header [isUserLoggedIn]="isUserLoggedIn && !isOnLoginPage" (invokeLogout)="logout()"></app-header>
+    <app-header *ngIf="(isUserLoggedIn || isOnPublicBrowsePage) && !isOnLoginPage" [isUserLoggedIn]="isUserLoggedIn"
+        (invokeLogout)="logout()"></app-header>
     <app-matrix-rain></app-matrix-rain>
 
     <div class="app-body">
-        <app-sidebar *ngIf="isUserLoggedIn && !isOnLoginPage" [isCollapsed]="isSidebarCollapsed"
-            (toggleCollapse)="onSidebarToggle($event)">
+        <app-sidebar *ngIf="(isUserLoggedIn || isOnPublicBrowsePage) && !isOnLoginPage"
+            [isCollapsed]="isSidebarCollapsed" (toggleCollapse)="onSidebarToggle($event)">
         </app-sidebar>
 
-        <main class="app-main" [class.sidebar-expanded]="isUserLoggedIn && !isOnLoginPage && !isSidebarCollapsed"
-            [class.sidebar-collapsed]="isUserLoggedIn && !isOnLoginPage && isSidebarCollapsed"
-            [class.no-sidebar]="!isUserLoggedIn || isOnLoginPage">
+        <main class="app-main"
+            [class.sidebar-expanded]="(isUserLoggedIn || isOnPublicBrowsePage) && !isOnLoginPage && !isSidebarCollapsed"
+            [class.sidebar-collapsed]="(isUserLoggedIn || isOnPublicBrowsePage) && !isOnLoginPage && isSidebarCollapsed"
+            [class.no-sidebar]="!(isUserLoggedIn || isOnPublicBrowsePage) || isOnLoginPage">
             <router-outlet></router-outlet>
         </main>
     </div>
@@ -26,7 +29,8 @@
 
 <!-- Mobile Layout -->
 <div *ngIf="isMobile && isAppLoaded" class="app-layout">
-    <app-header [isUserLoggedIn]="isUserLoggedIn && !isOnLoginPage" (invokeLogout)="logout()"></app-header>
+    <app-header *ngIf="(isUserLoggedIn || isOnPublicBrowsePage) && !isOnLoginPage" [isUserLoggedIn]="isUserLoggedIn"
+        (invokeLogout)="logout()"></app-header>
     <main class="app-main-mobile">
         <router-outlet></router-outlet>
     </main>

@@ -1,5 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ToastaService, ToastaConfig, ToastOptions, ToastData } from 'ngx-toasta';
 
 import { AlertService, AlertCommand, MessageSeverity } from './services/alert.service';
@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
     isAppLoaded = false;
     isUserLoggedIn = false;
     isOnLoginPage = false;
+    isOnPublicBrowsePage = false;
     appTitle = 'BMC';
     isMobile = false;
     isSidebarCollapsed = false;
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit {
         private authService: AuthService,
         public configurations: ConfigurationService,
         public router: Router,
+        private activatedRoute: ActivatedRoute,
         private localStorage: LocalStoreManager,
     ) {
         this.toastaConfig.theme = 'bootstrap';
@@ -73,10 +75,17 @@ export class AppComponent implements OnInit {
             }
         });
 
-        // Toggle body background and track login page state for layout visibility
+        // Toggle body background and track page state for layout visibility
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.isOnLoginPage = (event.urlAfterRedirects === '/login' || event.urlAfterRedirects === '/');
+
+                // Detect public browse routes via route data marker
+                let route = this.activatedRoute;
+                while (route.firstChild) {
+                    route = route.firstChild;
+                }
+                this.isOnPublicBrowsePage = route.snapshot.data['publicRoute'] === true;
 
                 if (this.isOnLoginPage) {
                     document.body.className = 'pre-login-background no-select';

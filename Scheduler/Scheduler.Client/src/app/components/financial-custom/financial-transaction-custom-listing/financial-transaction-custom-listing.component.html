@@ -18,6 +18,10 @@
             </div>
 
             <div class="header-right">
+                <!-- New Transaction -->
+                <button class="btn btn-sm btn-glass me-2" (click)="addTransaction()">
+                    <i class="fa-solid fa-plus me-1"></i> New Transaction
+                </button>
                 <!-- Type Filter Tabs -->
                 <div class="btn-group me-3">
                     <button class="btn btn-sm" [ngClass]="filterType === 'all' ? 'btn-glass-active' : 'btn-glass'"
@@ -35,6 +39,13 @@
                             expenseCount }}</span>
                     </button>
                 </div>
+
+                <!-- Office Filter -->
+                <select class="form-select form-select-sm glass-select me-2" *ngIf="offices.length > 1"
+                    [(ngModel)]="selectedOfficeId" (ngModelChange)="onOfficeChange()" style="max-width: 180px;">
+                    <option [ngValue]="null">All Offices</option>
+                    <option *ngFor="let office of offices" [ngValue]="office.id">{{ office.name }}</option>
+                </select>
 
                 <!-- Category Filter -->
                 <select class="form-select form-select-sm glass-select me-2" [(ngModel)]="filterCategoryId"
@@ -102,7 +113,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let tx of filteredTransactions; trackBy: trackById" class="tx-row">
+                    <tr *ngFor="let tx of filteredTransactions; trackBy: trackById" class="tx-row"
+                        (click)="editTransaction(tx)" style="cursor: pointer;">
                         <td class="ps-4">
                             <span class="fw-medium">{{ tx.transactionDate | date:'mediumDate' }}</span>
                         </td>
@@ -116,7 +128,7 @@
                             <div class="text-truncate" style="max-width: 300px;">{{ tx.description }}</div>
                         </td>
                         <td>
-                            <span class="text-muted small">{{ tx.paymentMethod || '—' }}</span>
+                            <span class="text-muted small">{{ tx.paymentType?.name || '—' }}</span>
                         </td>
                         <td>
                             <span class="text-muted small">{{ tx.referenceNumber || '—' }}</span>
@@ -165,3 +177,9 @@
     </div>
 
 </div>
+
+<!-- Transaction Add/Edit Modal -->
+<app-financial-transaction-add-edit #txAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
+    [hiddenFields]="['exportedDate', 'externalId', 'externalSystemName', 'versionNumber', 'active', 'deleted']"
+    (financialTransactionChanged)="onTransactionChanged()">
+</app-financial-transaction-add-edit>

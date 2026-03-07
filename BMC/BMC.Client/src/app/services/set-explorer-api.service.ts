@@ -66,15 +66,20 @@ export class SetExplorerApiService extends SecureEndpointBase {
      * Fetches fresh data from the server, bypassing the IndexedDB cache.
      */
     private fetchFromServer(): Observable<SetExplorerItem[]> {
-        const url = this.baseUrl + 'api/set-explorer';
-        const headers = new HttpHeaders({
-            Authorization: 'Bearer ' + this.authService.accessToken
-        });
-
-        return this.http.get<SetExplorerItem[]>(url, { headers }).pipe(
-            catchError(error => {
-                return this.handleError(error, () => this.fetchFromServer());
-            })
-        );
+        if (this.authService.isLoggedIn) {
+            const url = this.baseUrl + 'api/set-explorer';
+            const headers = new HttpHeaders({
+                Authorization: 'Bearer ' + this.authService.accessToken
+            });
+            return this.http.get<SetExplorerItem[]>(url, { headers }).pipe(
+                catchError(error => this.handleError(error, () => this.fetchFromServer()))
+            );
+        } else {
+            const url = this.baseUrl + 'api/public/browse/sets';
+            return this.http.get<SetExplorerItem[]>(url).pipe(
+                catchError(error => this.handleError(error, () => this.fetchFromServer()))
+            );
+        }
     }
 }
+

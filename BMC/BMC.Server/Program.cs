@@ -332,6 +332,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(MyPartListsController));
                 controllers.Add(typeof(MyLostPartsController));
                 controllers.Add(typeof(BrickbergController));
+                controllers.Add(typeof(PublicBrowseController));
 
                 //
                 // Start of code generated controller list for BMC module

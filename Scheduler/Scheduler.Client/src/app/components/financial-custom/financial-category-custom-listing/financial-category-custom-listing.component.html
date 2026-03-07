@@ -18,6 +18,10 @@
             </div>
 
             <div class="header-right">
+                <!-- New Category -->
+                <button class="btn btn-sm btn-glass me-2" (click)="addCategory()">
+                    <i class="fa-solid fa-plus me-1"></i> New Category
+                </button>
                 <!-- Type Filter Tabs -->
                 <div class="btn-group me-3">
                     <button class="btn btn-sm" [ngClass]="filterType === 'all' ? 'btn-glass-active' : 'btn-glass'"
@@ -33,6 +37,13 @@
                         Expense <span class="badge badge-glass-sm ms-1">{{ expenseCount }}</span>
                     </button>
                 </div>
+
+                <!-- Office Filter -->
+                <select class="form-select form-select-sm glass-select me-2" *ngIf="offices.length > 1"
+                    [(ngModel)]="selectedOfficeId" (ngModelChange)="onOfficeChange()" style="max-width: 180px;">
+                    <option [ngValue]="null">All Offices</option>
+                    <option *ngFor="let office of offices" [ngValue]="office.id">{{ office.name }}</option>
+                </select>
 
                 <!-- Search -->
                 <div class="search-bar position-relative">
@@ -88,7 +99,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let cat of filteredCategories; trackBy: trackById" class="cat-row">
+                    <tr *ngFor="let cat of filteredCategories; trackBy: trackById" class="cat-row"
+                        (click)="editCategory(cat)" style="cursor: pointer;">
                         <td class="ps-4">
                             <span class="fw-bold text-monospace">{{ cat.code }}</span>
                         </td>
@@ -104,8 +116,9 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge account-type-badge" [ngStyle]="getAccountTypeStyle(cat.accountType)">
-                                {{ cat.accountType }}
+                            <span class="badge account-type-badge"
+                                [ngStyle]="getAccountTypeStyle(cat.accountType?.name || '')">
+                                {{ cat.accountType?.name }}
                             </span>
                         </td>
                         <td class="text-center">
@@ -120,8 +133,9 @@
                         </td>
                         <td class="pe-4">
                             <span class="direction-indicator"
-                                [ngClass]="cat.isRevenue ? 'text-success' : 'text-danger'">
-                                <i [ngClass]="cat.isRevenue ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'"></i>
+                                [ngClass]="cat.accountType?.isRevenue ? 'text-success' : 'text-danger'">
+                                <i
+                                    [ngClass]="cat.accountType?.isRevenue ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'"></i>
                             </span>
                         </td>
                     </tr>
@@ -146,8 +160,8 @@
                         <span class="fw-medium">{{ cat.name }}</span>
                         <div class="mt-1">
                             <span class="badge account-type-badge me-1"
-                                [ngStyle]="getAccountTypeStyle(cat.accountType)">
-                                {{ cat.accountType }}
+                                [ngStyle]="getAccountTypeStyle(cat.accountType?.name || '')">
+                                {{ cat.accountType?.name }}
                             </span>
                             <span class="badge" *ngIf="cat.isTaxApplicable"
                                 style="background: rgba(16,185,129,0.1); color: #059669;">
@@ -155,9 +169,10 @@
                             </span>
                         </div>
                     </div>
-                    <span class="direction-indicator" [ngClass]="cat.isRevenue ? 'text-success' : 'text-danger'">
-                        <i [ngClass]="cat.isRevenue ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'"
-                            [ngbTooltip]="cat.isRevenue ? 'Revenue' : 'Expense'"></i>
+                    <span class="direction-indicator"
+                        [ngClass]="cat.accountType?.isRevenue ? 'text-success' : 'text-danger'">
+                        <i [ngClass]="cat.accountType?.isRevenue ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'"
+                            [ngbTooltip]="cat.accountType?.isRevenue ? 'Revenue' : 'Expense'"></i>
                     </span>
                 </div>
             </div>
@@ -165,3 +180,9 @@
     </div>
 
 </div>
+
+<!-- Category Add/Edit Modal -->
+<app-financial-category-add-edit #catAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
+    [hiddenFields]="['externalAccountId', 'versionNumber', 'active', 'deleted']"
+    (financialCategoryChanged)="onCategoryChanged()">
+</app-financial-category-add-edit>

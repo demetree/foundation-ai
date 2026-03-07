@@ -44,6 +44,24 @@
     <!-- Dashboard Content -->
     <ng-container *ngIf="!isLoading">
 
+        <!-- Office Picker -->
+        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap" *ngIf="offices.length > 1">
+            <small class="text-muted fw-semibold text-uppercase me-1">
+                <i class="fa-solid fa-building me-1"></i>Office:
+            </small>
+            <button class="btn btn-sm office-pill"
+                [ngClass]="selectedOfficeId === null ? 'office-pill-active' : 'office-pill-inactive'"
+                (click)="onOfficeChange(null)">
+                All Offices
+            </button>
+            <button *ngFor="let office of offices" class="btn btn-sm office-pill"
+                [ngClass]="selectedOfficeId === $any(office.id) ? 'office-pill-active' : 'office-pill-inactive'"
+                [style.--office-color]="office.color || '#6b7280'" (click)="onOfficeChange($any(office.id))">
+                <span class="office-dot me-1" [style.background]="office.color || '#6b7280'"></span>
+                {{ office.name }}
+            </button>
+        </div>
+
         <!-- Summary Cards Row -->
         <div class="row g-3 mb-4">
 

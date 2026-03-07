@@ -90,37 +90,49 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
             icon: 'fas fa-cube',
             title: 'Parts Catalog',
             description: 'Browse 79,000+ unique brick parts with detailed specifications, colours, and categories.',
-            gradient: 'gradient-red'
-        },
-        {
-            icon: 'fas fa-paint-brush',
-            title: 'Part Renderer',
-            description: 'Render any part in any colour with our software and ray-trace engines. Studio-quality images.',
-            gradient: 'gradient-blue'
-        },
-        {
-            icon: 'fas fa-book-open',
-            title: 'Manual Generator',
-            description: 'Generate step-by-step build instructions for your custom MOC designs.',
-            gradient: 'gradient-green'
+            gradient: 'gradient-red',
+            route: '/parts',
+            requiresAuth: false
         },
         {
             icon: 'fas fa-box-open',
             title: 'Set Explorer',
             description: 'Every LEGO set ever made. Search, filter, and discover across decades of bricks.',
-            gradient: 'gradient-orange'
+            gradient: 'gradient-orange',
+            route: '/lego/sets',
+            requiresAuth: false
         },
         {
-            icon: 'fas fa-users',
-            title: 'Community',
-            description: 'Share your builds, earn achievements, and connect with fellow LEGO enthusiasts.',
-            gradient: 'gradient-purple'
+            icon: 'fas fa-globe',
+            title: 'LEGO Universe',
+            description: 'Explore the full LEGO ecosystem — themes, minifigs, colours, and a galactic parts universe.',
+            gradient: 'gradient-purple',
+            route: '/lego',
+            requiresAuth: false
+        },
+        {
+            icon: 'fas fa-paint-brush',
+            title: 'Part Renderer',
+            description: 'Render any part in any colour with our software and ray-trace engines. Studio-quality images.',
+            gradient: 'gradient-blue',
+            route: '/login',
+            requiresAuth: true
+        },
+        {
+            icon: 'fas fa-book-open',
+            title: 'Manual Generator',
+            description: 'Generate step-by-step build instructions for your custom MOC designs.',
+            gradient: 'gradient-green',
+            route: '/login',
+            requiresAuth: true
         },
         {
             icon: 'fas fa-robot',
             title: 'AI Assistant',
             description: 'Get intelligent help with part identification, build suggestions, and more.',
-            gradient: 'gradient-teal'
+            gradient: 'gradient-teal',
+            route: '/login',
+            requiresAuth: true
         }
     ];
 
@@ -240,10 +252,24 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
     }
 
 
-    /// Navigate to login with a returnUrl pointing to the set detail page
+    goToBrowse(): void {
+        this.router.navigate(['/lego']);
+    }
+
+
+    goToFeature(feature: any): void {
+        this.router.navigate([feature.route]);
+    }
+
+
+    /// Navigate directly to the set detail page (now publicly accessible)
     goToSetDetail(set: FeaturedSet): void {
-        this.router.navigate(['/login'], {
-            queryParams: { returnUrl: '/lego/sets/' + set.id }
-        });
+        this.router.navigate(['/lego/sets', set.id]);
+    }
+
+
+    /// Navigate to the set explorer (for decade browsing)
+    goToSetExplorer(): void {
+        this.router.navigate(['/lego/sets']);
     }
 }

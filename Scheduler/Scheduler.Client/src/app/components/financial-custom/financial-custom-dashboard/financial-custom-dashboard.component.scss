@@ -273,3 +273,42 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 .min-width-0 {
     min-width: 0;
 }
+
+
+//
+// Office Picker Pills
+//
+.office-pill {
+    border-radius: 20px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.office-pill-active {
+    background: var(--bs-primary, #3b82f6);
+    color: white;
+    border-color: var(--bs-primary, #3b82f6);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
+
+.office-pill-inactive {
+    background: rgba(0, 0, 0, 0.04);
+    color: #6b7280;
+    border-color: rgba(0, 0, 0, 0.08);
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.08);
+        color: #374151;
+    }
+}
+
+.office-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    vertical-align: middle;
+}

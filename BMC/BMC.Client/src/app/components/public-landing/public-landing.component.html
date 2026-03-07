@@ -39,12 +39,11 @@
             </p>
 
             <div class="hero-cta">
-                <button class="cta-primary" (click)="goToLogin()">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
+                <button class="cta-primary" (click)="goToBrowse()">
+                    <i class="fas fa-compass"></i> Browse Now
                 </button>
-                <button class="cta-secondary" disabled title="Coming Soon">
-                    <i class="fas fa-user-plus"></i> Create Account
-                    <span class="coming-soon-badge">Coming Soon</span>
+                <button class="cta-secondary" (click)="goToLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
                 </button>
             </div>
         </div>
@@ -119,7 +118,7 @@
                         <i class="fas fa-fire"></i> {{ set.partCount | number }} parts
                     </div>
                     <div class="card-hover-overlay">
-                        <i class="fas fa-sign-in-alt"></i> Sign in to explore
+                        <i class="fas fa-arrow-right"></i> Explore Set
                     </div>
                 </div>
                 <div class="set-info">
@@ -151,7 +150,7 @@
                         <i class="fas fa-cube"></i>
                     </div>
                     <div class="card-hover-overlay">
-                        <i class="fas fa-sign-in-alt"></i> Sign in to explore
+                        <i class="fas fa-arrow-right"></i> Explore Set
                     </div>
                 </div>
                 <div class="discovery-info">
@@ -171,7 +170,7 @@
         </div>
         <div class="decade-strip">
             <div class="decade-card" *ngFor="let d of decades; let i = index" [style.animation-delay]="(i * 60) + 'ms'"
-                (click)="goToLogin()">
+                (click)="goToSetExplorer()">
                 <span class="decade-label">{{ d.label }}</span>
                 <div class="decade-stats">
                     <span><i class="fas fa-box-open"></i> {{ d.setCount | number }}</span>
@@ -189,12 +188,19 @@
             <p class="section-subtitle">Everything you need to explore, create, and manage your LEGO world</p>
         </div>
         <div class="features-grid">
-            <div class="feature-card" *ngFor="let feature of features" (click)="goToLogin()">
+            <div class="feature-card" *ngFor="let feature of features" (click)="goToFeature(feature)"
+                [class.auth-required]="feature.requiresAuth">
                 <div class="feature-icon" [ngClass]="feature.gradient">
                     <i [class]="feature.icon"></i>
                 </div>
                 <h3>{{ feature.title }}</h3>
                 <p>{{ feature.description }}</p>
+                <span class="feature-cta" *ngIf="!feature.requiresAuth">
+                    <i class="fas fa-arrow-right"></i> Explore
+                </span>
+                <span class="feature-cta auth" *ngIf="feature.requiresAuth">
+                    <i class="fas fa-lock"></i> Sign in required
+                </span>
             </div>
         </div>
     </section>
@@ -203,15 +209,14 @@
     <!-- ═══════════════════════════ CTA Footer ═══════════════════════════ -->
     <section class="cta-footer">
         <div class="cta-content">
-            <h2>Ready to start building?</h2>
-            <p>Join BMC and explore the largest LEGO database on the web.</p>
+            <h2>Ready to explore?</h2>
+            <p>Start browsing the largest LEGO database on the web — no account required.</p>
             <div class="cta-buttons">
-                <button class="cta-primary large" (click)="goToLogin()">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
+                <button class="cta-primary large" (click)="goToBrowse()">
+                    <i class="fas fa-compass"></i> Start Browsing
                 </button>
-                <button class="cta-secondary large" disabled title="Coming Soon">
-                    <i class="fas fa-user-plus"></i> Create Account
-                    <span class="coming-soon-badge">Coming Soon</span>
+                <button class="cta-secondary large" (click)="goToLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Sign In for Full Access
                 </button>
             </div>
         </div>

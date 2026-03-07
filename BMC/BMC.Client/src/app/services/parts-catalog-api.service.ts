@@ -133,54 +133,71 @@ export class PartsCatalogApiService extends SecureEndpointBase {
 
 
     private fetchFromServer(): Observable<CatalogPartItem[]> {
-        const url = this.baseUrl + 'api/parts-catalog/all';
-        const headers = new HttpHeaders({
-            Authorization: 'Bearer ' + this.authService.accessToken
-        });
-
-        return this.http.get<CatalogPartItem[]>(url, { headers }).pipe(
-            catchError(error => {
-                return this.handleError(error, () => this.fetchFromServer());
-            })
-        );
+        if (this.authService.isLoggedIn) {
+            const url = this.baseUrl + 'api/parts-catalog/all';
+            const headers = new HttpHeaders({
+                Authorization: 'Bearer ' + this.authService.accessToken
+            });
+            return this.http.get<CatalogPartItem[]>(url, { headers }).pipe(
+                catchError(error => this.handleError(error, () => this.fetchFromServer()))
+            );
+        } else {
+            const url = this.baseUrl + 'api/public/browse/catalog/all';
+            return this.http.get<CatalogPartItem[]>(url).pipe(
+                catchError(error => this.handleError(error, () => this.fetchFromServer()))
+            );
+        }
     }
 
     private fetchCategoriesFromServer(): Observable<CatalogCategory[]> {
-        const url = this.baseUrl + 'api/parts-catalog/categories';
-        const headers = new HttpHeaders({
-            Authorization: 'Bearer ' + this.authService.accessToken
-        });
-
-        return this.http.get<CatalogCategory[]>(url, { headers }).pipe(
-            catchError(error => {
-                return this.handleError(error, () => this.fetchCategoriesFromServer());
-            })
-        );
+        if (this.authService.isLoggedIn) {
+            const url = this.baseUrl + 'api/parts-catalog/categories';
+            const headers = new HttpHeaders({
+                Authorization: 'Bearer ' + this.authService.accessToken
+            });
+            return this.http.get<CatalogCategory[]>(url, { headers }).pipe(
+                catchError(error => this.handleError(error, () => this.fetchCategoriesFromServer()))
+            );
+        } else {
+            const url = this.baseUrl + 'api/public/browse/catalog/categories';
+            return this.http.get<CatalogCategory[]>(url).pipe(
+                catchError(error => this.handleError(error, () => this.fetchCategoriesFromServer()))
+            );
+        }
     }
 
     private fetchPartTypesFromServer(): Observable<CatalogPartType[]> {
-        const url = this.baseUrl + 'api/parts-catalog/part-types';
-        const headers = new HttpHeaders({
-            Authorization: 'Bearer ' + this.authService.accessToken
-        });
-
-        return this.http.get<CatalogPartType[]>(url, { headers }).pipe(
-            catchError(error => {
-                return this.handleError(error, () => this.fetchPartTypesFromServer());
-            })
-        );
+        if (this.authService.isLoggedIn) {
+            const url = this.baseUrl + 'api/parts-catalog/part-types';
+            const headers = new HttpHeaders({
+                Authorization: 'Bearer ' + this.authService.accessToken
+            });
+            return this.http.get<CatalogPartType[]>(url, { headers }).pipe(
+                catchError(error => this.handleError(error, () => this.fetchPartTypesFromServer()))
+            );
+        } else {
+            const url = this.baseUrl + 'api/public/browse/catalog/part-types';
+            return this.http.get<CatalogPartType[]>(url).pipe(
+                catchError(error => this.handleError(error, () => this.fetchPartTypesFromServer()))
+            );
+        }
     }
 
     private fetchPartColoursFromServer(): Observable<{ [partId: number]: string[] }> {
-        const url = this.baseUrl + 'api/parts-catalog/part-colours?top=10';
-        const headers = new HttpHeaders({
-            Authorization: 'Bearer ' + this.authService.accessToken
-        });
-
-        return this.http.get<{ [partId: number]: string[] }>(url, { headers }).pipe(
-            catchError(error => {
-                return this.handleError(error, () => this.fetchPartColoursFromServer());
-            })
-        );
+        if (this.authService.isLoggedIn) {
+            const url = this.baseUrl + 'api/parts-catalog/part-colours?top=10';
+            const headers = new HttpHeaders({
+                Authorization: 'Bearer ' + this.authService.accessToken
+            });
+            return this.http.get<{ [partId: number]: string[] }>(url, { headers }).pipe(
+                catchError(error => this.handleError(error, () => this.fetchPartColoursFromServer()))
+            );
+        } else {
+            const url = this.baseUrl + 'api/public/browse/catalog/part-colours?top=10';
+            return this.http.get<{ [partId: number]: string[] }>(url).pipe(
+                catchError(error => this.handleError(error, () => this.fetchPartColoursFromServer()))
+            );
+        }
     }
 }
+

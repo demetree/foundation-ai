@@ -1,0 +1,141 @@
+/* ================================================================
+   Auth Nudge Modal — themed glassmorphism prompt
+   ================================================================ */
+
+.nudge-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: nudgeFadeIn 0.2s ease-out;
+}
+
+.nudge-modal {
+    position: relative;
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 20px;
+    padding: 2.5rem 2rem 2rem;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: nudgeSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nudge-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--bmc-text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+
+    &:hover {
+        color: var(--bmc-text-primary);
+        background: var(--bmc-surface-hover);
+    }
+}
+
+.nudge-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--bmc-gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 1.6rem;
+    color: var(--bmc-text-primary);
+}
+
+.nudge-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: var(--bmc-text-primary);
+    margin: 0 0 0.75rem;
+}
+
+.nudge-message {
+    color: var(--bmc-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 1.75rem;
+}
+
+.nudge-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.nudge-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+
+    &.primary {
+        background: var(--bmc-gradient-primary);
+        color: var(--bmc-text-primary);
+        box-shadow: var(--bmc-btn-shadow);
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--bmc-btn-shadow-hover);
+        }
+    }
+
+    &.secondary {
+        background: transparent;
+        color: var(--bmc-text-secondary);
+        border: 1px solid var(--bmc-border);
+
+        &:hover {
+            color: var(--bmc-text-primary);
+            border-color: var(--bmc-border-strong);
+        }
+    }
+}
+
+
+@keyframes nudgeFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes nudgeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

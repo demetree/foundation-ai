@@ -12,6 +12,7 @@ import { CatalogPartDetailComponent } from './components/catalog-part-detail/cat
 import { AuthGuard } from './services/auth-guard';
 import { LoginRedirectGuard } from './services/login-redirect.guard';
 import { PublicOrRedirectGuard } from './services/public-or-redirect.guard';
+import { PublicAccessGuard } from './services/public-access.guard';
 import { PublicLandingComponent } from './components/public-landing/public-landing.component';
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { LegoUniverseComponent } from './components/lego-universe/lego-universe.component';
@@ -265,9 +266,9 @@ const routes: Routes = [
     { path: 'welcome', component: WelcomeComponent, canActivate: [AuthGuard], title: 'Welcome' },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], title: 'Dashboard' },
 
-    // Premium custom UI routes
-    { path: 'parts', component: PartsCatalogComponent, canActivate: [AuthGuard], title: 'Parts Catalog' },
-    { path: 'colours', component: ColourLibraryComponent, canActivate: [AuthGuard], title: 'Colour Library' },
+    // Public browse routes — accessible to both anonymous and logged-in users
+    { path: 'parts', component: PartsCatalogComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Parts Catalog' },
+    { path: 'colours', component: ColourLibraryComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Colour Library' },
     { path: 'ai', component: AiAssistantComponent, canActivate: [AuthGuard], title: 'AI Assistant' },
     { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
     { path: 'my-collection', component: MyCollectionComponent, canActivate: [AuthGuard], title: 'My Collection' },
@@ -279,18 +280,20 @@ const routes: Routes = [
     { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], title: 'My Profile' },
     { path: 'profile/settings', component: ProfileSettingsComponent, canActivate: [AuthGuard], title: 'Profile Settings' },
     { path: 'u/:id', component: PublicProfileComponent, title: 'Public Profile' },
-    { path: 'parts/:partId', component: CatalogPartDetailComponent, canActivate: [AuthGuard], title: 'Part Detail' },
+    { path: 'parts/:partId', component: CatalogPartDetailComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Part Detail' },
 
-    // LEGO Explorer routes
-    { path: 'lego', component: LegoUniverseComponent, canActivate: [AuthGuard], title: 'Universe' },
-    { path: 'lego/sets', component: SetExplorerComponent, canActivate: [AuthGuard], title: 'Set Explorer' },
-    { path: 'lego/sets/:id', component: SetDetailComponent, canActivate: [AuthGuard], title: 'Set Detail' },
-    { path: 'lego/minifigs', component: MinifigGalleryComponent, canActivate: [AuthGuard], title: 'Minifig Gallery' },
-    { path: 'lego/minifigs/:id', component: MinifigDetailComponent, canActivate: [AuthGuard], title: 'Minifig Detail' },
-    { path: 'lego/themes', component: ThemeExplorerComponent, canActivate: [AuthGuard], title: 'Theme Explorer' },
-    { path: 'lego/themes/:id', component: ThemeDetailComponent, canActivate: [AuthGuard], title: 'Theme Detail' },
-    { path: 'lego/parts-universe', component: PartsUniverseComponent, canActivate: [AuthGuard], title: 'Parts Universe' },
-    { path: 'lego/compare', component: SetComparisonComponent, canActivate: [AuthGuard], title: 'Compare Sets' },
+    // LEGO Explorer routes — public browse
+    { path: 'lego', component: LegoUniverseComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Universe' },
+    { path: 'lego/sets', component: SetExplorerComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Set Explorer' },
+    { path: 'lego/sets/:id', component: SetDetailComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Set Detail' },
+    { path: 'lego/minifigs', component: MinifigGalleryComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Minifig Gallery' },
+    { path: 'lego/minifigs/:id', component: MinifigDetailComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Minifig Detail' },
+    { path: 'lego/themes', component: ThemeExplorerComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Theme Explorer' },
+    { path: 'lego/themes/:id', component: ThemeDetailComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Theme Detail' },
+    { path: 'lego/parts-universe', component: PartsUniverseComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Parts Universe' },
+    { path: 'lego/compare', component: SetComparisonComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Compare Sets' },
+
+    // Authenticated-only tools
     { path: 'part-renderer', component: PartRendererComponent, canActivate: [AuthGuard], title: 'Part Renderer' },
     { path: 'manual-generator', component: ManualGeneratorComponent, canActivate: [AuthGuard], title: 'Manual Generator' },
     { path: 'brickberg', component: BrickbergDashboardComponent, canActivate: [AuthGuard], title: 'Brickberg Terminal' },

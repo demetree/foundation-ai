@@ -625,6 +625,7 @@ import { MySetsComponent } from './components/my-sets/my-sets.component';
 import { MyPartListsComponent } from './components/my-part-lists/my-part-lists.component';
 import { MyLostPartsComponent } from './components/my-lost-parts/my-lost-parts.component';
 import { BrickbergDashboardComponent } from './components/brickberg-dashboard/brickberg-dashboard.component';
+import { AuthNudgeModalComponent } from './components/auth-nudge-modal/auth-nudge-modal.component';
 
 
 @NgModule({
@@ -679,6 +680,7 @@ import { BrickbergDashboardComponent } from './components/brickberg-dashboard/br
         MyPartListsComponent,
         MyLostPartsComponent,
         BrickbergDashboardComponent,
+        AuthNudgeModalComponent,
 
 
         //

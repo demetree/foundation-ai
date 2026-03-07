@@ -1,0 +1,25 @@
+<div class="nudge-backdrop" *ngIf="visible" (click)="dismiss()">
+    <div class="nudge-modal" (click)="$event.stopPropagation()">
+
+        <button class="nudge-close" (click)="dismiss()" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="nudge-icon" *ngIf="config">
+            <i [class]="config.featureIcon"></i>
+        </div>
+
+        <h2 class="nudge-title" *ngIf="config">{{ config.featureName }}</h2>
+
+        <p class="nudge-message">{{ displayMessage }}</p>
+
+        <div class="nudge-actions">
+            <button class="nudge-btn primary" (click)="signIn()">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+            <button class="nudge-btn secondary" (click)="dismiss()">
+                Continue Browsing
+            </button>
+        </div>
+    </div>
+</div>

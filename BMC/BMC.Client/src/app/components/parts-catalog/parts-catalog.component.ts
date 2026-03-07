@@ -163,18 +163,20 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     loadData(): void {
         this.loading = true;
 
-        // Load user's preferred themes for category boosting (non-blocking)
-        const headers = this.authService.GetAuthenticationHeaders();
-        this.http.get<any>('/api/profile/mine', { headers }).pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (profile) => {
-                this.userPreferredThemeIds = (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId);
-            },
-            error: () => {
-                this.userPreferredThemeIds = [];
-            }
-        });
+        // Load user's preferred themes for category boosting (non-blocking, auth-only)
+        if (this.authService.isLoggedIn) {
+            const headers = this.authService.GetAuthenticationHeaders();
+            this.http.get<any>('/api/profile/mine', { headers }).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (profile) => {
+                    this.userPreferredThemeIds = (profile.preferredThemes || []).map((pt: any) => pt.legoThemeId);
+                },
+                error: () => {
+                    this.userPreferredThemeIds = [];
+                }
+            });
+        }
 
         // Load all data in parallel (including per-part colours)
         this.loadSub = forkJoin({

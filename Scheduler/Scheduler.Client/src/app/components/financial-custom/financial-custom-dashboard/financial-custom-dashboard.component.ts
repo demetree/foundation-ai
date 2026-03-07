@@ -12,6 +12,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { FiscalPeriodService, FiscalPeriodData } from '../../../scheduler-data-services/fiscal-period.service';
+import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 
@@ -56,14 +57,21 @@ export class FinancialCustomDashboardComponent implements OnInit {
     public months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     //
-    // Cached transaction list for re-processing when the year changes
+    // Cached transaction list for re-processing when the year or office changes
     //
     private allTransactions: FinancialTransactionData[] = [];
+
+    //
+    // Financial Office picker
+    //
+    public offices: FinancialOfficeData[] = [];
+    public selectedOfficeId: number | null = null;  // null = "All Offices"
 
     constructor(
         private transactionService: FinancialTransactionService,
         private categoryService: FinancialCategoryService,
         private fiscalPeriodService: FiscalPeriodService,
+        private financialOfficeService: FinancialOfficeService,
         private authService: AuthService,
         private navigationService: NavigationService,
         private router: Router
@@ -77,6 +85,19 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
     private loadDashboardData(): void {
         this.isLoading = true;
+
+        //
+        // Load financial offices for the office picker
+        //
+        this.financialOfficeService.GetFinancialOfficeList({
+            active: true,
+            deleted: false,
+            pageSize: 100
+        }).subscribe({
+            next: (offices) => {
+                this.offices = offices ?? [];
+            }
+        });
 
         //
         // Load fiscal periods to populate the year picker
@@ -107,7 +128,7 @@ export class FinancialCustomDashboardComponent implements OnInit {
             next: (transactions) => {
                 if (transactions) {
                     this.allTransactions = transactions;
-                    this.processTransactions(transactions);
+                    this.processTransactions(this.getFilteredTransactions());
                 }
                 this.isLoading = false;
             },
@@ -237,6 +258,24 @@ export class FinancialCustomDashboardComponent implements OnInit {
     public onYearChange(year: number): void {
         this.selectedYear = year;
         this.rebuildMonthlyBreakdown();
+    }
+
+
+    public onOfficeChange(officeId: number | null): void {
+        this.selectedOfficeId = officeId;
+        this.processTransactions(this.getFilteredTransactions());
+    }
+
+
+    /**
+     * Returns transactions filtered by the selected office.
+     * When selectedOfficeId is null, returns all transactions.
+     */
+    private getFilteredTransactions(): FinancialTransactionData[] {
+        if (this.selectedOfficeId === null) {
+            return this.allTransactions;
+        }
+        return this.allTransactions.filter(t => Number(t.financialOfficeId) === this.selectedOfficeId);
     }
 
 

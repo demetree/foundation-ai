@@ -820,6 +820,33 @@
         line-height: 1.6;
         margin: 0;
     }
+
+    .feature-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--bmc-primary);
+        transition: gap 0.2s;
+
+        &.auth {
+            color: var(--bmc-text-muted);
+        }
+    }
+
+    &:hover .feature-cta:not(.auth) {
+        gap: 10px;
+    }
+
+    &.auth-required {
+        opacity: 0.75;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 }
 
 .feature-icon {

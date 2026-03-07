@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { FinancialCategoryService, FinancialCategoryData } from '../../../scheduler-data-services/financial-category.service';
+import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { FinancialCategoryAddEditComponent } from '../../../scheduler-data-components/financial-category/financial-category-add-edit/financial-category-add-edit.component';
 import { Router } from '@angular/router';
 
 
@@ -44,15 +46,22 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
         'Equity': { bg: 'rgba(236, 72, 153, 0.1)', color: '#db2777', label: 'Equity' }
     };
 
+    // Office filter
+    public offices: FinancialOfficeData[] = [];
+    public selectedOfficeId: number | null = null;
+
 
     constructor(
         private categoryService: FinancialCategoryService,
+        private financialOfficeService: FinancialOfficeService,
         private alertService: AlertService,
         private authService: AuthService,
         private navigationService: NavigationService,
         private breakpointObserver: BreakpointObserver,
         private router: Router
     ) { }
+
+    @ViewChild('catAddEdit') catAddEdit!: FinancialCategoryAddEditComponent;
 
 
     ngOnInit(): void {
@@ -63,6 +72,7 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
             });
 
         this.loadData();
+        this.loadOffices();
     }
 
 
@@ -78,8 +88,8 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
             next: (data: FinancialCategoryData[] | null) => {
                 this.categories = data ?? [];
                 this.totalCount = this.categories.length;
-                this.incomeCount = this.categories.filter(c => c.isRevenue).length;
-                this.expenseCount = this.categories.filter(c => !c.isRevenue).length;
+                this.incomeCount = this.categories.filter(c => c.accountType?.isRevenue).length;
+                this.expenseCount = this.categories.filter(c => !c.accountType?.isRevenue).length;
                 this.applyFiltersAndSort();
                 this.isLoading = false;
             },
@@ -91,14 +101,37 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
     }
 
 
+    private loadOffices(): void {
+        this.financialOfficeService.GetFinancialOfficeList({
+            active: true,
+            deleted: false,
+            pageSize: 100
+        }).subscribe({
+            next: (data: FinancialOfficeData[] | null) => {
+                this.offices = data ?? [];
+            }
+        });
+    }
+
+
+    public onOfficeChange(): void {
+        this.applyFiltersAndSort();
+    }
+
+
     public applyFiltersAndSort(): void {
         let result = [...this.categories];
 
+        // Office filter
+        if (this.selectedOfficeId !== null) {
+            result = result.filter(c => Number(c.financialOfficeId) === this.selectedOfficeId);
+        }
+
         // Type filter
         if (this.filterType === 'income') {
-            result = result.filter(c => c.isRevenue);
+            result = result.filter(c => c.accountType?.isRevenue);
         } else if (this.filterType === 'expense') {
-            result = result.filter(c => !c.isRevenue);
+            result = result.filter(c => !c.accountType?.isRevenue);
         }
 
         // Text filter
@@ -125,8 +158,8 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
                     valB = (b.name ?? '').toLowerCase();
                     break;
                 case 'accountType':
-                    valA = (a.accountType ?? '').toLowerCase();
-                    valB = (b.accountType ?? '').toLowerCase();
+                    valA = (a.accountType?.name ?? '').toLowerCase();
+                    valB = (b.accountType?.name ?? '').toLowerCase();
                     break;
                 default:
                     valA = 0;
@@ -196,5 +229,27 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
     public trackById(index: number, item: FinancialCategoryData): number {
         return Number(item.id);
+    }
+
+
+    public addCategory(): void {
+        if (this.catAddEdit) {
+            this.catAddEdit.preSeededData = {
+                financialOfficeId: this.selectedOfficeId
+            };
+            this.catAddEdit.openModal();
+        }
+    }
+
+
+    public editCategory(cat: FinancialCategoryData): void {
+        if (this.catAddEdit) {
+            this.catAddEdit.openModal(cat);
+        }
+    }
+
+
+    public onCategoryChanged(): void {
+        this.loadData();
     }
 }
