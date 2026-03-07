@@ -66,15 +66,19 @@ export class MinifigGalleryApiService extends SecureEndpointBase {
      * Fetches fresh data from the server, bypassing the IndexedDB cache.
      */
     private fetchFromServer(): Observable<MinifigGalleryItem[]> {
-        const url = this.baseUrl + 'api/minifig-gallery';
-        const headers = new HttpHeaders({
-            Authorization: 'Bearer ' + this.authService.accessToken
-        });
-
-        return this.http.get<MinifigGalleryItem[]>(url, { headers }).pipe(
-            catchError(error => {
-                return this.handleError(error, () => this.fetchFromServer());
-            })
-        );
+        if (this.authService.isLoggedIn) {
+            const url = this.baseUrl + 'api/minifig-gallery';
+            const headers = new HttpHeaders({
+                Authorization: 'Bearer ' + this.authService.accessToken
+            });
+            return this.http.get<MinifigGalleryItem[]>(url, { headers }).pipe(
+                catchError(error => this.handleError(error, () => this.fetchFromServer()))
+            );
+        } else {
+            const url = this.baseUrl + 'api/public/browse/minifigs';
+            return this.http.get<MinifigGalleryItem[]>(url).pipe(
+                catchError(error => this.handleError(error, () => this.fetchFromServer()))
+            );
+        }
     }
 }

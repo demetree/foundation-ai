@@ -112,7 +112,12 @@ export class MinifigGalleryComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.loadUserThemes();
+        //
+        // Load user theme preferences (auth-only, non-critical personalization)
+        //
+        if (this.authService.isLoggedIn) {
+            this.loadUserThemes();
+        }
     }
 
 

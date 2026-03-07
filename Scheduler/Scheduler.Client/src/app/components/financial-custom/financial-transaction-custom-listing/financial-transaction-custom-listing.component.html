@@ -156,7 +156,8 @@
 
     <!-- Mobile Card View -->
     <div *ngIf="!isLoading && filteredTransactions.length > 0 && isSmallScreen">
-        <div class="card border-0 shadow-sm mb-2" *ngFor="let tx of filteredTransactions; trackBy: trackById">
+        <div class="card border-0 shadow-sm mb-2" *ngFor="let tx of filteredTransactions; trackBy: trackById"
+            (click)="editTransaction(tx)" role="button" style="cursor: pointer;">
             <div class="card-body py-3 px-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -178,8 +179,7 @@
 
 </div>
 
-<!-- Transaction Add/Edit Modal -->
-<app-financial-transaction-add-edit #txAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
-    [hiddenFields]="['exportedDate', 'externalId', 'externalSystemName', 'versionNumber', 'active', 'deleted']"
+<!-- Transaction Add/Edit Modal (Custom) -->
+<app-financial-transaction-custom-add-edit #txAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
     (financialTransactionChanged)="onTransactionChanged()">
-</app-financial-transaction-add-edit>
+</app-financial-transaction-custom-add-edit>

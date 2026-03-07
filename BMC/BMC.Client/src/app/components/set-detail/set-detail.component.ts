@@ -14,6 +14,7 @@ import { SetComparisonService } from '../../services/set-comparison.service';
 import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
 import { BrickSetSyncService } from '../../services/brickset-sync.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -88,8 +89,11 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         public ownershipCache: SetOwnershipCacheService,
         private bsSyncService: BrickSetSyncService,
         private alertService: AlertService,
+        private authService: AuthService,
     ) {
-        this.ownershipCache.ensureLoaded();
+        if (this.authService.isLoggedIn) {
+            this.ownershipCache.ensureLoaded();
+        }
     }
 
     ngOnInit(): void {
@@ -113,19 +117,85 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     private loadSet(id: number): void {
         this.loading = true;
-        this.legoSetService.GetLegoSet(id, true).pipe(takeUntil(this.destroy$)).subscribe({
-            next: (set) => {
-                this.set = set;
-                this.loading = false;
-                document.title = `${set.name} (${set.setNumber}) — Set Detail`;
-                this.loadRelatedData();
-                this.loadSimilarSets();
-                this.loadBrickbergData();
-            },
-            error: () => {
-                this.loading = false;
-            }
-        });
+
+        if (this.authService.isLoggedIn) {
+            // Authenticated path — use generated data service with navigation properties
+            this.legoSetService.GetLegoSet(id, true).pipe(takeUntil(this.destroy$)).subscribe({
+                next: (set) => {
+                    this.set = set;
+                    this.loading = false;
+                    document.title = `${set.name} (${set.setNumber}) — Set Detail`;
+                    this.loadRelatedData();
+                    this.loadSimilarSets();
+                    this.loadBrickbergData();
+                },
+                error: () => { this.loading = false; }
+            });
+        } else {
+            // Anonymous path — use public browse endpoint
+            this.http.get<any>(`/api/public/browse/sets/${id}`).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (result) => {
+                    // Map public DTO to LegoSetData shape
+                    this.set = {
+                        id: result.set.id,
+                        name: result.set.name,
+                        setNumber: result.set.setNumber,
+                        year: result.set.year,
+                        partCount: result.set.partCount,
+                        imageUrl: result.set.imageUrl,
+                        legoThemeId: result.set.themeId,
+                        rebrickableUrl: result.set.rebrickableUrl,
+                    } as any;
+                    this.loading = false;
+                    document.title = `${result.set.name} (${result.set.setNumber}) — Set Detail`;
+
+                    // Map parts from public response
+                    this.parts = (result.parts ?? []).map((p: any) => ({
+                        brickPartId: p.brickPartId,
+                        brickPart: {
+                            name: p.partName,
+                            ldrawPartId: p.ldrawPartId,
+                            rebrickableImgUrl: p.imgUrl,
+                            geometryOriginalFileName: p.hasGeometry ? 'exists' : null,
+                        },
+                        brickColour: {
+                            name: p.colourName,
+                            hexRgb: p.colourHex,
+                            ldrawColourCode: p.ldrawColourCode,
+                        },
+                        quantity: p.quantity,
+                        isSpare: p.isSpare,
+                    })) as any;
+                    this.partsLoading = false;
+
+                    // Map minifigs from public response
+                    this.minifigs = (result.minifigs ?? []).map((m: any) => ({
+                        legoMinifigId: m.legoMinifigId,
+                        legoMinifig: {
+                            id: m.legoMinifigId,
+                            name: m.name,
+                            imageUrl: m.imageUrl,
+                            figNumber: m.figNumber,
+                        },
+                        quantity: m.quantity,
+                    })) as any;
+                    this.minifigsLoading = false;
+                    this.subsetsLoading = false;
+                    this.parentSetsLoading = false;
+
+                    // Render charts
+                    setTimeout(() => {
+                        this.renderColourDonut();
+                        this.renderCategoryBar();
+                    }, 100);
+
+                    this.loadSimilarSets();
+                },
+                error: () => { this.loading = false; }
+            });
+        }
     }
 
     private async loadRelatedData(): Promise<void> {

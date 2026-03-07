@@ -1,0 +1,372 @@
+import { Component, ViewChild, TemplateRef, Input, Output, EventEmitter } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { Router } from '@angular/router';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { AuthService } from '../../../services/auth.service';
+import { FinancialTransactionService, FinancialTransactionData, FinancialTransactionSubmitData } from '../../../scheduler-data-services/financial-transaction.service';
+import { FinancialCategoryService, FinancialCategoryData } from '../../../scheduler-data-services/financial-category.service';
+import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
+import { PaymentTypeService } from '../../../scheduler-data-services/payment-type.service';
+import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
+import { FiscalPeriodService } from '../../../scheduler-data-services/fiscal-period.service';
+import { CurrencyService } from '../../../scheduler-data-services/currency.service';
+import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+
+@Component({
+    selector: 'app-financial-transaction-custom-add-edit',
+    templateUrl: './financial-transaction-custom-add-edit.component.html',
+    styleUrls: ['./financial-transaction-custom-add-edit.component.scss']
+})
+export class FinancialTransactionCustomAddEditComponent {
+
+    @ViewChild('txModal') txModal!: TemplateRef<any>;
+    @Output() financialTransactionChanged = new EventEmitter<void>();
+
+    @Input() navigateToDetailsAfterAdd: boolean = false;
+    @Input() showAddButton: boolean = false;
+    @Input() hiddenFields: string[] = [];
+
+    //
+    // Pre-seeded data (partial) for add mode — allows parent to set defaults like financialOfficeId
+    //
+    @Input() preSeededData: Record<string, any> | null = null;
+
+    public txForm!: FormGroup;
+    private modalRef: NgbModalRef | undefined;
+    public isEditMode = false;
+    public modalIsDisplayed = false;
+    public isSaving = false;
+    public showMoreDetails = false;
+
+    //
+    // Lookup data
+    //
+    public categories: FinancialCategoryData[] = [];
+    public revenueCategories: FinancialCategoryData[] = [];
+    public expenseCategories: FinancialCategoryData[] = [];
+    public offices: FinancialOfficeData[] = [];
+
+    paymentTypes$ = this.paymentTypeService.GetPaymentTypeList();
+    taxCodes$ = this.taxCodeService.GetTaxCodeList();
+    fiscalPeriods$ = this.fiscalPeriodService.GetFiscalPeriodList();
+    currencies$ = this.currencyService.GetCurrencyList();
+
+    //
+    // Private edit-mode state
+    //
+    private editId: number | bigint = 0;
+    private editVersionNumber: number | bigint = 0;
+
+    constructor(
+        private modalService: NgbModal,
+        private transactionService: FinancialTransactionService,
+        private categoryService: FinancialCategoryService,
+        private officeService: FinancialOfficeService,
+        private paymentTypeService: PaymentTypeService,
+        private taxCodeService: TaxCodeService,
+        private fiscalPeriodService: FiscalPeriodService,
+        private currencyService: CurrencyService,
+        private authService: AuthService,
+        private alertService: AlertService,
+        private router: Router,
+        private fb: FormBuilder
+    ) {
+        this.initForm();
+    }
+
+
+    private initForm(): void {
+        this.txForm = this.fb.group({
+            transactionDate: ['', Validators.required],
+            amount: [0, Validators.required],
+            taxAmount: [0],
+            totalAmount: [{ value: 0, disabled: true }],
+            financialCategoryId: [null, Validators.required],
+            financialOfficeId: [null],
+            paymentTypeId: [null],
+            description: ['', Validators.required],
+            isRevenue: [false],
+            currencyId: [null, Validators.required],
+            // More details (collapsible)
+            referenceNumber: [''],
+            notes: [''],
+            taxCodeId: [null],
+            fiscalPeriodId: [null],
+            journalEntryType: [''],
+            contactRole: [''],
+            scheduledEventId: [null],
+            contactId: [null],
+            clientId: [null],
+        });
+
+        //
+        // Auto-compute totalAmount when amount or taxAmount changes
+        //
+        this.txForm.get('amount')?.valueChanges.subscribe(() => this.computeTotal());
+        this.txForm.get('taxAmount')?.valueChanges.subscribe(() => this.computeTotal());
+    }
+
+
+    private computeTotal(): void {
+        const amount = Number(this.txForm.get('amount')?.value) || 0;
+        const tax = Number(this.txForm.get('taxAmount')?.value) || 0;
+        this.txForm.get('totalAmount')?.setValue(amount + tax, { emitEvent: false });
+    }
+
+
+    //
+    // Load lookup data
+    //
+    private loadLookups(): void {
+        this.categoryService.GetFinancialCategoryList({
+            active: true, deleted: false, includeRelations: true
+        }).subscribe({
+            next: (data) => {
+                this.categories = data ?? [];
+                this.revenueCategories = this.categories.filter(c => c.accountType?.isRevenue);
+                this.expenseCategories = this.categories.filter(c => !c.accountType?.isRevenue);
+            }
+        });
+
+        this.officeService.GetFinancialOfficeList({
+            active: true, deleted: false
+        }).subscribe({
+            next: (data) => { this.offices = data ?? []; }
+        });
+    }
+
+
+    //
+    // Public API — called by parent via @ViewChild
+    //
+    public openModal(txData?: FinancialTransactionData): void {
+
+        if (txData) {
+
+            if (!this.transactionService.userIsSchedulerFinancialTransactionReader()) {
+                this.alertService.showMessage(
+                    `${this.authService.currentUser?.userName} does not have permission to read Financial Transactions`, '', MessageSeverity.info
+                );
+                return;
+            }
+
+            this.isEditMode = true;
+            this.editId = txData.id;
+            this.editVersionNumber = txData.versionNumber;
+            this.populateForm(txData);
+
+            // Auto-expand more details if optional fields have values
+            this.showMoreDetails = !!(txData.referenceNumber || txData.notes || txData.taxCodeId
+                || txData.fiscalPeriodId || txData.journalEntryType || txData.contactRole
+                || txData.contactId || txData.clientId || txData.scheduledEventId);
+
+        } else {
+
+            if (!this.transactionService.userIsSchedulerFinancialTransactionWriter()) {
+                this.alertService.showMessage(
+                    `${this.authService.currentUser?.userName} does not have permission to write Financial Transactions`, '', MessageSeverity.info
+                );
+                return;
+            }
+
+            this.isEditMode = false;
+            this.editId = 0;
+            this.editVersionNumber = 0;
+            this.showMoreDetails = false;
+            this.resetForm();
+
+            //
+            // Apply pre-seeded data if provided
+            //
+            if (this.preSeededData) {
+                this.txForm.patchValue(this.preSeededData);
+            }
+        }
+
+        this.loadLookups();
+
+        this.modalRef = this.modalService.open(this.txModal, {
+            size: 'lg',
+            scrollable: true,
+            backdrop: 'static',
+            keyboard: true,
+            windowClass: 'custom-modal'
+        });
+        this.modalIsDisplayed = true;
+    }
+
+
+    public closeModal(): void {
+        if (this.modalRef) {
+            this.modalRef.dismiss('cancel');
+        }
+        this.modalIsDisplayed = false;
+    }
+
+
+    //
+    // Form population
+    //
+    private resetForm(): void {
+        const now = new Date();
+        const localIso = now.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+
+        this.txForm.reset({
+            transactionDate: localIso,
+            amount: 0,
+            taxAmount: 0,
+            totalAmount: 0,
+            financialCategoryId: null,
+            financialOfficeId: null,
+            paymentTypeId: null,
+            description: '',
+            isRevenue: false,
+            currencyId: null,
+            referenceNumber: '',
+            notes: '',
+            taxCodeId: null,
+            fiscalPeriodId: null,
+            journalEntryType: '',
+            contactRole: '',
+            scheduledEventId: null,
+            contactId: null,
+            clientId: null,
+        });
+    }
+
+
+    private populateForm(tx: FinancialTransactionData): void {
+        this.txForm.patchValue({
+            transactionDate: tx.transactionDate ? isoUtcStringToDateTimeLocal(tx.transactionDate) : '',
+            amount: tx.amount ?? 0,
+            taxAmount: tx.taxAmount ?? 0,
+            totalAmount: tx.totalAmount ?? 0,
+            financialCategoryId: tx.financialCategoryId ? Number(tx.financialCategoryId) : null,
+            financialOfficeId: tx.financialOfficeId ? Number(tx.financialOfficeId) : null,
+            paymentTypeId: tx.paymentTypeId ? Number(tx.paymentTypeId) : null,
+            description: tx.description ?? '',
+            isRevenue: tx.isRevenue ?? false,
+            currencyId: tx.currencyId ? Number(tx.currencyId) : null,
+            referenceNumber: tx.referenceNumber ?? '',
+            notes: tx.notes ?? '',
+            taxCodeId: tx.taxCodeId ? Number(tx.taxCodeId) : null,
+            fiscalPeriodId: tx.fiscalPeriodId ? Number(tx.fiscalPeriodId) : null,
+            journalEntryType: tx.journalEntryType ?? '',
+            contactRole: tx.contactRole ?? '',
+            scheduledEventId: tx.scheduledEventId ? Number(tx.scheduledEventId) : null,
+            contactId: tx.contactId ? Number(tx.contactId) : null,
+            clientId: tx.clientId ? Number(tx.clientId) : null,
+        });
+
+        this.computeTotal();
+    }
+
+
+    //
+    // When category changes, auto-set isRevenue
+    //
+    public onCategoryChange(): void {
+        const catId = this.txForm.get('financialCategoryId')?.value;
+        if (catId) {
+            const cat = this.categories.find(c => Number(c.id) === Number(catId));
+            if (cat?.accountType) {
+                this.txForm.get('isRevenue')?.setValue(cat.accountType.isRevenue);
+            }
+        }
+    }
+
+
+    //
+    // Submit
+    //
+    public submitForm(): void {
+
+        if (this.isSaving) return;
+
+        if (!this.transactionService.userIsSchedulerFinancialTransactionWriter()) {
+            this.alertService.showMessage(
+                `${this.authService.currentUser?.userName} does not have permission to write Financial Transactions`, '', MessageSeverity.info
+            );
+            return;
+        }
+
+        if (!this.txForm.valid) {
+            this.alertService.showMessage('Please fix form errors before saving.', 'Invalid Data', MessageSeverity.warn);
+            this.txForm.markAllAsTouched();
+            return;
+        }
+
+        this.isSaving = true;
+        const fv = this.txForm.getRawValue();
+
+        const submitData: FinancialTransactionSubmitData = {
+            id: this.isEditMode ? this.editId : 0,
+            financialCategoryId: Number(fv.financialCategoryId),
+            financialOfficeId: fv.financialOfficeId ? Number(fv.financialOfficeId) : null,
+            scheduledEventId: fv.scheduledEventId ? Number(fv.scheduledEventId) : null,
+            contactId: fv.contactId ? Number(fv.contactId) : null,
+            clientId: fv.clientId ? Number(fv.clientId) : null,
+            contactRole: fv.contactRole?.trim() || null,
+            taxCodeId: fv.taxCodeId ? Number(fv.taxCodeId) : null,
+            fiscalPeriodId: fv.fiscalPeriodId ? Number(fv.fiscalPeriodId) : null,
+            paymentTypeId: fv.paymentTypeId ? Number(fv.paymentTypeId) : null,
+            transactionDate: dateTimeLocalToIsoUtc(fv.transactionDate!.trim())!,
+            description: fv.description!.trim(),
+            amount: Number(fv.amount),
+            taxAmount: Number(fv.taxAmount),
+            totalAmount: Number(fv.totalAmount),
+            isRevenue: !!fv.isRevenue,
+            journalEntryType: fv.journalEntryType?.trim() || null,
+            referenceNumber: fv.referenceNumber?.trim() || null,
+            notes: fv.notes?.trim() || null,
+            currencyId: Number(fv.currencyId),
+            exportedDate: null,
+            externalId: null,
+            externalSystemName: null,
+            versionNumber: this.editVersionNumber,
+            active: true,
+            deleted: false,
+        };
+
+        if (this.isEditMode) {
+            this.transactionService.PutFinancialTransaction(this.editId, submitData).subscribe({
+                next: () => {
+                    this.alertService.showMessage('Transaction updated successfully', '', MessageSeverity.success);
+                    this.isSaving = false;
+                    this.closeModal();
+                    this.transactionService.ClearAllCaches();
+                    this.financialTransactionChanged.emit();
+                },
+                error: (err) => {
+                    this.alertService.showMessage('Failed to update transaction', JSON.stringify(err), MessageSeverity.error);
+                    this.isSaving = false;
+                }
+            });
+        } else {
+            this.transactionService.PostFinancialTransaction(submitData).subscribe({
+                next: () => {
+                    this.alertService.showMessage('Transaction created successfully', '', MessageSeverity.success);
+                    this.isSaving = false;
+                    this.closeModal();
+                    this.transactionService.ClearAllCaches();
+                    this.financialTransactionChanged.emit();
+                },
+                error: (err) => {
+                    this.alertService.showMessage('Failed to create transaction', JSON.stringify(err), MessageSeverity.error);
+                    this.isSaving = false;
+                }
+            });
+        }
+    }
+
+
+    //
+    // Helper to get category color for display in the dropdown
+    //
+    public getCategoryColor(catId: number | bigint | null): string {
+        if (!catId) return 'transparent';
+        const cat = this.categories.find(c => Number(c.id) === Number(catId));
+        return cat?.color || 'transparent';
+    }
+}

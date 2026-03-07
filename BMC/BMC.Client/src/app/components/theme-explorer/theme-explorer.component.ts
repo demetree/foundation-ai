@@ -4,6 +4,9 @@ import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
 import { LegoSetService } from '../../bmc-data-services/lego-set.service';
+import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
+import { SetExplorerApiService } from '../../services/set-explorer-api.service';
 import * as d3 from 'd3';
 
 interface ThemeNode {
@@ -66,8 +69,11 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
 
     constructor(
         private router: Router,
+        private http: HttpClient,
+        private authService: AuthService,
         private themeService: LegoThemeService,
-        private setService: LegoSetService
+        private setService: LegoSetService,
+        private setExplorerApi: SetExplorerApiService
     ) { }
 
     ngOnInit(): void {
@@ -97,51 +103,81 @@ export class ThemeExplorerComponent implements OnInit, OnDestroy, AfterViewInit 
     private loadData(): void {
         this.loading = true;
 
-        // Load themes and sets for counting
-        this.themeService.GetLegoThemeList({ active: true, deleted: false })
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (themes) => {
-                    this.themes = themes;
-                    this.totalThemes = themes.length;
+        if (this.authService.isLoggedIn) {
+            // Authenticated path — use generated data services
+            this.themeService.GetLegoThemeList({ active: true, deleted: false })
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: (themes) => {
+                        this.themes = themes;
+                        this.totalThemes = themes.length;
 
-                    // Now load sets to count per theme
-                    this.setService.GetLegoSetList({ active: true, deleted: false, pageSize: 5000, pageNumber: 1 })
-                        .pipe(takeUntil(this.destroy$))
-                        .subscribe({
-                            next: (sets) => {
-                                // Build set count map and collect preview images
-                                for (const s of sets) {
-                                    const tid = Number(s.legoThemeId);
-                                    this.setCountByTheme.set(tid, (this.setCountByTheme.get(tid) || 0) + 1);
-
-                                    // Collect up to 4 images per theme
-                                    if (s.imageUrl) {
-                                        const imgs = this.themePreviewImages.get(tid) || [];
-                                        if (imgs.length < 4) {
-                                            imgs.push({ id: Number(s.id), imageUrl: s.imageUrl });
-                                            this.themePreviewImages.set(tid, imgs);
+                        this.setService.GetLegoSetList({ active: true, deleted: false, pageSize: 5000, pageNumber: 1 })
+                            .pipe(takeUntil(this.destroy$))
+                            .subscribe({
+                                next: (sets) => {
+                                    for (const s of sets) {
+                                        const tid = Number(s.legoThemeId);
+                                        this.setCountByTheme.set(tid, (this.setCountByTheme.get(tid) || 0) + 1);
+                                        if (s.imageUrl) {
+                                            const imgs = this.themePreviewImages.get(tid) || [];
+                                            if (imgs.length < 4) {
+                                                imgs.push({ id: Number(s.id), imageUrl: s.imageUrl });
+                                                this.themePreviewImages.set(tid, imgs);
+                                            }
                                         }
                                     }
+                                    this.buildThemeCards();
+                                    this.loading = false;
+                                    setTimeout(() => this.renderSunburst(0), 300);
+                                },
+                                error: () => { this.buildThemeCards(); this.loading = false; }
+                            });
+                    },
+                    error: () => { this.loading = false; }
+                });
+        } else {
+            // Anonymous path — use public browse endpoints
+            this.http.get<any[]>('/api/public/browse/themes').pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (themes) => {
+                    // Map public theme DTOs to LegoThemeData shape
+                    this.themes = themes.map((t: any) => ({
+                        id: t.id,
+                        name: t.name,
+                        legoThemeId: t.parentId ?? t.legoThemeId ?? 0,
+                        active: true,
+                        deleted: false,
+                    })) as any;
+                    this.totalThemes = this.themes.length;
+
+                    // Use set-explorer API (already has dual path) for set counts
+                    this.setExplorerApi.getExploreSets().pipe(
+                        takeUntil(this.destroy$)
+                    ).subscribe({
+                        next: (sets) => {
+                            for (const s of sets) {
+                                const tid = s.themeId;
+                                this.setCountByTheme.set(tid, (this.setCountByTheme.get(tid) || 0) + 1);
+                                if (s.imageUrl) {
+                                    const imgs = this.themePreviewImages.get(tid) || [];
+                                    if (imgs.length < 4) {
+                                        imgs.push({ id: s.id, imageUrl: s.imageUrl });
+                                        this.themePreviewImages.set(tid, imgs);
+                                    }
                                 }
-
-                                this.buildThemeCards();
-                                this.loading = false;
-
-                                setTimeout(() => {
-                                    this.renderSunburst(0);
-                                }, 300);
-                            },
-                            error: () => {
-                                this.buildThemeCards();
-                                this.loading = false;
                             }
-                        });
+                            this.buildThemeCards();
+                            this.loading = false;
+                            setTimeout(() => this.renderSunburst(0), 300);
+                        },
+                        error: () => { this.buildThemeCards(); this.loading = false; }
+                    });
                 },
-                error: () => {
-                    this.loading = false;
-                }
+                error: () => { this.loading = false; }
             });
+        }
     }
 
     private buildThemeCards(): void {

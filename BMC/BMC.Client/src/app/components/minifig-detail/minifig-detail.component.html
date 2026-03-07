@@ -41,22 +41,20 @@
                         <span class="meta-label">Parts</span>
                         <span class="meta-value">{{ minifig.partCount | number }}</span>
                     </div>
-                    <div class="meta-item" *ngIf="appearsIn.length > 0">
+                    <div class="meta-item" *ngIf="setCount > 0">
                         <i class="fas fa-box"></i>
                         <span class="meta-label">Appears In</span>
-                        <span class="meta-value">{{ appearsIn.length }} sets</span>
+                        <span class="meta-value">{{ setCount }} sets</span>
                     </div>
-                    <div class="meta-item rarity-badge" *ngIf="appearsIn.length > 0"
-                        [class.exclusive]="appearsIn.length === 1"
-                        [class.rare]="appearsIn.length >= 2 && appearsIn.length <= 3"
-                        [class.uncommon]="appearsIn.length >= 4 && appearsIn.length <= 5">
-                        <i class="fas" [class.fa-gem]="appearsIn.length <= 3"
-                            [class.fa-star]="appearsIn.length >= 4 && appearsIn.length <= 5"></i>
+                    <div class="meta-item rarity-badge" *ngIf="setCount > 0" [class.exclusive]="setCount === 1"
+                        [class.rare]="setCount >= 2 && setCount <= 3" [class.uncommon]="setCount >= 4 && setCount <= 5">
+                        <i class="fas" [class.fa-gem]="setCount <= 3"
+                            [class.fa-star]="setCount >= 4 && setCount <= 5"></i>
                         <span class="meta-label">Rarity</span>
-                        <span class="meta-value" *ngIf="appearsIn.length === 1">Exclusive</span>
-                        <span class="meta-value" *ngIf="appearsIn.length >= 2 && appearsIn.length <= 3">Rare</span>
-                        <span class="meta-value" *ngIf="appearsIn.length >= 4 && appearsIn.length <= 5">Uncommon</span>
-                        <span class="meta-value" *ngIf="appearsIn.length > 5">Common</span>
+                        <span class="meta-value" *ngIf="setCount === 1">Exclusive</span>
+                        <span class="meta-value" *ngIf="setCount >= 2 && setCount <= 3">Rare</span>
+                        <span class="meta-value" *ngIf="setCount >= 4 && setCount <= 5">Uncommon</span>
+                        <span class="meta-value" *ngIf="setCount > 5">Common</span>
                     </div>
                 </div>
                 <div class="theme-chips" *ngIf="themes.length > 0">
@@ -69,7 +67,7 @@
         </section>
 
         <!-- Force Graph -->
-        <section class="graph-section" *ngIf="appearsIn.length > 0">
+        <section class="graph-section" *ngIf="setCount > 0">
             <h2><i class="fas fa-project-diagram"></i> Relationship Graph</h2>
             <p class="graph-hint">Drag nodes to explore. Click a set node to navigate.</p>
             <div class="graph-container" #forceGraph>
@@ -79,15 +77,17 @@
             </div>
         </section>
 
-        <!-- Appears In List (fallback / companion) -->
+        <!-- Appears In List -->
         <section class="appears-section">
             <h2><i class="fas fa-boxes"></i> Appears In</h2>
             <div *ngIf="setsLoading" class="section-loading">
                 <div class="spinner small"></div>
             </div>
-            <div *ngIf="!setsLoading && appearsIn.length === 0" class="section-empty">
+            <div *ngIf="!setsLoading && setCount === 0" class="section-empty">
                 <p>This minifig does not appear in any sets.</p>
             </div>
+
+            <!-- Authenticated sets -->
             <div class="set-list" *ngIf="!setsLoading && appearsIn.length > 0">
                 <div class="set-card" *ngFor="let sm of appearsIn" (click)="openSet(sm)">
                     <div class="set-card-img">
@@ -99,6 +99,21 @@
                         <span class="set-name">{{ sm.legoSet?.name ?? 'Unknown' }}</span>
                         <span class="set-number">{{ sm.legoSet?.setNumber }}</span>
                         <span class="set-qty" *ngIf="sm.quantity > 1">×{{ sm.quantity }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anonymous/public sets -->
+            <div class="set-list" *ngIf="!setsLoading && publicSets.length > 0 && appearsIn.length === 0">
+                <div class="set-card" *ngFor="let s of publicSets" (click)="openPublicSet(s)">
+                    <div class="set-card-img">
+                        <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.setName" loading="lazy" />
+                        <div *ngIf="!s.imageUrl" class="img-placeholder"><i class="fas fa-cube"></i></div>
+                    </div>
+                    <div class="set-card-info">
+                        <span class="set-name">{{ s.setName ?? 'Unknown' }}</span>
+                        <span class="set-number">{{ s.setNumber }}</span>
+                        <span class="set-qty" *ngIf="s.quantity > 1">×{{ s.quantity }}</span>
                     </div>
                 </div>
             </div>

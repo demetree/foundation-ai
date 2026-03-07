@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import * as d3 from 'd3';
 
 import { LegoMinifigService, LegoMinifigData } from '../../bmc-data-services/lego-minifig.service';
 import { LegoSetMinifigData } from '../../bmc-data-services/lego-set-minifig.service';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
+import { AuthService } from '../../services/auth.service';
 
 interface GraphNode extends d3.SimulationNodeDatum {
     id: string;
@@ -33,13 +35,18 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
     loading = true;
     setsLoading = true;
 
+    // Lightweight set list for anonymous mode (populated from public API)
+    publicSets: { legoSetId: number; setName: string; setNumber: string; year: number; imageUrl: string | null; quantity: number }[] = [];
+
     private destroy$ = new Subject<void>();
 
     constructor(
         private route: ActivatedRoute,
         public router: Router,
+        private http: HttpClient,
         private minifigService: LegoMinifigService,
         private themeService: LegoThemeService,
+        private authService: AuthService,
     ) { }
 
     ngOnInit(): void {
@@ -56,15 +63,42 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
 
     private loadMinifig(id: number): void {
         this.loading = true;
-        this.minifigService.GetLegoMinifig(id, true).pipe(takeUntil(this.destroy$)).subscribe({
-            next: (mf) => {
-                this.minifig = mf;
-                this.loading = false;
-                document.title = `${mf.name} — Minifig Detail`;
-                this.loadSets();
-            },
-            error: () => { this.loading = false; }
-        });
+
+        if (this.authService.isLoggedIn) {
+            // Authenticated path — use generated data service
+            this.minifigService.GetLegoMinifig(id, true).pipe(takeUntil(this.destroy$)).subscribe({
+                next: (mf) => {
+                    this.minifig = mf;
+                    this.loading = false;
+                    document.title = `${mf.name} — Minifig Detail`;
+                    this.loadSets();
+                },
+                error: () => { this.loading = false; }
+            });
+        } else {
+            // Anonymous path — use public API
+            this.http.get<any>(`/api/public/browse/minifigs/${id}`).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (result) => {
+                    // Map the public DTO to a lightweight minifig object
+                    this.minifig = {
+                        id: result.minifig.id,
+                        name: result.minifig.name,
+                        figNumber: result.minifig.figNumber,
+                        imageUrl: result.minifig.imageUrl,
+                    } as any;
+                    this.loading = false;
+                    document.title = `${result.minifig.name} — Minifig Detail`;
+
+                    // Store public sets and build the graph
+                    this.publicSets = result.sets ?? [];
+                    this.setsLoading = false;
+                    setTimeout(() => this.renderForceGraph(), 150);
+                },
+                error: () => { this.loading = false; }
+            });
+        }
     }
 
     private async loadSets(): Promise<void> {
@@ -110,14 +144,16 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
 
     // ── D3 Force-Directed Graph ─────────────────────
     private renderForceGraph(): void {
-        if (!this.forceGraphRef || !this.minifig || this.appearsIn.length === 0) return;
+        const hasAuthData = this.appearsIn.length > 0;
+        const hasPublicData = this.publicSets.length > 0;
+        if (!this.forceGraphRef || !this.minifig || (!hasAuthData && !hasPublicData)) return;
         const el = this.forceGraphRef.nativeElement;
         d3.select(el).selectAll('*').remove();
 
         const width = Math.min(el.clientWidth, 800);
         const height = 420;
 
-        // Build nodes + links
+        // Build nodes + links from whichever data source is available
         const nodes: GraphNode[] = [{
             id: `mf-${this.minifig.id}`,
             label: this.minifig.name,
@@ -128,23 +164,43 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
 
         const links: GraphLink[] = [];
 
-        for (const sm of this.appearsIn) {
-            if (!sm.legoSet) continue;
-            const nodeId = `set-${sm.legoSet.id}`;
-            if (!nodes.find(n => n.id === nodeId)) {
-                nodes.push({
-                    id: nodeId,
-                    label: sm.legoSet.name,
-                    type: 'set',
-                    imageUrl: sm.legoSet.imageUrl,
-                    dataId: Number(sm.legoSet.id),
+        if (hasAuthData) {
+            for (const sm of this.appearsIn) {
+                if (!sm.legoSet) continue;
+                const nodeId = `set-${sm.legoSet.id}`;
+                if (!nodes.find(n => n.id === nodeId)) {
+                    nodes.push({
+                        id: nodeId,
+                        label: sm.legoSet.name,
+                        type: 'set',
+                        imageUrl: sm.legoSet.imageUrl,
+                        dataId: Number(sm.legoSet.id),
+                    });
+                }
+                links.push({
+                    source: `mf-${this.minifig!.id}`,
+                    target: nodeId,
+                    qty: Number(sm.quantity) || 1,
                 });
             }
-            links.push({
-                source: `mf-${this.minifig!.id}`,
-                target: nodeId,
-                qty: Number(sm.quantity) || 1,
-            });
+        } else {
+            for (const s of this.publicSets) {
+                const nodeId = `set-${s.legoSetId}`;
+                if (!nodes.find(n => n.id === nodeId)) {
+                    nodes.push({
+                        id: nodeId,
+                        label: s.setName ?? `Set ${s.setNumber}`,
+                        type: 'set',
+                        imageUrl: s.imageUrl,
+                        dataId: s.legoSetId,
+                    });
+                }
+                links.push({
+                    source: `mf-${this.minifig!.id}`,
+                    target: nodeId,
+                    qty: Number(s.quantity) || 1,
+                });
+            }
         }
 
         const svg = d3.select(el)
@@ -273,9 +329,18 @@ export class MinifigDetailComponent implements OnInit, OnDestroy {
         this.router.navigate(['/lego/minifigs']);
     }
 
+    /** Returns the set count from whichever data source is populated */
+    get setCount(): number {
+        return this.appearsIn.length > 0 ? this.appearsIn.length : this.publicSets.length;
+    }
+
     openSet(sm: LegoSetMinifigData): void {
         if (sm.legoSet) {
             this.router.navigate(['/lego/sets', sm.legoSet.id]);
         }
+    }
+
+    openPublicSet(s: { legoSetId: number }): void {
+        this.router.navigate(['/lego/sets', s.legoSetId]);
     }
 }

@@ -140,7 +140,13 @@ export class PartsUniverseApiService {
         return this.cacheService.getOrFetch<PartsUniversePayload>(
             PartsUniverseApiService.CACHE_STORE,
             {},
-            () => this.http.get<PartsUniversePayload>(this.baseUrl, { headers: this.headers }),
+            () => {
+                if (this.authService.isLoggedIn) {
+                    return this.http.get<PartsUniversePayload>(this.baseUrl, { headers: this.headers });
+                } else {
+                    return this.http.get<PartsUniversePayload>('/api/public/browse/parts-universe');
+                }
+            },
             PartsUniverseApiService.CACHE_TTL
         );
     }

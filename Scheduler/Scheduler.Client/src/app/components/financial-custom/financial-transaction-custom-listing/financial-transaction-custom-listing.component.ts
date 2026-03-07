@@ -7,7 +7,7 @@ import { FinancialCategoryService, FinancialCategoryData } from '../../../schedu
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
-import { FinancialTransactionAddEditComponent } from '../../../scheduler-data-components/financial-transaction/financial-transaction-add-edit/financial-transaction-add-edit.component';
+import { FinancialTransactionCustomAddEditComponent } from '../financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 import { Router } from '@angular/router';
 
 
@@ -56,7 +56,7 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
         private router: Router
     ) { }
 
-    @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionAddEditComponent;
+    @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionCustomAddEditComponent;
 
 
     ngOnInit(): void {
@@ -79,7 +79,8 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
             active: true,
             deleted: false,
             includeRelations: true,
-            pageSize: 5000
+            // TODO: Replace with server-side pagination when transaction volume grows
+            pageSize: 10000
         }).subscribe({
             next: (data: FinancialTransactionData[] | null) => {
                 this.transactions = data ?? [];

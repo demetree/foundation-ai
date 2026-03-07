@@ -4,6 +4,8 @@ import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { BrickColourService, BrickColourData } from '../../bmc-data-services/brick-colour.service';
 import { ColourFinishService, ColourFinishData } from '../../bmc-data-services/colour-finish.service';
+import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'app-colour-library',
@@ -34,6 +36,8 @@ export class ColourLibraryComponent implements OnInit, OnDestroy {
     constructor(
         private colourService: BrickColourService,
         private finishService: ColourFinishService,
+        private authService: AuthService,
+        private http: HttpClient,
         private router: Router
     ) { }
 
@@ -58,32 +62,72 @@ export class ColourLibraryComponent implements OnInit, OnDestroy {
     loadData(): void {
         this.loading = true;
 
-        // Load finishes for grouping
-        this.finishService.GetColourFinishList({ active: true, deleted: false }).pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (finishes) => this.finishes = finishes,
-            error: () => this.finishes = []
-        });
+        if (this.authService.isLoggedIn) {
+            // Authenticated path — use generated data services
+            this.finishService.GetColourFinishList({ active: true, deleted: false }).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (finishes) => this.finishes = finishes,
+                error: () => this.finishes = []
+            });
 
-        // Load all colours
-        this.colourService.GetBrickColourList({ active: true, deleted: false, includeRelations: true }).pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (colours) => {
-                this.allColours = colours;
-                this.totalCount = colours.length;
-                this.transparentCount = colours.filter(c => c.isTransparent).length;
-                this.metallicCount = colours.filter(c => c.isMetallic).length;
-                this.applyFilters();
-                this.loading = false;
-            },
-            error: () => {
-                this.allColours = [];
-                this.filteredColours = [];
-                this.loading = false;
-            }
-        });
+            this.colourService.GetBrickColourList({ active: true, deleted: false, includeRelations: true }).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (colours) => {
+                    this.allColours = colours;
+                    this.totalCount = colours.length;
+                    this.transparentCount = colours.filter(c => c.isTransparent).length;
+                    this.metallicCount = colours.filter(c => c.isMetallic).length;
+                    this.applyFilters();
+                    this.loading = false;
+                },
+                error: () => {
+                    this.allColours = [];
+                    this.filteredColours = [];
+                    this.loading = false;
+                }
+            });
+        } else {
+            // Anonymous path — use public browse endpoint
+            this.http.get<any[]>('/api/public/browse/colours').pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (colours) => {
+                    // Map public DTOs to BrickColourData shape
+                    this.allColours = colours.map((c: any) => ({
+                        id: c.id,
+                        name: c.name,
+                        hexRgb: c.hexRgb,
+                        hexEdgeColour: c.hexEdgeColour,
+                        ldrawColourCode: c.ldrawColourCode,
+                        isTransparent: c.isTransparent,
+                        isMetallic: false,
+                        alpha: c.isTransparent ? 128 : 255,
+                        colourFinish: c.finishName ? { name: c.finishName } : null,
+                        colourFinishId: null,
+                    })) as any;
+                    this.totalCount = this.allColours.length;
+                    this.transparentCount = this.allColours.filter(c => c.isTransparent).length;
+                    this.metallicCount = 0;
+
+                    // Extract unique finishes from colour data
+                    const finishNames = new Set(colours.map((c: any) => c.finishName).filter(Boolean));
+                    this.finishes = Array.from(finishNames).map((name, idx) => ({
+                        id: idx + 1,
+                        name,
+                    })) as any;
+
+                    this.applyFilters();
+                    this.loading = false;
+                },
+                error: () => {
+                    this.allColours = [];
+                    this.filteredColours = [];
+                    this.loading = false;
+                }
+            });
+        }
     }
 
     onSearch(event: Event): void {

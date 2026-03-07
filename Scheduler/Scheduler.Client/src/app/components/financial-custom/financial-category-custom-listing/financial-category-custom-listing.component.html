@@ -93,6 +93,7 @@
                         <th class="sortable" style="width:120px" (click)="sortBy('accountType')">
                             Type <i class="fa-solid ms-1" [ngClass]="getSortIcon('accountType')"></i>
                         </th>
+                        <th *ngIf="offices.length > 1" style="width:140px">Office</th>
                         <th style="width:80px" class="text-center">Tax</th>
                         <th style="width:100px" class="text-end">Default Amt</th>
                         <th style="width:40px" class="pe-4"></th>
@@ -120,6 +121,14 @@
                                 [ngStyle]="getAccountTypeStyle(cat.accountType?.name || '')">
                                 {{ cat.accountType?.name }}
                             </span>
+                        </td>
+                        <td *ngIf="offices.length > 1">
+                            <span class="small text-muted" *ngIf="cat.financialOffice">
+                                <span class="office-dot me-1" *ngIf="cat.financialOffice.color"
+                                    [style.background]="cat.financialOffice.color"></span>
+                                {{ cat.financialOffice.name }}
+                            </span>
+                            <span *ngIf="!cat.financialOffice" class="text-muted">—</span>
                         </td>
                         <td class="text-center">
                             <i *ngIf="cat.isTaxApplicable" class="fa-solid fa-check text-success"></i>
@@ -162,6 +171,12 @@
                             <span class="badge account-type-badge me-1"
                                 [ngStyle]="getAccountTypeStyle(cat.accountType?.name || '')">
                                 {{ cat.accountType?.name }}
+                            </span>
+                            <span class="badge me-1" *ngIf="offices.length > 1 && cat.financialOffice"
+                                style="background: rgba(107,114,128,0.1); color: #6b7280;">
+                                <span class="office-dot me-1" *ngIf="cat.financialOffice.color"
+                                    [style.background]="cat.financialOffice.color"></span>
+                                {{ cat.financialOffice.name }}
                             </span>
                             <span class="badge" *ngIf="cat.isTaxApplicable"
                                 style="background: rgba(16,185,129,0.1); color: #059669;">

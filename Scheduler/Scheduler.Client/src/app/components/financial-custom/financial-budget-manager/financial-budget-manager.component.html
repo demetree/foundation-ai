@@ -1,0 +1,365 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">
+                        <i class="fa-solid fa-chart-pie me-2"></i>Budget Manager
+                    </h3>
+                    <small class="text-white-50">Budget vs. actual performance by category</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Office Filter -->
+                <select class="form-select form-select-sm glass-select me-2" *ngIf="offices.length > 1"
+                    [(ngModel)]="selectedOfficeId" (ngModelChange)="onFilterChange()" style="max-width: 180px;">
+                    <option [ngValue]="null">All Offices</option>
+                    <option *ngFor="let office of offices" [ngValue]="$any(office.id)">{{ office.name }}</option>
+                </select>
+
+                <!-- Fiscal Period Filter -->
+                <select class="form-select form-select-sm glass-select me-2" [(ngModel)]="selectedFiscalPeriodId"
+                    (ngModelChange)="onFilterChange()" style="max-width: 200px;">
+                    <option [ngValue]="null">All Periods</option>
+                    <option *ngFor="let fp of fiscalPeriods" [ngValue]="$any(fp.id)">{{ fp.name }}</option>
+                </select>
+
+                <button class="btn btn-sm btn-glass" (click)="goToDashboard()">
+                    <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm text-center py-5"
+        *ngIf="!isLoading && revenueRows.length === 0 && expenseRows.length === 0">
+        <div class="card-body">
+            <i class="fa-solid fa-chart-pie fa-3x text-muted opacity-25 mb-3"></i>
+            <h5 class="text-muted">No Budget Data</h5>
+            <p class="text-muted">
+                No budgets found for the selected filters. Create budgets via the
+                <a routerLink="/budgets">Budgets</a> configuration page.
+            </p>
+        </div>
+    </div>
+
+    <!-- Budget Grid -->
+    <div *ngIf="!isLoading && (revenueRows.length > 0 || expenseRows.length > 0)">
+
+        <!-- ═════ Summary Cards ═════ -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm summary-card">
+                    <div class="card-body text-center">
+                        <div class="small text-muted text-uppercase fw-medium mb-1">Revenue Target</div>
+                        <div class="h4 mb-0 text-success">
+                            {{ totalRevenueBudgetRevised | currency:'CAD':'symbol':'1.0-0' }}
+                        </div>
+                        <div class="small text-muted">
+                            Actual: {{ totalRevenueActual | currency:'CAD':'symbol':'1.0-0' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm summary-card">
+                    <div class="card-body text-center">
+                        <div class="small text-muted text-uppercase fw-medium mb-1">Expense Budget</div>
+                        <div class="h4 mb-0 text-danger">
+                            {{ totalExpenseBudgetRevised | currency:'CAD':'symbol':'1.0-0' }}
+                        </div>
+                        <div class="small text-muted">
+                            Actual: {{ totalExpenseActual | currency:'CAD':'symbol':'1.0-0' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm summary-card">
+                    <div class="card-body text-center">
+                        <div class="small text-muted text-uppercase fw-medium mb-1">Net Position</div>
+                        <div class="h4 mb-0"
+                            [ngClass]="(totalRevenueActual - totalExpenseActual) >= 0 ? 'text-success' : 'text-danger'">
+                            {{ (totalRevenueActual - totalExpenseActual) | currency:'CAD':'symbol':'1.0-0' }}
+                        </div>
+                        <div class="small text-muted">Revenue - Expenses</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ═════ Revenue Section ═════ -->
+        <div class="card border-0 shadow-sm mb-3" *ngIf="revenueRows.length > 0">
+            <div class="card-header bg-white border-bottom py-2 px-4">
+                <h6 class="mb-0 fw-bold">
+                    <i class="fa-solid fa-arrow-trend-up text-success me-2"></i>Revenue
+                    <span class="badge bg-success-subtle text-success ms-2">{{ revenueRows.length }} categories</span>
+                </h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle budget-table">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4" style="width: 250px;">Category</th>
+                            <th class="text-end" style="width: 130px;">Budgeted</th>
+                            <th class="text-end" style="width: 130px;">Revised</th>
+                            <th class="text-end" style="width: 130px;">Actual</th>
+                            <th class="text-end" style="width: 130px;">Variance</th>
+                            <th style="width: 160px;">Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of revenueRows" class="budget-row">
+                            <!-- Category -->
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <span class="color-dot me-2" *ngIf="row.categoryColor"
+                                        [style.background]="row.categoryColor"></span>
+                                    <div>
+                                        <span class="fw-medium">{{ row.categoryName }}</span>
+                                        <div class="text-muted small">{{ row.categoryCode }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Budgeted (editable) -->
+                            <td class="text-end">
+                                <span *ngIf="!isEditing(row.budget.id, 'budgetedAmount')" class="editable-cell"
+                                    (click)="startEdit(row, 'budgetedAmount')">
+                                    {{ row.budgetedAmount | currency:'CAD':'symbol':'1.2-2' }}
+                                </span>
+                                <div *ngIf="isEditing(row.budget.id, 'budgetedAmount')" class="inline-edit">
+                                    <input type="number" [(ngModel)]="editValue" class="form-control form-control-sm"
+                                        step="0.01" (keyup.enter)="saveEdit(row)" (keyup.escape)="cancelEdit()" />
+                                    <div class="inline-edit-actions">
+                                        <button class="btn btn-sm btn-success" (click)="saveEdit(row)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Revised (editable) -->
+                            <td class="text-end">
+                                <span *ngIf="!isEditing(row.budget.id, 'revisedAmount')" class="editable-cell"
+                                    (click)="startEdit(row, 'revisedAmount')">
+                                    <span *ngIf="row.revisedAmount !== null">
+                                        {{ row.revisedAmount | currency:'CAD':'symbol':'1.2-2' }}
+                                    </span>
+                                    <span *ngIf="row.revisedAmount === null" class="text-muted">—</span>
+                                </span>
+                                <div *ngIf="isEditing(row.budget.id, 'revisedAmount')" class="inline-edit">
+                                    <input type="number" [(ngModel)]="editValue" class="form-control form-control-sm"
+                                        step="0.01" (keyup.enter)="saveEdit(row)" (keyup.escape)="cancelEdit()" />
+                                    <div class="inline-edit-actions">
+                                        <button class="btn btn-sm btn-success" (click)="saveEdit(row)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Actual -->
+                            <td class="text-end fw-medium">
+                                {{ row.actualAmount | currency:'CAD':'symbol':'1.2-2' }}
+                            </td>
+
+                            <!-- Variance -->
+                            <td class="text-end">
+                                <span class="badge variance-badge" [ngClass]="getVarianceClass(row)">
+                                    {{ row.variance >= 0 ? '+' : '' }}{{ row.variance | currency:'CAD':'symbol':'1.0-0'
+                                    }}
+                                </span>
+                            </td>
+
+                            <!-- Progress -->
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar" [ngClass]="getProgressBarClass(row)"
+                                            [style.width.%]="row.percentUsed > 100 ? 100 : row.percentUsed">
+                                        </div>
+                                    </div>
+                                    <span class="small fw-medium" style="min-width: 40px;"
+                                        [ngClass]="getVarianceClass(row)">
+                                        {{ row.percentUsed }}%
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <!-- Revenue Totals -->
+                    <tfoot class="bg-light">
+                        <tr class="fw-bold">
+                            <td class="ps-4">Total Revenue</td>
+                            <td class="text-end">{{ totalRevenueBudget | currency:'CAD':'symbol':'1.2-2' }}</td>
+                            <td class="text-end">{{ totalRevenueBudgetRevised | currency:'CAD':'symbol':'1.2-2' }}</td>
+                            <td class="text-end">{{ totalRevenueActual | currency:'CAD':'symbol':'1.2-2' }}</td>
+                            <td class="text-end">
+                                <span class="badge variance-badge"
+                                    [ngClass]="(totalRevenueBudgetRevised - totalRevenueActual) >= 0 ? 'variance-under' : 'variance-over'">
+                                    {{ (totalRevenueBudgetRevised - totalRevenueActual) |
+                                    currency:'CAD':'symbol':'1.0-0' }}
+                                </span>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- ═════ Expense Section ═════ -->
+        <div class="card border-0 shadow-sm mb-3" *ngIf="expenseRows.length > 0">
+            <div class="card-header bg-white border-bottom py-2 px-4">
+                <h6 class="mb-0 fw-bold">
+                    <i class="fa-solid fa-arrow-trend-down text-danger me-2"></i>Expenses
+                    <span class="badge bg-danger-subtle text-danger ms-2">{{ expenseRows.length }} categories</span>
+                </h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle budget-table">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4" style="width: 250px;">Category</th>
+                            <th class="text-end" style="width: 130px;">Budgeted</th>
+                            <th class="text-end" style="width: 130px;">Revised</th>
+                            <th class="text-end" style="width: 130px;">Actual</th>
+                            <th class="text-end" style="width: 130px;">Variance</th>
+                            <th style="width: 160px;">Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of expenseRows" class="budget-row">
+                            <!-- Category -->
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <span class="color-dot me-2" *ngIf="row.categoryColor"
+                                        [style.background]="row.categoryColor"></span>
+                                    <div>
+                                        <span class="fw-medium">{{ row.categoryName }}</span>
+                                        <div class="text-muted small">{{ row.categoryCode }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Budgeted (editable) -->
+                            <td class="text-end">
+                                <span *ngIf="!isEditing(row.budget.id, 'budgetedAmount')" class="editable-cell"
+                                    (click)="startEdit(row, 'budgetedAmount')">
+                                    {{ row.budgetedAmount | currency:'CAD':'symbol':'1.2-2' }}
+                                </span>
+                                <div *ngIf="isEditing(row.budget.id, 'budgetedAmount')" class="inline-edit">
+                                    <input type="number" [(ngModel)]="editValue" class="form-control form-control-sm"
+                                        step="0.01" (keyup.enter)="saveEdit(row)" (keyup.escape)="cancelEdit()" />
+                                    <div class="inline-edit-actions">
+                                        <button class="btn btn-sm btn-success" (click)="saveEdit(row)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Revised (editable) -->
+                            <td class="text-end">
+                                <span *ngIf="!isEditing(row.budget.id, 'revisedAmount')" class="editable-cell"
+                                    (click)="startEdit(row, 'revisedAmount')">
+                                    <span *ngIf="row.revisedAmount !== null">
+                                        {{ row.revisedAmount | currency:'CAD':'symbol':'1.2-2' }}
+                                    </span>
+                                    <span *ngIf="row.revisedAmount === null" class="text-muted">—</span>
+                                </span>
+                                <div *ngIf="isEditing(row.budget.id, 'revisedAmount')" class="inline-edit">
+                                    <input type="number" [(ngModel)]="editValue" class="form-control form-control-sm"
+                                        step="0.01" (keyup.enter)="saveEdit(row)" (keyup.escape)="cancelEdit()" />
+                                    <div class="inline-edit-actions">
+                                        <button class="btn btn-sm btn-success" (click)="saveEdit(row)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Actual -->
+                            <td class="text-end fw-medium">
+                                {{ row.actualAmount | currency:'CAD':'symbol':'1.2-2' }}
+                            </td>
+
+                            <!-- Variance -->
+                            <td class="text-end">
+                                <span class="badge variance-badge" [ngClass]="getVarianceClass(row)">
+                                    {{ row.variance >= 0 ? '+' : '' }}{{ row.variance | currency:'CAD':'symbol':'1.0-0'
+                                    }}
+                                </span>
+                            </td>
+
+                            <!-- Progress -->
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar" [ngClass]="getProgressBarClass(row)"
+                                            [style.width.%]="row.percentUsed > 100 ? 100 : row.percentUsed">
+                                        </div>
+                                    </div>
+                                    <span class="small fw-medium" style="min-width: 40px;"
+                                        [ngClass]="getVarianceClass(row)">
+                                        {{ row.percentUsed }}%
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <!-- Expense Totals -->
+                    <tfoot class="bg-light">
+                        <tr class="fw-bold">
+                            <td class="ps-4">Total Expenses</td>
+                            <td class="text-end">{{ totalExpenseBudget | currency:'CAD':'symbol':'1.2-2' }}</td>
+                            <td class="text-end">{{ totalExpenseBudgetRevised | currency:'CAD':'symbol':'1.2-2' }}</td>
+                            <td class="text-end">{{ totalExpenseActual | currency:'CAD':'symbol':'1.2-2' }}</td>
+                            <td class="text-end">
+                                <span class="badge variance-badge"
+                                    [ngClass]="(totalExpenseBudgetRevised - totalExpenseActual) >= 0 ? 'variance-under' : 'variance-over'">
+                                    {{ (totalExpenseBudgetRevised - totalExpenseActual) |
+                                    currency:'CAD':'symbol':'1.0-0' }}
+                                </span>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>

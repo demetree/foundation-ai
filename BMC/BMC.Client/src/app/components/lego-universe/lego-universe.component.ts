@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
 import { LegoMinifigService } from '../../bmc-data-services/lego-minifig.service';
 import { LegoThemeService } from '../../bmc-data-services/lego-theme.service';
 import { UserProfilePreferredThemeService } from '../../bmc-data-services/user-profile-preferred-theme.service';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+import { AuthService } from '../../services/auth.service';
 import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
 import { PartsUniverseApiService } from '../../services/parts-universe.service';
 import { IndexedDBCacheService } from '../../services/indexeddb-cache.service';
@@ -164,6 +166,7 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
 
     constructor(
         public router: Router,
+        private http: HttpClient,
         private minifigService: LegoMinifigService,
         private themeService: LegoThemeService,
         private setExplorerApi: SetExplorerApiService,
@@ -171,16 +174,19 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         private partsUniverseApi: PartsUniverseApiService,
         private cacheService: IndexedDBCacheService,
         private userPrefThemeService: UserProfilePreferredThemeService,
-        private ownershipCache: SetOwnershipCacheService
+        private ownershipCache: SetOwnershipCacheService,
+        private authService: AuthService
     ) {
-        this.ownershipCache.ensureLoaded();
-        this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
-            this.ownedCount = ids.size;
-            this.collectionPct = this.totalSets > 0 ? Math.round((ids.size / this.totalSets) * 100) : 0;
-        });
-        this.ownershipCache.wantedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
-            this.wantedCount = ids.size;
-        });
+        if (this.authService.isLoggedIn) {
+            this.ownershipCache.ensureLoaded();
+            this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
+                this.ownedCount = ids.size;
+                this.collectionPct = this.totalSets > 0 ? Math.round((ids.size / this.totalSets) * 100) : 0;
+            });
+            this.ownershipCache.wantedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
+                this.wantedCount = ids.size;
+            });
+        }
     }
 
     ngOnInit(): void {
@@ -240,23 +246,23 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loading = true;
 
         //
-        // Fetch data from three cached sources in parallel:
-        //   1. Set-explorer cache (IndexedDB, 24h) — all sets, counts, and recent sets
-        //   2. Minifig count (IndexedDB, 24h)
-        //   3. Theme list (IndexedDB, 24h)
+        // Fetch data from cached sources in parallel.
+        // For anonymous users, use the gallery count instead of the authenticated row-count endpoint,
+        // and use a direct public API call for themes instead of the generated data service.
         //
-        forkJoin({
-            allSets: this.setExplorerApi.getExploreSets(),
-            allMinifigs: this.minifigGalleryApi.getGalleryMinifigs(),
-            minifigCount: this.cacheService.getOrFetch<number>(
+        const minifigCountSource = this.authService.isLoggedIn
+            ? this.cacheService.getOrFetch<number>(
                 'lego-minifig-count',
                 {},
                 () => this.minifigService.GetLegoMinifigsRowCount({ active: true, deleted: false }).pipe(
                     map(n => Number(n))
                 ),
                 1440
-            ),
-            themes: this.cacheService.getOrFetch<CachedTheme[]>(
+            )
+            : this.minifigGalleryApi.getGalleryMinifigs().pipe(map(list => list.length));
+
+        const themesSource = this.authService.isLoggedIn
+            ? this.cacheService.getOrFetch<CachedTheme[]>(
                 'lego-themes',
                 {},
                 () => this.themeService.GetLegoThemeList({ active: true, deleted: false }).pipe(
@@ -267,7 +273,25 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                     })))
                 ),
                 1440
-            ),
+            )
+            : this.cacheService.getOrFetch<CachedTheme[]>(
+                'lego-themes-public',
+                {},
+                () => this.http.get<any[]>('/api/public/browse/themes').pipe(
+                    map(list => list.map((t: any) => ({
+                        id: Number(t.id),
+                        name: t.name,
+                        legoThemeId: Number(t.legoThemeId ?? t.parentId ?? 0)
+                    })))
+                ),
+                1440
+            );
+
+        forkJoin({
+            allSets: this.setExplorerApi.getExploreSets(),
+            allMinifigs: this.minifigGalleryApi.getGalleryMinifigs(),
+            minifigCount: minifigCountSource,
+            themes: themesSource,
             partsStats: this.partsUniverseApi.getPayload().pipe(
                 map(payload => payload.stats)
             )
@@ -380,7 +404,9 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                 //
                 // Load user preferred themes for My Universe section
                 //
-                this.loadUserPreferredThemes();
+                if (this.authService.isLoggedIn) {
+                    this.loadUserPreferredThemes();
+                }
 
                 //
                 // Render D3 visualizations after a tick (so ViewChild elements exist)

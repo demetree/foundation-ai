@@ -47,6 +47,15 @@ export abstract class SecureEndpointBase {
   protected handleError<T>(error: ServerError, continuation: () => Observable<T>) {
 
     if (error.status === 401) {
+
+      //
+      // Anonymous user — don't attempt token refresh or redirect to login.
+      // Instead, propagate the error so callers can handle it gracefully.
+      //
+      if (!this.authService.isLoggedIn) {
+        return throwError(() => error);
+      }
+
       if (this.isRefreshingLogin == true) {
         return this.pauseTask(continuation);
       }

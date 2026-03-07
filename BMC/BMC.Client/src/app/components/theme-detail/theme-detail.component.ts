@@ -1,13 +1,15 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-import { Subject, forkJoin } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, switchMap, map } from 'rxjs/operators';
 import * as d3 from 'd3';
 import { LegoThemeService, LegoThemeData } from '../../bmc-data-services/lego-theme.service';
 import { LegoSetService, LegoSetData } from '../../bmc-data-services/lego-set.service';
 import { MinifigGalleryApiService, MinifigGalleryItem } from '../../services/minifig-gallery-api.service';
 import { SetOwnershipCacheService } from '../../services/set-ownership-cache.service';
+import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 interface BreadcrumbItem {
     id: bigint | number;
@@ -66,15 +68,19 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
         private router: Router,
         private route: ActivatedRoute,
         private location: Location,
+        private http: HttpClient,
         private themeService: LegoThemeService,
         private setService: LegoSetService,
         private minifigGalleryApi: MinifigGalleryApiService,
-        private ownershipCache: SetOwnershipCacheService
+        private ownershipCache: SetOwnershipCacheService,
+        private authService: AuthService
     ) {
-        this.ownershipCache.ensureLoaded();
-        this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
-            this.recalcCompletion(ids);
-        });
+        if (this.authService.isLoggedIn) {
+            this.ownershipCache.ensureLoaded();
+            this.ownershipCache.ownedIds$.pipe(takeUntil(this.destroy$)).subscribe(ids => {
+                this.recalcCompletion(ids);
+            });
+        }
     }
 
     ngOnInit(): void {
@@ -97,39 +103,93 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
         this.sets = [];
         this.subThemes = [];
 
-        forkJoin({
-            theme: this.themeService.GetLegoTheme(id, true),
-            allThemes: this.themeService.GetLegoThemeList({ active: true, deleted: false })
-        }).pipe(
-            takeUntil(this.destroy$)
-        ).subscribe({
-            next: (result) => {
-                this.theme = result.theme;
-                this.allThemes = result.allThemes;
-                document.title = `${result.theme.name} — Theme Detail`;
+        if (this.authService.isLoggedIn) {
+            // Authenticated path
+            forkJoin({
+                theme: this.themeService.GetLegoTheme(id, true),
+                allThemes: this.themeService.GetLegoThemeList({ active: true, deleted: false })
+            }).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (result) => {
+                    this.theme = result.theme;
+                    this.allThemes = result.allThemes;
+                    document.title = `${result.theme.name} — Theme Detail`;
+                    this.subThemes = this.allThemes.filter(t =>
+                        Number(t.legoThemeId) === Number(this.theme!.id)
+                    );
+                    this.totalSubThemes = this.subThemes.length;
+                    this.buildBreadcrumbs();
+                    this.loading = false;
+                    this.loadSets(id);
+                    this.loadMinifigs(id);
+                },
+                error: () => { this.loading = false; this.setsLoading = false; }
+            });
+        } else {
+            // Anonymous path — use public theme detail endpoint
+            this.http.get<any>(`/api/public/browse/themes/${id}`).pipe(
+                takeUntil(this.destroy$)
+            ).subscribe({
+                next: (result) => {
+                    // Map to LegoThemeData shape
+                    this.theme = {
+                        id: result.theme.id,
+                        name: result.theme.name,
+                        legoThemeId: result.theme.parentThemeId ?? 0,
+                    } as any;
+                    document.title = `${result.theme.name} — Theme Detail`;
 
-                // Find sub-themes
-                this.subThemes = this.allThemes.filter(t =>
-                    Number(t.legoThemeId) === Number(this.theme!.id)
-                );
-                this.totalSubThemes = this.subThemes.length;
+                    // Map child themes
+                    this.subThemes = (result.childThemes ?? []).map((ct: any) => ({
+                        id: ct.id,
+                        name: ct.name,
+                        legoThemeId: id,
+                    })) as any;
+                    this.totalSubThemes = this.subThemes.length;
 
-                // Build breadcrumb trail
-                this.buildBreadcrumbs();
+                    // Build breadcrumb from parentTheme info
+                    this.allThemes = [];
+                    if (result.theme.parentThemeId && result.theme.parentThemeName) {
+                        this.allThemes = [{
+                            id: result.theme.parentThemeId,
+                            name: result.theme.parentThemeName,
+                            legoThemeId: 0,
+                        } as any, this.theme as any];
+                    }
+                    this.buildBreadcrumbs();
+                    this.loading = false;
 
-                this.loading = false;
+                    // Map public sets
+                    this.sets = (result.sets ?? []).map((s: any) => ({
+                        id: s.id,
+                        name: s.name,
+                        setNumber: s.setNumber,
+                        year: s.year,
+                        partCount: s.partCount,
+                        imageUrl: s.imageUrl,
+                        legoThemeId: id,
+                    })) as any;
+                    this.totalSets = this.sets.length;
 
-                // Load sets for this theme
-                this.loadSets(id);
+                    const years = this.sets.map(s => Number(s.year)).filter(y => y > 0);
+                    if (years.length > 0) {
+                        const minYear = Math.min(...years);
+                        const maxYear = Math.max(...years);
+                        this.yearRange = minYear === maxYear ? `${minYear}` : `${minYear}–${maxYear}`;
+                    }
+                    this.totalParts = this.sets.reduce((sum, s) => sum + (Number(s.partCount) || 0), 0);
+                    this.setsLoading = false;
 
-                // Load minifigs for this theme
-                this.loadMinifigs(id);
-            },
-            error: () => {
-                this.loading = false;
-                this.setsLoading = false;
-            }
-        });
+                    const firstWithImage = this.sets.find(s => s.imageUrl);
+                    this.heroImageUrl = firstWithImage?.imageUrl ?? null;
+                    setTimeout(() => this.buildTimeline(), 0);
+
+                    this.loadMinifigs(id);
+                },
+                error: () => { this.loading = false; this.setsLoading = false; }
+            });
+        }
     }
 
     private loadSets(themeId: number): void {
@@ -149,27 +209,19 @@ export class ThemeDetailComponent implements OnInit, OnDestroy {
                 this.sets = sets;
                 this.totalSets = sets.length;
 
-                // Calculate year range
                 const years = sets.map(s => Number(s.year)).filter(y => y > 0);
                 if (years.length > 0) {
                     const minYear = Math.min(...years);
                     const maxYear = Math.max(...years);
                     this.yearRange = minYear === maxYear ? `${minYear}` : `${minYear}–${maxYear}`;
                 }
-
-                // Calculate total parts across all sets
                 this.totalParts = sets.reduce((sum, s) => sum + (Number(s.partCount) || 0), 0);
-
                 this.setsLoading = false;
 
-                // Use first available image as hero banner
                 const firstWithImage = sets.find(s => s.imageUrl);
                 this.heroImageUrl = firstWithImage?.imageUrl ?? null;
-
-                // Build the timeline chart after a tick so the DOM is ready
                 setTimeout(() => this.buildTimeline(), 0);
 
-                // Recalculate theme completion % with current ownership data
                 this.recalcCompletion(this.ownershipCache.getOwnedIds());
             },
             error: () => {

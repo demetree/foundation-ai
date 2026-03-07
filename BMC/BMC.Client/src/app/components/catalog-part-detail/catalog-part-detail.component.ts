@@ -286,29 +286,69 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.isLoading = true;
 
         try {
-            const part = await lastValueFrom(this.brickPartService.GetBrickPart(id, true));
+            if (this.authService.isLoggedIn) {
+                // Authenticated path — use generated data service
+                const part = await lastValueFrom(this.brickPartService.GetBrickPart(id, true));
+                this.part = part;
+                document.title = `${part.name} — Part Detail`;
 
-            this.part = part;
-            document.title = `${part.name} — Part Detail`;
+                this.loadConnectors();
+                this.loadColours();
+                this.loadSetParts();
 
-            // Load related data
-            this.loadConnectors();
-            this.loadColours();
-            this.loadSetParts();
+                if (part.geometryOriginalFileName) {
+                    this.hasGeometry = true;
+                    this.pendingColourReady = true;
+                    setTimeout(() => this.initThreeJsAndLoadModel(), 0);
+                }
+            } else {
+                // Anonymous path — use public detail endpoint
+                const result = await this.http.get<any>(
+                    `/api/public/browse/catalog/${id}/detail`
+                ).toPromise();
 
-            // Check for geometry and initialise 3D viewer
-            if (part.geometryOriginalFileName) {
-                this.hasGeometry = true;
+                if (result?.part) {
+                    this.part = {
+                        id: result.part.id,
+                        name: result.part.name,
+                        ldrawPartId: result.part.ldrawPartId,
+                        ldrawTitle: result.part.ldrawTitle,
+                        ldrawCategory: result.part.ldrawCategory,
+                        brickCategoryId: result.part.brickCategoryId,
+                        geometryOriginalFileName: result.part.geometryOriginalFileName,
+                        keywords: result.part.keywords,
+                        author: result.part.author,
+                        widthLdu: result.part.widthLdu,
+                        heightLdu: result.part.heightLdu,
+                        depthLdu: result.part.depthLdu,
+                        massGrams: result.part.massGrams,
+                        versionNumber: result.part.versionNumber,
+                        rebrickableImgUrl: result.part.rebrickableImgUrl,
+                        rebrickablePartNum: result.part.rebrickablePartNum,
+                        rebrickablePartUrl: result.part.rebrickablePartUrl,
+                    } as any;
 
-                //
-                // Defer showing the model until colour data is ready.
-                // We always want to apply a colour (from the part's known colours,
-                // or Light Bluish Gray as fallback) before revealing the model.
-                //
-                this.pendingColourReady = true;
+                    document.title = `${result.part.name} — Part Detail`;
 
-                // Allow template to render the canvas element first
-                setTimeout(() => this.initThreeJsAndLoadModel(), 0);
+                    // Build part colours from public response
+                    this.partColours = (result.colours ?? []).map((c: any) => {
+                        const col = new BrickColourData();
+                        col.id = c.brickColourId;
+                        col.name = c.colourName;
+                        col.hexRgb = c.colourHex;
+                        col.ldrawColourCode = c.ldrawColourCode;
+                        return col;
+                    });
+                    this.partColoursSourceLoaded = true;
+                    this.setPartsSourceLoaded = true;
+                    this.pendingColourReady = false;
+
+                    // 3D viewer not available for anonymous (requires auth for LDraw files)
+                    this.hasGeometry = false;
+
+                    // Load set appearances from public endpoint
+                    this.loadSetParts();
+                }
             }
         }
         catch (error) {
@@ -385,12 +425,20 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.isLoadingSetParts = true;
 
         try {
-            const headers = this.authService.GetAuthenticationHeaders();
-            const url = `${this.baseUrl}api/parts-catalog/${this.part.id}/set-appearances?limit=100&sortBy=year&sortDir=desc`;
+            let result: { totalCount: number; items: SetAppearanceDto[] } | undefined;
 
-            const result = await this.http.get<{ totalCount: number; items: SetAppearanceDto[] }>(
-                url, { headers }
-            ).toPromise();
+            if (this.authService.isLoggedIn) {
+                const headers = this.authService.GetAuthenticationHeaders();
+                const url = `${this.baseUrl}api/parts-catalog/${this.part.id}/set-appearances?limit=100&sortBy=year&sortDir=desc`;
+                result = await lastValueFrom(
+                    this.http.get<{ totalCount: number; items: SetAppearanceDto[] }>(url, { headers })
+                );
+            } else {
+                const url = `/api/public/browse/catalog/${this.part.id}/set-appearances?limit=100&sortBy=year&sortDir=desc`;
+                result = await lastValueFrom(
+                    this.http.get<{ totalCount: number; items: SetAppearanceDto[] }>(url)
+                );
+            }
 
             this.totalSetPartsCount = result?.totalCount ?? 0;
             this.setParts = result?.items ?? [];

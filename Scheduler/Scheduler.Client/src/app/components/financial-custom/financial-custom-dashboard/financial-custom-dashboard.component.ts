@@ -123,7 +123,8 @@ export class FinancialCustomDashboardComponent implements OnInit {
             active: true,
             deleted: false,
             includeRelations: true,
-            pageSize: 5000
+            // TODO: Replace with server-side aggregation/pagination when transaction volume grows
+            pageSize: 10000
         }).subscribe({
             next: (transactions) => {
                 if (transactions) {
@@ -234,7 +235,7 @@ export class FinancialCustomDashboardComponent implements OnInit {
         this.monthlyIncome = new Array(12).fill(0);
         this.monthlyExpenses = new Array(12).fill(0);
 
-        for (const t of this.allTransactions) {
+        for (const t of this.getFilteredTransactions()) {
             const txDate = t.transactionDate ? new Date(t.transactionDate) : null;
 
             if (txDate && txDate.getFullYear() === this.selectedYear) {
@@ -308,6 +309,11 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
     public goToCategories(): void {
         this.router.navigate(['/finances/categories']);
+    }
+
+
+    public goToBudgets(): void {
+        this.router.navigate(['/finances/budgets']);
     }
 
 

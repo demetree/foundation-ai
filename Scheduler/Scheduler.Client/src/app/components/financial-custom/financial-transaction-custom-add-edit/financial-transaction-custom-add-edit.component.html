@@ -1,0 +1,246 @@
+<!-- ng-bootstrap modal -->
+<ng-template #txModal let-modal>
+    <div class="modal-header tx-modal-header">
+        <h5 class="modal-title mb-0">
+            <i class="fa-solid me-2" [ngClass]="isEditMode ? 'fa-pen-to-square' : 'fa-plus-circle'"></i>
+            {{ isEditMode ? 'Edit Transaction' : 'New Transaction' }}
+        </h5>
+        <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+            <i class="fa fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="modal-body tx-modal-body">
+        <form [formGroup]="txForm" (ngSubmit)="submitForm()">
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 1: Primary — Date & Amounts        -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-dollar-sign me-1"></i> Amount & Date
+                </div>
+
+                <div class="row g-3">
+                    <!-- Transaction Date -->
+                    <div class="col-md-6">
+                        <label class="form-label" for="tx-date">
+                            <span class="text-danger">*</span> Transaction Date
+                        </label>
+                        <input type="datetime-local" id="tx-date" formControlName="transactionDate"
+                            class="form-control" />
+                        <div *ngIf="txForm.get('transactionDate')?.invalid && txForm.get('transactionDate')?.touched"
+                            class="text-danger small mt-1">Transaction date is required</div>
+                    </div>
+
+                    <!-- Payment Type -->
+                    <div class="col-md-6">
+                        <label class="form-label" for="tx-payment-type">Payment Type</label>
+                        <select id="tx-payment-type" formControlName="paymentTypeId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let pt of paymentTypes$ | async" [ngValue]="pt.id">{{ pt.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <!-- Amount -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="tx-amount">
+                            <span class="text-danger">*</span> Amount
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="tx-amount" formControlName="amount"
+                                class="form-control amount-input" step="0.01" min="0" />
+                        </div>
+                        <div *ngIf="txForm.get('amount')?.invalid && txForm.get('amount')?.touched"
+                            class="text-danger small mt-1">Amount is required</div>
+                    </div>
+
+                    <!-- Tax Amount -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="tx-tax">Tax Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="tx-tax" formControlName="taxAmount"
+                                class="form-control amount-input" step="0.01" min="0" />
+                        </div>
+                    </div>
+
+                    <!-- Total (computed, read-only) -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="tx-total">Total</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="tx-total" formControlName="totalAmount"
+                                class="form-control amount-input total-field" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 2: Classification                   -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-tags me-1"></i> Classification
+                </div>
+
+                <div class="row g-3">
+                    <!-- Category (grouped by account type) -->
+                    <div class="col-md-6">
+                        <label class="form-label" for="tx-category">
+                            <span class="text-danger">*</span> Category
+                        </label>
+                        <select id="tx-category" formControlName="financialCategoryId" class="form-select"
+                            (change)="onCategoryChange()">
+                            <option [ngValue]="null">— Select category —</option>
+                            <optgroup label="Revenue" *ngIf="revenueCategories.length > 0">
+                                <option *ngFor="let cat of revenueCategories" [ngValue]="cat.id">
+                                    {{ cat.code }} — {{ cat.name }}
+                                </option>
+                            </optgroup>
+                            <optgroup label="Expense" *ngIf="expenseCategories.length > 0">
+                                <option *ngFor="let cat of expenseCategories" [ngValue]="cat.id">
+                                    {{ cat.code }} — {{ cat.name }}
+                                </option>
+                            </optgroup>
+                        </select>
+                        <div *ngIf="txForm.get('financialCategoryId')?.invalid && txForm.get('financialCategoryId')?.touched"
+                            class="text-danger small mt-1">Category is required</div>
+                    </div>
+
+                    <!-- Office -->
+                    <div class="col-md-6" *ngIf="offices.length > 0">
+                        <label class="form-label" for="tx-office">Office</label>
+                        <select id="tx-office" formControlName="financialOfficeId" class="form-select">
+                            <option [ngValue]="null">— Select office —</option>
+                            <option *ngFor="let office of offices" [ngValue]="office.id">{{ office.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label" for="tx-desc">
+                            <span class="text-danger">*</span> Description
+                        </label>
+                        <textarea id="tx-desc" formControlName="description" class="form-control" rows="2"
+                            placeholder="What is this transaction for?"></textarea>
+                        <div *ngIf="txForm.get('description')?.invalid && txForm.get('description')?.touched"
+                            class="text-danger small mt-1">Description is required</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <!-- Currency -->
+                    <div class="col-md-6">
+                        <label class="form-label" for="tx-currency">
+                            <span class="text-danger">*</span> Currency
+                        </label>
+                        <select id="tx-currency" formControlName="currencyId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let cur of currencies$ | async" [ngValue]="cur.id">{{ cur.name }}</option>
+                        </select>
+                        <div *ngIf="txForm.get('currencyId')?.invalid && txForm.get('currencyId')?.touched"
+                            class="text-danger small mt-1">Currency is required</div>
+                    </div>
+
+                    <!-- Revenue/Expense indicator (auto-set but editable) -->
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input type="checkbox" id="tx-revenue" formControlName="isRevenue"
+                                class="form-check-input" />
+                            <label for="tx-revenue" class="form-check-label">
+                                <span
+                                    [ngClass]="txForm.get('isRevenue')?.value ? 'text-success fw-medium' : 'text-danger fw-medium'">
+                                    {{ txForm.get('isRevenue')?.value ? 'Revenue (Income)' : 'Expense' }}
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 3: More Details (collapsible)       -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label clickable" (click)="showMoreDetails = !showMoreDetails">
+                    <i class="fa-solid me-1" [ngClass]="showMoreDetails ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                    More Details
+                    <span class="text-muted small ms-2" *ngIf="!showMoreDetails">(click to expand)</span>
+                </div>
+
+                <div *ngIf="showMoreDetails" class="mt-2">
+                    <div class="row g-3">
+                        <!-- Reference # -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="tx-ref">Reference #</label>
+                            <input type="text" id="tx-ref" formControlName="referenceNumber" class="form-control"
+                                placeholder="Invoice or receipt number" />
+                        </div>
+
+                        <!-- Tax Code -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="tx-taxcode">Tax Code</label>
+                            <select id="tx-taxcode" formControlName="taxCodeId" class="form-select">
+                                <option [ngValue]="null">— Select —</option>
+                                <option *ngFor="let tc of taxCodes$ | async" [ngValue]="tc.id">{{ tc.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <!-- Fiscal Period -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="tx-fiscal">Fiscal Period</label>
+                            <select id="tx-fiscal" formControlName="fiscalPeriodId" class="form-select">
+                                <option [ngValue]="null">— Select —</option>
+                                <option *ngFor="let fp of fiscalPeriods$ | async" [ngValue]="fp.id">{{ fp.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Journal Entry Type -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="tx-journal">Journal Entry Type</label>
+                            <input type="text" id="tx-journal" formControlName="journalEntryType" class="form-control"
+                                placeholder="e.g. General, Adjusting" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <!-- Notes -->
+                        <div class="col-12">
+                            <label class="form-label" for="tx-notes">Notes</label>
+                            <textarea id="tx-notes" formControlName="notes" class="form-control" rows="3"
+                                placeholder="Additional notes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- FOOTER                                      -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="modal-footer tx-modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary"
+                    [disabled]="isSaving || !txForm.valid || txForm.pristine">
+                    <span *ngIf="isSaving">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        Saving...
+                    </span>
+                    <span *ngIf="!isSaving">
+                        <i class="fa-solid fa-check me-1"></i>
+                        {{ isEditMode ? 'Save Changes' : 'Record Transaction' }}
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>
