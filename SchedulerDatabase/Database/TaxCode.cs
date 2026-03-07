@@ -33,5 +33,9 @@ public partial class TaxCode
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<ChargeType> ChargeTypes { get; set; } = new List<ChargeType>();
+
+    public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
+
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 }

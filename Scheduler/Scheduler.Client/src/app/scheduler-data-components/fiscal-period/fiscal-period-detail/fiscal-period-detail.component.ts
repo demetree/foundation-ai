@@ -23,8 +23,10 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FiscalPeriodService, FiscalPeriodData, FiscalPeriodSubmitData } from '../../../scheduler-data-services/fiscal-period.service';
+import { PeriodStatusService } from '../../../scheduler-data-services/period-status.service';
 import { FiscalPeriodChangeHistoryService } from '../../../scheduler-data-services/fiscal-period-change-history.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { BudgetService } from '../../../scheduler-data-services/budget.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -43,7 +45,7 @@ interface FiscalPeriodFormValues {
   periodType: string,
   fiscalYear: string,     // Stored as string for form input, converted to number on submit.
   periodNumber: string,     // Stored as string for form input, converted to number on submit.
-  isClosed: boolean,
+  periodStatusId: number | bigint,       // For FK link number
   closedDate: string | null,
   closedBy: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
@@ -84,7 +86,7 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
         periodType: ['', Validators.required],
         fiscalYear: ['', Validators.required],
         periodNumber: ['', Validators.required],
-        isClosed: [false],
+        periodStatusId: [null, Validators.required],
         closedDate: [''],
         closedBy: [''],
         sequence: [''],
@@ -105,15 +107,19 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   fiscalPeriods$ = this.fiscalPeriodService.GetFiscalPeriodList();
+  public periodStatuses$ = this.periodStatusService.GetPeriodStatusList();
   public fiscalPeriodChangeHistories$ = this.fiscalPeriodChangeHistoryService.GetFiscalPeriodChangeHistoryList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public budgets$ = this.budgetService.GetBudgetList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public fiscalPeriodService: FiscalPeriodService,
+    public periodStatusService: PeriodStatusService,
     public fiscalPeriodChangeHistoryService: FiscalPeriodChangeHistoryService,
     public financialTransactionService: FinancialTransactionService,
+    public budgetService: BudgetService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -402,7 +408,7 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
         periodType: '',
         fiscalYear: '',
         periodNumber: '',
-        isClosed: false,
+        periodStatusId: null,
         closedDate: '',
         closedBy: '',
         sequence: '',
@@ -425,7 +431,7 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
         periodType: fiscalPeriodData.periodType ?? '',
         fiscalYear: fiscalPeriodData.fiscalYear?.toString() ?? '',
         periodNumber: fiscalPeriodData.periodNumber?.toString() ?? '',
-        isClosed: fiscalPeriodData.isClosed ?? false,
+        periodStatusId: fiscalPeriodData.periodStatusId,
         closedDate: isoUtcStringToDateTimeLocal(fiscalPeriodData.closedDate) ?? '',
         closedBy: fiscalPeriodData.closedBy ?? '',
         sequence: fiscalPeriodData.sequence?.toString() ?? '',
@@ -498,7 +504,7 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
         periodType: formValue.periodType!.trim(),
         fiscalYear: Number(formValue.fiscalYear),
         periodNumber: Number(formValue.periodNumber),
-        isClosed: !!formValue.isClosed,
+        periodStatusId: Number(formValue.periodStatusId),
         closedDate: formValue.closedDate ? dateTimeLocalToIsoUtc(formValue.closedDate.trim()) : null,
         closedBy: formValue.closedBy?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,

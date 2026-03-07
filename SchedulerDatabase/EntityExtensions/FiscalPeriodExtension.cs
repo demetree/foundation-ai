@@ -296,7 +296,7 @@ namespace Foundation.Scheduler.Database
 			[Required]
 			public Int32 periodNumber { get; set; }
 			[Required]
-			public Boolean isClosed { get; set; }
+			public Int32 periodStatusId { get; set; }
 			public DateTime? closedDate { get; set; }
 			public String closedBy { get; set; }
 			public Int32? sequence { get; set; }
@@ -315,6 +315,7 @@ namespace Foundation.Scheduler.Database
 		/// </summary>
 		public class FiscalPeriodOutputDTO : FiscalPeriodDTO
 		{
+			public PeriodStatus.PeriodStatusDTO periodStatus { get; set; }
 		}
 
 
@@ -337,7 +338,7 @@ namespace Foundation.Scheduler.Database
 				periodType = this.periodType,
 				fiscalYear = this.fiscalYear,
 				periodNumber = this.periodNumber,
-				isClosed = this.isClosed,
+				periodStatusId = this.periodStatusId,
 				closedDate = this.closedDate,
 				closedBy = this.closedBy,
 				sequence = this.sequence,
@@ -391,14 +392,15 @@ namespace Foundation.Scheduler.Database
 				periodType = this.periodType,
 				fiscalYear = this.fiscalYear,
 				periodNumber = this.periodNumber,
-				isClosed = this.isClosed,
+				periodStatusId = this.periodStatusId,
 				closedDate = this.closedDate,
 				closedBy = this.closedBy,
 				sequence = this.sequence,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
-				deleted = this.deleted
+				deleted = this.deleted,
+				periodStatus = this.periodStatus?.ToDTO()
 			};
 		}
 
@@ -445,7 +447,7 @@ namespace Foundation.Scheduler.Database
 				periodType = dto.periodType,
 				fiscalYear = dto.fiscalYear,
 				periodNumber = dto.periodNumber,
-				isClosed = dto.isClosed,
+				periodStatusId = dto.periodStatusId,
 				closedDate = dto.closedDate,
 				closedBy = dto.closedBy,
 				sequence = dto.sequence,
@@ -476,7 +478,7 @@ namespace Foundation.Scheduler.Database
 			this.periodType = dto.periodType;
 			this.fiscalYear = dto.fiscalYear;
 			this.periodNumber = dto.periodNumber;
-			this.isClosed = dto.isClosed;
+			this.periodStatusId = dto.periodStatusId;
 			this.closedDate = dto.closedDate;
 			this.closedBy = dto.closedBy;
 			this.sequence = dto.sequence;
@@ -513,7 +515,7 @@ namespace Foundation.Scheduler.Database
 				periodType = this.periodType,
 				fiscalYear = this.fiscalYear,
 				periodNumber = this.periodNumber,
-				isClosed = this.isClosed,
+				periodStatusId = this.periodStatusId,
 				closedDate = this.closedDate,
 				closedBy = this.closedBy,
 				sequence = this.sequence,
@@ -581,7 +583,7 @@ namespace Foundation.Scheduler.Database
 				periodType = fiscalPeriod.periodType,
 				fiscalYear = fiscalPeriod.fiscalYear,
 				periodNumber = fiscalPeriod.periodNumber,
-				isClosed = fiscalPeriod.isClosed,
+				periodStatusId = fiscalPeriod.periodStatusId,
 				closedDate = fiscalPeriod.closedDate,
 				closedBy = fiscalPeriod.closedBy,
 				sequence = fiscalPeriod.sequence,
@@ -616,7 +618,7 @@ namespace Foundation.Scheduler.Database
 				periodType = fiscalPeriod.periodType,
 				fiscalYear = fiscalPeriod.fiscalYear,
 				periodNumber = fiscalPeriod.periodNumber,
-				isClosed = fiscalPeriod.isClosed,
+				periodStatusId = fiscalPeriod.periodStatusId,
 				closedDate = fiscalPeriod.closedDate,
 				closedBy = fiscalPeriod.closedBy,
 				sequence = fiscalPeriod.sequence,
@@ -624,6 +626,7 @@ namespace Foundation.Scheduler.Database
 				objectGuid = fiscalPeriod.objectGuid,
 				active = fiscalPeriod.active,
 				deleted = fiscalPeriod.deleted,
+				periodStatus = PeriodStatus.CreateMinimalAnonymous(fiscalPeriod.periodStatus)
 			 };
 		}
 

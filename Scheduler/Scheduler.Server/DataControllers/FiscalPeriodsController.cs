@@ -73,7 +73,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string periodType = null,
 			int? fiscalYear = null,
 			int? periodNumber = null,
-			bool? isClosed = null,
+			int? periodStatusId = null,
 			DateTime? closedDate = null,
 			string closedBy = null,
 			int? sequence = null,
@@ -177,9 +177,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fp => fp.periodNumber == periodNumber.Value);
 			}
-			if (isClosed.HasValue == true)
+			if (periodStatusId.HasValue == true)
 			{
-				query = query.Where(fp => fp.isClosed == isClosed.Value);
+				query = query.Where(fp => fp.periodStatusId == periodStatusId.Value);
 			}
 			if (closedDate.HasValue == true)
 			{
@@ -241,11 +241,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.periodType.Contains(anyStringContains)
 			       || x.closedBy.Contains(anyStringContains)
+			       || (includeRelations == true && x.periodStatus.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.periodStatus.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.periodStatus.color.Contains(anyStringContains))
 			   );
 			}
 
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.periodStatus);
 				query = query.AsSplitQuery();
 			}
 
@@ -301,7 +305,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string periodType = null,
 			int? fiscalYear = null,
 			int? periodNumber = null,
-			bool? isClosed = null,
+			int? periodStatusId = null,
 			DateTime? closedDate = null,
 			string closedBy = null,
 			int? sequence = null,
@@ -385,9 +389,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fp => fp.periodNumber == periodNumber.Value);
 			}
-			if (isClosed.HasValue == true)
+			if (periodStatusId.HasValue == true)
 			{
-				query = query.Where(fp => fp.isClosed == isClosed.Value);
+				query = query.Where(fp => fp.periodStatusId == periodStatusId.Value);
 			}
 			if (closedDate.HasValue == true)
 			{
@@ -446,6 +450,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.periodType.Contains(anyStringContains)
 			       || x.closedBy.Contains(anyStringContains)
+			       || x.periodStatus.name.Contains(anyStringContains)
+			       || x.periodStatus.description.Contains(anyStringContains)
+			       || x.periodStatus.color.Contains(anyStringContains)
 			   );
 			}
 
@@ -509,6 +516,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.periodStatus);
 					query = query.AsSplitQuery();
 				}
 
@@ -879,8 +887,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					fiscalPeriod.Budgets = null;
 					fiscalPeriod.FinancialTransactions = null;
 					fiscalPeriod.FiscalPeriodChangeHistories = null;
+					fiscalPeriod.periodStatus = null;
 
 
 				    FiscalPeriodChangeHistory fiscalPeriodChangeHistory = new FiscalPeriodChangeHistory();
@@ -995,8 +1005,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.Budgets = null;
 				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.FiscalPeriodChangeHistories = null;
+				cloneOfExisting.periodStatus = null;
 
 				if (versionNumber >= fiscalPeriod.versionNumber)
 				{
@@ -1032,7 +1044,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    fiscalPeriod.periodType = oldFiscalPeriod.periodType;
 				    fiscalPeriod.fiscalYear = oldFiscalPeriod.fiscalYear;
 				    fiscalPeriod.periodNumber = oldFiscalPeriod.periodNumber;
-				    fiscalPeriod.isClosed = oldFiscalPeriod.isClosed;
+				    fiscalPeriod.periodStatusId = oldFiscalPeriod.periodStatusId;
 				    fiscalPeriod.closedDate = oldFiscalPeriod.closedDate;
 				    fiscalPeriod.closedBy = oldFiscalPeriod.closedBy;
 				    fiscalPeriod.sequence = oldFiscalPeriod.sequence;
@@ -1485,7 +1497,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string periodType = null,
 			int? fiscalYear = null,
 			int? periodNumber = null,
-			bool? isClosed = null,
+			int? periodStatusId = null,
 			DateTime? closedDate = null,
 			string closedBy = null,
 			int? sequence = null,
@@ -1588,9 +1600,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fp => fp.periodNumber == periodNumber.Value);
 			}
-			if (isClosed.HasValue == true)
+			if (periodStatusId.HasValue == true)
 			{
-				query = query.Where(fp => fp.isClosed == isClosed.Value);
+				query = query.Where(fp => fp.periodStatusId == periodStatusId.Value);
 			}
 			if (closedDate.HasValue == true)
 			{
@@ -1650,6 +1662,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.periodType.Contains(anyStringContains)
 			       || x.closedBy.Contains(anyStringContains)
+			       || x.periodStatus.name.Contains(anyStringContains)
+			       || x.periodStatus.description.Contains(anyStringContains)
+			       || x.periodStatus.color.Contains(anyStringContains)
 			   );
 			}
 

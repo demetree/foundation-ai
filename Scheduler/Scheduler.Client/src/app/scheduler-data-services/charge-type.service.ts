@@ -18,6 +18,8 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { RateTypeData } from './rate-type.service';
 import { CurrencyData } from './currency.service';
+import { FinancialCategoryData } from './financial-category.service';
+import { TaxCodeData } from './tax-code.service';
 import { ChargeTypeChangeHistoryService, ChargeTypeChangeHistoryData } from './charge-type-change-history.service';
 import { ScheduledEventTemplateChargeService, ScheduledEventTemplateChargeData } from './scheduled-event-template-charge.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
@@ -42,6 +44,8 @@ export class ChargeTypeQueryParameters {
     defaultDescription: string | null | undefined = null;
     rateTypeId: bigint | number | null | undefined = null;
     currencyId: bigint | number | null | undefined = null;
+    financialCategoryId: bigint | number | null | undefined = null;
+    taxCodeId: bigint | number | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -69,6 +73,8 @@ export class ChargeTypeSubmitData {
     defaultDescription: string | null = null;
     rateTypeId: bigint | number | null = null;
     currencyId!: bigint | number;
+    financialCategoryId: bigint | number | null = null;
+    taxCodeId: bigint | number | null = null;
     sequence: bigint | number | null = null;
     color: string | null = null;
     versionNumber!: bigint | number;
@@ -150,6 +156,8 @@ export class ChargeTypeData {
     defaultDescription!: string | null;
     rateTypeId!: bigint | number;
     currencyId!: bigint | number;
+    financialCategoryId!: bigint | number;
+    taxCodeId!: bigint | number;
     sequence!: bigint | number;
     color!: string | null;
     versionNumber!: bigint | number;
@@ -157,7 +165,9 @@ export class ChargeTypeData {
     active!: boolean;
     deleted!: boolean;
     currency: CurrencyData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    financialCategory: FinancialCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     rateType: RateTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    taxCode: TaxCodeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -773,6 +783,8 @@ export class ChargeTypeService extends SecureEndpointBase {
         output.defaultDescription = data.defaultDescription;
         output.rateTypeId = data.rateTypeId;
         output.currencyId = data.currencyId;
+        output.financialCategoryId = data.financialCategoryId;
+        output.taxCodeId = data.taxCodeId;
         output.sequence = data.sequence;
         output.color = data.color;
         output.versionNumber = data.versionNumber;

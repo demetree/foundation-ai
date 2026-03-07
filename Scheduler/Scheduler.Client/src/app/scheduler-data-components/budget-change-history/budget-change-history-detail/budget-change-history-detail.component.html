@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 budget-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="budget-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Budget Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Budget Change History' : 'Add Budget Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerBudgetChangeHistoryReader()">
+                <div class="col m-2 budget-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="budgetChangeHistoryForm" (ngSubmit)="submitForm()" class="budget-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('budgetId')">
+                                <label for="BudgetChangeHistory-budgetId" id="label-BudgetChangeHistory-budgetId"><span class="text-danger">*</span>Budget</label>
+                                <select id="BudgetChangeHistory-budgetId" formControlName="budgetId" class="form-select budget-change-history-select" [disabled]="!userIsSchedulerBudgetChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Budget</option>
+                                    <option *ngFor="let budget of budgets$ | async" [ngValue]="budget.id">{{budget.notes}}</option>
+                                </select>
+                                <div *ngIf="budgetChangeHistoryForm.get('budgetId')?.invalid && budgetChangeHistoryForm.get('budgetId')?.touched" class="text-danger">
+                                    Budget is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="BudgetChangeHistory-versionNumber" id="label-BudgetChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="BudgetChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control budget-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="BudgetChangeHistory-timeStamp" id="label-BudgetChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="BudgetChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control budget-change-history-input" [disabled]="!userIsSchedulerBudgetChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="budgetChangeHistoryForm.get('timeStamp')?.invalid && budgetChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="BudgetChangeHistory-userId" id="label-BudgetChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="BudgetChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control budget-change-history-input" [disabled]="!userIsSchedulerBudgetChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="budgetChangeHistoryForm.get('userId')?.invalid && budgetChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="BudgetChangeHistory-data" id="label-BudgetChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="BudgetChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control budget-change-history-input" [disabled]="!userIsSchedulerBudgetChangeHistoryWriter()"></textarea>
+                                <div *ngIf="budgetChangeHistoryForm.get('data')?.invalid && budgetChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="budget-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="budgetChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Budget Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !budgetChangeHistoryForm.valid || !budgetChangeHistoryForm.dirty || budgetChangeHistoryForm.pristine  || userIsSchedulerBudgetChangeHistoryWriter() == false " ngbTooltip="Save the Budget Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Budget Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

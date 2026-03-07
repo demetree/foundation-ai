@@ -30,6 +30,7 @@ import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.
 import { ChargeStatusService } from '../../../scheduler-data-services/charge-status.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { RateTypeService } from '../../../scheduler-data-services/rate-type.service';
+import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -48,6 +49,8 @@ interface EventChargeFormValues {
   unitPrice: string | null,     // Stored as string for form input, converted to number on submit.
   extendedAmount: string,     // Stored as string for form input, converted to number on submit.
   taxAmount: string,     // Stored as string for form input, converted to number on submit.
+  totalAmount: string,     // Stored as string for form input, converted to number on submit.
+  description: string | null,
   currencyId: number | bigint,       // For FK link number
   rateTypeId: number | bigint | null,       // For FK link number
   notes: string | null,
@@ -59,6 +62,7 @@ interface EventChargeFormValues {
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
+  taxCodeId: number | bigint | null,       // For FK link number
 };
 
 @Component({
@@ -97,6 +101,8 @@ export class EventChargeAddEditComponent {
         unitPrice: [''],
         extendedAmount: ['', Validators.required],
         taxAmount: ['', Validators.required],
+        totalAmount: ['', Validators.required],
+        description: [''],
         currencyId: [null, Validators.required],
         rateTypeId: [null],
         notes: [''],
@@ -108,6 +114,7 @@ export class EventChargeAddEditComponent {
         versionNumber: [''],
         active: [true],
         deleted: [false],
+        taxCodeId: [null],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -124,6 +131,7 @@ export class EventChargeAddEditComponent {
   chargeStatuses$ = this.chargeStatusService.GetChargeStatusList();
   currencies$ = this.currencyService.GetCurrencyList();
   rateTypes$ = this.rateTypeService.GetRateTypeList();
+  taxCodes$ = this.taxCodeService.GetTaxCodeList();
 
   constructor(
     private modalService: NgbModal,
@@ -134,6 +142,7 @@ export class EventChargeAddEditComponent {
     private chargeStatusService: ChargeStatusService,
     private currencyService: CurrencyService,
     private rateTypeService: RateTypeService,
+    private taxCodeService: TaxCodeService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -261,6 +270,8 @@ export class EventChargeAddEditComponent {
         unitPrice: formValue.unitPrice ? Number(formValue.unitPrice) : null,
         extendedAmount: Number(formValue.extendedAmount),
         taxAmount: Number(formValue.taxAmount),
+        totalAmount: Number(formValue.totalAmount),
+        description: formValue.description?.trim() || null,
         currencyId: Number(formValue.currencyId),
         rateTypeId: formValue.rateTypeId ? Number(formValue.rateTypeId) : null,
         notes: formValue.notes?.trim() || null,
@@ -272,6 +283,7 @@ export class EventChargeAddEditComponent {
         versionNumber: this.eventChargeSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
+        taxCodeId: formValue.taxCodeId ? Number(formValue.taxCodeId) : null,
    };
 
       if (this.isEditMode) {
@@ -406,6 +418,8 @@ export class EventChargeAddEditComponent {
         unitPrice: '',
         extendedAmount: '',
         taxAmount: '',
+        totalAmount: '',
+        description: '',
         currencyId: null,
         rateTypeId: null,
         notes: '',
@@ -417,6 +431,7 @@ export class EventChargeAddEditComponent {
         versionNumber: '',
         active: true,
         deleted: false,
+        taxCodeId: null,
    }, { emitEvent: false});
 
     }
@@ -434,6 +449,8 @@ export class EventChargeAddEditComponent {
         unitPrice: eventChargeData.unitPrice?.toString() ?? '',
         extendedAmount: eventChargeData.extendedAmount?.toString() ?? '',
         taxAmount: eventChargeData.taxAmount?.toString() ?? '',
+        totalAmount: eventChargeData.totalAmount?.toString() ?? '',
+        description: eventChargeData.description ?? '',
         currencyId: eventChargeData.currencyId,
         rateTypeId: eventChargeData.rateTypeId,
         notes: eventChargeData.notes ?? '',
@@ -445,6 +462,7 @@ export class EventChargeAddEditComponent {
         versionNumber: eventChargeData.versionNumber?.toString() ?? '',
         active: eventChargeData.active ?? true,
         deleted: eventChargeData.deleted ?? false,
+        taxCodeId: eventChargeData.taxCodeId,
       }, { emitEvent: false});
     }
 

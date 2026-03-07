@@ -59,6 +59,14 @@
                 Tax  Amount
                 <span *ngIf="sortColumn === 'taxAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalAmount')">
+                Total  Amount
+                <span *ngIf="sortColumn === 'totalAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('currency.name')">
                 Currency
                 <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -90,6 +98,10 @@
             <th class="sortable" scope="col" (click)="sortBy('externalId')">
                 External  Id
                 <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('taxCode.name')">
+                Tax  Code
+                <span *ngIf="sortColumn === 'taxCode.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
 End of commented block for alternate definition option -->
           </tr>
@@ -184,6 +196,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{eventCharge.unitPrice | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{eventCharge.extendedAmount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{eventCharge.taxAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{eventCharge.totalAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{eventCharge.description}}</td>
             <td class="text-truncate"><a [routerLink]="['/currency', eventCharge.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{eventCharge.currency?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/ratetype', eventCharge.rateTypeId]" class="btn btn-link text-left" ngbTooltip="Open Rate Type details">{{eventCharge.rateType?.name}}</a></td>
             <td class="text-truncate">{{eventCharge.notes}}</td>
@@ -192,6 +206,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{eventCharge.depositRefundedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{eventCharge.exportedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{eventCharge.externalId}}</td>
+            <td class="text-truncate"><a [routerLink]="['/taxcode', eventCharge.taxCodeId]" class="btn btn-link text-left" ngbTooltip="Open Tax Code details">{{eventCharge.taxCode?.name}}</a></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -371,6 +386,14 @@ End of commented block for alternate definition option -->
               <strong>Tax Amount: </strong>
               {{eventCharge.taxAmount | bigNumberFormat : '1.0-2'}}
             </p>
+            <p class="event-charge-info" *ngIf="eventCharge.totalAmount != null">
+              <strong>Total Amount: </strong>
+              {{eventCharge.totalAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="event-charge-info" *ngIf="eventCharge.description != null">
+              <strong>Description: </strong>
+              {{eventCharge.description}}
+            </p>
             <p class="event-charge-info" *ngIf="eventCharge.currencyId != null">
               <strong>Currency: </strong>
               <a [routerLink]="['/currency', eventCharge.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{eventCharge.currency?.name}}</a>
@@ -402,6 +425,10 @@ End of commented block for alternate definition option -->
             <p class="event-charge-info" *ngIf="eventCharge.externalId != null">
               <strong>External Id: </strong>
               {{eventCharge.externalId}}
+            </p>
+            <p class="event-charge-info" *ngIf="eventCharge.taxCodeId != null">
+              <strong>Tax Code: </strong>
+              <a [routerLink]="['/taxcode', eventCharge.taxCodeId]" class="text-left p-0 m-0" ngbTooltip="Open Tax Code details">{{eventCharge.taxCode?.name}}</a>
             </p>
             </div>
          </div>

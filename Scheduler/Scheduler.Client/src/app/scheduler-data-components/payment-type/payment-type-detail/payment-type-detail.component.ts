@@ -23,6 +23,8 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { PaymentTypeService, PaymentTypeData, PaymentTypeSubmitData } from '../../../scheduler-data-services/payment-type.service';
+import { PaymentTypeChangeHistoryService } from '../../../scheduler-data-services/payment-type-change-history.service';
+import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -37,7 +39,9 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface PaymentTypeFormValues {
   name: string,
   description: string,
+  color: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -69,7 +73,9 @@ export class PaymentTypeDetailComponent implements OnInit, CanComponentDeactivat
   public paymentTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: ['', Validators.required],
+        color: [''],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -86,12 +92,16 @@ export class PaymentTypeDetailComponent implements OnInit, CanComponentDeactivat
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   paymentTypes$ = this.paymentTypeService.GetPaymentTypeList();
+  public paymentTypeChangeHistories$ = this.paymentTypeChangeHistoryService.GetPaymentTypeChangeHistoryList();
+  public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public gifts$ = this.giftService.GetGiftList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public paymentTypeService: PaymentTypeService,
+    public paymentTypeChangeHistoryService: PaymentTypeChangeHistoryService,
+    public financialTransactionService: FinancialTransactionService,
     public giftService: GiftService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -376,7 +386,9 @@ export class PaymentTypeDetailComponent implements OnInit, CanComponentDeactivat
       this.paymentTypeForm.reset({
         name: '',
         description: '',
+        color: '',
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -390,7 +402,9 @@ export class PaymentTypeDetailComponent implements OnInit, CanComponentDeactivat
         this.paymentTypeForm.reset({
         name: paymentTypeData.name ?? '',
         description: paymentTypeData.description ?? '',
+        color: paymentTypeData.color ?? '',
         sequence: paymentTypeData.sequence?.toString() ?? '',
+        versionNumber: paymentTypeData.versionNumber?.toString() ?? '',
         active: paymentTypeData.active ?? true,
         deleted: paymentTypeData.deleted ?? false,
       }, { emitEvent: false});
@@ -454,7 +468,9 @@ export class PaymentTypeDetailComponent implements OnInit, CanComponentDeactivat
         id: this.paymentTypeData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
+        color: formValue.color?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.paymentTypeData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

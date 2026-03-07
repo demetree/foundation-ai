@@ -27,6 +27,10 @@ public partial class EventCharge
 
     public decimal taxAmount { get; set; }
 
+    public decimal totalAmount { get; set; }
+
+    public string description { get; set; }
+
     public int currencyId { get; set; }
 
     public int? rateTypeId { get; set; }
@@ -51,6 +55,8 @@ public partial class EventCharge
 
     public bool deleted { get; set; }
 
+    public int? taxCodeId { get; set; }
+
     public virtual ICollection<EventChargeChangeHistory> EventChargeChangeHistories { get; set; } = new List<EventChargeChangeHistory>();
 
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
@@ -66,4 +72,6 @@ public partial class EventCharge
     public virtual Resource resource { get; set; }
 
     public virtual ScheduledEvent scheduledEvent { get; set; }
+
+    public virtual TaxCode taxCode { get; set; }
 }

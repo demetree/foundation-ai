@@ -16,6 +16,8 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { PaymentTypeChangeHistoryService, PaymentTypeChangeHistoryData } from './payment-type-change-history.service';
+import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { GiftService, GiftData } from './gift.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -30,7 +32,9 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class PaymentTypeQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
+    color: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -48,11 +52,33 @@ export class PaymentTypeSubmitData {
     id!: bigint | number;
     name!: string;
     description!: string;
+    color: string | null = null;
     sequence: bigint | number | null = null;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class PaymentTypeBasicListData {
   id!: bigint | number;
@@ -100,7 +126,9 @@ export class PaymentTypeData {
     id!: bigint | number;
     name!: string;
     description!: string;
+    color!: string | null;
     sequence!: bigint | number;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -108,11 +136,30 @@ export class PaymentTypeData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _paymentTypeChangeHistories: PaymentTypeChangeHistoryData[] | null = null;
+    private _paymentTypeChangeHistoriesPromise: Promise<PaymentTypeChangeHistoryData[]> | null  = null;
+    private _paymentTypeChangeHistoriesSubject = new BehaviorSubject<PaymentTypeChangeHistoryData[] | null>(null);
+
+                
+    private _financialTransactions: FinancialTransactionData[] | null = null;
+    private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
+    private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<PaymentTypeData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<PaymentTypeData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<PaymentTypeData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -120,6 +167,56 @@ export class PaymentTypeData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public PaymentTypeChangeHistories$ = this._paymentTypeChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._paymentTypeChangeHistories === null && this._paymentTypeChangeHistoriesPromise === null) {
+            this.loadPaymentTypeChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _paymentTypeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get PaymentTypeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._paymentTypeChangeHistoriesCount$ === null) {
+            this._paymentTypeChangeHistoriesCount$ = PaymentTypeChangeHistoryService.Instance.GetPaymentTypeChangeHistoriesRowCount({paymentTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._paymentTypeChangeHistoriesCount$;
+    }
+
+
+
+    public FinancialTransactions$ = this._financialTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._financialTransactions === null && this._financialTransactionsPromise === null) {
+            this.loadFinancialTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _financialTransactionsCount$: Observable<bigint | number> | null = null;
+    public get FinancialTransactionsCount$(): Observable<bigint | number> {
+        if (this._financialTransactionsCount$ === null) {
+            this._financialTransactionsCount$ = FinancialTransactionService.Instance.GetFinancialTransactionsRowCount({paymentTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._financialTransactionsCount$;
+    }
+
+
+
     public Gifts$ = this._giftsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -183,17 +280,160 @@ export class PaymentTypeData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._paymentTypeChangeHistories = null;
+     this._paymentTypeChangeHistoriesPromise = null;
+     this._paymentTypeChangeHistoriesSubject.next(null);
+     this._paymentTypeChangeHistoriesCount$ = null;
+
+     this._financialTransactions = null;
+     this._financialTransactionsPromise = null;
+     this._financialTransactionsSubject.next(null);
+     this._financialTransactionsCount$ = null;
+
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
      this._giftsCount$ = null;
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the PaymentTypeChangeHistories for this PaymentType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.paymentType.PaymentTypeChangeHistories.then(paymentTypes => { ... })
+     *   or
+     *   await this.paymentType.paymentTypes
+     *
+    */
+    public get PaymentTypeChangeHistories(): Promise<PaymentTypeChangeHistoryData[]> {
+        if (this._paymentTypeChangeHistories !== null) {
+            return Promise.resolve(this._paymentTypeChangeHistories);
+        }
+
+        if (this._paymentTypeChangeHistoriesPromise !== null) {
+            return this._paymentTypeChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadPaymentTypeChangeHistories();
+
+        return this._paymentTypeChangeHistoriesPromise!;
+    }
+
+
+
+    private loadPaymentTypeChangeHistories(): void {
+
+        this._paymentTypeChangeHistoriesPromise = lastValueFrom(
+            PaymentTypeService.Instance.GetPaymentTypeChangeHistoriesForPaymentType(this.id)
+        )
+        .then(PaymentTypeChangeHistories => {
+            this._paymentTypeChangeHistories = PaymentTypeChangeHistories ?? [];
+            this._paymentTypeChangeHistoriesSubject.next(this._paymentTypeChangeHistories);
+            return this._paymentTypeChangeHistories;
+         })
+        .catch(err => {
+            this._paymentTypeChangeHistories = [];
+            this._paymentTypeChangeHistoriesSubject.next(this._paymentTypeChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._paymentTypeChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached PaymentTypeChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearPaymentTypeChangeHistoriesCache(): void {
+        this._paymentTypeChangeHistories = null;
+        this._paymentTypeChangeHistoriesPromise = null;
+        this._paymentTypeChangeHistoriesSubject.next(this._paymentTypeChangeHistories);      // Emit to observable
+    }
+
+    public get HasPaymentTypeChangeHistories(): Promise<boolean> {
+        return this.PaymentTypeChangeHistories.then(paymentTypeChangeHistories => paymentTypeChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the FinancialTransactions for this PaymentType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.paymentType.FinancialTransactions.then(paymentTypes => { ... })
+     *   or
+     *   await this.paymentType.paymentTypes
+     *
+    */
+    public get FinancialTransactions(): Promise<FinancialTransactionData[]> {
+        if (this._financialTransactions !== null) {
+            return Promise.resolve(this._financialTransactions);
+        }
+
+        if (this._financialTransactionsPromise !== null) {
+            return this._financialTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadFinancialTransactions();
+
+        return this._financialTransactionsPromise!;
+    }
+
+
+
+    private loadFinancialTransactions(): void {
+
+        this._financialTransactionsPromise = lastValueFrom(
+            PaymentTypeService.Instance.GetFinancialTransactionsForPaymentType(this.id)
+        )
+        .then(FinancialTransactions => {
+            this._financialTransactions = FinancialTransactions ?? [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            return this._financialTransactions;
+         })
+        .catch(err => {
+            this._financialTransactions = [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._financialTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached FinancialTransaction. Call after mutations to force refresh.
+     */
+    public ClearFinancialTransactionsCache(): void {
+        this._financialTransactions = null;
+        this._financialTransactionsPromise = null;
+        this._financialTransactionsSubject.next(this._financialTransactions);      // Emit to observable
+    }
+
+    public get HasFinancialTransactions(): Promise<boolean> {
+        return this.FinancialTransactions.then(financialTransactions => financialTransactions.length > 0);
+    }
+
+
     /**
      *
      * Gets the Gifts for this PaymentType.
@@ -261,6 +501,49 @@ export class PaymentTypeData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (paymentType.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await paymentType.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<PaymentTypeData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<PaymentTypeData>> {
+        const info = await lastValueFrom(
+            PaymentTypeService.Instance.GetPaymentTypeChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this PaymentTypeData object using values from another object that has some or all of the fields needed.
      */
@@ -294,6 +577,8 @@ export class PaymentTypeService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private paymentTypeChangeHistoryService: PaymentTypeChangeHistoryService,
+        private financialTransactionService: FinancialTransactionService,
         private giftService: GiftService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -354,7 +639,9 @@ export class PaymentTypeService extends SecureEndpointBase {
         output.id = data.id;
         output.name = data.name;
         output.description = data.description;
+        output.color = data.color;
         output.sequence = data.sequence;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -582,6 +869,108 @@ export class PaymentTypeService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackPaymentType(id: bigint | number, versionNumber: bigint | number) : Observable<PaymentTypeData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<PaymentTypeData>(this.baseUrl + 'api/PaymentType/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.RevivePaymentType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackPaymentType(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a PaymentType.
+     */
+    public GetPaymentTypeChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<PaymentTypeData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<PaymentTypeData>>(this.baseUrl + 'api/PaymentType/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetPaymentTypeChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a PaymentType.
+     */
+    public GetPaymentTypeAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<PaymentTypeData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<PaymentTypeData>[]>(this.baseUrl + 'api/PaymentType/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetPaymentTypeAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a PaymentType.
+     */
+    public GetPaymentTypeVersion(id: bigint | number, version: number): Observable<PaymentTypeData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<PaymentTypeData>(this.baseUrl + 'api/PaymentType/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.RevivePaymentType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetPaymentTypeVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a PaymentType at a specific point in time.
+     */
+    public GetPaymentTypeStateAtTime(id: bigint | number, time: string): Observable<PaymentTypeData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<PaymentTypeData>(this.baseUrl + 'api/PaymentType/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.RevivePaymentType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetPaymentTypeStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: PaymentTypeQueryParameters | any): string {
 
@@ -644,7 +1033,7 @@ export class PaymentTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerPaymentTypeWriter = user.writePermission >= 255;
+            userIsSchedulerPaymentTypeWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerPaymentTypeWriter = false;
           }      
@@ -652,6 +1041,26 @@ export class PaymentTypeService extends SecureEndpointBase {
 
         return userIsSchedulerPaymentTypeWriter;
     }
+
+    public GetPaymentTypeChangeHistoriesForPaymentType(paymentTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTypeChangeHistoryData[]> {
+        return this.paymentTypeChangeHistoryService.GetPaymentTypeChangeHistoryList({
+            paymentTypeId: paymentTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetFinancialTransactionsForPaymentType(paymentTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FinancialTransactionData[]> {
+        return this.financialTransactionService.GetFinancialTransactionList({
+            paymentTypeId: paymentTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
 
     public GetGiftsForPaymentType(paymentTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GiftData[]> {
         return this.giftService.GetGiftList({
@@ -698,6 +1107,14 @@ export class PaymentTypeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._paymentTypeChangeHistories = null;
+    (revived as any)._paymentTypeChangeHistoriesPromise = null;
+    (revived as any)._paymentTypeChangeHistoriesSubject = new BehaviorSubject<PaymentTypeChangeHistoryData[] | null>(null);
+
+    (revived as any)._financialTransactions = null;
+    (revived as any)._financialTransactionsPromise = null;
+    (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
     (revived as any)._giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
@@ -714,6 +1131,30 @@ export class PaymentTypeService extends SecureEndpointBase {
     // 2. But private methods (loadPaymentTypeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).PaymentTypeChangeHistories$ = (revived as any)._paymentTypeChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._paymentTypeChangeHistories === null && (revived as any)._paymentTypeChangeHistoriesPromise === null) {
+                (revived as any).loadPaymentTypeChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._paymentTypeChangeHistoriesCount$ = null;
+
+
+    (revived as any).FinancialTransactions$ = (revived as any)._financialTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._financialTransactions === null && (revived as any)._financialTransactionsPromise === null) {
+                (revived as any).loadFinancialTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._financialTransactionsCount$ = null;
+
+
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._gifts === null && (revived as any)._giftsPromise === null) {
@@ -725,6 +1166,23 @@ export class PaymentTypeService extends SecureEndpointBase {
 
     (revived as any)._giftsCount$ = null;
 
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<PaymentTypeData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
     return revived;

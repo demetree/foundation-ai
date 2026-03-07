@@ -190,11 +190,13 @@ export class ChargeStatusTableComponent implements OnInit, OnChanges, AfterViewI
     const isAdmin = this.authService.isSchedulerAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     

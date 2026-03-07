@@ -25,6 +25,8 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ChargeTypeService, ChargeTypeData, ChargeTypeSubmitData } from '../../../scheduler-data-services/charge-type.service';
 import { RateTypeService } from '../../../scheduler-data-services/rate-type.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
+import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
+import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { ChargeTypeChangeHistoryService } from '../../../scheduler-data-services/charge-type-change-history.service';
 import { ScheduledEventTemplateChargeService } from '../../../scheduler-data-services/scheduled-event-template-charge.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
@@ -49,6 +51,8 @@ interface ChargeTypeFormValues {
   defaultDescription: string | null,
   rateTypeId: number | bigint | null,       // For FK link number
   currencyId: number | bigint,       // For FK link number
+  financialCategoryId: number | bigint | null,       // For FK link number
+  taxCodeId: number | bigint | null,       // For FK link number
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   color: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
@@ -90,6 +94,8 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
         defaultDescription: [''],
         rateTypeId: [null],
         currencyId: [null, Validators.required],
+        financialCategoryId: [null],
+        taxCodeId: [null],
         sequence: [''],
         color: [''],
         versionNumber: [''],
@@ -111,6 +117,8 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
   chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   public rateTypes$ = this.rateTypeService.GetRateTypeList();
   public currencies$ = this.currencyService.GetCurrencyList();
+  public financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
+  public taxCodes$ = this.taxCodeService.GetTaxCodeList();
   public chargeTypeChangeHistories$ = this.chargeTypeChangeHistoryService.GetChargeTypeChangeHistoryList();
   public scheduledEventTemplateCharges$ = this.scheduledEventTemplateChargeService.GetScheduledEventTemplateChargeList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
@@ -122,6 +130,8 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
     public chargeTypeService: ChargeTypeService,
     public rateTypeService: RateTypeService,
     public currencyService: CurrencyService,
+    public financialCategoryService: FinancialCategoryService,
+    public taxCodeService: TaxCodeService,
     public chargeTypeChangeHistoryService: ChargeTypeChangeHistoryService,
     public scheduledEventTemplateChargeService: ScheduledEventTemplateChargeService,
     public eventChargeService: EventChargeService,
@@ -416,6 +426,8 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
         defaultDescription: '',
         rateTypeId: null,
         currencyId: null,
+        financialCategoryId: null,
+        taxCodeId: null,
         sequence: '',
         color: '',
         versionNumber: '',
@@ -439,6 +451,8 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
         defaultDescription: chargeTypeData.defaultDescription ?? '',
         rateTypeId: chargeTypeData.rateTypeId,
         currencyId: chargeTypeData.currencyId,
+        financialCategoryId: chargeTypeData.financialCategoryId,
+        taxCodeId: chargeTypeData.taxCodeId,
         sequence: chargeTypeData.sequence?.toString() ?? '',
         color: chargeTypeData.color ?? '',
         versionNumber: chargeTypeData.versionNumber?.toString() ?? '',
@@ -512,6 +526,8 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
         defaultDescription: formValue.defaultDescription?.trim() || null,
         rateTypeId: formValue.rateTypeId ? Number(formValue.rateTypeId) : null,
         currencyId: Number(formValue.currencyId),
+        financialCategoryId: formValue.financialCategoryId ? Number(formValue.financialCategoryId) : null,
+        taxCodeId: formValue.taxCodeId ? Number(formValue.taxCodeId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         color: formValue.color?.trim() || null,
         versionNumber: this.chargeTypeData?.versionNumber ?? 0,

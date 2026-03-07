@@ -41,14 +41,13 @@
                     Code is required
                 </div>
             </div>
-            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevenue')">
-                <input type="checkbox" id="FinancialCategory-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" />
-                <label for="FinancialCategory-isRevenue" class="form-check-label" id="label-FinancialCategory-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
-            </div>
-            <div class="form-group" *ngIf="!isFieldHidden('accountType')">
-                <label for="FinancialCategory-accountType" id="label-FinancialCategory-accountType"><span class="text-danger">*</span>Account Type</label>
-                <input type="text" id="FinancialCategory-accountType" formControlName="accountType" placeholder="Enter Account Type" class="form-control financial-category-input" [disabled]="!userIsSchedulerFinancialCategoryWriter()" aria-labelledby="label-accountType" />
-                <div *ngIf="financialCategoryForm.get('accountType')?.invalid && financialCategoryForm.get('accountType')?.touched" class="text-danger">
+            <div class="form-group" *ngIf="!isFieldHidden('accountTypeId')">
+                <label for="FinancialCategory-accountTypeId" id="label-FinancialCategory-accountTypeId"><span class="text-danger">*</span>Account Type</label>
+                <select id="FinancialCategory-accountTypeId" formControlName="accountTypeId" class="form-select financial-category-select" [disabled]="!userIsSchedulerFinancialCategoryWriter()">
+                    <option [ngValue]="null">Select Account Type</option>
+                    <option *ngFor="let accountType of accountTypes$ | async" [ngValue]="accountType.id">{{accountType.name}}</option>
+                </select>
+                <div *ngIf="financialCategoryForm.get('accountTypeId')?.invalid && financialCategoryForm.get('accountTypeId')?.touched" class="text-danger">
                     Account Type is required
                 </div>
             </div>

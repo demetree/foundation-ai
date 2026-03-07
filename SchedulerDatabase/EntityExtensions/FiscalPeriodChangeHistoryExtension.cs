@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = fiscalPeriodChangeHistory.timeStamp,
 				userId = fiscalPeriodChangeHistory.userId,
 				data = fiscalPeriodChangeHistory.data,
-				fiscalPeriod = FiscalPeriod.CreateMinimalAnonymous(fiscalPeriodChangeHistory.fiscalPeriod),
+				fiscalPeriod = FiscalPeriod.CreateMinimalAnonymous(fiscalPeriodChangeHistory.fiscalPeriod)
 			 };
 		}
 

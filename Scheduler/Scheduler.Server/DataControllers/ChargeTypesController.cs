@@ -75,6 +75,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string defaultDescription = null,
 			int? rateTypeId = null,
 			int? currencyId = null,
+			int? financialCategoryId = null,
+			int? taxCodeId = null,
 			int? sequence = null,
 			string color = null,
 			int? versionNumber = null,
@@ -167,6 +169,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ct => ct.currencyId == currencyId.Value);
 			}
+			if (financialCategoryId.HasValue == true)
+			{
+				query = query.Where(ct => ct.financialCategoryId == financialCategoryId.Value);
+			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ct => ct.taxCodeId == taxCodeId.Value);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ct => ct.sequence == sequence.Value);
@@ -228,16 +238,27 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.currency.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.currency.code.Contains(anyStringContains))
 			       || (includeRelations == true && x.currency.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.externalAccountId.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialCategory.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.rateType.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.rateType.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.rateType.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.externalTaxCodeId.Contains(anyStringContains))
 			   );
 			}
 
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.currency);
+				query = query.Include(x => x.financialCategory);
 				query = query.Include(x => x.rateType);
+				query = query.Include(x => x.taxCode);
 				query = query.AsSplitQuery();
 			}
 
@@ -295,6 +316,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string defaultDescription = null,
 			int? rateTypeId = null,
 			int? currencyId = null,
+			int? financialCategoryId = null,
+			int? taxCodeId = null,
 			int? sequence = null,
 			string color = null,
 			int? versionNumber = null,
@@ -367,6 +390,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ct => ct.currencyId == currencyId.Value);
 			}
+			if (financialCategoryId.HasValue == true)
+			{
+				query = query.Where(ct => ct.financialCategoryId == financialCategoryId.Value);
+			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ct => ct.taxCodeId == taxCodeId.Value);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ct => ct.sequence == sequence.Value);
@@ -425,9 +456,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.currency.description.Contains(anyStringContains)
 			       || x.currency.code.Contains(anyStringContains)
 			       || x.currency.color.Contains(anyStringContains)
+			       || x.financialCategory.name.Contains(anyStringContains)
+			       || x.financialCategory.description.Contains(anyStringContains)
+			       || x.financialCategory.code.Contains(anyStringContains)
+			       || x.financialCategory.externalAccountId.Contains(anyStringContains)
+			       || x.financialCategory.color.Contains(anyStringContains)
 			       || x.rateType.name.Contains(anyStringContains)
 			       || x.rateType.description.Contains(anyStringContains)
 			       || x.rateType.color.Contains(anyStringContains)
+			       || x.taxCode.name.Contains(anyStringContains)
+			       || x.taxCode.description.Contains(anyStringContains)
+			       || x.taxCode.code.Contains(anyStringContains)
+			       || x.taxCode.externalTaxCodeId.Contains(anyStringContains)
 			   );
 			}
 
@@ -492,7 +532,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (includeRelations == true)
 				{
 					query = query.Include(x => x.currency);
+					query = query.Include(x => x.financialCategory);
 					query = query.Include(x => x.rateType);
+					query = query.Include(x => x.taxCode);
 					query = query.AsSplitQuery();
 				}
 
@@ -848,7 +890,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					chargeType.EventResourceAssignments = null;
 					chargeType.ScheduledEventTemplateCharges = null;
 					chargeType.currency = null;
+					chargeType.financialCategory = null;
 					chargeType.rateType = null;
+					chargeType.taxCode = null;
 
 
 				    ChargeTypeChangeHistory chargeTypeChangeHistory = new ChargeTypeChangeHistory();
@@ -968,7 +1012,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.ScheduledEventTemplateCharges = null;
 				cloneOfExisting.currency = null;
+				cloneOfExisting.financialCategory = null;
 				cloneOfExisting.rateType = null;
+				cloneOfExisting.taxCode = null;
 
 				if (versionNumber >= chargeType.versionNumber)
 				{
@@ -1006,6 +1052,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    chargeType.defaultDescription = oldChargeType.defaultDescription;
 				    chargeType.rateTypeId = oldChargeType.rateTypeId;
 				    chargeType.currencyId = oldChargeType.currencyId;
+				    chargeType.financialCategoryId = oldChargeType.financialCategoryId;
+				    chargeType.taxCodeId = oldChargeType.taxCodeId;
 				    chargeType.sequence = oldChargeType.sequence;
 				    chargeType.color = oldChargeType.color;
 				    chargeType.objectGuid = oldChargeType.objectGuid;
@@ -1459,6 +1507,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string defaultDescription = null,
 			int? rateTypeId = null,
 			int? currencyId = null,
+			int? financialCategoryId = null,
+			int? taxCodeId = null,
 			int? sequence = null,
 			string color = null,
 			int? versionNumber = null,
@@ -1550,6 +1600,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ct => ct.currencyId == currencyId.Value);
 			}
+			if (financialCategoryId.HasValue == true)
+			{
+				query = query.Where(ct => ct.financialCategoryId == financialCategoryId.Value);
+			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ct => ct.taxCodeId == taxCodeId.Value);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ct => ct.sequence == sequence.Value);
@@ -1609,9 +1667,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.currency.description.Contains(anyStringContains)
 			       || x.currency.code.Contains(anyStringContains)
 			       || x.currency.color.Contains(anyStringContains)
+			       || x.financialCategory.name.Contains(anyStringContains)
+			       || x.financialCategory.description.Contains(anyStringContains)
+			       || x.financialCategory.code.Contains(anyStringContains)
+			       || x.financialCategory.externalAccountId.Contains(anyStringContains)
+			       || x.financialCategory.color.Contains(anyStringContains)
 			       || x.rateType.name.Contains(anyStringContains)
 			       || x.rateType.description.Contains(anyStringContains)
 			       || x.rateType.color.Contains(anyStringContains)
+			       || x.taxCode.name.Contains(anyStringContains)
+			       || x.taxCode.description.Contains(anyStringContains)
+			       || x.taxCode.code.Contains(anyStringContains)
+			       || x.taxCode.externalTaxCodeId.Contains(anyStringContains)
 			   );
 			}
 

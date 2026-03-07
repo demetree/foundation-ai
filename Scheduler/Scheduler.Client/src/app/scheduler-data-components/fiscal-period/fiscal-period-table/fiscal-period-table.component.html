@@ -55,9 +55,9 @@
                 Period  Number
                 <span *ngIf="sortColumn === 'periodNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('isClosed')">
-                Is  Closed
-                <span *ngIf="sortColumn === 'isClosed'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('periodStatus.name')">
+                Period  Status
+                <span *ngIf="sortColumn === 'periodStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('closedDate')">
                 Closed  Date
@@ -163,7 +163,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{fiscalPeriod.periodType}}</td>
             <td class="text-truncate">{{fiscalPeriod.fiscalYear | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{fiscalPeriod.periodNumber | bigNumberFormat : '1.0-2'}}</td>
-            <td class="text-truncate"><boolean-icon [value]="fiscalPeriod.isClosed"/></td>
+            <td class="text-truncate"><a [routerLink]="['/periodstatus', fiscalPeriod.periodStatusId]" class="btn btn-link text-left" ngbTooltip="Open Period Status details">{{fiscalPeriod.periodStatus?.name}}</a></td>
             <td class="text-truncate">{{fiscalPeriod.closedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{fiscalPeriod.closedBy}}</td>
             <td class="text-truncate">{{fiscalPeriod.sequence | bigNumberFormat : '1.0-2'}}</td>
@@ -284,6 +284,7 @@ End of commented block for alternate definition option -->
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
                <strong>{{fiscalPeriod.name}}</strong>
+               <small class="text-muted d-block">{{fiscalPeriod.periodStatus?.name}}</small>
              </div>
              <div>
                 <button class="action-btn action-view"
@@ -341,9 +342,9 @@ End of commented block for alternate definition option -->
               <strong>Period Number: </strong>
               {{fiscalPeriod.periodNumber | bigNumberFormat : '1.0-2'}}
             </p>
-            <p class="fiscal-period-info" *ngIf="fiscalPeriod.isClosed != null">
-              <strong>Is Closed: </strong>
-              <boolean-icon [value]="fiscalPeriod.isClosed"/>
+            <p class="fiscal-period-info" *ngIf="fiscalPeriod.periodStatusId != null">
+              <strong>Period Status: </strong>
+              <a [routerLink]="['/periodstatus', fiscalPeriod.periodStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Period Status details">{{fiscalPeriod.periodStatus?.name}}</a>
             </p>
             <p class="fiscal-period-info" *ngIf="fiscalPeriod.closedDate != null">
               <strong>Closed Date: </strong>

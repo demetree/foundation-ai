@@ -69,9 +69,15 @@
                     Period Number is required
                 </div>
             </div>
-            <div class="form-check my-2" *ngIf="!isFieldHidden('isClosed')">
-                <input type="checkbox" id="FiscalPeriod-isClosed" formControlName="isClosed" class="form-check-input" [disabled]="!userIsSchedulerFiscalPeriodWriter()" />
-                <label for="FiscalPeriod-isClosed" class="form-check-label" id="label-FiscalPeriod-isClosed"><span class="text-danger">*</span>Is Closed</label>
+            <div class="form-group" *ngIf="!isFieldHidden('periodStatusId')">
+                <label for="FiscalPeriod-periodStatusId" id="label-FiscalPeriod-periodStatusId"><span class="text-danger">*</span>Period Status</label>
+                <select id="FiscalPeriod-periodStatusId" formControlName="periodStatusId" class="form-select fiscal-period-select" [disabled]="!userIsSchedulerFiscalPeriodWriter()">
+                    <option [ngValue]="null">Select Period Status</option>
+                    <option *ngFor="let periodStatus of periodStatuses$ | async" [ngValue]="periodStatus.id">{{periodStatus.name}}</option>
+                </select>
+                <div *ngIf="fiscalPeriodForm.get('periodStatusId')?.invalid && fiscalPeriodForm.get('periodStatusId')?.touched" class="text-danger">
+                    Period Status is required
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('closedDate')">
                 <label for="FiscalPeriod-closedDate" id="label-FiscalPeriod-closedDate">Closed Date</label>

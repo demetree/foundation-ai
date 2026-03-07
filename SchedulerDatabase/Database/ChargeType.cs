@@ -29,6 +29,10 @@ public partial class ChargeType
 
     public int currencyId { get; set; }
 
+    public int? financialCategoryId { get; set; }
+
+    public int? taxCodeId { get; set; }
+
     public int? sequence { get; set; }
 
     public string color { get; set; }
@@ -51,5 +55,9 @@ public partial class ChargeType
 
     public virtual Currency currency { get; set; }
 
+    public virtual FinancialCategory financialCategory { get; set; }
+
     public virtual RateType rateType { get; set; }
+
+    public virtual TaxCode taxCode { get; set; }
 }

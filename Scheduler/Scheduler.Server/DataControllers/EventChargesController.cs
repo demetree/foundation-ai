@@ -74,6 +74,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			decimal? unitPrice = null,
 			decimal? extendedAmount = null,
 			decimal? taxAmount = null,
+			decimal? totalAmount = null,
+			string description = null,
 			int? currencyId = null,
 			int? rateTypeId = null,
 			string notes = null,
@@ -86,6 +88,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			int? taxCodeId = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -181,6 +184,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ec => ec.taxAmount == taxAmount.Value);
 			}
+			if (totalAmount.HasValue == true)
+			{
+				query = query.Where(ec => ec.totalAmount == totalAmount.Value);
+			}
+			if (string.IsNullOrEmpty(description) == false)
+			{
+				query = query.Where(ec => ec.description == description);
+			}
 			if (currencyId.HasValue == true)
 			{
 				query = query.Where(ec => ec.currencyId == currencyId.Value);
@@ -245,8 +256,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(ec => ec.active == true);
 				query = query.Where(ec => ec.deleted == false);
 			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ec => ec.taxCodeId == taxCodeId.Value);
+			}
 
-			query = query.OrderBy(ec => ec.externalId);
+			query = query.OrderBy(ec => ec.description).ThenBy(ec => ec.externalId);
 
 
 			//
@@ -257,7 +272,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
+			       x.description.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
 			       || (includeRelations == true && x.chargeStatus.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.chargeStatus.description.Contains(anyStringContains))
@@ -289,6 +305,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.scheduledEvent.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.taxCode.externalTaxCodeId.Contains(anyStringContains))
 			   );
 			}
 
@@ -300,6 +320,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Include(x => x.rateType);
 				query = query.Include(x => x.resource);
 				query = query.Include(x => x.scheduledEvent);
+				query = query.Include(x => x.taxCode);
 				query = query.AsSplitQuery();
 			}
 
@@ -356,6 +377,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			decimal? unitPrice = null,
 			decimal? extendedAmount = null,
 			decimal? taxAmount = null,
+			decimal? totalAmount = null,
+			string description = null,
 			int? currencyId = null,
 			int? rateTypeId = null,
 			string notes = null,
@@ -368,6 +391,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			int? taxCodeId = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -443,6 +467,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ec => ec.taxAmount == taxAmount.Value);
 			}
+			if (totalAmount.HasValue == true)
+			{
+				query = query.Where(ec => ec.totalAmount == totalAmount.Value);
+			}
+			if (description != null)
+			{
+				query = query.Where(ec => ec.description == description);
+			}
 			if (currencyId.HasValue == true)
 			{
 				query = query.Where(ec => ec.currencyId == currencyId.Value);
@@ -507,6 +539,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(ec => ec.active == true);
 				query = query.Where(ec => ec.deleted == false);
 			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ec => ec.taxCodeId == taxCodeId.Value);
+			}
 
 			//
 			// Add the any string contains parameter to span all the string fields on the Event Charge, or on an any of the string fields on its immediate relations
@@ -516,7 +552,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
+			       x.description.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
 			       || x.chargeStatus.name.Contains(anyStringContains)
 			       || x.chargeStatus.description.Contains(anyStringContains)
@@ -548,6 +585,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.taxCode.name.Contains(anyStringContains)
+			       || x.taxCode.description.Contains(anyStringContains)
+			       || x.taxCode.code.Contains(anyStringContains)
+			       || x.taxCode.externalTaxCodeId.Contains(anyStringContains)
 			   );
 			}
 
@@ -617,6 +658,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					query = query.Include(x => x.rateType);
 					query = query.Include(x => x.resource);
 					query = query.Include(x => x.scheduledEvent);
+					query = query.Include(x => x.taxCode);
 					query = query.AsSplitQuery();
 				}
 
@@ -630,7 +672,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.EventCharge Entity was read with Admin privilege." : "Scheduler.EventCharge Entity was read.");
 
-					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "EventCharge", materialized.id, materialized.externalId));
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "EventCharge", materialized.id, materialized.description));
 
 
 					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -788,6 +830,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					return Forbid();
 				}
 
+				if (eventCharge.description != null && eventCharge.description.Length > 250)
+				{
+					eventCharge.description = eventCharge.description.Substring(0, 250);
+				}
+
 				if (eventCharge.depositRefundedDate.HasValue == true && eventCharge.depositRefundedDate.Value.Kind != DateTimeKind.Utc)
 				{
 					eventCharge.depositRefundedDate = eventCharge.depositRefundedDate.Value.ToUniversalTime();
@@ -911,6 +958,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				eventCharge.tenantGuid = userTenantGuid;
 
+				if (eventCharge.description != null && eventCharge.description.Length > 250)
+				{
+					eventCharge.description = eventCharge.description.Substring(0, 250);
+				}
+
 				if (eventCharge.depositRefundedDate.HasValue == true && eventCharge.depositRefundedDate.Value.Kind != DateTimeKind.Utc)
 				{
 					eventCharge.depositRefundedDate = eventCharge.depositRefundedDate.Value.ToUniversalTime();
@@ -955,6 +1007,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					eventCharge.rateType = null;
 					eventCharge.resource = null;
 					eventCharge.scheduledEvent = null;
+					eventCharge.taxCode = null;
 
 
 				    EventChargeChangeHistory eventChargeChangeHistory = new EventChargeChangeHistory();
@@ -988,7 +1041,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "EventCharge", eventCharge.id, eventCharge.externalId));
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "EventCharge", eventCharge.id, eventCharge.description));
 
 			return CreatedAtRoute("EventCharge", new { id = eventCharge.id }, Database.EventCharge.CreateAnonymousWithFirstLevelSubObjects(eventCharge));
 		}
@@ -1077,6 +1130,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.rateType = null;
 				cloneOfExisting.resource = null;
 				cloneOfExisting.scheduledEvent = null;
+				cloneOfExisting.taxCode = null;
 
 				if (versionNumber >= eventCharge.versionNumber)
 				{
@@ -1113,6 +1167,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    eventCharge.unitPrice = oldEventCharge.unitPrice;
 				    eventCharge.extendedAmount = oldEventCharge.extendedAmount;
 				    eventCharge.taxAmount = oldEventCharge.taxAmount;
+				    eventCharge.totalAmount = oldEventCharge.totalAmount;
+				    eventCharge.description = oldEventCharge.description;
 				    eventCharge.currencyId = oldEventCharge.currencyId;
 				    eventCharge.rateTypeId = oldEventCharge.rateTypeId;
 				    eventCharge.notes = oldEventCharge.notes;
@@ -1124,6 +1180,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    eventCharge.objectGuid = oldEventCharge.objectGuid;
 				    eventCharge.active = oldEventCharge.active;
 				    eventCharge.deleted = oldEventCharge.deleted;
+				    eventCharge.taxCodeId = oldEventCharge.taxCodeId;
 
 				    string serializedEventCharge = JsonSerializer.Serialize(eventCharge);
 
@@ -1571,6 +1628,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			decimal? unitPrice = null,
 			decimal? extendedAmount = null,
 			decimal? taxAmount = null,
+			decimal? totalAmount = null,
+			string description = null,
 			int? currencyId = null,
 			int? rateTypeId = null,
 			string notes = null,
@@ -1583,6 +1642,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			int? taxCodeId = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -1677,6 +1737,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ec => ec.taxAmount == taxAmount.Value);
 			}
+			if (totalAmount.HasValue == true)
+			{
+				query = query.Where(ec => ec.totalAmount == totalAmount.Value);
+			}
+			if (string.IsNullOrEmpty(description) == false)
+			{
+				query = query.Where(ec => ec.description == description);
+			}
 			if (currencyId.HasValue == true)
 			{
 				query = query.Where(ec => ec.currencyId == currencyId.Value);
@@ -1741,6 +1809,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(ec => ec.active == true);
 				query = query.Where(ec => ec.deleted == false);
 			}
+			if (taxCodeId.HasValue == true)
+			{
+				query = query.Where(ec => ec.taxCodeId == taxCodeId.Value);
+			}
 
 
 			//
@@ -1751,7 +1823,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.notes.Contains(anyStringContains)
+			       x.description.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
 			       || x.chargeStatus.name.Contains(anyStringContains)
 			       || x.chargeStatus.description.Contains(anyStringContains)
@@ -1783,6 +1856,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.taxCode.name.Contains(anyStringContains)
+			       || x.taxCode.description.Contains(anyStringContains)
+			       || x.taxCode.code.Contains(anyStringContains)
+			       || x.taxCode.externalTaxCodeId.Contains(anyStringContains)
 			   );
 			}
 
@@ -1790,7 +1867,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.externalId);
+			query = query.OrderBy(x => x.description).ThenBy(x => x.externalId);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

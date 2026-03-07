@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ReceiptTypeService, ReceiptTypeData, ReceiptTypeSubmitData } from '../../../scheduler-data-services/receipt-type.service';
+import { ReceiptTypeChangeHistoryService } from '../../../scheduler-data-services/receipt-type-change-history.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -37,7 +38,9 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface ReceiptTypeFormValues {
   name: string,
   description: string,
+  color: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -69,7 +72,9 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
   public receiptTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: ['', Validators.required],
+        color: [''],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -86,12 +91,14 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   receiptTypes$ = this.receiptTypeService.GetReceiptTypeList();
+  public receiptTypeChangeHistories$ = this.receiptTypeChangeHistoryService.GetReceiptTypeChangeHistoryList();
   public gifts$ = this.giftService.GetGiftList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public receiptTypeService: ReceiptTypeService,
+    public receiptTypeChangeHistoryService: ReceiptTypeChangeHistoryService,
     public giftService: GiftService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -376,7 +383,9 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
       this.receiptTypeForm.reset({
         name: '',
         description: '',
+        color: '',
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -390,7 +399,9 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
         this.receiptTypeForm.reset({
         name: receiptTypeData.name ?? '',
         description: receiptTypeData.description ?? '',
+        color: receiptTypeData.color ?? '',
         sequence: receiptTypeData.sequence?.toString() ?? '',
+        versionNumber: receiptTypeData.versionNumber?.toString() ?? '',
         active: receiptTypeData.active ?? true,
         deleted: receiptTypeData.deleted ?? false,
       }, { emitEvent: false});
@@ -454,7 +465,9 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
         id: this.receiptTypeData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
+        color: formValue.color?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.receiptTypeData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

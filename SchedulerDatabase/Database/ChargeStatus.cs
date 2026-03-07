@@ -17,11 +17,15 @@ public partial class ChargeStatus
 
     public int? sequence { get; set; }
 
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<ChargeStatusChangeHistory> ChargeStatusChangeHistories { get; set; } = new List<ChargeStatusChangeHistory>();
 
     public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
 }

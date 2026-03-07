@@ -282,6 +282,7 @@ import { TenantHelperService } from './services/tenant-helper.service';
 // Beginning of imports for Scheduler Data Services
 //
 import { SchedulerDataServiceManagerService } from './scheduler-data-services/scheduler-data-service-manager.service';
+import { AccountTypeService } from './scheduler-data-services/account-type.service';
 import { AppealService } from './scheduler-data-services/appeal.service';
 import { AppealChangeHistoryService } from './scheduler-data-services/appeal-change-history.service';
 import { AssignmentRoleService } from './scheduler-data-services/assignment-role.service';
@@ -296,11 +297,14 @@ import { BatchService } from './scheduler-data-services/batch.service';
 import { BatchChangeHistoryService } from './scheduler-data-services/batch-change-history.service';
 import { BatchStatusService } from './scheduler-data-services/batch-status.service';
 import { BookingSourceTypeService } from './scheduler-data-services/booking-source-type.service';
+import { BudgetService } from './scheduler-data-services/budget.service';
+import { BudgetChangeHistoryService } from './scheduler-data-services/budget-change-history.service';
 import { CalendarService } from './scheduler-data-services/calendar.service';
 import { CalendarChangeHistoryService } from './scheduler-data-services/calendar-change-history.service';
 import { CampaignService } from './scheduler-data-services/campaign.service';
 import { CampaignChangeHistoryService } from './scheduler-data-services/campaign-change-history.service';
 import { ChargeStatusService } from './scheduler-data-services/charge-status.service';
+import { ChargeStatusChangeHistoryService } from './scheduler-data-services/charge-status-change-history.service';
 import { ChargeTypeService } from './scheduler-data-services/charge-type.service';
 import { ChargeTypeChangeHistoryService } from './scheduler-data-services/charge-type-change-history.service';
 import { ClientService } from './scheduler-data-services/client.service';
@@ -366,6 +370,8 @@ import { PaymentProviderChangeHistoryService } from './scheduler-data-services/p
 import { PaymentTransactionService } from './scheduler-data-services/payment-transaction.service';
 import { PaymentTransactionChangeHistoryService } from './scheduler-data-services/payment-transaction-change-history.service';
 import { PaymentTypeService } from './scheduler-data-services/payment-type.service';
+import { PaymentTypeChangeHistoryService } from './scheduler-data-services/payment-type-change-history.service';
+import { PeriodStatusService } from './scheduler-data-services/period-status.service';
 import { PledgeService } from './scheduler-data-services/pledge.service';
 import { PledgeChangeHistoryService } from './scheduler-data-services/pledge-change-history.service';
 import { PriorityService } from './scheduler-data-services/priority.service';
@@ -374,6 +380,7 @@ import { RateSheetService } from './scheduler-data-services/rate-sheet.service';
 import { RateSheetChangeHistoryService } from './scheduler-data-services/rate-sheet-change-history.service';
 import { RateTypeService } from './scheduler-data-services/rate-type.service';
 import { ReceiptTypeService } from './scheduler-data-services/receipt-type.service';
+import { ReceiptTypeChangeHistoryService } from './scheduler-data-services/receipt-type-change-history.service';
 import { RecurrenceExceptionService } from './scheduler-data-services/recurrence-exception.service';
 import { RecurrenceExceptionChangeHistoryService } from './scheduler-data-services/recurrence-exception-change-history.service';
 import { RecurrenceFrequencyService } from './scheduler-data-services/recurrence-frequency.service';
@@ -444,6 +451,10 @@ import { VolunteerStatusService } from './scheduler-data-services/volunteer-stat
 //
 // Beginning of imports for Scheduler Data Components
 //
+import { AccountTypeListingComponent } from './scheduler-data-components/account-type/account-type-listing/account-type-listing.component';
+import { AccountTypeAddEditComponent } from './scheduler-data-components/account-type/account-type-add-edit/account-type-add-edit.component';
+import { AccountTypeDetailComponent } from './scheduler-data-components/account-type/account-type-detail/account-type-detail.component';
+import { AccountTypeTableComponent } from './scheduler-data-components/account-type/account-type-table/account-type-table.component';
 import { AppealListingComponent } from './scheduler-data-components/appeal/appeal-listing/appeal-listing.component';
 import { AppealAddEditComponent } from './scheduler-data-components/appeal/appeal-add-edit/appeal-add-edit.component';
 import { AppealDetailComponent } from './scheduler-data-components/appeal/appeal-detail/appeal-detail.component';
@@ -500,6 +511,14 @@ import { BookingSourceTypeListingComponent } from './scheduler-data-components/b
 import { BookingSourceTypeAddEditComponent } from './scheduler-data-components/booking-source-type/booking-source-type-add-edit/booking-source-type-add-edit.component';
 import { BookingSourceTypeDetailComponent } from './scheduler-data-components/booking-source-type/booking-source-type-detail/booking-source-type-detail.component';
 import { BookingSourceTypeTableComponent } from './scheduler-data-components/booking-source-type/booking-source-type-table/booking-source-type-table.component';
+import { BudgetListingComponent } from './scheduler-data-components/budget/budget-listing/budget-listing.component';
+import { BudgetAddEditComponent } from './scheduler-data-components/budget/budget-add-edit/budget-add-edit.component';
+import { BudgetDetailComponent } from './scheduler-data-components/budget/budget-detail/budget-detail.component';
+import { BudgetTableComponent } from './scheduler-data-components/budget/budget-table/budget-table.component';
+import { BudgetChangeHistoryListingComponent } from './scheduler-data-components/budget-change-history/budget-change-history-listing/budget-change-history-listing.component';
+import { BudgetChangeHistoryAddEditComponent } from './scheduler-data-components/budget-change-history/budget-change-history-add-edit/budget-change-history-add-edit.component';
+import { BudgetChangeHistoryDetailComponent } from './scheduler-data-components/budget-change-history/budget-change-history-detail/budget-change-history-detail.component';
+import { BudgetChangeHistoryTableComponent } from './scheduler-data-components/budget-change-history/budget-change-history-table/budget-change-history-table.component';
 import { CalendarListingComponent } from './scheduler-data-components/calendar/calendar-listing/calendar-listing.component';
 import { CalendarAddEditComponent } from './scheduler-data-components/calendar/calendar-add-edit/calendar-add-edit.component';
 import { CalendarDetailComponent } from './scheduler-data-components/calendar/calendar-detail/calendar-detail.component';
@@ -520,6 +539,10 @@ import { ChargeStatusListingComponent } from './scheduler-data-components/charge
 import { ChargeStatusAddEditComponent } from './scheduler-data-components/charge-status/charge-status-add-edit/charge-status-add-edit.component';
 import { ChargeStatusDetailComponent } from './scheduler-data-components/charge-status/charge-status-detail/charge-status-detail.component';
 import { ChargeStatusTableComponent } from './scheduler-data-components/charge-status/charge-status-table/charge-status-table.component';
+import { ChargeStatusChangeHistoryListingComponent } from './scheduler-data-components/charge-status-change-history/charge-status-change-history-listing/charge-status-change-history-listing.component';
+import { ChargeStatusChangeHistoryAddEditComponent } from './scheduler-data-components/charge-status-change-history/charge-status-change-history-add-edit/charge-status-change-history-add-edit.component';
+import { ChargeStatusChangeHistoryDetailComponent } from './scheduler-data-components/charge-status-change-history/charge-status-change-history-detail/charge-status-change-history-detail.component';
+import { ChargeStatusChangeHistoryTableComponent } from './scheduler-data-components/charge-status-change-history/charge-status-change-history-table/charge-status-change-history-table.component';
 import { ChargeTypeListingComponent } from './scheduler-data-components/charge-type/charge-type-listing/charge-type-listing.component';
 import { ChargeTypeAddEditComponent } from './scheduler-data-components/charge-type/charge-type-add-edit/charge-type-add-edit.component';
 import { ChargeTypeDetailComponent } from './scheduler-data-components/charge-type/charge-type-detail/charge-type-detail.component';
@@ -780,6 +803,14 @@ import { PaymentTypeListingComponent } from './scheduler-data-components/payment
 import { PaymentTypeAddEditComponent } from './scheduler-data-components/payment-type/payment-type-add-edit/payment-type-add-edit.component';
 import { PaymentTypeDetailComponent } from './scheduler-data-components/payment-type/payment-type-detail/payment-type-detail.component';
 import { PaymentTypeTableComponent } from './scheduler-data-components/payment-type/payment-type-table/payment-type-table.component';
+import { PaymentTypeChangeHistoryListingComponent } from './scheduler-data-components/payment-type-change-history/payment-type-change-history-listing/payment-type-change-history-listing.component';
+import { PaymentTypeChangeHistoryAddEditComponent } from './scheduler-data-components/payment-type-change-history/payment-type-change-history-add-edit/payment-type-change-history-add-edit.component';
+import { PaymentTypeChangeHistoryDetailComponent } from './scheduler-data-components/payment-type-change-history/payment-type-change-history-detail/payment-type-change-history-detail.component';
+import { PaymentTypeChangeHistoryTableComponent } from './scheduler-data-components/payment-type-change-history/payment-type-change-history-table/payment-type-change-history-table.component';
+import { PeriodStatusListingComponent } from './scheduler-data-components/period-status/period-status-listing/period-status-listing.component';
+import { PeriodStatusAddEditComponent } from './scheduler-data-components/period-status/period-status-add-edit/period-status-add-edit.component';
+import { PeriodStatusDetailComponent } from './scheduler-data-components/period-status/period-status-detail/period-status-detail.component';
+import { PeriodStatusTableComponent } from './scheduler-data-components/period-status/period-status-table/period-status-table.component';
 import { PledgeListingComponent } from './scheduler-data-components/pledge/pledge-listing/pledge-listing.component';
 import { PledgeAddEditComponent } from './scheduler-data-components/pledge/pledge-add-edit/pledge-add-edit.component';
 import { PledgeDetailComponent } from './scheduler-data-components/pledge/pledge-detail/pledge-detail.component';
@@ -812,6 +843,10 @@ import { ReceiptTypeListingComponent } from './scheduler-data-components/receipt
 import { ReceiptTypeAddEditComponent } from './scheduler-data-components/receipt-type/receipt-type-add-edit/receipt-type-add-edit.component';
 import { ReceiptTypeDetailComponent } from './scheduler-data-components/receipt-type/receipt-type-detail/receipt-type-detail.component';
 import { ReceiptTypeTableComponent } from './scheduler-data-components/receipt-type/receipt-type-table/receipt-type-table.component';
+import { ReceiptTypeChangeHistoryListingComponent } from './scheduler-data-components/receipt-type-change-history/receipt-type-change-history-listing/receipt-type-change-history-listing.component';
+import { ReceiptTypeChangeHistoryAddEditComponent } from './scheduler-data-components/receipt-type-change-history/receipt-type-change-history-add-edit/receipt-type-change-history-add-edit.component';
+import { ReceiptTypeChangeHistoryDetailComponent } from './scheduler-data-components/receipt-type-change-history/receipt-type-change-history-detail/receipt-type-change-history-detail.component';
+import { ReceiptTypeChangeHistoryTableComponent } from './scheduler-data-components/receipt-type-change-history/receipt-type-change-history-table/receipt-type-change-history-table.component';
 import { RecurrenceExceptionListingComponent } from './scheduler-data-components/recurrence-exception/recurrence-exception-listing/recurrence-exception-listing.component';
 import { RecurrenceExceptionAddEditComponent } from './scheduler-data-components/recurrence-exception/recurrence-exception-add-edit/recurrence-exception-add-edit.component';
 import { RecurrenceExceptionDetailComponent } from './scheduler-data-components/recurrence-exception/recurrence-exception-detail/recurrence-exception-detail.component';
@@ -1264,6 +1299,10 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     // Beginning of declarations for Scheduler Data Components
 //
+AccountTypeListingComponent,
+AccountTypeAddEditComponent,
+AccountTypeDetailComponent,
+AccountTypeTableComponent,
 AppealListingComponent,
 AppealAddEditComponent,
 AppealDetailComponent,
@@ -1320,6 +1359,14 @@ BookingSourceTypeListingComponent,
 BookingSourceTypeAddEditComponent,
 BookingSourceTypeDetailComponent,
 BookingSourceTypeTableComponent,
+BudgetListingComponent,
+BudgetAddEditComponent,
+BudgetDetailComponent,
+BudgetTableComponent,
+BudgetChangeHistoryListingComponent,
+BudgetChangeHistoryAddEditComponent,
+BudgetChangeHistoryDetailComponent,
+BudgetChangeHistoryTableComponent,
 CalendarListingComponent,
 CalendarAddEditComponent,
 CalendarDetailComponent,
@@ -1340,6 +1387,10 @@ ChargeStatusListingComponent,
 ChargeStatusAddEditComponent,
 ChargeStatusDetailComponent,
 ChargeStatusTableComponent,
+ChargeStatusChangeHistoryListingComponent,
+ChargeStatusChangeHistoryAddEditComponent,
+ChargeStatusChangeHistoryDetailComponent,
+ChargeStatusChangeHistoryTableComponent,
 ChargeTypeListingComponent,
 ChargeTypeAddEditComponent,
 ChargeTypeDetailComponent,
@@ -1600,6 +1651,14 @@ PaymentTypeListingComponent,
 PaymentTypeAddEditComponent,
 PaymentTypeDetailComponent,
 PaymentTypeTableComponent,
+PaymentTypeChangeHistoryListingComponent,
+PaymentTypeChangeHistoryAddEditComponent,
+PaymentTypeChangeHistoryDetailComponent,
+PaymentTypeChangeHistoryTableComponent,
+PeriodStatusListingComponent,
+PeriodStatusAddEditComponent,
+PeriodStatusDetailComponent,
+PeriodStatusTableComponent,
 PledgeListingComponent,
 PledgeAddEditComponent,
 PledgeDetailComponent,
@@ -1632,6 +1691,10 @@ ReceiptTypeListingComponent,
 ReceiptTypeAddEditComponent,
 ReceiptTypeDetailComponent,
 ReceiptTypeTableComponent,
+ReceiptTypeChangeHistoryListingComponent,
+ReceiptTypeChangeHistoryAddEditComponent,
+ReceiptTypeChangeHistoryDetailComponent,
+ReceiptTypeChangeHistoryTableComponent,
 RecurrenceExceptionListingComponent,
 RecurrenceExceptionAddEditComponent,
 RecurrenceExceptionDetailComponent,
@@ -1967,6 +2030,7 @@ VolunteerStatusTableComponent,
     // Beginning of provider declarations for Scheduler Data Services
 //
 SchedulerDataServiceManagerService,
+AccountTypeService,
 AppealService,
 AppealChangeHistoryService,
 AssignmentRoleService,
@@ -1981,11 +2045,14 @@ BatchService,
 BatchChangeHistoryService,
 BatchStatusService,
 BookingSourceTypeService,
+BudgetService,
+BudgetChangeHistoryService,
 CalendarService,
 CalendarChangeHistoryService,
 CampaignService,
 CampaignChangeHistoryService,
 ChargeStatusService,
+ChargeStatusChangeHistoryService,
 ChargeTypeService,
 ChargeTypeChangeHistoryService,
 ClientService,
@@ -2051,6 +2118,8 @@ PaymentProviderChangeHistoryService,
 PaymentTransactionService,
 PaymentTransactionChangeHistoryService,
 PaymentTypeService,
+PaymentTypeChangeHistoryService,
+PeriodStatusService,
 PledgeService,
 PledgeChangeHistoryService,
 PriorityService,
@@ -2059,6 +2128,7 @@ RateSheetService,
 RateSheetChangeHistoryService,
 RateTypeService,
 ReceiptTypeService,
+ReceiptTypeChangeHistoryService,
 RecurrenceExceptionService,
 RecurrenceExceptionChangeHistoryService,
 RecurrenceFrequencyService,

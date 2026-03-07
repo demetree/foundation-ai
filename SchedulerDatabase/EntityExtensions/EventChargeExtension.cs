@@ -295,6 +295,9 @@ namespace Foundation.Scheduler.Database
 			[Required]
 			public Decimal taxAmount { get; set; }
 			[Required]
+			public Decimal totalAmount { get; set; }
+			public String description { get; set; }
+			[Required]
 			public Int32 currencyId { get; set; }
 			public Int32? rateTypeId { get; set; }
 			public String notes { get; set; }
@@ -310,6 +313,7 @@ namespace Foundation.Scheduler.Database
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
 			public Boolean? deleted { get; set; }
+			public Int32? taxCodeId { get; set; }
 		}
 
 
@@ -326,6 +330,7 @@ namespace Foundation.Scheduler.Database
 			public RateType.RateTypeDTO rateType { get; set; }
 			public Resource.ResourceDTO resource { get; set; }
 			public ScheduledEvent.ScheduledEventDTO scheduledEvent { get; set; }
+			public TaxCode.TaxCodeDTO taxCode { get; set; }
 		}
 
 
@@ -349,6 +354,8 @@ namespace Foundation.Scheduler.Database
 				unitPrice = this.unitPrice,
 				extendedAmount = this.extendedAmount,
 				taxAmount = this.taxAmount,
+				totalAmount = this.totalAmount,
+				description = this.description,
 				currencyId = this.currencyId,
 				rateTypeId = this.rateTypeId,
 				notes = this.notes,
@@ -360,7 +367,8 @@ namespace Foundation.Scheduler.Database
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
-				deleted = this.deleted
+				deleted = this.deleted,
+				taxCodeId = this.taxCodeId
 			};
 		}
 
@@ -408,6 +416,8 @@ namespace Foundation.Scheduler.Database
 				unitPrice = this.unitPrice,
 				extendedAmount = this.extendedAmount,
 				taxAmount = this.taxAmount,
+				totalAmount = this.totalAmount,
+				description = this.description,
 				currencyId = this.currencyId,
 				rateTypeId = this.rateTypeId,
 				notes = this.notes,
@@ -420,12 +430,14 @@ namespace Foundation.Scheduler.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				taxCodeId = this.taxCodeId,
 				chargeStatus = this.chargeStatus?.ToDTO(),
 				chargeType = this.chargeType?.ToDTO(),
 				currency = this.currency?.ToDTO(),
 				rateType = this.rateType?.ToDTO(),
 				resource = this.resource?.ToDTO(),
-				scheduledEvent = this.scheduledEvent?.ToDTO()
+				scheduledEvent = this.scheduledEvent?.ToDTO(),
+				taxCode = this.taxCode?.ToDTO()
 			};
 		}
 
@@ -473,6 +485,8 @@ namespace Foundation.Scheduler.Database
 				unitPrice = dto.unitPrice,
 				extendedAmount = dto.extendedAmount,
 				taxAmount = dto.taxAmount,
+				totalAmount = dto.totalAmount,
+				description = dto.description,
 				currencyId = dto.currencyId,
 				rateTypeId = dto.rateTypeId,
 				notes = dto.notes,
@@ -484,7 +498,8 @@ namespace Foundation.Scheduler.Database
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
-				deleted = dto.deleted ?? false
+				deleted = dto.deleted ?? false,
+				taxCodeId = dto.taxCodeId
 			};
 		}
 
@@ -509,6 +524,8 @@ namespace Foundation.Scheduler.Database
 			this.unitPrice = dto.unitPrice;
 			this.extendedAmount = dto.extendedAmount;
 			this.taxAmount = dto.taxAmount;
+			this.totalAmount = dto.totalAmount;
+			this.description = dto.description;
 			this.currencyId = dto.currencyId;
 			this.rateTypeId = dto.rateTypeId;
 			this.notes = dto.notes;
@@ -527,6 +544,7 @@ namespace Foundation.Scheduler.Database
 			{
 				this.deleted = dto.deleted.Value;
 			}
+			this.taxCodeId = dto.taxCodeId;
 		}
 
 
@@ -551,6 +569,8 @@ namespace Foundation.Scheduler.Database
 				unitPrice = this.unitPrice,
 				extendedAmount = this.extendedAmount,
 				taxAmount = this.taxAmount,
+				totalAmount = this.totalAmount,
+				description = this.description,
 				currencyId = this.currencyId,
 				rateTypeId = this.rateTypeId,
 				notes = this.notes,
@@ -563,6 +583,7 @@ namespace Foundation.Scheduler.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				taxCodeId = this.taxCodeId,
 			 };
 		}
 
@@ -624,6 +645,8 @@ namespace Foundation.Scheduler.Database
 				unitPrice = eventCharge.unitPrice,
 				extendedAmount = eventCharge.extendedAmount,
 				taxAmount = eventCharge.taxAmount,
+				totalAmount = eventCharge.totalAmount,
+				description = eventCharge.description,
 				currencyId = eventCharge.currencyId,
 				rateTypeId = eventCharge.rateTypeId,
 				notes = eventCharge.notes,
@@ -636,6 +659,7 @@ namespace Foundation.Scheduler.Database
 				objectGuid = eventCharge.objectGuid,
 				active = eventCharge.active,
 				deleted = eventCharge.deleted,
+				taxCodeId = eventCharge.taxCodeId,
 			 };
 		}
 
@@ -664,6 +688,8 @@ namespace Foundation.Scheduler.Database
 				unitPrice = eventCharge.unitPrice,
 				extendedAmount = eventCharge.extendedAmount,
 				taxAmount = eventCharge.taxAmount,
+				totalAmount = eventCharge.totalAmount,
+				description = eventCharge.description,
 				currencyId = eventCharge.currencyId,
 				rateTypeId = eventCharge.rateTypeId,
 				notes = eventCharge.notes,
@@ -676,12 +702,14 @@ namespace Foundation.Scheduler.Database
 				objectGuid = eventCharge.objectGuid,
 				active = eventCharge.active,
 				deleted = eventCharge.deleted,
+				taxCodeId = eventCharge.taxCodeId,
 				chargeStatus = ChargeStatus.CreateMinimalAnonymous(eventCharge.chargeStatus),
 				chargeType = ChargeType.CreateMinimalAnonymous(eventCharge.chargeType),
 				currency = Currency.CreateMinimalAnonymous(eventCharge.currency),
 				rateType = RateType.CreateMinimalAnonymous(eventCharge.rateType),
 				resource = Resource.CreateMinimalAnonymous(eventCharge.resource),
-				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(eventCharge.scheduledEvent)
+				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(eventCharge.scheduledEvent),
+				taxCode = TaxCode.CreateMinimalAnonymous(eventCharge.taxCode)
 			 };
 		}
 
@@ -702,8 +730,8 @@ namespace Foundation.Scheduler.Database
 
 			return new {
 				id = eventCharge.id,
-				name = eventCharge.externalId,
-				description = string.Join(", ", new[] { eventCharge.externalId}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = eventCharge.description,
+				name = eventCharge.description
 			 };
 		}
 	}

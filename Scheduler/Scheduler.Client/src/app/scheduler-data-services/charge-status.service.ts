@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { ChargeStatusChangeHistoryService, ChargeStatusChangeHistoryData } from './charge-status-change-history.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -32,6 +33,7 @@ export class ChargeStatusQueryParameters {
     description: string | null | undefined = null;
     color: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -51,10 +53,31 @@ export class ChargeStatusSubmitData {
     description!: string;
     color: string | null = null;
     sequence: bigint | number | null = null;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class ChargeStatusBasicListData {
   id!: bigint | number;
@@ -104,6 +127,7 @@ export class ChargeStatusData {
     description!: string;
     color!: string | null;
     sequence!: bigint | number;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -111,11 +135,25 @@ export class ChargeStatusData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _chargeStatusChangeHistories: ChargeStatusChangeHistoryData[] | null = null;
+    private _chargeStatusChangeHistoriesPromise: Promise<ChargeStatusChangeHistoryData[]> | null  = null;
+    private _chargeStatusChangeHistoriesSubject = new BehaviorSubject<ChargeStatusChangeHistoryData[] | null>(null);
+
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ChargeStatusData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ChargeStatusData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ChargeStatusData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -123,6 +161,31 @@ export class ChargeStatusData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public ChargeStatusChangeHistories$ = this._chargeStatusChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._chargeStatusChangeHistories === null && this._chargeStatusChangeHistoriesPromise === null) {
+            this.loadChargeStatusChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _chargeStatusChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ChargeStatusChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._chargeStatusChangeHistoriesCount$ === null) {
+            this._chargeStatusChangeHistoriesCount$ = ChargeStatusChangeHistoryService.Instance.GetChargeStatusChangeHistoriesRowCount({chargeStatusId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._chargeStatusChangeHistoriesCount$;
+    }
+
+
+
     public EventCharges$ = this._eventChargesSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -186,17 +249,90 @@ export class ChargeStatusData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._chargeStatusChangeHistories = null;
+     this._chargeStatusChangeHistoriesPromise = null;
+     this._chargeStatusChangeHistoriesSubject.next(null);
+     this._chargeStatusChangeHistoriesCount$ = null;
+
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
      this._eventChargesCount$ = null;
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the ChargeStatusChangeHistories for this ChargeStatus.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.chargeStatus.ChargeStatusChangeHistories.then(chargeStatuses => { ... })
+     *   or
+     *   await this.chargeStatus.chargeStatuses
+     *
+    */
+    public get ChargeStatusChangeHistories(): Promise<ChargeStatusChangeHistoryData[]> {
+        if (this._chargeStatusChangeHistories !== null) {
+            return Promise.resolve(this._chargeStatusChangeHistories);
+        }
+
+        if (this._chargeStatusChangeHistoriesPromise !== null) {
+            return this._chargeStatusChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadChargeStatusChangeHistories();
+
+        return this._chargeStatusChangeHistoriesPromise!;
+    }
+
+
+
+    private loadChargeStatusChangeHistories(): void {
+
+        this._chargeStatusChangeHistoriesPromise = lastValueFrom(
+            ChargeStatusService.Instance.GetChargeStatusChangeHistoriesForChargeStatus(this.id)
+        )
+        .then(ChargeStatusChangeHistories => {
+            this._chargeStatusChangeHistories = ChargeStatusChangeHistories ?? [];
+            this._chargeStatusChangeHistoriesSubject.next(this._chargeStatusChangeHistories);
+            return this._chargeStatusChangeHistories;
+         })
+        .catch(err => {
+            this._chargeStatusChangeHistories = [];
+            this._chargeStatusChangeHistoriesSubject.next(this._chargeStatusChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._chargeStatusChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ChargeStatusChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearChargeStatusChangeHistoriesCache(): void {
+        this._chargeStatusChangeHistories = null;
+        this._chargeStatusChangeHistoriesPromise = null;
+        this._chargeStatusChangeHistoriesSubject.next(this._chargeStatusChangeHistories);      // Emit to observable
+    }
+
+    public get HasChargeStatusChangeHistories(): Promise<boolean> {
+        return this.ChargeStatusChangeHistories.then(chargeStatusChangeHistories => chargeStatusChangeHistories.length > 0);
+    }
+
+
     /**
      *
      * Gets the EventCharges for this ChargeStatus.
@@ -264,6 +400,49 @@ export class ChargeStatusData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (chargeStatus.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await chargeStatus.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ChargeStatusData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ChargeStatusData>> {
+        const info = await lastValueFrom(
+            ChargeStatusService.Instance.GetChargeStatusChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this ChargeStatusData object using values from another object that has some or all of the fields needed.
      */
@@ -297,6 +476,7 @@ export class ChargeStatusService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private chargeStatusChangeHistoryService: ChargeStatusChangeHistoryService,
         private eventChargeService: EventChargeService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -359,6 +539,7 @@ export class ChargeStatusService extends SecureEndpointBase {
         output.description = data.description;
         output.color = data.color;
         output.sequence = data.sequence;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -586,6 +767,108 @@ export class ChargeStatusService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackChargeStatus(id: bigint | number, versionNumber: bigint | number) : Observable<ChargeStatusData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<ChargeStatusData>(this.baseUrl + 'api/ChargeStatus/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveChargeStatus(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackChargeStatus(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a ChargeStatus.
+     */
+    public GetChargeStatusChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ChargeStatusData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ChargeStatusData>>(this.baseUrl + 'api/ChargeStatus/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeStatusChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ChargeStatus.
+     */
+    public GetChargeStatusAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ChargeStatusData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ChargeStatusData>[]>(this.baseUrl + 'api/ChargeStatus/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeStatusAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ChargeStatus.
+     */
+    public GetChargeStatusVersion(id: bigint | number, version: number): Observable<ChargeStatusData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ChargeStatusData>(this.baseUrl + 'api/ChargeStatus/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveChargeStatus(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeStatusVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ChargeStatus at a specific point in time.
+     */
+    public GetChargeStatusStateAtTime(id: bigint | number, time: string): Observable<ChargeStatusData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ChargeStatusData>(this.baseUrl + 'api/ChargeStatus/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveChargeStatus(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeStatusStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ChargeStatusQueryParameters | any): string {
 
@@ -648,7 +931,7 @@ export class ChargeStatusService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerChargeStatusWriter = user.writePermission >= 255;
+            userIsSchedulerChargeStatusWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerChargeStatusWriter = false;
           }      
@@ -656,6 +939,16 @@ export class ChargeStatusService extends SecureEndpointBase {
 
         return userIsSchedulerChargeStatusWriter;
     }
+
+    public GetChargeStatusChangeHistoriesForChargeStatus(chargeStatusId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ChargeStatusChangeHistoryData[]> {
+        return this.chargeStatusChangeHistoryService.GetChargeStatusChangeHistoryList({
+            chargeStatusId: chargeStatusId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
 
     public GetEventChargesForChargeStatus(chargeStatusId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventChargeData[]> {
         return this.eventChargeService.GetEventChargeList({
@@ -702,6 +995,10 @@ export class ChargeStatusService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._chargeStatusChangeHistories = null;
+    (revived as any)._chargeStatusChangeHistoriesPromise = null;
+    (revived as any)._chargeStatusChangeHistoriesSubject = new BehaviorSubject<ChargeStatusChangeHistoryData[] | null>(null);
+
     (revived as any)._eventCharges = null;
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
@@ -718,6 +1015,18 @@ export class ChargeStatusService extends SecureEndpointBase {
     // 2. But private methods (loadChargeStatusXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).ChargeStatusChangeHistories$ = (revived as any)._chargeStatusChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._chargeStatusChangeHistories === null && (revived as any)._chargeStatusChangeHistoriesPromise === null) {
+                (revived as any).loadChargeStatusChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._chargeStatusChangeHistoriesCount$ = null;
+
+
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._eventCharges === null && (revived as any)._eventChargesPromise === null) {
@@ -729,6 +1038,23 @@ export class ChargeStatusService extends SecureEndpointBase {
 
     (revived as any)._eventChargesCount$ = null;
 
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ChargeStatusData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
     return revived;

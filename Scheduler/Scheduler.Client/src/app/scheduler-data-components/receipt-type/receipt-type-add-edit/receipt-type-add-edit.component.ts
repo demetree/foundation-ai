@@ -36,7 +36,9 @@ import { AuthService } from '../../../services/auth.service';
 interface ReceiptTypeFormValues {
   name: string,
   description: string,
+  color: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -71,7 +73,9 @@ export class ReceiptTypeAddEditComponent {
   public receiptTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: ['', Validators.required],
+        color: [''],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -209,7 +213,9 @@ export class ReceiptTypeAddEditComponent {
         id: this.receiptTypeSubmitData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
+        color: formValue.color?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.receiptTypeSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -223,6 +229,7 @@ export class ReceiptTypeAddEditComponent {
 
   private addReceiptType(receiptTypeData: ReceiptTypeSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    receiptTypeData.versionNumber = 0;
     receiptTypeData.active = true;
     receiptTypeData.deleted = false;
     this.receiptTypeService.PostReceiptType(receiptTypeData).pipe(
@@ -339,7 +346,9 @@ export class ReceiptTypeAddEditComponent {
       this.receiptTypeForm.reset({
         name: '',
         description: '',
+        color: '',
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -353,7 +362,9 @@ export class ReceiptTypeAddEditComponent {
         this.receiptTypeForm.reset({
         name: receiptTypeData.name ?? '',
         description: receiptTypeData.description ?? '',
+        color: receiptTypeData.color ?? '',
         sequence: receiptTypeData.sequence?.toString() ?? '',
+        versionNumber: receiptTypeData.versionNumber?.toString() ?? '',
         active: receiptTypeData.active ?? true,
         deleted: receiptTypeData.deleted ?? false,
       }, { emitEvent: false});

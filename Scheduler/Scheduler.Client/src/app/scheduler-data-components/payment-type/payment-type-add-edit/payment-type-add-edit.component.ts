@@ -36,7 +36,9 @@ import { AuthService } from '../../../services/auth.service';
 interface PaymentTypeFormValues {
   name: string,
   description: string,
+  color: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -71,7 +73,9 @@ export class PaymentTypeAddEditComponent {
   public paymentTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: ['', Validators.required],
+        color: [''],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -209,7 +213,9 @@ export class PaymentTypeAddEditComponent {
         id: this.paymentTypeSubmitData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
+        color: formValue.color?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.paymentTypeSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -223,6 +229,7 @@ export class PaymentTypeAddEditComponent {
 
   private addPaymentType(paymentTypeData: PaymentTypeSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    paymentTypeData.versionNumber = 0;
     paymentTypeData.active = true;
     paymentTypeData.deleted = false;
     this.paymentTypeService.PostPaymentType(paymentTypeData).pipe(
@@ -339,7 +346,9 @@ export class PaymentTypeAddEditComponent {
       this.paymentTypeForm.reset({
         name: '',
         description: '',
+        color: '',
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -353,7 +362,9 @@ export class PaymentTypeAddEditComponent {
         this.paymentTypeForm.reset({
         name: paymentTypeData.name ?? '',
         description: paymentTypeData.description ?? '',
+        color: paymentTypeData.color ?? '',
         sequence: paymentTypeData.sequence?.toString() ?? '',
+        versionNumber: paymentTypeData.versionNumber?.toString() ?? '',
         active: paymentTypeData.active ?? true,
         deleted: paymentTypeData.deleted ?? false,
       }, { emitEvent: false});

@@ -35,6 +35,10 @@
                 Description
                 <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
                 <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -126,6 +130,7 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/receipttype', receiptType.id]" class="btn btn-link text-left" ngbTooltip="Open Receipt Type details">{{receiptType.name}}</a></td>
             <td class="text-truncate">{{receiptType.description}}</td>
+            <td class="text-truncate">{{receiptType.color}}</td>
             <td class="text-truncate">{{receiptType.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
@@ -280,6 +285,10 @@ End of commented block for alternate definition option -->
             <p class="receipt-type-info" *ngIf="receiptType.description != null">
               <strong>Description: </strong>
               {{receiptType.description}}
+            </p>
+            <p class="receipt-type-info" *ngIf="receiptType.color != null">
+              <strong>Color: </strong>
+              {{receiptType.color}}
             </p>
             <p class="receipt-type-info" *ngIf="receiptType.sequence != null">
               <strong>Sequence: </strong>

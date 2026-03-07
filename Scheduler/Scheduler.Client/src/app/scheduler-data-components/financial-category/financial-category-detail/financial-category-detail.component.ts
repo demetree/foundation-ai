@@ -23,8 +23,11 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FinancialCategoryService, FinancialCategoryData, FinancialCategorySubmitData } from '../../../scheduler-data-services/financial-category.service';
+import { AccountTypeService } from '../../../scheduler-data-services/account-type.service';
 import { FinancialCategoryChangeHistoryService } from '../../../scheduler-data-services/financial-category-change-history.service';
+import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { BudgetService } from '../../../scheduler-data-services/budget.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -39,8 +42,7 @@ interface FinancialCategoryFormValues {
   name: string,
   description: string,
   code: string,
-  isRevenue: boolean,
-  accountType: string,
+  accountTypeId: number | bigint,       // For FK link number
   parentFinancialCategoryId: number | bigint | null,       // For FK link number
   isTaxApplicable: boolean,
   defaultAmount: string | null,     // Stored as string for form input, converted to number on submit.
@@ -80,8 +82,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         name: ['', Validators.required],
         description: ['', Validators.required],
         code: ['', Validators.required],
-        isRevenue: [false],
-        accountType: ['', Validators.required],
+        accountTypeId: [null, Validators.required],
         parentFinancialCategoryId: [null],
         isTaxApplicable: [false],
         defaultAmount: [''],
@@ -105,15 +106,21 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
+  public accountTypes$ = this.accountTypeService.GetAccountTypeList();
   public financialCategoryChangeHistories$ = this.financialCategoryChangeHistoryService.GetFinancialCategoryChangeHistoryList();
+  public chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public budgets$ = this.budgetService.GetBudgetList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public financialCategoryService: FinancialCategoryService,
+    public accountTypeService: AccountTypeService,
     public financialCategoryChangeHistoryService: FinancialCategoryChangeHistoryService,
+    public chargeTypeService: ChargeTypeService,
     public financialTransactionService: FinancialTransactionService,
+    public budgetService: BudgetService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -398,8 +405,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         name: '',
         description: '',
         code: '',
-        isRevenue: false,
-        accountType: '',
+        accountTypeId: null,
         parentFinancialCategoryId: null,
         isTaxApplicable: false,
         defaultAmount: '',
@@ -421,8 +427,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         name: financialCategoryData.name ?? '',
         description: financialCategoryData.description ?? '',
         code: financialCategoryData.code ?? '',
-        isRevenue: financialCategoryData.isRevenue ?? false,
-        accountType: financialCategoryData.accountType ?? '',
+        accountTypeId: financialCategoryData.accountTypeId,
         parentFinancialCategoryId: financialCategoryData.parentFinancialCategoryId,
         isTaxApplicable: financialCategoryData.isTaxApplicable ?? false,
         defaultAmount: financialCategoryData.defaultAmount?.toString() ?? '',
@@ -494,8 +499,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
         code: formValue.code!.trim(),
-        isRevenue: !!formValue.isRevenue,
-        accountType: formValue.accountType!.trim(),
+        accountTypeId: Number(formValue.accountTypeId),
         parentFinancialCategoryId: formValue.parentFinancialCategoryId ? Number(formValue.parentFinancialCategoryId) : null,
         isTaxApplicable: !!formValue.isTaxApplicable,
         defaultAmount: formValue.defaultAmount ? Number(formValue.defaultAmount) : null,

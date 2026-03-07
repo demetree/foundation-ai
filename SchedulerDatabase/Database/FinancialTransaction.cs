@@ -17,11 +17,15 @@ public partial class FinancialTransaction
 
     public int? contactId { get; set; }
 
+    public int? clientId { get; set; }
+
     public string contactRole { get; set; }
 
     public int? taxCodeId { get; set; }
 
     public int? fiscalPeriodId { get; set; }
+
+    public int? paymentTypeId { get; set; }
 
     public DateTime transactionDate { get; set; }
 
@@ -36,8 +40,6 @@ public partial class FinancialTransaction
     public bool isRevenue { get; set; }
 
     public string journalEntryType { get; set; }
-
-    public string paymentMethod { get; set; }
 
     public string referenceNumber { get; set; }
 
@@ -65,6 +67,8 @@ public partial class FinancialTransaction
 
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
+    public virtual Client client { get; set; }
+
     public virtual Contact contact { get; set; }
 
     public virtual Currency currency { get; set; }
@@ -72,6 +76,8 @@ public partial class FinancialTransaction
     public virtual FinancialCategory financialCategory { get; set; }
 
     public virtual FiscalPeriod fiscalPeriod { get; set; }
+
+    public virtual PaymentType paymentType { get; set; }
 
     public virtual ScheduledEvent scheduledEvent { get; set; }
 

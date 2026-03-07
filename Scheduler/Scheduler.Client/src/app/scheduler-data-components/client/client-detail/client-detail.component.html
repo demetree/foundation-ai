@@ -278,6 +278,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ clientId: clientData?.id }" [showAddButton]="true" [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="constituentService.userIsSchedulerConstituentReader()">
                             <button ngbNavLink>Constituents
                                 <span class="badge bg-primary ms-2">

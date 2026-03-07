@@ -24,7 +24,7 @@
                 <label for="EventChargeChangeHistory-eventChargeId" id="label-EventChargeChangeHistory-eventChargeId"><span class="text-danger">*</span>Event Charge</label>
                 <select id="EventChargeChangeHistory-eventChargeId" formControlName="eventChargeId" class="form-select event-charge-change-history-select" [disabled]="!userIsSchedulerEventChargeChangeHistoryWriter()">
                     <option [ngValue]="null">Select Event Charge</option>
-                    <option *ngFor="let eventCharge of eventCharges$ | async" [ngValue]="eventCharge.id">{{eventCharge.notes}}</option>
+                    <option *ngFor="let eventCharge of eventCharges$ | async" [ngValue]="eventCharge.id">{{eventCharge.description}}</option>
                 </select>
                 <div *ngIf="eventChargeChangeHistoryForm.get('eventChargeId')?.invalid && eventChargeChangeHistoryForm.get('eventChargeId')?.touched" class="text-danger">
                     Event Charge is required

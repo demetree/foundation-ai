@@ -57,6 +57,10 @@
                                 <label for="ChargeStatus-sequence" id="label-ChargeStatus-sequence">Sequence</label>
                                 <input type="number" id="ChargeStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control charge-status-input" [disabled]="!userIsSchedulerChargeStatusWriter()" aria-labelledby="label-sequence" />
                             </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ChargeStatus-versionNumber" id="label-ChargeStatus-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ChargeStatus-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control charge-status-input" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="ChargeStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerChargeStatusWriter()" />
                                 <label for="ChargeStatus-active" class="form-check-label" id="label-ChargeStatus-active"><span class="text-danger">*</span>Active</label>
@@ -88,6 +92,20 @@
                 <div class="col m-2 charge-status-details-body">
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="chargeStatusChangeHistoryService.userIsSchedulerChargeStatusChangeHistoryReader()">
+                            <button ngbNavLink>Charge Status Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (chargeStatusData?.ChargeStatusChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-charge-status-change-history-table [queryParams]="{ chargeStatusId: chargeStatusData?.id }" [showAddButton]="true" [preSeededData]="{ chargeStatusId: chargeStatusData?.id }" [hiddenFields]="['chargeStatusId']"></app-charge-status-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="eventChargeService.userIsSchedulerEventChargeReader()">
                             <button ngbNavLink>Event Charges
                                 <span class="badge bg-primary ms-2">

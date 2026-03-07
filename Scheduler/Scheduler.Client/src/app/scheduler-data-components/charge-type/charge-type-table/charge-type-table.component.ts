@@ -184,6 +184,8 @@ export class ChargeTypeTableComponent implements OnInit, OnChanges, AfterViewIni
     { key: 'defaultDescription', label: 'Default Description', width: undefined },
     { key: 'rateType.name', label: 'Rate Type', width: undefined, template: 'link', linkPath: ['/ratetype', 'rateTypeId'] },
     { key: 'currency.name', label: 'Currency', width: undefined, template: 'link', linkPath: ['/currency', 'currencyId'] },
+    { key: 'financialCategory.name', label: 'Financial Category', width: undefined, template: 'link', linkPath: ['/financialcategory', 'financialCategoryId'] },
+    { key: 'taxCode.name', label: 'Tax Code', width: undefined, template: 'link', linkPath: ['/taxcode', 'taxCodeId'] },
     { key: 'sequence', label: 'Sequence', width: undefined },
     { key: 'color', label: 'Color', width: "50px", template: 'color' },
 
@@ -342,6 +344,8 @@ export class ChargeTypeTableComponent implements OnInit, OnChanges, AfterViewIni
                       'defaultDescription',
                       'rateType.name',
                       'currency.name',
+                      'financialCategory.name',
+                      'taxCode.name',
                       'sequence',
                       'color',
         ];

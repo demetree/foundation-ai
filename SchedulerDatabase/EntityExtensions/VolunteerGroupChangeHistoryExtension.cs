@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = volunteerGroupChangeHistory.timeStamp,
 				userId = volunteerGroupChangeHistory.userId,
 				data = volunteerGroupChangeHistory.data,
-				volunteerGroup = VolunteerGroup.CreateMinimalAnonymous(volunteerGroupChangeHistory.volunteerGroup),
+				volunteerGroup = VolunteerGroup.CreateMinimalAnonymous(volunteerGroupChangeHistory.volunteerGroup)
 			 };
 		}
 

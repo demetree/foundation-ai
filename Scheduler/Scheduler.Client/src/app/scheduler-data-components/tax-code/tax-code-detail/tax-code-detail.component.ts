@@ -23,6 +23,8 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { TaxCodeService, TaxCodeData, TaxCodeSubmitData } from '../../../scheduler-data-services/tax-code.service';
+import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.service';
+import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -96,12 +98,16 @@ export class TaxCodeDetailComponent implements OnInit, CanComponentDeactivate {
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   taxCodes$ = this.taxCodeService.GetTaxCodeList();
+  public chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
+  public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public taxCodeService: TaxCodeService,
+    public chargeTypeService: ChargeTypeService,
+    public eventChargeService: EventChargeService,
     public financialTransactionService: FinancialTransactionService,
     private authService: AuthService,
     private route: ActivatedRoute,

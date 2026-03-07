@@ -16,8 +16,11 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { AccountTypeData } from './account-type.service';
 import { FinancialCategoryChangeHistoryService, FinancialCategoryChangeHistoryData } from './financial-category-change-history.service';
+import { ChargeTypeService, ChargeTypeData } from './charge-type.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
+import { BudgetService, BudgetData } from './budget.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -32,8 +35,7 @@ export class FinancialCategoryQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     code: string | null | undefined = null;
-    isRevenue: boolean | null | undefined = null;
-    accountType: string | null | undefined = null;
+    accountTypeId: bigint | number | null | undefined = null;
     parentFinancialCategoryId: bigint | number | null | undefined = null;
     isTaxApplicable: boolean | null | undefined = null;
     defaultAmount: number | null | undefined = null;
@@ -59,8 +61,7 @@ export class FinancialCategorySubmitData {
     name!: string;
     description!: string;
     code!: string;
-    isRevenue!: boolean;
-    accountType!: string;
+    accountTypeId!: bigint | number;
     parentFinancialCategoryId: bigint | number | null = null;
     isTaxApplicable!: boolean;
     defaultAmount: number | null = null;
@@ -140,8 +141,7 @@ export class FinancialCategoryData {
     name!: string;
     description!: string;
     code!: string;
-    isRevenue!: boolean;
-    accountType!: string;
+    accountTypeId!: bigint | number;
     parentFinancialCategoryId!: bigint | number;
     isTaxApplicable!: boolean;
     defaultAmount!: number | null;
@@ -152,6 +152,7 @@ export class FinancialCategoryData {
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
+    accountType: AccountTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     parentFinancialCategory: FinancialCategoryData | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)
 
     //
@@ -162,9 +163,19 @@ export class FinancialCategoryData {
     private _financialCategoryChangeHistoriesSubject = new BehaviorSubject<FinancialCategoryChangeHistoryData[] | null>(null);
 
                 
+    private _chargeTypes: ChargeTypeData[] | null = null;
+    private _chargeTypesPromise: Promise<ChargeTypeData[]> | null  = null;
+    private _chargeTypesSubject = new BehaviorSubject<ChargeTypeData[] | null>(null);
+
+                
     private _financialTransactions: FinancialTransactionData[] | null = null;
     private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
     private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
+    private _budgets: BudgetData[] | null = null;
+    private _budgetsPromise: Promise<BudgetData[]> | null  = null;
+    private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
 
@@ -208,6 +219,31 @@ export class FinancialCategoryData {
 
 
 
+    public ChargeTypes$ = this._chargeTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._chargeTypes === null && this._chargeTypesPromise === null) {
+            this.loadChargeTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _chargeTypesCount$: Observable<bigint | number> | null = null;
+    public get ChargeTypesCount$(): Observable<bigint | number> {
+        if (this._chargeTypesCount$ === null) {
+            this._chargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({financialCategoryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._chargeTypesCount$;
+    }
+
+
+
     public FinancialTransactions$ = this._financialTransactionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -229,6 +265,31 @@ export class FinancialCategoryData {
             });
         }
         return this._financialTransactionsCount$;
+    }
+
+
+
+    public Budgets$ = this._budgetsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._budgets === null && this._budgetsPromise === null) {
+            this.loadBudgets(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _budgetsCount$: Observable<bigint | number> | null = null;
+    public get BudgetsCount$(): Observable<bigint | number> {
+        if (this._budgetsCount$ === null) {
+            this._budgetsCount$ = BudgetService.Instance.GetBudgetsRowCount({financialCategoryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._budgetsCount$;
     }
 
 
@@ -276,10 +337,20 @@ export class FinancialCategoryData {
      this._financialCategoryChangeHistoriesSubject.next(null);
      this._financialCategoryChangeHistoriesCount$ = null;
 
+     this._chargeTypes = null;
+     this._chargeTypesPromise = null;
+     this._chargeTypesSubject.next(null);
+     this._chargeTypesCount$ = null;
+
      this._financialTransactions = null;
      this._financialTransactionsPromise = null;
      this._financialTransactionsSubject.next(null);
      this._financialTransactionsCount$ = null;
+
+     this._budgets = null;
+     this._budgetsPromise = null;
+     this._budgetsSubject.next(null);
+     this._budgetsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -357,6 +428,71 @@ export class FinancialCategoryData {
 
     /**
      *
+     * Gets the ChargeTypes for this FinancialCategory.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialCategory.ChargeTypes.then(financialCategories => { ... })
+     *   or
+     *   await this.financialCategory.financialCategories
+     *
+    */
+    public get ChargeTypes(): Promise<ChargeTypeData[]> {
+        if (this._chargeTypes !== null) {
+            return Promise.resolve(this._chargeTypes);
+        }
+
+        if (this._chargeTypesPromise !== null) {
+            return this._chargeTypesPromise;
+        }
+
+        // Start the load
+        this.loadChargeTypes();
+
+        return this._chargeTypesPromise!;
+    }
+
+
+
+    private loadChargeTypes(): void {
+
+        this._chargeTypesPromise = lastValueFrom(
+            FinancialCategoryService.Instance.GetChargeTypesForFinancialCategory(this.id)
+        )
+        .then(ChargeTypes => {
+            this._chargeTypes = ChargeTypes ?? [];
+            this._chargeTypesSubject.next(this._chargeTypes);
+            return this._chargeTypes;
+         })
+        .catch(err => {
+            this._chargeTypes = [];
+            this._chargeTypesSubject.next(this._chargeTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._chargeTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ChargeType. Call after mutations to force refresh.
+     */
+    public ClearChargeTypesCache(): void {
+        this._chargeTypes = null;
+        this._chargeTypesPromise = null;
+        this._chargeTypesSubject.next(this._chargeTypes);      // Emit to observable
+    }
+
+    public get HasChargeTypes(): Promise<boolean> {
+        return this.ChargeTypes.then(chargeTypes => chargeTypes.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the FinancialTransactions for this FinancialCategory.
      *
      * If already loaded, returns cached array.
@@ -417,6 +553,71 @@ export class FinancialCategoryData {
 
     public get HasFinancialTransactions(): Promise<boolean> {
         return this.FinancialTransactions.then(financialTransactions => financialTransactions.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Budgets for this FinancialCategory.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialCategory.Budgets.then(financialCategories => { ... })
+     *   or
+     *   await this.financialCategory.financialCategories
+     *
+    */
+    public get Budgets(): Promise<BudgetData[]> {
+        if (this._budgets !== null) {
+            return Promise.resolve(this._budgets);
+        }
+
+        if (this._budgetsPromise !== null) {
+            return this._budgetsPromise;
+        }
+
+        // Start the load
+        this.loadBudgets();
+
+        return this._budgetsPromise!;
+    }
+
+
+
+    private loadBudgets(): void {
+
+        this._budgetsPromise = lastValueFrom(
+            FinancialCategoryService.Instance.GetBudgetsForFinancialCategory(this.id)
+        )
+        .then(Budgets => {
+            this._budgets = Budgets ?? [];
+            this._budgetsSubject.next(this._budgets);
+            return this._budgets;
+         })
+        .catch(err => {
+            this._budgets = [];
+            this._budgetsSubject.next(this._budgets);
+            throw err;
+        })
+        .finally(() => {
+            this._budgetsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Budget. Call after mutations to force refresh.
+     */
+    public ClearBudgetsCache(): void {
+        this._budgets = null;
+        this._budgetsPromise = null;
+        this._budgetsSubject.next(this._budgets);      // Emit to observable
+    }
+
+    public get HasBudgets(): Promise<boolean> {
+        return this.Budgets.then(budgets => budgets.length > 0);
     }
 
 
@@ -499,7 +700,9 @@ export class FinancialCategoryService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private financialCategoryChangeHistoryService: FinancialCategoryChangeHistoryService,
+        private chargeTypeService: ChargeTypeService,
         private financialTransactionService: FinancialTransactionService,
+        private budgetService: BudgetService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -560,8 +763,7 @@ export class FinancialCategoryService extends SecureEndpointBase {
         output.name = data.name;
         output.description = data.description;
         output.code = data.code;
-        output.isRevenue = data.isRevenue;
-        output.accountType = data.accountType;
+        output.accountTypeId = data.accountTypeId;
         output.parentFinancialCategoryId = data.parentFinancialCategoryId;
         output.isTaxApplicable = data.isTaxApplicable;
         output.defaultAmount = data.defaultAmount;
@@ -979,8 +1181,28 @@ export class FinancialCategoryService extends SecureEndpointBase {
     }
 
 
+    public GetChargeTypesForFinancialCategory(financialCategoryId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ChargeTypeData[]> {
+        return this.chargeTypeService.GetChargeTypeList({
+            financialCategoryId: financialCategoryId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetFinancialTransactionsForFinancialCategory(financialCategoryId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FinancialTransactionData[]> {
         return this.financialTransactionService.GetFinancialTransactionList({
+            financialCategoryId: financialCategoryId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBudgetsForFinancialCategory(financialCategoryId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BudgetData[]> {
+        return this.budgetService.GetBudgetList({
             financialCategoryId: financialCategoryId,
             active: active,
             deleted: deleted,
@@ -1028,9 +1250,17 @@ export class FinancialCategoryService extends SecureEndpointBase {
     (revived as any)._financialCategoryChangeHistoriesPromise = null;
     (revived as any)._financialCategoryChangeHistoriesSubject = new BehaviorSubject<FinancialCategoryChangeHistoryData[] | null>(null);
 
+    (revived as any)._chargeTypes = null;
+    (revived as any)._chargeTypesPromise = null;
+    (revived as any)._chargeTypesSubject = new BehaviorSubject<ChargeTypeData[] | null>(null);
+
     (revived as any)._financialTransactions = null;
     (revived as any)._financialTransactionsPromise = null;
     (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+    (revived as any)._budgets = null;
+    (revived as any)._budgetsPromise = null;
+    (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
 
     //
@@ -1056,6 +1286,18 @@ export class FinancialCategoryService extends SecureEndpointBase {
     (revived as any)._financialCategoryChangeHistoriesCount$ = null;
 
 
+    (revived as any).ChargeTypes$ = (revived as any)._chargeTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._chargeTypes === null && (revived as any)._chargeTypesPromise === null) {
+                (revived as any).loadChargeTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._chargeTypesCount$ = null;
+
+
     (revived as any).FinancialTransactions$ = (revived as any)._financialTransactionsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._financialTransactions === null && (revived as any)._financialTransactionsPromise === null) {
@@ -1066,6 +1308,18 @@ export class FinancialCategoryService extends SecureEndpointBase {
       );
 
     (revived as any)._financialTransactionsCount$ = null;
+
+
+    (revived as any).Budgets$ = (revived as any)._budgetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._budgets === null && (revived as any)._budgetsPromise === null) {
+                (revived as any).loadBudgets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._budgetsCount$ = null;
 
 
 

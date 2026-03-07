@@ -22,6 +22,7 @@ import { ChargeTypeData } from './charge-type.service';
 import { ChargeStatusData } from './charge-status.service';
 import { CurrencyData } from './currency.service';
 import { RateTypeData } from './rate-type.service';
+import { TaxCodeData } from './tax-code.service';
 import { EventChargeChangeHistoryService, EventChargeChangeHistoryData } from './event-charge-change-history.service';
 import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
 
@@ -43,6 +44,8 @@ export class EventChargeQueryParameters {
     unitPrice: number | null | undefined = null;
     extendedAmount: number | null | undefined = null;
     taxAmount: number | null | undefined = null;
+    totalAmount: number | null | undefined = null;
+    description: string | null | undefined = null;
     currencyId: bigint | number | null | undefined = null;
     rateTypeId: bigint | number | null | undefined = null;
     notes: string | null | undefined = null;
@@ -55,6 +58,7 @@ export class EventChargeQueryParameters {
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
+    taxCodeId: bigint | number | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -75,6 +79,8 @@ export class EventChargeSubmitData {
     unitPrice: number | null = null;
     extendedAmount!: number;
     taxAmount!: number;
+    totalAmount!: number;
+    description: string | null = null;
     currencyId!: bigint | number;
     rateTypeId: bigint | number | null = null;
     notes: string | null = null;
@@ -86,6 +92,7 @@ export class EventChargeSubmitData {
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
+    taxCodeId: bigint | number | null = null;
 }
 
 
@@ -161,6 +168,8 @@ export class EventChargeData {
     unitPrice!: number | null;
     extendedAmount!: number;
     taxAmount!: number;
+    totalAmount!: number;
+    description!: string | null;
     currencyId!: bigint | number;
     rateTypeId!: bigint | number;
     notes!: string | null;
@@ -173,12 +182,14 @@ export class EventChargeData {
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
+    taxCodeId!: bigint | number;
     chargeStatus: ChargeStatusData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     chargeType: ChargeTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     currency: CurrencyData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     rateType: RateTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     resource: ResourceData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     scheduledEvent: ScheduledEventData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    taxCode: TaxCodeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -591,6 +602,8 @@ export class EventChargeService extends SecureEndpointBase {
         output.unitPrice = data.unitPrice;
         output.extendedAmount = data.extendedAmount;
         output.taxAmount = data.taxAmount;
+        output.totalAmount = data.totalAmount;
+        output.description = data.description;
         output.currencyId = data.currencyId;
         output.rateTypeId = data.rateTypeId;
         output.notes = data.notes;
@@ -602,6 +615,7 @@ export class EventChargeService extends SecureEndpointBase {
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
+        output.taxCodeId = data.taxCodeId;
 
         return output;
     }

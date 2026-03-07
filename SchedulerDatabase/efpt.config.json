@@ -19,6 +19,10 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[Scheduler].[AccountType]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Appeal]",
          "ObjectType": 0
       },
@@ -75,6 +79,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[Budget]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[BudgetChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Calendar]",
          "ObjectType": 0
       },
@@ -92,6 +104,10 @@
       },
       {
          "Name": "[Scheduler].[ChargeStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ChargeStatusChangeHistory]",
          "ObjectType": 0
       },
       {
@@ -355,6 +371,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[PaymentTypeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PeriodStatus]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Pledge]",
          "ObjectType": 0
       },
@@ -384,6 +408,10 @@
       },
       {
          "Name": "[Scheduler].[ReceiptType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ReceiptTypeChangeHistory]",
          "ObjectType": 0
       },
       {

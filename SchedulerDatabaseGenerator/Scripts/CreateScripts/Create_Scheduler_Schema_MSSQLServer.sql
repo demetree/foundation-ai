@@ -71,15 +71,16 @@ GO
 -- DROP TABLE [Scheduler].[DocumentChangeHistory]
 -- DROP TABLE [Scheduler].[Document]
 -- DROP TABLE [Scheduler].[DocumentType]
+-- DROP TABLE [Scheduler].[BudgetChangeHistory]
+-- DROP TABLE [Scheduler].[Budget]
 -- DROP TABLE [Scheduler].[FinancialTransactionChangeHistory]
 -- DROP TABLE [Scheduler].[FinancialTransaction]
 -- DROP TABLE [Scheduler].[FiscalPeriodChangeHistory]
 -- DROP TABLE [Scheduler].[FiscalPeriod]
--- DROP TABLE [Scheduler].[TaxCode]
--- DROP TABLE [Scheduler].[FinancialCategoryChangeHistory]
--- DROP TABLE [Scheduler].[FinancialCategory]
+-- DROP TABLE [Scheduler].[PeriodStatus]
 -- DROP TABLE [Scheduler].[EventChargeChangeHistory]
 -- DROP TABLE [Scheduler].[EventCharge]
+-- DROP TABLE [Scheduler].[ChargeStatusChangeHistory]
 -- DROP TABLE [Scheduler].[ChargeStatus]
 -- DROP TABLE [Scheduler].[ScheduledEventChangeHistory]
 -- DROP TABLE [Scheduler].[ScheduledEvent]
@@ -123,7 +124,9 @@ GO
 -- DROP TABLE [Scheduler].[SchedulingTargetType]
 -- DROP TABLE [Scheduler].[AssignmentStatus]
 -- DROP TABLE [Scheduler].[BookingSourceType]
+-- DROP TABLE [Scheduler].[ReceiptTypeChangeHistory]
 -- DROP TABLE [Scheduler].[ReceiptType]
+-- DROP TABLE [Scheduler].[PaymentTypeChangeHistory]
 -- DROP TABLE [Scheduler].[PaymentType]
 -- DROP TABLE [Scheduler].[EventStatus]
 -- DROP TABLE [Scheduler].[AssignmentRoleQualificationRequirementChangeHistory]
@@ -159,6 +162,10 @@ GO
 -- DROP TABLE [Scheduler].[Tag]
 -- DROP TABLE [Scheduler].[ChargeTypeChangeHistory]
 -- DROP TABLE [Scheduler].[ChargeType]
+-- DROP TABLE [Scheduler].[TaxCode]
+-- DROP TABLE [Scheduler].[FinancialCategoryChangeHistory]
+-- DROP TABLE [Scheduler].[FinancialCategory]
+-- DROP TABLE [Scheduler].[AccountType]
 -- DROP TABLE [Scheduler].[Currency]
 -- DROP TABLE [Scheduler].[InteractionType]
 -- DROP TABLE [Scheduler].[RateType]
@@ -226,15 +233,16 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[DocumentChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Document] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[DocumentType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[BudgetChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[Budget] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[FinancialTransactionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[FinancialTransaction] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[FiscalPeriodChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[FiscalPeriod] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[TaxCode] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[FinancialCategoryChangeHistory] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[FinancialCategory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PeriodStatus] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventChargeChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventCharge] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ChargeStatusChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ChargeStatus] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEventChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEvent] DISABLE
@@ -278,7 +286,9 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[SchedulingTargetType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[AssignmentStatus] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[BookingSourceType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ReceiptTypeChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ReceiptType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PaymentTypeChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[PaymentType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventStatus] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[AssignmentRoleQualificationRequirementChangeHistory] DISABLE
@@ -314,6 +324,10 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[Tag] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ChargeTypeChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ChargeType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[TaxCode] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategoryChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[AccountType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Currency] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[InteractionType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[RateType] DISABLE
@@ -381,15 +395,16 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[DocumentChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Document] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[DocumentType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[BudgetChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[Budget] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[FinancialTransactionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[FinancialTransaction] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[FiscalPeriodChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[FiscalPeriod] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[TaxCode] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[FinancialCategoryChangeHistory] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[FinancialCategory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PeriodStatus] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventChargeChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventCharge] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ChargeStatusChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ChargeStatus] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEventChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEvent] REBUILD
@@ -433,7 +448,9 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[SchedulingTargetType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[AssignmentStatus] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[BookingSourceType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ReceiptTypeChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ReceiptType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PaymentTypeChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[PaymentType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventStatus] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[AssignmentRoleQualificationRequirementChangeHistory] REBUILD
@@ -469,6 +486,10 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[Tag] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ChargeTypeChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ChargeType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[TaxCode] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategoryChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[FinancialCategory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[AccountType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Currency] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[InteractionType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[RateType] REBUILD
@@ -1224,10 +1245,225 @@ GO
 CREATE INDEX [I_Currency_tenantGuid_deleted] ON [Scheduler].[Currency] ([tenantGuid], [deleted])
 GO
 
-INSERT INTO [Scheduler].[Currency] ( [tenantGuid], [name], [description], [code], [sequence], [objectGuid] ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'US Dollas', 'United States Dollars', 'USD', 1, '5d460ce9-4cf5-41c3-ab9d-9ef104b0a276' )
+INSERT INTO [Scheduler].[Currency] ( [tenantGuid], [name], [description], [code], [sequence], [objectGuid] ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'US Dollar', 'United States Dollars', 'USD', 1, '5d460ce9-4cf5-41c3-ab9d-9ef104b0a276' )
 GO
 
-INSERT INTO [Scheduler].[Currency] ( [tenantGuid], [name], [description], [code], [sequence], [objectGuid] ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Canadian', 'Canadian Dollars', 'CAD', 2, 'c6673662-f1c9-4aee-b5df-867500cb8545' )
+INSERT INTO [Scheduler].[Currency] ( [tenantGuid], [name], [description], [code], [sequence], [objectGuid] ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Canadian Dollar', 'Canadian Dollars', 'CAD', 2, 'c6673662-f1c9-4aee-b5df-867500cb8545' )
+GO
+
+
+/*
+====================================================================================================
+ ACCOUNT TYPE
+ Standard accounting classifications (Income, Expense, COGS, Asset, Liability, Equity).
+ System-defined reference data — not tenant-specific.
+
+ DESIGN NOTE: The isRevenue flag provides a single source of truth for revenue classification,
+ eliminating the need for programmatic derivation from string values. The externalMapping field
+ maps to external system account types (e.g., QuickBooks).
+ =====================================================================================================
+*/
+CREATE TABLE [Scheduler].[AccountType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[isRevenue] BIT NOT NULL DEFAULT 0,		-- True for revenue account types (Income), false for all others (Expense, COGS, Asset, Liability, Equity).
+	[externalMapping] NVARCHAR(100) NULL,		-- Maps to the account type in external systems (e.g., QuickBooks account type name).
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display.
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the AccountType table's name field.
+CREATE INDEX [I_AccountType_name] ON [Scheduler].[AccountType] ([name])
+GO
+
+-- Index on the AccountType table's active field.
+CREATE INDEX [I_AccountType_active] ON [Scheduler].[AccountType] ([active])
+GO
+
+-- Index on the AccountType table's deleted field.
+CREATE INDEX [I_AccountType_deleted] ON [Scheduler].[AccountType] ([deleted])
+GO
+
+INSERT INTO [Scheduler].[AccountType] ( [name], [description], [isRevenue], [externalMapping], [color], [sequence], [objectGuid] ) VALUES  ( 'Income', 'Revenue from operations, sales, services, grants, etc.', 1, 'Income', '#4CAF50', 1, 'a1b2c3d4-0001-4000-8000-000000000001' )
+GO
+
+INSERT INTO [Scheduler].[AccountType] ( [name], [description], [isRevenue], [externalMapping], [color], [sequence], [objectGuid] ) VALUES  ( 'Expense', 'Operating expenses, overhead, supplies, labour, etc.', 0, 'Expense', '#F44336', 2, 'a1b2c3d4-0001-4000-8000-000000000002' )
+GO
+
+INSERT INTO [Scheduler].[AccountType] ( [name], [description], [isRevenue], [externalMapping], [color], [sequence], [objectGuid] ) VALUES  ( 'COGS', 'Cost of Goods Sold — direct costs attributable to goods/services sold.', 0, 'Cost of Goods Sold', '#FF9800', 3, 'a1b2c3d4-0001-4000-8000-000000000003' )
+GO
+
+INSERT INTO [Scheduler].[AccountType] ( [name], [description], [isRevenue], [externalMapping], [color], [sequence], [objectGuid] ) VALUES  ( 'Asset', 'Resources owned — cash, equipment, accounts receivable, etc.', 0, 'Other Current Asset', '#2196F3', 4, 'a1b2c3d4-0001-4000-8000-000000000004' )
+GO
+
+INSERT INTO [Scheduler].[AccountType] ( [name], [description], [isRevenue], [externalMapping], [color], [sequence], [objectGuid] ) VALUES  ( 'Liability', 'Obligations owed — accounts payable, loans, deferred revenue, etc.', 0, 'Other Current Liability', '#9C27B0', 5, 'a1b2c3d4-0001-4000-8000-000000000005' )
+GO
+
+INSERT INTO [Scheduler].[AccountType] ( [name], [description], [isRevenue], [externalMapping], [color], [sequence], [objectGuid] ) VALUES  ( 'Equity', 'Owner''s equity, retained earnings, net assets.', 0, 'Equity', '#607D8B', 6, 'a1b2c3d4-0001-4000-8000-000000000006' )
+GO
+
+
+/*
+====================================================================================================
+ FINANCIAL CATEGORY (Chart of Accounts)
+ Tenant-specific chart of accounts for categorizing all income and expense transactions.
+ Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
+ general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+
+ DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
+ sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+
+ accountTypeId links to AccountType for standard classification (Income, Expense, COGS, etc.)
+ and derives isRevenue from the AccountType.isRevenue flag.
+ =====================================================================================================
+*/
+CREATE TABLE [Scheduler].[FinancialCategory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[description] NVARCHAR(500) NOT NULL,
+	[code] NVARCHAR(50) NOT NULL,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
+	[accountTypeId] INT NOT NULL,		-- Link to AccountType — standard accounting classification (Income, Expense, COGS, Asset, Liability, Equity). Replaces the old accountType string field.
+	[parentFinancialCategoryId] INT NULL,		-- Optional parent for sub-categories.
+	[isTaxApplicable] BIT NOT NULL DEFAULT 0,		-- Whether HST/tax typically applies to transactions in this category.
+	[defaultAmount] MONEY NULL,		-- Optional default amount for common transactions in this category.
+	[externalAccountId] NVARCHAR(250) NULL,		-- Account ID in external system (e.g., QuickBooks account ID) for sync.
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_FinancialCategory_AccountType_accountTypeId] FOREIGN KEY ([accountTypeId]) REFERENCES [Scheduler].[AccountType] ([id]),		-- Foreign key to the AccountType table.
+	CONSTRAINT [FK_FinancialCategory_FinancialCategory_parentFinancialCategoryId] FOREIGN KEY ([parentFinancialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT [UC_FinancialCategory_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
+	CONSTRAINT [UC_FinancialCategory_tenantGuid_code] UNIQUE ( [tenantGuid], [code]) 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
+)
+GO
+
+-- Index on the FinancialCategory table's tenantGuid field.
+CREATE INDEX [I_FinancialCategory_tenantGuid] ON [Scheduler].[FinancialCategory] ([tenantGuid])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,name fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_name] ON [Scheduler].[FinancialCategory] ([tenantGuid], [name])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,accountTypeId fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_accountTypeId] ON [Scheduler].[FinancialCategory] ([tenantGuid], [accountTypeId])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_parentFinancialCategoryId] ON [Scheduler].[FinancialCategory] ([tenantGuid], [parentFinancialCategoryId])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,externalAccountId fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_externalAccountId] ON [Scheduler].[FinancialCategory] ([tenantGuid], [externalAccountId])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,active fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_active] ON [Scheduler].[FinancialCategory] ([tenantGuid], [active])
+GO
+
+-- Index on the FinancialCategory table's tenantGuid,deleted fields.
+CREATE INDEX [I_FinancialCategory_tenantGuid_deleted] ON [Scheduler].[FinancialCategory] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the FinancialCategory table.
+CREATE TABLE [Scheduler].[FinancialCategoryChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[financialCategoryId] INT NOT NULL,		-- Link to the FinancialCategory table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_FinancialCategoryChangeHistory_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id])		-- Foreign key to the FinancialCategory table.
+)
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid field.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_userId] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,financialCategoryId fields.
+CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_financialCategoryId] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [financialCategoryId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
+ TAX CODE
+ Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
+ This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
+
+ DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
+ A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
+ =====================================================================================================
+*/
+CREATE TABLE [Scheduler].[TaxCode]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[description] NVARCHAR(500) NOT NULL,
+	[code] NVARCHAR(50) NOT NULL,		-- Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').
+	[rate] NUMERIC(38,22) NOT NULL DEFAULT 0,		-- Tax rate as a percentage (e.g., 15.0 for 15% HST).
+	[isDefault] BIT NOT NULL DEFAULT 0,		-- Whether this is the default tax code for new transactions.
+	[isExempt] BIT NOT NULL DEFAULT 0,		-- True for tax-exempt codes (rate should be 0).
+	[externalTaxCodeId] NVARCHAR(250) NULL,		-- Tax code ID in external system (e.g., QuickBooks TaxCode ID).
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_TaxCode_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) ,		-- Uniqueness enforced on the TaxCode table's tenantGuid and name fields.
+	CONSTRAINT [UC_TaxCode_tenantGuid_code] UNIQUE ( [tenantGuid], [code]) 		-- Uniqueness enforced on the TaxCode table's tenantGuid and code fields.
+)
+GO
+
+-- Index on the TaxCode table's tenantGuid field.
+CREATE INDEX [I_TaxCode_tenantGuid] ON [Scheduler].[TaxCode] ([tenantGuid])
+GO
+
+-- Index on the TaxCode table's tenantGuid,name fields.
+CREATE INDEX [I_TaxCode_tenantGuid_name] ON [Scheduler].[TaxCode] ([tenantGuid], [name])
+GO
+
+-- Index on the TaxCode table's tenantGuid,externalTaxCodeId fields.
+CREATE INDEX [I_TaxCode_tenantGuid_externalTaxCodeId] ON [Scheduler].[TaxCode] ([tenantGuid], [externalTaxCodeId])
+GO
+
+-- Index on the TaxCode table's tenantGuid,active fields.
+CREATE INDEX [I_TaxCode_tenantGuid_active] ON [Scheduler].[TaxCode] ([tenantGuid], [active])
+GO
+
+-- Index on the TaxCode table's tenantGuid,deleted fields.
+CREATE INDEX [I_TaxCode_tenantGuid_deleted] ON [Scheduler].[TaxCode] ([tenantGuid], [deleted])
 GO
 
 
@@ -1236,7 +1472,7 @@ GO
  CHARGE MASTER (Like Epic CDM)
  Master list of chargeable items (revenue or expenses). e.g., "Site Visit Fee" (revenue), "Travel Expense" (expense).
  Tied to RateType for billing context.
- ====================================================================================================
+ =====================================================================================================
 */
 CREATE TABLE [Scheduler].[ChargeType]
 (
@@ -1251,6 +1487,8 @@ CREATE TABLE [Scheduler].[ChargeType]
 	[defaultDescription] NVARCHAR(500) NULL,		-- sometimes auto-dropped charges need a note (e.g., "Travel to site – 45 km").
 	[rateTypeId] INT NULL,		-- Link to RateType (e.g., 'Standard', 'Overtime')
 	[currencyId] INT NOT NULL,		-- Link to the Currency table.
+	[financialCategoryId] INT NULL,		-- Optional bridge to the general ledger. Maps this charge type to a FinancialCategory for unified Chart of Accounts reporting across both event charges and standalone transactions.
+	[taxCodeId] INT NULL,		-- Optional default TaxCode for charges of this type. When set, new EventCharges auto-inherit this tax rate.
 	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[color] NVARCHAR(10) NULL,		-- Hex color for UI display
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -1260,6 +1498,8 @@ CREATE TABLE [Scheduler].[ChargeType]
 
 	CONSTRAINT [FK_ChargeType_RateType_rateTypeId] FOREIGN KEY ([rateTypeId]) REFERENCES [Scheduler].[RateType] ([id]),		-- Foreign key to the RateType table.
 	CONSTRAINT [FK_ChargeType_Currency_currencyId] FOREIGN KEY ([currencyId]) REFERENCES [Scheduler].[Currency] ([id]),		-- Foreign key to the Currency table.
+	CONSTRAINT [FK_ChargeType_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT [FK_ChargeType_TaxCode_taxCodeId] FOREIGN KEY ([taxCodeId]) REFERENCES [Scheduler].[TaxCode] ([id]),		-- Foreign key to the TaxCode table.
 	CONSTRAINT [UC_ChargeType_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the ChargeType table's tenantGuid and name fields.
 )
 GO
@@ -1282,6 +1522,14 @@ GO
 
 -- Index on the ChargeType table's tenantGuid,currencyId fields.
 CREATE INDEX [I_ChargeType_tenantGuid_currencyId] ON [Scheduler].[ChargeType] ([tenantGuid], [currencyId])
+GO
+
+-- Index on the ChargeType table's tenantGuid,financialCategoryId fields.
+CREATE INDEX [I_ChargeType_tenantGuid_financialCategoryId] ON [Scheduler].[ChargeType] ([tenantGuid], [financialCategoryId])
+GO
+
+-- Index on the ChargeType table's tenantGuid,taxCodeId fields.
+CREATE INDEX [I_ChargeType_tenantGuid_taxCodeId] ON [Scheduler].[ChargeType] ([tenantGuid], [taxCodeId])
 GO
 
 -- Index on the ChargeType table's tenantGuid,active fields.
@@ -3097,78 +3345,145 @@ INSERT INTO [Scheduler].[EventStatus] ( [name], [description], [sequence], [obje
 GO
 
 
--- Master list of payment types ( credit card, check, cash, etc..)
+-- Master list of payment types (credit card, cheque, cash, e-transfer, etc.)
 CREATE TABLE [Scheduler].[PaymentType]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
 	[description] NVARCHAR(500) NOT NULL,
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display
 	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [UC_PaymentType_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the PaymentType table's tenantGuid and name fields.
 )
 GO
 
--- Index on the PaymentType table's name field.
-CREATE INDEX [I_PaymentType_name] ON [Scheduler].[PaymentType] ([name])
+-- Index on the PaymentType table's tenantGuid field.
+CREATE INDEX [I_PaymentType_tenantGuid] ON [Scheduler].[PaymentType] ([tenantGuid])
 GO
 
--- Index on the PaymentType table's active field.
-CREATE INDEX [I_PaymentType_active] ON [Scheduler].[PaymentType] ([active])
+-- Index on the PaymentType table's tenantGuid,name fields.
+CREATE INDEX [I_PaymentType_tenantGuid_name] ON [Scheduler].[PaymentType] ([tenantGuid], [name])
 GO
 
--- Index on the PaymentType table's deleted field.
-CREATE INDEX [I_PaymentType_deleted] ON [Scheduler].[PaymentType] ([deleted])
+-- Index on the PaymentType table's tenantGuid,active fields.
+CREATE INDEX [I_PaymentType_tenantGuid_active] ON [Scheduler].[PaymentType] ([tenantGuid], [active])
 GO
 
-INSERT INTO [Scheduler].[PaymentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Credit Card', 'Credit Card', 1, '3353a9f0-1b8e-4170-a20a-d35eab81fab8' )
-GO
-
-INSERT INTO [Scheduler].[PaymentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Check', 'Check', 2, '19376f2d-87c0-4eb5-a11c-f02cb4f9b412' )
-GO
-
-INSERT INTO [Scheduler].[PaymentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Cash', 'Cash', 3, 'dca9c876-bb7d-4c33-8ef4-96a955dacbb0' )
-GO
-
-INSERT INTO [Scheduler].[PaymentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Crypto', 'Crypto', 4, '8be012ff-f305-45cd-bedb-cc5b9f11f3ef' )
-GO
-
-INSERT INTO [Scheduler].[PaymentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Stock', 'Stock', 5, '427451dc-b522-4613-aa3a-57593b6d4d03' )
+-- Index on the PaymentType table's tenantGuid,deleted fields.
+CREATE INDEX [I_PaymentType_tenantGuid_deleted] ON [Scheduler].[PaymentType] ([tenantGuid], [deleted])
 GO
 
 
--- Master list of receipt types
+-- The change history for records from the PaymentType table.
+CREATE TABLE [Scheduler].[PaymentTypeChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[paymentTypeId] INT NOT NULL,		-- Link to the PaymentType table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_PaymentTypeChangeHistory_PaymentType_paymentTypeId] FOREIGN KEY ([paymentTypeId]) REFERENCES [Scheduler].[PaymentType] ([id])		-- Foreign key to the PaymentType table.
+)
+GO
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid field.
+CREATE INDEX [I_PaymentTypeChangeHistory_tenantGuid] ON [Scheduler].[PaymentTypeChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_PaymentTypeChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[PaymentTypeChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_PaymentTypeChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[PaymentTypeChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_PaymentTypeChangeHistory_tenantGuid_userId] ON [Scheduler].[PaymentTypeChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,paymentTypeId fields.
+CREATE INDEX [I_PaymentTypeChangeHistory_tenantGuid_paymentTypeId] ON [Scheduler].[PaymentTypeChangeHistory] ([tenantGuid], [paymentTypeId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Master list of receipt types (Receipted, Do Not Receipt, etc.)
 CREATE TABLE [Scheduler].[ReceiptType]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
 	[description] NVARCHAR(500) NOT NULL,
+	[color] NVARCHAR(10) NULL,		-- Hex color for UI display
 	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [UC_ReceiptType_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the ReceiptType table's tenantGuid and name fields.
 )
 GO
 
--- Index on the ReceiptType table's name field.
-CREATE INDEX [I_ReceiptType_name] ON [Scheduler].[ReceiptType] ([name])
+-- Index on the ReceiptType table's tenantGuid field.
+CREATE INDEX [I_ReceiptType_tenantGuid] ON [Scheduler].[ReceiptType] ([tenantGuid])
 GO
 
--- Index on the ReceiptType table's active field.
-CREATE INDEX [I_ReceiptType_active] ON [Scheduler].[ReceiptType] ([active])
+-- Index on the ReceiptType table's tenantGuid,name fields.
+CREATE INDEX [I_ReceiptType_tenantGuid_name] ON [Scheduler].[ReceiptType] ([tenantGuid], [name])
 GO
 
--- Index on the ReceiptType table's deleted field.
-CREATE INDEX [I_ReceiptType_deleted] ON [Scheduler].[ReceiptType] ([deleted])
+-- Index on the ReceiptType table's tenantGuid,active fields.
+CREATE INDEX [I_ReceiptType_tenantGuid_active] ON [Scheduler].[ReceiptType] ([tenantGuid], [active])
 GO
 
-INSERT INTO [Scheduler].[ReceiptType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Receipted', 'Receipted', 1, 'b0a794eb-afa9-4791-b164-e28e5ed21a35' )
+-- Index on the ReceiptType table's tenantGuid,deleted fields.
+CREATE INDEX [I_ReceiptType_tenantGuid_deleted] ON [Scheduler].[ReceiptType] ([tenantGuid], [deleted])
 GO
 
-INSERT INTO [Scheduler].[ReceiptType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Do Not Receipt', 'Do Not Receipt', 2, 'd6ceb144-aced-4e2a-9407-a2b0c995c795' )
+
+-- The change history for records from the ReceiptType table.
+CREATE TABLE [Scheduler].[ReceiptTypeChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[receiptTypeId] INT NOT NULL,		-- Link to the ReceiptType table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ReceiptTypeChangeHistory_ReceiptType_receiptTypeId] FOREIGN KEY ([receiptTypeId]) REFERENCES [Scheduler].[ReceiptType] ([id])		-- Foreign key to the ReceiptType table.
+)
+GO
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ReceiptTypeChangeHistory_tenantGuid] ON [Scheduler].[ReceiptTypeChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ReceiptTypeChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[ReceiptTypeChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ReceiptTypeChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[ReceiptTypeChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ReceiptTypeChangeHistory_tenantGuid_userId] ON [Scheduler].[ReceiptTypeChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,receiptTypeId fields.
+CREATE INDEX [I_ReceiptTypeChangeHistory_tenantGuid_receiptTypeId] ON [Scheduler].[ReceiptTypeChangeHistory] ([tenantGuid], [receiptTypeId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -5064,7 +5379,7 @@ CREATE INDEX [I_ScheduledEventChangeHistory_tenantGuid_scheduledEventId] ON [Sch
 GO
 
 
--- Master list of charge statuses (Pending, Approved, Invoiced, Void)
+-- Master list of charge statuses (Pending, Approved, Invoiced, Void). Not tenant-specific because workflow will be tied to these values.  Could be redesigned later to get really fancy for tenant specific workflow, but out of scope for now.
 CREATE TABLE [Scheduler].[ChargeStatus]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
@@ -5072,6 +5387,7 @@ CREATE TABLE [Scheduler].[ChargeStatus]
 	[description] NVARCHAR(500) NOT NULL,
 	[color] NVARCHAR(10) NULL,		-- Hex color for UI display
 	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -5104,6 +5420,37 @@ INSERT INTO [Scheduler].[ChargeStatus] ( [name], [description], [color], [sequen
 GO
 
 
+-- The change history for records from the ChargeStatus table.
+CREATE TABLE [Scheduler].[ChargeStatusChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[chargeStatusId] INT NOT NULL,		-- Link to the ChargeStatus table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ChargeStatusChangeHistory_ChargeStatus_chargeStatusId] FOREIGN KEY ([chargeStatusId]) REFERENCES [Scheduler].[ChargeStatus] ([id])		-- Foreign key to the ChargeStatus table.
+)
+GO
+
+-- Index on the ChargeStatusChangeHistory table's versionNumber field.
+CREATE INDEX [I_ChargeStatusChangeHistory_versionNumber] ON [Scheduler].[ChargeStatusChangeHistory] ([versionNumber])
+GO
+
+-- Index on the ChargeStatusChangeHistory table's timeStamp field.
+CREATE INDEX [I_ChargeStatusChangeHistory_timeStamp] ON [Scheduler].[ChargeStatusChangeHistory] ([timeStamp])
+GO
+
+-- Index on the ChargeStatusChangeHistory table's userId field.
+CREATE INDEX [I_ChargeStatusChangeHistory_userId] ON [Scheduler].[ChargeStatusChangeHistory] ([userId])
+GO
+
+-- Index on the ChargeStatusChangeHistory table's chargeStatusId field.
+CREATE INDEX [I_ChargeStatusChangeHistory_chargeStatusId] ON [Scheduler].[ChargeStatusChangeHistory] ([chargeStatusId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
 /*
 ====================================================================================================
  EVENT CHARGES
@@ -5129,8 +5476,10 @@ CREATE TABLE [Scheduler].[EventCharge]
 	[chargeStatusId] INT NOT NULL,		-- Link to the ChargeStatus table.  Tracks the status of the charge from creation through invoicing or cancelling.
 	[quantity] NUMERIC(38,22) NULL DEFAULT 1,		-- Quantity (hours, units, km, etc.)
 	[unitPrice] MONEY NULL,		-- Price per unit (can be NULL for flat fees)
-	[extendedAmount] MONEY NOT NULL DEFAULT 0,		-- Always the final calculated/total amount (quantity × unitPrice, or just amount) Does not include taxes.
-	[taxAmount] MONEY NOT NULL DEFAULT 0,		-- The calculated tax based on isTaxable
+	[extendedAmount] MONEY NOT NULL DEFAULT 0,		-- Pre-tax amount (quantity × unitPrice, or just amount for flat fees).
+	[taxAmount] MONEY NOT NULL DEFAULT 0,		-- The calculated tax based on TaxCode.rate.
+	[totalAmount] MONEY NOT NULL DEFAULT 0,		-- Total amount inclusive of tax (extendedAmount + taxAmount). Consistent with FinancialTransaction.totalAmount.
+	[description] NVARCHAR(250) NULL,		-- Short description or label for the charge. Falls back to ChargeType.name if not set.
 	[currencyId] INT NOT NULL,		-- Link to Currency table.
 	[rateTypeId] INT NULL,		-- Optional link to RateType (e.g., 'Overtime').
 	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the charge
@@ -5142,14 +5491,16 @@ CREATE TABLE [Scheduler].[EventCharge]
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+	[deleted] BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	[taxCodeId] INT NULL		-- Optional link to TaxCode. When set, indicates which tax rate was applied to calculate taxAmount. Inherited from ChargeType.taxCodeId on creation.
 
 	CONSTRAINT [FK_EventCharge_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
 	CONSTRAINT [FK_EventCharge_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
 	CONSTRAINT [FK_EventCharge_ChargeType_chargeTypeId] FOREIGN KEY ([chargeTypeId]) REFERENCES [Scheduler].[ChargeType] ([id]),		-- Foreign key to the ChargeType table.
 	CONSTRAINT [FK_EventCharge_ChargeStatus_chargeStatusId] FOREIGN KEY ([chargeStatusId]) REFERENCES [Scheduler].[ChargeStatus] ([id]),		-- Foreign key to the ChargeStatus table.
 	CONSTRAINT [FK_EventCharge_Currency_currencyId] FOREIGN KEY ([currencyId]) REFERENCES [Scheduler].[Currency] ([id]),		-- Foreign key to the Currency table.
-	CONSTRAINT [FK_EventCharge_RateType_rateTypeId] FOREIGN KEY ([rateTypeId]) REFERENCES [Scheduler].[RateType] ([id])		-- Foreign key to the RateType table.
+	CONSTRAINT [FK_EventCharge_RateType_rateTypeId] FOREIGN KEY ([rateTypeId]) REFERENCES [Scheduler].[RateType] ([id]),		-- Foreign key to the RateType table.
+	CONSTRAINT [FK_EventCharge_TaxCode_taxCodeId] FOREIGN KEY ([taxCodeId]) REFERENCES [Scheduler].[TaxCode] ([id])		-- Foreign key to the TaxCode table.
 )
 GO
 
@@ -5193,6 +5544,10 @@ GO
 CREATE INDEX [I_EventCharge_tenantGuid_deleted] ON [Scheduler].[EventCharge] ([tenantGuid], [deleted])
 GO
 
+-- Index on the EventCharge table's tenantGuid,taxCodeId fields.
+CREATE INDEX [I_EventCharge_tenantGuid_taxCodeId] ON [Scheduler].[EventCharge] ([tenantGuid], [taxCodeId])
+GO
+
 
 -- The change history for records from the EventCharge table.
 CREATE TABLE [Scheduler].[EventChargeChangeHistory]
@@ -5232,154 +5587,47 @@ GO
 
 /*
 ====================================================================================================
- FINANCIAL CATEGORY (Chart of Accounts)
- Tenant-specific chart of accounts for categorizing all income and expense transactions.
- Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
- general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+ PERIOD STATUS
+ Fiscal period workflow states (Open, In Review, Closed).
+ System-defined reference data — not tenant-specific.
 
- DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
- sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
-
- accountType aligns with standard accounting classifications, enabling mapping to external systems
- like QuickBooks: Income, Expense, COGS, Asset, Liability, Equity.
- ====================================================================================================
+ DESIGN NOTE: Controls the accounting period lifecycle. Open periods accept transactions,
+ In Review periods are being reconciled, Closed periods are finalized.
+ =====================================================================================================
 */
-CREATE TABLE [Scheduler].[FinancialCategory]
+CREATE TABLE [Scheduler].[PeriodStatus]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[name] NVARCHAR(100) NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
 	[description] NVARCHAR(500) NOT NULL,
-	[code] NVARCHAR(50) NOT NULL,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
-	[isRevenue] BIT NOT NULL DEFAULT 1,		-- True = income category, False = expense category. Maintained for backward compatibility.
-	[accountType] NVARCHAR(50) NOT NULL DEFAULT 'Income',		-- Standard accounting classification: Income, Expense, COGS, Asset, Liability, Equity. Maps directly to QuickBooks account types.
-	[parentFinancialCategoryId] INT NULL,		-- Optional parent for sub-categories.
-	[isTaxApplicable] BIT NOT NULL DEFAULT 0,		-- Whether HST/tax typically applies to transactions in this category.
-	[defaultAmount] MONEY NULL,		-- Optional default amount for common transactions in this category.
-	[externalAccountId] NVARCHAR(250) NULL,		-- Account ID in external system (e.g., QuickBooks account ID) for sync.
-	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[color] NVARCHAR(10) NULL,		-- Hex color for UI display.
-	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
-	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
-	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
-	CONSTRAINT [FK_FinancialCategory_FinancialCategory_parentFinancialCategoryId] FOREIGN KEY ([parentFinancialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
-	CONSTRAINT [UC_FinancialCategory_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
-	CONSTRAINT [UC_FinancialCategory_tenantGuid_code] UNIQUE ( [tenantGuid], [code]) 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
-)
-GO
-
--- Index on the FinancialCategory table's tenantGuid field.
-CREATE INDEX [I_FinancialCategory_tenantGuid] ON [Scheduler].[FinancialCategory] ([tenantGuid])
-GO
-
--- Index on the FinancialCategory table's tenantGuid,name fields.
-CREATE INDEX [I_FinancialCategory_tenantGuid_name] ON [Scheduler].[FinancialCategory] ([tenantGuid], [name])
-GO
-
--- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
-CREATE INDEX [I_FinancialCategory_tenantGuid_parentFinancialCategoryId] ON [Scheduler].[FinancialCategory] ([tenantGuid], [parentFinancialCategoryId])
-GO
-
--- Index on the FinancialCategory table's tenantGuid,externalAccountId fields.
-CREATE INDEX [I_FinancialCategory_tenantGuid_externalAccountId] ON [Scheduler].[FinancialCategory] ([tenantGuid], [externalAccountId])
-GO
-
--- Index on the FinancialCategory table's tenantGuid,active fields.
-CREATE INDEX [I_FinancialCategory_tenantGuid_active] ON [Scheduler].[FinancialCategory] ([tenantGuid], [active])
-GO
-
--- Index on the FinancialCategory table's tenantGuid,deleted fields.
-CREATE INDEX [I_FinancialCategory_tenantGuid_deleted] ON [Scheduler].[FinancialCategory] ([tenantGuid], [deleted])
-GO
-
-
--- The change history for records from the FinancialCategory table.
-CREATE TABLE [Scheduler].[FinancialCategoryChangeHistory]
-(
-	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[financialCategoryId] INT NOT NULL,		-- Link to the FinancialCategory table.
-	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
-	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
-	[userId] INT NOT NULL,
-	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
-
-	CONSTRAINT [FK_FinancialCategoryChangeHistory_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id])		-- Foreign key to the FinancialCategory table.
-)
-GO
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid field.
-CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid])
-GO
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [versionNumber])
-GO
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [timeStamp])
-GO
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_userId] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [userId])
-GO
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,financialCategoryId fields.
-CREATE INDEX [I_FinancialCategoryChangeHistory_tenantGuid_financialCategoryId] ON [Scheduler].[FinancialCategoryChangeHistory] ([tenantGuid], [financialCategoryId]) INCLUDE ( versionNumber, timeStamp, userId )
-GO
-
-
-/*
-====================================================================================================
- TAX CODE
- Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
- This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
-
- DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
- A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
- ====================================================================================================
-*/
-CREATE TABLE [Scheduler].[TaxCode]
-(
-	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[name] NVARCHAR(100) NOT NULL,
-	[description] NVARCHAR(500) NOT NULL,
-	[code] NVARCHAR(50) NOT NULL,		-- Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').
-	[rate] NUMERIC(38,22) NOT NULL DEFAULT 0,		-- Tax rate as a percentage (e.g., 15.0 for 15% HST).
-	[isDefault] BIT NOT NULL DEFAULT 0,		-- Whether this is the default tax code for new transactions.
-	[isExempt] BIT NOT NULL DEFAULT 0,		-- True for tax-exempt codes (rate should be 0).
-	[externalTaxCodeId] NVARCHAR(250) NULL,		-- Tax code ID in external system (e.g., QuickBooks TaxCode ID).
 	[sequence] INT NULL,		-- Sequence to use for sorting.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
-	CONSTRAINT [UC_TaxCode_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) ,		-- Uniqueness enforced on the TaxCode table's tenantGuid and name fields.
-	CONSTRAINT [UC_TaxCode_tenantGuid_code] UNIQUE ( [tenantGuid], [code]) 		-- Uniqueness enforced on the TaxCode table's tenantGuid and code fields.
 )
 GO
 
--- Index on the TaxCode table's tenantGuid field.
-CREATE INDEX [I_TaxCode_tenantGuid] ON [Scheduler].[TaxCode] ([tenantGuid])
+-- Index on the PeriodStatus table's name field.
+CREATE INDEX [I_PeriodStatus_name] ON [Scheduler].[PeriodStatus] ([name])
 GO
 
--- Index on the TaxCode table's tenantGuid,name fields.
-CREATE INDEX [I_TaxCode_tenantGuid_name] ON [Scheduler].[TaxCode] ([tenantGuid], [name])
+-- Index on the PeriodStatus table's active field.
+CREATE INDEX [I_PeriodStatus_active] ON [Scheduler].[PeriodStatus] ([active])
 GO
 
--- Index on the TaxCode table's tenantGuid,externalTaxCodeId fields.
-CREATE INDEX [I_TaxCode_tenantGuid_externalTaxCodeId] ON [Scheduler].[TaxCode] ([tenantGuid], [externalTaxCodeId])
+-- Index on the PeriodStatus table's deleted field.
+CREATE INDEX [I_PeriodStatus_deleted] ON [Scheduler].[PeriodStatus] ([deleted])
 GO
 
--- Index on the TaxCode table's tenantGuid,active fields.
-CREATE INDEX [I_TaxCode_tenantGuid_active] ON [Scheduler].[TaxCode] ([tenantGuid], [active])
+INSERT INTO [Scheduler].[PeriodStatus] ( [name], [description], [color], [sequence], [objectGuid] ) VALUES  ( 'Open', 'Period is open and accepting transactions.', '#4CAF50', 1, 'b2c3d4e5-0001-4000-8000-000000000001' )
 GO
 
--- Index on the TaxCode table's tenantGuid,deleted fields.
-CREATE INDEX [I_TaxCode_tenantGuid_deleted] ON [Scheduler].[TaxCode] ([tenantGuid], [deleted])
+INSERT INTO [Scheduler].[PeriodStatus] ( [name], [description], [color], [sequence], [objectGuid] ) VALUES  ( 'In Review', 'Period is being reviewed and reconciled. No new transactions.', '#FF9800', 2, 'b2c3d4e5-0001-4000-8000-000000000002' )
+GO
+
+INSERT INTO [Scheduler].[PeriodStatus] ( [name], [description], [color], [sequence], [objectGuid] ) VALUES  ( 'Closed', 'Period is finalized. No modifications allowed.', '#F44336', 3, 'b2c3d4e5-0001-4000-8000-000000000003' )
 GO
 
 
@@ -5390,8 +5638,8 @@ GO
  Supports period-close controls to prevent modifications to finalized periods.
 
  DESIGN NOTE: Allows both calendar-year and fiscal-year configurations.
- The isClosed flag prevents new transactions from being added to closed periods.
- ====================================================================================================
+ periodStatusId links to PeriodStatus for workflow state (Open, In Review, Closed).
+ =====================================================================================================
 */
 CREATE TABLE [Scheduler].[FiscalPeriod]
 (
@@ -5404,7 +5652,7 @@ CREATE TABLE [Scheduler].[FiscalPeriod]
 	[periodType] NVARCHAR(50) NOT NULL DEFAULT 'Month',		-- Period type: Month, Quarter, Year, Custom.
 	[fiscalYear] INT NOT NULL,		-- The fiscal year this period belongs to.
 	[periodNumber] INT NOT NULL,		-- Period number within the fiscal year (1-12 for months, 1-4 for quarters, 1 for year).
-	[isClosed] BIT NOT NULL DEFAULT 0,		-- When true, no new transactions can be posted to this period.
+	[periodStatusId] INT NOT NULL,		-- Link to PeriodStatus — workflow state (Open, In Review, Closed). Replaces the old periodStatus string field.
 	[closedDate] DATETIME2(7) NULL,		-- When the period was closed.
 	[closedBy] NVARCHAR(100) NULL,		-- User who closed the period.
 	[sequence] INT NULL,		-- Sequence to use for sorting.
@@ -5413,6 +5661,7 @@ CREATE TABLE [Scheduler].[FiscalPeriod]
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [FK_FiscalPeriod_PeriodStatus_periodStatusId] FOREIGN KEY ([periodStatusId]) REFERENCES [Scheduler].[PeriodStatus] ([id]),		-- Foreign key to the PeriodStatus table.
 	CONSTRAINT [UC_FiscalPeriod_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) ,		-- Uniqueness enforced on the FiscalPeriod table's tenantGuid and name fields.
 	CONSTRAINT [UC_FiscalPeriod_tenantGuid_fiscalYear_periodNumber] UNIQUE ( [tenantGuid], [fiscalYear], [periodNumber]) 		-- Uniqueness enforced on the FiscalPeriod table's tenantGuid and fiscalYear and periodNumber fields.
 )
@@ -5424,6 +5673,10 @@ GO
 
 -- Index on the FiscalPeriod table's tenantGuid,name fields.
 CREATE INDEX [I_FiscalPeriod_tenantGuid_name] ON [Scheduler].[FiscalPeriod] ([tenantGuid], [name])
+GO
+
+-- Index on the FiscalPeriod table's tenantGuid,periodStatusId fields.
+CREATE INDEX [I_FiscalPeriod_tenantGuid_periodStatusId] ON [Scheduler].[FiscalPeriod] ([tenantGuid], [periodStatusId])
 GO
 
 -- Index on the FiscalPeriod table's tenantGuid,active fields.
@@ -5480,9 +5733,9 @@ GO
 
  Optionally links to a ScheduledEvent when the transaction relates to a booking.
 
- DESIGN NOTE: isRevenue is denormalized from FinancialCategory for query performance.
- Amount is always stored as a positive value; isRevenue determines the direction.
- ====================================================================================================
+ DESIGN NOTE: Amount is always stored as a positive value; direction (income vs expense) is
+ determined by the linked FinancialCategory.accountType.
+ =====================================================================================================
 */
 CREATE TABLE [Scheduler].[FinancialTransaction]
 (
@@ -5491,17 +5744,18 @@ CREATE TABLE [Scheduler].[FinancialTransaction]
 	[financialCategoryId] INT NOT NULL,		-- Link to the FinancialCategory (chart of accounts entry).
 	[scheduledEventId] INT NULL,		-- Optional link to a ScheduledEvent when the transaction relates to a booking.
 	[contactId] INT NULL,		-- Optional link to the Contact who paid or was paid.
+	[clientId] INT NULL,		-- Optional link to the Client (vendor, customer, or supplier) for this transaction.
 	[contactRole] NVARCHAR(50) NULL DEFAULT 'Customer',		-- Role of the linked contact: Customer, Vendor, Employee. Maps to QuickBooks entity types for sync.
 	[taxCodeId] INT NULL,		-- Optional link to TaxCode. Overrides the category-level isTaxApplicable for precise tax handling.
 	[fiscalPeriodId] INT NULL,		-- Optional link to FiscalPeriod. Auto-assigned based on transactionDate when null.
+	[paymentTypeId] INT NULL,		-- Optional link to PaymentType indicating how payment was made (e-transfer, cash, cheque, card, etc.).
 	[transactionDate] DATETIME2(7) NOT NULL,		-- When the transaction occurred (UTC).
 	[description] NVARCHAR(500) NOT NULL,		-- Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').
-	[amount] MONEY NOT NULL DEFAULT 0,		-- Transaction amount before tax. Always positive — direction determined by isRevenue.
+	[amount] MONEY NOT NULL DEFAULT 0,		-- Transaction amount before tax. Always positive — direction determined by FinancialCategory.accountType.
 	[taxAmount] MONEY NOT NULL DEFAULT 0,		-- Tax amount (e.g., HST). Calculated from TaxCode.rate when applicable.
 	[totalAmount] MONEY NOT NULL DEFAULT 0,		-- Total amount inclusive of tax (amount + taxAmount).
-	[isRevenue] BIT NOT NULL DEFAULT 1,		-- Denormalized from FinancialCategory. True = income, False = expense.
+	[isRevenue] BIT NOT NULL DEFAULT 1,		-- Denormalized from FinancialCategory.accountType for query performance. True when accountType = 'Income', false otherwise.
 	[journalEntryType] NVARCHAR(50) NULL,		-- Double-entry type for accounting integration: Debit or Credit. Null = auto-determined from isRevenue.
-	[paymentMethod] NVARCHAR(50) NULL,		-- How payment was made: e-transfer, cash, cheque, card, etc.
 	[referenceNumber] NVARCHAR(100) NULL,		-- Cheque number, e-transfer reference, receipt number, etc.
 	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the transaction.
 	[currencyId] INT NOT NULL,		-- Link to Currency table.
@@ -5516,8 +5770,10 @@ CREATE TABLE [Scheduler].[FinancialTransaction]
 	CONSTRAINT [FK_FinancialTransaction_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
 	CONSTRAINT [FK_FinancialTransaction_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
 	CONSTRAINT [FK_FinancialTransaction_Contact_contactId] FOREIGN KEY ([contactId]) REFERENCES [Scheduler].[Contact] ([id]),		-- Foreign key to the Contact table.
+	CONSTRAINT [FK_FinancialTransaction_Client_clientId] FOREIGN KEY ([clientId]) REFERENCES [Scheduler].[Client] ([id]),		-- Foreign key to the Client table.
 	CONSTRAINT [FK_FinancialTransaction_TaxCode_taxCodeId] FOREIGN KEY ([taxCodeId]) REFERENCES [Scheduler].[TaxCode] ([id]),		-- Foreign key to the TaxCode table.
 	CONSTRAINT [FK_FinancialTransaction_FiscalPeriod_fiscalPeriodId] FOREIGN KEY ([fiscalPeriodId]) REFERENCES [Scheduler].[FiscalPeriod] ([id]),		-- Foreign key to the FiscalPeriod table.
+	CONSTRAINT [FK_FinancialTransaction_PaymentType_paymentTypeId] FOREIGN KEY ([paymentTypeId]) REFERENCES [Scheduler].[PaymentType] ([id]),		-- Foreign key to the PaymentType table.
 	CONSTRAINT [FK_FinancialTransaction_Currency_currencyId] FOREIGN KEY ([currencyId]) REFERENCES [Scheduler].[Currency] ([id])		-- Foreign key to the Currency table.
 )
 GO
@@ -5538,12 +5794,20 @@ GO
 CREATE INDEX [I_FinancialTransaction_tenantGuid_contactId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [contactId])
 GO
 
+-- Index on the FinancialTransaction table's tenantGuid,clientId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_clientId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [clientId])
+GO
+
 -- Index on the FinancialTransaction table's tenantGuid,taxCodeId fields.
 CREATE INDEX [I_FinancialTransaction_tenantGuid_taxCodeId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [taxCodeId])
 GO
 
 -- Index on the FinancialTransaction table's tenantGuid,fiscalPeriodId fields.
 CREATE INDEX [I_FinancialTransaction_tenantGuid_fiscalPeriodId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [fiscalPeriodId])
+GO
+
+-- Index on the FinancialTransaction table's tenantGuid,paymentTypeId fields.
+CREATE INDEX [I_FinancialTransaction_tenantGuid_paymentTypeId] ON [Scheduler].[FinancialTransaction] ([tenantGuid], [paymentTypeId])
 GO
 
 -- Index on the FinancialTransaction table's tenantGuid,transactionDate fields.
@@ -5600,6 +5864,100 @@ GO
 
 -- Index on the FinancialTransactionChangeHistory table's tenantGuid,financialTransactionId fields.
 CREATE INDEX [I_FinancialTransactionChangeHistory_tenantGuid_financialTransactionId] ON [Scheduler].[FinancialTransactionChangeHistory] ([tenantGuid], [financialTransactionId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
+ BUDGET
+ Tracks budgeted amounts by FinancialCategory and FiscalPeriod.
+ Enables budget-vs-actual reporting: 'We budgeted $5,000 for bar supplies this quarter,
+ we have spent $3,200 so far.'
+
+ DESIGN NOTE: One budget record per category per period. Combined with FinancialTransaction
+ actuals, enables variance analysis, burn rate tracking, and forecasting.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[Budget]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[financialCategoryId] INT NOT NULL,		-- The category this budget applies to.
+	[fiscalPeriodId] INT NOT NULL,		-- The fiscal period this budget covers.
+	[budgetedAmount] MONEY NOT NULL DEFAULT 0,		-- The planned/budgeted amount for this category in this period.
+	[revisedAmount] MONEY NULL,		-- Optional revised budget amount (after mid-period adjustments).
+	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the budget line (e.g., justification for revision).
+	[currencyId] INT NOT NULL,		-- Link to Currency table.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_Budget_FinancialCategory_financialCategoryId] FOREIGN KEY ([financialCategoryId]) REFERENCES [Scheduler].[FinancialCategory] ([id]),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT [FK_Budget_FiscalPeriod_fiscalPeriodId] FOREIGN KEY ([fiscalPeriodId]) REFERENCES [Scheduler].[FiscalPeriod] ([id]),		-- Foreign key to the FiscalPeriod table.
+	CONSTRAINT [FK_Budget_Currency_currencyId] FOREIGN KEY ([currencyId]) REFERENCES [Scheduler].[Currency] ([id]),		-- Foreign key to the Currency table.
+	CONSTRAINT [UC_Budget_tenantGuid_financialCategoryId_fiscalPeriodId] UNIQUE ( [tenantGuid], [financialCategoryId], [fiscalPeriodId]) 		-- Uniqueness enforced on the Budget table's tenantGuid and financialCategoryId and fiscalPeriodId fields.
+)
+GO
+
+-- Index on the Budget table's tenantGuid field.
+CREATE INDEX [I_Budget_tenantGuid] ON [Scheduler].[Budget] ([tenantGuid])
+GO
+
+-- Index on the Budget table's tenantGuid,financialCategoryId fields.
+CREATE INDEX [I_Budget_tenantGuid_financialCategoryId] ON [Scheduler].[Budget] ([tenantGuid], [financialCategoryId])
+GO
+
+-- Index on the Budget table's tenantGuid,fiscalPeriodId fields.
+CREATE INDEX [I_Budget_tenantGuid_fiscalPeriodId] ON [Scheduler].[Budget] ([tenantGuid], [fiscalPeriodId])
+GO
+
+-- Index on the Budget table's tenantGuid,currencyId fields.
+CREATE INDEX [I_Budget_tenantGuid_currencyId] ON [Scheduler].[Budget] ([tenantGuid], [currencyId])
+GO
+
+-- Index on the Budget table's tenantGuid,active fields.
+CREATE INDEX [I_Budget_tenantGuid_active] ON [Scheduler].[Budget] ([tenantGuid], [active])
+GO
+
+-- Index on the Budget table's tenantGuid,deleted fields.
+CREATE INDEX [I_Budget_tenantGuid_deleted] ON [Scheduler].[Budget] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the Budget table.
+CREATE TABLE [Scheduler].[BudgetChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[budgetId] INT NOT NULL,		-- Link to the Budget table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_BudgetChangeHistory_Budget_budgetId] FOREIGN KEY ([budgetId]) REFERENCES [Scheduler].[Budget] ([id])		-- Foreign key to the Budget table.
+)
+GO
+
+-- Index on the BudgetChangeHistory table's tenantGuid field.
+CREATE INDEX [I_BudgetChangeHistory_tenantGuid] ON [Scheduler].[BudgetChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the BudgetChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_BudgetChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[BudgetChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the BudgetChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_BudgetChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[BudgetChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the BudgetChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_BudgetChangeHistory_tenantGuid_userId] ON [Scheduler].[BudgetChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the BudgetChangeHistory table's tenantGuid,budgetId fields.
+CREATE INDEX [I_BudgetChangeHistory_tenantGuid_budgetId] ON [Scheduler].[BudgetChangeHistory] ([tenantGuid], [budgetId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

@@ -24,6 +24,7 @@ import { Subject, finalize } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FinancialCategoryService, FinancialCategoryData, FinancialCategorySubmitData } from '../../../scheduler-data-services/financial-category.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+import { AccountTypeService } from '../../../scheduler-data-services/account-type.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -37,8 +38,7 @@ interface FinancialCategoryFormValues {
   name: string,
   description: string,
   code: string,
-  isRevenue: boolean,
-  accountType: string,
+  accountTypeId: number | bigint,       // For FK link number
   parentFinancialCategoryId: number | bigint | null,       // For FK link number
   isTaxApplicable: boolean,
   defaultAmount: string | null,     // Stored as string for form input, converted to number on submit.
@@ -81,8 +81,7 @@ export class FinancialCategoryAddEditComponent {
         name: ['', Validators.required],
         description: ['', Validators.required],
         code: ['', Validators.required],
-        isRevenue: [false],
-        accountType: ['', Validators.required],
+        accountTypeId: [null, Validators.required],
         parentFinancialCategoryId: [null],
         isTaxApplicable: [false],
         defaultAmount: [''],
@@ -102,10 +101,12 @@ export class FinancialCategoryAddEditComponent {
   public isSaving: boolean = false;
 
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
+  accountTypes$ = this.accountTypeService.GetAccountTypeList();
 
   constructor(
     private modalService: NgbModal,
     private financialCategoryService: FinancialCategoryService,
+    private accountTypeService: AccountTypeService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -228,8 +229,7 @@ export class FinancialCategoryAddEditComponent {
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
         code: formValue.code!.trim(),
-        isRevenue: !!formValue.isRevenue,
-        accountType: formValue.accountType!.trim(),
+        accountTypeId: Number(formValue.accountTypeId),
         parentFinancialCategoryId: formValue.parentFinancialCategoryId ? Number(formValue.parentFinancialCategoryId) : null,
         isTaxApplicable: !!formValue.isTaxApplicable,
         defaultAmount: formValue.defaultAmount ? Number(formValue.defaultAmount) : null,
@@ -368,8 +368,7 @@ export class FinancialCategoryAddEditComponent {
         name: '',
         description: '',
         code: '',
-        isRevenue: false,
-        accountType: '',
+        accountTypeId: null,
         parentFinancialCategoryId: null,
         isTaxApplicable: false,
         defaultAmount: '',
@@ -391,8 +390,7 @@ export class FinancialCategoryAddEditComponent {
         name: financialCategoryData.name ?? '',
         description: financialCategoryData.description ?? '',
         code: financialCategoryData.code ?? '',
-        isRevenue: financialCategoryData.isRevenue ?? false,
-        accountType: financialCategoryData.accountType ?? '',
+        accountTypeId: financialCategoryData.accountTypeId,
         parentFinancialCategoryId: financialCategoryData.parentFinancialCategoryId,
         isTaxApplicable: financialCategoryData.isTaxApplicable ?? false,
         defaultAmount: financialCategoryData.defaultAmount?.toString() ?? '',

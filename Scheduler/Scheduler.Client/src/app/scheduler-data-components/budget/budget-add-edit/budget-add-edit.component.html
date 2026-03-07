@@ -1,0 +1,95 @@
+<div class="add-budget" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-budget me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Budget" 
+        *ngIf="userIsSchedulerBudgetWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #budgetModal let-modal>
+   <div class="modal-header budget-modal-header">
+      <h5 class="modal-title mb-0" id="budgetModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Budget' : 'Add Budget' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body budget-modal-body">
+      <form [formGroup]="budgetForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('financialCategoryId')">
+                <label for="Budget-financialCategoryId" id="label-Budget-financialCategoryId"><span class="text-danger">*</span>Financial Category</label>
+                <select id="Budget-financialCategoryId" formControlName="financialCategoryId" class="form-select budget-select" [disabled]="!userIsSchedulerBudgetWriter()">
+                    <option [ngValue]="null">Select Financial Category</option>
+                    <option *ngFor="let financialCategory of financialCategories$ | async" [ngValue]="financialCategory.id">{{financialCategory.name}}</option>
+                </select>
+                <div *ngIf="budgetForm.get('financialCategoryId')?.invalid && budgetForm.get('financialCategoryId')?.touched" class="text-danger">
+                    Financial Category is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fiscalPeriodId')">
+                <label for="Budget-fiscalPeriodId" id="label-Budget-fiscalPeriodId"><span class="text-danger">*</span>Fiscal Period</label>
+                <select id="Budget-fiscalPeriodId" formControlName="fiscalPeriodId" class="form-select budget-select" [disabled]="!userIsSchedulerBudgetWriter()">
+                    <option [ngValue]="null">Select Fiscal Period</option>
+                    <option *ngFor="let fiscalPeriod of fiscalPeriods$ | async" [ngValue]="fiscalPeriod.id">{{fiscalPeriod.name}}</option>
+                </select>
+                <div *ngIf="budgetForm.get('fiscalPeriodId')?.invalid && budgetForm.get('fiscalPeriodId')?.touched" class="text-danger">
+                    Fiscal Period is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('budgetedAmount')">
+                <label for="Budget-budgetedAmount" id="label-Budget-budgetedAmount"><span class="text-danger">*</span>Budgeted Amount</label>
+                <input type="number" id="Budget-budgetedAmount" formControlName="budgetedAmount" placeholder="Enter Budgeted Amount" class="form-control budget-input" [disabled]="!userIsSchedulerBudgetWriter()" aria-labelledby="label-budgetedAmount" />
+                <div *ngIf="budgetForm.get('budgetedAmount')?.invalid && budgetForm.get('budgetedAmount')?.touched" class="text-danger">
+                    Budgeted Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('revisedAmount')">
+                <label for="Budget-revisedAmount" id="label-Budget-revisedAmount">Revised Amount</label>
+                <input type="number" id="Budget-revisedAmount" formControlName="revisedAmount" placeholder="Enter Revised Amount" class="form-control budget-input" [disabled]="!userIsSchedulerBudgetWriter()" aria-labelledby="label-revisedAmount" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Budget-notes" id="label-Budget-notes">Notes</label>
+                <textarea id="Budget-notes" formControlName="notes" placeholder="Enter Notes" class="form-control budget-input" [disabled]="!userIsSchedulerBudgetWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                <label for="Budget-currencyId" id="label-Budget-currencyId"><span class="text-danger">*</span>Currency</label>
+                <select id="Budget-currencyId" formControlName="currencyId" class="form-select budget-select" [disabled]="!userIsSchedulerBudgetWriter()">
+                    <option [ngValue]="null">Select Currency</option>
+                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                </select>
+                <div *ngIf="budgetForm.get('currencyId')?.invalid && budgetForm.get('currencyId')?.touched" class="text-danger">
+                    Currency is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Budget-versionNumber" id="label-Budget-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Budget-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control budget-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Budget-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerBudgetWriter()" />
+                <label for="Budget-active" class="form-check-label" id="label-Budget-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Budget-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerBudgetWriter()" />
+                <label for="Budget-deleted" class="form-check-label" id="label-Budget-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer budget-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Budget changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !budgetForm.valid || budgetForm.pristine  || userIsSchedulerBudgetWriter() == false " ngbTooltip="Save the Budget changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Budget' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

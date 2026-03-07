@@ -1,0 +1,120 @@
+<div class="container-fluid p-1 m-0 account-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="account-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Account Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Account Type' : 'Add Account Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerAccountTypeReader()">
+                <div class="col m-2 account-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="accountTypeForm" (ngSubmit)="submitForm()" class="account-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="AccountType-name" id="label-AccountType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="AccountType-name" formControlName="name" placeholder="Enter Name" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="accountTypeForm.get('name')?.invalid && accountTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="AccountType-description" id="label-AccountType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="AccountType-description" formControlName="description" placeholder="Enter Description" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()"></textarea>
+                                <div *ngIf="accountTypeForm.get('description')?.invalid && accountTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevenue')">
+                                <input type="checkbox" id="AccountType-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerAccountTypeWriter()" />
+                                <label for="AccountType-isRevenue" class="form-check-label" id="label-AccountType-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalMapping')">
+                                <label for="AccountType-externalMapping" id="label-AccountType-externalMapping">External Mapping</label>
+                                <input type="text" id="AccountType-externalMapping" formControlName="externalMapping" placeholder="Enter External Mapping" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()" aria-labelledby="label-externalMapping" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="AccountType-color" id="label-AccountType-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="AccountType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerAccountTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="accountTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="AccountType-sequence" id="label-AccountType-sequence">Sequence</label>
+                                <input type="number" id="AccountType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="AccountType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAccountTypeWriter()" />
+                                <label for="AccountType-active" class="form-check-label" id="label-AccountType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="AccountType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAccountTypeWriter()" />
+                                <label for="AccountType-deleted" class="form-check-label" id="label-AccountType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="account-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="accountTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Account Type">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !accountTypeForm.valid || !accountTypeForm.dirty || accountTypeForm.pristine  || userIsSchedulerAccountTypeWriter() == false " ngbTooltip="Save the Account Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Account Type' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerAccountTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 account-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="financialCategoryService.userIsSchedulerFinancialCategoryReader()">
+                            <button ngbNavLink>Financial Categories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (accountTypeData?.FinancialCategoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-category-table [queryParams]="{ accountTypeId: accountTypeData?.id }" [showAddButton]="true" [preSeededData]="{ accountTypeId: accountTypeData?.id }" [hiddenFields]="['accountTypeId']"></app-financial-category-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

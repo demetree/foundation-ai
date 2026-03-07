@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ChargeStatusService, ChargeStatusData, ChargeStatusSubmitData } from '../../../scheduler-data-services/charge-status.service';
+import { ChargeStatusChangeHistoryService } from '../../../scheduler-data-services/charge-status-change-history.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -39,6 +40,7 @@ interface ChargeStatusFormValues {
   description: string,
   color: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -72,6 +74,7 @@ export class ChargeStatusDetailComponent implements OnInit, CanComponentDeactiva
         description: ['', Validators.required],
         color: [''],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -88,12 +91,14 @@ export class ChargeStatusDetailComponent implements OnInit, CanComponentDeactiva
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   chargeStatuses$ = this.chargeStatusService.GetChargeStatusList();
+  public chargeStatusChangeHistories$ = this.chargeStatusChangeHistoryService.GetChargeStatusChangeHistoryList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public chargeStatusService: ChargeStatusService,
+    public chargeStatusChangeHistoryService: ChargeStatusChangeHistoryService,
     public eventChargeService: EventChargeService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -380,6 +385,7 @@ export class ChargeStatusDetailComponent implements OnInit, CanComponentDeactiva
         description: '',
         color: '',
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -395,6 +401,7 @@ export class ChargeStatusDetailComponent implements OnInit, CanComponentDeactiva
         description: chargeStatusData.description ?? '',
         color: chargeStatusData.color ?? '',
         sequence: chargeStatusData.sequence?.toString() ?? '',
+        versionNumber: chargeStatusData.versionNumber?.toString() ?? '',
         active: chargeStatusData.active ?? true,
         deleted: chargeStatusData.deleted ?? false,
       }, { emitEvent: false});
@@ -460,6 +467,7 @@ export class ChargeStatusDetailComponent implements OnInit, CanComponentDeactiva
         description: formValue.description!.trim(),
         color: formValue.color?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.chargeStatusData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

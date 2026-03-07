@@ -27,8 +27,10 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
+import { ClientService } from '../../../scheduler-data-services/client.service';
 import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { FiscalPeriodService } from '../../../scheduler-data-services/fiscal-period.service';
+import { PaymentTypeService } from '../../../scheduler-data-services/payment-type.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -43,9 +45,11 @@ interface FinancialTransactionFormValues {
   financialCategoryId: number | bigint,       // For FK link number
   scheduledEventId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
+  clientId: number | bigint | null,       // For FK link number
   contactRole: string | null,
   taxCodeId: number | bigint | null,       // For FK link number
   fiscalPeriodId: number | bigint | null,       // For FK link number
+  paymentTypeId: number | bigint | null,       // For FK link number
   transactionDate: string,
   description: string,
   amount: string,     // Stored as string for form input, converted to number on submit.
@@ -53,7 +57,6 @@ interface FinancialTransactionFormValues {
   totalAmount: string,     // Stored as string for form input, converted to number on submit.
   isRevenue: boolean,
   journalEntryType: string | null,
-  paymentMethod: string | null,
   referenceNumber: string | null,
   notes: string | null,
   currencyId: number | bigint,       // For FK link number
@@ -96,9 +99,11 @@ export class FinancialTransactionAddEditComponent {
         financialCategoryId: [null, Validators.required],
         scheduledEventId: [null],
         contactId: [null],
+        clientId: [null],
         contactRole: [''],
         taxCodeId: [null],
         fiscalPeriodId: [null],
+        paymentTypeId: [null],
         transactionDate: ['', Validators.required],
         description: ['', Validators.required],
         amount: ['', Validators.required],
@@ -106,7 +111,6 @@ export class FinancialTransactionAddEditComponent {
         totalAmount: ['', Validators.required],
         isRevenue: [false],
         journalEntryType: [''],
-        paymentMethod: [''],
         referenceNumber: [''],
         notes: [''],
         currencyId: [null, Validators.required],
@@ -129,8 +133,10 @@ export class FinancialTransactionAddEditComponent {
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   contacts$ = this.contactService.GetContactList();
+  clients$ = this.clientService.GetClientList();
   taxCodes$ = this.taxCodeService.GetTaxCodeList();
   fiscalPeriods$ = this.fiscalPeriodService.GetFiscalPeriodList();
+  paymentTypes$ = this.paymentTypeService.GetPaymentTypeList();
   currencies$ = this.currencyService.GetCurrencyList();
 
   constructor(
@@ -139,8 +145,10 @@ export class FinancialTransactionAddEditComponent {
     private financialCategoryService: FinancialCategoryService,
     private scheduledEventService: ScheduledEventService,
     private contactService: ContactService,
+    private clientService: ClientService,
     private taxCodeService: TaxCodeService,
     private fiscalPeriodService: FiscalPeriodService,
+    private paymentTypeService: PaymentTypeService,
     private currencyService: CurrencyService,
     private authService: AuthService,
     private alertService: AlertService,
@@ -264,9 +272,11 @@ export class FinancialTransactionAddEditComponent {
         financialCategoryId: Number(formValue.financialCategoryId),
         scheduledEventId: formValue.scheduledEventId ? Number(formValue.scheduledEventId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
+        clientId: formValue.clientId ? Number(formValue.clientId) : null,
         contactRole: formValue.contactRole?.trim() || null,
         taxCodeId: formValue.taxCodeId ? Number(formValue.taxCodeId) : null,
         fiscalPeriodId: formValue.fiscalPeriodId ? Number(formValue.fiscalPeriodId) : null,
+        paymentTypeId: formValue.paymentTypeId ? Number(formValue.paymentTypeId) : null,
         transactionDate: dateTimeLocalToIsoUtc(formValue.transactionDate!.trim())!,
         description: formValue.description!.trim(),
         amount: Number(formValue.amount),
@@ -274,7 +284,6 @@ export class FinancialTransactionAddEditComponent {
         totalAmount: Number(formValue.totalAmount),
         isRevenue: !!formValue.isRevenue,
         journalEntryType: formValue.journalEntryType?.trim() || null,
-        paymentMethod: formValue.paymentMethod?.trim() || null,
         referenceNumber: formValue.referenceNumber?.trim() || null,
         notes: formValue.notes?.trim() || null,
         currencyId: Number(formValue.currencyId),
@@ -413,9 +422,11 @@ export class FinancialTransactionAddEditComponent {
         financialCategoryId: null,
         scheduledEventId: null,
         contactId: null,
+        clientId: null,
         contactRole: '',
         taxCodeId: null,
         fiscalPeriodId: null,
+        paymentTypeId: null,
         transactionDate: '',
         description: '',
         amount: '',
@@ -423,7 +434,6 @@ export class FinancialTransactionAddEditComponent {
         totalAmount: '',
         isRevenue: false,
         journalEntryType: '',
-        paymentMethod: '',
         referenceNumber: '',
         notes: '',
         currencyId: null,
@@ -445,9 +455,11 @@ export class FinancialTransactionAddEditComponent {
         financialCategoryId: financialTransactionData.financialCategoryId,
         scheduledEventId: financialTransactionData.scheduledEventId,
         contactId: financialTransactionData.contactId,
+        clientId: financialTransactionData.clientId,
         contactRole: financialTransactionData.contactRole ?? '',
         taxCodeId: financialTransactionData.taxCodeId,
         fiscalPeriodId: financialTransactionData.fiscalPeriodId,
+        paymentTypeId: financialTransactionData.paymentTypeId,
         transactionDate: isoUtcStringToDateTimeLocal(financialTransactionData.transactionDate) ?? '',
         description: financialTransactionData.description ?? '',
         amount: financialTransactionData.amount?.toString() ?? '',
@@ -455,7 +467,6 @@ export class FinancialTransactionAddEditComponent {
         totalAmount: financialTransactionData.totalAmount?.toString() ?? '',
         isRevenue: financialTransactionData.isRevenue ?? false,
         journalEntryType: financialTransactionData.journalEntryType ?? '',
-        paymentMethod: financialTransactionData.paymentMethod ?? '',
         referenceNumber: financialTransactionData.referenceNumber ?? '',
         notes: financialTransactionData.notes ?? '',
         currencyId: financialTransactionData.currencyId,

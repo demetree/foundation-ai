@@ -44,6 +44,13 @@
                     <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
                 </select>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                <label for="FinancialTransaction-clientId" id="label-FinancialTransaction-clientId">Client</label>
+                <select id="FinancialTransaction-clientId" formControlName="clientId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                    <option [ngValue]="null">Select Client</option>
+                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                </select>
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('contactRole')">
                 <label for="FinancialTransaction-contactRole" id="label-FinancialTransaction-contactRole">Contact Role</label>
                 <input type="text" id="FinancialTransaction-contactRole" formControlName="contactRole" placeholder="Enter Contact Role" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-contactRole" />
@@ -60,6 +67,13 @@
                 <select id="FinancialTransaction-fiscalPeriodId" formControlName="fiscalPeriodId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
                     <option [ngValue]="null">Select Fiscal Period</option>
                     <option *ngFor="let fiscalPeriod of fiscalPeriods$ | async" [ngValue]="fiscalPeriod.id">{{fiscalPeriod.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('paymentTypeId')">
+                <label for="FinancialTransaction-paymentTypeId" id="label-FinancialTransaction-paymentTypeId">Payment Type</label>
+                <select id="FinancialTransaction-paymentTypeId" formControlName="paymentTypeId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                    <option [ngValue]="null">Select Payment Type</option>
+                    <option *ngFor="let paymentType of paymentTypes$ | async" [ngValue]="paymentType.id">{{paymentType.name}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
@@ -104,10 +118,6 @@
             <div class="form-group" *ngIf="!isFieldHidden('journalEntryType')">
                 <label for="FinancialTransaction-journalEntryType" id="label-FinancialTransaction-journalEntryType">Journal Entry Type</label>
                 <input type="text" id="FinancialTransaction-journalEntryType" formControlName="journalEntryType" placeholder="Enter Journal Entry Type" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-journalEntryType" />
-            </div>
-            <div class="form-group" *ngIf="!isFieldHidden('paymentMethod')">
-                <label for="FinancialTransaction-paymentMethod" id="label-FinancialTransaction-paymentMethod">Payment Method</label>
-                <input type="text" id="FinancialTransaction-paymentMethod" formControlName="paymentMethod" placeholder="Enter Payment Method" class="form-control financial-transaction-input" [disabled]="!userIsSchedulerFinancialTransactionWriter()" aria-labelledby="label-paymentMethod" />
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('referenceNumber')">
                 <label for="FinancialTransaction-referenceNumber" id="label-FinancialTransaction-referenceNumber">Reference Number</label>

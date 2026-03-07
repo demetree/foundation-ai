@@ -17,9 +17,7 @@ public partial class FinancialCategory
 
     public string code { get; set; }
 
-    public bool isRevenue { get; set; }
-
-    public string accountType { get; set; }
+    public int accountTypeId { get; set; }
 
     public int? parentFinancialCategoryId { get; set; }
 
@@ -41,11 +39,17 @@ public partial class FinancialCategory
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
+
+    public virtual ICollection<ChargeType> ChargeTypes { get; set; } = new List<ChargeType>();
+
     public virtual ICollection<FinancialCategoryChangeHistory> FinancialCategoryChangeHistories { get; set; } = new List<FinancialCategoryChangeHistory>();
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
     public virtual ICollection<FinancialCategory> InverseparentFinancialCategory { get; set; } = new List<FinancialCategory>();
+
+    public virtual AccountType accountType { get; set; }
 
     public virtual FinancialCategory parentFinancialCategory { get; set; }
 }

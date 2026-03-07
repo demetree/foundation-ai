@@ -55,7 +55,7 @@
                 <label for="PaymentTransaction-eventChargeId" id="label-PaymentTransaction-eventChargeId">Event Charge</label>
                 <select id="PaymentTransaction-eventChargeId" formControlName="eventChargeId" class="form-select payment-transaction-select" [disabled]="!userIsSchedulerPaymentTransactionWriter()">
                     <option [ngValue]="null">Select Event Charge</option>
-                    <option *ngFor="let eventCharge of eventCharges$ | async" [ngValue]="eventCharge.id">{{eventCharge.notes}}</option>
+                    <option *ngFor="let eventCharge of eventCharges$ | async" [ngValue]="eventCharge.id">{{eventCharge.description}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">

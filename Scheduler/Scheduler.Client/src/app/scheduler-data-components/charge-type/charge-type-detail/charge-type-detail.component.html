@@ -68,6 +68,20 @@
                                     Currency is required
                                 </div>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('financialCategoryId')">
+                                <label for="ChargeType-financialCategoryId" id="label-ChargeType-financialCategoryId">Financial Category</label>
+                                <select id="ChargeType-financialCategoryId" formControlName="financialCategoryId" class="form-select charge-type-select" [disabled]="!userIsSchedulerChargeTypeWriter()">
+                                    <option [ngValue]="null">Select Financial Category</option>
+                                    <option *ngFor="let financialCategory of financialCategories$ | async" [ngValue]="financialCategory.id">{{financialCategory.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('taxCodeId')">
+                                <label for="ChargeType-taxCodeId" id="label-ChargeType-taxCodeId">Tax Code</label>
+                                <select id="ChargeType-taxCodeId" formControlName="taxCodeId" class="form-select charge-type-select" [disabled]="!userIsSchedulerChargeTypeWriter()">
+                                    <option [ngValue]="null">Select Tax Code</option>
+                                    <option *ngFor="let taxCode of taxCodes$ | async" [ngValue]="taxCode.id">{{taxCode.name}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                                 <label for="ChargeType-sequence" id="label-ChargeType-sequence">Sequence</label>
                                 <input type="number" id="ChargeType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()" aria-labelledby="label-sequence" />

@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { ReceiptTypeChangeHistoryService, ReceiptTypeChangeHistoryData } from './receipt-type-change-history.service';
 import { GiftService, GiftData } from './gift.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -30,7 +31,9 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class ReceiptTypeQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
+    color: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -48,11 +51,33 @@ export class ReceiptTypeSubmitData {
     id!: bigint | number;
     name!: string;
     description!: string;
+    color: string | null = null;
     sequence: bigint | number | null = null;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class ReceiptTypeBasicListData {
   id!: bigint | number;
@@ -100,7 +125,9 @@ export class ReceiptTypeData {
     id!: bigint | number;
     name!: string;
     description!: string;
+    color!: string | null;
     sequence!: bigint | number;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -108,11 +135,25 @@ export class ReceiptTypeData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _receiptTypeChangeHistories: ReceiptTypeChangeHistoryData[] | null = null;
+    private _receiptTypeChangeHistoriesPromise: Promise<ReceiptTypeChangeHistoryData[]> | null  = null;
+    private _receiptTypeChangeHistoriesSubject = new BehaviorSubject<ReceiptTypeChangeHistoryData[] | null>(null);
+
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ReceiptTypeData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ReceiptTypeData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ReceiptTypeData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -120,6 +161,31 @@ export class ReceiptTypeData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public ReceiptTypeChangeHistories$ = this._receiptTypeChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._receiptTypeChangeHistories === null && this._receiptTypeChangeHistoriesPromise === null) {
+            this.loadReceiptTypeChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _receiptTypeChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get ReceiptTypeChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._receiptTypeChangeHistoriesCount$ === null) {
+            this._receiptTypeChangeHistoriesCount$ = ReceiptTypeChangeHistoryService.Instance.GetReceiptTypeChangeHistoriesRowCount({receiptTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._receiptTypeChangeHistoriesCount$;
+    }
+
+
+
     public Gifts$ = this._giftsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -183,17 +249,90 @@ export class ReceiptTypeData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._receiptTypeChangeHistories = null;
+     this._receiptTypeChangeHistoriesPromise = null;
+     this._receiptTypeChangeHistoriesSubject.next(null);
+     this._receiptTypeChangeHistoriesCount$ = null;
+
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
      this._giftsCount$ = null;
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the ReceiptTypeChangeHistories for this ReceiptType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.receiptType.ReceiptTypeChangeHistories.then(receiptTypes => { ... })
+     *   or
+     *   await this.receiptType.receiptTypes
+     *
+    */
+    public get ReceiptTypeChangeHistories(): Promise<ReceiptTypeChangeHistoryData[]> {
+        if (this._receiptTypeChangeHistories !== null) {
+            return Promise.resolve(this._receiptTypeChangeHistories);
+        }
+
+        if (this._receiptTypeChangeHistoriesPromise !== null) {
+            return this._receiptTypeChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadReceiptTypeChangeHistories();
+
+        return this._receiptTypeChangeHistoriesPromise!;
+    }
+
+
+
+    private loadReceiptTypeChangeHistories(): void {
+
+        this._receiptTypeChangeHistoriesPromise = lastValueFrom(
+            ReceiptTypeService.Instance.GetReceiptTypeChangeHistoriesForReceiptType(this.id)
+        )
+        .then(ReceiptTypeChangeHistories => {
+            this._receiptTypeChangeHistories = ReceiptTypeChangeHistories ?? [];
+            this._receiptTypeChangeHistoriesSubject.next(this._receiptTypeChangeHistories);
+            return this._receiptTypeChangeHistories;
+         })
+        .catch(err => {
+            this._receiptTypeChangeHistories = [];
+            this._receiptTypeChangeHistoriesSubject.next(this._receiptTypeChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._receiptTypeChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ReceiptTypeChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearReceiptTypeChangeHistoriesCache(): void {
+        this._receiptTypeChangeHistories = null;
+        this._receiptTypeChangeHistoriesPromise = null;
+        this._receiptTypeChangeHistoriesSubject.next(this._receiptTypeChangeHistories);      // Emit to observable
+    }
+
+    public get HasReceiptTypeChangeHistories(): Promise<boolean> {
+        return this.ReceiptTypeChangeHistories.then(receiptTypeChangeHistories => receiptTypeChangeHistories.length > 0);
+    }
+
+
     /**
      *
      * Gets the Gifts for this ReceiptType.
@@ -261,6 +400,49 @@ export class ReceiptTypeData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (receiptType.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await receiptType.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ReceiptTypeData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ReceiptTypeData>> {
+        const info = await lastValueFrom(
+            ReceiptTypeService.Instance.GetReceiptTypeChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this ReceiptTypeData object using values from another object that has some or all of the fields needed.
      */
@@ -294,6 +476,7 @@ export class ReceiptTypeService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private receiptTypeChangeHistoryService: ReceiptTypeChangeHistoryService,
         private giftService: GiftService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -354,7 +537,9 @@ export class ReceiptTypeService extends SecureEndpointBase {
         output.id = data.id;
         output.name = data.name;
         output.description = data.description;
+        output.color = data.color;
         output.sequence = data.sequence;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -582,6 +767,108 @@ export class ReceiptTypeService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackReceiptType(id: bigint | number, versionNumber: bigint | number) : Observable<ReceiptTypeData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<ReceiptTypeData>(this.baseUrl + 'api/ReceiptType/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveReceiptType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackReceiptType(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a ReceiptType.
+     */
+    public GetReceiptTypeChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ReceiptTypeData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ReceiptTypeData>>(this.baseUrl + 'api/ReceiptType/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetReceiptTypeChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ReceiptType.
+     */
+    public GetReceiptTypeAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ReceiptTypeData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ReceiptTypeData>[]>(this.baseUrl + 'api/ReceiptType/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetReceiptTypeAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ReceiptType.
+     */
+    public GetReceiptTypeVersion(id: bigint | number, version: number): Observable<ReceiptTypeData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ReceiptTypeData>(this.baseUrl + 'api/ReceiptType/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveReceiptType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetReceiptTypeVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ReceiptType at a specific point in time.
+     */
+    public GetReceiptTypeStateAtTime(id: bigint | number, time: string): Observable<ReceiptTypeData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ReceiptTypeData>(this.baseUrl + 'api/ReceiptType/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveReceiptType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetReceiptTypeStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ReceiptTypeQueryParameters | any): string {
 
@@ -644,7 +931,7 @@ export class ReceiptTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerReceiptTypeWriter = user.writePermission >= 255;
+            userIsSchedulerReceiptTypeWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerReceiptTypeWriter = false;
           }      
@@ -652,6 +939,16 @@ export class ReceiptTypeService extends SecureEndpointBase {
 
         return userIsSchedulerReceiptTypeWriter;
     }
+
+    public GetReceiptTypeChangeHistoriesForReceiptType(receiptTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ReceiptTypeChangeHistoryData[]> {
+        return this.receiptTypeChangeHistoryService.GetReceiptTypeChangeHistoryList({
+            receiptTypeId: receiptTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
 
     public GetGiftsForReceiptType(receiptTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GiftData[]> {
         return this.giftService.GetGiftList({
@@ -698,6 +995,10 @@ export class ReceiptTypeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._receiptTypeChangeHistories = null;
+    (revived as any)._receiptTypeChangeHistoriesPromise = null;
+    (revived as any)._receiptTypeChangeHistoriesSubject = new BehaviorSubject<ReceiptTypeChangeHistoryData[] | null>(null);
+
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
     (revived as any)._giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
@@ -714,6 +1015,18 @@ export class ReceiptTypeService extends SecureEndpointBase {
     // 2. But private methods (loadReceiptTypeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).ReceiptTypeChangeHistories$ = (revived as any)._receiptTypeChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._receiptTypeChangeHistories === null && (revived as any)._receiptTypeChangeHistoriesPromise === null) {
+                (revived as any).loadReceiptTypeChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._receiptTypeChangeHistoriesCount$ = null;
+
+
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._gifts === null && (revived as any)._giftsPromise === null) {
@@ -725,6 +1038,23 @@ export class ReceiptTypeService extends SecureEndpointBase {
 
     (revived as any)._giftsCount$ = null;
 
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ReceiptTypeData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
     return revived;

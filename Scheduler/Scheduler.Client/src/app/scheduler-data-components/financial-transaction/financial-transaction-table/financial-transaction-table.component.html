@@ -39,6 +39,10 @@
                 Contact
                 <span *ngIf="sortColumn === 'contact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('client.name')">
+                Client
+                <span *ngIf="sortColumn === 'client.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('contactRole')">
                 Contact  Role
                 <span *ngIf="sortColumn === 'contactRole'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -50,6 +54,10 @@
             <th class="sortable" scope="col" (click)="sortBy('fiscalPeriod.name')">
                 Fiscal  Period
                 <span *ngIf="sortColumn === 'fiscalPeriod.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('paymentType.name')">
+                Payment  Type
+                <span *ngIf="sortColumn === 'paymentType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('transactionDate')">
                 Transaction  Date
@@ -78,10 +86,6 @@
             <th class="sortable" scope="col" (click)="sortBy('journalEntryType')">
                 Journal  Entry  Type
                 <span *ngIf="sortColumn === 'journalEntryType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
-            </th>
-            <th class="sortable" scope="col" (click)="sortBy('paymentMethod')">
-                Payment  Method
-                <span *ngIf="sortColumn === 'paymentMethod'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('referenceNumber')">
                 Reference  Number
@@ -195,9 +199,11 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/financialcategory', financialTransaction.financialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{financialTransaction.financialCategory?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/scheduledevent', financialTransaction.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{financialTransaction.scheduledEvent?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/contact', financialTransaction.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{financialTransaction.contact?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/client', financialTransaction.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{financialTransaction.client?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/financialtransaction', financialTransaction.id]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{financialTransaction.contactRole}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/taxcode', financialTransaction.taxCodeId]" class="btn btn-link text-left" ngbTooltip="Open Tax Code details">{{financialTransaction.taxCode?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/fiscalperiod', financialTransaction.fiscalPeriodId]" class="btn btn-link text-left" ngbTooltip="Open Fiscal Period details">{{financialTransaction.fiscalPeriod?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/paymenttype', financialTransaction.paymentTypeId]" class="btn btn-link text-left" ngbTooltip="Open Payment Type details">{{financialTransaction.paymentType?.name}}</a></td>
             <td class="text-truncate">{{financialTransaction.transactionDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{financialTransaction.description}}</td>
             <td class="text-truncate">{{financialTransaction.amount | bigNumberFormat : '1.0-2'}}</td>
@@ -205,7 +211,6 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{financialTransaction.totalAmount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="financialTransaction.isRevenue"/></td>
             <td class="text-truncate">{{financialTransaction.journalEntryType}}</td>
-            <td class="text-truncate">{{financialTransaction.paymentMethod}}</td>
             <td class="text-truncate">{{financialTransaction.referenceNumber}}</td>
             <td class="text-truncate">{{financialTransaction.notes}}</td>
             <td class="text-truncate"><a [routerLink]="['/currency', financialTransaction.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{financialTransaction.currency?.name}}</a></td>
@@ -371,6 +376,10 @@ End of commented block for alternate definition option -->
               <strong>Contact: </strong>
               <a [routerLink]="['/contact', financialTransaction.contactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{financialTransaction.contact?.name}}</a>
             </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.clientId != null">
+              <strong>Client: </strong>
+              <a [routerLink]="['/client', financialTransaction.clientId]" class="text-left p-0 m-0" ngbTooltip="Open Client details">{{financialTransaction.client?.name}}</a>
+            </p>
             <p class="financial-transaction-info" *ngIf="financialTransaction.contactRole != null">
               <strong>Contact Role: </strong>
               {{financialTransaction.contactRole}}
@@ -382,6 +391,10 @@ End of commented block for alternate definition option -->
             <p class="financial-transaction-info" *ngIf="financialTransaction.fiscalPeriodId != null">
               <strong>Fiscal Period: </strong>
               <a [routerLink]="['/fiscalperiod', financialTransaction.fiscalPeriodId]" class="text-left p-0 m-0" ngbTooltip="Open Fiscal Period details">{{financialTransaction.fiscalPeriod?.name}}</a>
+            </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.paymentTypeId != null">
+              <strong>Payment Type: </strong>
+              <a [routerLink]="['/paymenttype', financialTransaction.paymentTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Payment Type details">{{financialTransaction.paymentType?.name}}</a>
             </p>
             <p class="financial-transaction-info" *ngIf="financialTransaction.transactionDate != null">
               <strong>Transaction Date: </strong>
@@ -410,10 +423,6 @@ End of commented block for alternate definition option -->
             <p class="financial-transaction-info" *ngIf="financialTransaction.journalEntryType != null">
               <strong>Journal Entry Type: </strong>
               {{financialTransaction.journalEntryType}}
-            </p>
-            <p class="financial-transaction-info" *ngIf="financialTransaction.paymentMethod != null">
-              <strong>Payment Method: </strong>
-              {{financialTransaction.paymentMethod}}
             </p>
             <p class="financial-transaction-info" *ngIf="financialTransaction.referenceNumber != null">
               <strong>Reference Number: </strong>

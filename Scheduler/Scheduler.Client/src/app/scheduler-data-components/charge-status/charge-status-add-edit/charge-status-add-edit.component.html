@@ -60,6 +60,10 @@
                 <label for="ChargeStatus-sequence" id="label-ChargeStatus-sequence">Sequence</label>
                 <input type="number" id="ChargeStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control charge-status-input" [disabled]="!userIsSchedulerChargeStatusWriter()" aria-labelledby="label-sequence" />
             </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ChargeStatus-versionNumber" id="label-ChargeStatus-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ChargeStatus-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control charge-status-input" />
+            </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="ChargeStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerChargeStatusWriter()" />
                 <label for="ChargeStatus-active" class="form-check-label" id="label-ChargeStatus-active"><span class="text-danger">*</span>Active</label>

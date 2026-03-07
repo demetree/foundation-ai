@@ -177,6 +177,7 @@ export class ReceiptTypeTableComponent implements OnInit, OnChanges, AfterViewIn
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/receipttype', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
+    { key: 'color', label: 'Color', width: "50px", template: 'color' },
     { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
@@ -189,11 +190,13 @@ export class ReceiptTypeTableComponent implements OnInit, OnChanges, AfterViewIn
     const isAdmin = this.authService.isSchedulerAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -325,6 +328,7 @@ export class ReceiptTypeTableComponent implements OnInit, OnChanges, AfterViewIn
         const filterFields = [
                       'name',
                       'description',
+                      'color',
                       'sequence',
         ];
 

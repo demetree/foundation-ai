@@ -1,4 +1,4 @@
-﻿using Foundation.CodeGeneration;
+using Foundation.CodeGeneration;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -1056,7 +1056,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             currencyTable.AddData(new Dictionary<string, string> {
                 { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
-                { "name", "US Dollas" },
+                { "name", "US Dollar" },
                 { "description", "United States Dollars" },
                 { "code", "USD"},
                 { "sequence", "1" },
@@ -1064,12 +1064,167 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             currencyTable.AddData(new Dictionary<string, string> {
                 { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
-                { "name", "Canadian" },
+                { "name", "Canadian Dollar" },
                 { "description", "Canadian Dollars" },
                 { "code", "CAD"},
                 { "sequence", "2" },
                 { "objectGuid", "c6673662-f1c9-4aee-b5df-867500cb8545" } });
 
+
+
+            //
+            // Account Type — Standard accounting classifications
+            // System-defined, not tenant-specific. Replaces the accountType string on FinancialCategory.
+            //
+            // NOTE: Defined before FinancialCategory so that FinancialCategory can FK-reference this table.
+            //
+            Database.Table accountTypeTable = database.AddTable("AccountType");
+            accountTypeTable.comment = @"====================================================================================================
+ ACCOUNT TYPE
+ Standard accounting classifications (Income, Expense, COGS, Asset, Liability, Equity).
+ System-defined reference data — not tenant-specific.
+
+ DESIGN NOTE: The isRevenue flag provides a single source of truth for revenue classification,
+ eliminating the need for programmatic derivation from string values. The externalMapping field
+ maps to external system account types (e.g., QuickBooks).
+ =====================================================================================================";
+
+            accountTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            accountTypeTable.AddIdField();
+            accountTypeTable.AddNameAndDescriptionFields(true, true, false);
+            accountTypeTable.AddBoolField("isRevenue", false, false).AddScriptComments("True for revenue account types (Income), false for all others (Expense, COGS, Asset, Liability, Equity).");
+            accountTypeTable.AddString100Field("externalMapping", true).AddScriptComments("Maps to the account type in external systems (e.g., QuickBooks account type name).");
+            accountTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            accountTypeTable.AddSequenceField();
+            accountTypeTable.AddControlFields();
+
+            // Seed standard accounting classifications
+            accountTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Income" },
+                { "description", "Revenue from operations, sales, services, grants, etc." },
+                { "isRevenue", "1" },
+                { "externalMapping", "Income" },
+                { "color", "#4CAF50" },
+                { "sequence", "1" },
+                { "objectGuid", "a1b2c3d4-0001-4000-8000-000000000001" } });
+
+            accountTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Expense" },
+                { "description", "Operating expenses, overhead, supplies, labour, etc." },
+                { "isRevenue", "0" },
+                { "externalMapping", "Expense" },
+                { "color", "#F44336" },
+                { "sequence", "2" },
+                { "objectGuid", "a1b2c3d4-0001-4000-8000-000000000002" } });
+
+            accountTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "COGS" },
+                { "description", "Cost of Goods Sold — direct costs attributable to goods/services sold." },
+                { "isRevenue", "0" },
+                { "externalMapping", "Cost of Goods Sold" },
+                { "color", "#FF9800" },
+                { "sequence", "3" },
+                { "objectGuid", "a1b2c3d4-0001-4000-8000-000000000003" } });
+
+            accountTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Asset" },
+                { "description", "Resources owned — cash, equipment, accounts receivable, etc." },
+                { "isRevenue", "0" },
+                { "externalMapping", "Other Current Asset" },
+                { "color", "#2196F3" },
+                { "sequence", "4" },
+                { "objectGuid", "a1b2c3d4-0001-4000-8000-000000000004" } });
+
+            accountTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Liability" },
+                { "description", "Obligations owed — accounts payable, loans, deferred revenue, etc." },
+                { "isRevenue", "0" },
+                { "externalMapping", "Other Current Liability" },
+                { "color", "#9C27B0" },
+                { "sequence", "5" },
+                { "objectGuid", "a1b2c3d4-0001-4000-8000-000000000005" } });
+
+            accountTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Equity" },
+                { "description", "Owner's equity, retained earnings, net assets." },
+                { "isRevenue", "0" },
+                { "externalMapping", "Equity" },
+                { "color", "#607D8B" },
+                { "sequence", "6" },
+                { "objectGuid", "a1b2c3d4-0001-4000-8000-000000000006" } });
+
+
+            //
+            // Financial Category — Chart of Accounts
+            // Tenant-specific categories for all income and expense transactions.
+            // Separate from ChargeType because these are general ledger categories
+            // (cleaning, supplies, grants, bar sales, etc.) not tied to the event charge pipeline.
+            //
+            // NOTE: Defined before ChargeType so that ChargeType can FK-reference this table.
+            //
+            Database.Table financialCategoryTable = database.AddTable("FinancialCategory");
+            financialCategoryTable.comment = @"====================================================================================================
+ FINANCIAL CATEGORY (Chart of Accounts)
+ Tenant-specific chart of accounts for categorizing all income and expense transactions.
+ Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
+ general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+
+ DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
+ sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+
+ accountTypeId links to AccountType for standard classification (Income, Expense, COGS, etc.)
+ and derives isRevenue from the AccountType.isRevenue flag.
+ =====================================================================================================";
+
+            financialCategoryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            financialCategoryTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            financialCategoryTable.AddIdField();
+            financialCategoryTable.AddMultiTenantSupport();
+            financialCategoryTable.AddNameAndDescriptionFields(true, true, false);
+            financialCategoryTable.AddString50Field("code", false).AddScriptComments("Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).");
+            financialCategoryTable.AddForeignKeyField(accountTypeTable, false, true).AddScriptComments("Link to AccountType — standard accounting classification (Income, Expense, COGS, Asset, Liability, Equity). Replaces the old accountType string field.");
+            financialCategoryTable.AddForeignKeyField("parentFinancialCategoryId", financialCategoryTable, true, true).AddScriptComments("Optional parent for sub-categories.");
+            financialCategoryTable.AddBoolField("isTaxApplicable", false, false).AddScriptComments("Whether HST/tax typically applies to transactions in this category.");
+            financialCategoryTable.AddMoneyField("defaultAmount", true, true).AddScriptComments("Optional default amount for common transactions in this category.");
+            financialCategoryTable.AddString250Field("externalAccountId", true).AddScriptComments("Account ID in external system (e.g., QuickBooks account ID) for sync.").CreateIndex();
+            financialCategoryTable.AddSequenceField();
+            financialCategoryTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            financialCategoryTable.AddVersionControl();
+            financialCategoryTable.AddControlFields();
+
+            financialCategoryTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
+
+
+            //
+            // Tax Code — Tax rates for financial transactions
+            // Maps to QuickBooks TaxCode/TaxRate objects for integration.
+            //
+            // NOTE: Defined before ChargeType so that ChargeType can FK-reference this table.
+            //
+            Database.Table taxCodeTable = database.AddTable("TaxCode");
+            taxCodeTable.comment = @"====================================================================================================
+ TAX CODE
+ Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
+ This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
+
+ DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
+ A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
+ =====================================================================================================";
+
+            taxCodeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            taxCodeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            taxCodeTable.AddIdField();
+            taxCodeTable.AddMultiTenantSupport();
+            taxCodeTable.AddNameAndDescriptionFields(true, true, false);
+            taxCodeTable.AddString50Field("code", false).AddScriptComments("Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').");
+            taxCodeTable.AddDecimalField("rate", false, 0, true).AddScriptComments("Tax rate as a percentage (e.g., 15.0 for 15% HST).");
+            taxCodeTable.AddBoolField("isDefault", false, false).AddScriptComments("Whether this is the default tax code for new transactions.");
+            taxCodeTable.AddBoolField("isExempt", false, false).AddScriptComments("True for tax-exempt codes (rate should be 0).");
+            taxCodeTable.AddString250Field("externalTaxCodeId", true).AddScriptComments("Tax code ID in external system (e.g., QuickBooks TaxCode ID).").CreateIndex();
+            taxCodeTable.AddSequenceField();
+            taxCodeTable.AddControlFields();
+
+            taxCodeTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
 
 
             // Master list of charge types
@@ -1078,7 +1233,7 @@ All operational tables include multi-tenant support, versioning where appropriat
  CHARGE MASTER (Like Epic CDM)
  Master list of chargeable items (revenue or expenses). e.g., ""Site Visit Fee"" (revenue), ""Travel Expense"" (expense).
  Tied to RateType for billing context.
- ====================================================================================================";
+ =====================================================================================================";
 
             chargeTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
             chargeTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
@@ -1092,6 +1247,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             chargeTypeTable.AddString500Field("defaultDescription", true).AddScriptComments("sometimes auto-dropped charges need a note (e.g., \"Travel to site – 45 km\").");
             chargeTypeTable.AddForeignKeyField(rateTypeTable, true, true).AddScriptComments("Link to RateType (e.g., 'Standard', 'Overtime')");
             chargeTypeTable.AddForeignKeyField(currencyTable, false, true);
+            chargeTypeTable.AddForeignKeyField(financialCategoryTable, true, true).AddScriptComments("Optional bridge to the general ledger. Maps this charge type to a FinancialCategory for unified Chart of Accounts reporting across both event charges and standalone transactions.");
+            chargeTypeTable.AddForeignKeyField(taxCodeTable, true, true).AddScriptComments("Optional default TaxCode for charges of this type. When set, new EventCharges auto-inherit this tax rate.");
             chargeTypeTable.AddSequenceField();
             chargeTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
             chargeTypeTable.AddVersionControl();
@@ -1913,13 +2070,19 @@ Used to track engagement level and control visibility/assignment rules.";
 
 
             Database.Table paymentTypeTable = database.AddTable("PaymentType");
-            paymentTypeTable.comment = "Master list of payment types ( credit card, check, cash, etc..)";
-            paymentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            paymentTypeTable.comment = "Master list of payment types (credit card, cheque, cash, e-transfer, etc.)";
+            paymentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            paymentTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             paymentTypeTable.AddIdField();
+            paymentTypeTable.AddMultiTenantSupport();
             paymentTypeTable.AddNameAndDescriptionFields(true, true, false);
+            paymentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
             paymentTypeTable.AddSequenceField();
+            paymentTypeTable.AddVersionControl();
             paymentTypeTable.AddControlFields();
 
+
+            /* can't seed these values without a tenantGuid, but leaving here as examples for reference when seeding tenant-specific data 
             paymentTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Credit Card" },
                 { "description", "Credit Card" },
@@ -1949,16 +2112,22 @@ Used to track engagement level and control visibility/assignment rules.";
                 { "description", "Stock" },
                 { "sequence", "5" },
                 { "objectGuid", "427451dc-b522-4613-aa3a-57593b6d4d03" } });
-
+            */
 
             Database.Table receiptTypeTable = database.AddTable("ReceiptType");
-            receiptTypeTable.comment = "Master list of receipt types";
-            receiptTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            receiptTypeTable.comment = "Master list of receipt types (Receipted, Do Not Receipt, etc.)";
+            receiptTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            receiptTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             receiptTypeTable.AddIdField();
+            receiptTypeTable.AddMultiTenantSupport();
             receiptTypeTable.AddNameAndDescriptionFields(true, true, false);
+            receiptTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
             receiptTypeTable.AddSequenceField();
+            receiptTypeTable.AddVersionControl();
             receiptTypeTable.AddControlFields();
 
+            /* can't seed these values without a tenantGuid, but leaving here as examples for reference when seeding tenant-specific data 
+             
             receiptTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Receipted" },
                 { "description", "Receipted" },
@@ -1971,7 +2140,7 @@ Used to track engagement level and control visibility/assignment rules.";
                 { "sequence", "2" },
                 { "objectGuid", "d6ceb144-aced-4e2a-9407-a2b0c995c795" } });
 
-
+            */
 
 
             Database.Table bookingSourceTypeTable = database.AddTable("BookingSourceType");
@@ -2695,14 +2864,16 @@ You attach the specific Crew/Resource to Event B.";
 
 
             Database.Table chargeStatusTable = database.AddTable("ChargeStatus");
-            chargeStatusTable.comment = "Master list of charge statuses (Pending, Approved, Invoiced, Void)";
-            chargeStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            chargeStatusTable.comment = "Master list of charge statuses (Pending, Approved, Invoiced, Void). Not tenant-specific because workflow will be tied to these values.  Could be redesigned later to get really fancy for tenant specific workflow, but out of scope for now.";
+            chargeStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            chargeStatusTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             chargeStatusTable.AddIdField();
+            //chargeStatusTable.AddMultiTenantSupport();
             chargeStatusTable.AddNameAndDescriptionFields(true, true, false);
             chargeStatusTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
             chargeStatusTable.AddSequenceField();
+            chargeStatusTable.AddVersionControl();
             chargeStatusTable.AddControlFields();
-
 
             // Seed common statuses
             chargeStatusTable.AddData(new Dictionary<string, string> {
@@ -2736,6 +2907,7 @@ You attach the specific Crew/Resource to Event B.";
                 { "objectGuid", "19d6560f-ed85-4d1e-905f-9a6e3dfb3026" } });
 
 
+
             Database.Table eventChargeTable = database.AddTable("EventCharge");
             eventChargeTable.comment = @"====================================================================================================
  EVENT CHARGES
@@ -2760,8 +2932,10 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             eventChargeTable.AddForeignKeyField(chargeStatusTable, false, true).AddScriptComments("Link to the ChargeStatus table.  Tracks the status of the charge from creation through invoicing or cancelling.");
             eventChargeTable.AddDecimalField("quantity", true, 1, true).AddScriptComments("Quantity (hours, units, km, etc.)");
             eventChargeTable.AddMoneyField("unitPrice", true, true).AddScriptComments("Price per unit (can be NULL for flat fees)");
-            eventChargeTable.AddMoneyField("extendedAmount", false, 0, true).AddScriptComments("Always the final calculated/total amount (quantity × unitPrice, or just amount) Does not include taxes.");
-            eventChargeTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("The calculated tax based on isTaxable");
+            eventChargeTable.AddMoneyField("extendedAmount", false, 0, true).AddScriptComments("Pre-tax amount (quantity × unitPrice, or just amount for flat fees).");
+            eventChargeTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("The calculated tax based on TaxCode.rate.");
+            eventChargeTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Total amount inclusive of tax (extendedAmount + taxAmount). Consistent with FinancialTransaction.totalAmount.");
+            eventChargeTable.AddString250Field("description", true).AddScriptComments("Short description or label for the charge. Falls back to ChargeType.name if not set.");
 
 
             eventChargeTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Link to Currency table.");
@@ -2775,102 +2949,55 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             eventChargeTable.AddVersionControl();
             eventChargeTable.AddControlFields();
 
-
-
             #region Financial Ledger — FinancialCategory + FinancialTransaction
 
-            //
-            // Financial Category — Chart of Accounts
-            // Tenant-specific categories for all income and expense transactions.
-            // Separate from ChargeType because these are general ledger categories
-            // (cleaning, supplies, grants, bar sales, etc.) not tied to the event charge pipeline.
-            //
-            Database.Table financialCategoryTable = database.AddTable("FinancialCategory");
-            financialCategoryTable.comment = @"====================================================================================================
- FINANCIAL CATEGORY (Chart of Accounts)
- Tenant-specific chart of accounts for categorizing all income and expense transactions.
- Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
- general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
-
- DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
- sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
-
- accountType aligns with standard accounting classifications, enabling mapping to external systems
- like QuickBooks: Income, Expense, COGS, Asset, Liability, Equity.
- ====================================================================================================";
-
-            financialCategoryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
-            financialCategoryTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
-            financialCategoryTable.AddIdField();
-            financialCategoryTable.AddMultiTenantSupport();
-            financialCategoryTable.AddNameAndDescriptionFields(true, true, false);
-            financialCategoryTable.AddString50Field("code", false).AddScriptComments("Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).");
-            financialCategoryTable.AddBoolField("isRevenue", false, true).AddScriptComments("True = income category, False = expense category. Maintained for backward compatibility.");
-            financialCategoryTable.AddString50Field("accountType", false, "Income").AddScriptComments("Standard accounting classification: Income, Expense, COGS, Asset, Liability, Equity. Maps directly to QuickBooks account types.");
-            financialCategoryTable.AddForeignKeyField("parentFinancialCategoryId", financialCategoryTable, true, true).AddScriptComments("Optional parent for sub-categories.");
-            financialCategoryTable.AddBoolField("isTaxApplicable", false, false).AddScriptComments("Whether HST/tax typically applies to transactions in this category.");
-            financialCategoryTable.AddMoneyField("defaultAmount", true, true).AddScriptComments("Optional default amount for common transactions in this category.");
-            financialCategoryTable.AddString250Field("externalAccountId", true).AddScriptComments("Account ID in external system (e.g., QuickBooks account ID) for sync.").CreateIndex();
-            financialCategoryTable.AddSequenceField();
-            financialCategoryTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
-            financialCategoryTable.AddVersionControl();
-            financialCategoryTable.AddControlFields();
-
-            financialCategoryTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
-
+            // NOTE: FinancialCategory, TaxCode, ChargeStatus, and EventCharge are defined earlier
+            //       in the file (before/around ChargeType) so that FK references resolve correctly
+            //       in the generated SQL. Only FiscalPeriod, FinancialTransaction, and Budget remain here.
 
             //
-            // Tax Code — Tax rates for financial transactions
-            // Maps to QuickBooks TaxCode/TaxRate objects for integration.
+            // Period Status — Fiscal period workflow states
+            // System-defined, not tenant-specific. Replaces the periodStatus string on FiscalPeriod.
             //
-            Database.Table taxCodeTable = database.AddTable("TaxCode");
-            taxCodeTable.comment = @"====================================================================================================
- TAX CODE
- Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
- This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
+            Database.Table periodStatusTable = database.AddTable("PeriodStatus");
+            periodStatusTable.comment = @"====================================================================================================
+ PERIOD STATUS
+ Fiscal period workflow states (Open, In Review, Closed).
+ System-defined reference data — not tenant-specific.
 
- DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
- A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
- ====================================================================================================";
+ DESIGN NOTE: Controls the accounting period lifecycle. Open periods accept transactions,
+ In Review periods are being reconciled, Closed periods are finalized.
+ =====================================================================================================";
 
-            taxCodeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
-            taxCodeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
-            taxCodeTable.AddIdField();
-            taxCodeTable.AddMultiTenantSupport();
-            taxCodeTable.AddNameAndDescriptionFields(true, true, false);
-            taxCodeTable.AddString50Field("code", false).AddScriptComments("Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').");
-            taxCodeTable.AddDecimalField("rate", false, 0, true).AddScriptComments("Tax rate as a percentage (e.g., 15.0 for 15% HST).");
-            taxCodeTable.AddBoolField("isDefault", false, false).AddScriptComments("Whether this is the default tax code for new transactions.");
-            taxCodeTable.AddBoolField("isExempt", false, false).AddScriptComments("True for tax-exempt codes (rate should be 0).");
-            taxCodeTable.AddString250Field("externalTaxCodeId", true).AddScriptComments("Tax code ID in external system (e.g., QuickBooks TaxCode ID).").CreateIndex();
-            taxCodeTable.AddSequenceField();
-            taxCodeTable.AddControlFields();
+            periodStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            periodStatusTable.AddIdField();
+            periodStatusTable.AddNameAndDescriptionFields(true, true, false);
+            periodStatusTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            periodStatusTable.AddSequenceField();
+            periodStatusTable.AddControlFields();
 
-            taxCodeTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
-
-
-            /* - this won't work without tenant guid 
-            // Seed with NL HST
-            taxCodeTable.AddData(new Dictionary<string, string> {
-                { "name", "HST (NL)" },
-                { "description", "Harmonized Sales Tax - Newfoundland and Labrador (15%)" },
-                { "code", "HST" },
-                { "rate", "15.0" },
-                { "isDefault", "1" },
-                { "isExempt", "0" },
+            // Seed workflow states
+            periodStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Open" },
+                { "description", "Period is open and accepting transactions." },
+                { "color", "#4CAF50" },
                 { "sequence", "1" },
-                { "objectGuid", "c1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
+                { "objectGuid", "b2c3d4e5-0001-4000-8000-000000000001" } });
 
-            taxCodeTable.AddData(new Dictionary<string, string> {
-                { "name", "Exempt" },
-                { "description", "Tax exempt" },
-                { "code", "EXEMPT" },
-                { "rate", "0" },
-                { "isDefault", "0" },
-                { "isExempt", "1" },
+            periodStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "In Review" },
+                { "description", "Period is being reviewed and reconciled. No new transactions." },
+                { "color", "#FF9800" },
                 { "sequence", "2" },
-                { "objectGuid", "c1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
-            */
+                { "objectGuid", "b2c3d4e5-0001-4000-8000-000000000002" } });
+
+            periodStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Closed" },
+                { "description", "Period is finalized. No modifications allowed." },
+                { "color", "#F44336" },
+                { "sequence", "3" },
+                { "objectGuid", "b2c3d4e5-0001-4000-8000-000000000003" } });
+
 
             //
             // Fiscal Period — Accounting period tracking
@@ -2882,8 +3009,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
  Supports period-close controls to prevent modifications to finalized periods.
 
  DESIGN NOTE: Allows both calendar-year and fiscal-year configurations.
- The isClosed flag prevents new transactions from being added to closed periods.
- ====================================================================================================";
+ periodStatusId links to PeriodStatus for workflow state (Open, In Review, Closed).
+ =====================================================================================================";
 
             fiscalPeriodTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
             fiscalPeriodTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
@@ -2895,7 +3022,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             fiscalPeriodTable.AddString50Field("periodType", false, "Month").AddScriptComments("Period type: Month, Quarter, Year, Custom.");
             fiscalPeriodTable.AddIntField("fiscalYear", false).AddScriptComments("The fiscal year this period belongs to.");
             fiscalPeriodTable.AddIntField("periodNumber", false).AddScriptComments("Period number within the fiscal year (1-12 for months, 1-4 for quarters, 1 for year).");
-            fiscalPeriodTable.AddBoolField("isClosed", false, false).AddScriptComments("When true, no new transactions can be posted to this period.");
+            fiscalPeriodTable.AddForeignKeyField(periodStatusTable, false, true).AddScriptComments("Link to PeriodStatus — workflow state (Open, In Review, Closed). Replaces the old periodStatus string field.");
             fiscalPeriodTable.AddDateTimeField("closedDate", true).AddScriptComments("When the period was closed.");
             fiscalPeriodTable.AddString100Field("closedBy", true).AddScriptComments("User who closed the period.");
             fiscalPeriodTable.AddSequenceField();
@@ -2920,9 +3047,9 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
  Optionally links to a ScheduledEvent when the transaction relates to a booking.
 
- DESIGN NOTE: isRevenue is denormalized from FinancialCategory for query performance.
- Amount is always stored as a positive value; isRevenue determines the direction.
- ====================================================================================================";
+ DESIGN NOTE: Amount is always stored as a positive value; direction (income vs expense) is
+ determined by the linked FinancialCategory.accountType.
+ =====================================================================================================";
 
             financialTransactionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             financialTransactionTable.AddIdField();
@@ -2930,17 +3057,18 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             financialTransactionTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("Link to the FinancialCategory (chart of accounts entry).");
             financialTransactionTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent when the transaction relates to a booking.");
             financialTransactionTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to the Contact who paid or was paid.");
+            financialTransactionTable.AddForeignKeyField(clientTable, true, true).AddScriptComments("Optional link to the Client (vendor, customer, or supplier) for this transaction.");
             financialTransactionTable.AddString50Field("contactRole", true, "Customer").AddScriptComments("Role of the linked contact: Customer, Vendor, Employee. Maps to QuickBooks entity types for sync.");
             financialTransactionTable.AddForeignKeyField(taxCodeTable, true, true).AddScriptComments("Optional link to TaxCode. Overrides the category-level isTaxApplicable for precise tax handling.");
             financialTransactionTable.AddForeignKeyField(fiscalPeriodTable, true, true).AddScriptComments("Optional link to FiscalPeriod. Auto-assigned based on transactionDate when null.");
+            financialTransactionTable.AddForeignKeyField(paymentTypeTable, true, true).AddScriptComments("Optional link to PaymentType indicating how payment was made (e-transfer, cash, cheque, card, etc.).");
             financialTransactionTable.AddDateTimeField("transactionDate", false).AddScriptComments("When the transaction occurred (UTC).").CreateIndex();
             financialTransactionTable.AddString500Field("description", false).AddScriptComments("Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').");
-            financialTransactionTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Transaction amount before tax. Always positive — direction determined by isRevenue.");
+            financialTransactionTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Transaction amount before tax. Always positive — direction determined by FinancialCategory.accountType.");
             financialTransactionTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("Tax amount (e.g., HST). Calculated from TaxCode.rate when applicable.");
             financialTransactionTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Total amount inclusive of tax (amount + taxAmount).");
-            financialTransactionTable.AddBoolField("isRevenue", false, true).AddScriptComments("Denormalized from FinancialCategory. True = income, False = expense.");
+            financialTransactionTable.AddBoolField("isRevenue", false, true).AddScriptComments("Denormalized from FinancialCategory.accountType for query performance. True when accountType = 'Income', false otherwise.");
             financialTransactionTable.AddString50Field("journalEntryType", true).AddScriptComments("Double-entry type for accounting integration: Debit or Credit. Null = auto-determined from isRevenue.");
-            financialTransactionTable.AddString50Field("paymentMethod", true).AddScriptComments("How payment was made: e-transfer, cash, cheque, card, etc.");
             financialTransactionTable.AddString100Field("referenceNumber", true).AddScriptComments("Cheque number, e-transfer reference, receipt number, etc.");
             financialTransactionTable.AddTextField("notes", true).AddScriptComments("Optional notes about the transaction.");
             financialTransactionTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Link to Currency table.");
@@ -2949,6 +3077,45 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             financialTransactionTable.AddString50Field("externalSystemName", true).AddScriptComments("Name of the external system (e.g., 'QuickBooks', 'Xero') for multi-system tracking.");
             financialTransactionTable.AddVersionControl();
             financialTransactionTable.AddControlFields();
+
+
+            // TODO: Add composite indexes (tenantGuid, isRevenue, transactionDate) and
+            //       (tenantGuid, financialCategoryId, transactionDate) when framework supports them.
+            //       These are the primary access patterns for financial dashboards and reports.
+
+            // EventCharge taxCodeId FK — deferred here because TaxCode is defined after EventCharge.
+            eventChargeTable.AddForeignKeyField(taxCodeTable, true, true).AddScriptComments("Optional link to TaxCode. When set, indicates which tax rate was applied to calculate taxAmount. Inherited from ChargeType.taxCodeId on creation.");
+
+
+            //
+            // Budget — Budget tracking by category and fiscal period.
+            // Enables budget-vs-actual reporting for small towns and businesses.
+            //
+            Database.Table budgetTable = database.AddTable("Budget");
+            budgetTable.comment = @"====================================================================================================
+ BUDGET
+ Tracks budgeted amounts by FinancialCategory and FiscalPeriod.
+ Enables budget-vs-actual reporting: 'We budgeted $5,000 for bar supplies this quarter,
+ we have spent $3,200 so far.'
+
+ DESIGN NOTE: One budget record per category per period. Combined with FinancialTransaction
+ actuals, enables variance analysis, burn rate tracking, and forecasting.
+ ====================================================================================================";
+
+            budgetTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            budgetTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            budgetTable.AddIdField();
+            budgetTable.AddMultiTenantSupport();
+            budgetTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("The category this budget applies to.");
+            budgetTable.AddForeignKeyField(fiscalPeriodTable, false, true).AddScriptComments("The fiscal period this budget covers.");
+            budgetTable.AddMoneyField("budgetedAmount", false, 0, true).AddScriptComments("The planned/budgeted amount for this category in this period.");
+            budgetTable.AddMoneyField("revisedAmount", true, true).AddScriptComments("Optional revised budget amount (after mid-period adjustments).");
+            budgetTable.AddTextField("notes", true).AddScriptComments("Optional notes about the budget line (e.g., justification for revision).");
+            budgetTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Link to Currency table.");
+            budgetTable.AddVersionControl();
+            budgetTable.AddControlFields();
+
+            budgetTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "financialCategoryId", "fiscalPeriodId" }, true);
 
             #endregion
 

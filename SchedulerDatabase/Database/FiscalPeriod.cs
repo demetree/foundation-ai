@@ -25,7 +25,7 @@ public partial class FiscalPeriod
 
     public int periodNumber { get; set; }
 
-    public bool isClosed { get; set; }
+    public int periodStatusId { get; set; }
 
     public DateTime? closedDate { get; set; }
 
@@ -41,7 +41,11 @@ public partial class FiscalPeriod
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
+
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
     public virtual ICollection<FiscalPeriodChangeHistory> FiscalPeriodChangeHistories { get; set; } = new List<FiscalPeriodChangeHistory>();
+
+    public virtual PeriodStatus periodStatus { get; set; }
 }

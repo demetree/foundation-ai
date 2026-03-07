@@ -9,6 +9,7 @@
 
 */
 import {Injectable} from '@angular/core';
+import {AccountTypeService} from  './account-type.service';
 import {AppealService} from  './appeal.service';
 import {AppealChangeHistoryService} from  './appeal-change-history.service';
 import {AssignmentRoleService} from  './assignment-role.service';
@@ -23,11 +24,14 @@ import {BatchService} from  './batch.service';
 import {BatchChangeHistoryService} from  './batch-change-history.service';
 import {BatchStatusService} from  './batch-status.service';
 import {BookingSourceTypeService} from  './booking-source-type.service';
+import {BudgetService} from  './budget.service';
+import {BudgetChangeHistoryService} from  './budget-change-history.service';
 import {CalendarService} from  './calendar.service';
 import {CalendarChangeHistoryService} from  './calendar-change-history.service';
 import {CampaignService} from  './campaign.service';
 import {CampaignChangeHistoryService} from  './campaign-change-history.service';
 import {ChargeStatusService} from  './charge-status.service';
+import {ChargeStatusChangeHistoryService} from  './charge-status-change-history.service';
 import {ChargeTypeService} from  './charge-type.service';
 import {ChargeTypeChangeHistoryService} from  './charge-type-change-history.service';
 import {ClientService} from  './client.service';
@@ -93,6 +97,8 @@ import {PaymentProviderChangeHistoryService} from  './payment-provider-change-hi
 import {PaymentTransactionService} from  './payment-transaction.service';
 import {PaymentTransactionChangeHistoryService} from  './payment-transaction-change-history.service';
 import {PaymentTypeService} from  './payment-type.service';
+import {PaymentTypeChangeHistoryService} from  './payment-type-change-history.service';
+import {PeriodStatusService} from  './period-status.service';
 import {PledgeService} from  './pledge.service';
 import {PledgeChangeHistoryService} from  './pledge-change-history.service';
 import {PriorityService} from  './priority.service';
@@ -101,6 +107,7 @@ import {RateSheetService} from  './rate-sheet.service';
 import {RateSheetChangeHistoryService} from  './rate-sheet-change-history.service';
 import {RateTypeService} from  './rate-type.service';
 import {ReceiptTypeService} from  './receipt-type.service';
+import {ReceiptTypeChangeHistoryService} from  './receipt-type-change-history.service';
 import {RecurrenceExceptionService} from  './recurrence-exception.service';
 import {RecurrenceExceptionChangeHistoryService} from  './recurrence-exception-change-history.service';
 import {RecurrenceFrequencyService} from  './recurrence-frequency.service';
@@ -169,7 +176,8 @@ import {VolunteerStatusService} from  './volunteer-status.service';
 })
 export class SchedulerDataServiceManagerService  {
 
-    constructor(public appealService: AppealService
+    constructor(public accountTypeService: AccountTypeService
+              , public appealService: AppealService
               , public appealChangeHistoryService: AppealChangeHistoryService
               , public assignmentRoleService: AssignmentRoleService
               , public assignmentRoleQualificationRequirementService: AssignmentRoleQualificationRequirementService
@@ -183,11 +191,14 @@ export class SchedulerDataServiceManagerService  {
               , public batchChangeHistoryService: BatchChangeHistoryService
               , public batchStatusService: BatchStatusService
               , public bookingSourceTypeService: BookingSourceTypeService
+              , public budgetService: BudgetService
+              , public budgetChangeHistoryService: BudgetChangeHistoryService
               , public calendarService: CalendarService
               , public calendarChangeHistoryService: CalendarChangeHistoryService
               , public campaignService: CampaignService
               , public campaignChangeHistoryService: CampaignChangeHistoryService
               , public chargeStatusService: ChargeStatusService
+              , public chargeStatusChangeHistoryService: ChargeStatusChangeHistoryService
               , public chargeTypeService: ChargeTypeService
               , public chargeTypeChangeHistoryService: ChargeTypeChangeHistoryService
               , public clientService: ClientService
@@ -253,6 +264,8 @@ export class SchedulerDataServiceManagerService  {
               , public paymentTransactionService: PaymentTransactionService
               , public paymentTransactionChangeHistoryService: PaymentTransactionChangeHistoryService
               , public paymentTypeService: PaymentTypeService
+              , public paymentTypeChangeHistoryService: PaymentTypeChangeHistoryService
+              , public periodStatusService: PeriodStatusService
               , public pledgeService: PledgeService
               , public pledgeChangeHistoryService: PledgeChangeHistoryService
               , public priorityService: PriorityService
@@ -261,6 +274,7 @@ export class SchedulerDataServiceManagerService  {
               , public rateSheetChangeHistoryService: RateSheetChangeHistoryService
               , public rateTypeService: RateTypeService
               , public receiptTypeService: ReceiptTypeService
+              , public receiptTypeChangeHistoryService: ReceiptTypeChangeHistoryService
               , public recurrenceExceptionService: RecurrenceExceptionService
               , public recurrenceExceptionChangeHistoryService: RecurrenceExceptionChangeHistoryService
               , public recurrenceFrequencyService: RecurrenceFrequencyService
@@ -327,6 +341,7 @@ export class SchedulerDataServiceManagerService  {
 
     public ClearAllCaches() {
 
+        this.accountTypeService.ClearAllCaches();
         this.appealService.ClearAllCaches();
         this.appealChangeHistoryService.ClearAllCaches();
         this.assignmentRoleService.ClearAllCaches();
@@ -341,11 +356,14 @@ export class SchedulerDataServiceManagerService  {
         this.batchChangeHistoryService.ClearAllCaches();
         this.batchStatusService.ClearAllCaches();
         this.bookingSourceTypeService.ClearAllCaches();
+        this.budgetService.ClearAllCaches();
+        this.budgetChangeHistoryService.ClearAllCaches();
         this.calendarService.ClearAllCaches();
         this.calendarChangeHistoryService.ClearAllCaches();
         this.campaignService.ClearAllCaches();
         this.campaignChangeHistoryService.ClearAllCaches();
         this.chargeStatusService.ClearAllCaches();
+        this.chargeStatusChangeHistoryService.ClearAllCaches();
         this.chargeTypeService.ClearAllCaches();
         this.chargeTypeChangeHistoryService.ClearAllCaches();
         this.clientService.ClearAllCaches();
@@ -411,6 +429,8 @@ export class SchedulerDataServiceManagerService  {
         this.paymentTransactionService.ClearAllCaches();
         this.paymentTransactionChangeHistoryService.ClearAllCaches();
         this.paymentTypeService.ClearAllCaches();
+        this.paymentTypeChangeHistoryService.ClearAllCaches();
+        this.periodStatusService.ClearAllCaches();
         this.pledgeService.ClearAllCaches();
         this.pledgeChangeHistoryService.ClearAllCaches();
         this.priorityService.ClearAllCaches();
@@ -419,6 +439,7 @@ export class SchedulerDataServiceManagerService  {
         this.rateSheetChangeHistoryService.ClearAllCaches();
         this.rateTypeService.ClearAllCaches();
         this.receiptTypeService.ClearAllCaches();
+        this.receiptTypeChangeHistoryService.ClearAllCaches();
         this.recurrenceExceptionService.ClearAllCaches();
         this.recurrenceExceptionChangeHistoryService.ClearAllCaches();
         this.recurrenceFrequencyService.ClearAllCaches();

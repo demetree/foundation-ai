@@ -1222,6 +1222,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					client.ClientChangeHistories = null;
 					client.ClientContacts = null;
 					client.Constituents = null;
+					client.FinancialTransactions = null;
 					client.ScheduledEvents = null;
 					client.SchedulingTargetAddresses = null;
 					client.SchedulingTargets = null;
@@ -1360,6 +1361,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.ClientChangeHistories = null;
 				cloneOfExisting.ClientContacts = null;
 				cloneOfExisting.Constituents = null;
+				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.ScheduledEvents = null;
 				cloneOfExisting.SchedulingTargetAddresses = null;
 				cloneOfExisting.SchedulingTargets = null;

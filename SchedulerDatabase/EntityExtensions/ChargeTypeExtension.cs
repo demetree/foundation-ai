@@ -294,6 +294,8 @@ namespace Foundation.Scheduler.Database
 			public Int32? rateTypeId { get; set; }
 			[Required]
 			public Int32 currencyId { get; set; }
+			public Int32? financialCategoryId { get; set; }
+			public Int32? taxCodeId { get; set; }
 			public Int32? sequence { get; set; }
 			public String color { get; set; }
 			public Int32 versionNumber { get; set; }
@@ -312,7 +314,9 @@ namespace Foundation.Scheduler.Database
 		public class ChargeTypeOutputDTO : ChargeTypeDTO
 		{
 			public Currency.CurrencyDTO currency { get; set; }
+			public FinancialCategory.FinancialCategoryDTO financialCategory { get; set; }
 			public RateType.RateTypeDTO rateType { get; set; }
+			public TaxCode.TaxCodeDTO taxCode { get; set; }
 		}
 
 
@@ -337,6 +341,8 @@ namespace Foundation.Scheduler.Database
 				defaultDescription = this.defaultDescription,
 				rateTypeId = this.rateTypeId,
 				currencyId = this.currencyId,
+				financialCategoryId = this.financialCategoryId,
+				taxCodeId = this.taxCodeId,
 				sequence = this.sequence,
 				color = this.color,
 				versionNumber = this.versionNumber,
@@ -391,6 +397,8 @@ namespace Foundation.Scheduler.Database
 				defaultDescription = this.defaultDescription,
 				rateTypeId = this.rateTypeId,
 				currencyId = this.currencyId,
+				financialCategoryId = this.financialCategoryId,
+				taxCodeId = this.taxCodeId,
 				sequence = this.sequence,
 				color = this.color,
 				versionNumber = this.versionNumber,
@@ -398,7 +406,9 @@ namespace Foundation.Scheduler.Database
 				active = this.active,
 				deleted = this.deleted,
 				currency = this.currency?.ToDTO(),
-				rateType = this.rateType?.ToDTO()
+				financialCategory = this.financialCategory?.ToDTO(),
+				rateType = this.rateType?.ToDTO(),
+				taxCode = this.taxCode?.ToDTO()
 			};
 		}
 
@@ -447,6 +457,8 @@ namespace Foundation.Scheduler.Database
 				defaultDescription = dto.defaultDescription,
 				rateTypeId = dto.rateTypeId,
 				currencyId = dto.currencyId,
+				financialCategoryId = dto.financialCategoryId,
+				taxCodeId = dto.taxCodeId,
 				sequence = dto.sequence,
 				color = dto.color,
 				versionNumber = dto.versionNumber,
@@ -478,6 +490,8 @@ namespace Foundation.Scheduler.Database
 			this.defaultDescription = dto.defaultDescription;
 			this.rateTypeId = dto.rateTypeId;
 			this.currencyId = dto.currencyId;
+			this.financialCategoryId = dto.financialCategoryId;
+			this.taxCodeId = dto.taxCodeId;
 			this.sequence = dto.sequence;
 			this.color = dto.color;
 			this.versionNumber = dto.versionNumber;
@@ -515,6 +529,8 @@ namespace Foundation.Scheduler.Database
 				defaultDescription = this.defaultDescription,
 				rateTypeId = this.rateTypeId,
 				currencyId = this.currencyId,
+				financialCategoryId = this.financialCategoryId,
+				taxCodeId = this.taxCodeId,
 				sequence = this.sequence,
 				color = this.color,
 				versionNumber = this.versionNumber,
@@ -583,6 +599,8 @@ namespace Foundation.Scheduler.Database
 				defaultDescription = chargeType.defaultDescription,
 				rateTypeId = chargeType.rateTypeId,
 				currencyId = chargeType.currencyId,
+				financialCategoryId = chargeType.financialCategoryId,
+				taxCodeId = chargeType.taxCodeId,
 				sequence = chargeType.sequence,
 				color = chargeType.color,
 				versionNumber = chargeType.versionNumber,
@@ -618,6 +636,8 @@ namespace Foundation.Scheduler.Database
 				defaultDescription = chargeType.defaultDescription,
 				rateTypeId = chargeType.rateTypeId,
 				currencyId = chargeType.currencyId,
+				financialCategoryId = chargeType.financialCategoryId,
+				taxCodeId = chargeType.taxCodeId,
 				sequence = chargeType.sequence,
 				color = chargeType.color,
 				versionNumber = chargeType.versionNumber,
@@ -625,7 +645,9 @@ namespace Foundation.Scheduler.Database
 				active = chargeType.active,
 				deleted = chargeType.deleted,
 				currency = Currency.CreateMinimalAnonymous(chargeType.currency),
-				rateType = RateType.CreateMinimalAnonymous(chargeType.rateType)
+				financialCategory = FinancialCategory.CreateMinimalAnonymous(chargeType.financialCategory),
+				rateType = RateType.CreateMinimalAnonymous(chargeType.rateType),
+				taxCode = TaxCode.CreateMinimalAnonymous(chargeType.taxCode)
 			 };
 		}
 

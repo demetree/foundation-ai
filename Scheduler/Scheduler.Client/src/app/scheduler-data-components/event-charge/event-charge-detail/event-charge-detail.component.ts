@@ -29,6 +29,7 @@ import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.
 import { ChargeStatusService } from '../../../scheduler-data-services/charge-status.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { RateTypeService } from '../../../scheduler-data-services/rate-type.service';
+import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { EventChargeChangeHistoryService } from '../../../scheduler-data-services/event-charge-change-history.service';
 import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
 import { AuthService } from '../../../services/auth.service';
@@ -50,6 +51,8 @@ interface EventChargeFormValues {
   unitPrice: string | null,     // Stored as string for form input, converted to number on submit.
   extendedAmount: string,     // Stored as string for form input, converted to number on submit.
   taxAmount: string,     // Stored as string for form input, converted to number on submit.
+  totalAmount: string,     // Stored as string for form input, converted to number on submit.
+  description: string | null,
   currencyId: number | bigint,       // For FK link number
   rateTypeId: number | bigint | null,       // For FK link number
   notes: string | null,
@@ -61,6 +64,7 @@ interface EventChargeFormValues {
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
+  taxCodeId: number | bigint | null,       // For FK link number
 };
 
 
@@ -96,6 +100,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         unitPrice: [''],
         extendedAmount: ['', Validators.required],
         taxAmount: ['', Validators.required],
+        totalAmount: ['', Validators.required],
+        description: [''],
         currencyId: [null, Validators.required],
         rateTypeId: [null],
         notes: [''],
@@ -107,6 +113,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         versionNumber: [''],
         active: [true],
         deleted: [false],
+        taxCodeId: [null],
       });
 
 
@@ -127,6 +134,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
   public chargeStatuses$ = this.chargeStatusService.GetChargeStatusList();
   public currencies$ = this.currencyService.GetCurrencyList();
   public rateTypes$ = this.rateTypeService.GetRateTypeList();
+  public taxCodes$ = this.taxCodeService.GetTaxCodeList();
   public eventChargeChangeHistories$ = this.eventChargeChangeHistoryService.GetEventChargeChangeHistoryList();
   public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
 
@@ -140,6 +148,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
     public chargeStatusService: ChargeStatusService,
     public currencyService: CurrencyService,
     public rateTypeService: RateTypeService,
+    public taxCodeService: TaxCodeService,
     public eventChargeChangeHistoryService: EventChargeChangeHistoryService,
     public paymentTransactionService: PaymentTransactionService,
     private authService: AuthService,
@@ -431,6 +440,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         unitPrice: '',
         extendedAmount: '',
         taxAmount: '',
+        totalAmount: '',
+        description: '',
         currencyId: null,
         rateTypeId: null,
         notes: '',
@@ -442,6 +453,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         versionNumber: '',
         active: true,
         deleted: false,
+        taxCodeId: null,
    }, { emitEvent: false});
 
     }
@@ -459,6 +471,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         unitPrice: eventChargeData.unitPrice?.toString() ?? '',
         extendedAmount: eventChargeData.extendedAmount?.toString() ?? '',
         taxAmount: eventChargeData.taxAmount?.toString() ?? '',
+        totalAmount: eventChargeData.totalAmount?.toString() ?? '',
+        description: eventChargeData.description ?? '',
         currencyId: eventChargeData.currencyId,
         rateTypeId: eventChargeData.rateTypeId,
         notes: eventChargeData.notes ?? '',
@@ -470,6 +484,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         versionNumber: eventChargeData.versionNumber?.toString() ?? '',
         active: eventChargeData.active ?? true,
         deleted: eventChargeData.deleted ?? false,
+        taxCodeId: eventChargeData.taxCodeId,
       }, { emitEvent: false});
     }
 
@@ -537,6 +552,8 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         unitPrice: formValue.unitPrice ? Number(formValue.unitPrice) : null,
         extendedAmount: Number(formValue.extendedAmount),
         taxAmount: Number(formValue.taxAmount),
+        totalAmount: Number(formValue.totalAmount),
+        description: formValue.description?.trim() || null,
         currencyId: Number(formValue.currencyId),
         rateTypeId: formValue.rateTypeId ? Number(formValue.rateTypeId) : null,
         notes: formValue.notes?.trim() || null,
@@ -548,6 +565,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
         versionNumber: this.eventChargeData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
+        taxCodeId: formValue.taxCodeId ? Number(formValue.taxCodeId) : null,
    };
 
 

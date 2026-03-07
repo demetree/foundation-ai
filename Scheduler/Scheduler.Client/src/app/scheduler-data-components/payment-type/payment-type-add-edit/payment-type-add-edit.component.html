@@ -34,9 +34,35 @@
                     Description is required
                 </div>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="PaymentType-color" id="label-PaymentType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="PaymentType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerPaymentTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="paymentTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                 <label for="PaymentType-sequence" id="label-PaymentType-sequence">Sequence</label>
                 <input type="number" id="PaymentType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="PaymentType-versionNumber" id="label-PaymentType-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="PaymentType-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control payment-type-input" />
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="PaymentType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" />

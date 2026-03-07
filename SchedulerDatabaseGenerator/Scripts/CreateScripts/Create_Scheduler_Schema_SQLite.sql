@@ -59,15 +59,16 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "DocumentChangeHistory"
 -- DROP TABLE "Document"
 -- DROP TABLE "DocumentType"
+-- DROP TABLE "BudgetChangeHistory"
+-- DROP TABLE "Budget"
 -- DROP TABLE "FinancialTransactionChangeHistory"
 -- DROP TABLE "FinancialTransaction"
 -- DROP TABLE "FiscalPeriodChangeHistory"
 -- DROP TABLE "FiscalPeriod"
--- DROP TABLE "TaxCode"
--- DROP TABLE "FinancialCategoryChangeHistory"
--- DROP TABLE "FinancialCategory"
+-- DROP TABLE "PeriodStatus"
 -- DROP TABLE "EventChargeChangeHistory"
 -- DROP TABLE "EventCharge"
+-- DROP TABLE "ChargeStatusChangeHistory"
 -- DROP TABLE "ChargeStatus"
 -- DROP TABLE "ScheduledEventChangeHistory"
 -- DROP TABLE "ScheduledEvent"
@@ -111,7 +112,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "SchedulingTargetType"
 -- DROP TABLE "AssignmentStatus"
 -- DROP TABLE "BookingSourceType"
+-- DROP TABLE "ReceiptTypeChangeHistory"
 -- DROP TABLE "ReceiptType"
+-- DROP TABLE "PaymentTypeChangeHistory"
 -- DROP TABLE "PaymentType"
 -- DROP TABLE "EventStatus"
 -- DROP TABLE "AssignmentRoleQualificationRequirementChangeHistory"
@@ -147,6 +150,10 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "Tag"
 -- DROP TABLE "ChargeTypeChangeHistory"
 -- DROP TABLE "ChargeType"
+-- DROP TABLE "TaxCode"
+-- DROP TABLE "FinancialCategoryChangeHistory"
+-- DROP TABLE "FinancialCategory"
+-- DROP TABLE "AccountType"
 -- DROP TABLE "Currency"
 -- DROP TABLE "InteractionType"
 -- DROP TABLE "RateType"
@@ -214,15 +221,16 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Document" DISABLE
 -- ALTER INDEX ALL ON "DocumentType" DISABLE
+-- ALTER INDEX ALL ON "BudgetChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "Budget" DISABLE
 -- ALTER INDEX ALL ON "FinancialTransactionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "FinancialTransaction" DISABLE
 -- ALTER INDEX ALL ON "FiscalPeriodChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "FiscalPeriod" DISABLE
--- ALTER INDEX ALL ON "TaxCode" DISABLE
--- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" DISABLE
--- ALTER INDEX ALL ON "FinancialCategory" DISABLE
+-- ALTER INDEX ALL ON "PeriodStatus" DISABLE
 -- ALTER INDEX ALL ON "EventChargeChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "EventCharge" DISABLE
+-- ALTER INDEX ALL ON "ChargeStatusChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ChargeStatus" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEvent" DISABLE
@@ -266,7 +274,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "SchedulingTargetType" DISABLE
 -- ALTER INDEX ALL ON "AssignmentStatus" DISABLE
 -- ALTER INDEX ALL ON "BookingSourceType" DISABLE
+-- ALTER INDEX ALL ON "ReceiptTypeChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ReceiptType" DISABLE
+-- ALTER INDEX ALL ON "PaymentTypeChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "PaymentType" DISABLE
 -- ALTER INDEX ALL ON "EventStatus" DISABLE
 -- ALTER INDEX ALL ON "AssignmentRoleQualificationRequirementChangeHistory" DISABLE
@@ -302,6 +312,10 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "Tag" DISABLE
 -- ALTER INDEX ALL ON "ChargeTypeChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ChargeType" DISABLE
+-- ALTER INDEX ALL ON "TaxCode" DISABLE
+-- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "FinancialCategory" DISABLE
+-- ALTER INDEX ALL ON "AccountType" DISABLE
 -- ALTER INDEX ALL ON "Currency" DISABLE
 -- ALTER INDEX ALL ON "InteractionType" DISABLE
 -- ALTER INDEX ALL ON "RateType" DISABLE
@@ -369,15 +383,16 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Document" REBUILD
 -- ALTER INDEX ALL ON "DocumentType" REBUILD
+-- ALTER INDEX ALL ON "BudgetChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "Budget" REBUILD
 -- ALTER INDEX ALL ON "FinancialTransactionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "FinancialTransaction" REBUILD
 -- ALTER INDEX ALL ON "FiscalPeriodChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "FiscalPeriod" REBUILD
--- ALTER INDEX ALL ON "TaxCode" REBUILD
--- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" REBUILD
--- ALTER INDEX ALL ON "FinancialCategory" REBUILD
+-- ALTER INDEX ALL ON "PeriodStatus" REBUILD
 -- ALTER INDEX ALL ON "EventChargeChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "EventCharge" REBUILD
+-- ALTER INDEX ALL ON "ChargeStatusChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ChargeStatus" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEvent" REBUILD
@@ -421,7 +436,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "SchedulingTargetType" REBUILD
 -- ALTER INDEX ALL ON "AssignmentStatus" REBUILD
 -- ALTER INDEX ALL ON "BookingSourceType" REBUILD
+-- ALTER INDEX ALL ON "ReceiptTypeChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ReceiptType" REBUILD
+-- ALTER INDEX ALL ON "PaymentTypeChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "PaymentType" REBUILD
 -- ALTER INDEX ALL ON "EventStatus" REBUILD
 -- ALTER INDEX ALL ON "AssignmentRoleQualificationRequirementChangeHistory" REBUILD
@@ -457,6 +474,10 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "Tag" REBUILD
 -- ALTER INDEX ALL ON "ChargeTypeChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ChargeType" REBUILD
+-- ALTER INDEX ALL ON "TaxCode" REBUILD
+-- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "FinancialCategory" REBUILD
+-- ALTER INDEX ALL ON "AccountType" REBUILD
 -- ALTER INDEX ALL ON "Currency" REBUILD
 -- ALTER INDEX ALL ON "InteractionType" REBUILD
 -- ALTER INDEX ALL ON "RateType" REBUILD
@@ -1068,9 +1089,207 @@ CREATE INDEX "I_Currency_tenantGuid_active" ON "Currency" ("tenantGuid", "active
 CREATE INDEX "I_Currency_tenantGuid_deleted" ON "Currency" ("tenantGuid", "deleted")
 ;
 
-INSERT INTO "Currency" ( "tenantGuid", "name", "description", "code", "sequence", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'US Dollas', 'United States Dollars', 'USD', 1, '5d460ce9-4cf5-41c3-ab9d-9ef104b0a276' );
+INSERT INTO "Currency" ( "tenantGuid", "name", "description", "code", "sequence", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'US Dollar', 'United States Dollars', 'USD', 1, '5d460ce9-4cf5-41c3-ab9d-9ef104b0a276' );
 
-INSERT INTO "Currency" ( "tenantGuid", "name", "description", "code", "sequence", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Canadian', 'Canadian Dollars', 'CAD', 2, 'c6673662-f1c9-4aee-b5df-867500cb8545' );
+INSERT INTO "Currency" ( "tenantGuid", "name", "description", "code", "sequence", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Canadian Dollar', 'Canadian Dollars', 'CAD', 2, 'c6673662-f1c9-4aee-b5df-867500cb8545' );
+
+
+/*
+====================================================================================================
+ ACCOUNT TYPE
+ Standard accounting classifications (Income, Expense, COGS, Asset, Liability, Equity).
+ System-defined reference data — not tenant-specific.
+
+ DESIGN NOTE: The isRevenue flag provides a single source of truth for revenue classification,
+ eliminating the need for programmatic derivation from string values. The externalMapping field
+ maps to external system account types (e.g., QuickBooks).
+ =====================================================================================================
+*/
+CREATE TABLE "AccountType"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"isRevenue" BIT NOT NULL DEFAULT 0,		-- True for revenue account types (Income), false for all others (Expense, COGS, Asset, Liability, Equity).
+	"externalMapping" VARCHAR(100) NULL COLLATE NOCASE,		-- Maps to the account type in external systems (e.g., QuickBooks account type name).
+	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display.
+	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the AccountType table's name field.
+CREATE INDEX "I_AccountType_name" ON "AccountType" ("name")
+;
+
+-- Index on the AccountType table's active field.
+CREATE INDEX "I_AccountType_active" ON "AccountType" ("active")
+;
+
+-- Index on the AccountType table's deleted field.
+CREATE INDEX "I_AccountType_deleted" ON "AccountType" ("deleted")
+;
+
+INSERT INTO "AccountType" ( "name", "description", "isRevenue", "externalMapping", "color", "sequence", "objectGuid" ) VALUES  ( 'Income', 'Revenue from operations, sales, services, grants, etc.', 1, 'Income', '#4CAF50', 1, 'a1b2c3d4-0001-4000-8000-000000000001' );
+
+INSERT INTO "AccountType" ( "name", "description", "isRevenue", "externalMapping", "color", "sequence", "objectGuid" ) VALUES  ( 'Expense', 'Operating expenses, overhead, supplies, labour, etc.', 0, 'Expense', '#F44336', 2, 'a1b2c3d4-0001-4000-8000-000000000002' );
+
+INSERT INTO "AccountType" ( "name", "description", "isRevenue", "externalMapping", "color", "sequence", "objectGuid" ) VALUES  ( 'COGS', 'Cost of Goods Sold — direct costs attributable to goods/services sold.', 0, 'Cost of Goods Sold', '#FF9800', 3, 'a1b2c3d4-0001-4000-8000-000000000003' );
+
+INSERT INTO "AccountType" ( "name", "description", "isRevenue", "externalMapping", "color", "sequence", "objectGuid" ) VALUES  ( 'Asset', 'Resources owned — cash, equipment, accounts receivable, etc.', 0, 'Other Current Asset', '#2196F3', 4, 'a1b2c3d4-0001-4000-8000-000000000004' );
+
+INSERT INTO "AccountType" ( "name", "description", "isRevenue", "externalMapping", "color", "sequence", "objectGuid" ) VALUES  ( 'Liability', 'Obligations owed — accounts payable, loans, deferred revenue, etc.', 0, 'Other Current Liability', '#9C27B0', 5, 'a1b2c3d4-0001-4000-8000-000000000005' );
+
+INSERT INTO "AccountType" ( "name", "description", "isRevenue", "externalMapping", "color", "sequence", "objectGuid" ) VALUES  ( 'Equity', 'Owner''s equity, retained earnings, net assets.', 0, 'Equity', '#607D8B', 6, 'a1b2c3d4-0001-4000-8000-000000000006' );
+
+
+/*
+====================================================================================================
+ FINANCIAL CATEGORY (Chart of Accounts)
+ Tenant-specific chart of accounts for categorizing all income and expense transactions.
+ Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
+ general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+
+ DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
+ sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
+
+ accountTypeId links to AccountType for standard classification (Income, Expense, COGS, etc.)
+ and derives isRevenue from the AccountType.isRevenue flag.
+ =====================================================================================================
+*/
+CREATE TABLE "FinancialCategory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
+	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"code" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
+	"accountTypeId" INTEGER NOT NULL,		-- Link to AccountType — standard accounting classification (Income, Expense, COGS, Asset, Liability, Equity). Replaces the old accountType string field.
+	"parentFinancialCategoryId" INTEGER NULL,		-- Optional parent for sub-categories.
+	"isTaxApplicable" BIT NOT NULL DEFAULT 0,		-- Whether HST/tax typically applies to transactions in this category.
+	"defaultAmount" NUMERIC NULL,		-- Optional default amount for common transactions in this category.
+	"externalAccountId" VARCHAR(250) NULL COLLATE NOCASE,		-- Account ID in external system (e.g., QuickBooks account ID) for sync.
+	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("accountTypeId") REFERENCES "AccountType"("id"),		-- Foreign key to the AccountType table.
+	FOREIGN KEY ("parentFinancialCategoryId") REFERENCES "FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
+	UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
+	UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
+);
+-- Index on the FinancialCategory table's tenantGuid field.
+CREATE INDEX "I_FinancialCategory_tenantGuid" ON "FinancialCategory" ("tenantGuid")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,name fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_name" ON "FinancialCategory" ("tenantGuid", "name")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,accountTypeId fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_accountTypeId" ON "FinancialCategory" ("tenantGuid", "accountTypeId")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_parentFinancialCategoryId" ON "FinancialCategory" ("tenantGuid", "parentFinancialCategoryId")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,externalAccountId fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_externalAccountId" ON "FinancialCategory" ("tenantGuid", "externalAccountId")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,active fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_active" ON "FinancialCategory" ("tenantGuid", "active")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,deleted fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_deleted" ON "FinancialCategory" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the FinancialCategory table.
+CREATE TABLE "FinancialCategoryChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"financialCategoryId" INTEGER NOT NULL,		-- Link to the FinancialCategory table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("financialCategoryId") REFERENCES "FinancialCategory"("id")		-- Foreign key to the FinancialCategory table.
+);
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid field.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid" ON "FinancialCategoryChangeHistory" ("tenantGuid")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_versionNumber" ON "FinancialCategoryChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_timeStamp" ON "FinancialCategoryChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_userId" ON "FinancialCategoryChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the FinancialCategoryChangeHistory table's tenantGuid,financialCategoryId fields.
+CREATE INDEX "I_FnnclCtgryChngHstry_tnntGud_fnnclCtgryd" ON "FinancialCategoryChangeHistory" ("tenantGuid", "financialCategoryId", "versionNumber", "timeStamp", "userId")
+;
+
+
+/*
+====================================================================================================
+ TAX CODE
+ Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
+ This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
+
+ DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
+ A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
+ =====================================================================================================
+*/
+CREATE TABLE "TaxCode"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
+	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"code" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').
+	"rate" NUMERIC NOT NULL DEFAULT 0,		-- Tax rate as a percentage (e.g., 15.0 for 15% HST).
+	"isDefault" BIT NOT NULL DEFAULT 0,		-- Whether this is the default tax code for new transactions.
+	"isExempt" BIT NOT NULL DEFAULT 0,		-- True for tax-exempt codes (rate should be 0).
+	"externalTaxCodeId" VARCHAR(250) NULL COLLATE NOCASE,		-- Tax code ID in external system (e.g., QuickBooks TaxCode ID).
+	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the TaxCode table's tenantGuid and name fields.
+	UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the TaxCode table's tenantGuid and code fields.
+);
+-- Index on the TaxCode table's tenantGuid field.
+CREATE INDEX "I_TaxCode_tenantGuid" ON "TaxCode" ("tenantGuid")
+;
+
+-- Index on the TaxCode table's tenantGuid,name fields.
+CREATE INDEX "I_TaxCode_tenantGuid_name" ON "TaxCode" ("tenantGuid", "name")
+;
+
+-- Index on the TaxCode table's tenantGuid,externalTaxCodeId fields.
+CREATE INDEX "I_TaxCode_tenantGuid_externalTaxCodeId" ON "TaxCode" ("tenantGuid", "externalTaxCodeId")
+;
+
+-- Index on the TaxCode table's tenantGuid,active fields.
+CREATE INDEX "I_TaxCode_tenantGuid_active" ON "TaxCode" ("tenantGuid", "active")
+;
+
+-- Index on the TaxCode table's tenantGuid,deleted fields.
+CREATE INDEX "I_TaxCode_tenantGuid_deleted" ON "TaxCode" ("tenantGuid", "deleted")
+;
 
 
 /*
@@ -1078,7 +1297,7 @@ INSERT INTO "Currency" ( "tenantGuid", "name", "description", "code", "sequence"
  CHARGE MASTER (Like Epic CDM)
  Master list of chargeable items (revenue or expenses). e.g., "Site Visit Fee" (revenue), "Travel Expense" (expense).
  Tied to RateType for billing context.
- ====================================================================================================
+ =====================================================================================================
 */
 CREATE TABLE "ChargeType"
 (
@@ -1093,6 +1312,8 @@ CREATE TABLE "ChargeType"
 	"defaultDescription" VARCHAR(500) NULL COLLATE NOCASE,		-- sometimes auto-dropped charges need a note (e.g., "Travel to site – 45 km").
 	"rateTypeId" INTEGER NULL,		-- Link to RateType (e.g., 'Standard', 'Overtime')
 	"currencyId" INTEGER NOT NULL,		-- Link to the Currency table.
+	"financialCategoryId" INTEGER NULL,		-- Optional bridge to the general ledger. Maps this charge type to a FinancialCategory for unified Chart of Accounts reporting across both event charges and standalone transactions.
+	"taxCodeId" INTEGER NULL,		-- Optional default TaxCode for charges of this type. When set, new EventCharges auto-inherit this tax rate.
 	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
 	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -1101,6 +1322,8 @@ CREATE TABLE "ChargeType"
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY ("rateTypeId") REFERENCES "RateType"("id"),		-- Foreign key to the RateType table.
 	FOREIGN KEY ("currencyId") REFERENCES "Currency"("id"),		-- Foreign key to the Currency table.
+	FOREIGN KEY ("financialCategoryId") REFERENCES "FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
+	FOREIGN KEY ("taxCodeId") REFERENCES "TaxCode"("id"),		-- Foreign key to the TaxCode table.
 	UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the ChargeType table's tenantGuid and name fields.
 );
 -- Index on the ChargeType table's tenantGuid field.
@@ -1121,6 +1344,14 @@ CREATE INDEX "I_ChargeType_tenantGuid_rateTypeId" ON "ChargeType" ("tenantGuid",
 
 -- Index on the ChargeType table's tenantGuid,currencyId fields.
 CREATE INDEX "I_ChargeType_tenantGuid_currencyId" ON "ChargeType" ("tenantGuid", "currencyId")
+;
+
+-- Index on the ChargeType table's tenantGuid,financialCategoryId fields.
+CREATE INDEX "I_ChargeType_tenantGuid_financialCategoryId" ON "ChargeType" ("tenantGuid", "financialCategoryId")
+;
+
+-- Index on the ChargeType table's tenantGuid,taxCodeId fields.
+CREATE INDEX "I_ChargeType_tenantGuid_taxCodeId" ON "ChargeType" ("tenantGuid", "taxCodeId")
 ;
 
 -- Index on the ChargeType table's tenantGuid,active fields.
@@ -2710,68 +2941,134 @@ INSERT INTO "EventStatus" ( "name", "description", "sequence", "objectGuid" ) VA
 INSERT INTO "EventStatus" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Canceled', 'Explicitly canceled', 5, '01148ccb-e746-4218-88c5-8f0a5ee36adc' );
 
 
--- Master list of payment types ( credit card, check, cash, etc..)
+-- Master list of payment types (credit card, cheque, cash, e-transfer, etc.)
 CREATE TABLE "PaymentType"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
 	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display
 	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the PaymentType table's tenantGuid and name fields.
 );
--- Index on the PaymentType table's name field.
-CREATE INDEX "I_PaymentType_name" ON "PaymentType" ("name")
+-- Index on the PaymentType table's tenantGuid field.
+CREATE INDEX "I_PaymentType_tenantGuid" ON "PaymentType" ("tenantGuid")
 ;
 
--- Index on the PaymentType table's active field.
-CREATE INDEX "I_PaymentType_active" ON "PaymentType" ("active")
+-- Index on the PaymentType table's tenantGuid,name fields.
+CREATE INDEX "I_PaymentType_tenantGuid_name" ON "PaymentType" ("tenantGuid", "name")
 ;
 
--- Index on the PaymentType table's deleted field.
-CREATE INDEX "I_PaymentType_deleted" ON "PaymentType" ("deleted")
+-- Index on the PaymentType table's tenantGuid,active fields.
+CREATE INDEX "I_PaymentType_tenantGuid_active" ON "PaymentType" ("tenantGuid", "active")
 ;
 
-INSERT INTO "PaymentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Credit Card', 'Credit Card', 1, '3353a9f0-1b8e-4170-a20a-d35eab81fab8' );
-
-INSERT INTO "PaymentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Check', 'Check', 2, '19376f2d-87c0-4eb5-a11c-f02cb4f9b412' );
-
-INSERT INTO "PaymentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Cash', 'Cash', 3, 'dca9c876-bb7d-4c33-8ef4-96a955dacbb0' );
-
-INSERT INTO "PaymentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Crypto', 'Crypto', 4, '8be012ff-f305-45cd-bedb-cc5b9f11f3ef' );
-
-INSERT INTO "PaymentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Stock', 'Stock', 5, '427451dc-b522-4613-aa3a-57593b6d4d03' );
+-- Index on the PaymentType table's tenantGuid,deleted fields.
+CREATE INDEX "I_PaymentType_tenantGuid_deleted" ON "PaymentType" ("tenantGuid", "deleted")
+;
 
 
--- Master list of receipt types
+-- The change history for records from the PaymentType table.
+CREATE TABLE "PaymentTypeChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"paymentTypeId" INTEGER NOT NULL,		-- Link to the PaymentType table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("paymentTypeId") REFERENCES "PaymentType"("id")		-- Foreign key to the PaymentType table.
+);
+-- Index on the PaymentTypeChangeHistory table's tenantGuid field.
+CREATE INDEX "I_PaymentTypeChangeHistory_tenantGuid" ON "PaymentTypeChangeHistory" ("tenantGuid")
+;
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_PaymentTypeChangeHistory_tenantGuid_versionNumber" ON "PaymentTypeChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_PaymentTypeChangeHistory_tenantGuid_timeStamp" ON "PaymentTypeChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_PaymentTypeChangeHistory_tenantGuid_userId" ON "PaymentTypeChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the PaymentTypeChangeHistory table's tenantGuid,paymentTypeId fields.
+CREATE INDEX "I_PaymentTypeChangeHistory_tenantGuid_paymentTypeId" ON "PaymentTypeChangeHistory" ("tenantGuid", "paymentTypeId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- Master list of receipt types (Receipted, Do Not Receipt, etc.)
 CREATE TABLE "ReceiptType"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
 	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display
 	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the ReceiptType table's tenantGuid and name fields.
 );
--- Index on the ReceiptType table's name field.
-CREATE INDEX "I_ReceiptType_name" ON "ReceiptType" ("name")
+-- Index on the ReceiptType table's tenantGuid field.
+CREATE INDEX "I_ReceiptType_tenantGuid" ON "ReceiptType" ("tenantGuid")
 ;
 
--- Index on the ReceiptType table's active field.
-CREATE INDEX "I_ReceiptType_active" ON "ReceiptType" ("active")
+-- Index on the ReceiptType table's tenantGuid,name fields.
+CREATE INDEX "I_ReceiptType_tenantGuid_name" ON "ReceiptType" ("tenantGuid", "name")
 ;
 
--- Index on the ReceiptType table's deleted field.
-CREATE INDEX "I_ReceiptType_deleted" ON "ReceiptType" ("deleted")
+-- Index on the ReceiptType table's tenantGuid,active fields.
+CREATE INDEX "I_ReceiptType_tenantGuid_active" ON "ReceiptType" ("tenantGuid", "active")
 ;
 
-INSERT INTO "ReceiptType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Receipted', 'Receipted', 1, 'b0a794eb-afa9-4791-b164-e28e5ed21a35' );
+-- Index on the ReceiptType table's tenantGuid,deleted fields.
+CREATE INDEX "I_ReceiptType_tenantGuid_deleted" ON "ReceiptType" ("tenantGuid", "deleted")
+;
 
-INSERT INTO "ReceiptType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Do Not Receipt', 'Do Not Receipt', 2, 'd6ceb144-aced-4e2a-9407-a2b0c995c795' );
+
+-- The change history for records from the ReceiptType table.
+CREATE TABLE "ReceiptTypeChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"receiptTypeId" INTEGER NOT NULL,		-- Link to the ReceiptType table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("receiptTypeId") REFERENCES "ReceiptType"("id")		-- Foreign key to the ReceiptType table.
+);
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid field.
+CREATE INDEX "I_ReceiptTypeChangeHistory_tenantGuid" ON "ReceiptTypeChangeHistory" ("tenantGuid")
+;
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_ReceiptTypeChangeHistory_tenantGuid_versionNumber" ON "ReceiptTypeChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_ReceiptTypeChangeHistory_tenantGuid_timeStamp" ON "ReceiptTypeChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_ReceiptTypeChangeHistory_tenantGuid_userId" ON "ReceiptTypeChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the ReceiptTypeChangeHistory table's tenantGuid,receiptTypeId fields.
+CREATE INDEX "I_ReceiptTypeChangeHistory_tenantGuid_receiptTypeId" ON "ReceiptTypeChangeHistory" ("tenantGuid", "receiptTypeId", "versionNumber", "timeStamp", "userId")
+;
 
 
 -- Master list of booking sources ( walk-in, phone, online)
@@ -4526,7 +4823,7 @@ CREATE INDEX "I_ScheduledEventChangeHistory_tenantGuid_scheduledEventId" ON "Sch
 ;
 
 
--- Master list of charge statuses (Pending, Approved, Invoiced, Void)
+-- Master list of charge statuses (Pending, Approved, Invoiced, Void). Not tenant-specific because workflow will be tied to these values.  Could be redesigned later to get really fancy for tenant specific workflow, but out of scope for now.
 CREATE TABLE "ChargeStatus"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -4534,6 +4831,7 @@ CREATE TABLE "ChargeStatus"
 	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
 	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display
 	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -4558,6 +4856,34 @@ INSERT INTO "ChargeStatus" ( "name", "description", "sequence", "color", "object
 INSERT INTO "ChargeStatus" ( "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( 'Invoiced', 'Invoiced', 3, '#35A145', 'd250cc5c-51e9-49bb-91ce-4be47fc30dc0' );
 
 INSERT INTO "ChargeStatus" ( "name", "description", "color", "sequence", "objectGuid" ) VALUES  ( 'Void', 'Void - Charge Disregarded', '#C62828', 4, '19d6560f-ed85-4d1e-905f-9a6e3dfb3026' );
+
+
+-- The change history for records from the ChargeStatus table.
+CREATE TABLE "ChargeStatusChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"chargeStatusId" INTEGER NOT NULL,		-- Link to the ChargeStatus table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("chargeStatusId") REFERENCES "ChargeStatus"("id")		-- Foreign key to the ChargeStatus table.
+);
+-- Index on the ChargeStatusChangeHistory table's versionNumber field.
+CREATE INDEX "I_ChargeStatusChangeHistory_versionNumber" ON "ChargeStatusChangeHistory" ("versionNumber")
+;
+
+-- Index on the ChargeStatusChangeHistory table's timeStamp field.
+CREATE INDEX "I_ChargeStatusChangeHistory_timeStamp" ON "ChargeStatusChangeHistory" ("timeStamp")
+;
+
+-- Index on the ChargeStatusChangeHistory table's userId field.
+CREATE INDEX "I_ChargeStatusChangeHistory_userId" ON "ChargeStatusChangeHistory" ("userId")
+;
+
+-- Index on the ChargeStatusChangeHistory table's chargeStatusId field.
+CREATE INDEX "I_ChargeStatusChangeHistory_chargeStatusId" ON "ChargeStatusChangeHistory" ("chargeStatusId", "versionNumber", "timeStamp", "userId")
+;
 
 
 /*
@@ -4585,8 +4911,10 @@ CREATE TABLE "EventCharge"
 	"chargeStatusId" INTEGER NOT NULL,		-- Link to the ChargeStatus table.  Tracks the status of the charge from creation through invoicing or cancelling.
 	"quantity" NUMERIC NULL DEFAULT 1,		-- Quantity (hours, units, km, etc.)
 	"unitPrice" NUMERIC NULL,		-- Price per unit (can be NULL for flat fees)
-	"extendedAmount" NUMERIC NOT NULL DEFAULT 0,		-- Always the final calculated/total amount (quantity × unitPrice, or just amount) Does not include taxes.
-	"taxAmount" NUMERIC NOT NULL DEFAULT 0,		-- The calculated tax based on isTaxable
+	"extendedAmount" NUMERIC NOT NULL DEFAULT 0,		-- Pre-tax amount (quantity × unitPrice, or just amount for flat fees).
+	"taxAmount" NUMERIC NOT NULL DEFAULT 0,		-- The calculated tax based on TaxCode.rate.
+	"totalAmount" NUMERIC NOT NULL DEFAULT 0,		-- Total amount inclusive of tax (extendedAmount + taxAmount). Consistent with FinancialTransaction.totalAmount.
+	"description" VARCHAR(250) NULL COLLATE NOCASE,		-- Short description or label for the charge. Falls back to ChargeType.name if not set.
 	"currencyId" INTEGER NOT NULL,		-- Link to Currency table.
 	"rateTypeId" INTEGER NULL,		-- Optional link to RateType (e.g., 'Overtime').
 	"notes" TEXT NULL COLLATE NOCASE,		-- Optional notes about the charge
@@ -4599,12 +4927,14 @@ CREATE TABLE "EventCharge"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	"taxCodeId" INTEGER NULL,		-- Optional link to TaxCode. When set, indicates which tax rate was applied to calculate taxAmount. Inherited from ChargeType.taxCodeId on creation.
 	FOREIGN KEY ("scheduledEventId") REFERENCES "ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
 	FOREIGN KEY ("resourceId") REFERENCES "Resource"("id"),		-- Foreign key to the Resource table.
 	FOREIGN KEY ("chargeTypeId") REFERENCES "ChargeType"("id"),		-- Foreign key to the ChargeType table.
 	FOREIGN KEY ("chargeStatusId") REFERENCES "ChargeStatus"("id"),		-- Foreign key to the ChargeStatus table.
 	FOREIGN KEY ("currencyId") REFERENCES "Currency"("id"),		-- Foreign key to the Currency table.
-	FOREIGN KEY ("rateTypeId") REFERENCES "RateType"("id")		-- Foreign key to the RateType table.
+	FOREIGN KEY ("rateTypeId") REFERENCES "RateType"("id"),		-- Foreign key to the RateType table.
+	FOREIGN KEY ("taxCodeId") REFERENCES "TaxCode"("id")		-- Foreign key to the TaxCode table.
 );
 -- Index on the EventCharge table's tenantGuid field.
 CREATE INDEX "I_EventCharge_tenantGuid" ON "EventCharge" ("tenantGuid")
@@ -4646,6 +4976,10 @@ CREATE INDEX "I_EventCharge_tenantGuid_active" ON "EventCharge" ("tenantGuid", "
 CREATE INDEX "I_EventCharge_tenantGuid_deleted" ON "EventCharge" ("tenantGuid", "deleted")
 ;
 
+-- Index on the EventCharge table's tenantGuid,taxCodeId fields.
+CREATE INDEX "I_EventCharge_tenantGuid_taxCodeId" ON "EventCharge" ("tenantGuid", "taxCodeId")
+;
+
 
 -- The change history for records from the EventCharge table.
 CREATE TABLE "EventChargeChangeHistory"
@@ -4682,146 +5016,43 @@ CREATE INDEX "I_EventChargeChangeHistory_tenantGuid_eventChargeId" ON "EventChar
 
 /*
 ====================================================================================================
- FINANCIAL CATEGORY (Chart of Accounts)
- Tenant-specific chart of accounts for categorizing all income and expense transactions.
- Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
- general ledger items: cleaning labour, supplies, bank fees, grants, bar sales, ticket sales, etc.
+ PERIOD STATUS
+ Fiscal period workflow states (Open, In Review, Closed).
+ System-defined reference data — not tenant-specific.
 
- DESIGN NOTE: Supports optional hierarchy via self-referencing parentFinancialCategoryId for
- sub-categories (e.g., Bar Sales > Tips, Bar Sales > Liquor).
-
- accountType aligns with standard accounting classifications, enabling mapping to external systems
- like QuickBooks: Income, Expense, COGS, Asset, Liability, Equity.
- ====================================================================================================
+ DESIGN NOTE: Controls the accounting period lifecycle. Open periods accept transactions,
+ In Review periods are being reconciled, Closed periods are finalized.
+ =====================================================================================================
 */
-CREATE TABLE "FinancialCategory"
+CREATE TABLE "PeriodStatus"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
 	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
-	"code" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
-	"isRevenue" BIT NOT NULL DEFAULT 1,		-- True = income category, False = expense category. Maintained for backward compatibility.
-	"accountType" VARCHAR(50) NOT NULL DEFAULT 'Income' COLLATE NOCASE,		-- Standard accounting classification: Income, Expense, COGS, Asset, Liability, Equity. Maps directly to QuickBooks account types.
-	"parentFinancialCategoryId" INTEGER NULL,		-- Optional parent for sub-categories.
-	"isTaxApplicable" BIT NOT NULL DEFAULT 0,		-- Whether HST/tax typically applies to transactions in this category.
-	"defaultAmount" NUMERIC NULL,		-- Optional default amount for common transactions in this category.
-	"externalAccountId" VARCHAR(250) NULL COLLATE NOCASE,		-- Account ID in external system (e.g., QuickBooks account ID) for sync.
-	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
 	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display.
-	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
-	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
-	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	FOREIGN KEY ("parentFinancialCategoryId") REFERENCES "FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
-	UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
-	UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
-);
--- Index on the FinancialCategory table's tenantGuid field.
-CREATE INDEX "I_FinancialCategory_tenantGuid" ON "FinancialCategory" ("tenantGuid")
-;
-
--- Index on the FinancialCategory table's tenantGuid,name fields.
-CREATE INDEX "I_FinancialCategory_tenantGuid_name" ON "FinancialCategory" ("tenantGuid", "name")
-;
-
--- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
-CREATE INDEX "I_FinancialCategory_tenantGuid_parentFinancialCategoryId" ON "FinancialCategory" ("tenantGuid", "parentFinancialCategoryId")
-;
-
--- Index on the FinancialCategory table's tenantGuid,externalAccountId fields.
-CREATE INDEX "I_FinancialCategory_tenantGuid_externalAccountId" ON "FinancialCategory" ("tenantGuid", "externalAccountId")
-;
-
--- Index on the FinancialCategory table's tenantGuid,active fields.
-CREATE INDEX "I_FinancialCategory_tenantGuid_active" ON "FinancialCategory" ("tenantGuid", "active")
-;
-
--- Index on the FinancialCategory table's tenantGuid,deleted fields.
-CREATE INDEX "I_FinancialCategory_tenantGuid_deleted" ON "FinancialCategory" ("tenantGuid", "deleted")
-;
-
-
--- The change history for records from the FinancialCategory table.
-CREATE TABLE "FinancialCategoryChangeHistory"
-(
-	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"financialCategoryId" INTEGER NOT NULL,		-- Link to the FinancialCategory table.
-	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
-	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
-	"userId" INTEGER NOT NULL,
-	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
-	FOREIGN KEY ("financialCategoryId") REFERENCES "FinancialCategory"("id")		-- Foreign key to the FinancialCategory table.
-);
--- Index on the FinancialCategoryChangeHistory table's tenantGuid field.
-CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid" ON "FinancialCategoryChangeHistory" ("tenantGuid")
-;
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_versionNumber" ON "FinancialCategoryChangeHistory" ("tenantGuid", "versionNumber")
-;
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_timeStamp" ON "FinancialCategoryChangeHistory" ("tenantGuid", "timeStamp")
-;
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX "I_FinancialCategoryChangeHistory_tenantGuid_userId" ON "FinancialCategoryChangeHistory" ("tenantGuid", "userId")
-;
-
--- Index on the FinancialCategoryChangeHistory table's tenantGuid,financialCategoryId fields.
-CREATE INDEX "I_FnnclCtgryChngHstry_tnntGud_fnnclCtgryd" ON "FinancialCategoryChangeHistory" ("tenantGuid", "financialCategoryId", "versionNumber", "timeStamp", "userId")
-;
-
-
-/*
-====================================================================================================
- TAX CODE
- Defines specific tax codes with their rates (e.g., 'HST-NL' at 15%, 'GST' at 5%, 'Exempt').
- This replaces the simple isTaxApplicable boolean on FinancialCategory with structured tax handling.
-
- DESIGN NOTE: Supports external system mapping via externalTaxCodeId for QuickBooks, Xero, etc.
- A tax code can have a zero rate (e.g., 'Exempt' or 'Zero-Rated').
- ====================================================================================================
-*/
-CREATE TABLE "TaxCode"
-(
-	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
-	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
-	"code" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Short tax code identifier (e.g., 'HST', 'GST', 'EXEMPT').
-	"rate" NUMERIC NOT NULL DEFAULT 0,		-- Tax rate as a percentage (e.g., 15.0 for 15% HST).
-	"isDefault" BIT NOT NULL DEFAULT 0,		-- Whether this is the default tax code for new transactions.
-	"isExempt" BIT NOT NULL DEFAULT 0,		-- True for tax-exempt codes (rate should be 0).
-	"externalTaxCodeId" VARCHAR(250) NULL COLLATE NOCASE,		-- Tax code ID in external system (e.g., QuickBooks TaxCode ID).
 	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the TaxCode table's tenantGuid and name fields.
-	UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the TaxCode table's tenantGuid and code fields.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
 );
--- Index on the TaxCode table's tenantGuid field.
-CREATE INDEX "I_TaxCode_tenantGuid" ON "TaxCode" ("tenantGuid")
+-- Index on the PeriodStatus table's name field.
+CREATE INDEX "I_PeriodStatus_name" ON "PeriodStatus" ("name")
 ;
 
--- Index on the TaxCode table's tenantGuid,name fields.
-CREATE INDEX "I_TaxCode_tenantGuid_name" ON "TaxCode" ("tenantGuid", "name")
+-- Index on the PeriodStatus table's active field.
+CREATE INDEX "I_PeriodStatus_active" ON "PeriodStatus" ("active")
 ;
 
--- Index on the TaxCode table's tenantGuid,externalTaxCodeId fields.
-CREATE INDEX "I_TaxCode_tenantGuid_externalTaxCodeId" ON "TaxCode" ("tenantGuid", "externalTaxCodeId")
+-- Index on the PeriodStatus table's deleted field.
+CREATE INDEX "I_PeriodStatus_deleted" ON "PeriodStatus" ("deleted")
 ;
 
--- Index on the TaxCode table's tenantGuid,active fields.
-CREATE INDEX "I_TaxCode_tenantGuid_active" ON "TaxCode" ("tenantGuid", "active")
-;
+INSERT INTO "PeriodStatus" ( "name", "description", "color", "sequence", "objectGuid" ) VALUES  ( 'Open', 'Period is open and accepting transactions.', '#4CAF50', 1, 'b2c3d4e5-0001-4000-8000-000000000001' );
 
--- Index on the TaxCode table's tenantGuid,deleted fields.
-CREATE INDEX "I_TaxCode_tenantGuid_deleted" ON "TaxCode" ("tenantGuid", "deleted")
-;
+INSERT INTO "PeriodStatus" ( "name", "description", "color", "sequence", "objectGuid" ) VALUES  ( 'In Review', 'Period is being reviewed and reconciled. No new transactions.', '#FF9800', 2, 'b2c3d4e5-0001-4000-8000-000000000002' );
+
+INSERT INTO "PeriodStatus" ( "name", "description", "color", "sequence", "objectGuid" ) VALUES  ( 'Closed', 'Period is finalized. No modifications allowed.', '#F44336', 3, 'b2c3d4e5-0001-4000-8000-000000000003' );
 
 
 /*
@@ -4831,8 +5062,8 @@ CREATE INDEX "I_TaxCode_tenantGuid_deleted" ON "TaxCode" ("tenantGuid", "deleted
  Supports period-close controls to prevent modifications to finalized periods.
 
  DESIGN NOTE: Allows both calendar-year and fiscal-year configurations.
- The isClosed flag prevents new transactions from being added to closed periods.
- ====================================================================================================
+ periodStatusId links to PeriodStatus for workflow state (Open, In Review, Closed).
+ =====================================================================================================
 */
 CREATE TABLE "FiscalPeriod"
 (
@@ -4845,7 +5076,7 @@ CREATE TABLE "FiscalPeriod"
 	"periodType" VARCHAR(50) NOT NULL DEFAULT 'Month' COLLATE NOCASE,		-- Period type: Month, Quarter, Year, Custom.
 	"fiscalYear" INTEGER NOT NULL,		-- The fiscal year this period belongs to.
 	"periodNumber" INTEGER NOT NULL,		-- Period number within the fiscal year (1-12 for months, 1-4 for quarters, 1 for year).
-	"isClosed" BIT NOT NULL DEFAULT 0,		-- When true, no new transactions can be posted to this period.
+	"periodStatusId" INTEGER NOT NULL,		-- Link to PeriodStatus — workflow state (Open, In Review, Closed). Replaces the old periodStatus string field.
 	"closedDate" DATETIME NULL,		-- When the period was closed.
 	"closedBy" VARCHAR(100) NULL COLLATE NOCASE,		-- User who closed the period.
 	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
@@ -4853,6 +5084,7 @@ CREATE TABLE "FiscalPeriod"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("periodStatusId") REFERENCES "PeriodStatus"("id"),		-- Foreign key to the PeriodStatus table.
 	UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the FiscalPeriod table's tenantGuid and name fields.
 	UNIQUE ( "tenantGuid", "fiscalYear", "periodNumber") 		-- Uniqueness enforced on the FiscalPeriod table's tenantGuid and fiscalYear and periodNumber fields.
 );
@@ -4862,6 +5094,10 @@ CREATE INDEX "I_FiscalPeriod_tenantGuid" ON "FiscalPeriod" ("tenantGuid")
 
 -- Index on the FiscalPeriod table's tenantGuid,name fields.
 CREATE INDEX "I_FiscalPeriod_tenantGuid_name" ON "FiscalPeriod" ("tenantGuid", "name")
+;
+
+-- Index on the FiscalPeriod table's tenantGuid,periodStatusId fields.
+CREATE INDEX "I_FiscalPeriod_tenantGuid_periodStatusId" ON "FiscalPeriod" ("tenantGuid", "periodStatusId")
 ;
 
 -- Index on the FiscalPeriod table's tenantGuid,active fields.
@@ -4915,9 +5151,9 @@ CREATE INDEX "I_FiscalPeriodChangeHistory_tenantGuid_fiscalPeriodId" ON "FiscalP
 
  Optionally links to a ScheduledEvent when the transaction relates to a booking.
 
- DESIGN NOTE: isRevenue is denormalized from FinancialCategory for query performance.
- Amount is always stored as a positive value; isRevenue determines the direction.
- ====================================================================================================
+ DESIGN NOTE: Amount is always stored as a positive value; direction (income vs expense) is
+ determined by the linked FinancialCategory.accountType.
+ =====================================================================================================
 */
 CREATE TABLE "FinancialTransaction"
 (
@@ -4926,17 +5162,18 @@ CREATE TABLE "FinancialTransaction"
 	"financialCategoryId" INTEGER NOT NULL,		-- Link to the FinancialCategory (chart of accounts entry).
 	"scheduledEventId" INTEGER NULL,		-- Optional link to a ScheduledEvent when the transaction relates to a booking.
 	"contactId" INTEGER NULL,		-- Optional link to the Contact who paid or was paid.
+	"clientId" INTEGER NULL,		-- Optional link to the Client (vendor, customer, or supplier) for this transaction.
 	"contactRole" VARCHAR(50) NULL DEFAULT 'Customer' COLLATE NOCASE,		-- Role of the linked contact: Customer, Vendor, Employee. Maps to QuickBooks entity types for sync.
 	"taxCodeId" INTEGER NULL,		-- Optional link to TaxCode. Overrides the category-level isTaxApplicable for precise tax handling.
 	"fiscalPeriodId" INTEGER NULL,		-- Optional link to FiscalPeriod. Auto-assigned based on transactionDate when null.
+	"paymentTypeId" INTEGER NULL,		-- Optional link to PaymentType indicating how payment was made (e-transfer, cash, cheque, card, etc.).
 	"transactionDate" DATETIME NOT NULL,		-- When the transaction occurred (UTC).
 	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,		-- Description of the transaction (e.g., 'Easter Brunch Food', 'DD Refund - Natasha Chafe').
-	"amount" NUMERIC NOT NULL DEFAULT 0,		-- Transaction amount before tax. Always positive — direction determined by isRevenue.
+	"amount" NUMERIC NOT NULL DEFAULT 0,		-- Transaction amount before tax. Always positive — direction determined by FinancialCategory.accountType.
 	"taxAmount" NUMERIC NOT NULL DEFAULT 0,		-- Tax amount (e.g., HST). Calculated from TaxCode.rate when applicable.
 	"totalAmount" NUMERIC NOT NULL DEFAULT 0,		-- Total amount inclusive of tax (amount + taxAmount).
-	"isRevenue" BIT NOT NULL DEFAULT 1,		-- Denormalized from FinancialCategory. True = income, False = expense.
+	"isRevenue" BIT NOT NULL DEFAULT 1,		-- Denormalized from FinancialCategory.accountType for query performance. True when accountType = 'Income', false otherwise.
 	"journalEntryType" VARCHAR(50) NULL COLLATE NOCASE,		-- Double-entry type for accounting integration: Debit or Credit. Null = auto-determined from isRevenue.
-	"paymentMethod" VARCHAR(50) NULL COLLATE NOCASE,		-- How payment was made: e-transfer, cash, cheque, card, etc.
 	"referenceNumber" VARCHAR(100) NULL COLLATE NOCASE,		-- Cheque number, e-transfer reference, receipt number, etc.
 	"notes" TEXT NULL COLLATE NOCASE,		-- Optional notes about the transaction.
 	"currencyId" INTEGER NOT NULL,		-- Link to Currency table.
@@ -4950,8 +5187,10 @@ CREATE TABLE "FinancialTransaction"
 	FOREIGN KEY ("financialCategoryId") REFERENCES "FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
 	FOREIGN KEY ("scheduledEventId") REFERENCES "ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
 	FOREIGN KEY ("contactId") REFERENCES "Contact"("id"),		-- Foreign key to the Contact table.
+	FOREIGN KEY ("clientId") REFERENCES "Client"("id"),		-- Foreign key to the Client table.
 	FOREIGN KEY ("taxCodeId") REFERENCES "TaxCode"("id"),		-- Foreign key to the TaxCode table.
 	FOREIGN KEY ("fiscalPeriodId") REFERENCES "FiscalPeriod"("id"),		-- Foreign key to the FiscalPeriod table.
+	FOREIGN KEY ("paymentTypeId") REFERENCES "PaymentType"("id"),		-- Foreign key to the PaymentType table.
 	FOREIGN KEY ("currencyId") REFERENCES "Currency"("id")		-- Foreign key to the Currency table.
 );
 -- Index on the FinancialTransaction table's tenantGuid field.
@@ -4970,12 +5209,20 @@ CREATE INDEX "I_FinancialTransaction_tenantGuid_scheduledEventId" ON "FinancialT
 CREATE INDEX "I_FinancialTransaction_tenantGuid_contactId" ON "FinancialTransaction" ("tenantGuid", "contactId")
 ;
 
+-- Index on the FinancialTransaction table's tenantGuid,clientId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_clientId" ON "FinancialTransaction" ("tenantGuid", "clientId")
+;
+
 -- Index on the FinancialTransaction table's tenantGuid,taxCodeId fields.
 CREATE INDEX "I_FinancialTransaction_tenantGuid_taxCodeId" ON "FinancialTransaction" ("tenantGuid", "taxCodeId")
 ;
 
 -- Index on the FinancialTransaction table's tenantGuid,fiscalPeriodId fields.
 CREATE INDEX "I_FinancialTransaction_tenantGuid_fiscalPeriodId" ON "FinancialTransaction" ("tenantGuid", "fiscalPeriodId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,paymentTypeId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_paymentTypeId" ON "FinancialTransaction" ("tenantGuid", "paymentTypeId")
 ;
 
 -- Index on the FinancialTransaction table's tenantGuid,transactionDate fields.
@@ -5029,6 +5276,94 @@ CREATE INDEX "I_FinancialTransactionChangeHistory_tenantGuid_userId" ON "Financi
 
 -- Index on the FinancialTransactionChangeHistory table's tenantGuid,financialTransactionId fields.
 CREATE INDEX "I_FnnclTrnsctnChngHstry_tnntGud_fnnclTrnsctnd" ON "FinancialTransactionChangeHistory" ("tenantGuid", "financialTransactionId", "versionNumber", "timeStamp", "userId")
+;
+
+
+/*
+====================================================================================================
+ BUDGET
+ Tracks budgeted amounts by FinancialCategory and FiscalPeriod.
+ Enables budget-vs-actual reporting: 'We budgeted $5,000 for bar supplies this quarter,
+ we have spent $3,200 so far.'
+
+ DESIGN NOTE: One budget record per category per period. Combined with FinancialTransaction
+ actuals, enables variance analysis, burn rate tracking, and forecasting.
+ ====================================================================================================
+*/
+CREATE TABLE "Budget"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"financialCategoryId" INTEGER NOT NULL,		-- The category this budget applies to.
+	"fiscalPeriodId" INTEGER NOT NULL,		-- The fiscal period this budget covers.
+	"budgetedAmount" NUMERIC NOT NULL DEFAULT 0,		-- The planned/budgeted amount for this category in this period.
+	"revisedAmount" NUMERIC NULL,		-- Optional revised budget amount (after mid-period adjustments).
+	"notes" TEXT NULL COLLATE NOCASE,		-- Optional notes about the budget line (e.g., justification for revision).
+	"currencyId" INTEGER NOT NULL,		-- Link to Currency table.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("financialCategoryId") REFERENCES "FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
+	FOREIGN KEY ("fiscalPeriodId") REFERENCES "FiscalPeriod"("id"),		-- Foreign key to the FiscalPeriod table.
+	FOREIGN KEY ("currencyId") REFERENCES "Currency"("id"),		-- Foreign key to the Currency table.
+	UNIQUE ( "tenantGuid", "financialCategoryId", "fiscalPeriodId") 		-- Uniqueness enforced on the Budget table's tenantGuid and financialCategoryId and fiscalPeriodId fields.
+);
+-- Index on the Budget table's tenantGuid field.
+CREATE INDEX "I_Budget_tenantGuid" ON "Budget" ("tenantGuid")
+;
+
+-- Index on the Budget table's tenantGuid,financialCategoryId fields.
+CREATE INDEX "I_Budget_tenantGuid_financialCategoryId" ON "Budget" ("tenantGuid", "financialCategoryId")
+;
+
+-- Index on the Budget table's tenantGuid,fiscalPeriodId fields.
+CREATE INDEX "I_Budget_tenantGuid_fiscalPeriodId" ON "Budget" ("tenantGuid", "fiscalPeriodId")
+;
+
+-- Index on the Budget table's tenantGuid,currencyId fields.
+CREATE INDEX "I_Budget_tenantGuid_currencyId" ON "Budget" ("tenantGuid", "currencyId")
+;
+
+-- Index on the Budget table's tenantGuid,active fields.
+CREATE INDEX "I_Budget_tenantGuid_active" ON "Budget" ("tenantGuid", "active")
+;
+
+-- Index on the Budget table's tenantGuid,deleted fields.
+CREATE INDEX "I_Budget_tenantGuid_deleted" ON "Budget" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the Budget table.
+CREATE TABLE "BudgetChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"budgetId" INTEGER NOT NULL,		-- Link to the Budget table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("budgetId") REFERENCES "Budget"("id")		-- Foreign key to the Budget table.
+);
+-- Index on the BudgetChangeHistory table's tenantGuid field.
+CREATE INDEX "I_BudgetChangeHistory_tenantGuid" ON "BudgetChangeHistory" ("tenantGuid")
+;
+
+-- Index on the BudgetChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_BudgetChangeHistory_tenantGuid_versionNumber" ON "BudgetChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the BudgetChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_BudgetChangeHistory_tenantGuid_timeStamp" ON "BudgetChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the BudgetChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_BudgetChangeHistory_tenantGuid_userId" ON "BudgetChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the BudgetChangeHistory table's tenantGuid,budgetId fields.
+CREATE INDEX "I_BudgetChangeHistory_tenantGuid_budgetId" ON "BudgetChangeHistory" ("tenantGuid", "budgetId", "versionNumber", "timeStamp", "userId")
 ;
 
 

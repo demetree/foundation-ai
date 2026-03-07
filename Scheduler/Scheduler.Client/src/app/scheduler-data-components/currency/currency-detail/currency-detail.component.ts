@@ -29,6 +29,7 @@ import { ClientService } from '../../../scheduler-data-services/client.service';
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { BudgetService } from '../../../scheduler-data-services/budget.service';
 import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -104,6 +105,7 @@ export class CurrencyDetailComponent implements OnInit, CanComponentDeactivate {
   public rateSheets$ = this.rateSheetService.GetRateSheetList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public budgets$ = this.budgetService.GetBudgetList();
   public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
 
   private destroy$ = new Subject<void>();
@@ -116,6 +118,7 @@ export class CurrencyDetailComponent implements OnInit, CanComponentDeactivate {
     public rateSheetService: RateSheetService,
     public eventChargeService: EventChargeService,
     public financialTransactionService: FinancialTransactionService,
+    public budgetService: BudgetService,
     public paymentTransactionService: PaymentTransactionService,
     private authService: AuthService,
     private route: ActivatedRoute,

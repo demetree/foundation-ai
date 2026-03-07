@@ -27,6 +27,7 @@ import { ClientContactService, ClientContactData } from './client-contact.servic
 import { SchedulingTargetService, SchedulingTargetData } from './scheduling-target.service';
 import { SchedulingTargetAddressService, SchedulingTargetAddressData } from './scheduling-target-address.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
+import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -235,6 +236,11 @@ export class ClientData {
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
                 
+    private _financialTransactions: FinancialTransactionData[] | null = null;
+    private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
+    private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
@@ -381,6 +387,31 @@ export class ClientData {
 
 
 
+    public FinancialTransactions$ = this._financialTransactionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._financialTransactions === null && this._financialTransactionsPromise === null) {
+            this.loadFinancialTransactions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _financialTransactionsCount$: Observable<bigint | number> | null = null;
+    public get FinancialTransactionsCount$(): Observable<bigint | number> {
+        if (this._financialTransactionsCount$ === null) {
+            this._financialTransactionsCount$ = FinancialTransactionService.Instance.GetFinancialTransactionsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._financialTransactionsCount$;
+    }
+
+
+
     public Constituents$ = this._constituentsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -468,6 +499,11 @@ export class ClientData {
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
      this._scheduledEventsCount$ = null;
+
+     this._financialTransactions = null;
+     this._financialTransactionsPromise = null;
+     this._financialTransactionsSubject.next(null);
+     this._financialTransactionsCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
@@ -810,6 +846,71 @@ export class ClientData {
 
     /**
      *
+     * Gets the FinancialTransactions for this Client.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.client.FinancialTransactions.then(clients => { ... })
+     *   or
+     *   await this.client.clients
+     *
+    */
+    public get FinancialTransactions(): Promise<FinancialTransactionData[]> {
+        if (this._financialTransactions !== null) {
+            return Promise.resolve(this._financialTransactions);
+        }
+
+        if (this._financialTransactionsPromise !== null) {
+            return this._financialTransactionsPromise;
+        }
+
+        // Start the load
+        this.loadFinancialTransactions();
+
+        return this._financialTransactionsPromise!;
+    }
+
+
+
+    private loadFinancialTransactions(): void {
+
+        this._financialTransactionsPromise = lastValueFrom(
+            ClientService.Instance.GetFinancialTransactionsForClient(this.id)
+        )
+        .then(FinancialTransactions => {
+            this._financialTransactions = FinancialTransactions ?? [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            return this._financialTransactions;
+         })
+        .catch(err => {
+            this._financialTransactions = [];
+            this._financialTransactionsSubject.next(this._financialTransactions);
+            throw err;
+        })
+        .finally(() => {
+            this._financialTransactionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached FinancialTransaction. Call after mutations to force refresh.
+     */
+    public ClearFinancialTransactionsCache(): void {
+        this._financialTransactions = null;
+        this._financialTransactionsPromise = null;
+        this._financialTransactionsSubject.next(this._financialTransactions);      // Emit to observable
+    }
+
+    public get HasFinancialTransactions(): Promise<boolean> {
+        return this.FinancialTransactions.then(financialTransactions => financialTransactions.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the Constituents for this Client.
      *
      * If already loaded, returns cached array.
@@ -956,6 +1057,7 @@ export class ClientService extends SecureEndpointBase {
         private schedulingTargetService: SchedulingTargetService,
         private schedulingTargetAddressService: SchedulingTargetAddressService,
         private scheduledEventService: ScheduledEventService,
+        private financialTransactionService: FinancialTransactionService,
         private constituentService: ConstituentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -1489,6 +1591,16 @@ export class ClientService extends SecureEndpointBase {
     }
 
 
+    public GetFinancialTransactionsForClient(clientId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FinancialTransactionData[]> {
+        return this.financialTransactionService.GetFinancialTransactionList({
+            clientId: clientId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetConstituentsForClient(clientId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConstituentData[]> {
         return this.constituentService.GetConstituentList({
             clientId: clientId,
@@ -1553,6 +1665,10 @@ export class ClientService extends SecureEndpointBase {
     (revived as any)._scheduledEvents = null;
     (revived as any)._scheduledEventsPromise = null;
     (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
+
+    (revived as any)._financialTransactions = null;
+    (revived as any)._financialTransactionsPromise = null;
+    (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
 
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
@@ -1628,6 +1744,18 @@ export class ClientService extends SecureEndpointBase {
       );
 
     (revived as any)._scheduledEventsCount$ = null;
+
+
+    (revived as any).FinancialTransactions$ = (revived as any)._financialTransactionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._financialTransactions === null && (revived as any)._financialTransactionsPromise === null) {
+                (revived as any).loadFinancialTransactions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._financialTransactionsCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(

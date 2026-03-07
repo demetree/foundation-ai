@@ -38,6 +38,7 @@ interface ChargeStatusFormValues {
   description: string,
   color: string | null,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -74,6 +75,7 @@ export class ChargeStatusAddEditComponent {
         description: ['', Validators.required],
         color: [''],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -213,6 +215,7 @@ export class ChargeStatusAddEditComponent {
         description: formValue.description!.trim(),
         color: formValue.color?.trim() || null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.chargeStatusSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -226,6 +229,7 @@ export class ChargeStatusAddEditComponent {
 
   private addChargeStatus(chargeStatusData: ChargeStatusSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    chargeStatusData.versionNumber = 0;
     chargeStatusData.active = true;
     chargeStatusData.deleted = false;
     this.chargeStatusService.PostChargeStatus(chargeStatusData).pipe(
@@ -344,6 +348,7 @@ export class ChargeStatusAddEditComponent {
         description: '',
         color: '',
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -359,6 +364,7 @@ export class ChargeStatusAddEditComponent {
         description: chargeStatusData.description ?? '',
         color: chargeStatusData.color ?? '',
         sequence: chargeStatusData.sequence?.toString() ?? '',
+        versionNumber: chargeStatusData.versionNumber?.toString() ?? '',
         active: chargeStatusData.active ?? true,
         deleted: chargeStatusData.deleted ?? false,
       }, { emitEvent: false});

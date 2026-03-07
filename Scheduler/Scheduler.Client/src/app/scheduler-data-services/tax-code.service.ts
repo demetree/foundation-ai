@@ -16,6 +16,8 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { ChargeTypeService, ChargeTypeData } from './charge-type.service';
+import { EventChargeService, EventChargeData } from './event-charge.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -123,6 +125,16 @@ export class TaxCodeData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _chargeTypes: ChargeTypeData[] | null = null;
+    private _chargeTypesPromise: Promise<ChargeTypeData[]> | null  = null;
+    private _chargeTypesSubject = new BehaviorSubject<ChargeTypeData[] | null>(null);
+
+                
+    private _eventCharges: EventChargeData[] | null = null;
+    private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
+    private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
+
+                
     private _financialTransactions: FinancialTransactionData[] | null = null;
     private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
     private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
@@ -135,6 +147,56 @@ export class TaxCodeData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public ChargeTypes$ = this._chargeTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._chargeTypes === null && this._chargeTypesPromise === null) {
+            this.loadChargeTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _chargeTypesCount$: Observable<bigint | number> | null = null;
+    public get ChargeTypesCount$(): Observable<bigint | number> {
+        if (this._chargeTypesCount$ === null) {
+            this._chargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({taxCodeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._chargeTypesCount$;
+    }
+
+
+
+    public EventCharges$ = this._eventChargesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventCharges === null && this._eventChargesPromise === null) {
+            this.loadEventCharges(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _eventChargesCount$: Observable<bigint | number> | null = null;
+    public get EventChargesCount$(): Observable<bigint | number> {
+        if (this._eventChargesCount$ === null) {
+            this._eventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({taxCodeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventChargesCount$;
+    }
+
+
+
     public FinancialTransactions$ = this._financialTransactionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -198,6 +260,16 @@ export class TaxCodeData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._chargeTypes = null;
+     this._chargeTypesPromise = null;
+     this._chargeTypesSubject.next(null);
+     this._chargeTypesCount$ = null;
+
+     this._eventCharges = null;
+     this._eventChargesPromise = null;
+     this._eventChargesSubject.next(null);
+     this._eventChargesCount$ = null;
+
      this._financialTransactions = null;
      this._financialTransactionsPromise = null;
      this._financialTransactionsSubject.next(null);
@@ -209,6 +281,136 @@ export class TaxCodeData {
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the ChargeTypes for this TaxCode.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.taxCode.ChargeTypes.then(taxCodes => { ... })
+     *   or
+     *   await this.taxCode.taxCodes
+     *
+    */
+    public get ChargeTypes(): Promise<ChargeTypeData[]> {
+        if (this._chargeTypes !== null) {
+            return Promise.resolve(this._chargeTypes);
+        }
+
+        if (this._chargeTypesPromise !== null) {
+            return this._chargeTypesPromise;
+        }
+
+        // Start the load
+        this.loadChargeTypes();
+
+        return this._chargeTypesPromise!;
+    }
+
+
+
+    private loadChargeTypes(): void {
+
+        this._chargeTypesPromise = lastValueFrom(
+            TaxCodeService.Instance.GetChargeTypesForTaxCode(this.id)
+        )
+        .then(ChargeTypes => {
+            this._chargeTypes = ChargeTypes ?? [];
+            this._chargeTypesSubject.next(this._chargeTypes);
+            return this._chargeTypes;
+         })
+        .catch(err => {
+            this._chargeTypes = [];
+            this._chargeTypesSubject.next(this._chargeTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._chargeTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ChargeType. Call after mutations to force refresh.
+     */
+    public ClearChargeTypesCache(): void {
+        this._chargeTypes = null;
+        this._chargeTypesPromise = null;
+        this._chargeTypesSubject.next(this._chargeTypes);      // Emit to observable
+    }
+
+    public get HasChargeTypes(): Promise<boolean> {
+        return this.ChargeTypes.then(chargeTypes => chargeTypes.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the EventCharges for this TaxCode.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.taxCode.EventCharges.then(taxCodes => { ... })
+     *   or
+     *   await this.taxCode.taxCodes
+     *
+    */
+    public get EventCharges(): Promise<EventChargeData[]> {
+        if (this._eventCharges !== null) {
+            return Promise.resolve(this._eventCharges);
+        }
+
+        if (this._eventChargesPromise !== null) {
+            return this._eventChargesPromise;
+        }
+
+        // Start the load
+        this.loadEventCharges();
+
+        return this._eventChargesPromise!;
+    }
+
+
+
+    private loadEventCharges(): void {
+
+        this._eventChargesPromise = lastValueFrom(
+            TaxCodeService.Instance.GetEventChargesForTaxCode(this.id)
+        )
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
+            this._eventChargesSubject.next(this._eventCharges);
+            return this._eventCharges;
+         })
+        .catch(err => {
+            this._eventCharges = [];
+            this._eventChargesSubject.next(this._eventCharges);
+            throw err;
+        })
+        .finally(() => {
+            this._eventChargesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventCharge. Call after mutations to force refresh.
+     */
+    public ClearEventChargesCache(): void {
+        this._eventCharges = null;
+        this._eventChargesPromise = null;
+        this._eventChargesSubject.next(this._eventCharges);      // Emit to observable
+    }
+
+    public get HasEventCharges(): Promise<boolean> {
+        return this.EventCharges.then(eventCharges => eventCharges.length > 0);
+    }
+
+
     /**
      *
      * Gets the FinancialTransactions for this TaxCode.
@@ -309,6 +511,8 @@ export class TaxCodeService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private chargeTypeService: ChargeTypeService,
+        private eventChargeService: EventChargeService,
         private financialTransactionService: FinancialTransactionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -673,6 +877,26 @@ export class TaxCodeService extends SecureEndpointBase {
         return userIsSchedulerTaxCodeWriter;
     }
 
+    public GetChargeTypesForTaxCode(taxCodeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ChargeTypeData[]> {
+        return this.chargeTypeService.GetChargeTypeList({
+            taxCodeId: taxCodeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetEventChargesForTaxCode(taxCodeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventChargeData[]> {
+        return this.eventChargeService.GetEventChargeList({
+            taxCodeId: taxCodeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetFinancialTransactionsForTaxCode(taxCodeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FinancialTransactionData[]> {
         return this.financialTransactionService.GetFinancialTransactionList({
             taxCodeId: taxCodeId,
@@ -718,6 +942,14 @@ export class TaxCodeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._chargeTypes = null;
+    (revived as any)._chargeTypesPromise = null;
+    (revived as any)._chargeTypesSubject = new BehaviorSubject<ChargeTypeData[] | null>(null);
+
+    (revived as any)._eventCharges = null;
+    (revived as any)._eventChargesPromise = null;
+    (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
+
     (revived as any)._financialTransactions = null;
     (revived as any)._financialTransactionsPromise = null;
     (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
@@ -734,6 +966,30 @@ export class TaxCodeService extends SecureEndpointBase {
     // 2. But private methods (loadTaxCodeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).ChargeTypes$ = (revived as any)._chargeTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._chargeTypes === null && (revived as any)._chargeTypesPromise === null) {
+                (revived as any).loadChargeTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._chargeTypesCount$ = null;
+
+
+    (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventCharges === null && (revived as any)._eventChargesPromise === null) {
+                (revived as any).loadEventCharges();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._eventChargesCount$ = null;
+
+
     (revived as any).FinancialTransactions$ = (revived as any)._financialTransactionsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._financialTransactions === null && (revived as any)._financialTransactionsPromise === null) {

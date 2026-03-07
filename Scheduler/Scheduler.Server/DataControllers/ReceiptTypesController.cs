@@ -16,6 +16,7 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.Scheduler.Database;
+using Foundation.ChangeHistory;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {
@@ -31,7 +32,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 	public partial class ReceiptTypesController : SecureWebAPIController
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 255;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
+
+		static object receiptTypePutSyncRoot = new object();
+		static object receiptTypeDeleteSyncRoot = new object();
 
 		private SchedulerContext _context;
 
@@ -42,7 +46,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -64,7 +68,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetReceiptTypes(
 			string name = null,
 			string description = null,
+			string color = null,
 			int? sequence = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -87,8 +93,20 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
 
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
@@ -103,6 +121,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 			IQueryable<Database.ReceiptType> query = (from rt in _context.ReceiptTypes select rt);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(rt => rt.name == name);
@@ -111,9 +132,17 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(rt => rt.description == description);
 			}
+			if (string.IsNullOrEmpty(color) == false)
+			{
+				query = query.Where(rt => rt.color == color);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(rt => rt.sequence == sequence.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(rt => rt.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -144,7 +173,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(rt => rt.deleted == false);
 			}
 
-			query = query.OrderBy(rt => rt.sequence).ThenBy(rt => rt.name).ThenBy(rt => rt.description);
+			query = query.OrderBy(rt => rt.sequence).ThenBy(rt => rt.name).ThenBy(rt => rt.description).ThenBy(rt => rt.color);
 
 
 			//
@@ -157,6 +186,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.color.Contains(anyStringContains)
 			   );
 			}
 
@@ -212,7 +242,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string description = null,
+			string color = null,
 			int? sequence = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -229,10 +261,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			IQueryable<Database.ReceiptType> query = (from rt in _context.ReceiptTypes select rt);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 			if (name != null)
 			{
 				query = query.Where(rt => rt.name == name);
@@ -241,9 +286,17 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(rt => rt.description == description);
 			}
+			if (color != null)
+			{
+				query = query.Where(rt => rt.color == color);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(rt => rt.sequence == sequence.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(rt => rt.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -284,6 +337,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.color.Contains(anyStringContains)
 			   );
 			}
 
@@ -319,8 +373,21 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
@@ -330,6 +397,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 							(userIsWriter == true || rt.active == true)
 					select rt);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -393,9 +462,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -409,13 +478,27 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.ReceiptType> query = (from x in _context.ReceiptTypes
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.ReceiptType existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -448,57 +531,112 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			//
 			Database.ReceiptType receiptType = (Database.ReceiptType)_context.Entry(existing).GetDatabaseValues().ToObject();
 			receiptType.ApplyDTO(receiptTypeDTO);
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (receiptType.deleted == true || existing.deleted == true))
+			//
+			// The tenant guid for any ReceiptType being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.ReceiptType record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the ReceiptType because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				receiptType.tenantGuid = existing.tenantGuid;
 			}
 
-			if (receiptType.name != null && receiptType.name.Length > 100)
+			lock (receiptTypePutSyncRoot)
 			{
-				receiptType.name = receiptType.name.Substring(0, 100);
-			}
+				//
+				// Validate the version number for the receiptType being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != receiptType.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "ReceiptType save attempt was made but save request was with version " + receiptType.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The ReceiptType you are trying to update has already changed.  Please try your save again after reloading the ReceiptType.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					receiptType.versionNumber++;
+				}
 
-			if (receiptType.description != null && receiptType.description.Length > 500)
-			{
-				receiptType.description = receiptType.description.Substring(0, 500);
-			}
 
-			EntityEntry<Database.ReceiptType> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(receiptType);
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (receiptType.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.ReceiptType record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				if (receiptType.name != null && receiptType.name.Length > 100)
+				{
+					receiptType.name = receiptType.name.Substring(0, 100);
+				}
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"Scheduler.ReceiptType entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
-					null);
+				if (receiptType.description != null && receiptType.description.Length > 500)
+				{
+					receiptType.description = receiptType.description.Substring(0, 500);
+				}
 
+				if (receiptType.color != null && receiptType.color.Length > 10)
+				{
+					receiptType.color = receiptType.color.Substring(0, 10);
+				}
+
+				try
+				{
+				    EntityEntry<Database.ReceiptType> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(receiptType);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        ReceiptTypeChangeHistory receiptTypeChangeHistory = new ReceiptTypeChangeHistory();
+				        receiptTypeChangeHistory.receiptTypeId = receiptType.id;
+				        receiptTypeChangeHistory.versionNumber = receiptType.versionNumber;
+				        receiptTypeChangeHistory.timeStamp = DateTime.UtcNow;
+				        receiptTypeChangeHistory.userId = securityUser.id;
+				        receiptTypeChangeHistory.tenantGuid = userTenantGuid;
+				        receiptTypeChangeHistory.data = JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType));
+				        _context.ReceiptTypeChangeHistories.Add(receiptTypeChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.ReceiptType entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
+						null);
 
 				return Ok(Database.ReceiptType.CreateAnonymous(receiptType));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"Scheduler.ReceiptType entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.ReceiptType entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -521,9 +659,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -532,6 +670,19 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new ReceiptType object using the data from the DTO
 			//
@@ -539,6 +690,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			try
 			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				receiptType.tenantGuid = userTenantGuid;
+
 				if (receiptType.name != null && receiptType.name.Length > 100)
 				{
 					receiptType.name = receiptType.name.Substring(0, 100);
@@ -549,22 +705,62 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					receiptType.description = receiptType.description.Substring(0, 500);
 				}
 
+				if (receiptType.color != null && receiptType.color.Length > 10)
+				{
+					receiptType.color = receiptType.color.Substring(0, 10);
+				}
+
 				receiptType.objectGuid = Guid.NewGuid();
+				receiptType.versionNumber = 1;
+
 				_context.ReceiptTypes.Add(receiptType);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"Scheduler.ReceiptType entity successfully created.",
-					true,
-					receiptType.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the receiptType object so that no further changes will be written to the database
+				    //
+				    _context.Entry(receiptType).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					receiptType.Gifts = null;
+					receiptType.ReceiptTypeChangeHistories = null;
+
+
+				    ReceiptTypeChangeHistory receiptTypeChangeHistory = new ReceiptTypeChangeHistory();
+				    receiptTypeChangeHistory.receiptTypeId = receiptType.id;
+				    receiptTypeChangeHistory.versionNumber = receiptType.versionNumber;
+				    receiptTypeChangeHistory.timeStamp = DateTime.UtcNow;
+				    receiptTypeChangeHistory.userId = securityUser.id;
+				    receiptTypeChangeHistory.tenantGuid = userTenantGuid;
+				    receiptTypeChangeHistory.data = JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType));
+				    _context.ReceiptTypeChangeHistories.Add(receiptTypeChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.ReceiptType entity successfully created.",
+						true,
+						receiptType. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.ReceiptType entity creation failed.", false, receiptType.id.ToString(), "", JsonSerializer.Serialize(receiptType), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.ReceiptType entity creation failed.", false, receiptType.id.ToString(), "", JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)), ex);
 
 				return Problem(ex.Message);
 			}
@@ -576,6 +772,437 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+
+        /// <summary>
+        /// 
+        /// This rolls a ReceiptType entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ReceiptType/Rollback/{id}")]
+		[Route("api/ReceiptType/Rollback")]
+		public async Task<IActionResult> RollbackToReceiptTypeVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.ReceiptType> query = (from x in _context.ReceiptTypes
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this ReceiptType concurrently
+			//
+			lock (receiptTypePutSyncRoot)
+			{
+				
+				Database.ReceiptType receiptType = query.FirstOrDefault();
+				
+				if (receiptType == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.ReceiptType rollback", id.ToString(), new Exception("No Scheduler.ReceiptType entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the ReceiptType current state so we can log it.
+				//
+				Database.ReceiptType cloneOfExisting = (Database.ReceiptType)_context.Entry(receiptType).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.Gifts = null;
+				cloneOfExisting.ReceiptTypeChangeHistories = null;
+
+				if (versionNumber >= receiptType.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.ReceiptType rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.ReceiptType rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				ReceiptTypeChangeHistory receiptTypeChangeHistory = (from x in _context.ReceiptTypeChangeHistories
+				                                               where
+				                                               x.receiptTypeId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (receiptTypeChangeHistory != null)
+				{
+				    Database.ReceiptType oldReceiptType = JsonSerializer.Deserialize<Database.ReceiptType>(receiptTypeChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    receiptType.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    receiptType.name = oldReceiptType.name;
+				    receiptType.description = oldReceiptType.description;
+				    receiptType.color = oldReceiptType.color;
+				    receiptType.sequence = oldReceiptType.sequence;
+				    receiptType.objectGuid = oldReceiptType.objectGuid;
+				    receiptType.active = oldReceiptType.active;
+				    receiptType.deleted = oldReceiptType.deleted;
+
+				    string serializedReceiptType = JsonSerializer.Serialize(receiptType);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        ReceiptTypeChangeHistory newReceiptTypeChangeHistory = new ReceiptTypeChangeHistory();
+				        newReceiptTypeChangeHistory.receiptTypeId = receiptType.id;
+				        newReceiptTypeChangeHistory.versionNumber = receiptType.versionNumber;
+				        newReceiptTypeChangeHistory.timeStamp = DateTime.UtcNow;
+				        newReceiptTypeChangeHistory.userId = securityUser.id;
+				        newReceiptTypeChangeHistory.tenantGuid = userTenantGuid;
+				        newReceiptTypeChangeHistory.data = JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType));
+				        _context.ReceiptTypeChangeHistories.Add(newReceiptTypeChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.ReceiptType rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
+						null);
+
+
+				    return Ok(Database.ReceiptType.CreateAnonymous(receiptType));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.ReceiptType rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.ReceiptType rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a ReceiptType.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the ReceiptType</param>
+        /// <param name="versionNumber">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ReceiptType/{id}/ChangeMetadata")]
+		public async Task<IActionResult> GetReceiptTypeChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.ReceiptType receiptType = await _context.ReceiptTypes.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (receiptType == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				receiptType.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.ReceiptType> versionInfo = await receiptType.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null)
+				{
+					return NotFound($"Version {versionNumber} not found.");
+				}
+
+				return Ok(versionInfo);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a ReceiptType.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the ReceiptType</param>
+        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ReceiptType/{id}/AuditHistory")]
+		public async Task<IActionResult> GetReceiptTypeAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.ReceiptType receiptType = await _context.ReceiptTypes.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (receiptType == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				receiptType.SetupVersionInquiry(_context, userTenantGuid);
+
+				List<VersionInformation<Database.ReceiptType>> versions = await receiptType.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
+
+				return Ok(versions);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific version of a ReceiptType.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the ReceiptType</param>
+        /// <param name="version">The version number to retrieve</param>
+        /// <returns>The ReceiptType object at that version</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ReceiptType/{id}/Version/{version}")]
+		public async Task<IActionResult> GetReceiptTypeVersion(int id, int version, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.ReceiptType receiptType = await _context.ReceiptTypes.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (receiptType == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				receiptType.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.ReceiptType> versionInfo = await receiptType.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound();
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the state of a ReceiptType at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the ReceiptType</param>
+        /// <param name="time">The point in time (ISO format, UTC)</param>
+        /// <returns>The ReceiptType object at that time</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ReceiptType/{id}/StateAtTime")]
+		public async Task<IActionResult> GetReceiptTypeStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// Scheduler Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.ReceiptType receiptType = await _context.ReceiptTypes.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (receiptType == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				receiptType.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.ReceiptType> versionInfo = await receiptType.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound("No state found at specified time.");
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
 
         /// <summary>
         /// 
@@ -593,9 +1220,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -603,11 +1230,26 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.ReceiptType> query = (from x in _context.ReceiptTypes
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.ReceiptType receiptType = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -619,33 +1261,52 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Database.ReceiptType cloneOfExisting = (Database.ReceiptType)_context.Entry(receiptType).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (receiptTypeDeleteSyncRoot)
 			{
-				receiptType.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        receiptType.deleted = true;
+			        receiptType.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"Scheduler.ReceiptType entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        ReceiptTypeChangeHistory receiptTypeChangeHistory = new ReceiptTypeChangeHistory();
+			        receiptTypeChangeHistory.receiptTypeId = receiptType.id;
+			        receiptTypeChangeHistory.versionNumber = receiptType.versionNumber;
+			        receiptTypeChangeHistory.timeStamp = DateTime.UtcNow;
+			        receiptTypeChangeHistory.userId = securityUser.id;
+			        receiptTypeChangeHistory.tenantGuid = userTenantGuid;
+			        receiptTypeChangeHistory.data = JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType));
+			        _context.ReceiptTypeChangeHistories.Add(receiptTypeChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.ReceiptType entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.ReceiptType entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"Scheduler.ReceiptType entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.ReceiptType.CreateAnonymousWithFirstLevelSubObjects(receiptType)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -664,7 +1325,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string name = null,
 			string description = null,
+			string color = null,
 			int? sequence = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -685,7 +1348,20 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
+
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
 
 
 			if (pageNumber.HasValue == true &&
@@ -701,6 +1377,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 			IQueryable<Database.ReceiptType> query = (from rt in _context.ReceiptTypes select rt);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(rt => rt.name == name);
@@ -709,9 +1388,17 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(rt => rt.description == description);
 			}
+			if (string.IsNullOrEmpty(color) == false)
+			{
+				query = query.Where(rt => rt.color == color);
+			}
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(rt => rt.sequence == sequence.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(rt => rt.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -753,11 +1440,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
+			       || x.color.Contains(anyStringContains)
 			   );
 			}
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description).ThenBy(x => x.color);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{
@@ -783,9 +1474,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 
 			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
+			// Scheduler Config Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}

@@ -1,0 +1,112 @@
+<div class="container-fluid p-1 m-0 period-status-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="period-status-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Period Status</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Period Status' : 'Add Period Status'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPeriodStatusReader()">
+                <div class="col m-2 period-status-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="periodStatusForm" (ngSubmit)="submitForm()" class="period-status-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="PeriodStatus-name" id="label-PeriodStatus-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="PeriodStatus-name" formControlName="name" placeholder="Enter Name" class="form-control period-status-input" [disabled]="!userIsSchedulerPeriodStatusWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="periodStatusForm.get('name')?.invalid && periodStatusForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="PeriodStatus-description" id="label-PeriodStatus-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="PeriodStatus-description" formControlName="description" placeholder="Enter Description" class="form-control period-status-input" [disabled]="!userIsSchedulerPeriodStatusWriter()"></textarea>
+                                <div *ngIf="periodStatusForm.get('description')?.invalid && periodStatusForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="PeriodStatus-color" id="label-PeriodStatus-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="PeriodStatus-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerPeriodStatusWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="periodStatusForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="PeriodStatus-sequence" id="label-PeriodStatus-sequence">Sequence</label>
+                                <input type="number" id="PeriodStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control period-status-input" [disabled]="!userIsSchedulerPeriodStatusWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PeriodStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPeriodStatusWriter()" />
+                                <label for="PeriodStatus-active" class="form-check-label" id="label-PeriodStatus-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PeriodStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPeriodStatusWriter()" />
+                                <label for="PeriodStatus-deleted" class="form-check-label" id="label-PeriodStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="period-status-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="periodStatusForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Period Status">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !periodStatusForm.valid || !periodStatusForm.dirty || periodStatusForm.pristine  || userIsSchedulerPeriodStatusWriter() == false " ngbTooltip="Save the Period Status changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Period Status' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerPeriodStatusReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 period-status-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="fiscalPeriodService.userIsSchedulerFiscalPeriodReader()">
+                            <button ngbNavLink>Fiscal Periods
+                                <span class="badge bg-primary ms-2">
+                                    {{ (periodStatusData?.FiscalPeriodsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-fiscal-period-table [queryParams]="{ periodStatusId: periodStatusData?.id }" [showAddButton]="true" [preSeededData]="{ periodStatusId: periodStatusData?.id }" [hiddenFields]="['periodStatusId']"></app-fiscal-period-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

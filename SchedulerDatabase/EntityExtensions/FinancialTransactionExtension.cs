@@ -285,9 +285,11 @@ namespace Foundation.Scheduler.Database
 			public Int32 financialCategoryId { get; set; }
 			public Int32? scheduledEventId { get; set; }
 			public Int32? contactId { get; set; }
+			public Int32? clientId { get; set; }
 			public String contactRole { get; set; }
 			public Int32? taxCodeId { get; set; }
 			public Int32? fiscalPeriodId { get; set; }
+			public Int32? paymentTypeId { get; set; }
 			[Required]
 			public DateTime transactionDate { get; set; }
 			[Required]
@@ -301,7 +303,6 @@ namespace Foundation.Scheduler.Database
 			[Required]
 			public Boolean isRevenue { get; set; }
 			public String journalEntryType { get; set; }
-			public String paymentMethod { get; set; }
 			public String referenceNumber { get; set; }
 			public String notes { get; set; }
 			[Required]
@@ -324,10 +325,12 @@ namespace Foundation.Scheduler.Database
 		/// </summary>
 		public class FinancialTransactionOutputDTO : FinancialTransactionDTO
 		{
+			public Client.ClientDTO client { get; set; }
 			public Contact.ContactDTO contact { get; set; }
 			public Currency.CurrencyDTO currency { get; set; }
 			public FinancialCategory.FinancialCategoryDTO financialCategory { get; set; }
 			public FiscalPeriod.FiscalPeriodDTO fiscalPeriod { get; set; }
+			public PaymentType.PaymentTypeDTO paymentType { get; set; }
 			public ScheduledEvent.ScheduledEventDTO scheduledEvent { get; set; }
 			public TaxCode.TaxCodeDTO taxCode { get; set; }
 		}
@@ -348,9 +351,11 @@ namespace Foundation.Scheduler.Database
 				financialCategoryId = this.financialCategoryId,
 				scheduledEventId = this.scheduledEventId,
 				contactId = this.contactId,
+				clientId = this.clientId,
 				contactRole = this.contactRole,
 				taxCodeId = this.taxCodeId,
 				fiscalPeriodId = this.fiscalPeriodId,
+				paymentTypeId = this.paymentTypeId,
 				transactionDate = this.transactionDate,
 				description = this.description,
 				amount = this.amount,
@@ -358,7 +363,6 @@ namespace Foundation.Scheduler.Database
 				totalAmount = this.totalAmount,
 				isRevenue = this.isRevenue,
 				journalEntryType = this.journalEntryType,
-				paymentMethod = this.paymentMethod,
 				referenceNumber = this.referenceNumber,
 				notes = this.notes,
 				currencyId = this.currencyId,
@@ -411,9 +415,11 @@ namespace Foundation.Scheduler.Database
 				financialCategoryId = this.financialCategoryId,
 				scheduledEventId = this.scheduledEventId,
 				contactId = this.contactId,
+				clientId = this.clientId,
 				contactRole = this.contactRole,
 				taxCodeId = this.taxCodeId,
 				fiscalPeriodId = this.fiscalPeriodId,
+				paymentTypeId = this.paymentTypeId,
 				transactionDate = this.transactionDate,
 				description = this.description,
 				amount = this.amount,
@@ -421,7 +427,6 @@ namespace Foundation.Scheduler.Database
 				totalAmount = this.totalAmount,
 				isRevenue = this.isRevenue,
 				journalEntryType = this.journalEntryType,
-				paymentMethod = this.paymentMethod,
 				referenceNumber = this.referenceNumber,
 				notes = this.notes,
 				currencyId = this.currencyId,
@@ -432,10 +437,12 @@ namespace Foundation.Scheduler.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				client = this.client?.ToDTO(),
 				contact = this.contact?.ToDTO(),
 				currency = this.currency?.ToDTO(),
 				financialCategory = this.financialCategory?.ToDTO(),
 				fiscalPeriod = this.fiscalPeriod?.ToDTO(),
+				paymentType = this.paymentType?.ToDTO(),
 				scheduledEvent = this.scheduledEvent?.ToDTO(),
 				taxCode = this.taxCode?.ToDTO()
 			};
@@ -480,9 +487,11 @@ namespace Foundation.Scheduler.Database
 				financialCategoryId = dto.financialCategoryId,
 				scheduledEventId = dto.scheduledEventId,
 				contactId = dto.contactId,
+				clientId = dto.clientId,
 				contactRole = dto.contactRole,
 				taxCodeId = dto.taxCodeId,
 				fiscalPeriodId = dto.fiscalPeriodId,
+				paymentTypeId = dto.paymentTypeId,
 				transactionDate = dto.transactionDate,
 				description = dto.description,
 				amount = dto.amount,
@@ -490,7 +499,6 @@ namespace Foundation.Scheduler.Database
 				totalAmount = dto.totalAmount,
 				isRevenue = dto.isRevenue,
 				journalEntryType = dto.journalEntryType,
-				paymentMethod = dto.paymentMethod,
 				referenceNumber = dto.referenceNumber,
 				notes = dto.notes,
 				currencyId = dto.currencyId,
@@ -520,9 +528,11 @@ namespace Foundation.Scheduler.Database
 			this.financialCategoryId = dto.financialCategoryId;
 			this.scheduledEventId = dto.scheduledEventId;
 			this.contactId = dto.contactId;
+			this.clientId = dto.clientId;
 			this.contactRole = dto.contactRole;
 			this.taxCodeId = dto.taxCodeId;
 			this.fiscalPeriodId = dto.fiscalPeriodId;
+			this.paymentTypeId = dto.paymentTypeId;
 			this.transactionDate = dto.transactionDate;
 			this.description = dto.description;
 			this.amount = dto.amount;
@@ -530,7 +540,6 @@ namespace Foundation.Scheduler.Database
 			this.totalAmount = dto.totalAmount;
 			this.isRevenue = dto.isRevenue;
 			this.journalEntryType = dto.journalEntryType;
-			this.paymentMethod = dto.paymentMethod;
 			this.referenceNumber = dto.referenceNumber;
 			this.notes = dto.notes;
 			this.currencyId = dto.currencyId;
@@ -566,9 +575,11 @@ namespace Foundation.Scheduler.Database
 				financialCategoryId = this.financialCategoryId,
 				scheduledEventId = this.scheduledEventId,
 				contactId = this.contactId,
+				clientId = this.clientId,
 				contactRole = this.contactRole,
 				taxCodeId = this.taxCodeId,
 				fiscalPeriodId = this.fiscalPeriodId,
+				paymentTypeId = this.paymentTypeId,
 				transactionDate = this.transactionDate,
 				description = this.description,
 				amount = this.amount,
@@ -576,7 +587,6 @@ namespace Foundation.Scheduler.Database
 				totalAmount = this.totalAmount,
 				isRevenue = this.isRevenue,
 				journalEntryType = this.journalEntryType,
-				paymentMethod = this.paymentMethod,
 				referenceNumber = this.referenceNumber,
 				notes = this.notes,
 				currencyId = this.currencyId,
@@ -643,9 +653,11 @@ namespace Foundation.Scheduler.Database
 				financialCategoryId = financialTransaction.financialCategoryId,
 				scheduledEventId = financialTransaction.scheduledEventId,
 				contactId = financialTransaction.contactId,
+				clientId = financialTransaction.clientId,
 				contactRole = financialTransaction.contactRole,
 				taxCodeId = financialTransaction.taxCodeId,
 				fiscalPeriodId = financialTransaction.fiscalPeriodId,
+				paymentTypeId = financialTransaction.paymentTypeId,
 				transactionDate = financialTransaction.transactionDate,
 				description = financialTransaction.description,
 				amount = financialTransaction.amount,
@@ -653,7 +665,6 @@ namespace Foundation.Scheduler.Database
 				totalAmount = financialTransaction.totalAmount,
 				isRevenue = financialTransaction.isRevenue,
 				journalEntryType = financialTransaction.journalEntryType,
-				paymentMethod = financialTransaction.paymentMethod,
 				referenceNumber = financialTransaction.referenceNumber,
 				notes = financialTransaction.notes,
 				currencyId = financialTransaction.currencyId,
@@ -687,9 +698,11 @@ namespace Foundation.Scheduler.Database
 				financialCategoryId = financialTransaction.financialCategoryId,
 				scheduledEventId = financialTransaction.scheduledEventId,
 				contactId = financialTransaction.contactId,
+				clientId = financialTransaction.clientId,
 				contactRole = financialTransaction.contactRole,
 				taxCodeId = financialTransaction.taxCodeId,
 				fiscalPeriodId = financialTransaction.fiscalPeriodId,
+				paymentTypeId = financialTransaction.paymentTypeId,
 				transactionDate = financialTransaction.transactionDate,
 				description = financialTransaction.description,
 				amount = financialTransaction.amount,
@@ -697,7 +710,6 @@ namespace Foundation.Scheduler.Database
 				totalAmount = financialTransaction.totalAmount,
 				isRevenue = financialTransaction.isRevenue,
 				journalEntryType = financialTransaction.journalEntryType,
-				paymentMethod = financialTransaction.paymentMethod,
 				referenceNumber = financialTransaction.referenceNumber,
 				notes = financialTransaction.notes,
 				currencyId = financialTransaction.currencyId,
@@ -708,10 +720,12 @@ namespace Foundation.Scheduler.Database
 				objectGuid = financialTransaction.objectGuid,
 				active = financialTransaction.active,
 				deleted = financialTransaction.deleted,
+				client = Client.CreateMinimalAnonymous(financialTransaction.client),
 				contact = Contact.CreateMinimalAnonymous(financialTransaction.contact),
 				currency = Currency.CreateMinimalAnonymous(financialTransaction.currency),
 				financialCategory = FinancialCategory.CreateMinimalAnonymous(financialTransaction.financialCategory),
 				fiscalPeriod = FiscalPeriod.CreateMinimalAnonymous(financialTransaction.fiscalPeriod),
+				paymentType = PaymentType.CreateMinimalAnonymous(financialTransaction.paymentType),
 				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(financialTransaction.scheduledEvent),
 				taxCode = TaxCode.CreateMinimalAnonymous(financialTransaction.taxCode)
 			 };

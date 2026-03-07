@@ -183,6 +183,8 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
     { key: 'unitPrice', label: 'Unit Price', width: undefined },
     { key: 'extendedAmount', label: 'Extended Amount', width: undefined },
     { key: 'taxAmount', label: 'Tax Amount', width: undefined },
+    { key: 'totalAmount', label: 'Total Amount', width: undefined },
+    { key: 'description', label: 'Description', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/eventcharge', 'id']  },
     { key: 'currency.name', label: 'Currency', width: undefined, template: 'link', linkPath: ['/currency', 'currencyId'] },
     { key: 'rateType.name', label: 'Rate Type', width: undefined, template: 'link', linkPath: ['/ratetype', 'rateTypeId'] },
     { key: 'notes', label: 'Notes', width: undefined },
@@ -190,7 +192,8 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
     { key: 'isDeposit', label: 'Is Deposit', width: '120px', template: 'boolean' },
     { key: 'depositRefundedDate', label: 'Deposit Refunded Date', width: undefined, template: 'date' },
     { key: 'exportedDate', label: 'Exported Date', width: undefined, template: 'date' },
-    { key: 'externalId', label: 'External Id', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/eventcharge', 'id']  },
+    { key: 'externalId', label: 'External Id', width: undefined },
+    { key: 'taxCode.name', label: 'Tax Code', width: undefined, template: 'link', linkPath: ['/taxcode', 'taxCodeId'] },
 
     ];
 
@@ -346,6 +349,8 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
                       'unitPrice',
                       'extendedAmount',
                       'taxAmount',
+                      'totalAmount',
+                      'description',
                       'currency.name',
                       'rateType.name',
                       'notes',
@@ -354,6 +359,7 @@ export class EventChargeTableComponent implements OnInit, OnChanges, AfterViewIn
                       'depositRefundedDate',
                       'exportedDate',
                       'externalId',
+                      'taxCode.name',
         ];
 
         result = result.filter((eventCharge) =>

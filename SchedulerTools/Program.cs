@@ -1366,6 +1366,8 @@ namespace Foundation.Scheduler.CodeGeneration
                 Console.WriteLine($"  Calendar: {recCalendar.name} (id={recCalendar.id})");
                 Console.WriteLine();
 
+                
+
                 //
                 // Step 1: Create fiscal periods for 2025 and 2026
                 //
@@ -1375,43 +1377,71 @@ namespace Foundation.Scheduler.CodeGeneration
                 Console.WriteLine();
 
                 //
-                // Step 2: Load financial categories from the Events Code sheet
+                // Step 2: Create standard payment types for this tenant
                 //
-                Console.WriteLine("--- Step 2: Loading Financial Categories ---");
-                Dictionary<string, int> categoryIdByCode = LoadFinancialCategories(context, financesFile, cad.id);
-                Console.WriteLine($"  {categoryIdByCode.Count} categories loaded.");
+                Console.WriteLine("--- Step 2: Loading Payment Types ---");
+                int paymentTypeCount = LoadPaymentTypes(context);
+                Console.WriteLine($"  {paymentTypeCount} payment types loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 3: Load income transactions
+                // Step 3: Create standard receipt types for this tenant
                 //
-                Console.WriteLine("--- Step 3: Loading Income Transactions ---");
-                int incomeCount = LoadFinancialTransactions(context, financesFile, "Income", true, categoryIdByCode, cad.id);
+                Console.WriteLine("--- Step 3: Loading Receipt Types ---");
+                int receiptTypeCount = LoadReceiptTypes(context);
+                Console.WriteLine($"  {receiptTypeCount} receipt types loaded.");
+                Console.WriteLine();
+
+                //
+                // Step 4: Load financial categories from the Events Code sheet
+                //
+                // Resolve AccountType IDs for category creation
+                var incomeAccountType = context.AccountTypes.FirstOrDefault(at => at.name == "Income");
+                var expenseAccountType = context.AccountTypes.FirstOrDefault(at => at.name == "Expense");
+
+                if (incomeAccountType == null || expenseAccountType == null)
+                {
+                    Console.WriteLine("ERROR: AccountType seed data not found. Ensure database scripts have been run.");
+                    return;
+                }
+
+                Console.WriteLine("--- Step 4: Loading Financial Categories ---");
+                Dictionary<string, int> categoryIdByCode = LoadFinancialCategories(context, financesFile, cad.id, incomeAccountType.id, expenseAccountType.id);
+                Console.WriteLine($"  {categoryIdByCode.Count} categories loaded.");
+                Console.WriteLine();
+
+                
+
+                //
+                // Step 5: Load income transactions
+                //
+                Console.WriteLine("--- Step 5: Loading Income Transactions ---");
+                int incomeCount = LoadFinancialTransactions(context, financesFile, "Income", true, categoryIdByCode, cad.id, incomeAccountType.id, expenseAccountType.id);
                 Console.WriteLine($"  {incomeCount} income transactions loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 4: Load expense transactions
+                // Step 6: Load expense transactions
                 //
-                Console.WriteLine("--- Step 4: Loading Expense Transactions ---");
-                int expenseCount = LoadFinancialTransactions(context, financesFile, "Expenses", false, categoryIdByCode, cad.id);
+                Console.WriteLine("--- Step 6: Loading Expense Transactions ---");
+                int expenseCount = LoadFinancialTransactions(context, financesFile, "Expenses", false, categoryIdByCode, cad.id, incomeAccountType.id, expenseAccountType.id);
                 Console.WriteLine($"  {expenseCount} expense transactions loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 5: Load bookings as ScheduledEvents
+                // Step 7: Load bookings as ScheduledEvents
                 //
-                Console.WriteLine("--- Step 5: Loading Bookings ---");
+                Console.WriteLine("--- Step 7: Loading Bookings ---");
                 int bookingCount = LoadBookings(context, bookingsFile, recCalendar.id, completedStatus.id, plannedStatus.id, cad.id);
                 Console.WriteLine($"  {bookingCount} bookings loaded.");
                 Console.WriteLine();
-
+                
                 Console.WriteLine("=== Data loading complete ===");
                 Console.WriteLine();
             }
         }
 
-
+        
         /// <summary>
         /// Reads the 'Events Code' sheet from Rec_Finances.xls and creates FinancialCategory records.
         /// Returns a dictionary mapping category codes to their database IDs.
@@ -1428,7 +1458,9 @@ namespace Foundation.Scheduler.CodeGeneration
         private static Dictionary<string, int> LoadFinancialCategories(
             SchedulerContext context,
             string financesFilePath,
-            int currencyId)
+            int currencyId,
+            int incomeAccountTypeId,
+            int expenseAccountTypeId)
         {
             Dictionary<string, int> result = new Dictionary<string, int>();
 
@@ -1543,7 +1575,7 @@ namespace Foundation.Scheduler.CodeGeneration
                 fc.code = categoryCode;
                 fc.name = categoryName;
                 fc.description = $"{(isRevenue ? "Revenue" : "Expense")}: {categoryName}";
-                fc.isRevenue = isRevenue;
+                fc.accountTypeId = isRevenue ? incomeAccountTypeId : expenseAccountTypeId;
                 fc.isTaxApplicable = false;
                 fc.sequence = sequence++;
                 fc.versionNumber = 0;
@@ -1590,7 +1622,9 @@ namespace Foundation.Scheduler.CodeGeneration
             string sheetName,
             bool isRevenue,
             Dictionary<string, int> categoryIdByCode,
-            int currencyId)
+            int currencyId,
+            int incomeAccountTypeId,
+            int expenseAccountTypeId)
         {
             // Check if transactions already exist
             int existingCount = context.FinancialTransactions
@@ -1716,7 +1750,7 @@ namespace Foundation.Scheduler.CodeGeneration
                                 miscCategory.code = categoryCode;
                                 miscCategory.name = $"Category {categoryCode}";
                                 miscCategory.description = $"{(isRevenue ? "Revenue" : "Expense")}: Auto-created for code {categoryCode}";
-                                miscCategory.isRevenue = isRevenue;
+                                miscCategory.accountTypeId = isRevenue ? incomeAccountTypeId : expenseAccountTypeId;
                                 miscCategory.isTaxApplicable = false;
                                 miscCategory.sequence = 900 + int.Parse(categoryCode.Length > 3 ? categoryCode.Substring(0, 3) : categoryCode, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture);
                                 miscCategory.versionNumber = 0;
@@ -2180,6 +2214,14 @@ namespace Foundation.Scheduler.CodeGeneration
         {
             int createdCount = 0;
 
+            // Resolve the "Open" PeriodStatus ID from seed data
+            var openStatus = context.PeriodStatuses.FirstOrDefault(ps => ps.name == "Open");
+            if (openStatus == null)
+            {
+                Console.WriteLine("  ERROR: PeriodStatus 'Open' not found. Ensure database scripts have been run.");
+                return 0;
+            }
+
             string[] monthNames = new string[]
             {
                 "January", "February", "March", "April", "May", "June",
@@ -2219,7 +2261,7 @@ namespace Foundation.Scheduler.CodeGeneration
                     fp.periodType = "Month";
                     fp.fiscalYear = year;
                     fp.periodNumber = month;
-                    fp.isClosed = false;
+                    fp.periodStatusId = openStatus.id;
                     fp.sequence = ((year - startYear) * 12) + month;
                     fp.versionNumber = 0;
                     fp.objectGuid = Guid.NewGuid();
@@ -2238,6 +2280,99 @@ namespace Foundation.Scheduler.CodeGeneration
             return createdCount;
         }
 
+
+        /// <summary>
+        /// Creates standard payment types for the PHMC tenant.
+        /// Mirrors the seed data that was previously in the database generator.
+        /// Skips if any payment types already exist.
+        ///
+        /// AI-generated code.
+        /// </summary>
+        private static int LoadPaymentTypes(SchedulerContext context)
+        {
+            int existingCount = context.PaymentTypes.Count();
+
+            if (existingCount > 0)
+            {
+                Console.WriteLine($"  Payment types already exist ({existingCount} found). Skipping.");
+                return 0;
+            }
+
+            var paymentTypes = new (string name, string description, int sequence, string guid)[]
+            {
+                ("Credit Card",  "Credit Card",                    1, "3353a9f0-1b8e-4170-a20a-d35eab81fab8"),
+                ("Cheque",       "Cheque",                         2, "19376f2d-87c0-4eb5-a11c-f02cb4f9b412"),
+                ("Cash",         "Cash",                           3, "dca9c876-bb7d-4c33-8ef4-96a955dacbb0"),
+                ("E-Transfer",   "Interac E-Transfer",             4, "8be012ff-f305-45cd-bedb-cc5b9f11f3ef"),
+                ("Debit",        "Debit",                          5, "427451dc-b522-4613-aa3a-57593b6d4d03"),
+            };
+
+            int count = 0;
+            foreach (var pt in paymentTypes)
+            {
+                PaymentType paymentType = new PaymentType();
+                paymentType.name = pt.name;
+                paymentType.description = pt.description;
+                paymentType.sequence = pt.sequence;
+                paymentType.objectGuid = new Guid(pt.guid);
+                paymentType.active = true;
+                paymentType.deleted = false;
+
+                context.PaymentTypes.Add(paymentType);
+                count++;
+
+                Console.WriteLine($"    + {paymentType.name}");
+            }
+
+            context.SaveChanges();
+            return count;
+        }
+
+
+        /// <summary>
+        /// Creates standard receipt types for the PHMC tenant.
+        /// Mirrors the seed data that was previously in the database generator.
+        /// Skips if any receipt types already exist.
+        ///
+        /// AI-generated code.
+        /// </summary>
+        private static int LoadReceiptTypes(SchedulerContext context)
+        {
+            int existingCount = context.ReceiptTypes.Count();
+
+            if (existingCount > 0)
+            {
+                Console.WriteLine($"  Receipt types already exist ({existingCount} found). Skipping.");
+                return 0;
+            }
+
+            var receiptTypes = new (string name, string description, int sequence, string guid)[]
+            {
+                ("Receipted",       "Receipted",       1, "b0a794eb-afa9-4791-b164-e28e5ed21a35"),
+                ("Do Not Receipt",  "Do Not Receipt",  2, "d6ceb144-aced-4e2a-9407-a2b0c995c795"),
+            };
+
+            int count = 0;
+            foreach (var rt in receiptTypes)
+            {
+                ReceiptType receiptType = new ReceiptType();
+                receiptType.name = rt.name;
+                receiptType.description = rt.description;
+                receiptType.sequence = rt.sequence;
+                receiptType.objectGuid = new Guid(rt.guid);
+                receiptType.active = true;
+                receiptType.deleted = false;
+
+                context.ReceiptTypes.Add(receiptType);
+                count++;
+
+                Console.WriteLine($"    + {receiptType.name}");
+            }
+
+            context.SaveChanges();
+            return count;
+        }
+        
 
         #region Helper Methods
 

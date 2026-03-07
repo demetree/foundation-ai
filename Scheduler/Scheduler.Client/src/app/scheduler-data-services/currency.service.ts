@@ -22,6 +22,7 @@ import { ClientService, ClientData } from './client.service';
 import { RateSheetService, RateSheetData } from './rate-sheet.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
+import { BudgetService, BudgetData } from './budget.service';
 import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -151,6 +152,11 @@ export class CurrencyData {
     private _financialTransactions: FinancialTransactionData[] | null = null;
     private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
     private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
+    private _budgets: BudgetData[] | null = null;
+    private _budgetsPromise: Promise<BudgetData[]> | null  = null;
+    private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
     private _paymentTransactions: PaymentTransactionData[] | null = null;
@@ -315,6 +321,31 @@ export class CurrencyData {
 
 
 
+    public Budgets$ = this._budgetsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._budgets === null && this._budgetsPromise === null) {
+            this.loadBudgets(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _budgetsCount$: Observable<bigint | number> | null = null;
+    public get BudgetsCount$(): Observable<bigint | number> {
+        if (this._budgetsCount$ === null) {
+            this._budgetsCount$ = BudgetService.Instance.GetBudgetsRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._budgetsCount$;
+    }
+
+
+
     public PaymentTransactions$ = this._paymentTransactionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -407,6 +438,11 @@ export class CurrencyData {
      this._financialTransactionsPromise = null;
      this._financialTransactionsSubject.next(null);
      this._financialTransactionsCount$ = null;
+
+     this._budgets = null;
+     this._budgetsPromise = null;
+     this._budgetsSubject.next(null);
+     this._budgetsCount$ = null;
 
      this._paymentTransactions = null;
      this._paymentTransactionsPromise = null;
@@ -811,6 +847,71 @@ export class CurrencyData {
 
     /**
      *
+     * Gets the Budgets for this Currency.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.currency.Budgets.then(currencies => { ... })
+     *   or
+     *   await this.currency.currencies
+     *
+    */
+    public get Budgets(): Promise<BudgetData[]> {
+        if (this._budgets !== null) {
+            return Promise.resolve(this._budgets);
+        }
+
+        if (this._budgetsPromise !== null) {
+            return this._budgetsPromise;
+        }
+
+        // Start the load
+        this.loadBudgets();
+
+        return this._budgetsPromise!;
+    }
+
+
+
+    private loadBudgets(): void {
+
+        this._budgetsPromise = lastValueFrom(
+            CurrencyService.Instance.GetBudgetsForCurrency(this.id)
+        )
+        .then(Budgets => {
+            this._budgets = Budgets ?? [];
+            this._budgetsSubject.next(this._budgets);
+            return this._budgets;
+         })
+        .catch(err => {
+            this._budgets = [];
+            this._budgetsSubject.next(this._budgets);
+            throw err;
+        })
+        .finally(() => {
+            this._budgetsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Budget. Call after mutations to force refresh.
+     */
+    public ClearBudgetsCache(): void {
+        this._budgets = null;
+        this._budgetsPromise = null;
+        this._budgetsSubject.next(this._budgets);      // Emit to observable
+    }
+
+    public get HasBudgets(): Promise<boolean> {
+        return this.Budgets.then(budgets => budgets.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the PaymentTransactions for this Currency.
      *
      * If already loaded, returns cached array.
@@ -915,6 +1016,7 @@ export class CurrencyService extends SecureEndpointBase {
         private rateSheetService: RateSheetService,
         private eventChargeService: EventChargeService,
         private financialTransactionService: FinancialTransactionService,
+        private budgetService: BudgetService,
         private paymentTransactionService: PaymentTransactionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -1337,6 +1439,16 @@ export class CurrencyService extends SecureEndpointBase {
     }
 
 
+    public GetBudgetsForCurrency(currencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BudgetData[]> {
+        return this.budgetService.GetBudgetList({
+            currencyId: currencyId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetPaymentTransactionsForCurrency(currencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
         return this.paymentTransactionService.GetPaymentTransactionList({
             currencyId: currencyId,
@@ -1405,6 +1517,10 @@ export class CurrencyService extends SecureEndpointBase {
     (revived as any)._financialTransactions = null;
     (revived as any)._financialTransactionsPromise = null;
     (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+    (revived as any)._budgets = null;
+    (revived as any)._budgetsPromise = null;
+    (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
     (revived as any)._paymentTransactions = null;
     (revived as any)._paymentTransactionsPromise = null;
@@ -1492,6 +1608,18 @@ export class CurrencyService extends SecureEndpointBase {
       );
 
     (revived as any)._financialTransactionsCount$ = null;
+
+
+    (revived as any).Budgets$ = (revived as any)._budgetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._budgets === null && (revived as any)._budgetsPromise === null) {
+                (revived as any).loadBudgets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._budgetsCount$ = null;
 
 
     (revived as any).PaymentTransactions$ = (revived as any)._paymentTransactionsSubject.asObservable().pipe(

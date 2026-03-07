@@ -26,6 +26,8 @@ import { ChargeTypeService, ChargeTypeData, ChargeTypeSubmitData } from '../../.
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { RateTypeService } from '../../../scheduler-data-services/rate-type.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
+import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
+import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -45,6 +47,8 @@ interface ChargeTypeFormValues {
   defaultDescription: string | null,
   rateTypeId: number | bigint | null,       // For FK link number
   currencyId: number | bigint,       // For FK link number
+  financialCategoryId: number | bigint | null,       // For FK link number
+  taxCodeId: number | bigint | null,       // For FK link number
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
   color: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
@@ -89,6 +93,8 @@ export class ChargeTypeAddEditComponent {
         defaultDescription: [''],
         rateTypeId: [null],
         currencyId: [null, Validators.required],
+        financialCategoryId: [null],
+        taxCodeId: [null],
         sequence: [''],
         color: [''],
         versionNumber: [''],
@@ -106,12 +112,16 @@ export class ChargeTypeAddEditComponent {
   chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   rateTypes$ = this.rateTypeService.GetRateTypeList();
   currencies$ = this.currencyService.GetCurrencyList();
+  financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
+  taxCodes$ = this.taxCodeService.GetTaxCodeList();
 
   constructor(
     private modalService: NgbModal,
     private chargeTypeService: ChargeTypeService,
     private rateTypeService: RateTypeService,
     private currencyService: CurrencyService,
+    private financialCategoryService: FinancialCategoryService,
+    private taxCodeService: TaxCodeService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -240,6 +250,8 @@ export class ChargeTypeAddEditComponent {
         defaultDescription: formValue.defaultDescription?.trim() || null,
         rateTypeId: formValue.rateTypeId ? Number(formValue.rateTypeId) : null,
         currencyId: Number(formValue.currencyId),
+        financialCategoryId: formValue.financialCategoryId ? Number(formValue.financialCategoryId) : null,
+        taxCodeId: formValue.taxCodeId ? Number(formValue.taxCodeId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
         color: formValue.color?.trim() || null,
         versionNumber: this.chargeTypeSubmitData?.versionNumber ?? 0,
@@ -380,6 +392,8 @@ export class ChargeTypeAddEditComponent {
         defaultDescription: '',
         rateTypeId: null,
         currencyId: null,
+        financialCategoryId: null,
+        taxCodeId: null,
         sequence: '',
         color: '',
         versionNumber: '',
@@ -403,6 +417,8 @@ export class ChargeTypeAddEditComponent {
         defaultDescription: chargeTypeData.defaultDescription ?? '',
         rateTypeId: chargeTypeData.rateTypeId,
         currencyId: chargeTypeData.currencyId,
+        financialCategoryId: chargeTypeData.financialCategoryId,
+        taxCodeId: chargeTypeData.taxCodeId,
         sequence: chargeTypeData.sequence?.toString() ?? '',
         color: chargeTypeData.color ?? '',
         versionNumber: chargeTypeData.versionNumber?.toString() ?? '',

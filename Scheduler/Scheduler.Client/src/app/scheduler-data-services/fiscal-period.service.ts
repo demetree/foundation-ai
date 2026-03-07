@@ -16,8 +16,10 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { PeriodStatusData } from './period-status.service';
 import { FiscalPeriodChangeHistoryService, FiscalPeriodChangeHistoryData } from './fiscal-period-change-history.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
+import { BudgetService, BudgetData } from './budget.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -36,7 +38,7 @@ export class FiscalPeriodQueryParameters {
     periodType: string | null | undefined = null;
     fiscalYear: bigint | number | null | undefined = null;
     periodNumber: bigint | number | null | undefined = null;
-    isClosed: boolean | null | undefined = null;
+    periodStatusId: bigint | number | null | undefined = null;
     closedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     closedBy: string | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
@@ -63,7 +65,7 @@ export class FiscalPeriodSubmitData {
     periodType!: string;
     fiscalYear!: bigint | number;
     periodNumber!: bigint | number;
-    isClosed!: boolean;
+    periodStatusId!: bigint | number;
     closedDate: string | null = null;     // ISO 8601 (full datetime)
     closedBy: string | null = null;
     sequence: bigint | number | null = null;
@@ -144,7 +146,7 @@ export class FiscalPeriodData {
     periodType!: string;
     fiscalYear!: bigint | number;
     periodNumber!: bigint | number;
-    isClosed!: boolean;
+    periodStatusId!: bigint | number;
     closedDate!: string | null;   // ISO 8601 (full datetime)
     closedBy!: string | null;
     sequence!: bigint | number;
@@ -152,6 +154,7 @@ export class FiscalPeriodData {
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
+    periodStatus: PeriodStatusData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -164,6 +167,11 @@ export class FiscalPeriodData {
     private _financialTransactions: FinancialTransactionData[] | null = null;
     private _financialTransactionsPromise: Promise<FinancialTransactionData[]> | null  = null;
     private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+                
+    private _budgets: BudgetData[] | null = null;
+    private _budgetsPromise: Promise<BudgetData[]> | null  = null;
+    private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
 
@@ -232,6 +240,31 @@ export class FiscalPeriodData {
 
 
 
+    public Budgets$ = this._budgetsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._budgets === null && this._budgetsPromise === null) {
+            this.loadBudgets(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _budgetsCount$: Observable<bigint | number> | null = null;
+    public get BudgetsCount$(): Observable<bigint | number> {
+        if (this._budgetsCount$ === null) {
+            this._budgetsCount$ = BudgetService.Instance.GetBudgetsRowCount({fiscalPeriodId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._budgetsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -279,6 +312,11 @@ export class FiscalPeriodData {
      this._financialTransactionsPromise = null;
      this._financialTransactionsSubject.next(null);
      this._financialTransactionsCount$ = null;
+
+     this._budgets = null;
+     this._budgetsPromise = null;
+     this._budgetsSubject.next(null);
+     this._budgetsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -419,6 +457,71 @@ export class FiscalPeriodData {
     }
 
 
+    /**
+     *
+     * Gets the Budgets for this FiscalPeriod.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.fiscalPeriod.Budgets.then(fiscalPeriods => { ... })
+     *   or
+     *   await this.fiscalPeriod.fiscalPeriods
+     *
+    */
+    public get Budgets(): Promise<BudgetData[]> {
+        if (this._budgets !== null) {
+            return Promise.resolve(this._budgets);
+        }
+
+        if (this._budgetsPromise !== null) {
+            return this._budgetsPromise;
+        }
+
+        // Start the load
+        this.loadBudgets();
+
+        return this._budgetsPromise!;
+    }
+
+
+
+    private loadBudgets(): void {
+
+        this._budgetsPromise = lastValueFrom(
+            FiscalPeriodService.Instance.GetBudgetsForFiscalPeriod(this.id)
+        )
+        .then(Budgets => {
+            this._budgets = Budgets ?? [];
+            this._budgetsSubject.next(this._budgets);
+            return this._budgets;
+         })
+        .catch(err => {
+            this._budgets = [];
+            this._budgetsSubject.next(this._budgets);
+            throw err;
+        })
+        .finally(() => {
+            this._budgetsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Budget. Call after mutations to force refresh.
+     */
+    public ClearBudgetsCache(): void {
+        this._budgets = null;
+        this._budgetsPromise = null;
+        this._budgetsSubject.next(this._budgets);      // Emit to observable
+    }
+
+    public get HasBudgets(): Promise<boolean> {
+        return this.Budgets.then(budgets => budgets.length > 0);
+    }
+
+
 
 
     //
@@ -499,6 +602,7 @@ export class FiscalPeriodService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private fiscalPeriodChangeHistoryService: FiscalPeriodChangeHistoryService,
         private financialTransactionService: FinancialTransactionService,
+        private budgetService: BudgetService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -563,7 +667,7 @@ export class FiscalPeriodService extends SecureEndpointBase {
         output.periodType = data.periodType;
         output.fiscalYear = data.fiscalYear;
         output.periodNumber = data.periodNumber;
-        output.isClosed = data.isClosed;
+        output.periodStatusId = data.periodStatusId;
         output.closedDate = data.closedDate;
         output.closedBy = data.closedBy;
         output.sequence = data.sequence;
@@ -988,6 +1092,16 @@ export class FiscalPeriodService extends SecureEndpointBase {
     }
 
 
+    public GetBudgetsForFiscalPeriod(fiscalPeriodId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BudgetData[]> {
+        return this.budgetService.GetBudgetList({
+            fiscalPeriodId: fiscalPeriodId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full FiscalPeriodData instance.
@@ -1031,6 +1145,10 @@ export class FiscalPeriodService extends SecureEndpointBase {
     (revived as any)._financialTransactionsPromise = null;
     (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
 
+    (revived as any)._budgets = null;
+    (revived as any)._budgetsPromise = null;
+    (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1065,6 +1183,18 @@ export class FiscalPeriodService extends SecureEndpointBase {
       );
 
     (revived as any)._financialTransactionsCount$ = null;
+
+
+    (revived as any).Budgets$ = (revived as any)._budgetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._budgets === null && (revived as any)._budgetsPromise === null) {
+                (revived as any).loadBudgets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._budgetsCount$ = null;
 
 
 

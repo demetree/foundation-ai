@@ -288,9 +288,7 @@ namespace Foundation.Scheduler.Database
 			[Required]
 			public String code { get; set; }
 			[Required]
-			public Boolean isRevenue { get; set; }
-			[Required]
-			public String accountType { get; set; }
+			public Int32 accountTypeId { get; set; }
 			public Int32? parentFinancialCategoryId { get; set; }
 			[Required]
 			public Boolean isTaxApplicable { get; set; }
@@ -313,6 +311,7 @@ namespace Foundation.Scheduler.Database
 		/// </summary>
 		public class FinancialCategoryOutputDTO : FinancialCategoryDTO
 		{
+			public AccountType.AccountTypeDTO accountType { get; set; }
 			public FinancialCategory.FinancialCategoryDTO parentFinancialCategory { get; set; }
 		}
 
@@ -332,8 +331,7 @@ namespace Foundation.Scheduler.Database
 				name = this.name,
 				description = this.description,
 				code = this.code,
-				isRevenue = this.isRevenue,
-				accountType = this.accountType,
+				accountTypeId = this.accountTypeId,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
@@ -386,8 +384,7 @@ namespace Foundation.Scheduler.Database
 				name = this.name,
 				description = this.description,
 				code = this.code,
-				isRevenue = this.isRevenue,
-				accountType = this.accountType,
+				accountTypeId = this.accountTypeId,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
@@ -398,6 +395,7 @@ namespace Foundation.Scheduler.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				accountType = this.accountType?.ToDTO(),
 				parentFinancialCategory = this.parentFinancialCategory?.ToDTO()
 			};
 		}
@@ -441,8 +439,7 @@ namespace Foundation.Scheduler.Database
 				name = dto.name,
 				description = dto.description,
 				code = dto.code,
-				isRevenue = dto.isRevenue,
-				accountType = dto.accountType,
+				accountTypeId = dto.accountTypeId,
 				parentFinancialCategoryId = dto.parentFinancialCategoryId,
 				isTaxApplicable = dto.isTaxApplicable,
 				defaultAmount = dto.defaultAmount,
@@ -472,8 +469,7 @@ namespace Foundation.Scheduler.Database
 			this.name = dto.name;
 			this.description = dto.description;
 			this.code = dto.code;
-			this.isRevenue = dto.isRevenue;
-			this.accountType = dto.accountType;
+			this.accountTypeId = dto.accountTypeId;
 			this.parentFinancialCategoryId = dto.parentFinancialCategoryId;
 			this.isTaxApplicable = dto.isTaxApplicable;
 			this.defaultAmount = dto.defaultAmount;
@@ -509,8 +505,7 @@ namespace Foundation.Scheduler.Database
 				name = this.name,
 				description = this.description,
 				code = this.code,
-				isRevenue = this.isRevenue,
-				accountType = this.accountType,
+				accountTypeId = this.accountTypeId,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
@@ -577,8 +572,7 @@ namespace Foundation.Scheduler.Database
 				name = financialCategory.name,
 				description = financialCategory.description,
 				code = financialCategory.code,
-				isRevenue = financialCategory.isRevenue,
-				accountType = financialCategory.accountType,
+				accountTypeId = financialCategory.accountTypeId,
 				parentFinancialCategoryId = financialCategory.parentFinancialCategoryId,
 				isTaxApplicable = financialCategory.isTaxApplicable,
 				defaultAmount = financialCategory.defaultAmount,
@@ -612,8 +606,7 @@ namespace Foundation.Scheduler.Database
 				name = financialCategory.name,
 				description = financialCategory.description,
 				code = financialCategory.code,
-				isRevenue = financialCategory.isRevenue,
-				accountType = financialCategory.accountType,
+				accountTypeId = financialCategory.accountTypeId,
 				parentFinancialCategoryId = financialCategory.parentFinancialCategoryId,
 				isTaxApplicable = financialCategory.isTaxApplicable,
 				defaultAmount = financialCategory.defaultAmount,
@@ -624,6 +617,7 @@ namespace Foundation.Scheduler.Database
 				objectGuid = financialCategory.objectGuid,
 				active = financialCategory.active,
 				deleted = financialCategory.deleted,
+				accountType = AccountType.CreateMinimalAnonymous(financialCategory.accountType),
 				parentFinancialCategory = FinancialCategory.CreateMinimalAnonymous(financialCategory.parentFinancialCategory)
 			 };
 		}

@@ -29,6 +29,8 @@ public partial class Currency
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
+
     public virtual ICollection<ChargeType> ChargeTypes { get; set; } = new List<ChargeType>();
 
     public virtual ICollection<Client> Clients { get; set; } = new List<Client>();

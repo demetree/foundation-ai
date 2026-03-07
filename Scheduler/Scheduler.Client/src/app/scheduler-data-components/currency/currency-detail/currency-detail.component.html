@@ -183,6 +183,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="budgetService.userIsSchedulerBudgetReader()">
+                            <button ngbNavLink>Budgets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.BudgetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-budget-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-budget-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
                             <button ngbNavLink>Payment Transactions
                                 <span class="badge bg-primary ms-2">

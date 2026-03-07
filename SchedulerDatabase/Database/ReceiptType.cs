@@ -9,11 +9,17 @@ public partial class ReceiptType
 {
     public int id { get; set; }
 
+    public Guid tenantGuid { get; set; }
+
     public string name { get; set; }
 
     public string description { get; set; }
 
+    public string color { get; set; }
+
     public int? sequence { get; set; }
+
+    public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }
 
@@ -22,4 +28,6 @@ public partial class ReceiptType
     public bool deleted { get; set; }
 
     public virtual ICollection<Gift> Gifts { get; set; } = new List<Gift>();
+
+    public virtual ICollection<ReceiptTypeChangeHistory> ReceiptTypeChangeHistories { get; set; } = new List<ReceiptTypeChangeHistory>();
 }

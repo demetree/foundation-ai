@@ -63,6 +63,14 @@
                 Currency
                 <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialCategory.name')">
+                Financial  Category
+                <span *ngIf="sortColumn === 'financialCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('taxCode.name')">
+                Tax  Code
+                <span *ngIf="sortColumn === 'taxCode.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
                 <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -165,6 +173,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{chargeType.defaultDescription}}</td>
             <td class="text-truncate"><a [routerLink]="['/ratetype', chargeType.rateTypeId]" class="btn btn-link text-left" ngbTooltip="Open Rate Type details">{{chargeType.rateType?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/currency', chargeType.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{chargeType.currency?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialcategory', chargeType.financialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{chargeType.financialCategory?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/taxcode', chargeType.taxCodeId]" class="btn btn-link text-left" ngbTooltip="Open Tax Code details">{{chargeType.taxCode?.name}}</a></td>
             <td class="text-truncate">{{chargeType.sequence | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{chargeType.color}}</td>
 End of commented block for alternate definition option -->
@@ -349,6 +359,14 @@ End of commented block for alternate definition option -->
             <p class="charge-type-info" *ngIf="chargeType.currencyId != null">
               <strong>Currency: </strong>
               <a [routerLink]="['/currency', chargeType.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{chargeType.currency?.name}}</a>
+            </p>
+            <p class="charge-type-info" *ngIf="chargeType.financialCategoryId != null">
+              <strong>Financial Category: </strong>
+              <a [routerLink]="['/financialcategory', chargeType.financialCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Category details">{{chargeType.financialCategory?.name}}</a>
+            </p>
+            <p class="charge-type-info" *ngIf="chargeType.taxCodeId != null">
+              <strong>Tax Code: </strong>
+              <a [routerLink]="['/taxcode', chargeType.taxCodeId]" class="text-left p-0 m-0" ngbTooltip="Open Tax Code details">{{chargeType.taxCode?.name}}</a>
             </p>
             <p class="charge-type-info" *ngIf="chargeType.sequence != null">
               <strong>Sequence: </strong>

@@ -1,0 +1,94 @@
+<div class="add-account-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-account-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Account Type" 
+        *ngIf="userIsSchedulerAccountTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #accountTypeModal let-modal>
+   <div class="modal-header account-type-modal-header">
+      <h5 class="modal-title mb-0" id="accountTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Account Type' : 'Add Account Type' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body account-type-modal-body">
+      <form [formGroup]="accountTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="AccountType-name" id="label-AccountType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="AccountType-name" formControlName="name" placeholder="Enter Name" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="accountTypeForm.get('name')?.invalid && accountTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="AccountType-description" id="label-AccountType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="AccountType-description" formControlName="description" placeholder="Enter Description" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()"></textarea>
+                <div *ngIf="accountTypeForm.get('description')?.invalid && accountTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevenue')">
+                <input type="checkbox" id="AccountType-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerAccountTypeWriter()" />
+                <label for="AccountType-isRevenue" class="form-check-label" id="label-AccountType-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('externalMapping')">
+                <label for="AccountType-externalMapping" id="label-AccountType-externalMapping">External Mapping</label>
+                <input type="text" id="AccountType-externalMapping" formControlName="externalMapping" placeholder="Enter External Mapping" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()" aria-labelledby="label-externalMapping" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="AccountType-color" id="label-AccountType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="AccountType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerAccountTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="accountTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="AccountType-sequence" id="label-AccountType-sequence">Sequence</label>
+                <input type="number" id="AccountType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control account-type-input" [disabled]="!userIsSchedulerAccountTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AccountType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAccountTypeWriter()" />
+                <label for="AccountType-active" class="form-check-label" id="label-AccountType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AccountType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAccountTypeWriter()" />
+                <label for="AccountType-deleted" class="form-check-label" id="label-AccountType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer account-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Account Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !accountTypeForm.valid || accountTypeForm.pristine  || userIsSchedulerAccountTypeWriter() == false " ngbTooltip="Save the Account Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Account Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

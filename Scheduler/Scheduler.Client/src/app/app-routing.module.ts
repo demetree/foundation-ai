@@ -111,6 +111,8 @@ import { FinancialCategoryCustomListingComponent } from './components/financial-
 //
 // Beginning of imports for Scheduler Data Components
 //
+import { AccountTypeListingComponent } from './scheduler-data-components/account-type/account-type-listing/account-type-listing.component';
+import { AccountTypeDetailComponent } from './scheduler-data-components/account-type/account-type-detail/account-type-detail.component';
 import { AppealListingComponent } from './scheduler-data-components/appeal/appeal-listing/appeal-listing.component';
 import { AppealDetailComponent } from './scheduler-data-components/appeal/appeal-detail/appeal-detail.component';
 import { AppealChangeHistoryListingComponent } from './scheduler-data-components/appeal-change-history/appeal-change-history-listing/appeal-change-history-listing.component';
@@ -139,6 +141,10 @@ import { BatchStatusListingComponent } from './scheduler-data-components/batch-s
 import { BatchStatusDetailComponent } from './scheduler-data-components/batch-status/batch-status-detail/batch-status-detail.component';
 import { BookingSourceTypeListingComponent } from './scheduler-data-components/booking-source-type/booking-source-type-listing/booking-source-type-listing.component';
 import { BookingSourceTypeDetailComponent } from './scheduler-data-components/booking-source-type/booking-source-type-detail/booking-source-type-detail.component';
+import { BudgetListingComponent } from './scheduler-data-components/budget/budget-listing/budget-listing.component';
+import { BudgetDetailComponent } from './scheduler-data-components/budget/budget-detail/budget-detail.component';
+import { BudgetChangeHistoryListingComponent } from './scheduler-data-components/budget-change-history/budget-change-history-listing/budget-change-history-listing.component';
+import { BudgetChangeHistoryDetailComponent } from './scheduler-data-components/budget-change-history/budget-change-history-detail/budget-change-history-detail.component';
 import { CalendarListingComponent } from './scheduler-data-components/calendar/calendar-listing/calendar-listing.component';
 import { CalendarDetailComponent } from './scheduler-data-components/calendar/calendar-detail/calendar-detail.component';
 import { CalendarChangeHistoryListingComponent } from './scheduler-data-components/calendar-change-history/calendar-change-history-listing/calendar-change-history-listing.component';
@@ -149,6 +155,8 @@ import { CampaignChangeHistoryListingComponent } from './scheduler-data-componen
 import { CampaignChangeHistoryDetailComponent } from './scheduler-data-components/campaign-change-history/campaign-change-history-detail/campaign-change-history-detail.component';
 import { ChargeStatusListingComponent } from './scheduler-data-components/charge-status/charge-status-listing/charge-status-listing.component';
 import { ChargeStatusDetailComponent } from './scheduler-data-components/charge-status/charge-status-detail/charge-status-detail.component';
+import { ChargeStatusChangeHistoryListingComponent } from './scheduler-data-components/charge-status-change-history/charge-status-change-history-listing/charge-status-change-history-listing.component';
+import { ChargeStatusChangeHistoryDetailComponent } from './scheduler-data-components/charge-status-change-history/charge-status-change-history-detail/charge-status-change-history-detail.component';
 import { ChargeTypeListingComponent } from './scheduler-data-components/charge-type/charge-type-listing/charge-type-listing.component';
 import { ChargeTypeDetailComponent } from './scheduler-data-components/charge-type/charge-type-detail/charge-type-detail.component';
 import { ChargeTypeChangeHistoryListingComponent } from './scheduler-data-components/charge-type-change-history/charge-type-change-history-listing/charge-type-change-history-listing.component';
@@ -279,6 +287,10 @@ import { PaymentTransactionChangeHistoryListingComponent } from './scheduler-dat
 import { PaymentTransactionChangeHistoryDetailComponent } from './scheduler-data-components/payment-transaction-change-history/payment-transaction-change-history-detail/payment-transaction-change-history-detail.component';
 import { PaymentTypeListingComponent } from './scheduler-data-components/payment-type/payment-type-listing/payment-type-listing.component';
 import { PaymentTypeDetailComponent } from './scheduler-data-components/payment-type/payment-type-detail/payment-type-detail.component';
+import { PaymentTypeChangeHistoryListingComponent } from './scheduler-data-components/payment-type-change-history/payment-type-change-history-listing/payment-type-change-history-listing.component';
+import { PaymentTypeChangeHistoryDetailComponent } from './scheduler-data-components/payment-type-change-history/payment-type-change-history-detail/payment-type-change-history-detail.component';
+import { PeriodStatusListingComponent } from './scheduler-data-components/period-status/period-status-listing/period-status-listing.component';
+import { PeriodStatusDetailComponent } from './scheduler-data-components/period-status/period-status-detail/period-status-detail.component';
 import { PledgeListingComponent } from './scheduler-data-components/pledge/pledge-listing/pledge-listing.component';
 import { PledgeDetailComponent } from './scheduler-data-components/pledge/pledge-detail/pledge-detail.component';
 import { PledgeChangeHistoryListingComponent } from './scheduler-data-components/pledge-change-history/pledge-change-history-listing/pledge-change-history-listing.component';
@@ -295,6 +307,8 @@ import { RateTypeListingComponent } from './scheduler-data-components/rate-type/
 import { RateTypeDetailComponent } from './scheduler-data-components/rate-type/rate-type-detail/rate-type-detail.component';
 import { ReceiptTypeListingComponent } from './scheduler-data-components/receipt-type/receipt-type-listing/receipt-type-listing.component';
 import { ReceiptTypeDetailComponent } from './scheduler-data-components/receipt-type/receipt-type-detail/receipt-type-detail.component';
+import { ReceiptTypeChangeHistoryListingComponent } from './scheduler-data-components/receipt-type-change-history/receipt-type-change-history-listing/receipt-type-change-history-listing.component';
+import { ReceiptTypeChangeHistoryDetailComponent } from './scheduler-data-components/receipt-type-change-history/receipt-type-change-history-detail/receipt-type-change-history-detail.component';
 import { RecurrenceExceptionListingComponent } from './scheduler-data-components/recurrence-exception/recurrence-exception-listing/recurrence-exception-listing.component';
 import { RecurrenceExceptionDetailComponent } from './scheduler-data-components/recurrence-exception/recurrence-exception-detail/recurrence-exception-detail.component';
 import { RecurrenceExceptionChangeHistoryListingComponent } from './scheduler-data-components/recurrence-exception-change-history/recurrence-exception-change-history-listing/recurrence-exception-change-history-listing.component';
@@ -545,6 +559,11 @@ const routes: Routes = [
   //
   // Beginning of routes for Scheduler Data Components
 //
+  {path: 'accounttypes', component: AccountTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Account Types' },
+  {path: 'accounttypes/new', component: AccountTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Account Type' },
+  {path: 'accounttypes/:accountTypeId', component: AccountTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Account Type' },
+  {path: 'accounttype/:accountTypeId', component: AccountTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Account Type' },
+  {path: 'accounttype',  redirectTo: 'accounttypes'},
   {path: 'appeals', component: AppealListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Appeals' },
   {path: 'appeals/new', component: AppealDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Appeal' },
   {path: 'appeals/:appealId', component: AppealDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Appeal' },
@@ -615,6 +634,16 @@ const routes: Routes = [
   {path: 'bookingsourcetypes/:bookingSourceTypeId', component: BookingSourceTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Booking Source Type' },
   {path: 'bookingsourcetype/:bookingSourceTypeId', component: BookingSourceTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Booking Source Type' },
   {path: 'bookingsourcetype',  redirectTo: 'bookingsourcetypes'},
+  {path: 'budgets', component: BudgetListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Budgets' },
+  {path: 'budgets/new', component: BudgetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Budget' },
+  {path: 'budgets/:budgetId', component: BudgetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Budget' },
+  {path: 'budget/:budgetId', component: BudgetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Budget' },
+  {path: 'budget',  redirectTo: 'budgets'},
+  {path: 'budgetchangehistories', component: BudgetChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Budget Change Histories' },
+  {path: 'budgetchangehistories/new', component: BudgetChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Budget Change History' },
+  {path: 'budgetchangehistories/:budgetChangeHistoryId', component: BudgetChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Budget Change History' },
+  {path: 'budgetchangehistory/:budgetChangeHistoryId', component: BudgetChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Budget Change History' },
+  {path: 'budgetchangehistory',  redirectTo: 'budgetchangehistories'},
   {path: 'calendars', component: CalendarListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Calendars' },
   {path: 'calendars/new', component: CalendarDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Calendar' },
   {path: 'calendars/:calendarId', component: CalendarDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Calendar' },
@@ -640,6 +669,11 @@ const routes: Routes = [
   {path: 'chargestatuses/:chargeStatusId', component: ChargeStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Charge Status' },
   {path: 'chargestatus/:chargeStatusId', component: ChargeStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Charge Status' },
   {path: 'chargestatus',  redirectTo: 'chargestatuses'},
+  {path: 'chargestatuschangehistories', component: ChargeStatusChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Charge Status Change Histories' },
+  {path: 'chargestatuschangehistories/new', component: ChargeStatusChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Charge Status Change History' },
+  {path: 'chargestatuschangehistories/:chargeStatusChangeHistoryId', component: ChargeStatusChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Charge Status Change History' },
+  {path: 'chargestatuschangehistory/:chargeStatusChangeHistoryId', component: ChargeStatusChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Charge Status Change History' },
+  {path: 'chargestatuschangehistory',  redirectTo: 'chargestatuschangehistories'},
   {path: 'chargetypes', component: ChargeTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Charge Types' },
   {path: 'chargetypes/new', component: ChargeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Charge Type' },
   {path: 'chargetypes/:chargeTypeId', component: ChargeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Charge Type' },
@@ -965,6 +999,16 @@ const routes: Routes = [
   {path: 'paymenttypes/:paymentTypeId', component: PaymentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Type' },
   {path: 'paymenttype/:paymentTypeId', component: PaymentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Type' },
   {path: 'paymenttype',  redirectTo: 'paymenttypes'},
+  {path: 'paymenttypechangehistories', component: PaymentTypeChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Payment Type Change Histories' },
+  {path: 'paymenttypechangehistories/new', component: PaymentTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Payment Type Change History' },
+  {path: 'paymenttypechangehistories/:paymentTypeChangeHistoryId', component: PaymentTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Type Change History' },
+  {path: 'paymenttypechangehistory/:paymentTypeChangeHistoryId', component: PaymentTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Payment Type Change History' },
+  {path: 'paymenttypechangehistory',  redirectTo: 'paymenttypechangehistories'},
+  {path: 'periodstatuses', component: PeriodStatusListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Period Statuses' },
+  {path: 'periodstatuses/new', component: PeriodStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Period Status' },
+  {path: 'periodstatuses/:periodStatusId', component: PeriodStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Period Status' },
+  {path: 'periodstatus/:periodStatusId', component: PeriodStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Period Status' },
+  {path: 'periodstatus',  redirectTo: 'periodstatuses'},
   {path: 'pledges', component: PledgeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Pledges' },
   {path: 'pledges/new', component: PledgeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Pledge' },
   {path: 'pledges/:pledgeId', component: PledgeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Pledge' },
@@ -1005,6 +1049,11 @@ const routes: Routes = [
   {path: 'receipttypes/:receiptTypeId', component: ReceiptTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Receipt Type' },
   {path: 'receipttype/:receiptTypeId', component: ReceiptTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Receipt Type' },
   {path: 'receipttype',  redirectTo: 'receipttypes'},
+  {path: 'receipttypechangehistories', component: ReceiptTypeChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Receipt Type Change Histories' },
+  {path: 'receipttypechangehistories/new', component: ReceiptTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Receipt Type Change History' },
+  {path: 'receipttypechangehistories/:receiptTypeChangeHistoryId', component: ReceiptTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Receipt Type Change History' },
+  {path: 'receipttypechangehistory/:receiptTypeChangeHistoryId', component: ReceiptTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Receipt Type Change History' },
+  {path: 'receipttypechangehistory',  redirectTo: 'receipttypechangehistories'},
   {path: 'recurrenceexceptions', component: RecurrenceExceptionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Recurrence Exceptions' },
   {path: 'recurrenceexceptions/new', component: RecurrenceExceptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Recurrence Exception' },
   {path: 'recurrenceexceptions/:recurrenceExceptionId', component: RecurrenceExceptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Recurrence Exception' },

@@ -69,8 +69,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string code = null,
-			bool? isRevenue = null,
-			string accountType = null,
+			int? accountTypeId = null,
 			int? parentFinancialCategoryId = null,
 			bool? isTaxApplicable = null,
 			decimal? defaultAmount = null,
@@ -143,13 +142,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fc => fc.code == code);
 			}
-			if (isRevenue.HasValue == true)
+			if (accountTypeId.HasValue == true)
 			{
-				query = query.Where(fc => fc.isRevenue == isRevenue.Value);
-			}
-			if (string.IsNullOrEmpty(accountType) == false)
-			{
-				query = query.Where(fc => fc.accountType == accountType);
+				query = query.Where(fc => fc.accountTypeId == accountTypeId.Value);
 			}
 			if (parentFinancialCategoryId.HasValue == true)
 			{
@@ -222,13 +217,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.code.Contains(anyStringContains)
-			       || x.accountType.Contains(anyStringContains)
 			       || x.externalAccountId.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
+			       || (includeRelations == true && x.accountType.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.accountType.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.accountType.externalMapping.Contains(anyStringContains))
+			       || (includeRelations == true && x.accountType.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentFinancialCategory.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentFinancialCategory.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentFinancialCategory.code.Contains(anyStringContains))
-			       || (includeRelations == true && x.parentFinancialCategory.accountType.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentFinancialCategory.externalAccountId.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentFinancialCategory.color.Contains(anyStringContains))
 			   );
@@ -236,6 +233,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.accountType);
 				query = query.Include(x => x.parentFinancialCategory);
 				query = query.AsSplitQuery();
 			}
@@ -288,8 +286,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string code = null,
-			bool? isRevenue = null,
-			string accountType = null,
+			int? accountTypeId = null,
 			int? parentFinancialCategoryId = null,
 			bool? isTaxApplicable = null,
 			decimal? defaultAmount = null,
@@ -342,13 +339,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fc => fc.code == code);
 			}
-			if (isRevenue.HasValue == true)
+			if (accountTypeId.HasValue == true)
 			{
-				query = query.Where(fc => fc.isRevenue == isRevenue.Value);
-			}
-			if (accountType != null)
-			{
-				query = query.Where(fc => fc.accountType == accountType);
+				query = query.Where(fc => fc.accountTypeId == accountTypeId.Value);
 			}
 			if (parentFinancialCategoryId.HasValue == true)
 			{
@@ -418,13 +411,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.code.Contains(anyStringContains)
-			       || x.accountType.Contains(anyStringContains)
 			       || x.externalAccountId.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
+			       || x.accountType.name.Contains(anyStringContains)
+			       || x.accountType.description.Contains(anyStringContains)
+			       || x.accountType.externalMapping.Contains(anyStringContains)
+			       || x.accountType.color.Contains(anyStringContains)
 			       || x.parentFinancialCategory.name.Contains(anyStringContains)
 			       || x.parentFinancialCategory.description.Contains(anyStringContains)
 			       || x.parentFinancialCategory.code.Contains(anyStringContains)
-			       || x.parentFinancialCategory.accountType.Contains(anyStringContains)
 			       || x.parentFinancialCategory.externalAccountId.Contains(anyStringContains)
 			       || x.parentFinancialCategory.color.Contains(anyStringContains)
 			   );
@@ -490,6 +485,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.accountType);
 					query = query.Include(x => x.parentFinancialCategory);
 					query = query.AsSplitQuery();
 				}
@@ -677,11 +673,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					financialCategory.code = financialCategory.code.Substring(0, 50);
 				}
 
-				if (financialCategory.accountType != null && financialCategory.accountType.Length > 50)
-				{
-					financialCategory.accountType = financialCategory.accountType.Substring(0, 50);
-				}
-
 				if (financialCategory.externalAccountId != null && financialCategory.externalAccountId.Length > 250)
 				{
 					financialCategory.externalAccountId = financialCategory.externalAccountId.Substring(0, 250);
@@ -815,11 +806,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					financialCategory.code = financialCategory.code.Substring(0, 50);
 				}
 
-				if (financialCategory.accountType != null && financialCategory.accountType.Length > 50)
-				{
-					financialCategory.accountType = financialCategory.accountType.Substring(0, 50);
-				}
-
 				if (financialCategory.externalAccountId != null && financialCategory.externalAccountId.Length > 250)
 				{
 					financialCategory.externalAccountId = financialCategory.externalAccountId.Substring(0, 250);
@@ -851,9 +837,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					financialCategory.Budgets = null;
+					financialCategory.ChargeTypes = null;
 					financialCategory.FinancialCategoryChangeHistories = null;
 					financialCategory.FinancialTransactions = null;
 					financialCategory.InverseparentFinancialCategory = null;
+					financialCategory.accountType = null;
 					financialCategory.parentFinancialCategory = null;
 
 
@@ -969,9 +958,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.Budgets = null;
+				cloneOfExisting.ChargeTypes = null;
 				cloneOfExisting.FinancialCategoryChangeHistories = null;
 				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.InverseparentFinancialCategory = null;
+				cloneOfExisting.accountType = null;
 				cloneOfExisting.parentFinancialCategory = null;
 
 				if (versionNumber >= financialCategory.versionNumber)
@@ -1004,8 +996,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    financialCategory.name = oldFinancialCategory.name;
 				    financialCategory.description = oldFinancialCategory.description;
 				    financialCategory.code = oldFinancialCategory.code;
-				    financialCategory.isRevenue = oldFinancialCategory.isRevenue;
-				    financialCategory.accountType = oldFinancialCategory.accountType;
+				    financialCategory.accountTypeId = oldFinancialCategory.accountTypeId;
 				    financialCategory.parentFinancialCategoryId = oldFinancialCategory.parentFinancialCategoryId;
 				    financialCategory.isTaxApplicable = oldFinancialCategory.isTaxApplicable;
 				    financialCategory.defaultAmount = oldFinancialCategory.defaultAmount;
@@ -1457,8 +1448,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string code = null,
-			bool? isRevenue = null,
-			string accountType = null,
+			int? accountTypeId = null,
 			int? parentFinancialCategoryId = null,
 			bool? isTaxApplicable = null,
 			decimal? defaultAmount = null,
@@ -1530,13 +1520,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(fc => fc.code == code);
 			}
-			if (isRevenue.HasValue == true)
+			if (accountTypeId.HasValue == true)
 			{
-				query = query.Where(fc => fc.isRevenue == isRevenue.Value);
-			}
-			if (string.IsNullOrEmpty(accountType) == false)
-			{
-				query = query.Where(fc => fc.accountType == accountType);
+				query = query.Where(fc => fc.accountTypeId == accountTypeId.Value);
 			}
 			if (parentFinancialCategoryId.HasValue == true)
 			{
@@ -1607,13 +1593,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.code.Contains(anyStringContains)
-			       || x.accountType.Contains(anyStringContains)
 			       || x.externalAccountId.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
+			       || x.accountType.name.Contains(anyStringContains)
+			       || x.accountType.description.Contains(anyStringContains)
+			       || x.accountType.externalMapping.Contains(anyStringContains)
+			       || x.accountType.color.Contains(anyStringContains)
 			       || x.parentFinancialCategory.name.Contains(anyStringContains)
 			       || x.parentFinancialCategory.description.Contains(anyStringContains)
 			       || x.parentFinancialCategory.code.Contains(anyStringContains)
-			       || x.parentFinancialCategory.accountType.Contains(anyStringContains)
 			       || x.parentFinancialCategory.externalAccountId.Contains(anyStringContains)
 			       || x.parentFinancialCategory.color.Contains(anyStringContains)
 			   );

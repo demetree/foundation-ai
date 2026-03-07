@@ -34,9 +34,35 @@
                     Description is required
                 </div>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="ReceiptType-color" id="label-ReceiptType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ReceiptType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerReceiptTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="receiptTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                 <label for="ReceiptType-sequence" id="label-ReceiptType-sequence">Sequence</label>
                 <input type="number" id="ReceiptType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control receipt-type-input" [disabled]="!userIsSchedulerReceiptTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ReceiptType-versionNumber" id="label-ReceiptType-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ReceiptType-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control receipt-type-input" />
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="ReceiptType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerReceiptTypeWriter()" />
