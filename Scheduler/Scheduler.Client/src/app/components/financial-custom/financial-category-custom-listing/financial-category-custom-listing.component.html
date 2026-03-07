@@ -196,8 +196,7 @@
 
 </div>
 
-<!-- Category Add/Edit Modal -->
-<app-financial-category-add-edit #catAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
-    [hiddenFields]="['externalAccountId', 'versionNumber', 'active', 'deleted']"
-    (financialCategoryChanged)="onCategoryChanged()">
-</app-financial-category-add-edit>
+<!-- Category Add/Edit Modal (Custom) -->
+<app-financial-category-custom-add-edit #catAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
+    [hiddenFields]="['externalAccountId']" (financialCategoryChanged)="onCategoryChanged()">
+</app-financial-category-custom-add-edit>

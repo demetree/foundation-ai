@@ -1,0 +1,179 @@
+<ng-template #catModal>
+
+    <!-- Modal Header -->
+    <div class="modal-header cat-modal-header">
+        <h5 class="modal-title">
+            <i class="fa-solid" [ngClass]="isEditMode ? 'fa-pen-to-square' : 'fa-plus-circle'" class="me-2"></i>
+            {{ isEditMode ? 'Edit Category' : 'New Category' }}
+        </h5>
+        <button class="modal-close-btn" (click)="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body cat-modal-body" [formGroup]="catForm">
+
+        <!-- Section 1: Core Details -->
+        <div class="section-card mb-3">
+            <div class="section-label">Core Details</div>
+
+            <div class="row g-3">
+                <!-- Code -->
+                <div class="col-md-4" *ngIf="!isFieldHidden('code')">
+                    <label class="form-label" for="cat-code">
+                        <span class="text-danger">*</span> Code
+                    </label>
+                    <input type="text" id="cat-code" formControlName="code" class="form-control"
+                        placeholder="e.g. 4010" />
+                    <div *ngIf="catForm.get('code')?.invalid && catForm.get('code')?.touched"
+                        class="text-danger small mt-1">Code is required</div>
+                </div>
+
+                <!-- Name -->
+                <div class="col-md-8" *ngIf="!isFieldHidden('name')">
+                    <label class="form-label" for="cat-name">
+                        <span class="text-danger">*</span> Name
+                    </label>
+                    <input type="text" id="cat-name" formControlName="name" class="form-control"
+                        placeholder="Category name" />
+                    <div *ngIf="catForm.get('name')?.invalid && catForm.get('name')?.touched"
+                        class="text-danger small mt-1">Name is required</div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <!-- Description -->
+                <div class="col-12" *ngIf="!isFieldHidden('description')">
+                    <label class="form-label" for="cat-desc">
+                        <span class="text-danger">*</span> Description
+                    </label>
+                    <textarea id="cat-desc" formControlName="description" class="form-control" rows="2"
+                        placeholder="Brief description of this category"></textarea>
+                    <div *ngIf="catForm.get('description')?.invalid && catForm.get('description')?.touched"
+                        class="text-danger small mt-1">Description is required</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Classification -->
+        <div class="section-card mb-3">
+            <div class="section-label">Classification</div>
+
+            <div class="row g-3">
+                <!-- Account Type -->
+                <div class="col-md-6" *ngIf="!isFieldHidden('accountTypeId')">
+                    <label class="form-label" for="cat-account-type">
+                        <span class="text-danger">*</span> Account Type
+                    </label>
+                    <select id="cat-account-type" formControlName="accountTypeId" class="form-select">
+                        <option [ngValue]="null">— Select account type —</option>
+                        <option *ngFor="let at of accountTypes" [ngValue]="at.id">
+                            {{ at.name }}
+                        </option>
+                    </select>
+                    <div *ngIf="catForm.get('accountTypeId')?.invalid && catForm.get('accountTypeId')?.touched"
+                        class="text-danger small mt-1">Account type is required</div>
+                </div>
+
+                <!-- Office -->
+                <div class="col-md-6" *ngIf="offices.length > 0 && !isFieldHidden('financialOfficeId')">
+                    <label class="form-label" for="cat-office">Office</label>
+                    <select id="cat-office" formControlName="financialOfficeId" class="form-select">
+                        <option [ngValue]="null">— Select office —</option>
+                        <option *ngFor="let office of offices" [ngValue]="office.id">
+                            {{ office.name }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <!-- Parent Category -->
+                <div class="col-md-6" *ngIf="!isFieldHidden('parentFinancialCategoryId')">
+                    <label class="form-label" for="cat-parent">Parent Category</label>
+                    <select id="cat-parent" formControlName="parentFinancialCategoryId" class="form-select">
+                        <option [ngValue]="null">— None (top-level) —</option>
+                        <option *ngFor="let parent of parentCategories" [ngValue]="parent.id">
+                            {{ parent.code }} — {{ parent.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Default Amount -->
+                <div class="col-md-3" *ngIf="!isFieldHidden('defaultAmount')">
+                    <label class="form-label" for="cat-default-amount">Default Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" id="cat-default-amount" formControlName="defaultAmount"
+                            class="form-control amount-input" step="0.01" placeholder="0.00" />
+                    </div>
+                </div>
+
+                <!-- Tax Applicable -->
+                <div class="col-md-3 d-flex align-items-end" *ngIf="!isFieldHidden('isTaxApplicable')">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" id="cat-tax" formControlName="isTaxApplicable"
+                            class="form-check-input" />
+                        <label class="form-check-label" for="cat-tax">Tax Applicable</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: More Details (Collapsible) -->
+        <div class="section-card">
+            <div class="section-label clickable" (click)="showMoreDetails = !showMoreDetails">
+                <i class="fa-solid me-1" [ngClass]="showMoreDetails ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                More Details
+            </div>
+
+            <div *ngIf="showMoreDetails">
+                <div class="row g-3">
+                    <!-- Sequence -->
+                    <div class="col-md-4" *ngIf="!isFieldHidden('sequence')">
+                        <label class="form-label" for="cat-sequence">Sort Order</label>
+                        <input type="number" id="cat-sequence" formControlName="sequence" class="form-control"
+                            placeholder="e.g. 10" />
+                    </div>
+
+                    <!-- External Account ID -->
+                    <div class="col-md-4" *ngIf="!isFieldHidden('externalAccountId')">
+                        <label class="form-label" for="cat-external-id">External Account ID</label>
+                        <input type="text" id="cat-external-id" formControlName="externalAccountId" class="form-control"
+                            placeholder="External system ref" />
+                    </div>
+
+                    <!-- Color -->
+                    <div class="col-md-4" *ngIf="!isFieldHidden('color')">
+                        <label class="form-label" for="cat-color">Color</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="color" id="cat-color" formControlName="color"
+                                class="form-control form-control-color" style="width: 40px; height: 38px;" />
+                            <input type="text" [value]="catForm.get('color')?.value || ''"
+                                (input)="catForm.get('color')?.setValue($any($event.target).value)" class="form-control"
+                                placeholder="#hex" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer cat-modal-footer d-flex justify-content-between">
+        <button class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitForm()"
+            [disabled]="isSaving || catForm.pristine || catForm.invalid">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+            {{ isEditMode ? 'Save Changes' : 'Create Category' }}
+        </button>
+    </div>
+
+</ng-template>
+
+<!-- Optional: Visible "Add" button for standalone usage -->
+<button *ngIf="showAddButton" class="btn btn-sm btn-primary" (click)="openModal()">
+    <i class="fa-solid fa-plus me-1"></i> Add Category
+</button>

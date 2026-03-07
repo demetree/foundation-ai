@@ -22,6 +22,7 @@ import { BrickPartColourData } from '../../bmc-data-services/brick-part-colour.s
 import { BrickColourService, BrickColourData } from '../../bmc-data-services/brick-colour.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { AuthNudgeService } from '../../services/auth-nudge.service';
 import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
 import { lastValueFrom, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -218,7 +219,8 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         private router: Router,
         private location: Location,
         private http: HttpClient,
-        private authService: AuthService,
+        public authService: AuthService,
+        private authNudgeService: AuthNudgeService,
         private brickPartService: BrickPartService,
         private brickColourService: BrickColourService,
         private fileCacheService: LDrawFileCacheService,
@@ -275,6 +277,18 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
     goBack(): void {
         this.location.back();
+    }
+
+
+    /**
+     * Show the auth nudge modal when an anonymous user clicks the Server Render tab.
+     */
+    nudgeServerRender(): void {
+        this.authNudgeService.nudge({
+            featureName: 'Server-Side Rendering',
+            featureIcon: 'bi-camera',
+            message: 'Server-side rendering produces high-quality images using the server\'s ray tracer. Sign in to access this feature.'
+        });
     }
 
 
@@ -340,14 +354,16 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                         return col;
                     });
                     this.partColoursSourceLoaded = true;
-                    this.setPartsSourceLoaded = true;
-                    this.pendingColourReady = false;
-
-                    // 3D viewer not available for anonymous (requires auth for LDraw files)
-                    this.hasGeometry = false;
 
                     // Load set appearances from public endpoint
                     this.loadSetParts();
+
+                    // Enable 3D viewer — uses public LDraw file endpoint (client-side rendering only)
+                    if (result.part.geometryOriginalFileName) {
+                        this.hasGeometry = true;
+                        this.pendingColourReady = true;
+                        setTimeout(() => this.initThreeJsAndLoadModel(), 0);
+                    }
                 }
             }
         }
@@ -590,18 +606,34 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.isLoadingAllColours = true;
 
         try {
-            //
-            // Fetch all active colours from the BrickColour table.
-            // A large page size is used because the colour table is small enough to load in one request.
-            //
-            this.allColours = await lastValueFrom(
-                this.brickColourService.GetBrickColourList({
-                    active: true,
-                    deleted: false,
-                    pageSize: 500,
-                    pageNumber: 1
-                })
-            );
+            if (this.authService.isLoggedIn) {
+                //
+                // Authenticated path — fetch from generated data service
+                //
+                this.allColours = await lastValueFrom(
+                    this.brickColourService.GetBrickColourList({
+                        active: true,
+                        deleted: false,
+                        pageSize: 500,
+                        pageNumber: 1
+                    })
+                );
+            } else {
+                //
+                // Anonymous path — use public colours endpoint
+                //
+                const colours = await lastValueFrom(
+                    this.http.get<any[]>('/api/public/browse/colours')
+                );
+                this.allColours = (colours ?? []).map((c: any) => {
+                    const col = new BrickColourData();
+                    col.id = c.id;
+                    col.name = c.name;
+                    col.hexRgb = c.hexRgb;
+                    col.ldrawColourCode = c.ldrawColourCode;
+                    return col;
+                });
+            }
 
             this.allColoursLoaded = true;
 
@@ -1047,23 +1079,33 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
 
         //
-        // Set Bearer token so the loader can fetch files from our authenticated API
+        // Conditionally set auth headers and endpoint based on login status.
+        // Anonymous users get the public browse endpoint (client-side rendering only,
+        // no server CPU cost). Authenticated users use the standard endpoint.
         //
-        loader.setRequestHeader({
-            'Authorization': `Bearer ${this.authService.accessToken}`
-        });
+        let fileEndpoint: string;
+
+        if (this.authService.isLoggedIn) {
+            loader.setRequestHeader({
+                'Authorization': `Bearer ${this.authService.accessToken}`
+            });
+            fileEndpoint = this.baseUrl + 'api/ldraw/file/';
+        } else {
+            // Public endpoint — no auth header needed
+            fileEndpoint = this.baseUrl + 'api/public/browse/ldraw/';
+        }
 
         //
-        // Point the parts library at our catch-all file endpoint.
+        // Point the parts library at the appropriate file endpoint.
         // The server has smart file resolution so the first request always succeeds.
         //
-        loader.setPartsLibraryPath(this.baseUrl + 'api/ldraw/file/');
+        loader.setPartsLibraryPath(fileEndpoint);
 
         //
         // Preload LDraw colour configuration, then load the model.
         // Using callback-based load() for more reliable error handling.
         //
-        const mainFileUrl = this.baseUrl + 'api/ldraw/file/' + this.part.geometryOriginalFileName;
+        const mainFileUrl = fileEndpoint + this.part.geometryOriginalFileName;
 
         console.log('[LDraw] Starting model load:', mainFileUrl);
 
@@ -1080,7 +1122,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         //
         // Try to preload materials first (non-blocking — if it fails, we continue with defaults)
         //
-        const preloadUrl = this.baseUrl + 'api/ldraw/file/LDConfig.ldr';
+        const preloadUrl = fileEndpoint + 'LDConfig.ldr';
 
         (loader as any).preloadMaterials(preloadUrl)
             .then(() => {

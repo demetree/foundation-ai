@@ -1,0 +1,103 @@
+.cat-modal-header {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    color: white;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+
+    .modal-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .modal-close-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 8px;
+        color: white;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    }
+}
+
+.cat-modal-body {
+    padding: 1.25rem 1.5rem;
+    background: #f8fafc;
+}
+
+.cat-modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 0.75rem 1.5rem;
+    gap: 0.5rem;
+}
+
+
+//
+// Section cards group related fields
+//
+.section-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+
+    .section-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.75rem;
+
+        &.clickable {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s ease;
+
+            &:hover {
+                color: #6366f1;
+            }
+        }
+    }
+}
+
+
+//
+// Amount inputs
+//
+.amount-input {
+    font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    font-size: 1.05rem;
+    font-weight: 500;
+    text-align: right;
+}
+
+
+//
+// Form labels
+//
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.3rem;
+}
+
+
+//
+// Input group styling
+//
+.input-group-text {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #6b7280;
+    font-weight: 500;
+}

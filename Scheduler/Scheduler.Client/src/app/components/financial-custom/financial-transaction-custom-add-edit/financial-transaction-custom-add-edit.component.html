@@ -23,7 +23,7 @@
 
                 <div class="row g-3">
                     <!-- Transaction Date -->
-                    <div class="col-md-6">
+                    <div class="col-md-6" *ngIf="!isFieldHidden('transactionDate')">
                         <label class="form-label" for="tx-date">
                             <span class="text-danger">*</span> Transaction Date
                         </label>
@@ -34,7 +34,7 @@
                     </div>
 
                     <!-- Payment Type -->
-                    <div class="col-md-6">
+                    <div class="col-md-6" *ngIf="!isFieldHidden('paymentTypeId')">
                         <label class="form-label" for="tx-payment-type">Payment Type</label>
                         <select id="tx-payment-type" formControlName="paymentTypeId" class="form-select">
                             <option [ngValue]="null">— Select —</option>
@@ -45,7 +45,7 @@
 
                 <div class="row g-3 mt-1">
                     <!-- Amount -->
-                    <div class="col-md-4">
+                    <div class="col-md-4" *ngIf="!isFieldHidden('amount')">
                         <label class="form-label" for="tx-amount">
                             <span class="text-danger">*</span> Amount
                         </label>
@@ -59,7 +59,7 @@
                     </div>
 
                     <!-- Tax Amount -->
-                    <div class="col-md-4">
+                    <div class="col-md-4" *ngIf="!isFieldHidden('taxAmount')">
                         <label class="form-label" for="tx-tax">Tax Amount</label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
@@ -69,7 +69,7 @@
                     </div>
 
                     <!-- Total (computed, read-only) -->
-                    <div class="col-md-4">
+                    <div class="col-md-4" *ngIf="!isFieldHidden('totalAmount')">
                         <label class="form-label" for="tx-total">Total</label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
@@ -90,7 +90,7 @@
 
                 <div class="row g-3">
                     <!-- Category (grouped by account type) -->
-                    <div class="col-md-6">
+                    <div class="col-md-6" *ngIf="!isFieldHidden('financialCategoryId')">
                         <label class="form-label" for="tx-category">
                             <span class="text-danger">*</span> Category
                         </label>
@@ -113,7 +113,7 @@
                     </div>
 
                     <!-- Office -->
-                    <div class="col-md-6" *ngIf="offices.length > 0">
+                    <div class="col-md-6" *ngIf="offices.length > 0 && !isFieldHidden('financialOfficeId')">
                         <label class="form-label" for="tx-office">Office</label>
                         <select id="tx-office" formControlName="financialOfficeId" class="form-select">
                             <option [ngValue]="null">— Select office —</option>
@@ -124,7 +124,7 @@
 
                 <div class="row g-3 mt-1">
                     <!-- Description -->
-                    <div class="col-12">
+                    <div class="col-12" *ngIf="!isFieldHidden('description')">
                         <label class="form-label" for="tx-desc">
                             <span class="text-danger">*</span> Description
                         </label>
@@ -137,7 +137,7 @@
 
                 <div class="row g-3 mt-1">
                     <!-- Currency -->
-                    <div class="col-md-6">
+                    <div class="col-md-6" *ngIf="!isFieldHidden('currencyId')">
                         <label class="form-label" for="tx-currency">
                             <span class="text-danger">*</span> Currency
                         </label>
@@ -150,7 +150,7 @@
                     </div>
 
                     <!-- Revenue/Expense indicator (auto-set but editable) -->
-                    <div class="col-md-6 d-flex align-items-end">
+                    <div class="col-md-6 d-flex align-items-end" *ngIf="!isFieldHidden('isRevenue')">
                         <div class="form-check form-switch">
                             <input type="checkbox" id="tx-revenue" formControlName="isRevenue"
                                 class="form-check-input" />

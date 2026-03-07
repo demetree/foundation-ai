@@ -43,8 +43,11 @@
                     <i class="bi bi-badge-3d"></i> 3D Viewer
                 </button>
                 <button class="viewer-tab" [class.active]="activeViewerTab === 'render'"
-                    (click)="activeViewerTab = 'render'" *ngIf="hasGeometry">
+                    (click)="activeViewerTab = 'render'" *ngIf="hasGeometry && authService.isLoggedIn">
                     <i class="bi bi-camera"></i> Server Render
+                </button>
+                <button class="viewer-tab" (click)="nudgeServerRender()" *ngIf="hasGeometry && !authService.isLoggedIn">
+                    <i class="bi bi-lock"></i> Server Render
                 </button>
             </div>
 
@@ -57,13 +60,13 @@
                         3D Preview
                     </span>
                     <div class="viewer-header-actions">
-                        <button class="pose-btn" *ngIf="hasGeometry" [class.active]="poseMode"
+                        <button class="pose-btn" *ngIf="hasGeometry && authService.isLoggedIn" [class.active]="poseMode"
                             (click)="togglePoseMode()" title="Pose the part, then send view to Server Render">
                             <i class="bi bi-bounding-box"></i>
                             {{ poseMode ? 'Posing' : 'Pose Part' }}
                         </button>
-                        <button class="pose-render-btn" *ngIf="poseMode" (click)="applyPoseToRender()"
-                            title="Use current camera angle for server render">
+                        <button class="pose-render-btn" *ngIf="poseMode && authService.isLoggedIn"
+                            (click)="applyPoseToRender()" title="Use current camera angle for server render">
                             <i class="bi bi-camera"></i> Render This View
                         </button>
                     </div>

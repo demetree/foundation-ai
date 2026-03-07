@@ -5,7 +5,7 @@ import { FinancialCategoryService, FinancialCategoryData } from '../../../schedu
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
-import { FinancialCategoryAddEditComponent } from '../../../scheduler-data-components/financial-category/financial-category-add-edit/financial-category-add-edit.component';
+import { FinancialCategoryCustomAddEditComponent } from '../financial-category-custom-add-edit/financial-category-custom-add-edit.component';
 import { Router } from '@angular/router';
 
 
@@ -61,7 +61,7 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
         private router: Router
     ) { }
 
-    @ViewChild('catAddEdit') catAddEdit!: FinancialCategoryAddEditComponent;
+    @ViewChild('catAddEdit') catAddEdit!: FinancialCategoryCustomAddEditComponent;
 
 
     ngOnInit(): void {

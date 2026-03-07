@@ -177,6 +177,7 @@ import { FinancialTransactionCustomListingComponent } from './components/financi
 import { FinancialCategoryCustomListingComponent } from './components/financial-custom/financial-category-custom-listing/financial-category-custom-listing.component';
 import { FinancialTransactionCustomAddEditComponent } from './components/financial-custom/financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 import { FinancialBudgetManagerComponent } from './components/financial-custom/financial-budget-manager/financial-budget-manager.component';
+import { FinancialCategoryCustomAddEditComponent } from './components/financial-custom/financial-category-custom-add-edit/financial-category-custom-add-edit.component';
 
 
 //
@@ -1240,6 +1241,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     FinancialCategoryCustomListingComponent,
     FinancialTransactionCustomAddEditComponent,
     FinancialBudgetManagerComponent,
+    FinancialCategoryCustomAddEditComponent,
 
 
     //

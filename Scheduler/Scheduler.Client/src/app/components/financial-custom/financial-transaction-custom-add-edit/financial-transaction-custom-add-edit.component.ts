@@ -186,6 +186,17 @@ export class FinancialTransactionCustomAddEditComponent {
 
         this.loadLookups();
 
+        //
+        // Disable validators for hidden fields to prevent form invalidation
+        //
+        for (const fieldName of this.hiddenFields) {
+            const control = this.txForm.get(fieldName);
+            if (control) {
+                control.clearValidators();
+                control.updateValueAndValidity();
+            }
+        }
+
         this.modalRef = this.modalService.open(this.txModal, {
             size: 'lg',
             scrollable: true,
@@ -368,5 +379,14 @@ export class FinancialTransactionCustomAddEditComponent {
         if (!catId) return 'transparent';
         const cat = this.categories.find(c => Number(c.id) === Number(catId));
         return cat?.color || 'transparent';
+    }
+
+
+    //
+    // Helper method to determine if a field should be hidden based on the hiddenFields input.
+    //
+    public isFieldHidden(fieldName: string): boolean {
+        if (!this.hiddenFields) return false;
+        return this.hiddenFields.includes(fieldName);
     }
 }

@@ -1,16 +1,20 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation.Auditor;
 using Foundation.BMC.Database;
 using Foundation.BMC.Services;
+using Foundation.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Foundation.BMC.Controllers.WebAPI
@@ -40,6 +44,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         private readonly MinifigGalleryService _minifigGalleryService;
         private readonly PartsUniverseService _partsUniverseService;
         private readonly IMemoryCache _cache;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<PublicBrowseController> _logger;
 
         private static readonly TimeSpan ShortCache = TimeSpan.FromMinutes(2);
@@ -55,6 +60,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             MinifigGalleryService minifigGalleryService,
             PartsUniverseService partsUniverseService,
             IMemoryCache cache,
+            IConfiguration configuration,
             ILogger<PublicBrowseController> logger
         )
         {
@@ -63,6 +69,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             _minifigGalleryService = minifigGalleryService;
             _partsUniverseService = partsUniverseService;
             _cache = cache;
+            _configuration = configuration;
             _logger = logger;
 
             _context.Database.SetCommandTimeout(30);
@@ -919,6 +926,208 @@ namespace Foundation.BMC.Controllers.WebAPI
                 "[Anonymous] Parts Universe data loaded");
 
             return Ok(payload);
+        }
+
+        #endregion
+
+
+        #region LDraw Geometry Files
+
+        //
+        // Static in-memory cache — keyed by normalised relative path, value is file content.
+        // Survives across requests for the lifetime of the application.
+        // Shared with LDrawController (same file data, different access path).
+        //
+        private static readonly ConcurrentDictionary<string, string> _ldrawFileCache
+            = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        //
+        // Filename-to-path index for smart file resolution.
+        //
+        private static ConcurrentDictionary<string, string> _ldrawFileIndex;
+        private static readonly object _ldrawIndexLock = new object();
+        private static readonly SemaphoreSlim _ldrawIoSemaphore = new SemaphoreSlim(8, 8);
+
+        //
+        // Only serve files with these extensions — prevent abuse
+        //
+        private static readonly HashSet<string> AllowedExtensions
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".dat", ".ldr", ".mpd" };
+
+
+        /// <summary>
+        /// GET /api/public/browse/ldraw/{**filePath}
+        ///
+        /// Serves raw LDraw geometry files (.dat, .ldr) for the anonymous 3D part viewer.
+        /// Files are static, immutable geometry — zero CPU rendering cost.
+        /// Uses in-memory caching and semaphore-guarded disk I/O.
+        /// </summary>
+        [HttpGet("ldraw/{**filePath}")]
+        public async Task<IActionResult> GetPublicLDrawFile(string filePath, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return BadRequest("Path parameter is required.");
+            }
+
+            // Path traversal protection
+            if (filePath.Contains("..") || Path.IsPathRooted(filePath))
+            {
+                _logger.LogWarning("[PublicBrowse] Rejected LDraw file request with suspicious path: {Path}", filePath);
+                return BadRequest("Invalid path.");
+            }
+
+            // Extension whitelist
+            string ext = Path.GetExtension(filePath);
+            if (!AllowedExtensions.Contains(ext))
+            {
+                return BadRequest("Unsupported file type.");
+            }
+
+            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+
+            if (string.IsNullOrEmpty(dataPath))
+            {
+                _logger.LogError("[PublicBrowse] LDraw:DataPath is not configured.");
+                return StatusCode(500, "LDraw data path is not configured.");
+            }
+
+            string normalisedPath = filePath.Replace('\\', '/');
+
+            // Check in-memory cache first
+            if (_ldrawFileCache.TryGetValue(normalisedPath, out string cachedContent))
+            {
+                return Content(cachedContent, "text/plain");
+            }
+
+            // Resolve the full file path with smart lookup
+            string fullPath = ResolveLDrawFilePath(dataPath, normalisedPath);
+
+            if (fullPath == null)
+            {
+                return NotFound($"LDraw file not found: {normalisedPath}");
+            }
+
+            // Safety check: resolved path must stay within data directory
+            string normalisedDataPath = Path.GetFullPath(dataPath);
+            if (!fullPath.StartsWith(normalisedDataPath, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("[PublicBrowse] Rejected LDraw file outside data directory: {FullPath}", fullPath);
+                return BadRequest("Invalid path.");
+            }
+
+            // Read from disk, guarded by semaphore
+            try
+            {
+                await _ldrawIoSemaphore.WaitAsync(cancellationToken);
+
+                try
+                {
+                    // Double-check cache after acquiring semaphore
+                    if (_ldrawFileCache.TryGetValue(normalisedPath, out string justCached))
+                    {
+                        return Content(justCached, "text/plain");
+                    }
+
+                    string content = await System.IO.File.ReadAllTextAsync(fullPath, cancellationToken);
+                    _ldrawFileCache.TryAdd(normalisedPath, content);
+
+                    return Content(content, "text/plain");
+                }
+                finally
+                {
+                    _ldrawIoSemaphore.Release();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[PublicBrowse] Error reading LDraw file: {Path}", fullPath);
+                return StatusCode(500, "Error reading file.");
+            }
+        }
+
+
+        /// <summary>
+        /// Resolves a requested LDraw path to an actual file on disk.
+        /// Mirrors the resolution strategy in LDrawController.
+        /// </summary>
+        private string ResolveLDrawFilePath(string dataPath, string normalisedPath)
+        {
+            // 1. Try exact path
+            string exactPath = Path.GetFullPath(Path.Combine(dataPath, normalisedPath));
+            if (System.IO.File.Exists(exactPath)) return exactPath;
+
+            // 2. Build/retrieve filename index
+            EnsureLDrawFileIndexBuilt(dataPath);
+
+            // 3. Try path suffix with standard LDraw directories
+            int firstSlash = normalisedPath.IndexOf('/');
+            if (firstSlash >= 0)
+            {
+                string pathSuffix = normalisedPath.Substring(firstSlash + 1);
+                string[] searchDirs = { "p", "parts", "parts/s", "p/48", "p/8", "models" };
+
+                foreach (string dir in searchDirs)
+                {
+                    string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, pathSuffix));
+                    if (System.IO.File.Exists(candidate)) return candidate;
+                }
+            }
+
+            // 4. Fall back to filename-only lookup
+            string fileName = Path.GetFileName(normalisedPath).ToLowerInvariant();
+            if (_ldrawFileIndex != null && _ldrawFileIndex.TryGetValue(fileName, out string indexedRelativePath))
+            {
+                string indexedFullPath = Path.GetFullPath(Path.Combine(dataPath, indexedRelativePath));
+                if (System.IO.File.Exists(indexedFullPath)) return indexedFullPath;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Lazily builds the filename-to-path index for the LDraw data directory.
+        /// </summary>
+        private void EnsureLDrawFileIndexBuilt(string dataPath)
+        {
+            if (_ldrawFileIndex != null) return;
+
+            lock (_ldrawIndexLock)
+            {
+                if (_ldrawFileIndex != null) return;
+
+                _logger.LogInformation("[PublicBrowse] Building LDraw file index for: {DataPath}", dataPath);
+
+                var index = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                try
+                {
+                    string[] extensions = { "*.dat", "*.ldr", "*.mpd" };
+
+                    foreach (string pattern in extensions)
+                    {
+                        foreach (string file in Directory.EnumerateFiles(dataPath, pattern, SearchOption.AllDirectories))
+                        {
+                            string relativePath = Path.GetRelativePath(dataPath, file).Replace('\\', '/');
+                            string lowerFileName = Path.GetFileName(file).ToLowerInvariant();
+                            index.TryAdd(lowerFileName, relativePath);
+                        }
+                    }
+
+                    _logger.LogInformation("[PublicBrowse] LDraw file index built: {Count} files indexed.", index.Count);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[PublicBrowse] Error building LDraw file index.");
+                }
+
+                _ldrawFileIndex = index;
+            }
         }
 
         #endregion
