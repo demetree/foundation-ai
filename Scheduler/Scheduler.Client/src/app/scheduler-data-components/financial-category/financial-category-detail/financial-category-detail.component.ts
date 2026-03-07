@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FinancialCategoryService, FinancialCategoryData, FinancialCategorySubmitData } from '../../../scheduler-data-services/financial-category.service';
 import { AccountTypeService } from '../../../scheduler-data-services/account-type.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
 import { FinancialCategoryChangeHistoryService } from '../../../scheduler-data-services/financial-category-change-history.service';
 import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
@@ -43,6 +44,7 @@ interface FinancialCategoryFormValues {
   description: string,
   code: string,
   accountTypeId: number | bigint,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
   parentFinancialCategoryId: number | bigint | null,       // For FK link number
   isTaxApplicable: boolean,
   defaultAmount: string | null,     // Stored as string for form input, converted to number on submit.
@@ -83,6 +85,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         description: ['', Validators.required],
         code: ['', Validators.required],
         accountTypeId: [null, Validators.required],
+        financialOfficeId: [null],
         parentFinancialCategoryId: [null],
         isTaxApplicable: [false],
         defaultAmount: [''],
@@ -107,6 +110,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
 
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   public accountTypes$ = this.accountTypeService.GetAccountTypeList();
+  public financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
   public financialCategoryChangeHistories$ = this.financialCategoryChangeHistoryService.GetFinancialCategoryChangeHistoryList();
   public chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
@@ -117,6 +121,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
   constructor(
     public financialCategoryService: FinancialCategoryService,
     public accountTypeService: AccountTypeService,
+    public financialOfficeService: FinancialOfficeService,
     public financialCategoryChangeHistoryService: FinancialCategoryChangeHistoryService,
     public chargeTypeService: ChargeTypeService,
     public financialTransactionService: FinancialTransactionService,
@@ -406,6 +411,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         description: '',
         code: '',
         accountTypeId: null,
+        financialOfficeId: null,
         parentFinancialCategoryId: null,
         isTaxApplicable: false,
         defaultAmount: '',
@@ -428,6 +434,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         description: financialCategoryData.description ?? '',
         code: financialCategoryData.code ?? '',
         accountTypeId: financialCategoryData.accountTypeId,
+        financialOfficeId: financialCategoryData.financialOfficeId,
         parentFinancialCategoryId: financialCategoryData.parentFinancialCategoryId,
         isTaxApplicable: financialCategoryData.isTaxApplicable ?? false,
         defaultAmount: financialCategoryData.defaultAmount?.toString() ?? '',
@@ -500,6 +507,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
         description: formValue.description!.trim(),
         code: formValue.code!.trim(),
         accountTypeId: Number(formValue.accountTypeId),
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
         parentFinancialCategoryId: formValue.parentFinancialCategoryId ? Number(formValue.parentFinancialCategoryId) : null,
         isTaxApplicable: !!formValue.isTaxApplicable,
         defaultAmount: formValue.defaultAmount ? Number(formValue.defaultAmount) : null,

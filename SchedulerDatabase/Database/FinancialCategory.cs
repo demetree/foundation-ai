@@ -19,6 +19,8 @@ public partial class FinancialCategory
 
     public int accountTypeId { get; set; }
 
+    public int? financialOfficeId { get; set; }
+
     public int? parentFinancialCategoryId { get; set; }
 
     public bool isTaxApplicable { get; set; }
@@ -50,6 +52,8 @@ public partial class FinancialCategory
     public virtual ICollection<FinancialCategory> InverseparentFinancialCategory { get; set; } = new List<FinancialCategory>();
 
     public virtual AccountType accountType { get; set; }
+
+    public virtual FinancialOffice financialOffice { get; set; }
 
     public virtual FinancialCategory parentFinancialCategory { get; set; }
 }

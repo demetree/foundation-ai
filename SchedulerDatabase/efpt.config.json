@@ -267,6 +267,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[FinancialOffice]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FinancialOfficeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[FinancialTransaction]",
          "ObjectType": 0
       },

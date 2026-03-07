@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FinancialCategoryService, FinancialCategoryData, FinancialCategorySubmitData } from '../../../scheduler-data-services/financial-category.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { AccountTypeService } from '../../../scheduler-data-services/account-type.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -39,6 +40,7 @@ interface FinancialCategoryFormValues {
   description: string,
   code: string,
   accountTypeId: number | bigint,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
   parentFinancialCategoryId: number | bigint | null,       // For FK link number
   isTaxApplicable: boolean,
   defaultAmount: string | null,     // Stored as string for form input, converted to number on submit.
@@ -82,6 +84,7 @@ export class FinancialCategoryAddEditComponent {
         description: ['', Validators.required],
         code: ['', Validators.required],
         accountTypeId: [null, Validators.required],
+        financialOfficeId: [null],
         parentFinancialCategoryId: [null],
         isTaxApplicable: [false],
         defaultAmount: [''],
@@ -102,11 +105,13 @@ export class FinancialCategoryAddEditComponent {
 
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   accountTypes$ = this.accountTypeService.GetAccountTypeList();
+  financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
 
   constructor(
     private modalService: NgbModal,
     private financialCategoryService: FinancialCategoryService,
     private accountTypeService: AccountTypeService,
+    private financialOfficeService: FinancialOfficeService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -230,6 +235,7 @@ export class FinancialCategoryAddEditComponent {
         description: formValue.description!.trim(),
         code: formValue.code!.trim(),
         accountTypeId: Number(formValue.accountTypeId),
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
         parentFinancialCategoryId: formValue.parentFinancialCategoryId ? Number(formValue.parentFinancialCategoryId) : null,
         isTaxApplicable: !!formValue.isTaxApplicable,
         defaultAmount: formValue.defaultAmount ? Number(formValue.defaultAmount) : null,
@@ -369,6 +375,7 @@ export class FinancialCategoryAddEditComponent {
         description: '',
         code: '',
         accountTypeId: null,
+        financialOfficeId: null,
         parentFinancialCategoryId: null,
         isTaxApplicable: false,
         defaultAmount: '',
@@ -391,6 +398,7 @@ export class FinancialCategoryAddEditComponent {
         description: financialCategoryData.description ?? '',
         code: financialCategoryData.code ?? '',
         accountTypeId: financialCategoryData.accountTypeId,
+        financialOfficeId: financialCategoryData.financialOfficeId,
         parentFinancialCategoryId: financialCategoryData.parentFinancialCategoryId,
         isTaxApplicable: financialCategoryData.isTaxApplicable ?? false,
         defaultAmount: financialCategoryData.defaultAmount?.toString() ?? '',

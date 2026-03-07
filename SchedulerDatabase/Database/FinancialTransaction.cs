@@ -13,6 +13,8 @@ public partial class FinancialTransaction
 
     public int financialCategoryId { get; set; }
 
+    public int? financialOfficeId { get; set; }
+
     public int? scheduledEventId { get; set; }
 
     public int? contactId { get; set; }
@@ -74,6 +76,8 @@ public partial class FinancialTransaction
     public virtual Currency currency { get; set; }
 
     public virtual FinancialCategory financialCategory { get; set; }
+
+    public virtual FinancialOffice financialOffice { get; set; }
 
     public virtual FiscalPeriod fiscalPeriod { get; set; }
 

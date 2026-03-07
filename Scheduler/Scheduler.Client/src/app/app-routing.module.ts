@@ -235,6 +235,10 @@ import { FinancialCategoryListingComponent } from './scheduler-data-components/f
 import { FinancialCategoryDetailComponent } from './scheduler-data-components/financial-category/financial-category-detail/financial-category-detail.component';
 import { FinancialCategoryChangeHistoryListingComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-listing/financial-category-change-history-listing.component';
 import { FinancialCategoryChangeHistoryDetailComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-detail/financial-category-change-history-detail.component';
+import { FinancialOfficeListingComponent } from './scheduler-data-components/financial-office/financial-office-listing/financial-office-listing.component';
+import { FinancialOfficeDetailComponent } from './scheduler-data-components/financial-office/financial-office-detail/financial-office-detail.component';
+import { FinancialOfficeChangeHistoryListingComponent } from './scheduler-data-components/financial-office-change-history/financial-office-change-history-listing/financial-office-change-history-listing.component';
+import { FinancialOfficeChangeHistoryDetailComponent } from './scheduler-data-components/financial-office-change-history/financial-office-change-history-detail/financial-office-change-history-detail.component';
 import { FinancialTransactionListingComponent } from './scheduler-data-components/financial-transaction/financial-transaction-listing/financial-transaction-listing.component';
 import { FinancialTransactionDetailComponent } from './scheduler-data-components/financial-transaction/financial-transaction-detail/financial-transaction-detail.component';
 import { FinancialTransactionChangeHistoryListingComponent } from './scheduler-data-components/financial-transaction-change-history/financial-transaction-change-history-listing/financial-transaction-change-history-listing.component';
@@ -869,6 +873,16 @@ const routes: Routes = [
   {path: 'financialcategorychangehistories/:financialCategoryChangeHistoryId', component: FinancialCategoryChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category Change History' },
   {path: 'financialcategorychangehistory/:financialCategoryChangeHistoryId', component: FinancialCategoryChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category Change History' },
   {path: 'financialcategorychangehistory',  redirectTo: 'financialcategorychangehistories'},
+  {path: 'financialoffices', component: FinancialOfficeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Offices' },
+  {path: 'financialoffices/new', component: FinancialOfficeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Office' },
+  {path: 'financialoffices/:financialOfficeId', component: FinancialOfficeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Office' },
+  {path: 'financialoffice/:financialOfficeId', component: FinancialOfficeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Office' },
+  {path: 'financialoffice',  redirectTo: 'financialoffices'},
+  {path: 'financialofficechangehistories', component: FinancialOfficeChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Office Change Histories' },
+  {path: 'financialofficechangehistories/new', component: FinancialOfficeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Office Change History' },
+  {path: 'financialofficechangehistories/:financialOfficeChangeHistoryId', component: FinancialOfficeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Office Change History' },
+  {path: 'financialofficechangehistory/:financialOfficeChangeHistoryId', component: FinancialOfficeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Office Change History' },
+  {path: 'financialofficechangehistory',  redirectTo: 'financialofficechangehistories'},
   {path: 'financialtransactions', component: FinancialTransactionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Transactions' },
   {path: 'financialtransactions/new', component: FinancialTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Transaction' },
   {path: 'financialtransactions/:financialTransactionId', component: FinancialTransactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Transaction' },

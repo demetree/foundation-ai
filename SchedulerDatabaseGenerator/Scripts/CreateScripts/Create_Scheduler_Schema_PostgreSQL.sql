@@ -169,6 +169,8 @@ CREATE SCHEMA "Scheduler"
 -- DROP TABLE "Scheduler"."TaxCode"
 -- DROP TABLE "Scheduler"."FinancialCategoryChangeHistory"
 -- DROP TABLE "Scheduler"."FinancialCategory"
+-- DROP TABLE "Scheduler"."FinancialOfficeChangeHistory"
+-- DROP TABLE "Scheduler"."FinancialOffice"
 -- DROP TABLE "Scheduler"."AccountType"
 -- DROP TABLE "Scheduler"."Currency"
 -- DROP TABLE "Scheduler"."InteractionType"
@@ -331,6 +333,8 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "TaxCode" DISABLE
 -- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "FinancialCategory" DISABLE
+-- ALTER INDEX ALL ON "FinancialOfficeChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "FinancialOffice" DISABLE
 -- ALTER INDEX ALL ON "AccountType" DISABLE
 -- ALTER INDEX ALL ON "Currency" DISABLE
 -- ALTER INDEX ALL ON "InteractionType" DISABLE
@@ -493,6 +497,8 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "TaxCode" REBUILD
 -- ALTER INDEX ALL ON "FinancialCategoryChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "FinancialCategory" REBUILD
+-- ALTER INDEX ALL ON "FinancialOfficeChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "FinancialOffice" REBUILD
 -- ALTER INDEX ALL ON "AccountType" REBUILD
 -- ALTER INDEX ALL ON "Currency" REBUILD
 -- ALTER INDEX ALL ON "InteractionType" REBUILD
@@ -1162,6 +1168,90 @@ INSERT INTO "Scheduler"."AccountType" ( "name", "description", "isRevenue", "ext
 
 /*
 ====================================================================================================
+ FINANCIAL OFFICE
+ Represents a departmental or committee-level financial partition within a tenant.
+ Enables separate books, independent exports, and role-based access for different
+ organizational units (e.g., Recreation Committee vs Town Administration).
+
+ DESIGN NOTE: Each office can have its own chart of accounts slice, transactions,
+ budgets, and export configuration. A FinancialCategory or FinancialTransaction
+ optionally belongs to an office. When null, it is considered tenant-wide.
+
+ Export fields (contactName, contactEmail, exportFormat) support the workflow where
+ each office exports independently to its own accountant.
+ =====================================================================================================
+*/
+CREATE TABLE "Scheduler"."FinancialOffice"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL,
+	"description" VARCHAR(500) NOT NULL,
+	"code" VARCHAR(50) NOT NULL,		-- Short code for the office (e.g., 'REC', 'ADMIN', 'FIRE').
+	"contactName" VARCHAR(250) NULL,		-- Accountant or financial contact name for this office.
+	"contactEmail" VARCHAR(250) NULL,		-- Accountant or financial contact email for export delivery.
+	"exportFormat" VARCHAR(50) NULL DEFAULT 'CSV',		-- Preferred export format: CSV, QuickBooks, Xero, etc.
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display.
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "UC_FinancialOffice_tenantGuid_name" UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the FinancialOffice table's tenantGuid and name fields.
+	CONSTRAINT "UC_FinancialOffice_tenantGuid_code" UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the FinancialOffice table's tenantGuid and code fields.
+);
+-- Index on the FinancialOffice table's tenantGuid field.
+CREATE INDEX "I_FinancialOffice_tenantGuid" ON "Scheduler"."FinancialOffice" ("tenantGuid")
+;
+
+-- Index on the FinancialOffice table's tenantGuid,name fields.
+CREATE INDEX "I_FinancialOffice_tenantGuid_name" ON "Scheduler"."FinancialOffice" ("tenantGuid", "name")
+;
+
+-- Index on the FinancialOffice table's tenantGuid,active fields.
+CREATE INDEX "I_FinancialOffice_tenantGuid_active" ON "Scheduler"."FinancialOffice" ("tenantGuid", "active")
+;
+
+-- Index on the FinancialOffice table's tenantGuid,deleted fields.
+CREATE INDEX "I_FinancialOffice_tenantGuid_deleted" ON "Scheduler"."FinancialOffice" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the FinancialOffice table.
+CREATE TABLE "Scheduler"."FinancialOfficeChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"financialOfficeId" INT NOT NULL,		-- Link to the FinancialOffice table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "financialOfficeId" FOREIGN KEY ("financialOfficeId") REFERENCES "Scheduler"."FinancialOffice"("id")		-- Foreign key to the FinancialOffice table.
+);
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid field.
+CREATE INDEX "I_FinancialOfficeChangeHistory_tenantGuid" ON "Scheduler"."FinancialOfficeChangeHistory" ("tenantGuid")
+;
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_FinancialOfficeChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."FinancialOfficeChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_FinancialOfficeChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."FinancialOfficeChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_FinancialOfficeChangeHistory_tenantGuid_userId" ON "Scheduler"."FinancialOfficeChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,financialOfficeId fields.
+CREATE INDEX "I_FinancialOfficeChangeHistory_tenantGuid_financialOfficeId" ON "Scheduler"."FinancialOfficeChangeHistory" ("tenantGuid", "financialOfficeId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+/*
+====================================================================================================
  FINANCIAL CATEGORY (Chart of Accounts)
  Tenant-specific chart of accounts for categorizing all income and expense transactions.
  Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
@@ -1182,6 +1272,7 @@ CREATE TABLE "Scheduler"."FinancialCategory"
 	"description" VARCHAR(500) NOT NULL,
 	"code" VARCHAR(50) NOT NULL,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
 	"accountTypeId" INT NOT NULL,		-- Link to AccountType — standard accounting classification (Income, Expense, COGS, Asset, Liability, Equity). Replaces the old accountType string field.
+	"financialOfficeId" INT NULL,		-- Optional link to FinancialOffice — scopes this category to a specific department/committee. When null, the category is tenant-wide.
 	"parentFinancialCategoryId" INT NULL,		-- Optional parent for sub-categories.
 	"isTaxApplicable" BOOLEAN NOT NULL DEFAULT false,		-- Whether HST/tax typically applies to transactions in this category.
 	"defaultAmount" DECIMAL(11,2) NULL,		-- Optional default amount for common transactions in this category.
@@ -1193,6 +1284,7 @@ CREATE TABLE "Scheduler"."FinancialCategory"
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
 	CONSTRAINT "accountTypeId" FOREIGN KEY ("accountTypeId") REFERENCES "Scheduler"."AccountType"("id"),		-- Foreign key to the AccountType table.
+	CONSTRAINT "financialOfficeId" FOREIGN KEY ("financialOfficeId") REFERENCES "Scheduler"."FinancialOffice"("id"),		-- Foreign key to the FinancialOffice table.
 	CONSTRAINT "parentFinancialCategoryId" FOREIGN KEY ("parentFinancialCategoryId") REFERENCES "Scheduler"."FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
 	CONSTRAINT "UC_FinancialCategory_tenantGuid_name" UNIQUE ( "tenantGuid", "name") ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
 	CONSTRAINT "UC_FinancialCategory_tenantGuid_code" UNIQUE ( "tenantGuid", "code") 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
@@ -1207,6 +1299,10 @@ CREATE INDEX "I_FinancialCategory_tenantGuid_name" ON "Scheduler"."FinancialCate
 
 -- Index on the FinancialCategory table's tenantGuid,accountTypeId fields.
 CREATE INDEX "I_FinancialCategory_tenantGuid_accountTypeId" ON "Scheduler"."FinancialCategory" ("tenantGuid", "accountTypeId")
+;
+
+-- Index on the FinancialCategory table's tenantGuid,financialOfficeId fields.
+CREATE INDEX "I_FinancialCategory_tenantGuid_financialOfficeId" ON "Scheduler"."FinancialCategory" ("tenantGuid", "financialOfficeId")
 ;
 
 -- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
@@ -5176,6 +5272,7 @@ CREATE TABLE "Scheduler"."FinancialTransaction"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	"financialCategoryId" INT NOT NULL,		-- Link to the FinancialCategory (chart of accounts entry).
+	"financialOfficeId" INT NULL,		-- Optional link to FinancialOffice — scopes this transaction to a specific department/committee. Can be inherited from the FinancialCategory if not set directly.
 	"scheduledEventId" INT NULL,		-- Optional link to a ScheduledEvent when the transaction relates to a booking.
 	"contactId" INT NULL,		-- Optional link to the Contact who paid or was paid.
 	"clientId" INT NULL,		-- Optional link to the Client (vendor, customer, or supplier) for this transaction.
@@ -5201,6 +5298,7 @@ CREATE TABLE "Scheduler"."FinancialTransaction"
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
 	CONSTRAINT "financialCategoryId" FOREIGN KEY ("financialCategoryId") REFERENCES "Scheduler"."FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
+	CONSTRAINT "financialOfficeId" FOREIGN KEY ("financialOfficeId") REFERENCES "Scheduler"."FinancialOffice"("id"),		-- Foreign key to the FinancialOffice table.
 	CONSTRAINT "scheduledEventId" FOREIGN KEY ("scheduledEventId") REFERENCES "Scheduler"."ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
 	CONSTRAINT "contactId" FOREIGN KEY ("contactId") REFERENCES "Scheduler"."Contact"("id"),		-- Foreign key to the Contact table.
 	CONSTRAINT "clientId" FOREIGN KEY ("clientId") REFERENCES "Scheduler"."Client"("id"),		-- Foreign key to the Client table.
@@ -5215,6 +5313,10 @@ CREATE INDEX "I_FinancialTransaction_tenantGuid" ON "Scheduler"."FinancialTransa
 
 -- Index on the FinancialTransaction table's tenantGuid,financialCategoryId fields.
 CREATE INDEX "I_FinancialTransaction_tenantGuid_financialCategoryId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "financialCategoryId")
+;
+
+-- Index on the FinancialTransaction table's tenantGuid,financialOfficeId fields.
+CREATE INDEX "I_FinancialTransaction_tenantGuid_financialOfficeId" ON "Scheduler"."FinancialTransaction" ("tenantGuid", "financialOfficeId")
 ;
 
 -- Index on the FinancialTransaction table's tenantGuid,scheduledEventId fields.
@@ -5312,6 +5414,7 @@ CREATE TABLE "Scheduler"."Budget"
 	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	"financialCategoryId" INT NOT NULL,		-- The category this budget applies to.
 	"fiscalPeriodId" INT NOT NULL,		-- The fiscal period this budget covers.
+	"financialOfficeId" INT NULL,		-- Optional link to FinancialOffice — scopes this budget to a specific department/committee. Can be inherited from the FinancialCategory if not set directly.
 	"budgetedAmount" DECIMAL(11,2) NOT NULL DEFAULT 0,		-- The planned/budgeted amount for this category in this period.
 	"revisedAmount" DECIMAL(11,2) NULL,		-- Optional revised budget amount (after mid-period adjustments).
 	"notes" TEXT NULL,		-- Optional notes about the budget line (e.g., justification for revision).
@@ -5322,6 +5425,7 @@ CREATE TABLE "Scheduler"."Budget"
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
 	CONSTRAINT "financialCategoryId" FOREIGN KEY ("financialCategoryId") REFERENCES "Scheduler"."FinancialCategory"("id"),		-- Foreign key to the FinancialCategory table.
 	CONSTRAINT "fiscalPeriodId" FOREIGN KEY ("fiscalPeriodId") REFERENCES "Scheduler"."FiscalPeriod"("id"),		-- Foreign key to the FiscalPeriod table.
+	CONSTRAINT "financialOfficeId" FOREIGN KEY ("financialOfficeId") REFERENCES "Scheduler"."FinancialOffice"("id"),		-- Foreign key to the FinancialOffice table.
 	CONSTRAINT "currencyId" FOREIGN KEY ("currencyId") REFERENCES "Scheduler"."Currency"("id"),		-- Foreign key to the Currency table.
 	CONSTRAINT "UC_Budget_tenantGuid_financialCategoryId_fiscalPeriodId" UNIQUE ( "tenantGuid", "financialCategoryId", "fiscalPeriodId") 		-- Uniqueness enforced on the Budget table's tenantGuid and financialCategoryId and fiscalPeriodId fields.
 );
@@ -5335,6 +5439,10 @@ CREATE INDEX "I_Budget_tenantGuid_financialCategoryId" ON "Scheduler"."Budget" (
 
 -- Index on the Budget table's tenantGuid,fiscalPeriodId fields.
 CREATE INDEX "I_Budget_tenantGuid_fiscalPeriodId" ON "Scheduler"."Budget" ("tenantGuid", "fiscalPeriodId")
+;
+
+-- Index on the Budget table's tenantGuid,financialOfficeId fields.
+CREATE INDEX "I_Budget_tenantGuid_financialOfficeId" ON "Scheduler"."Budget" ("tenantGuid", "financialOfficeId")
 ;
 
 -- Index on the Budget table's tenantGuid,currencyId fields.

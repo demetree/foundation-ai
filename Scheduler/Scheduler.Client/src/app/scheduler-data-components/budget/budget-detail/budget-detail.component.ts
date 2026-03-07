@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BudgetService, BudgetData, BudgetSubmitData } from '../../../scheduler-data-services/budget.service';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { FiscalPeriodService } from '../../../scheduler-data-services/fiscal-period.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { BudgetChangeHistoryService } from '../../../scheduler-data-services/budget-change-history.service';
 import { AuthService } from '../../../services/auth.service';
@@ -40,6 +41,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface BudgetFormValues {
   financialCategoryId: number | bigint,       // For FK link number
   fiscalPeriodId: number | bigint,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
   budgetedAmount: string,     // Stored as string for form input, converted to number on submit.
   revisedAmount: string | null,     // Stored as string for form input, converted to number on submit.
   notes: string | null,
@@ -76,6 +78,7 @@ export class BudgetDetailComponent implements OnInit, CanComponentDeactivate {
   public budgetForm: FormGroup = this.fb.group({
         financialCategoryId: [null, Validators.required],
         fiscalPeriodId: [null, Validators.required],
+        financialOfficeId: [null],
         budgetedAmount: ['', Validators.required],
         revisedAmount: [''],
         notes: [''],
@@ -99,6 +102,7 @@ export class BudgetDetailComponent implements OnInit, CanComponentDeactivate {
   budgets$ = this.budgetService.GetBudgetList();
   public financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   public fiscalPeriods$ = this.fiscalPeriodService.GetFiscalPeriodList();
+  public financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
   public currencies$ = this.currencyService.GetCurrencyList();
   public budgetChangeHistories$ = this.budgetChangeHistoryService.GetBudgetChangeHistoryList();
 
@@ -108,6 +112,7 @@ export class BudgetDetailComponent implements OnInit, CanComponentDeactivate {
     public budgetService: BudgetService,
     public financialCategoryService: FinancialCategoryService,
     public fiscalPeriodService: FiscalPeriodService,
+    public financialOfficeService: FinancialOfficeService,
     public currencyService: CurrencyService,
     public budgetChangeHistoryService: BudgetChangeHistoryService,
     private authService: AuthService,
@@ -393,6 +398,7 @@ export class BudgetDetailComponent implements OnInit, CanComponentDeactivate {
       this.budgetForm.reset({
         financialCategoryId: null,
         fiscalPeriodId: null,
+        financialOfficeId: null,
         budgetedAmount: '',
         revisedAmount: '',
         notes: '',
@@ -411,6 +417,7 @@ export class BudgetDetailComponent implements OnInit, CanComponentDeactivate {
         this.budgetForm.reset({
         financialCategoryId: budgetData.financialCategoryId,
         fiscalPeriodId: budgetData.fiscalPeriodId,
+        financialOfficeId: budgetData.financialOfficeId,
         budgetedAmount: budgetData.budgetedAmount?.toString() ?? '',
         revisedAmount: budgetData.revisedAmount?.toString() ?? '',
         notes: budgetData.notes ?? '',
@@ -479,6 +486,7 @@ export class BudgetDetailComponent implements OnInit, CanComponentDeactivate {
         id: this.budgetData?.id || 0,
         financialCategoryId: Number(formValue.financialCategoryId),
         fiscalPeriodId: Number(formValue.fiscalPeriodId),
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
         budgetedAmount: Number(formValue.budgetedAmount),
         revisedAmount: formValue.revisedAmount ? Number(formValue.revisedAmount) : null,
         notes: formValue.notes?.trim() || null,

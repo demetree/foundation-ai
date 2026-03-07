@@ -157,6 +157,8 @@ USE `Scheduler`;
 -- DROP TABLE `TaxCode`
 -- DROP TABLE `FinancialCategoryChangeHistory`
 -- DROP TABLE `FinancialCategory`
+-- DROP TABLE `FinancialOfficeChangeHistory`
+-- DROP TABLE `FinancialOffice`
 -- DROP TABLE `AccountType`
 -- DROP TABLE `Currency`
 -- DROP TABLE `InteractionType`
@@ -319,6 +321,8 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `TaxCode` DISABLE
 -- ALTER INDEX ALL ON `FinancialCategoryChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `FinancialCategory` DISABLE
+-- ALTER INDEX ALL ON `FinancialOfficeChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `FinancialOffice` DISABLE
 -- ALTER INDEX ALL ON `AccountType` DISABLE
 -- ALTER INDEX ALL ON `Currency` DISABLE
 -- ALTER INDEX ALL ON `InteractionType` DISABLE
@@ -481,6 +485,8 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `TaxCode` REBUILD
 -- ALTER INDEX ALL ON `FinancialCategoryChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `FinancialCategory` REBUILD
+-- ALTER INDEX ALL ON `FinancialOfficeChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `FinancialOffice` REBUILD
 -- ALTER INDEX ALL ON `AccountType` REBUILD
 -- ALTER INDEX ALL ON `Currency` REBUILD
 -- ALTER INDEX ALL ON `InteractionType` REBUILD
@@ -1086,6 +1092,79 @@ INSERT INTO `AccountType` ( `name`, `description`, `isRevenue`, `externalMapping
 
 /*
 ====================================================================================================
+ FINANCIAL OFFICE
+ Represents a departmental or committee-level financial partition within a tenant.
+ Enables separate books, independent exports, and role-based access for different
+ organizational units (e.g., Recreation Committee vs Town Administration).
+
+ DESIGN NOTE: Each office can have its own chart of accounts slice, transactions,
+ budgets, and export configuration. A FinancialCategory or FinancialTransaction
+ optionally belongs to an office. When null, it is considered tenant-wide.
+
+ Export fields (contactName, contactEmail, exportFormat) support the workflow where
+ each office exports independently to its own accountant.
+ =====================================================================================================
+*/
+CREATE TABLE `FinancialOffice`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
+	`description` VARCHAR(500) NOT NULL,
+	`code` VARCHAR(50) NOT NULL,		-- Short code for the office (e.g., 'REC', 'ADMIN', 'FIRE').
+	`contactName` VARCHAR(250) NULL,		-- Accountant or financial contact name for this office.
+	`contactEmail` VARCHAR(250) NULL,		-- Accountant or financial contact email for export delivery.
+	`exportFormat` VARCHAR(50) NULL DEFAULT 'CSV',		-- Preferred export format: CSV, QuickBooks, Xero, etc.
+	`color` VARCHAR(10) NULL,		-- Hex color for UI display.
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_FinancialOffice_tenantGuid_name_Unique`( `tenantGuid`, `name` ) ,		-- Uniqueness enforced on the FinancialOffice table's tenantGuid and name fields.
+	UNIQUE `UC_FinancialOffice_tenantGuid_code_Unique`( `tenantGuid`, `code` ) 		-- Uniqueness enforced on the FinancialOffice table's tenantGuid and code fields.
+);
+-- Index on the FinancialOffice table's tenantGuid field.
+CREATE INDEX `I_FinancialOffice_tenantGuid` ON `FinancialOffice` (`tenantGuid`);
+
+-- Index on the FinancialOffice table's tenantGuid,name fields.
+CREATE INDEX `I_FinancialOffice_tenantGuid_name` ON `FinancialOffice` (`tenantGuid`, `name`);
+
+-- Index on the FinancialOffice table's tenantGuid,active fields.
+CREATE INDEX `I_FinancialOffice_tenantGuid_active` ON `FinancialOffice` (`tenantGuid`, `active`);
+
+-- Index on the FinancialOffice table's tenantGuid,deleted fields.
+CREATE INDEX `I_FinancialOffice_tenantGuid_deleted` ON `FinancialOffice` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the FinancialOffice table.
+CREATE TABLE `FinancialOfficeChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`financialOfficeId` INT NOT NULL,		-- Link to the FinancialOffice table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`financialOfficeId`) REFERENCES `FinancialOffice`(`id`)		-- Foreign key to the FinancialOffice table.
+);
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid field.
+CREATE INDEX `I_FinancialOfficeChangeHistory_tenantGuid` ON `FinancialOfficeChangeHistory` (`tenantGuid`);
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_FinancialOfficeChangeHistory_tenantGuid_versionNumber` ON `FinancialOfficeChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_FinancialOfficeChangeHistory_tenantGuid_timeStamp` ON `FinancialOfficeChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_FinancialOfficeChangeHistory_tenantGuid_userId` ON `FinancialOfficeChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the FinancialOfficeChangeHistory table's tenantGuid,financialOfficeId fields.
+CREATE INDEX `I_FinancialOfficeChangeHistory_tenantGuid_financialOfficeId` ON `FinancialOfficeChangeHistory` (`tenantGuid`, `financialOfficeId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+====================================================================================================
  FINANCIAL CATEGORY (Chart of Accounts)
  Tenant-specific chart of accounts for categorizing all income and expense transactions.
  Unlike ChargeType (which is specifically for event-linked charges), FinancialCategory represents
@@ -1105,6 +1184,7 @@ CREATE TABLE `FinancialCategory`(
 	`description` VARCHAR(500) NOT NULL,
 	`code` VARCHAR(50) NOT NULL,		-- Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).
 	`accountTypeId` INT NOT NULL,		-- Link to AccountType — standard accounting classification (Income, Expense, COGS, Asset, Liability, Equity). Replaces the old accountType string field.
+	`financialOfficeId` INT NULL,		-- Optional link to FinancialOffice — scopes this category to a specific department/committee. When null, the category is tenant-wide.
 	`parentFinancialCategoryId` INT NULL,		-- Optional parent for sub-categories.
 	`isTaxApplicable` BIT NOT NULL DEFAULT 0,		-- Whether HST/tax typically applies to transactions in this category.
 	`defaultAmount` DECIMAL(11,2) NULL,		-- Optional default amount for common transactions in this category.
@@ -1116,6 +1196,7 @@ CREATE TABLE `FinancialCategory`(
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`accountTypeId`) REFERENCES `AccountType`(`id`),		-- Foreign key to the AccountType table.
+	FOREIGN KEY (`financialOfficeId`) REFERENCES `FinancialOffice`(`id`),		-- Foreign key to the FinancialOffice table.
 	FOREIGN KEY (`parentFinancialCategoryId`) REFERENCES `FinancialCategory`(`id`),		-- Foreign key to the FinancialCategory table.
 	UNIQUE `UC_FinancialCategory_tenantGuid_name_Unique`( `tenantGuid`, `name` ) ,		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and name fields.
 	UNIQUE `UC_FinancialCategory_tenantGuid_code_Unique`( `tenantGuid`, `code` ) 		-- Uniqueness enforced on the FinancialCategory table's tenantGuid and code fields.
@@ -1128,6 +1209,9 @@ CREATE INDEX `I_FinancialCategory_tenantGuid_name` ON `FinancialCategory` (`tena
 
 -- Index on the FinancialCategory table's tenantGuid,accountTypeId fields.
 CREATE INDEX `I_FinancialCategory_tenantGuid_accountTypeId` ON `FinancialCategory` (`tenantGuid`, `accountTypeId`);
+
+-- Index on the FinancialCategory table's tenantGuid,financialOfficeId fields.
+CREATE INDEX `I_FinancialCategory_tenantGuid_financialOfficeId` ON `FinancialCategory` (`tenantGuid`, `financialOfficeId`);
 
 -- Index on the FinancialCategory table's tenantGuid,parentFinancialCategoryId fields.
 CREATE INDEX `I_FinancialCategory_tenantGuid_parentFinancialCategoryId` ON `FinancialCategory` (`tenantGuid`, `parentFinancialCategoryId`);
@@ -4517,6 +4601,7 @@ CREATE TABLE `FinancialTransaction`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`financialCategoryId` INT NOT NULL,		-- Link to the FinancialCategory (chart of accounts entry).
+	`financialOfficeId` INT NULL,		-- Optional link to FinancialOffice — scopes this transaction to a specific department/committee. Can be inherited from the FinancialCategory if not set directly.
 	`scheduledEventId` INT NULL,		-- Optional link to a ScheduledEvent when the transaction relates to a booking.
 	`contactId` INT NULL,		-- Optional link to the Contact who paid or was paid.
 	`clientId` INT NULL,		-- Optional link to the Client (vendor, customer, or supplier) for this transaction.
@@ -4542,6 +4627,7 @@ CREATE TABLE `FinancialTransaction`(
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`financialCategoryId`) REFERENCES `FinancialCategory`(`id`),		-- Foreign key to the FinancialCategory table.
+	FOREIGN KEY (`financialOfficeId`) REFERENCES `FinancialOffice`(`id`),		-- Foreign key to the FinancialOffice table.
 	FOREIGN KEY (`scheduledEventId`) REFERENCES `ScheduledEvent`(`id`),		-- Foreign key to the ScheduledEvent table.
 	FOREIGN KEY (`contactId`) REFERENCES `Contact`(`id`),		-- Foreign key to the Contact table.
 	FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`),		-- Foreign key to the Client table.
@@ -4555,6 +4641,9 @@ CREATE INDEX `I_FinancialTransaction_tenantGuid` ON `FinancialTransaction` (`ten
 
 -- Index on the FinancialTransaction table's tenantGuid,financialCategoryId fields.
 CREATE INDEX `I_FinancialTransaction_tenantGuid_financialCategoryId` ON `FinancialTransaction` (`tenantGuid`, `financialCategoryId`);
+
+-- Index on the FinancialTransaction table's tenantGuid,financialOfficeId fields.
+CREATE INDEX `I_FinancialTransaction_tenantGuid_financialOfficeId` ON `FinancialTransaction` (`tenantGuid`, `financialOfficeId`);
 
 -- Index on the FinancialTransaction table's tenantGuid,scheduledEventId fields.
 CREATE INDEX `I_FinancialTransaction_tenantGuid_scheduledEventId` ON `FinancialTransaction` (`tenantGuid`, `scheduledEventId`);
@@ -4633,6 +4722,7 @@ CREATE TABLE `Budget`(
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`financialCategoryId` INT NOT NULL,		-- The category this budget applies to.
 	`fiscalPeriodId` INT NOT NULL,		-- The fiscal period this budget covers.
+	`financialOfficeId` INT NULL,		-- Optional link to FinancialOffice — scopes this budget to a specific department/committee. Can be inherited from the FinancialCategory if not set directly.
 	`budgetedAmount` DECIMAL(11,2) NOT NULL DEFAULT 0,		-- The planned/budgeted amount for this category in this period.
 	`revisedAmount` DECIMAL(11,2) NULL,		-- Optional revised budget amount (after mid-period adjustments).
 	`notes` TEXT NULL,		-- Optional notes about the budget line (e.g., justification for revision).
@@ -4643,6 +4733,7 @@ CREATE TABLE `Budget`(
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`financialCategoryId`) REFERENCES `FinancialCategory`(`id`),		-- Foreign key to the FinancialCategory table.
 	FOREIGN KEY (`fiscalPeriodId`) REFERENCES `FiscalPeriod`(`id`),		-- Foreign key to the FiscalPeriod table.
+	FOREIGN KEY (`financialOfficeId`) REFERENCES `FinancialOffice`(`id`),		-- Foreign key to the FinancialOffice table.
 	FOREIGN KEY (`currencyId`) REFERENCES `Currency`(`id`),		-- Foreign key to the Currency table.
 	UNIQUE `UC_Budget_tenantGuid_financialCategoryId_fiscalPeriodId_Unique`( `tenantGuid`, `financialCategoryId`, `fiscalPeriodId` ) 		-- Uniqueness enforced on the Budget table's tenantGuid and financialCategoryId and fiscalPeriodId fields.
 );
@@ -4654,6 +4745,9 @@ CREATE INDEX `I_Budget_tenantGuid_financialCategoryId` ON `Budget` (`tenantGuid`
 
 -- Index on the Budget table's tenantGuid,fiscalPeriodId fields.
 CREATE INDEX `I_Budget_tenantGuid_fiscalPeriodId` ON `Budget` (`tenantGuid`, `fiscalPeriodId`);
+
+-- Index on the Budget table's tenantGuid,financialOfficeId fields.
+CREATE INDEX `I_Budget_tenantGuid_financialOfficeId` ON `Budget` (`tenantGuid`, `financialOfficeId`);
 
 -- Index on the Budget table's tenantGuid,currencyId fields.
 CREATE INDEX `I_Budget_tenantGuid_currencyId` ON `Budget` (`tenantGuid`, `currencyId`);

@@ -289,6 +289,7 @@ namespace Foundation.Scheduler.Database
 			public String code { get; set; }
 			[Required]
 			public Int32 accountTypeId { get; set; }
+			public Int32? financialOfficeId { get; set; }
 			public Int32? parentFinancialCategoryId { get; set; }
 			[Required]
 			public Boolean isTaxApplicable { get; set; }
@@ -312,6 +313,7 @@ namespace Foundation.Scheduler.Database
 		public class FinancialCategoryOutputDTO : FinancialCategoryDTO
 		{
 			public AccountType.AccountTypeDTO accountType { get; set; }
+			public FinancialOffice.FinancialOfficeDTO financialOffice { get; set; }
 			public FinancialCategory.FinancialCategoryDTO parentFinancialCategory { get; set; }
 		}
 
@@ -332,6 +334,7 @@ namespace Foundation.Scheduler.Database
 				description = this.description,
 				code = this.code,
 				accountTypeId = this.accountTypeId,
+				financialOfficeId = this.financialOfficeId,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
@@ -385,6 +388,7 @@ namespace Foundation.Scheduler.Database
 				description = this.description,
 				code = this.code,
 				accountTypeId = this.accountTypeId,
+				financialOfficeId = this.financialOfficeId,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
@@ -396,6 +400,7 @@ namespace Foundation.Scheduler.Database
 				active = this.active,
 				deleted = this.deleted,
 				accountType = this.accountType?.ToDTO(),
+				financialOffice = this.financialOffice?.ToDTO(),
 				parentFinancialCategory = this.parentFinancialCategory?.ToDTO()
 			};
 		}
@@ -440,6 +445,7 @@ namespace Foundation.Scheduler.Database
 				description = dto.description,
 				code = dto.code,
 				accountTypeId = dto.accountTypeId,
+				financialOfficeId = dto.financialOfficeId,
 				parentFinancialCategoryId = dto.parentFinancialCategoryId,
 				isTaxApplicable = dto.isTaxApplicable,
 				defaultAmount = dto.defaultAmount,
@@ -470,6 +476,7 @@ namespace Foundation.Scheduler.Database
 			this.description = dto.description;
 			this.code = dto.code;
 			this.accountTypeId = dto.accountTypeId;
+			this.financialOfficeId = dto.financialOfficeId;
 			this.parentFinancialCategoryId = dto.parentFinancialCategoryId;
 			this.isTaxApplicable = dto.isTaxApplicable;
 			this.defaultAmount = dto.defaultAmount;
@@ -506,6 +513,7 @@ namespace Foundation.Scheduler.Database
 				description = this.description,
 				code = this.code,
 				accountTypeId = this.accountTypeId,
+				financialOfficeId = this.financialOfficeId,
 				parentFinancialCategoryId = this.parentFinancialCategoryId,
 				isTaxApplicable = this.isTaxApplicable,
 				defaultAmount = this.defaultAmount,
@@ -573,6 +581,7 @@ namespace Foundation.Scheduler.Database
 				description = financialCategory.description,
 				code = financialCategory.code,
 				accountTypeId = financialCategory.accountTypeId,
+				financialOfficeId = financialCategory.financialOfficeId,
 				parentFinancialCategoryId = financialCategory.parentFinancialCategoryId,
 				isTaxApplicable = financialCategory.isTaxApplicable,
 				defaultAmount = financialCategory.defaultAmount,
@@ -607,6 +616,7 @@ namespace Foundation.Scheduler.Database
 				description = financialCategory.description,
 				code = financialCategory.code,
 				accountTypeId = financialCategory.accountTypeId,
+				financialOfficeId = financialCategory.financialOfficeId,
 				parentFinancialCategoryId = financialCategory.parentFinancialCategoryId,
 				isTaxApplicable = financialCategory.isTaxApplicable,
 				defaultAmount = financialCategory.defaultAmount,
@@ -618,6 +628,7 @@ namespace Foundation.Scheduler.Database
 				active = financialCategory.active,
 				deleted = financialCategory.deleted,
 				accountType = AccountType.CreateMinimalAnonymous(financialCategory.accountType),
+				financialOffice = FinancialOffice.CreateMinimalAnonymous(financialCategory.financialOffice),
 				parentFinancialCategory = FinancialCategory.CreateMinimalAnonymous(financialCategory.parentFinancialCategory)
 			 };
 		}

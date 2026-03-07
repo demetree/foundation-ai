@@ -30,6 +30,13 @@
                     Financial Category is required
                 </div>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('financialOfficeId')">
+                <label for="FinancialTransaction-financialOfficeId" id="label-FinancialTransaction-financialOfficeId">Financial Office</label>
+                <select id="FinancialTransaction-financialOfficeId" formControlName="financialOfficeId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">
+                    <option [ngValue]="null">Select Financial Office</option>
+                    <option *ngFor="let financialOffice of financialOffices$ | async" [ngValue]="financialOffice.id">{{financialOffice.name}}</option>
+                </select>
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
                 <label for="FinancialTransaction-scheduledEventId" id="label-FinancialTransaction-scheduledEventId">Scheduled Event</label>
                 <select id="FinancialTransaction-scheduledEventId" formControlName="scheduledEventId" class="form-select financial-transaction-select" [disabled]="!userIsSchedulerFinancialTransactionWriter()">

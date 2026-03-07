@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 financial-office-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="financial-office-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Financial Office Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Financial Office Change History' : 'Add Financial Office Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerFinancialOfficeChangeHistoryReader()">
+                <div class="col m-2 financial-office-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="financialOfficeChangeHistoryForm" (ngSubmit)="submitForm()" class="financial-office-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('financialOfficeId')">
+                                <label for="FinancialOfficeChangeHistory-financialOfficeId" id="label-FinancialOfficeChangeHistory-financialOfficeId"><span class="text-danger">*</span>Financial Office</label>
+                                <select id="FinancialOfficeChangeHistory-financialOfficeId" formControlName="financialOfficeId" class="form-select financial-office-change-history-select" [disabled]="!userIsSchedulerFinancialOfficeChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Financial Office</option>
+                                    <option *ngFor="let financialOffice of financialOffices$ | async" [ngValue]="financialOffice.id">{{financialOffice.name}}</option>
+                                </select>
+                                <div *ngIf="financialOfficeChangeHistoryForm.get('financialOfficeId')?.invalid && financialOfficeChangeHistoryForm.get('financialOfficeId')?.touched" class="text-danger">
+                                    Financial Office is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="FinancialOfficeChangeHistory-versionNumber" id="label-FinancialOfficeChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="FinancialOfficeChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control financial-office-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="FinancialOfficeChangeHistory-timeStamp" id="label-FinancialOfficeChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="FinancialOfficeChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control financial-office-change-history-input" [disabled]="!userIsSchedulerFinancialOfficeChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="financialOfficeChangeHistoryForm.get('timeStamp')?.invalid && financialOfficeChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="FinancialOfficeChangeHistory-userId" id="label-FinancialOfficeChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="FinancialOfficeChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control financial-office-change-history-input" [disabled]="!userIsSchedulerFinancialOfficeChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="financialOfficeChangeHistoryForm.get('userId')?.invalid && financialOfficeChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="FinancialOfficeChangeHistory-data" id="label-FinancialOfficeChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="FinancialOfficeChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control financial-office-change-history-input" [disabled]="!userIsSchedulerFinancialOfficeChangeHistoryWriter()"></textarea>
+                                <div *ngIf="financialOfficeChangeHistoryForm.get('data')?.invalid && financialOfficeChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="financial-office-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="financialOfficeChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Financial Office Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !financialOfficeChangeHistoryForm.valid || !financialOfficeChangeHistoryForm.dirty || financialOfficeChangeHistoryForm.pristine  || userIsSchedulerFinancialOfficeChangeHistoryWriter() == false " ngbTooltip="Save the Financial Office Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Financial Office Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

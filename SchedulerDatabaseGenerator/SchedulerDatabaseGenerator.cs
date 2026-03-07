@@ -1155,6 +1155,45 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             //
+            // Financial Office — Departmental financial partition
+            // Multi-tenant. Groups financial categories, transactions, and budgets by
+            // department/office within a tenant (e.g., Recreation Committee vs Town Administration).
+            //
+            // NOTE: Defined before FinancialCategory so that FC can FK-reference this table.
+            //
+            Database.Table financialOfficeTable = database.AddTable("FinancialOffice");
+            financialOfficeTable.comment = @"====================================================================================================
+ FINANCIAL OFFICE
+ Represents a departmental or committee-level financial partition within a tenant.
+ Enables separate books, independent exports, and role-based access for different
+ organizational units (e.g., Recreation Committee vs Town Administration).
+
+ DESIGN NOTE: Each office can have its own chart of accounts slice, transactions,
+ budgets, and export configuration. A FinancialCategory or FinancialTransaction
+ optionally belongs to an office. When null, it is considered tenant-wide.
+
+ Export fields (contactName, contactEmail, exportFormat) support the workflow where
+ each office exports independently to its own accountant.
+ =====================================================================================================";
+
+            financialOfficeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            financialOfficeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            financialOfficeTable.AddIdField();
+            financialOfficeTable.AddMultiTenantSupport();
+            financialOfficeTable.AddNameAndDescriptionFields(true, true, false);
+            financialOfficeTable.AddString50Field("code", false).AddScriptComments("Short code for the office (e.g., 'REC', 'ADMIN', 'FIRE').");
+            financialOfficeTable.AddString250Field("contactName", true).AddScriptComments("Accountant or financial contact name for this office.");
+            financialOfficeTable.AddString250Field("contactEmail", true).AddScriptComments("Accountant or financial contact email for export delivery.");
+            financialOfficeTable.AddString50Field("exportFormat", true, "CSV").AddScriptComments("Preferred export format: CSV, QuickBooks, Xero, etc.");
+            financialOfficeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            financialOfficeTable.AddSequenceField();
+            financialOfficeTable.AddVersionControl();
+            financialOfficeTable.AddControlFields();
+
+            financialOfficeTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "code" }, true);
+
+
+            //
             // Financial Category — Chart of Accounts
             // Tenant-specific categories for all income and expense transactions.
             // Separate from ChargeType because these are general ledger categories
@@ -1183,6 +1222,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             financialCategoryTable.AddNameAndDescriptionFields(true, true, false);
             financialCategoryTable.AddString50Field("code", false).AddScriptComments("Short code for the category (e.g., '12' for Kids Rental, '40' for Easter Brunch Supplies).");
             financialCategoryTable.AddForeignKeyField(accountTypeTable, false, true).AddScriptComments("Link to AccountType — standard accounting classification (Income, Expense, COGS, Asset, Liability, Equity). Replaces the old accountType string field.");
+            financialCategoryTable.AddForeignKeyField(financialOfficeTable, true, true).AddScriptComments("Optional link to FinancialOffice — scopes this category to a specific department/committee. When null, the category is tenant-wide.");
             financialCategoryTable.AddForeignKeyField("parentFinancialCategoryId", financialCategoryTable, true, true).AddScriptComments("Optional parent for sub-categories.");
             financialCategoryTable.AddBoolField("isTaxApplicable", false, false).AddScriptComments("Whether HST/tax typically applies to transactions in this category.");
             financialCategoryTable.AddMoneyField("defaultAmount", true, true).AddScriptComments("Optional default amount for common transactions in this category.");
@@ -3055,6 +3095,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             financialTransactionTable.AddIdField();
             financialTransactionTable.AddMultiTenantSupport();
             financialTransactionTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("Link to the FinancialCategory (chart of accounts entry).");
+            financialTransactionTable.AddForeignKeyField(financialOfficeTable, true, true).AddScriptComments("Optional link to FinancialOffice — scopes this transaction to a specific department/committee. Can be inherited from the FinancialCategory if not set directly.");
             financialTransactionTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent when the transaction relates to a booking.");
             financialTransactionTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to the Contact who paid or was paid.");
             financialTransactionTable.AddForeignKeyField(clientTable, true, true).AddScriptComments("Optional link to the Client (vendor, customer, or supplier) for this transaction.");
@@ -3108,6 +3149,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             budgetTable.AddMultiTenantSupport();
             budgetTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("The category this budget applies to.");
             budgetTable.AddForeignKeyField(fiscalPeriodTable, false, true).AddScriptComments("The fiscal period this budget covers.");
+            budgetTable.AddForeignKeyField(financialOfficeTable, true, true).AddScriptComments("Optional link to FinancialOffice — scopes this budget to a specific department/committee. Can be inherited from the FinancialCategory if not set directly.");
             budgetTable.AddMoneyField("budgetedAmount", false, 0, true).AddScriptComments("The planned/budgeted amount for this category in this period.");
             budgetTable.AddMoneyField("revisedAmount", true, true).AddScriptComments("Optional revised budget amount (after mid-period adjustments).");
             budgetTable.AddTextField("notes", true).AddScriptComments("Optional notes about the budget line (e.g., justification for revision).");

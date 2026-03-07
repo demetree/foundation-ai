@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FinancialTransactionService, FinancialTransactionData, FinancialTransactionSubmitData } from '../../../scheduler-data-services/financial-transaction.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
 import { ClientService } from '../../../scheduler-data-services/client.service';
@@ -43,6 +44,7 @@ import { AuthService } from '../../../services/auth.service';
 //
 interface FinancialTransactionFormValues {
   financialCategoryId: number | bigint,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
   scheduledEventId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
   clientId: number | bigint | null,       // For FK link number
@@ -97,6 +99,7 @@ export class FinancialTransactionAddEditComponent {
 
   public financialTransactionForm: FormGroup = this.fb.group({
         financialCategoryId: [null, Validators.required],
+        financialOfficeId: [null],
         scheduledEventId: [null],
         contactId: [null],
         clientId: [null],
@@ -131,6 +134,7 @@ export class FinancialTransactionAddEditComponent {
 
   financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
+  financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
   scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   contacts$ = this.contactService.GetContactList();
   clients$ = this.clientService.GetClientList();
@@ -143,6 +147,7 @@ export class FinancialTransactionAddEditComponent {
     private modalService: NgbModal,
     private financialTransactionService: FinancialTransactionService,
     private financialCategoryService: FinancialCategoryService,
+    private financialOfficeService: FinancialOfficeService,
     private scheduledEventService: ScheduledEventService,
     private contactService: ContactService,
     private clientService: ClientService,
@@ -270,6 +275,7 @@ export class FinancialTransactionAddEditComponent {
     const financialTransactionSubmitData: FinancialTransactionSubmitData = {
         id: this.financialTransactionSubmitData?.id || 0,
         financialCategoryId: Number(formValue.financialCategoryId),
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
         scheduledEventId: formValue.scheduledEventId ? Number(formValue.scheduledEventId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
         clientId: formValue.clientId ? Number(formValue.clientId) : null,
@@ -420,6 +426,7 @@ export class FinancialTransactionAddEditComponent {
       //
       this.financialTransactionForm.reset({
         financialCategoryId: null,
+        financialOfficeId: null,
         scheduledEventId: null,
         contactId: null,
         clientId: null,
@@ -453,6 +460,7 @@ export class FinancialTransactionAddEditComponent {
         //
         this.financialTransactionForm.reset({
         financialCategoryId: financialTransactionData.financialCategoryId,
+        financialOfficeId: financialTransactionData.financialOfficeId,
         scheduledEventId: financialTransactionData.scheduledEventId,
         contactId: financialTransactionData.contactId,
         clientId: financialTransactionData.clientId,

@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = appealChangeHistory.timeStamp,
 				userId = appealChangeHistory.userId,
 				data = appealChangeHistory.data,
-				appeal = Appeal.CreateMinimalAnonymous(appealChangeHistory.appeal)
+				appeal = Appeal.CreateMinimalAnonymous(appealChangeHistory.appeal),
 			 };
 		}
 

@@ -209,6 +209,7 @@ namespace Foundation.Scheduler
                 //
                 // Start of code generated controller list for Scheduler module
                 //
+                controllers.Add(typeof(AccountTypesController));
                 controllers.Add(typeof(AppealsController));
                 controllers.Add(typeof(AppealChangeHistoriesController));
                 controllers.Add(typeof(AssignmentRolesController));
@@ -223,11 +224,14 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(BatchChangeHistoriesController));
                 controllers.Add(typeof(BatchStatusesController));
                 controllers.Add(typeof(BookingSourceTypesController));
+                controllers.Add(typeof(BudgetsController));
+                controllers.Add(typeof(BudgetChangeHistoriesController));
                 controllers.Add(typeof(CalendarsController));
                 controllers.Add(typeof(CalendarChangeHistoriesController));
                 controllers.Add(typeof(CampaignsController));
                 controllers.Add(typeof(CampaignChangeHistoriesController));
                 controllers.Add(typeof(ChargeStatusesController));
+                controllers.Add(typeof(ChargeStatusChangeHistoriesController));
                 controllers.Add(typeof(ChargeTypesController));
                 controllers.Add(typeof(ChargeTypeChangeHistoriesController));
                 controllers.Add(typeof(ClientsController));
@@ -267,6 +271,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(EventStatusesController));
                 controllers.Add(typeof(FinancialCategoriesController));
                 controllers.Add(typeof(FinancialCategoryChangeHistoriesController));
+                controllers.Add(typeof(FinancialOfficesController));
+                controllers.Add(typeof(FinancialOfficeChangeHistoriesController));
                 controllers.Add(typeof(FinancialTransactionsController));
                 controllers.Add(typeof(FinancialTransactionChangeHistoriesController));
                 controllers.Add(typeof(FiscalPeriodsController));
@@ -293,6 +299,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(PaymentTransactionsController));
                 controllers.Add(typeof(PaymentTransactionChangeHistoriesController));
                 controllers.Add(typeof(PaymentTypesController));
+                controllers.Add(typeof(PaymentTypeChangeHistoriesController));
+                controllers.Add(typeof(PeriodStatusesController));
                 controllers.Add(typeof(PledgesController));
                 controllers.Add(typeof(PledgeChangeHistoriesController));
                 controllers.Add(typeof(PrioritiesController));
@@ -301,6 +309,7 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(RateSheetChangeHistoriesController));
                 controllers.Add(typeof(RateTypesController));
                 controllers.Add(typeof(ReceiptTypesController));
+                controllers.Add(typeof(ReceiptTypeChangeHistoriesController));
                 controllers.Add(typeof(RecurrenceExceptionsController));
                 controllers.Add(typeof(RecurrenceExceptionChangeHistoriesController));
                 controllers.Add(typeof(RecurrenceFrequenciesController));

@@ -43,6 +43,10 @@
                 Account  Type
                 <span *ngIf="sortColumn === 'accountType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialOffice.name')">
+                Financial  Office
+                <span *ngIf="sortColumn === 'financialOffice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('parentFinancialCategory.name')">
                 Parent  Financial  Category
                 <span *ngIf="sortColumn === 'parentFinancialCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -156,6 +160,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{financialCategory.description}}</td>
             <td class="text-truncate">{{financialCategory.code}}</td>
             <td class="text-truncate"><a [routerLink]="['/accounttype', financialCategory.accountTypeId]" class="btn btn-link text-left" ngbTooltip="Open Account Type details">{{financialCategory.accountType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialoffice', financialCategory.financialOfficeId]" class="btn btn-link text-left" ngbTooltip="Open Financial Office details">{{financialCategory.financialOffice?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/financialcategory', financialCategory.parentFinancialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{financialCategory.parentFinancialCategory?.name}}</a></td>
             <td class="text-truncate"><boolean-icon [value]="financialCategory.isTaxApplicable"/></td>
             <td class="text-truncate">{{financialCategory.defaultAmount | bigNumberFormat : '1.0-2'}}</td>
@@ -324,6 +329,10 @@ End of commented block for alternate definition option -->
             <p class="financial-category-info" *ngIf="financialCategory.accountTypeId != null">
               <strong>Account Type: </strong>
               <a [routerLink]="['/accounttype', financialCategory.accountTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Account Type details">{{financialCategory.accountType?.name}}</a>
+            </p>
+            <p class="financial-category-info" *ngIf="financialCategory.financialOfficeId != null">
+              <strong>Financial Office: </strong>
+              <a [routerLink]="['/financialoffice', financialCategory.financialOfficeId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Office details">{{financialCategory.financialOffice?.name}}</a>
             </p>
             <p class="financial-category-info" *ngIf="financialCategory.parentFinancialCategoryId != null">
               <strong>Parent Financial Category: </strong>

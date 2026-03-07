@@ -68,6 +68,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetBudgets(
 			int? financialCategoryId = null,
 			int? fiscalPeriodId = null,
+			int? financialOfficeId = null,
 			decimal? budgetedAmount = null,
 			decimal? revisedAmount = null,
 			string notes = null,
@@ -133,6 +134,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(b => b.fiscalPeriodId == fiscalPeriodId.Value);
 			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(b => b.financialOfficeId == financialOfficeId.Value);
+			}
 			if (budgetedAmount.HasValue == true)
 			{
 				query = query.Where(b => b.budgetedAmount == budgetedAmount.Value);
@@ -188,6 +193,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Include(x => x.currency);
 				query = query.Include(x => x.financialCategory);
+				query = query.Include(x => x.financialOffice);
 				query = query.Include(x => x.fiscalPeriod);
 				query = query.AsSplitQuery();
 			}
@@ -239,6 +245,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			int? financialCategoryId = null,
 			int? fiscalPeriodId = null,
+			int? financialOfficeId = null,
 			decimal? budgetedAmount = null,
 			decimal? revisedAmount = null,
 			string notes = null,
@@ -283,6 +290,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (fiscalPeriodId.HasValue == true)
 			{
 				query = query.Where(b => b.fiscalPeriodId == fiscalPeriodId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(b => b.financialOfficeId == financialOfficeId.Value);
 			}
 			if (budgetedAmount.HasValue == true)
 			{
@@ -394,6 +405,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				{
 					query = query.Include(x => x.currency);
 					query = query.Include(x => x.financialCategory);
+					query = query.Include(x => x.financialOffice);
 					query = query.Include(x => x.fiscalPeriod);
 					query = query.AsSplitQuery();
 				}
@@ -698,6 +710,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					budget.BudgetChangeHistories = null;
 					budget.currency = null;
 					budget.financialCategory = null;
+					budget.financialOffice = null;
 					budget.fiscalPeriod = null;
 
 
@@ -816,6 +829,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.BudgetChangeHistories = null;
 				cloneOfExisting.currency = null;
 				cloneOfExisting.financialCategory = null;
+				cloneOfExisting.financialOffice = null;
 				cloneOfExisting.fiscalPeriod = null;
 
 				if (versionNumber >= budget.versionNumber)
@@ -847,6 +861,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 				    budget.financialCategoryId = oldBudget.financialCategoryId;
 				    budget.fiscalPeriodId = oldBudget.fiscalPeriodId;
+				    budget.financialOfficeId = oldBudget.financialOfficeId;
 				    budget.budgetedAmount = oldBudget.budgetedAmount;
 				    budget.revisedAmount = oldBudget.revisedAmount;
 				    budget.notes = oldBudget.notes;
@@ -1295,6 +1310,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			int? financialCategoryId = null,
 			int? fiscalPeriodId = null,
+			int? financialOfficeId = null,
 			decimal? budgetedAmount = null,
 			decimal? revisedAmount = null,
 			string notes = null,
@@ -1358,6 +1374,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (fiscalPeriodId.HasValue == true)
 			{
 				query = query.Where(b => b.fiscalPeriodId == fiscalPeriodId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(b => b.financialOfficeId == financialOfficeId.Value);
 			}
 			if (budgetedAmount.HasValue == true)
 			{

@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { FinancialCategoryData } from './financial-category.service';
+import { FinancialOfficeData } from './financial-office.service';
 import { ScheduledEventData } from './scheduled-event.service';
 import { ContactData } from './contact.service';
 import { ClientData } from './client.service';
@@ -39,6 +40,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class FinancialTransactionQueryParameters {
     financialCategoryId: bigint | number | null | undefined = null;
+    financialOfficeId: bigint | number | null | undefined = null;
     scheduledEventId: bigint | number | null | undefined = null;
     contactId: bigint | number | null | undefined = null;
     clientId: bigint | number | null | undefined = null;
@@ -76,6 +78,7 @@ export class FinancialTransactionQueryParameters {
 export class FinancialTransactionSubmitData {
     id!: bigint | number;
     financialCategoryId!: bigint | number;
+    financialOfficeId: bigint | number | null = null;
     scheduledEventId: bigint | number | null = null;
     contactId: bigint | number | null = null;
     clientId: bigint | number | null = null;
@@ -167,6 +170,7 @@ export class FinancialTransactionBasicListData {
 export class FinancialTransactionData {
     id!: bigint | number;
     financialCategoryId!: bigint | number;
+    financialOfficeId!: bigint | number;
     scheduledEventId!: bigint | number;
     contactId!: bigint | number;
     clientId!: bigint | number;
@@ -195,6 +199,7 @@ export class FinancialTransactionData {
     contact: ContactData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     currency: CurrencyData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialCategory: FinancialCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    financialOffice: FinancialOfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     fiscalPeriod: FiscalPeriodData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     paymentType: PaymentTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     scheduledEvent: ScheduledEventData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
@@ -705,6 +710,7 @@ export class FinancialTransactionService extends SecureEndpointBase {
 
         output.id = data.id;
         output.financialCategoryId = data.financialCategoryId;
+        output.financialOfficeId = data.financialOfficeId;
         output.scheduledEventId = data.scheduledEventId;
         output.contactId = data.contactId;
         output.clientId = data.clientId;

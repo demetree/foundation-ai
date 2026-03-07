@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { FinancialTransactionService, FinancialTransactionData, FinancialTransactionSubmitData } from '../../../scheduler-data-services/financial-transaction.service';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
 import { ClientService } from '../../../scheduler-data-services/client.service';
@@ -46,6 +47,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 //
 interface FinancialTransactionFormValues {
   financialCategoryId: number | bigint,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
   scheduledEventId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
   clientId: number | bigint | null,       // For FK link number
@@ -97,6 +99,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
 
   public financialTransactionForm: FormGroup = this.fb.group({
         financialCategoryId: [null, Validators.required],
+        financialOfficeId: [null],
         scheduledEventId: [null],
         contactId: [null],
         clientId: [null],
@@ -135,6 +138,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
 
   financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
+  public financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public contacts$ = this.contactService.GetContactList();
   public clients$ = this.clientService.GetClientList();
@@ -151,6 +155,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
   constructor(
     public financialTransactionService: FinancialTransactionService,
     public financialCategoryService: FinancialCategoryService,
+    public financialOfficeService: FinancialOfficeService,
     public scheduledEventService: ScheduledEventService,
     public contactService: ContactService,
     public clientService: ClientService,
@@ -443,6 +448,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
       //
       this.financialTransactionForm.reset({
         financialCategoryId: null,
+        financialOfficeId: null,
         scheduledEventId: null,
         contactId: null,
         clientId: null,
@@ -476,6 +482,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
         //
         this.financialTransactionForm.reset({
         financialCategoryId: financialTransactionData.financialCategoryId,
+        financialOfficeId: financialTransactionData.financialOfficeId,
         scheduledEventId: financialTransactionData.scheduledEventId,
         contactId: financialTransactionData.contactId,
         clientId: financialTransactionData.clientId,
@@ -559,6 +566,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
     const financialTransactionSubmitData: FinancialTransactionSubmitData = {
         id: this.financialTransactionData?.id || 0,
         financialCategoryId: Number(formValue.financialCategoryId),
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
         scheduledEventId: formValue.scheduledEventId ? Number(formValue.scheduledEventId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
         clientId: formValue.clientId ? Number(formValue.clientId) : null,

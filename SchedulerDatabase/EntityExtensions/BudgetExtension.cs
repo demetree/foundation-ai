@@ -285,6 +285,7 @@ namespace Foundation.Scheduler.Database
 			public Int32 financialCategoryId { get; set; }
 			[Required]
 			public Int32 fiscalPeriodId { get; set; }
+			public Int32? financialOfficeId { get; set; }
 			[Required]
 			public Decimal budgetedAmount { get; set; }
 			public Decimal? revisedAmount { get; set; }
@@ -308,6 +309,7 @@ namespace Foundation.Scheduler.Database
 		{
 			public Currency.CurrencyDTO currency { get; set; }
 			public FinancialCategory.FinancialCategoryDTO financialCategory { get; set; }
+			public FinancialOffice.FinancialOfficeDTO financialOffice { get; set; }
 			public FiscalPeriod.FiscalPeriodDTO fiscalPeriod { get; set; }
 		}
 
@@ -326,6 +328,7 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				financialCategoryId = this.financialCategoryId,
 				fiscalPeriodId = this.fiscalPeriodId,
+				financialOfficeId = this.financialOfficeId,
 				budgetedAmount = this.budgetedAmount,
 				revisedAmount = this.revisedAmount,
 				notes = this.notes,
@@ -375,6 +378,7 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				financialCategoryId = this.financialCategoryId,
 				fiscalPeriodId = this.fiscalPeriodId,
+				financialOfficeId = this.financialOfficeId,
 				budgetedAmount = this.budgetedAmount,
 				revisedAmount = this.revisedAmount,
 				notes = this.notes,
@@ -385,6 +389,7 @@ namespace Foundation.Scheduler.Database
 				deleted = this.deleted,
 				currency = this.currency?.ToDTO(),
 				financialCategory = this.financialCategory?.ToDTO(),
+				financialOffice = this.financialOffice?.ToDTO(),
 				fiscalPeriod = this.fiscalPeriod?.ToDTO()
 			};
 		}
@@ -427,6 +432,7 @@ namespace Foundation.Scheduler.Database
 				id = dto.id,
 				financialCategoryId = dto.financialCategoryId,
 				fiscalPeriodId = dto.fiscalPeriodId,
+				financialOfficeId = dto.financialOfficeId,
 				budgetedAmount = dto.budgetedAmount,
 				revisedAmount = dto.revisedAmount,
 				notes = dto.notes,
@@ -453,6 +459,7 @@ namespace Foundation.Scheduler.Database
 
 			this.financialCategoryId = dto.financialCategoryId;
 			this.fiscalPeriodId = dto.fiscalPeriodId;
+			this.financialOfficeId = dto.financialOfficeId;
 			this.budgetedAmount = dto.budgetedAmount;
 			this.revisedAmount = dto.revisedAmount;
 			this.notes = dto.notes;
@@ -485,6 +492,7 @@ namespace Foundation.Scheduler.Database
 				tenantGuid = this.tenantGuid,
 				financialCategoryId = this.financialCategoryId,
 				fiscalPeriodId = this.fiscalPeriodId,
+				financialOfficeId = this.financialOfficeId,
 				budgetedAmount = this.budgetedAmount,
 				revisedAmount = this.revisedAmount,
 				notes = this.notes,
@@ -548,6 +556,7 @@ namespace Foundation.Scheduler.Database
 				id = budget.id,
 				financialCategoryId = budget.financialCategoryId,
 				fiscalPeriodId = budget.fiscalPeriodId,
+				financialOfficeId = budget.financialOfficeId,
 				budgetedAmount = budget.budgetedAmount,
 				revisedAmount = budget.revisedAmount,
 				notes = budget.notes,
@@ -578,6 +587,7 @@ namespace Foundation.Scheduler.Database
 				id = budget.id,
 				financialCategoryId = budget.financialCategoryId,
 				fiscalPeriodId = budget.fiscalPeriodId,
+				financialOfficeId = budget.financialOfficeId,
 				budgetedAmount = budget.budgetedAmount,
 				revisedAmount = budget.revisedAmount,
 				notes = budget.notes,
@@ -588,6 +598,7 @@ namespace Foundation.Scheduler.Database
 				deleted = budget.deleted,
 				currency = Currency.CreateMinimalAnonymous(budget.currency),
 				financialCategory = FinancialCategory.CreateMinimalAnonymous(budget.financialCategory),
+				financialOffice = FinancialOffice.CreateMinimalAnonymous(budget.financialOffice),
 				fiscalPeriod = FiscalPeriod.CreateMinimalAnonymous(budget.fiscalPeriod)
 			 };
 		}

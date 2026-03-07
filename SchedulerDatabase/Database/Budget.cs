@@ -15,6 +15,8 @@ public partial class Budget
 
     public int fiscalPeriodId { get; set; }
 
+    public int? financialOfficeId { get; set; }
+
     public decimal budgetedAmount { get; set; }
 
     public decimal? revisedAmount { get; set; }
@@ -36,6 +38,8 @@ public partial class Budget
     public virtual Currency currency { get; set; }
 
     public virtual FinancialCategory financialCategory { get; set; }
+
+    public virtual FinancialOffice financialOffice { get; set; }
 
     public virtual FiscalPeriod fiscalPeriod { get; set; }
 }

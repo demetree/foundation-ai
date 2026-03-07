@@ -176,6 +176,7 @@ export class FinancialTransactionTableComponent implements OnInit, OnChanges, Af
     //
     const defaultColumns: TableColumn[] = [
     { key: 'financialCategory.name', label: 'Financial Category', width: undefined, template: 'link', linkPath: ['/financialcategory', 'financialCategoryId'] },
+    { key: 'financialOffice.name', label: 'Financial Office', width: undefined, template: 'link', linkPath: ['/financialoffice', 'financialOfficeId'] },
     { key: 'scheduledEvent.name', label: 'Scheduled Event', width: undefined, template: 'link', linkPath: ['/scheduledevent', 'scheduledEventId'] },
     { key: 'contact.name', label: 'Contact', width: undefined, template: 'link', linkPath: ['/contact', 'contactId'] },
     { key: 'client.name', label: 'Client', width: undefined, template: 'link', linkPath: ['/client', 'clientId'] },
@@ -344,6 +345,7 @@ export class FinancialTransactionTableComponent implements OnInit, OnChanges, Af
         // Define fields to filter on, including nested properties
         const filterFields = [
                       'financialCategory.name',
+                      'financialOffice.name',
                       'scheduledEvent.name',
                       'contact.name',
                       'client.name',

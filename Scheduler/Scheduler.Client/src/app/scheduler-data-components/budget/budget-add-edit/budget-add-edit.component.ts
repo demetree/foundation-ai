@@ -26,6 +26,7 @@ import { BudgetService, BudgetData, BudgetSubmitData } from '../../../scheduler-
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { FiscalPeriodService } from '../../../scheduler-data-services/fiscal-period.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -39,6 +40,7 @@ import { AuthService } from '../../../services/auth.service';
 interface BudgetFormValues {
   financialCategoryId: number | bigint,       // For FK link number
   fiscalPeriodId: number | bigint,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
   budgetedAmount: string,     // Stored as string for form input, converted to number on submit.
   revisedAmount: string | null,     // Stored as string for form input, converted to number on submit.
   notes: string | null,
@@ -78,6 +80,7 @@ export class BudgetAddEditComponent {
   public budgetForm: FormGroup = this.fb.group({
         financialCategoryId: [null, Validators.required],
         fiscalPeriodId: [null, Validators.required],
+        financialOfficeId: [null],
         budgetedAmount: ['', Validators.required],
         revisedAmount: [''],
         notes: [''],
@@ -97,6 +100,7 @@ export class BudgetAddEditComponent {
   budgets$ = this.budgetService.GetBudgetList();
   financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   fiscalPeriods$ = this.fiscalPeriodService.GetFiscalPeriodList();
+  financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
   currencies$ = this.currencyService.GetCurrencyList();
 
   constructor(
@@ -104,6 +108,7 @@ export class BudgetAddEditComponent {
     private budgetService: BudgetService,
     private financialCategoryService: FinancialCategoryService,
     private fiscalPeriodService: FiscalPeriodService,
+    private financialOfficeService: FinancialOfficeService,
     private currencyService: CurrencyService,
     private authService: AuthService,
     private alertService: AlertService,
@@ -226,6 +231,7 @@ export class BudgetAddEditComponent {
         id: this.budgetSubmitData?.id || 0,
         financialCategoryId: Number(formValue.financialCategoryId),
         fiscalPeriodId: Number(formValue.fiscalPeriodId),
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
         budgetedAmount: Number(formValue.budgetedAmount),
         revisedAmount: formValue.revisedAmount ? Number(formValue.revisedAmount) : null,
         notes: formValue.notes?.trim() || null,
@@ -361,6 +367,7 @@ export class BudgetAddEditComponent {
       this.budgetForm.reset({
         financialCategoryId: null,
         fiscalPeriodId: null,
+        financialOfficeId: null,
         budgetedAmount: '',
         revisedAmount: '',
         notes: '',
@@ -379,6 +386,7 @@ export class BudgetAddEditComponent {
         this.budgetForm.reset({
         financialCategoryId: budgetData.financialCategoryId,
         fiscalPeriodId: budgetData.fiscalPeriodId,
+        financialOfficeId: budgetData.financialOfficeId,
         budgetedAmount: budgetData.budgetedAmount?.toString() ?? '',
         revisedAmount: budgetData.revisedAmount?.toString() ?? '',
         notes: budgetData.notes ?? '',

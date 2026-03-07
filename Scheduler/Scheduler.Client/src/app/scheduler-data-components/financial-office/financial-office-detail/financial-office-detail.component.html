@@ -1,0 +1,177 @@
+<div class="container-fluid p-1 m-0 financial-office-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="financial-office-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Financial Office</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Financial Office' : 'Add Financial Office'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerFinancialOfficeReader()">
+                <div class="col m-2 financial-office-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="financialOfficeForm" (ngSubmit)="submitForm()" class="financial-office-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="FinancialOffice-name" id="label-FinancialOffice-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="FinancialOffice-name" formControlName="name" placeholder="Enter Name" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="financialOfficeForm.get('name')?.invalid && financialOfficeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="FinancialOffice-description" id="label-FinancialOffice-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="FinancialOffice-description" formControlName="description" placeholder="Enter Description" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()"></textarea>
+                                <div *ngIf="financialOfficeForm.get('description')?.invalid && financialOfficeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('code')">
+                                <label for="FinancialOffice-code" id="label-FinancialOffice-code"><span class="text-danger">*</span>Code</label>
+                                <input type="text" id="FinancialOffice-code" formControlName="code" placeholder="Enter Code" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" aria-labelledby="label-code" />
+                                <div *ngIf="financialOfficeForm.get('code')?.invalid && financialOfficeForm.get('code')?.touched" class="text-danger">
+                                    Code is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactName')">
+                                <label for="FinancialOffice-contactName" id="label-FinancialOffice-contactName">Contact Name</label>
+                                <input type="text" id="FinancialOffice-contactName" formControlName="contactName" placeholder="Enter Contact Name" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" aria-labelledby="label-contactName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactEmail')">
+<label for="FinancialOffice-contactEmail" id="label-FinancialOffice-contactEmail"><a href="mailto:{{financialOfficeData?.contactEmail}}" ngbTooltip="Send Email to {{financialOfficeData?.contactEmail}}">Contact Email</a></label>
+                                <input type="text" id="FinancialOffice-contactEmail" formControlName="contactEmail" placeholder="Enter Contact Email" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" aria-labelledby="label-contactEmail" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exportFormat')">
+                                <label for="FinancialOffice-exportFormat" id="label-FinancialOffice-exportFormat">Export Format</label>
+                                <input type="text" id="FinancialOffice-exportFormat" formControlName="exportFormat" placeholder="Enter Export Format" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" aria-labelledby="label-exportFormat" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="FinancialOffice-color" id="label-FinancialOffice-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="FinancialOffice-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerFinancialOfficeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="financialOfficeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="FinancialOffice-sequence" id="label-FinancialOffice-sequence">Sequence</label>
+                                <input type="number" id="FinancialOffice-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control financial-office-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="FinancialOffice-versionNumber" id="label-FinancialOffice-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="FinancialOffice-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control financial-office-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FinancialOffice-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" />
+                                <label for="FinancialOffice-active" class="form-check-label" id="label-FinancialOffice-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="FinancialOffice-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerFinancialOfficeWriter()" />
+                                <label for="FinancialOffice-deleted" class="form-check-label" id="label-FinancialOffice-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="financial-office-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="financialOfficeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Financial Office">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !financialOfficeForm.valid || !financialOfficeForm.dirty || financialOfficeForm.pristine  || userIsSchedulerFinancialOfficeWriter() == false " ngbTooltip="Save the Financial Office changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Financial Office' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerFinancialOfficeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 financial-office-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="financialOfficeChangeHistoryService.userIsSchedulerFinancialOfficeChangeHistoryReader()">
+                            <button ngbNavLink>Financial Office Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialOfficeData?.FinancialOfficeChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-office-change-history-table [queryParams]="{ financialOfficeId: financialOfficeData?.id }" [showAddButton]="true" [preSeededData]="{ financialOfficeId: financialOfficeData?.id }" [hiddenFields]="['financialOfficeId']"></app-financial-office-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialCategoryService.userIsSchedulerFinancialCategoryReader()">
+                            <button ngbNavLink>Financial Categories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialOfficeData?.FinancialCategoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-category-table [queryParams]="{ financialOfficeId: financialOfficeData?.id }" [showAddButton]="true" [preSeededData]="{ financialOfficeId: financialOfficeData?.id }" [hiddenFields]="['financialOfficeId']"></app-financial-category-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="financialTransactionService.userIsSchedulerFinancialTransactionReader()">
+                            <button ngbNavLink>Financial Transactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialOfficeData?.FinancialTransactionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-financial-transaction-table [queryParams]="{ financialOfficeId: financialOfficeData?.id }" [showAddButton]="true" [preSeededData]="{ financialOfficeId: financialOfficeData?.id }" [hiddenFields]="['financialOfficeId']"></app-financial-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="budgetService.userIsSchedulerBudgetReader()">
+                            <button ngbNavLink>Budgets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialOfficeData?.BudgetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-budget-table [queryParams]="{ financialOfficeId: financialOfficeData?.id }" [showAddButton]="true" [preSeededData]="{ financialOfficeId: financialOfficeData?.id }" [hiddenFields]="['financialOfficeId']"></app-budget-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { AccountTypeData } from './account-type.service';
+import { FinancialOfficeData } from './financial-office.service';
 import { FinancialCategoryChangeHistoryService, FinancialCategoryChangeHistoryData } from './financial-category-change-history.service';
 import { ChargeTypeService, ChargeTypeData } from './charge-type.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
@@ -36,6 +37,7 @@ export class FinancialCategoryQueryParameters {
     description: string | null | undefined = null;
     code: string | null | undefined = null;
     accountTypeId: bigint | number | null | undefined = null;
+    financialOfficeId: bigint | number | null | undefined = null;
     parentFinancialCategoryId: bigint | number | null | undefined = null;
     isTaxApplicable: boolean | null | undefined = null;
     defaultAmount: number | null | undefined = null;
@@ -62,6 +64,7 @@ export class FinancialCategorySubmitData {
     description!: string;
     code!: string;
     accountTypeId!: bigint | number;
+    financialOfficeId: bigint | number | null = null;
     parentFinancialCategoryId: bigint | number | null = null;
     isTaxApplicable!: boolean;
     defaultAmount: number | null = null;
@@ -142,6 +145,7 @@ export class FinancialCategoryData {
     description!: string;
     code!: string;
     accountTypeId!: bigint | number;
+    financialOfficeId!: bigint | number;
     parentFinancialCategoryId!: bigint | number;
     isTaxApplicable!: boolean;
     defaultAmount!: number | null;
@@ -153,6 +157,7 @@ export class FinancialCategoryData {
     active!: boolean;
     deleted!: boolean;
     accountType: AccountTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    financialOffice: FinancialOfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     parentFinancialCategory: FinancialCategoryData | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)
 
     //
@@ -764,6 +769,7 @@ export class FinancialCategoryService extends SecureEndpointBase {
         output.description = data.description;
         output.code = data.code;
         output.accountTypeId = data.accountTypeId;
+        output.financialOfficeId = data.financialOfficeId;
         output.parentFinancialCategoryId = data.parentFinancialCategoryId;
         output.isTaxApplicable = data.isTaxApplicable;
         output.defaultAmount = data.defaultAmount;

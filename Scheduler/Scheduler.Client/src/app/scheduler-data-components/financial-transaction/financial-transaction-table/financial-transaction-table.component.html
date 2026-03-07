@@ -31,6 +31,10 @@
                 Financial  Category
                 <span *ngIf="sortColumn === 'financialCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialOffice.name')">
+                Financial  Office
+                <span *ngIf="sortColumn === 'financialOffice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('scheduledEvent.name')">
                 Scheduled  Event
                 <span *ngIf="sortColumn === 'scheduledEvent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -197,6 +201,7 @@ End of commented block for alternate definition option -->
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/financialcategory', financialTransaction.financialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{financialTransaction.financialCategory?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialoffice', financialTransaction.financialOfficeId]" class="btn btn-link text-left" ngbTooltip="Open Financial Office details">{{financialTransaction.financialOffice?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/scheduledevent', financialTransaction.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{financialTransaction.scheduledEvent?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/contact', financialTransaction.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{financialTransaction.contact?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/client', financialTransaction.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{financialTransaction.client?.name}}</a></td>
@@ -367,6 +372,10 @@ End of commented block for alternate definition option -->
             <p class="financial-transaction-info" *ngIf="financialTransaction.financialCategoryId != null">
               <strong>Financial Category: </strong>
               <a [routerLink]="['/financialcategory', financialTransaction.financialCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Category details">{{financialTransaction.financialCategory?.name}}</a>
+            </p>
+            <p class="financial-transaction-info" *ngIf="financialTransaction.financialOfficeId != null">
+              <strong>Financial Office: </strong>
+              <a [routerLink]="['/financialoffice', financialTransaction.financialOfficeId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Office details">{{financialTransaction.financialOffice?.name}}</a>
             </p>
             <p class="financial-transaction-info" *ngIf="financialTransaction.scheduledEventId != null">
               <strong>Scheduled Event: </strong>

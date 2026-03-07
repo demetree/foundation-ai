@@ -344,6 +344,8 @@ import { EventResourceAssignmentChangeHistoryService } from './scheduler-data-se
 import { EventStatusService } from './scheduler-data-services/event-status.service';
 import { FinancialCategoryService } from './scheduler-data-services/financial-category.service';
 import { FinancialCategoryChangeHistoryService } from './scheduler-data-services/financial-category-change-history.service';
+import { FinancialOfficeService } from './scheduler-data-services/financial-office.service';
+import { FinancialOfficeChangeHistoryService } from './scheduler-data-services/financial-office-change-history.service';
 import { FinancialTransactionService } from './scheduler-data-services/financial-transaction.service';
 import { FinancialTransactionChangeHistoryService } from './scheduler-data-services/financial-transaction-change-history.service';
 import { FiscalPeriodService } from './scheduler-data-services/fiscal-period.service';
@@ -699,6 +701,14 @@ import { FinancialCategoryChangeHistoryListingComponent } from './scheduler-data
 import { FinancialCategoryChangeHistoryAddEditComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-add-edit/financial-category-change-history-add-edit.component';
 import { FinancialCategoryChangeHistoryDetailComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-detail/financial-category-change-history-detail.component';
 import { FinancialCategoryChangeHistoryTableComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-table/financial-category-change-history-table.component';
+import { FinancialOfficeListingComponent } from './scheduler-data-components/financial-office/financial-office-listing/financial-office-listing.component';
+import { FinancialOfficeAddEditComponent } from './scheduler-data-components/financial-office/financial-office-add-edit/financial-office-add-edit.component';
+import { FinancialOfficeDetailComponent } from './scheduler-data-components/financial-office/financial-office-detail/financial-office-detail.component';
+import { FinancialOfficeTableComponent } from './scheduler-data-components/financial-office/financial-office-table/financial-office-table.component';
+import { FinancialOfficeChangeHistoryListingComponent } from './scheduler-data-components/financial-office-change-history/financial-office-change-history-listing/financial-office-change-history-listing.component';
+import { FinancialOfficeChangeHistoryAddEditComponent } from './scheduler-data-components/financial-office-change-history/financial-office-change-history-add-edit/financial-office-change-history-add-edit.component';
+import { FinancialOfficeChangeHistoryDetailComponent } from './scheduler-data-components/financial-office-change-history/financial-office-change-history-detail/financial-office-change-history-detail.component';
+import { FinancialOfficeChangeHistoryTableComponent } from './scheduler-data-components/financial-office-change-history/financial-office-change-history-table/financial-office-change-history-table.component';
 import { FinancialTransactionListingComponent } from './scheduler-data-components/financial-transaction/financial-transaction-listing/financial-transaction-listing.component';
 import { FinancialTransactionAddEditComponent } from './scheduler-data-components/financial-transaction/financial-transaction-add-edit/financial-transaction-add-edit.component';
 import { FinancialTransactionDetailComponent } from './scheduler-data-components/financial-transaction/financial-transaction-detail/financial-transaction-detail.component';
@@ -1547,6 +1557,14 @@ FinancialCategoryChangeHistoryListingComponent,
 FinancialCategoryChangeHistoryAddEditComponent,
 FinancialCategoryChangeHistoryDetailComponent,
 FinancialCategoryChangeHistoryTableComponent,
+FinancialOfficeListingComponent,
+FinancialOfficeAddEditComponent,
+FinancialOfficeDetailComponent,
+FinancialOfficeTableComponent,
+FinancialOfficeChangeHistoryListingComponent,
+FinancialOfficeChangeHistoryAddEditComponent,
+FinancialOfficeChangeHistoryDetailComponent,
+FinancialOfficeChangeHistoryTableComponent,
 FinancialTransactionListingComponent,
 FinancialTransactionAddEditComponent,
 FinancialTransactionDetailComponent,
@@ -2092,6 +2110,8 @@ EventResourceAssignmentChangeHistoryService,
 EventStatusService,
 FinancialCategoryService,
 FinancialCategoryChangeHistoryService,
+FinancialOfficeService,
+FinancialOfficeChangeHistoryService,
 FinancialTransactionService,
 FinancialTransactionChangeHistoryService,
 FiscalPeriodService,

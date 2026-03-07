@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { FinancialCategoryData } from './financial-category.service';
 import { FiscalPeriodData } from './fiscal-period.service';
+import { FinancialOfficeData } from './financial-office.service';
 import { CurrencyData } from './currency.service';
 import { BudgetChangeHistoryService, BudgetChangeHistoryData } from './budget-change-history.service';
 
@@ -33,6 +34,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class BudgetQueryParameters {
     financialCategoryId: bigint | number | null | undefined = null;
     fiscalPeriodId: bigint | number | null | undefined = null;
+    financialOfficeId: bigint | number | null | undefined = null;
     budgetedAmount: number | null | undefined = null;
     revisedAmount: number | null | undefined = null;
     notes: string | null | undefined = null;
@@ -55,6 +57,7 @@ export class BudgetSubmitData {
     id!: bigint | number;
     financialCategoryId!: bigint | number;
     fiscalPeriodId!: bigint | number;
+    financialOfficeId: bigint | number | null = null;
     budgetedAmount!: number;
     revisedAmount: number | null = null;
     notes: string | null = null;
@@ -131,6 +134,7 @@ export class BudgetData {
     id!: bigint | number;
     financialCategoryId!: bigint | number;
     fiscalPeriodId!: bigint | number;
+    financialOfficeId!: bigint | number;
     budgetedAmount!: number;
     revisedAmount!: number | null;
     notes!: string | null;
@@ -141,6 +145,7 @@ export class BudgetData {
     deleted!: boolean;
     currency: CurrencyData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialCategory: FinancialCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    financialOffice: FinancialOfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     fiscalPeriod: FiscalPeriodData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
@@ -447,6 +452,7 @@ export class BudgetService extends SecureEndpointBase {
         output.id = data.id;
         output.financialCategoryId = data.financialCategoryId;
         output.fiscalPeriodId = data.fiscalPeriodId;
+        output.financialOfficeId = data.financialOfficeId;
         output.budgetedAmount = data.budgetedAmount;
         output.revisedAmount = data.revisedAmount;
         output.notes = data.notes;

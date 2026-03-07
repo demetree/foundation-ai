@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = scheduledEventQualificationRequirementChangeHistory.timeStamp,
 				userId = scheduledEventQualificationRequirementChangeHistory.userId,
 				data = scheduledEventQualificationRequirementChangeHistory.data,
-				scheduledEventQualificationRequirement = ScheduledEventQualificationRequirement.CreateMinimalAnonymous(scheduledEventQualificationRequirementChangeHistory.scheduledEventQualificationRequirement)
+				scheduledEventQualificationRequirement = ScheduledEventQualificationRequirement.CreateMinimalAnonymous(scheduledEventQualificationRequirementChangeHistory.scheduledEventQualificationRequirement),
 			 };
 		}
 

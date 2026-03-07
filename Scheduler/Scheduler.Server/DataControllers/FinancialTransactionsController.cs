@@ -67,6 +67,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/FinancialTransactions")]
 		public async Task<IActionResult> GetFinancialTransactions(
 			int? financialCategoryId = null,
+			int? financialOfficeId = null,
 			int? scheduledEventId = null,
 			int? contactId = null,
 			int? clientId = null,
@@ -157,6 +158,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (financialCategoryId.HasValue == true)
 			{
 				query = query.Where(ft => ft.financialCategoryId == financialCategoryId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(ft => ft.financialOfficeId == financialOfficeId.Value);
 			}
 			if (scheduledEventId.HasValue == true)
 			{
@@ -328,6 +333,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.financialCategory.code.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialCategory.externalAccountId.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialCategory.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.contactName.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.contactEmail.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.exportFormat.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.fiscalPeriod.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.fiscalPeriod.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.fiscalPeriod.periodType.Contains(anyStringContains))
@@ -355,6 +367,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Include(x => x.contact);
 				query = query.Include(x => x.currency);
 				query = query.Include(x => x.financialCategory);
+				query = query.Include(x => x.financialOffice);
 				query = query.Include(x => x.fiscalPeriod);
 				query = query.Include(x => x.paymentType);
 				query = query.Include(x => x.scheduledEvent);
@@ -408,6 +421,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/FinancialTransactions/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? financialCategoryId = null,
+			int? financialOfficeId = null,
 			int? scheduledEventId = null,
 			int? contactId = null,
 			int? clientId = null,
@@ -478,6 +492,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (financialCategoryId.HasValue == true)
 			{
 				query = query.Where(ft => ft.financialCategoryId == financialCategoryId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(ft => ft.financialOfficeId == financialOfficeId.Value);
 			}
 			if (scheduledEventId.HasValue == true)
 			{
@@ -646,6 +664,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialCategory.code.Contains(anyStringContains)
 			       || x.financialCategory.externalAccountId.Contains(anyStringContains)
 			       || x.financialCategory.color.Contains(anyStringContains)
+			       || x.financialOffice.name.Contains(anyStringContains)
+			       || x.financialOffice.description.Contains(anyStringContains)
+			       || x.financialOffice.code.Contains(anyStringContains)
+			       || x.financialOffice.contactName.Contains(anyStringContains)
+			       || x.financialOffice.contactEmail.Contains(anyStringContains)
+			       || x.financialOffice.exportFormat.Contains(anyStringContains)
+			       || x.financialOffice.color.Contains(anyStringContains)
 			       || x.fiscalPeriod.name.Contains(anyStringContains)
 			       || x.fiscalPeriod.description.Contains(anyStringContains)
 			       || x.fiscalPeriod.periodType.Contains(anyStringContains)
@@ -731,6 +756,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					query = query.Include(x => x.contact);
 					query = query.Include(x => x.currency);
 					query = query.Include(x => x.financialCategory);
+					query = query.Include(x => x.financialOffice);
 					query = query.Include(x => x.fiscalPeriod);
 					query = query.Include(x => x.paymentType);
 					query = query.Include(x => x.scheduledEvent);
@@ -1122,6 +1148,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					financialTransaction.contact = null;
 					financialTransaction.currency = null;
 					financialTransaction.financialCategory = null;
+					financialTransaction.financialOffice = null;
 					financialTransaction.fiscalPeriod = null;
 					financialTransaction.paymentType = null;
 					financialTransaction.scheduledEvent = null;
@@ -1247,6 +1274,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.contact = null;
 				cloneOfExisting.currency = null;
 				cloneOfExisting.financialCategory = null;
+				cloneOfExisting.financialOffice = null;
 				cloneOfExisting.fiscalPeriod = null;
 				cloneOfExisting.paymentType = null;
 				cloneOfExisting.scheduledEvent = null;
@@ -1280,6 +1308,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Put all other fields back the way that they were 
 				    //
 				    financialTransaction.financialCategoryId = oldFinancialTransaction.financialCategoryId;
+				    financialTransaction.financialOfficeId = oldFinancialTransaction.financialOfficeId;
 				    financialTransaction.scheduledEventId = oldFinancialTransaction.scheduledEventId;
 				    financialTransaction.contactId = oldFinancialTransaction.contactId;
 				    financialTransaction.clientId = oldFinancialTransaction.clientId;
@@ -1743,6 +1772,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			int? financialCategoryId = null,
+			int? financialOfficeId = null,
 			int? scheduledEventId = null,
 			int? contactId = null,
 			int? clientId = null,
@@ -1832,6 +1862,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (financialCategoryId.HasValue == true)
 			{
 				query = query.Where(ft => ft.financialCategoryId == financialCategoryId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(ft => ft.financialOfficeId == financialOfficeId.Value);
 			}
 			if (scheduledEventId.HasValue == true)
 			{
@@ -2001,6 +2035,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialCategory.code.Contains(anyStringContains)
 			       || x.financialCategory.externalAccountId.Contains(anyStringContains)
 			       || x.financialCategory.color.Contains(anyStringContains)
+			       || x.financialOffice.name.Contains(anyStringContains)
+			       || x.financialOffice.description.Contains(anyStringContains)
+			       || x.financialOffice.code.Contains(anyStringContains)
+			       || x.financialOffice.contactName.Contains(anyStringContains)
+			       || x.financialOffice.contactEmail.Contains(anyStringContains)
+			       || x.financialOffice.exportFormat.Contains(anyStringContains)
+			       || x.financialOffice.color.Contains(anyStringContains)
 			       || x.fiscalPeriod.name.Contains(anyStringContains)
 			       || x.fiscalPeriod.description.Contains(anyStringContains)
 			       || x.fiscalPeriod.periodType.Contains(anyStringContains)

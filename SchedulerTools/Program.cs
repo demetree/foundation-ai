@@ -1377,23 +1377,33 @@ namespace Foundation.Scheduler.CodeGeneration
                 Console.WriteLine();
 
                 //
-                // Step 2: Create standard payment types for this tenant
+                // Step 2: Create financial offices for this tenant
                 //
-                Console.WriteLine("--- Step 2: Loading Payment Types ---");
+                Console.WriteLine("--- Step 2: Loading Financial Offices ---");
+                var officeIds = LoadFinancialOffices(context);
+                Console.WriteLine($"  {officeIds.Count} financial offices loaded.");
+                Console.WriteLine();
+
+                int recOfficeId = officeIds.ContainsKey("REC") ? officeIds["REC"] : 0;
+
+                //
+                // Step 3: Create standard payment types for this tenant
+                //
+                Console.WriteLine("--- Step 3: Loading Payment Types ---");
                 int paymentTypeCount = LoadPaymentTypes(context);
                 Console.WriteLine($"  {paymentTypeCount} payment types loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 3: Create standard receipt types for this tenant
+                // Step 4: Create standard receipt types for this tenant
                 //
-                Console.WriteLine("--- Step 3: Loading Receipt Types ---");
+                Console.WriteLine("--- Step 4: Loading Receipt Types ---");
                 int receiptTypeCount = LoadReceiptTypes(context);
                 Console.WriteLine($"  {receiptTypeCount} receipt types loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 4: Load financial categories from the Events Code sheet
+                // Step 5: Load financial categories from the Events Code sheet
                 //
                 // Resolve AccountType IDs for category creation
                 var incomeAccountType = context.AccountTypes.FirstOrDefault(at => at.name == "Income");
@@ -1405,33 +1415,33 @@ namespace Foundation.Scheduler.CodeGeneration
                     return;
                 }
 
-                Console.WriteLine("--- Step 4: Loading Financial Categories ---");
-                Dictionary<string, int> categoryIdByCode = LoadFinancialCategories(context, financesFile, cad.id, incomeAccountType.id, expenseAccountType.id);
+                Console.WriteLine("--- Step 5: Loading Financial Categories ---");
+                Dictionary<string, int> categoryIdByCode = LoadFinancialCategories(context, financesFile, cad.id, incomeAccountType.id, expenseAccountType.id, recOfficeId);
                 Console.WriteLine($"  {categoryIdByCode.Count} categories loaded.");
                 Console.WriteLine();
 
                 
 
                 //
-                // Step 5: Load income transactions
+                // Step 6: Load income transactions
                 //
-                Console.WriteLine("--- Step 5: Loading Income Transactions ---");
-                int incomeCount = LoadFinancialTransactions(context, financesFile, "Income", true, categoryIdByCode, cad.id, incomeAccountType.id, expenseAccountType.id);
+                Console.WriteLine("--- Step 6: Loading Income Transactions ---");
+                int incomeCount = LoadFinancialTransactions(context, financesFile, "Income", true, categoryIdByCode, cad.id, incomeAccountType.id, expenseAccountType.id, recOfficeId);
                 Console.WriteLine($"  {incomeCount} income transactions loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 6: Load expense transactions
+                // Step 7: Load expense transactions
                 //
-                Console.WriteLine("--- Step 6: Loading Expense Transactions ---");
-                int expenseCount = LoadFinancialTransactions(context, financesFile, "Expenses", false, categoryIdByCode, cad.id, incomeAccountType.id, expenseAccountType.id);
+                Console.WriteLine("--- Step 7: Loading Expense Transactions ---");
+                int expenseCount = LoadFinancialTransactions(context, financesFile, "Expenses", false, categoryIdByCode, cad.id, incomeAccountType.id, expenseAccountType.id, recOfficeId);
                 Console.WriteLine($"  {expenseCount} expense transactions loaded.");
                 Console.WriteLine();
 
                 //
-                // Step 7: Load bookings as ScheduledEvents
+                // Step 8: Load bookings as ScheduledEvents
                 //
-                Console.WriteLine("--- Step 7: Loading Bookings ---");
+                Console.WriteLine("--- Step 8: Loading Bookings ---");
                 int bookingCount = LoadBookings(context, bookingsFile, recCalendar.id, completedStatus.id, plannedStatus.id, cad.id);
                 Console.WriteLine($"  {bookingCount} bookings loaded.");
                 Console.WriteLine();
@@ -1460,7 +1470,8 @@ namespace Foundation.Scheduler.CodeGeneration
             string financesFilePath,
             int currencyId,
             int incomeAccountTypeId,
-            int expenseAccountTypeId)
+            int expenseAccountTypeId,
+            int financialOfficeId)
         {
             Dictionary<string, int> result = new Dictionary<string, int>();
 
@@ -1576,6 +1587,7 @@ namespace Foundation.Scheduler.CodeGeneration
                 fc.name = categoryName;
                 fc.description = $"{(isRevenue ? "Revenue" : "Expense")}: {categoryName}";
                 fc.accountTypeId = isRevenue ? incomeAccountTypeId : expenseAccountTypeId;
+                fc.financialOfficeId = financialOfficeId > 0 ? financialOfficeId : null;
                 fc.isTaxApplicable = false;
                 fc.sequence = sequence++;
                 fc.versionNumber = 0;
@@ -1624,7 +1636,8 @@ namespace Foundation.Scheduler.CodeGeneration
             Dictionary<string, int> categoryIdByCode,
             int currencyId,
             int incomeAccountTypeId,
-            int expenseAccountTypeId)
+            int expenseAccountTypeId,
+            int financialOfficeId)
         {
             // Check if transactions already exist
             int existingCount = context.FinancialTransactions
@@ -1751,6 +1764,7 @@ namespace Foundation.Scheduler.CodeGeneration
                                 miscCategory.name = $"Category {categoryCode}";
                                 miscCategory.description = $"{(isRevenue ? "Revenue" : "Expense")}: Auto-created for code {categoryCode}";
                                 miscCategory.accountTypeId = isRevenue ? incomeAccountTypeId : expenseAccountTypeId;
+                                miscCategory.financialOfficeId = financialOfficeId > 0 ? financialOfficeId : null;
                                 miscCategory.isTaxApplicable = false;
                                 miscCategory.sequence = 900 + int.Parse(categoryCode.Length > 3 ? categoryCode.Substring(0, 3) : categoryCode, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture);
                                 miscCategory.versionNumber = 0;
@@ -1899,6 +1913,7 @@ namespace Foundation.Scheduler.CodeGeneration
                 ft.taxAmount = taxAmount;
                 ft.totalAmount = totalAmount;
                 ft.isRevenue = isRevenue;
+                ft.financialOfficeId = financialOfficeId > 0 ? financialOfficeId : null;
                 ft.currencyId = currencyId;
                 ft.versionNumber = 0;
                 ft.objectGuid = Guid.NewGuid();
@@ -2372,7 +2387,84 @@ namespace Foundation.Scheduler.CodeGeneration
             context.SaveChanges();
             return count;
         }
-        
+
+
+        /// <summary>
+        /// Creates standard financial offices for the PHMC tenant.
+        /// Returns a dictionary mapping office codes to their database IDs.
+        ///
+        /// AI-generated code.
+        /// </summary>
+        private static Dictionary<string, int> LoadFinancialOffices(SchedulerContext context)
+        {
+            Dictionary<string, int> result = new Dictionary<string, int>();
+
+            int existingCount = context.FinancialOffices
+                .Where(fo => fo.tenantGuid == PHMCTenantGuid)
+                .Count();
+
+            if (existingCount > 0)
+            {
+                Console.WriteLine($"  Financial offices already exist ({existingCount} found). Loading IDs...");
+
+                var existing = context.FinancialOffices
+                    .Where(fo => fo.tenantGuid == PHMCTenantGuid)
+                    .ToList();
+
+                foreach (var fo in existing)
+                {
+                    result[fo.code] = fo.id;
+                }
+
+                return result;
+            }
+
+            var offices = new (string code, string name, string description, string color, int sequence, string guid)[]
+            {
+                ("REC",   "Recreation Committee",  "Petty Harbour-Maddox Cove Recreation Committee — manages the recreation centre, events, programs, and related finances.",  "#4CAF50", 1, "f1a1b2c3-0001-4000-8000-000000000001"),
+                ("ADMIN", "Town Administration",   "Town of Petty Harbour-Maddox Cove administrative operations — infrastructure, water/sewer, snow removal, general governance.", "#2196F3", 2, "f1a1b2c3-0001-4000-8000-000000000002"),
+            };
+
+            int count = 0;
+            foreach (var o in offices)
+            {
+                FinancialOffice office = new FinancialOffice();
+                office.tenantGuid = PHMCTenantGuid;
+                office.code = o.code;
+                office.name = o.name;
+                office.description = o.description;
+                office.color = o.color;
+                office.exportFormat = "CSV";
+                office.sequence = o.sequence;
+                office.versionNumber = 0;
+                office.objectGuid = new Guid(o.guid);
+                office.active = true;
+                office.deleted = false;
+
+                context.FinancialOffices.Add(office);
+                count++;
+
+                result[office.code] = 0; // placeholder, will get real ID after save
+
+                Console.WriteLine($"    + {office.name} ({office.code})");
+            }
+
+            context.SaveChanges();
+
+            // Reload IDs after save
+            var saved = context.FinancialOffices
+                .Where(fo => fo.tenantGuid == PHMCTenantGuid)
+                .ToList();
+
+            result.Clear();
+            foreach (var fo in saved)
+            {
+                result[fo.code] = fo.id;
+            }
+
+            return result;
+        }
+
 
         #region Helper Methods
 

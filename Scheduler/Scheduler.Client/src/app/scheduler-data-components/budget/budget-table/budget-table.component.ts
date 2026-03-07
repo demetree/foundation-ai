@@ -177,6 +177,7 @@ export class BudgetTableComponent implements OnInit, OnChanges, AfterViewInit {
     const defaultColumns: TableColumn[] = [
     { key: 'financialCategory.name', label: 'Financial Category', width: undefined, template: 'link', linkPath: ['/financialcategory', 'financialCategoryId'] },
     { key: 'fiscalPeriod.name', label: 'Fiscal Period', width: undefined, template: 'link', linkPath: ['/fiscalperiod', 'fiscalPeriodId'] },
+    { key: 'financialOffice.name', label: 'Financial Office', width: undefined, template: 'link', linkPath: ['/financialoffice', 'financialOfficeId'] },
     { key: 'budgetedAmount', label: 'Budgeted Amount', width: undefined },
     { key: 'revisedAmount', label: 'Revised Amount', width: undefined },
     { key: 'notes', label: 'Notes', width: undefined },
@@ -330,6 +331,7 @@ export class BudgetTableComponent implements OnInit, OnChanges, AfterViewInit {
         const filterFields = [
                       'financialCategory.name',
                       'fiscalPeriod.name',
+                      'financialOffice.name',
                       'budgetedAmount',
                       'revisedAmount',
                       'notes',

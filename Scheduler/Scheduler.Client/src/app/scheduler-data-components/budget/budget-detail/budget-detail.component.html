@@ -37,6 +37,13 @@
                                     Fiscal Period is required
                                 </div>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('financialOfficeId')">
+                                <label for="Budget-financialOfficeId" id="label-Budget-financialOfficeId">Financial Office</label>
+                                <select id="Budget-financialOfficeId" formControlName="financialOfficeId" class="form-select budget-select" [disabled]="!userIsSchedulerBudgetWriter()">
+                                    <option [ngValue]="null">Select Financial Office</option>
+                                    <option *ngFor="let financialOffice of financialOffices$ | async" [ngValue]="financialOffice.id">{{financialOffice.name}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('budgetedAmount')">
                                 <label for="Budget-budgetedAmount" id="label-Budget-budgetedAmount"><span class="text-danger">*</span>Budgeted Amount</label>
                                 <input type="number" id="Budget-budgetedAmount" formControlName="budgetedAmount" placeholder="Enter Budgeted Amount" class="form-control budget-input" [disabled]="!userIsSchedulerBudgetWriter()" aria-labelledby="label-budgetedAmount" />

@@ -35,6 +35,10 @@
                 Fiscal  Period
                 <span *ngIf="sortColumn === 'fiscalPeriod.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialOffice.name')">
+                Financial  Office
+                <span *ngIf="sortColumn === 'financialOffice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('budgetedAmount')">
                 Budgeted  Amount
                 <span *ngIf="sortColumn === 'budgetedAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -138,6 +142,7 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/financialcategory', budget.financialCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Financial Category details">{{budget.financialCategory?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/fiscalperiod', budget.fiscalPeriodId]" class="btn btn-link text-left" ngbTooltip="Open Fiscal Period details">{{budget.fiscalPeriod?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialoffice', budget.financialOfficeId]" class="btn btn-link text-left" ngbTooltip="Open Financial Office details">{{budget.financialOffice?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/budget', budget.id]" class="btn btn-link text-left" ngbTooltip="Open Budget details">{{budget.budgetedAmount | bigNumberFormat : '1.0-2'}}</a></td>
             <td class="text-truncate">{{budget.revisedAmount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{budget.notes}}</td>
@@ -296,6 +301,10 @@ End of commented block for alternate definition option -->
             <p class="budget-info" *ngIf="budget.fiscalPeriodId != null">
               <strong>Fiscal Period: </strong>
               <a [routerLink]="['/fiscalperiod', budget.fiscalPeriodId]" class="text-left p-0 m-0" ngbTooltip="Open Fiscal Period details">{{budget.fiscalPeriod?.name}}</a>
+            </p>
+            <p class="budget-info" *ngIf="budget.financialOfficeId != null">
+              <strong>Financial Office: </strong>
+              <a [routerLink]="['/financialoffice', budget.financialOfficeId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Office details">{{budget.financialOffice?.name}}</a>
             </p>
             <p class="budget-info" *ngIf="budget.budgetedAmount != null">
               <strong>Budgeted Amount: </strong>

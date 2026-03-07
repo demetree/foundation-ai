@@ -283,6 +283,7 @@ namespace Foundation.Scheduler.Database
 			public Int32 id { get; set; }
 			[Required]
 			public Int32 financialCategoryId { get; set; }
+			public Int32? financialOfficeId { get; set; }
 			public Int32? scheduledEventId { get; set; }
 			public Int32? contactId { get; set; }
 			public Int32? clientId { get; set; }
@@ -329,6 +330,7 @@ namespace Foundation.Scheduler.Database
 			public Contact.ContactDTO contact { get; set; }
 			public Currency.CurrencyDTO currency { get; set; }
 			public FinancialCategory.FinancialCategoryDTO financialCategory { get; set; }
+			public FinancialOffice.FinancialOfficeDTO financialOffice { get; set; }
 			public FiscalPeriod.FiscalPeriodDTO fiscalPeriod { get; set; }
 			public PaymentType.PaymentTypeDTO paymentType { get; set; }
 			public ScheduledEvent.ScheduledEventDTO scheduledEvent { get; set; }
@@ -349,6 +351,7 @@ namespace Foundation.Scheduler.Database
 			{
 				id = this.id,
 				financialCategoryId = this.financialCategoryId,
+				financialOfficeId = this.financialOfficeId,
 				scheduledEventId = this.scheduledEventId,
 				contactId = this.contactId,
 				clientId = this.clientId,
@@ -413,6 +416,7 @@ namespace Foundation.Scheduler.Database
 			{
 				id = this.id,
 				financialCategoryId = this.financialCategoryId,
+				financialOfficeId = this.financialOfficeId,
 				scheduledEventId = this.scheduledEventId,
 				contactId = this.contactId,
 				clientId = this.clientId,
@@ -441,6 +445,7 @@ namespace Foundation.Scheduler.Database
 				contact = this.contact?.ToDTO(),
 				currency = this.currency?.ToDTO(),
 				financialCategory = this.financialCategory?.ToDTO(),
+				financialOffice = this.financialOffice?.ToDTO(),
 				fiscalPeriod = this.fiscalPeriod?.ToDTO(),
 				paymentType = this.paymentType?.ToDTO(),
 				scheduledEvent = this.scheduledEvent?.ToDTO(),
@@ -485,6 +490,7 @@ namespace Foundation.Scheduler.Database
 			{
 				id = dto.id,
 				financialCategoryId = dto.financialCategoryId,
+				financialOfficeId = dto.financialOfficeId,
 				scheduledEventId = dto.scheduledEventId,
 				contactId = dto.contactId,
 				clientId = dto.clientId,
@@ -526,6 +532,7 @@ namespace Foundation.Scheduler.Database
 			}
 
 			this.financialCategoryId = dto.financialCategoryId;
+			this.financialOfficeId = dto.financialOfficeId;
 			this.scheduledEventId = dto.scheduledEventId;
 			this.contactId = dto.contactId;
 			this.clientId = dto.clientId;
@@ -573,6 +580,7 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				tenantGuid = this.tenantGuid,
 				financialCategoryId = this.financialCategoryId,
+				financialOfficeId = this.financialOfficeId,
 				scheduledEventId = this.scheduledEventId,
 				contactId = this.contactId,
 				clientId = this.clientId,
@@ -651,6 +659,7 @@ namespace Foundation.Scheduler.Database
 			return new {
 				id = financialTransaction.id,
 				financialCategoryId = financialTransaction.financialCategoryId,
+				financialOfficeId = financialTransaction.financialOfficeId,
 				scheduledEventId = financialTransaction.scheduledEventId,
 				contactId = financialTransaction.contactId,
 				clientId = financialTransaction.clientId,
@@ -696,6 +705,7 @@ namespace Foundation.Scheduler.Database
 			return new {
 				id = financialTransaction.id,
 				financialCategoryId = financialTransaction.financialCategoryId,
+				financialOfficeId = financialTransaction.financialOfficeId,
 				scheduledEventId = financialTransaction.scheduledEventId,
 				contactId = financialTransaction.contactId,
 				clientId = financialTransaction.clientId,
@@ -724,6 +734,7 @@ namespace Foundation.Scheduler.Database
 				contact = Contact.CreateMinimalAnonymous(financialTransaction.contact),
 				currency = Currency.CreateMinimalAnonymous(financialTransaction.currency),
 				financialCategory = FinancialCategory.CreateMinimalAnonymous(financialTransaction.financialCategory),
+				financialOffice = FinancialOffice.CreateMinimalAnonymous(financialTransaction.financialOffice),
 				fiscalPeriod = FiscalPeriod.CreateMinimalAnonymous(financialTransaction.fiscalPeriod),
 				paymentType = PaymentType.CreateMinimalAnonymous(financialTransaction.paymentType),
 				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(financialTransaction.scheduledEvent),
