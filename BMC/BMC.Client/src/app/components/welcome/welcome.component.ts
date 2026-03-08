@@ -16,6 +16,7 @@ import { catchError, takeUntil } from 'rxjs/operators';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 import { AuthService } from '../../services/auth.service';
+import { AuthNudgeService } from '../../services/auth-nudge.service';
 
 
 //
@@ -190,28 +191,35 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private http: HttpClient,
-        private authService: AuthService
+        public authService: AuthService,
+        private authNudgeService: AuthNudgeService
     ) { }
 
 
     ngOnInit(): void {
 
         //
-        // Personalized greeting based on time of day
+        // Personalized greeting based on time of day and login status
         //
-        const name = this.authService.fullName || this.authService.userName || '';
-        this.displayName = name ? name.split(' ')[0] : '';
-
         const hour = new Date().getHours();
 
-        if (hour < 12) {
-            this.greeting = 'Good morning';
-        }
-        else if (hour < 17) {
-            this.greeting = 'Good afternoon';
-        }
-        else {
-            this.greeting = 'Good evening';
+        if (this.authService.isLoggedIn) {
+            const name = this.authService.fullName || this.authService.userName || '';
+            this.displayName = name ? name.split(' ')[0] : '';
+
+            if (hour < 12) {
+                this.greeting = 'Good morning';
+            }
+            else if (hour < 17) {
+                this.greeting = 'Good afternoon';
+            }
+            else {
+                this.greeting = 'Good evening';
+            }
+        } else {
+            // Anonymous user
+            this.displayName = '';
+            this.greeting = 'Welcome';
         }
 
         this.startTaglineRotation();
@@ -264,34 +272,74 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     /// Load live database stats
     private loadStats(): void {
 
-        const headers = this.authService.GetAuthenticationHeaders();
+        if (this.authService.isLoggedIn) {
+            //
+            // Authenticated path — use generated RowCount endpoints
+            //
+            const headers = this.authService.GetAuthenticationHeaders();
 
-        const endpoints = [
-            '/api/LegoSets/RowCount',
-            '/api/BrickParts/RowCount',
-            '/api/BrickColours/RowCount',
-            '/api/LegoThemes/RowCount',
-            '/api/LegoMinifigs/RowCount'
-        ];
+            const endpoints = [
+                '/api/LegoSets/RowCount',
+                '/api/BrickParts/RowCount',
+                '/api/BrickColours/RowCount',
+                '/api/LegoThemes/RowCount',
+                '/api/LegoMinifigs/RowCount'
+            ];
 
-        //
-        // Fire all requests in parallel.  Each one independently
-        // updates its stat card so the UI fills in progressively.
-        //
-        endpoints.forEach((url, index) => {
-
-            this.http.get<any>(url, { headers })
-                .pipe(
-                    takeUntil(this.destroy$),
-                    catchError(() => of(null))
-                )
-                .subscribe(count => {
-                    if (count != null) {
-                        this.animateCounter(index, count);
-                    }
-                    this.stats[index].loaded = true;
+            endpoints.forEach((url, index) => {
+                this.http.get<any>(url, { headers })
+                    .pipe(
+                        takeUntil(this.destroy$),
+                        catchError(() => of(null))
+                    )
+                    .subscribe(count => {
+                        if (count != null) {
+                            this.animateCounter(index, count);
+                        }
+                        this.stats[index].loaded = true;
+                    });
+            });
+        } else {
+            //
+            // Anonymous path — use public browse endpoints to get counts
+            //
+            this.http.get<any[]>('/api/public/browse/sets')
+                .pipe(takeUntil(this.destroy$), catchError(() => of([])))
+                .subscribe(sets => {
+                    this.animateCounter(0, Array.isArray(sets) ? sets.length : 0);
+                    this.stats[0].loaded = true;
                 });
-        });
+
+            this.http.get<any>('/api/public/browse/parts-universe')
+                .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
+                .subscribe(payload => {
+                    if (payload?.stats?.totalUniqueParts) {
+                        this.animateCounter(1, payload.stats.totalUniqueParts);
+                    }
+                    this.stats[1].loaded = true;
+                });
+
+            this.http.get<any[]>('/api/public/browse/colours')
+                .pipe(takeUntil(this.destroy$), catchError(() => of([])))
+                .subscribe(colours => {
+                    this.animateCounter(2, Array.isArray(colours) ? colours.length : 0);
+                    this.stats[2].loaded = true;
+                });
+
+            this.http.get<any[]>('/api/public/browse/themes')
+                .pipe(takeUntil(this.destroy$), catchError(() => of([])))
+                .subscribe(themes => {
+                    this.animateCounter(3, Array.isArray(themes) ? themes.length : 0);
+                    this.stats[3].loaded = true;
+                });
+
+            this.http.get<any[]>('/api/public/browse/minifigs')
+                .pipe(takeUntil(this.destroy$), catchError(() => of([])))
+                .subscribe(minifigs => {
+                    this.animateCounter(4, Array.isArray(minifigs) ? minifigs.length : 0);
+                    this.stats[4].loaded = true;
+                });
+        }
     }
 
 

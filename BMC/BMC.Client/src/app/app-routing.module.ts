@@ -263,7 +263,7 @@ import { PublicProfileComponent } from './components/public-profile/public-profi
 const routes: Routes = [
     { path: '', component: PublicLandingComponent, canActivate: [PublicOrRedirectGuard], title: 'BMC — Brick Machine Construction' },
     { path: 'login', component: LoginComponent, canActivate: [LoginRedirectGuard], title: 'Login' },
-    { path: 'welcome', component: WelcomeComponent, canActivate: [AuthGuard], title: 'Welcome' },
+    { path: 'welcome', component: WelcomeComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Welcome' },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], title: 'Dashboard' },
 
     // Public browse routes — accessible to both anonymous and logged-in users

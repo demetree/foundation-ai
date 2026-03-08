@@ -275,13 +275,13 @@ export class LegoUniverseComponent implements OnInit, OnDestroy, AfterViewInit {
                 1440
             )
             : this.cacheService.getOrFetch<CachedTheme[]>(
-                'lego-themes-public',
+                'lego-themes-public-v2',
                 {},
                 () => this.http.get<any[]>('/api/public/browse/themes').pipe(
                     map(list => list.map((t: any) => ({
                         id: Number(t.id),
                         name: t.name,
-                        legoThemeId: Number(t.legoThemeId ?? t.parentId ?? 0)
+                        legoThemeId: Number(t.parentThemeId ?? t.legoThemeId ?? 0)
                     })))
                 ),
                 1440

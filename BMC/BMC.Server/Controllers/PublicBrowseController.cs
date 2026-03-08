@@ -624,6 +624,9 @@ namespace Foundation.BMC.Controllers.WebAPI
                     partName = sp.brickPart != null ? sp.brickPart.name : null,
                     ldrawPartId = sp.brickPart != null ? sp.brickPart.ldrawPartId : null,
                     hasGeometry = sp.brickPart != null && sp.brickPart.geometryOriginalFileName != null,
+                    categoryName = sp.brickPart != null && sp.brickPart.brickCategory != null
+                        ? sp.brickPart.brickCategory.name
+                        : (sp.brickPart != null ? sp.brickPart.ldrawCategory : null),
                     colourName = sp.brickColour != null ? sp.brickColour.name : null,
                     colourHex = sp.brickColour != null ? sp.brickColour.hexRgb : null,
                     ldrawColourCode = sp.brickColour != null ? sp.brickColour.ldrawColourCode ?? 0 : 0,

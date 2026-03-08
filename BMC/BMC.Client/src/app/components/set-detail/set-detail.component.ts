@@ -158,7 +158,10 @@ export class SetDetailComponent implements OnInit, OnDestroy {
                             name: p.partName,
                             ldrawPartId: p.ldrawPartId,
                             rebrickableImgUrl: p.imgUrl,
+                            rebrickablePartNum: p.ldrawPartId,
                             geometryOriginalFileName: p.hasGeometry ? 'exists' : null,
+                            brickCategory: p.categoryName ? { name: p.categoryName } : null,
+                            ldrawCategory: p.categoryName ?? null,
                         },
                         brickColour: {
                             name: p.colourName,
