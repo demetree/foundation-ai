@@ -1,1 +1,73 @@
-import { Component, OnInit } from '@angular/core'; \r\nimport { HubApiService } from '../../services/hub-api.service'; \r\n\r\n @Component({ \r\n    selector: 'app-hub-schedule', \r\n    templateUrl: './hub-schedule.component.html', \r\n    styleUrls: ['./hub-schedule.component.scss']\r\n }) \r\nexport class HubScheduleComponent implements OnInit { \r\n\r\n    assignments: any[] = []; \r\n    filteredAssignments: any[] = []; \r\n    isLoading = true; \r\n    filter: 'upcoming' | 'past' | 'all' = 'upcoming'; \r\n    respondingId: number | null = null; \r\n\r\n    constructor(private api: HubApiService) { } \r\n\r\n    ngOnInit(): void { \r\n        this.loadAssignments(); \r\n } \r\n\r\n    private loadAssignments(): void { \r\n        this.isLoading = true; \r\n        this.api.getMyAssignments().subscribe({ \r\n            next: (assigns) => { \r\n                this.assignments = assigns; \r\n                this.applyFilter(); \r\n                this.isLoading = false; \r\n }, \r\n            error: () => this.isLoading = false\r\n }); \r\n } \r\n\r\n    setFilter(filter: 'upcoming' | 'past' | 'all'): void { \r\n        this.filter = filter; \r\n        this.applyFilter(); \r\n } \r\n\r\n    private applyFilter(): void { \r\n        const now = new Date(); \r\n        if (this.filter === 'upcoming') { \r\n            this.filteredAssignments = this.assignments.filter(a => new Date(a.startDateTime) >= now); \r\n } else if (this.filter === 'past') { \r\n            this.filteredAssignments = this.assignments.filter(a => new Date(a.startDateTime) < now); \r\n } else { \r\n            this.filteredAssignments = [...this.assignments]; \r\n } \r\n } \r\n\r\n    respond(assignmentId: number, accepted: boolean): void { \r\n        this.respondingId = assignmentId; \r\n        this.api.respondToAssignment(assignmentId, accepted).subscribe({ \r\n            next: (result) => { \r\n                // Update assignment status locally\r\n                const assignment = this.assignments.find(a => a.id === assignmentId);\r\n                if (assignment) {\r\n                    assignment.status = result.status;\r\n                }\r\n                this.respondingId = null;\r\n            },\r\n            error: () => this.respondingId = null\r\n        });\r\n    }\r\n\r\n    getStatusClass(status: string): string {\r\n        switch (status) {\r\n            case 'Confirmed': return 'badge-success';\r\n            case 'Declined': return 'badge-danger';\r\n            case 'Planned': return 'badge-warning';\r\n            default: return 'badge-info';\r\n        }\r\n    }\r\n}\r\n
+import { Component, OnInit } from '@angular/core';
+import { HubApiService } from '../../services/hub-api.service';
+
+@Component({
+    selector: 'app-hub-schedule',
+    templateUrl: './hub-schedule.component.html',
+    styleUrls: ['./hub-schedule.component.scss']
+})
+export class HubScheduleComponent implements OnInit {
+
+    assignments: any[] = [];
+    filteredAssignments: any[] = [];
+    isLoading = true;
+    filter: 'upcoming' | 'past' | 'all' = 'upcoming';
+    respondingId: number | null = null;
+
+    constructor(private api: HubApiService) { }
+
+    ngOnInit(): void {
+        this.loadAssignments();
+    }
+
+    private loadAssignments(): void {
+        this.isLoading = true;
+        this.api.getMyAssignments().subscribe({
+            next: (assigns) => {
+                this.assignments = assigns;
+                this.applyFilter();
+                this.isLoading = false;
+            },
+            error: () => this.isLoading = false
+        });
+    }
+
+    setFilter(filter: 'upcoming' | 'past' | 'all'): void {
+        this.filter = filter;
+        this.applyFilter();
+    }
+
+    private applyFilter(): void {
+        const now = new Date();
+        if (this.filter === 'upcoming') {
+            this.filteredAssignments = this.assignments.filter(a => new Date(a.startDateTime) >= now);
+        } else if (this.filter === 'past') {
+            this.filteredAssignments = this.assignments.filter(a => new Date(a.startDateTime) < now);
+        } else {
+            this.filteredAssignments = [...this.assignments];
+        }
+    }
+
+    respond(assignmentId: number, accepted: boolean): void {
+        this.respondingId = assignmentId;
+        this.api.respondToAssignment(assignmentId, accepted).subscribe({
+            next: (result) => {
+                const assignment = this.assignments.find(a => a.id === assignmentId);
+                if (assignment) {
+                    assignment.status = result.status;
+                }
+                this.respondingId = null;
+            },
+            error: () => this.respondingId = null
+        });
+    }
+
+    getStatusClass(status: string): string {
+        switch (status) {
+            case 'Confirmed': return 'badge-success';
+            case 'Declined': return 'badge-danger';
+            case 'Planned': return 'badge-warning';
+            default: return 'badge-info';
+        }
+    }
+}

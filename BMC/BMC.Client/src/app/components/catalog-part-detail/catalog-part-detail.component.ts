@@ -1794,7 +1794,8 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                     const blobUrl = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = blobUrl;
-                    a.download = `${this.part!.name}.stl`;
+                    const title = this.part!.ldrawTitle || this.part!.name;
+                    a.download = `${this.part!.name} - ${title}.stl`;
                     a.click();
                     URL.revokeObjectURL(blobUrl);
                     this.exportingStl = false;

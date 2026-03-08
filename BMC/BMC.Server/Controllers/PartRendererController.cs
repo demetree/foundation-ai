@@ -595,13 +595,25 @@ namespace Foundation.BMC.Controllers.WebAPI
             format = (format ?? "binary").ToLowerInvariant();
             bool ascii = format == "ascii";
 
+            // Build a human-readable filename:  "3001 - Brick 2 x 4.stl"
+            string partTitle = await _db.BrickParts
+                .Where(p => p.active && !p.deleted &&
+                    (p.name == partNumber || p.ldrawPartId == partNumber || p.ldrawPartId == partNumber + ".dat"))
+                .Select(p => p.ldrawTitle ?? p.name)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            string safeTitle = string.IsNullOrWhiteSpace(partTitle)
+                ? partNumber
+                : $"{partNumber} - {string.Join("_", partTitle.Split(Path.GetInvalidFileNameChars()))}";
+            string stlFileName = $"{safeTitle}.stl";
+
             // Check cache
             string cacheKey = $"part-stl:{partNumber}:{colourCode}:{format}";
 
             if (_cache.TryGetValue(cacheKey, out byte[] cached))
             {
                 string cachedContentType = ascii ? "text/plain" : "application/octet-stream";
-                return File(cached, cachedContentType, $"{partNumber}.stl");
+                return File(cached, cachedContentType, stlFileName);
             }
 
             // Resolve part file
@@ -637,7 +649,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
                 string contentType = ascii ? "text/plain" : "application/octet-stream";
 
-                return File(stlBytes, contentType, $"{partNumber}.stl");
+                return File(stlBytes, contentType, stlFileName);
             }
             catch (OperationCanceledException)
             {

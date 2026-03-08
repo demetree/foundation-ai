@@ -1,7 +1,87 @@
 .hub-page-title i {
-    \r\n color: var(--hub-primary-light);
-    \r\n margin-right: 0.5rem;
-    \r\n
+    color: var(--hub-primary-light);
+    margin-right: 0.5rem;
 }
 
-\r\n\r\n // Profile info section\r\n.profile-info {\r\n    margin-bottom: 1rem;\r\n}\r\n\r\n.profile-row {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    padding: 0.6rem 0;\r\n    \r\n    & + .profile-row {\r\n        border-top: 1px solid var(--hub-border);\r\n    }\r\n}\r\n\r\n.profile-label {\r\n    font-size: 0.85rem;\r\n    color: var(--hub-text-muted);\r\n    font-weight: 500;\r\n}\r\n\r\n.profile-value {\r\n    font-size: 0.95rem;\r\n    font-weight: 600;\r\n    text-align: right;\r\n\r\n    &.hours {\r\n        color: var(--hub-primary-light);\r\n        font-size: 1.1rem;\r\n    }\r\n}\r\n\r\n// Edit form\r\n.profile-edit {\r\n    margin-bottom: 1.5rem;\r\n}\r\n\r\n.edit-field {\r\n    margin-bottom: 1rem;\r\n\r\n    label {\r\n        display: block;\r\n        font-size: 0.8rem;\r\n        font-weight: 600;\r\n        color: var(--hub-text-muted);\r\n        text-transform: uppercase;\r\n        letter-spacing: 0.05em;\r\n        margin-bottom: 0.4rem;\r\n    }\r\n\r\n    textarea {\r\n        resize: vertical;\r\n        min-height: 60px;\r\n    }\r\n}\r\n\r\n.save-btn {\r\n    width: 100%;\r\n    margin-top: 0.5rem;\r\n}\r\n\r\n.save-message {\r\n    margin-top: 0.75rem;\r\n    padding: 0.5rem 0.75rem;\r\n    border-radius: var(--hub-radius-sm);\r\n    font-size: 0.8rem;\r\n    font-weight: 500;\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 0.4rem;\r\n\r\n    &.success {\r\n        background: rgba(16, 185, 129, 0.1);\r\n        color: var(--hub-success);\r\n    }\r\n\r\n    &.error {\r\n        background: rgba(239, 68, 68, 0.1);\r\n        color: var(--hub-danger);\r\n    }\r\n}\r\n
+// Profile info section
+.profile-info {
+    margin-bottom: 1rem;
+}
+
+.profile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+
+    &+.profile-row {
+        border-top: 1px solid var(--hub-border);
+    }
+}
+
+.profile-label {
+    font-size: 0.85rem;
+    color: var(--hub-text-muted);
+    font-weight: 500;
+}
+
+.profile-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: right;
+
+    &.hours {
+        color: var(--hub-primary-light);
+        font-size: 1.1rem;
+    }
+}
+
+// Edit form
+.profile-edit {
+    margin-bottom: 1.5rem;
+}
+
+.edit-field {
+    margin-bottom: 1rem;
+
+    label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--hub-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.4rem;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+}
+
+.save-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.save-message {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--hub-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--hub-success);
+    }
+
+    &.error {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--hub-danger);
+    }
+}

@@ -1,1 +1,63 @@
-import { Component, OnInit } from '@angular/core'; \r\nimport { HubApiService } from '../../services/hub-api.service'; \r\n\r\n @Component({ \r\n    selector: 'app-hub-profile', \r\n    templateUrl: './hub-profile.component.html', \r\n    styleUrls: ['./hub-profile.component.scss']\r\n }) \r\nexport class HubProfileComponent implements OnInit { \r\n\r\n    profile: any = null; \r\n    isLoading = true; \r\n    isSaving = false; \r\n    saveMessage = ''; \r\n    saveError = ''; \r\n\r\n    // Editable fields\r\n    availabilityPreferences = '';\r\n    interestsAndSkillsNotes = '';\r\n    emergencyContactNotes = '';\r\n\r\n    constructor(private api: HubApiService) { }\r\n\r\n    ngOnInit(): void {\r\n        this.loadProfile();\r\n    }\r\n\r\n    private loadProfile(): void {\r\n        this.isLoading = true;\r\n        this.api.getMyProfile().subscribe({\r\n            next: (profile) => {\r\n                this.profile = profile;\r\n                this.availabilityPreferences = profile.availabilityPreferences || '';\r\n                this.interestsAndSkillsNotes = profile.interestsAndSkillsNotes || '';\r\n                this.emergencyContactNotes = profile.emergencyContactNotes || '';\r\n                this.isLoading = false;\r\n            },\r\n            error: () => this.isLoading = false\r\n        });\r\n    }\r\n\r\n    saveProfile(): void {\r\n        this.isSaving = true;\r\n        this.saveMessage = '';\r\n        this.saveError = '';\r\n\r\n        this.api.updateMyProfile({\r\n            availabilityPreferences: this.availabilityPreferences,\r\n            interestsAndSkillsNotes: this.interestsAndSkillsNotes,\r\n            emergencyContactNotes: this.emergencyContactNotes\r\n        }).subscribe({\r\n            next: () => {\r\n                this.saveMessage = 'Profile saved!';\r\n                this.isSaving = false;\r\n                setTimeout(() => this.saveMessage = '', 3000);\r\n            },\r\n            error: () => {\r\n                this.saveError = 'Failed to save. Please try again.';\r\n                this.isSaving = false;\r\n            }\r\n        });\r\n    }\r\n}\r\n
+import { Component, OnInit } from '@angular/core';
+import { HubApiService } from '../../services/hub-api.service';
+
+@Component({
+    selector: 'app-hub-profile',
+    templateUrl: './hub-profile.component.html',
+    styleUrls: ['./hub-profile.component.scss']
+})
+export class HubProfileComponent implements OnInit {
+
+    profile: any = null;
+    isLoading = true;
+    isSaving = false;
+    saveMessage = '';
+    saveError = '';
+
+    // Editable fields
+    availabilityPreferences = '';
+    interestsAndSkillsNotes = '';
+    emergencyContactNotes = '';
+
+    constructor(private api: HubApiService) { }
+
+    ngOnInit(): void {
+        this.loadProfile();
+    }
+
+    private loadProfile(): void {
+        this.isLoading = true;
+        this.api.getMyProfile().subscribe({
+            next: (profile) => {
+                this.profile = profile;
+                this.availabilityPreferences = profile.availabilityPreferences || '';
+                this.interestsAndSkillsNotes = profile.interestsAndSkillsNotes || '';
+                this.emergencyContactNotes = profile.emergencyContactNotes || '';
+                this.isLoading = false;
+            },
+            error: () => this.isLoading = false
+        });
+    }
+
+    saveProfile(): void {
+        this.isSaving = true;
+        this.saveMessage = '';
+        this.saveError = '';
+
+        this.api.updateMyProfile({
+            availabilityPreferences: this.availabilityPreferences,
+            interestsAndSkillsNotes: this.interestsAndSkillsNotes,
+            emergencyContactNotes: this.emergencyContactNotes
+        }).subscribe({
+            next: () => {
+                this.saveMessage = 'Profile saved!';
+                this.isSaving = false;
+                setTimeout(() => this.saveMessage = '', 3000);
+            },
+            error: () => {
+                this.saveError = 'Failed to save. Please try again.';
+                this.isSaving = false;
+            }
+        });
+    }
+}

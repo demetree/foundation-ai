@@ -1,1 +1,93 @@
-import { Component, OnInit } from '@angular/core'; \r\nimport { HubApiService } from '../../services/hub-api.service'; \r\n\r\n @Component({ \r\n    selector: 'app-hub-hours', \r\n    templateUrl: './hub-hours.component.html', \r\n    styleUrls: ['./hub-hours.component.scss']\r\n }) \r\nexport class HubHoursComponent implements OnInit { \r\n\r\n    assignments: any[] = []; \r\n    isLoading = true; \r\n    totalReported = 0; \r\n    totalApproved = 0; \r\n    pendingCount = 0; \r\n\r\n    // Inline report form state\r\n    reportingId: number | null = null;\r\n    reportHours: number | null = null;\r\n    reportNotes = '';\r\n    reportError = '';\r\n    reportSuccess = '';\r\n\r\n    constructor(private api: HubApiService) { }\r\n\r\n    ngOnInit(): void {\r\n        this.loadHours();\r\n    }\r\n\r\n    private loadHours(): void {\r\n        this.isLoading = true;\r\n\r\n        // Load past assignments (last 365 days)\r\n        const to = new Date();\r\n        const from = new Date();\r\n        from.setFullYear(from.getFullYear() - 1);\r\n\r\n        this.api.getMyAssignments(from, to).subscribe({\r\n            next: (assigns) => {\r\n                // Filter to past assignments\r\n                this.assignments = assigns.filter(a => new Date(a.startDateTime) < new Date());\r\n                this.calculateTotals();\r\n                this.isLoading = false;\r\n            },\r\n            error: () => this.isLoading = false\r\n        });\r\n    }\r\n\r\n    private calculateTotals(): void {\r\n        this.totalReported = this.assignments.reduce((sum, a) => sum + (a.reportedHours || 0), 0);\r\n        this.totalApproved = this.assignments.reduce((sum, a) => sum + (a.approvedHours || 0), 0);\r\n        this.pendingCount = this.assignments.filter(a => a.reportedHours && !a.approvedHours).length;\r\n    }\r\n\r\n    startReporting(assignmentId: number): void {\r\n        this.reportingId = assignmentId;\r\n        this.reportHours = null;\r\n        this.reportNotes = '';\r\n        this.reportError = '';\r\n        this.reportSuccess = '';\r\n    }\r\n\r\n    cancelReporting(): void {\r\n        this.reportingId = null;\r\n    }\r\n\r\n    submitHours(assignmentId: number): void {\r\n        if (!this.reportHours || this.reportHours <= 0) {\r\n            this.reportError = 'Please enter a valid number of hours.';\r\n            return;\r\n        }\r\n\r\n        this.reportError = '';\r\n\r\n        this.api.reportHours(assignmentId, this.reportHours, this.reportNotes || undefined).subscribe({\r\n            next: () => {\r\n                // Update locally\r\n                const a = this.assignments.find(x => x.id === assignmentId);\r\n                if (a) {\r\n                    a.reportedHours = this.reportHours;\r\n                    a.notes = this.reportNotes;\r\n                }\r\n                this.calculateTotals();\r\n                this.reportSuccess = 'Hours reported!';\r\n                setTimeout(() => {\r\n                    this.reportingId = null;\r\n                    this.reportSuccess = '';\r\n                }, 1500);\r\n            },\r\n            error: () => {\r\n                this.reportError = 'Failed to report hours. Please try again.';\r\n            }\r\n        });\r\n    }\r\n}\r\n
+import { Component, OnInit } from '@angular/core';
+import { HubApiService } from '../../services/hub-api.service';
+
+@Component({
+    selector: 'app-hub-hours',
+    templateUrl: './hub-hours.component.html',
+    styleUrls: ['./hub-hours.component.scss']
+})
+export class HubHoursComponent implements OnInit {
+
+    assignments: any[] = [];
+    isLoading = true;
+    totalReported = 0;
+    totalApproved = 0;
+    pendingCount = 0;
+
+    // Inline report form state
+    reportingId: number | null = null;
+    reportHours: number | null = null;
+    reportNotes = '';
+    reportError = '';
+    reportSuccess = '';
+
+    constructor(private api: HubApiService) { }
+
+    ngOnInit(): void {
+        this.loadHours();
+    }
+
+    private loadHours(): void {
+        this.isLoading = true;
+
+        // Load past assignments (last 365 days)
+        const to = new Date();
+        const from = new Date();
+        from.setFullYear(from.getFullYear() - 1);
+
+        this.api.getMyAssignments(from, to).subscribe({
+            next: (assigns) => {
+                this.assignments = assigns.filter(a => new Date(a.startDateTime) < new Date());
+                this.calculateTotals();
+                this.isLoading = false;
+            },
+            error: () => this.isLoading = false
+        });
+    }
+
+    private calculateTotals(): void {
+        this.totalReported = this.assignments.reduce((sum, a) => sum + (a.reportedHours || 0), 0);
+        this.totalApproved = this.assignments.reduce((sum, a) => sum + (a.approvedHours || 0), 0);
+        this.pendingCount = this.assignments.filter(a => a.reportedHours && !a.approvedHours).length;
+    }
+
+    startReporting(assignmentId: number): void {
+        this.reportingId = assignmentId;
+        this.reportHours = null;
+        this.reportNotes = '';
+        this.reportError = '';
+        this.reportSuccess = '';
+    }
+
+    cancelReporting(): void {
+        this.reportingId = null;
+    }
+
+    submitHours(assignmentId: number): void {
+        if (!this.reportHours || this.reportHours <= 0) {
+            this.reportError = 'Please enter a valid number of hours.';
+            return;
+        }
+
+        this.reportError = '';
+
+        this.api.reportHours(assignmentId, this.reportHours, this.reportNotes || undefined).subscribe({
+            next: () => {
+                const a = this.assignments.find(x => x.id === assignmentId);
+                if (a) {
+                    a.reportedHours = this.reportHours;
+                    a.notes = this.reportNotes;
+                }
+                this.calculateTotals();
+                this.reportSuccess = 'Hours reported!';
+                setTimeout(() => {
+                    this.reportingId = null;
+                    this.reportSuccess = '';
+                }, 1500);
+            },
+            error: () => {
+                this.reportError = 'Failed to report hours. Please try again.';
+            }
+        });
+    }
+}
