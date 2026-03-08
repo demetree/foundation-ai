@@ -1,0 +1,32 @@
+<div class="hub-page">\r\n\r\n <h1 class="hub-page-title animate-in">\r\n <i class="fas fa-calendar"></i> My
+        Schedule\r\n </h1>\r\n\r\n <!-- Filter tabs -->\r\n <div class="schedule-filters animate-in animate-delay-1">
+        \r\n <button class="filter-tab" [class.active]="filter === 'upcoming'"
+            (click)="setFilter('upcoming')">Upcoming</button>\r\n <button class="filter-tab"
+            [class.active]="filter === 'past'" (click)="setFilter('past')">Past</button>\r\n <button class="filter-tab"
+            [class.active]="filter === 'all'" (click)="setFilter('all')">All</button>\r\n </div>\r\n\r\n
+    <!-- Loading -->\r\n <div *ngIf="isLoading" class="hub-card-sm" style="text-align: center; padding: 2rem;">\r\n <i
+            class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--hub-primary-light);"></i>\r\n </div>
+    \r\n\r\n <!-- Empty state -->\r\n <div *ngIf="!isLoading && filteredAssignments.length === 0"
+        class="hub-empty-state hub-card-sm animate-in animate-delay-2">\r\n <i class="fas fa-calendar-check"></i>\r\n
+        <h3>No {{ filter === 'upcoming' ? 'upcoming' : filter === 'past' ? 'past' : '' }} assignments</h3>\r\n <p>
+            Nothing to show here right now.</p>\r\n </div>\r\n\r\n <!-- Assignment list -->\r\n <div
+        class="assignment-list" *ngIf="!isLoading && filteredAssignments.length > 0">\r\n <div
+            class="schedule-card hub-card-sm animate-in" *ngFor="let a of filteredAssignments; let i = index" \r\n
+            [class]="'animate-delay-' + (i + 2)">\r\n\r\n <div class="schedule-card-header">\r\n <div
+                    class="schedule-date">\r\n <span class="schedule-day">{{ a.startDateTime | date:'d' }}</span>\r\n
+                    <span class="schedule-month">{{ a.startDateTime | date:'MMM' }}</span>\r\n </div>\r\n <div
+                    class="schedule-info">\r\n <strong>{{ a.eventName || 'Event' }}</strong>\r\n <span
+                        class="schedule-time">\r\n {{ a.startDateTime | date:'h:mm a' }} – {{ a.endDateTime | date:'h:mm
+                        a' }}\r\n </span>\r\n <div class="schedule-meta">\r\n <span class="hub-badge"
+                            [ngClass]="getStatusClass(a.status)">{{ a.status || 'Planned' }}</span>\r\n <span
+                            class="hub-badge badge-info" *ngIf="a.role">{{ a.role }}</span>\r\n </div>\r\n </div>\r\n
+            </div>\r\n\r\n <div class="schedule-desc" *ngIf="a.eventDescription">\r\n {{ a.eventDescription }}\r\n
+            </div>\r\n\r\n <!-- Accept / Decline actions for pending assignments -->\r\n <div class="schedule-actions"
+                *ngIf="a.status === 'Planned' || a.status === 'Assigned'">\r\n <button
+                    class="hub-btn-primary schedule-action-btn" (click)="respond(a.id, true)" \r\n
+                    [disabled]="respondingId === a.id">\r\n <i class="fas fa-check"
+                        *ngIf="respondingId !== a.id"></i>\r\n <i class="fas fa-spinner fa-spin"
+                        *ngIf="respondingId === a.id"></i>\r\n Accept\r\n </button>\r\n <button
+                    class="hub-btn-outline schedule-action-btn" (click)="respond(a.id, false)" \r\n
+                    [disabled]="respondingId === a.id">\r\n <i class="fas fa-times"></i>\r\n Decline\r\n </button>\r\n
+            </div>\r\n\r\n </div>\r\n </div>\r\n\r\n</div>\r\n

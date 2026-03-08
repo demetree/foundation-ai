@@ -122,7 +122,7 @@ export interface PartsUniversePayload {
 export class PartsUniverseApiService {
     private readonly baseUrl = '/api/parts-universe';
 
-    private static readonly CACHE_STORE = 'parts-universe';
+    private static readonly CACHE_STORE = 'parts-universe-v2';
     private static readonly CACHE_TTL = 1440; // 24 hours
 
     constructor(
@@ -141,11 +141,23 @@ export class PartsUniverseApiService {
             PartsUniverseApiService.CACHE_STORE,
             {},
             () => {
-                if (this.authService.isLoggedIn) {
-                    return this.http.get<PartsUniversePayload>(this.baseUrl, { headers: this.headers });
-                } else {
-                    return this.http.get<PartsUniversePayload>('/api/public/browse/parts-universe');
-                }
+                const source$ = this.authService.isLoggedIn
+                    ? this.http.get<PartsUniversePayload>(this.baseUrl, { headers: this.headers })
+                    : this.http.get<PartsUniversePayload>('/api/public/browse/parts-universe');
+
+                //
+                // Guard: if the server returns a payload with 0 ranked parts (e.g.
+                // during first-run bootstrap before data is imported), immediately
+                // evict it from IndexedDB so the next visit re-fetches from the
+                // server instead of serving stale empty results for 24 hours.
+                //
+                return source$.pipe(
+                    tap(payload => {
+                        if ((payload?.rankedParts?.length ?? 0) === 0) {
+                            this.cacheService.invalidate(PartsUniverseApiService.CACHE_STORE);
+                        }
+                    })
+                );
             },
             PartsUniverseApiService.CACHE_TTL
         );

@@ -63,16 +63,26 @@ namespace Foundation.BMC.Services
         private readonly ILogger<DataImportWorker> _logger;
         private readonly HttpClient _httpClient;
 
+        private readonly PartsUniverseService _partsUniverseService;
+        private readonly SetExplorerService _setExplorerService;
+        private readonly MinifigGalleryService _minifigGalleryService;
+
 
         public DataImportWorker(
             IServiceScopeFactory scopeFactory,
             IConfiguration configuration,
-            ILogger<DataImportWorker> logger
+            ILogger<DataImportWorker> logger,
+            PartsUniverseService partsUniverseService,
+            SetExplorerService setExplorerService,
+            MinifigGalleryService minifigGalleryService
         )
         {
             _scopeFactory = scopeFactory;
             _configuration = configuration;
             _logger = logger;
+            _partsUniverseService = partsUniverseService;
+            _setExplorerService = setExplorerService;
+            _minifigGalleryService = minifigGalleryService;
 
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromMinutes(15);
@@ -181,6 +191,36 @@ namespace Foundation.BMC.Services
                             "{Prefix} Bootstrap complete. Entering normal hourly check cycle.",
                             LOG_PREFIX
                         );
+
+                        //
+                        // Refresh the precomputation caches now that the database is populated.
+                        // These services fire early during startup and may have cached empty results
+                        // from an empty database before the bootstrap had a chance to run.
+                        //
+                        _logger.LogInformation(
+                            "{Prefix} Refreshing precomputation caches after bootstrap...",
+                            LOG_PREFIX
+                        );
+
+                        try
+                        {
+                            await _partsUniverseService.RefreshAsync().ConfigureAwait(false);
+                            await _setExplorerService.RefreshAsync().ConfigureAwait(false);
+                            await _minifigGalleryService.RefreshAsync().ConfigureAwait(false);
+
+                            _logger.LogInformation(
+                                "{Prefix} Precomputation caches refreshed.",
+                                LOG_PREFIX
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(
+                                ex,
+                                "{Prefix} Failed to refresh precomputation caches after bootstrap (non-fatal).",
+                                LOG_PREFIX
+                            );
+                        }
                     }
                     else
                     {

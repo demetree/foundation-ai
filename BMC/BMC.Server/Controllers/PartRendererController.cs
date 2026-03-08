@@ -402,19 +402,18 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpGet]
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/part-renderer/render-step")]
-        public async Task<IActionResult> RenderStep(
-            string partNumber,
-            int stepIndex = 0,
-            int colourCode = 4,
-            int width = 512,
-            int height = 512,
-            float elevation = 30f,
-            float azimuth = -45f,
-            bool renderEdges = true,
-            bool smoothShading = true,
-            string antiAlias = "none",
-            string renderer = "rasterizer",
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> RenderStep(string partNumber,
+                                                    int stepIndex = 0,
+                                                    int colourCode = 4,
+                                                    int width = 512,
+                                                    int height = 512,
+                                                    float elevation = 30f,
+                                                    float azimuth = -45f,
+                                                    bool renderEdges = true,
+                                                    bool smoothShading = true,
+                                                    string antiAlias = "none",
+                                                    string renderer = "rasterizer",
+                                                    CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
@@ -484,9 +483,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [HttpPost]
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/part-renderer/batch-render")]
-        public async Task<IActionResult> BatchRender(
-            [FromBody] BatchRenderRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> BatchRender([FromBody] BatchRenderRequest request,
+                                                     CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -560,7 +558,99 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
         // ════════════════════════════════════════════════════════════════
-        //  Upload + Render Endpoint
+        //  STL Export Endpoint
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/part-renderer/export-stl
+        ///
+        /// Exports a part's LDraw geometry as an STL (stereolithography) file
+        /// suitable for 3D printing or CAD import.
+        ///
+        /// Supports both binary (compact, default) and ASCII (human-readable) formats
+        /// via the 'format' parameter.
+        ///
+        /// AI-generated — Mar 2026.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/part-renderer/export-stl")]
+        public async Task<IActionResult> ExportStl(string partNumber,
+                                                  int colourCode = 4,
+                                                  string format = "binary",
+                                                  CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(partNumber))
+            {
+                return BadRequest("partNumber is required.");
+            }
+
+            format = (format ?? "binary").ToLowerInvariant();
+            bool ascii = format == "ascii";
+
+            // Check cache
+            string cacheKey = $"part-stl:{partNumber}:{colourCode}:{format}";
+
+            if (_cache.TryGetValue(cacheKey, out byte[] cached))
+            {
+                string cachedContentType = ascii ? "text/plain" : "application/octet-stream";
+                return File(cached, cachedContentType, $"{partNumber}.stl");
+            }
+
+            // Resolve part file
+            string datPath = await ResolvePartFile(partNumber, cancellationToken);
+            if (datPath == null)
+            {
+                return NotFound($"Part '{partNumber}' not found.");
+            }
+
+            try
+            {
+                // 60-second export timeout
+                using var exportCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                exportCts.CancelAfter(TimeSpan.FromSeconds(60));
+
+                byte[] stlBytes = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.ExportToStl(datPath, colourCode, ascii);
+                }, exportCts.Token);
+
+                if (stlBytes == null || stlBytes.Length == 0)
+                {
+                    return NotFound($"Part '{partNumber}' has no geometry data.");
+                }
+
+                _cache.Set(cacheKey, stlBytes, TimeSpan.FromMinutes(10));
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity,
+                                            $"STL export (cache miss) — part='{partNumber}', colour={colourCode}, format={format}, size={stlBytes.Length}",
+                                            partNumber);
+
+                string contentType = ascii ? "text/plain" : "application/octet-stream";
+
+                return File(stlBytes, contentType, $"{partNumber}.stl");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Request cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting STL for {PartNumber}", partNumber);
+                return StatusCode(500, "Error exporting STL.");
+            }
+        }
+
+
         // ════════════════════════════════════════════════════════════════
         //  Step Debug Endpoint (temporary diagnostic)
         // ════════════════════════════════════════════════════════════════
@@ -608,9 +698,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/part-renderer/step-count-upload")]
         [RequestSizeLimit(10 * 1024 * 1024)]
-        public async Task<IActionResult> StepCountUpload(
-            Microsoft.AspNetCore.Http.IFormFile file,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> StepCountUpload(Microsoft.AspNetCore.Http.IFormFile file,
+                                                         CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -745,26 +834,25 @@ namespace Foundation.BMC.Controllers.WebAPI
         [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/part-renderer/render-upload")]
         [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB max
-        public async Task<IActionResult> RenderUpload(
-            Microsoft.AspNetCore.Http.IFormFile file,
-            int colourCode = 4,
-            int width = 512,
-            int height = 512,
-            float elevation = 30f,
-            float azimuth = -45f,
-            bool renderEdges = true,
-            bool smoothShading = true,
-            string antiAlias = "none",
-            string format = "png",
-            int quality = 90,
-            string backgroundHex = null,
-            string gradientTopHex = null,
-            string gradientBottomHex = null,
-            string renderer = "rasterizer",
-            bool enablePbr = true,
-            float exposure = 1.0f,
-            float aperture = 0f,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> RenderUpload(Microsoft.AspNetCore.Http.IFormFile file,
+                                                      int colourCode = 4,
+                                                      int width = 512,
+                                                      int height = 512,
+                                                      float elevation = 30f,
+                                                      float azimuth = -45f,
+                                                      bool renderEdges = true,
+                                                      bool smoothShading = true,
+                                                      string antiAlias = "none",
+                                                      string format = "png",
+                                                      int quality = 90,
+                                                      string backgroundHex = null,
+                                                      string gradientTopHex = null,
+                                                      string gradientBottomHex = null,
+                                                      string renderer = "rasterizer",
+                                                      bool enablePbr = true,
+                                                      float exposure = 1.0f,
+                                                      float aperture = 0f,
+                                                      CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 

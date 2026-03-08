@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -104,8 +105,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     // Generate and send OTP using existing infrastructure
                     string token = SecurityLogic.GenerateAndSendTwoFactorToken(user, timeoutMinutes: 10);
 
-                    _logger.LogInformation("VolunteerHub OTP sent for user {User}. Code: {Code} (remove in production)",
-                        user.accountName, token);
+                    _logger.LogInformation("VolunteerHub OTP sent for user {User}", user.accountName);
 
                     return Ok(new { message = "If an account exists with that email or phone, a code has been sent." });
                 }
@@ -206,8 +206,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("auth/session")]
         public async Task<IActionResult> GetSession()
         {
-            var (user, errorResult) = await ResolveSessionUserAsync();
-            if (user == null) return errorResult!;
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
 
             var profile = await GetVolunteerProfileForUserAsync(user);
             if (profile == null) return Unauthorized(new { message = "No volunteer profile linked." });
@@ -231,8 +232,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
-            var (user, errorResult) = await ResolveSessionUserAsync();
-            if (user == null) return errorResult!;
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
 
             var profile = await GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
@@ -253,8 +255,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             DateTime? from = null,
             DateTime? to = null)
         {
-            var (user, errorResult) = await ResolveSessionUserAsync();
-            if (user == null) return errorResult!;
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
 
             var profile = await GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
@@ -305,6 +308,169 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         // ─────────────────────────────────────────────────────────────
+        // DATA: Report Hours
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Allows a volunteer to report hours for a specific assignment.
+        /// </summary>
+        [HttpPost("me/assignments/{assignmentId}/report-hours")]
+        public async Task<IActionResult> ReportHours(int assignmentId, [FromBody] ReportHoursModel model)
+        {
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
+
+            var profile = await GetVolunteerProfileForUserAsync(user);
+            if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
+
+            var assignment = await _schedulerDb.EventResourceAssignments
+                .Where(a => a.id == assignmentId)
+                .Where(a => a.resourceId == profile.resourceId)
+                .Where(a => a.active == true && a.deleted == false)
+                .FirstOrDefaultAsync();
+
+            if (assignment == null)
+            {
+                return NotFound(new { message = "Assignment not found." });
+            }
+
+            assignment.reportedVolunteerHours = model.Hours;
+            assignment.volunteerNotes = model.Notes;
+            await _schedulerDb.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "VolunteerHub: User {User} reported {Hours} hours for assignment {AssignmentId}",
+                user.accountName, model.Hours, assignmentId);
+
+            return Ok(new { message = "Hours reported successfully.", reportedHours = model.Hours });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // DATA: Respond to Assignment (Accept/Decline)
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Allows a volunteer to accept or decline an assignment.
+        /// </summary>
+        [HttpPost("me/assignments/{assignmentId}/respond")]
+        public async Task<IActionResult> RespondToAssignment(int assignmentId, [FromBody] RespondToAssignmentModel model)
+        {
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
+
+            var profile = await GetVolunteerProfileForUserAsync(user);
+            if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
+
+            var assignment = await _schedulerDb.EventResourceAssignments
+                .Where(a => a.id == assignmentId)
+                .Where(a => a.resourceId == profile.resourceId)
+                .Where(a => a.active == true && a.deleted == false)
+                .Include(a => a.assignmentStatus)
+                .FirstOrDefaultAsync();
+
+            if (assignment == null)
+            {
+                return NotFound(new { message = "Assignment not found." });
+            }
+
+            // Look up the target status by name
+            string targetStatusName = model.Accepted ? "Confirmed" : "Declined";
+            var targetStatus = await _schedulerDb.AssignmentStatuses
+                .Where(s => s.name == targetStatusName && s.active == true && s.deleted == false)
+                .FirstOrDefaultAsync();
+
+            if (targetStatus != null)
+            {
+                assignment.assignmentStatusId = targetStatus.id;
+            }
+
+            await _schedulerDb.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "VolunteerHub: User {User} {Response} assignment {AssignmentId}",
+                user.accountName, model.Accepted ? "accepted" : "declined", assignmentId);
+
+            return Ok(new { message = $"Assignment {targetStatusName.ToLower()} successfully.", status = targetStatusName });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // DATA: Update Profile
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Allows a volunteer to update their own profile fields.
+        /// </summary>
+        [HttpPut("me/profile")]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileModel model)
+        {
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
+
+            var profile = await _schedulerDb.VolunteerProfiles
+                .Where(vp => vp.linkedUserGuid == user.objectGuid)
+                .Where(vp => vp.active == true && vp.deleted == false)
+                .FirstOrDefaultAsync();
+
+            if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
+
+            if (model.AvailabilityPreferences != null)
+                profile.availabilityPreferences = model.AvailabilityPreferences;
+
+            if (model.InterestsAndSkillsNotes != null)
+                profile.interestsAndSkillsNotes = model.InterestsAndSkillsNotes;
+
+            if (model.EmergencyContactNotes != null)
+                profile.emergencyContactNotes = model.EmergencyContactNotes;
+
+            await _schedulerDb.SaveChangesAsync();
+
+            _logger.LogInformation("VolunteerHub: User {User} updated their profile", user.accountName);
+
+            return Ok(new { message = "Profile updated successfully." });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // AUTH: Logout
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Invalidates the volunteer's hub session.
+        /// </summary>
+        [HttpPost("auth/logout")]
+        public async Task<IActionResult> Logout()
+        {
+            SessionResolution session = await ResolveSessionUserAsync();
+            if (session.User == null) return session.ErrorResult!;
+            SecurityUser user = session.User;
+
+            using (SecurityContext securityDb = new SecurityContext())
+            {
+                // Re-fetch the user from a writable context
+                SecurityUser? dbUser = await securityDb.SecurityUsers
+                    .Where(u => u.objectGuid == user.objectGuid)
+                    .FirstOrDefaultAsync();
+
+                if (dbUser != null)
+                {
+                    dbUser.authenticationToken = null;
+                    dbUser.authenticationTokenExpiry = null;
+                    await securityDb.SaveChangesAsync();
+                }
+            }
+
+            _logger.LogInformation("VolunteerHub: User {User} logged out", user.accountName);
+
+            return Ok(new { message = "Logged out successfully." });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
         // ADMIN: Provision Hub Access for a Volunteer
         // ─────────────────────────────────────────────────────────────
 
@@ -313,6 +479,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// the VolunteerProfile, and configures 2FA delivery for OTP login.
         /// Called from the admin volunteer add/edit form.
         /// </summary>
+        [Authorize]
         [HttpPost("admin/provision-access")]
         public async Task<IActionResult> ProvisionAccess([FromBody] ProvisionAccessModel model)
         {
@@ -465,13 +632,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// <summary>
         /// Resolves the session token from the request header and returns the SecurityUser.
         /// </summary>
-        private async Task<(SecurityUser?, IActionResult?)> ResolveSessionUserAsync()
+        private async Task<SessionResolution> ResolveSessionUserAsync()
         {
             string? token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                return (null, Unauthorized(new { message = "Session token required." }));
+                return new SessionResolution(null, Unauthorized(new { message = "Session token required." }));
             }
 
             using (SecurityContext securityDb = new SecurityContext())
@@ -483,10 +650,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 if (user == null || user.authenticationTokenExpiry == null || user.authenticationTokenExpiry < DateTime.UtcNow)
                 {
-                    return (null, Unauthorized(new { message = "Session expired or invalid." }));
+                    return new SessionResolution(null, Unauthorized(new { message = "Session expired or invalid." }));
                 }
 
-                return (user, null);
+                return new SessionResolution(user, null);
             }
         }
 
@@ -509,6 +676,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
     // REQUEST MODELS
     // ─────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Result of resolving a volunteer hub session from the request header.
+    /// </summary>
+    public record SessionResolution(SecurityUser? User, IActionResult? ErrorResult);
+
     public class OtpRequestModel
     {
         public string Identifier { get; set; } = "";
@@ -527,5 +699,23 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         public string? Phone { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
+    }
+
+    public class ReportHoursModel
+    {
+        public float Hours { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    public class RespondToAssignmentModel
+    {
+        public bool Accepted { get; set; }
+    }
+
+    public class UpdateProfileModel
+    {
+        public string? AvailabilityPreferences { get; set; }
+        public string? InterestsAndSkillsNotes { get; set; }
+        public string? EmergencyContactNotes { get; set; }
     }
 }

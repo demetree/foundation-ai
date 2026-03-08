@@ -167,6 +167,8 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     private renderedBlobUrl: string | null = null;
     renderedFormat = 'png';
     batchExporting = false;
+    exportingStl = false;
+    stlFormat: 'binary' | 'ascii' = 'binary';
 
     // Size presets
     sizeCategory: 'standard' | 'desktop' | 'mobile' = 'standard';
@@ -288,6 +290,20 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
             featureName: 'Server-Side Rendering',
             featureIcon: 'bi-camera',
             message: 'Server-side rendering produces high-quality images using the server\'s ray tracer. Sign in to access this feature.'
+        });
+    }
+
+
+    /**
+     * Show the auth nudge modal when an anonymous user clicks the Export STL button.
+     *
+     * AI-generated — Mar 2026.
+     */
+    nudgeStlExport(): void {
+        this.authNudgeService.nudge({
+            featureName: 'STL Export',
+            featureIcon: 'bi-box',
+            message: 'STL export generates a 3D-printable mesh from the part geometry on the server. Sign in to access this feature.'
         });
     }
 
@@ -1749,6 +1765,43 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                 error: () => {
                     this.batchExporting = false;
                     this.renderError = 'Batch export failed. Please try again.';
+                }
+            });
+    }
+
+
+    /**
+     * Export the part geometry as an STL file via the server-side exporter.
+     * Supports both binary (compact) and ASCII (human-readable) formats.
+     *
+     * AI-generated — Mar 2026.
+     */
+    exportStl(): void {
+        if (this.part == null || this.exportingStl) {
+            return;
+        }
+
+        this.exportingStl = true;
+        const headers = this.authService.GetAuthenticationHeaders();
+        const colourCode = this.selectedColour != null ? Number(this.selectedColour.ldrawColourCode) : 71;
+
+        const url = `/api/part-renderer/export-stl?partNumber=${encodeURIComponent(this.part.name)}&colourCode=${colourCode}&format=${this.stlFormat}`;
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = `${this.part!.name}.stl`;
+                    a.click();
+                    URL.revokeObjectURL(blobUrl);
+                    this.exportingStl = false;
+                },
+                error: () => {
+                    this.exportingStl = false;
+                    this.renderError = 'STL export failed. Please try again.';
                 }
             });
     }

@@ -1,0 +1,38 @@
+<div class="hub-page">\r\n\r\n <h1 class="hub-page-title animate-in">\r\n <i class="fas fa-user"></i> My Profile\r\n
+    </h1>\r\n\r\n <!-- Loading -->\r\n <div *ngIf="isLoading" class="hub-card-sm"
+        style="text-align: center; padding: 2rem;">\r\n <i class="fas fa-spinner fa-spin"
+            style="font-size: 1.5rem; color: var(--hub-primary-light);"></i>\r\n </div>\r\n\r\n <div
+        *ngIf="!isLoading && profile">\r\n\r\n <!-- Read-only info -->\r\n <div
+            class="profile-info hub-card animate-in animate-delay-1">\r\n <h2 class="hub-section-label">Profile</h2>
+            \r\n\r\n <div class="profile-row">\r\n <span class="profile-label">Name</span>\r\n <span
+                    class="profile-value">{{ profile.resource?.name || '—' }}</span>\r\n </div>\r\n\r\n <div
+                class="profile-row">\r\n <span class="profile-label">Status</span>\r\n <span class="profile-value">\r\n
+                    <span class="hub-badge"
+                        [ngClass]="{\r\n                        'badge-success': profile.volunteerStatus?.name === 'Active',\r\n                        'badge-warning': profile.volunteerStatus?.name === 'Inactive',\r\n                        'badge-info': profile.volunteerStatus?.name !== 'Active' && profile.volunteerStatus?.name !== 'Inactive'\r\n                    }">{{
+                        profile.volunteerStatus?.name || '—' }}</span>\r\n </span>\r\n </div>\r\n\r\n <div
+                class="profile-row" *ngIf="profile.onboardedDate">\r\n <span class="profile-label">Member
+                    Since</span>\r\n <span class="profile-value">{{ profile.onboardedDate | date:'MMMM yyyy'
+                    }}</span>\r\n </div>\r\n\r\n <div class="profile-row">\r\n <span class="profile-label">Total
+                    Hours</span>\r\n <span class="profile-value hours">{{ profile.totalHoursServed || 0 | number:'1.0-1'
+                    }}</span>\r\n </div>\r\n\r\n <div class="profile-row" *ngIf="profile.backgroundCheckDate">\r\n <span
+                    class="profile-label">BG Check</span>\r\n <span class="profile-value">\r\n <i
+                        class="fas fa-check-circle" style="color: var(--hub-success); margin-right: 0.3rem;"></i>\r\n {{
+                    profile.backgroundCheckDate | date:'MMM d, yyyy' }}\r\n </span>\r\n </div>\r\n </div>\r\n\r\n
+        <!-- Editable fields -->\r\n <div class="profile-edit hub-card animate-in animate-delay-3">\r\n <h2
+                class="hub-section-label">My Preferences</h2>\r\n\r\n <div class="edit-field">\r\n <label
+                    for="availability">Availability Preferences</label>\r\n <textarea id="availability"
+                    class="hub-input" rows="3" [(ngModel)]="availabilityPreferences" \r\n
+                    placeholder="e.g. Weekday mornings, Saturday afternoons..."></textarea>\r\n </div>\r\n\r\n <div
+                class="edit-field">\r\n <label for="skills">Interests &amp; Skills</label>\r\n <textarea id="skills"
+                    class="hub-input" rows="3" [(ngModel)]="interestsAndSkillsNotes" \r\n
+                    placeholder="e.g. First aid certified, enjoy working with children..."></textarea>\r\n </div>
+            \r\n\r\n <div class="edit-field">\r\n <label for="emergency">Emergency Contact</label>\r\n <textarea
+                    id="emergency" class="hub-input" rows="2" [(ngModel)]="emergencyContactNotes" \r\n
+                    placeholder="Name, relationship, phone number"></textarea>\r\n </div>\r\n\r\n <button
+                class="hub-btn-primary save-btn" (click)="saveProfile()" [disabled]="isSaving">\r\n <i
+                    class="fas fa-save" *ngIf="!isSaving"></i>\r\n <i class="fas fa-spinner fa-spin"
+                    *ngIf="isSaving"></i>\r\n {{ isSaving ? 'Saving...' : 'Save Changes' }}\r\n </button>\r\n\r\n <div
+                class="save-message success" *ngIf="saveMessage">\r\n <i class="fas fa-check-circle"></i> {{ saveMessage
+                }}\r\n </div>\r\n <div class="save-message error" *ngIf="saveError">\r\n <i
+                    class="fas fa-exclamation-circle"></i> {{ saveError }}\r\n </div>\r\n </div>\r\n\r\n </div>\r\n\r\n
+</div>\r\n

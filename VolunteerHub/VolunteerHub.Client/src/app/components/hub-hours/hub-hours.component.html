@@ -1,0 +1,39 @@
+<div class="hub-page">\r\n\r\n <h1 class="hub-page-title animate-in">\r\n <i class="fas fa-clock"></i> My Hours\r\n
+    </h1>\r\n\r\n <!-- Loading -->\r\n <div *ngIf="isLoading" class="hub-card-sm"
+        style="text-align: center; padding: 2rem;">\r\n <i class="fas fa-spinner fa-spin"
+            style="font-size: 1.5rem; color: var(--hub-primary-light);"></i>\r\n </div>\r\n\r\n
+    <!-- Summary cards -->\r\n <div class="hours-summary animate-in animate-delay-1" *ngIf="!isLoading">\r\n <div
+            class="stat-card hub-card-sm">\r\n <div class="stat-value">{{ totalReported | number:'1.1-1' }}</div>\r\n
+            <div class="stat-label">Reported</div>\r\n </div>\r\n <div class="stat-card hub-card-sm">\r\n <div
+                class="stat-value approved">{{ totalApproved | number:'1.1-1' }}</div>\r\n <div class="stat-label">
+                Approved</div>\r\n </div>\r\n <div class="stat-card hub-card-sm">\r\n <div class="stat-value pending">{{
+                pendingCount }}</div>\r\n <div class="stat-label">Pending</div>\r\n </div>\r\n </div>\r\n\r\n
+    <!-- Empty state -->\r\n <div *ngIf="!isLoading && assignments.length === 0"
+        class="hub-empty-state hub-card-sm animate-in animate-delay-2">\r\n <i class="fas fa-hourglass-half"></i>\r\n
+        <h3>No hours to show</h3>\r\n <p>Completed assignments from the past year will appear here.</p>\r\n </div>
+    \r\n\r\n <!-- Assignment hours list -->\r\n <div class="hours-list animate-in animate-delay-2"
+        *ngIf="!isLoading && assignments.length > 0">\r\n <h2 class="hub-section-label">Assignment History</h2>\r\n\r\n
+        <div class="hours-card hub-card-sm" *ngFor="let a of assignments">\r\n <div class="hours-card-main">\r\n <div
+                    class="hours-event">\r\n <strong>{{ a.eventName || 'Event' }}</strong>\r\n <span
+                        class="hours-date">{{ a.startDateTime | date:'MMM d, yyyy' }}</span>\r\n </div>\r\n <div
+                    class="hours-values">\r\n <div class="hours-value" *ngIf="a.reportedHours">\r\n <span
+                            class="hours-num">{{ a.reportedHours | number:'1.1-1' }}</span>\r\n <span
+                            class="hours-label">reported</span>\r\n </div>\r\n <div class="hours-value"
+                        *ngIf="a.approvedHours">\r\n <span class="hours-num approved">{{ a.approvedHours |
+                            number:'1.1-1' }}</span>\r\n <span class="hours-label">approved</span>\r\n </div>\r\n
+                    <button class="report-btn hub-btn-outline" *ngIf="!a.reportedHours && reportingId !== a.id" \r\n
+                        (click)="startReporting(a.id)">\r\n <i class="fas fa-plus"></i> Log Hours\r\n </button>\r\n
+                </div>\r\n </div>\r\n\r\n <!-- Inline report form -->\r\n <div class="report-form"
+                *ngIf="reportingId === a.id">\r\n <div class="report-fields">\r\n <div class="report-field">\r\n
+                        <label>Hours</label>\r\n <input type="number" class="hub-input report-input"
+                            [(ngModel)]="reportHours" min="0.5" \r\n step="0.5" placeholder="0.0" autofocus>\r\n </div>
+                    \r\n <div class="report-field">\r\n <label>Notes <span
+                                class="optional">(optional)</span></label>\r\n <input type="text" class="hub-input"
+                            [(ngModel)]="reportNotes" \r\n placeholder="Any notes about this session">\r\n </div>\r\n
+                </div>\r\n <div class="report-actions">\r\n <button class="hub-btn-primary" (click)="submitHours(a.id)"
+                        [disabled]="!reportHours">\r\n <i class="fas fa-check"></i> Submit\r\n </button>\r\n <button
+                        class="hub-btn-outline" (click)="cancelReporting()">\r\n Cancel\r\n </button>\r\n </div>\r\n
+                <div class="report-message error" *ngIf="reportError">\r\n <i class="fas fa-exclamation-circle"></i> {{
+                    reportError }}\r\n </div>\r\n <div class="report-message success" *ngIf="reportSuccess">\r\n <i
+                        class="fas fa-check-circle"></i> {{ reportSuccess }}\r\n </div>\r\n </div>\r\n </div>\r\n </div>
+    \r\n\r\n</div>\r\n

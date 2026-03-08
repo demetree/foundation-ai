@@ -353,6 +353,42 @@ namespace BMC.LDraw.Render
 
 
         /// <summary>
+        /// Export an LDraw file to STL (stereolithography) bytes.
+        /// Supports both binary (compact) and ASCII (human-readable) formats.
+        ///
+        /// AI-generated — Mar 2026.
+        /// </summary>
+        /// <param name="inputPath">Path to the .ldr, .mpd, or .dat file.</param>
+        /// <param name="colourCode">LDraw colour code for the part.  -1 uses the default (red).</param>
+        /// <param name="ascii">When true, returns UTF-8 encoded ASCII STL; otherwise binary STL.</param>
+        /// <returns>Complete STL file as a byte array.</returns>
+        public byte[] ExportToStl(string inputPath,
+                                   int colourCode = -1,
+                                   bool ascii = false)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFile(inputPath, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            if (ascii == true)
+            {
+                string stlText = StlExporter.ExportAscii(mesh);
+                return System.Text.Encoding.UTF8.GetBytes(stlText);
+            }
+
+            return StlExporter.ExportBinary(mesh);
+        }
+
+
+        /// <summary>
         /// Get the number of build steps in an LDraw file.
         /// </summary>
         public int GetStepCount(string inputPath)
@@ -840,6 +876,43 @@ namespace BMC.LDraw.Render
             camera.AutoFrame(mesh, elevation, azimuth);
 
             return SvgExporter.RenderToSvg(mesh, camera, width, height, renderEdges);
+        }
+
+
+        /// <summary>
+        /// Export LDraw content to STL bytes — no temp file needed.
+        /// Supports both binary (compact) and ASCII (human-readable) formats.
+        ///
+        /// AI-generated — Mar 2026.
+        /// </summary>
+        /// <param name="lines">LDraw file content as lines.</param>
+        /// <param name="fileName">Original filename (used for multi-part document lookup).</param>
+        /// <param name="colourCode">LDraw colour code.  -1 uses the default (red).</param>
+        /// <param name="ascii">When true, returns UTF-8 encoded ASCII STL; otherwise binary STL.</param>
+        /// <returns>Complete STL file as a byte array.</returns>
+        public byte[] ExportToStl(string[] lines, string fileName,
+                                   int colourCode = -1,
+                                   bool ascii = false)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFromContent(lines, fileName, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            if (ascii == true)
+            {
+                string stlText = StlExporter.ExportAscii(mesh);
+                return System.Text.Encoding.UTF8.GetBytes(stlText);
+            }
+
+            return StlExporter.ExportBinary(mesh);
         }
 
 

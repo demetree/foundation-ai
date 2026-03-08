@@ -60,6 +60,16 @@
                         3D Preview
                     </span>
                     <div class="viewer-header-actions">
+                        <button class="pose-btn stl-header-btn" *ngIf="hasGeometry && authService.isLoggedIn"
+                            [disabled]="exportingStl" (click)="exportStl()"
+                            title="Export 3D geometry as STL file for 3D printing">
+                            <i class="bi" [ngClass]="exportingStl ? 'bi-arrow-repeat spin' : 'bi-box'"></i>
+                            {{ exportingStl ? 'Exporting…' : 'Export STL' }}
+                        </button>
+                        <button class="pose-btn stl-header-btn" *ngIf="hasGeometry && !authService.isLoggedIn"
+                            (click)="nudgeStlExport()" title="Sign in to export STL">
+                            <i class="bi bi-lock"></i> Export STL
+                        </button>
                         <button class="pose-btn" *ngIf="hasGeometry && authService.isLoggedIn" [class.active]="poseMode"
                             (click)="togglePoseMode()" title="Pose the part, then send view to Server Render">
                             <i class="bi bi-bounding-box"></i>
@@ -372,6 +382,16 @@
                                         [ngClass]="batchExporting ? 'bi-arrow-repeat spin' : 'bi-file-earmark-zip'"></i>
                                     {{ batchExporting ? 'Exporting…' : 'Export All Sizes' }}
                                 </button>
+                                <button class="download-btn stl-btn" [disabled]="exportingStl" (click)="exportStl()"
+                                    title="Export 3D geometry as STL file">
+                                    <i class="bi" [ngClass]="exportingStl ? 'bi-arrow-repeat spin' : 'bi-box'"></i>
+                                    {{ exportingStl ? 'Exporting…' : 'Export STL' }}
+                                </button>
+                                <select class="stl-format-select" [(ngModel)]="stlFormat"
+                                    title="STL format: Binary (compact) or ASCII (human-readable)">
+                                    <option value="binary">Binary</option>
+                                    <option value="ascii">ASCII</option>
+                                </select>
                             </div>
                         </div>
                     </div>

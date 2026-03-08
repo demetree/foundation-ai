@@ -1715,6 +1715,34 @@
     background: var(--bmc-surface-subtle);
 }
 
+.stl-btn {
+    background: var(--bmc-surface-subtle);
+    border-color: var(--bmc-primary);
+
+    &:hover:not(:disabled) {
+        background: var(--bmc-primary);
+        color: white;
+    }
+}
+
+.stl-format-select {
+    padding: 4px 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--bmc-text-primary);
+    background: var(--bmc-bg-elevated);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    outline: none;
+    transition: var(--transition-fast);
+
+    &:focus {
+        border-color: var(--bmc-primary);
+    }
+}
+
 /* Spin animation for loading icons */
 .spin {
     animation: spin 1s linear infinite;
