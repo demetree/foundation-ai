@@ -497,6 +497,28 @@
           <input type="text" class="form-control" formControlName="externalId"
             placeholder="External system reference" />
         </div>
+
+        <!-- Volunteer Hub Settings -->
+        <div class="col-12">
+          <hr class="my-2">
+          <h6 class="fw-semibold mb-3">
+            <i class="bi bi-hand-thumbs-up me-2 text-success"></i>Volunteer Hub Settings
+          </h6>
+        </div>
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="isOpenForVolunteers"
+              formControlName="isOpenForVolunteers">
+            <label class="form-check-label" for="isOpenForVolunteers">Open for Volunteer Sign-up</label>
+          </div>
+          <small class="text-muted">When enabled, this event will appear in the Volunteer Hub for self-sign-up.</small>
+        </div>
+        <div class="col-md-6" *ngIf="eventForm.get('isOpenForVolunteers')?.value">
+          <label class="form-label fw-semibold">Max Volunteer Slots</label>
+          <input type="number" class="form-control" formControlName="maxVolunteerSlots" placeholder="Unlimited"
+            min="1" />
+          <small class="text-muted">Leave blank for unlimited slots.</small>
+        </div>
       </div>
     </div>
 

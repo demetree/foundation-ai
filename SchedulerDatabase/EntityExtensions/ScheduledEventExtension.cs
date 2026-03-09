@@ -309,6 +309,9 @@ namespace Foundation.Scheduler.Database
 			public String color { get; set; }
 			public String externalId { get; set; }
 			public String attributes { get; set; }
+			[Required]
+			public Boolean isOpenForVolunteers { get; set; }
+			public Int32? maxVolunteerSlots { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -375,6 +378,8 @@ namespace Foundation.Scheduler.Database
 				color = this.color,
 				externalId = this.externalId,
 				attributes = this.attributes,
+				isOpenForVolunteers = this.isOpenForVolunteers,
+				maxVolunteerSlots = this.maxVolunteerSlots,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -442,6 +447,8 @@ namespace Foundation.Scheduler.Database
 				color = this.color,
 				externalId = this.externalId,
 				attributes = this.attributes,
+				isOpenForVolunteers = this.isOpenForVolunteers,
+				maxVolunteerSlots = this.maxVolunteerSlots,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -521,6 +528,8 @@ namespace Foundation.Scheduler.Database
 				color = dto.color,
 				externalId = dto.externalId,
 				attributes = dto.attributes,
+				isOpenForVolunteers = dto.isOpenForVolunteers,
+				maxVolunteerSlots = dto.maxVolunteerSlots,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -565,6 +574,8 @@ namespace Foundation.Scheduler.Database
 			this.color = dto.color;
 			this.externalId = dto.externalId;
 			this.attributes = dto.attributes;
+			this.isOpenForVolunteers = dto.isOpenForVolunteers;
+			this.maxVolunteerSlots = dto.maxVolunteerSlots;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -615,6 +626,8 @@ namespace Foundation.Scheduler.Database
 				color = this.color,
 				externalId = this.externalId,
 				attributes = this.attributes,
+				isOpenForVolunteers = this.isOpenForVolunteers,
+				maxVolunteerSlots = this.maxVolunteerSlots,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -696,6 +709,8 @@ namespace Foundation.Scheduler.Database
 				color = scheduledEvent.color,
 				externalId = scheduledEvent.externalId,
 				attributes = scheduledEvent.attributes,
+				isOpenForVolunteers = scheduledEvent.isOpenForVolunteers,
+				maxVolunteerSlots = scheduledEvent.maxVolunteerSlots,
 				versionNumber = scheduledEvent.versionNumber,
 				objectGuid = scheduledEvent.objectGuid,
 				active = scheduledEvent.active,
@@ -744,6 +759,8 @@ namespace Foundation.Scheduler.Database
 				color = scheduledEvent.color,
 				externalId = scheduledEvent.externalId,
 				attributes = scheduledEvent.attributes,
+				isOpenForVolunteers = scheduledEvent.isOpenForVolunteers,
+				maxVolunteerSlots = scheduledEvent.maxVolunteerSlots,
 				versionNumber = scheduledEvent.versionNumber,
 				objectGuid = scheduledEvent.objectGuid,
 				active = scheduledEvent.active,

@@ -157,6 +157,10 @@
                 <label for="EventResourceAssignment-volunteerNotes" id="label-EventResourceAssignment-volunteerNotes">Volunteer Notes</label>
                 <textarea id="EventResourceAssignment-volunteerNotes" formControlName="volunteerNotes" placeholder="Enter Volunteer Notes" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reminderSentDateTime')">
+                <label for="EventResourceAssignment-reminderSentDateTime" id="label-EventResourceAssignment-reminderSentDateTime">Reminder Sent Date Time</label>
+                <input type="datetime-local" id="EventResourceAssignment-reminderSentDateTime" formControlName="reminderSentDateTime" placeholder="Enter Reminder Sent Date Time" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-reminderSentDateTime" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="EventResourceAssignment-versionNumber" id="label-EventResourceAssignment-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="EventResourceAssignment-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-resource-assignment-input" />

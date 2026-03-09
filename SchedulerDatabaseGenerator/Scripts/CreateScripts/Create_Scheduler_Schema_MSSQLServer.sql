@@ -2102,6 +2102,9 @@ GO
 CREATE INDEX [I_VolunteerStatus_deleted] ON [Scheduler].[VolunteerStatus] ([deleted])
 GO
 
+INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [requiresApproval], [objectGuid] ) VALUES  ( 'Pending', 'Self-registered volunteer awaiting admin approval', 5, '#F59E0B', 0, 1, 1, 'a1111111-2222-3333-4444-555555555000' )
+GO
+
 INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [objectGuid] ) VALUES  ( 'Prospect / Interested', 'Has expressed interest but not yet onboarded', 10, '#9E9E9E', 0, 1, 'a1111111-2222-3333-4444-555555555001' )
 GO
 
@@ -5343,6 +5346,8 @@ CREATE TABLE [Scheduler].[ScheduledEvent]
 	[color] NVARCHAR(10) NULL,		-- Override Hex color for UI display
 	[externalId] NVARCHAR(100) NULL,		-- Optional link to an entity in another system
 	[attributes] NVARCHAR(MAX) NULL,		-- to store arbitrary JSON
+	[isOpenForVolunteers] BIT NOT NULL DEFAULT 0,		-- Whether this event appears in the Volunteer Hub opportunity browser for self-sign-up
+	[maxVolunteerSlots] INT NULL,		-- Maximum number of volunteer sign-ups allowed; NULL = unlimited
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -8507,6 +8512,7 @@ Used to:
 	[chargeTypeId] INT NULL,		-- Optional: links to an expense-type ChargeType for the reimbursement (e.g. 'Mileage Reimbursement')
 	[reimbursementRequested] BIT NOT NULL DEFAULT 0,		-- Volunteer has flagged that they want/need reimbursement
 	[volunteerNotes] NVARCHAR(MAX) NULL,		-- Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')
+	[reminderSentDateTime] DATETIME2(7) NULL,		-- When the last automated reminder was sent for this assignment; NULL = no reminder sent yet
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.

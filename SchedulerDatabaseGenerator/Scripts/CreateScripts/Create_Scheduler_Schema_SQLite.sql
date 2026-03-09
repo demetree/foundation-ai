@@ -1823,6 +1823,8 @@ CREATE INDEX "I_VolunteerStatus_active" ON "VolunteerStatus" ("active")
 CREATE INDEX "I_VolunteerStatus_deleted" ON "VolunteerStatus" ("deleted")
 ;
 
+INSERT INTO "VolunteerStatus" ( "name", "description", "sequence", "color", "isActive", "preventsScheduling", "requiresApproval", "objectGuid" ) VALUES  ( 'Pending', 'Self-registered volunteer awaiting admin approval', 5, '#F59E0B', 0, 1, 1, 'a1111111-2222-3333-4444-555555555000' );
+
 INSERT INTO "VolunteerStatus" ( "name", "description", "sequence", "color", "isActive", "preventsScheduling", "objectGuid" ) VALUES  ( 'Prospect / Interested', 'Has expressed interest but not yet onboarded', 10, '#9E9E9E', 0, 1, 'a1111111-2222-3333-4444-555555555001' );
 
 INSERT INTO "VolunteerStatus" ( "name", "description", "sequence", "color", "isActive", "preventsScheduling", "objectGuid" ) VALUES  ( 'Active', 'Fully onboarded and available for assignments', 20, '#4CAF50', 1, 0, 'a1111111-2222-3333-4444-555555555002' );
@@ -4787,6 +4789,8 @@ CREATE TABLE "ScheduledEvent"
 	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Override Hex color for UI display
 	"externalId" VARCHAR(100) NULL COLLATE NOCASE,		-- Optional link to an entity in another system
 	"attributes" TEXT NULL COLLATE NOCASE,		-- to store arbitrary JSON
+	"isOpenForVolunteers" BIT NOT NULL DEFAULT 0,		-- Whether this event appears in the Volunteer Hub opportunity browser for self-sign-up
+	"maxVolunteerSlots" INTEGER NULL,		-- Maximum number of volunteer sign-ups allowed; NULL = unlimited
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -7732,6 +7736,7 @@ Used to:
 	"chargeTypeId" INTEGER NULL,		-- Optional: links to an expense-type ChargeType for the reimbursement (e.g. 'Mileage Reimbursement')
 	"reimbursementRequested" BIT NOT NULL DEFAULT 0,		-- Volunteer has flagged that they want/need reimbursement
 	"volunteerNotes" TEXT NULL COLLATE NOCASE,		-- Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')
+	"reminderSentDateTime" DATETIME NULL,		-- When the last automated reminder was sent for this assignment; NULL = no reminder sent yet
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.

@@ -129,6 +129,10 @@ namespace Foundation.Scheduler
                 // Register Geocoding Service (for address-to-coordinate resolution via Nominatim)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.GeocodingService>();
 
+                // Register Volunteer Communications Services
+                builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerNotificationService>();
+                builder.Services.AddHostedService<Foundation.Scheduler.Services.VolunteerReminderWorker>();
+
                 //
                 // Add the Scheduler Database context
                 //

@@ -1839,6 +1839,8 @@ CREATE INDEX "I_VolunteerStatus_active" ON "Scheduler"."VolunteerStatus" ("activ
 CREATE INDEX "I_VolunteerStatus_deleted" ON "Scheduler"."VolunteerStatus" ("deleted")
 ;
 
+INSERT INTO "Scheduler"."VolunteerStatus" ( "name", "description", "sequence", "color", "isActive", "preventsScheduling", "requiresApproval", "objectGuid" ) VALUES  ( 'Pending', 'Self-registered volunteer awaiting admin approval', 5, '#F59E0B', false, true, true, 'a1111111-2222-3333-4444-555555555000' );
+
 INSERT INTO "Scheduler"."VolunteerStatus" ( "name", "description", "sequence", "color", "isActive", "preventsScheduling", "objectGuid" ) VALUES  ( 'Prospect / Interested', 'Has expressed interest but not yet onboarded', 10, '#9E9E9E', false, true, 'a1111111-2222-3333-4444-555555555001' );
 
 INSERT INTO "Scheduler"."VolunteerStatus" ( "name", "description", "sequence", "color", "isActive", "preventsScheduling", "objectGuid" ) VALUES  ( 'Active', 'Fully onboarded and available for assignments', 20, '#4CAF50', true, false, 'a1111111-2222-3333-4444-555555555002' );
@@ -4803,6 +4805,8 @@ CREATE TABLE "Scheduler"."ScheduledEvent"
 	"color" VARCHAR(10) NULL,		-- Override Hex color for UI display
 	"externalId" VARCHAR(100) NULL,		-- Optional link to an entity in another system
 	"attributes" TEXT NULL,		-- to store arbitrary JSON
+	"isOpenForVolunteers" BOOLEAN NOT NULL DEFAULT false,		-- Whether this event appears in the Volunteer Hub opportunity browser for self-sign-up
+	"maxVolunteerSlots" INT NULL,		-- Maximum number of volunteer sign-ups allowed; NULL = unlimited
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
@@ -7748,6 +7752,7 @@ Used to:
 	"chargeTypeId" INT NULL,		-- Optional: links to an expense-type ChargeType for the reimbursement (e.g. 'Mileage Reimbursement')
 	"reimbursementRequested" BOOLEAN NOT NULL DEFAULT false,		-- Volunteer has flagged that they want/need reimbursement
 	"volunteerNotes" TEXT NULL,		-- Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')
+	"reminderSentDateTime" TIMESTAMP NULL,		-- When the last automated reminder was sent for this assignment; NULL = no reminder sent yet
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.

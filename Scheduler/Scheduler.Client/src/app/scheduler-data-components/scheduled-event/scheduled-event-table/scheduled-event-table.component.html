@@ -123,6 +123,14 @@
                 Attributes
                 <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('isOpenForVolunteers')">
+                Is  Open  For  Volunteers
+                <span *ngIf="sortColumn === 'isOpenForVolunteers'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('maxVolunteerSlots')">
+                Max  Volunteer  Slots
+                <span *ngIf="sortColumn === 'maxVolunteerSlots'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -232,6 +240,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{scheduledEvent.color}}</td>
             <td class="text-truncate">{{scheduledEvent.externalId}}</td>
             <td class="text-truncate">{{scheduledEvent.attributes}}</td>
+            <td class="text-truncate"><boolean-icon [value]="scheduledEvent.isOpenForVolunteers"/></td>
+            <td class="text-truncate">{{scheduledEvent.maxVolunteerSlots | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -474,6 +484,14 @@ End of commented block for alternate definition option -->
             <p class="scheduled-event-info" *ngIf="scheduledEvent.attributes != null">
               <strong>Attributes: </strong>
               {{scheduledEvent.attributes}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.isOpenForVolunteers != null">
+              <strong>Is Open For Volunteers: </strong>
+              <boolean-icon [value]="scheduledEvent.isOpenForVolunteers"/>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.maxVolunteerSlots != null">
+              <strong>Max Volunteer Slots: </strong>
+              {{scheduledEvent.maxVolunteerSlots | bigNumberFormat : '1.0-2'}}
             </p>
             </div>
          </div>

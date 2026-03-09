@@ -95,11 +95,9 @@ namespace Foundation.Scheduler.Services
                         a.scheduledEvent.active &&
                         !a.scheduledEvent.deleted &&
                         a.scheduledEvent.startDateTime >= windowStart &&
-                        a.scheduledEvent.startDateTime <= windowEnd)
-                    // TODO: Once 'reminderSentDateTime' column is added to EventResourceAssignment,
-                    // add this filter: && a.reminderSentDateTime == null
+                        a.scheduledEvent.startDateTime <= windowEnd &&
+                        a.reminderSentDateTime == null)
                     .ToListAsync();
-
                 if (assignments.Count == 0) continue;
 
                 _logger.LogInformation("VolunteerReminderWorker: Found {Count} assignments needing {Window}h reminder",
@@ -148,8 +146,8 @@ namespace Foundation.Scheduler.Services
                             hoursUntil
                         );
 
-                        // TODO: Once 'reminderSentDateTime' column is added, set it here:
-                        // assignment.reminderSentDateTime = DateTime.UtcNow;
+                        // Mark reminder as sent
+                        assignment.reminderSentDateTime = DateTime.UtcNow;
                         totalSent++;
                     }
                     catch (Exception ex)

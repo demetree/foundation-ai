@@ -182,6 +182,14 @@
                 <label for="ScheduledEvent-attributes" id="label-ScheduledEvent-attributes">Attributes</label>
                 <textarea id="ScheduledEvent-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()"></textarea>
             </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isOpenForVolunteers')">
+                <input type="checkbox" id="ScheduledEvent-isOpenForVolunteers" formControlName="isOpenForVolunteers" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventWriter()" />
+                <label for="ScheduledEvent-isOpenForVolunteers" class="form-check-label" id="label-ScheduledEvent-isOpenForVolunteers"><span class="text-danger">*</span>Is Open For Volunteers</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('maxVolunteerSlots')">
+                <label for="ScheduledEvent-maxVolunteerSlots" id="label-ScheduledEvent-maxVolunteerSlots">Max Volunteer Slots</label>
+                <input type="number" id="ScheduledEvent-maxVolunteerSlots" formControlName="maxVolunteerSlots" placeholder="Enter Max Volunteer Slots" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-maxVolunteerSlots" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="ScheduledEvent-versionNumber" id="label-ScheduledEvent-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="ScheduledEvent-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-input" />

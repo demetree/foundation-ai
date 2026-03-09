@@ -201,6 +201,7 @@ export class EventResourceAssignmentTableComponent implements OnInit, OnChanges,
     { key: 'chargeType.name', label: 'Charge Type', width: undefined, template: 'link', linkPath: ['/chargetype', 'chargeTypeId'] },
     { key: 'reimbursementRequested', label: 'Reimbursement Requested', width: '120px', template: 'boolean' },
     { key: 'volunteerNotes', label: 'Volunteer Notes', width: undefined },
+    { key: 'reminderSentDateTime', label: 'Reminder Sent Date Time', width: undefined, template: 'date' },
 
     ];
 
@@ -374,6 +375,7 @@ export class EventResourceAssignmentTableComponent implements OnInit, OnChanges,
                       'chargeType.name',
                       'reimbursementRequested',
                       'volunteerNotes',
+                      'reminderSentDateTime',
         ];
 
         result = result.filter((eventResourceAssignment) =>

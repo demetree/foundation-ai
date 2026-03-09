@@ -63,6 +63,7 @@ export class EventResourceAssignmentQueryParameters {
     chargeTypeId: bigint | number | null | undefined = null;
     reimbursementRequested: boolean | null | undefined = null;
     volunteerNotes: string | null | undefined = null;
+    reminderSentDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -105,6 +106,7 @@ export class EventResourceAssignmentSubmitData {
     chargeTypeId: bigint | number | null = null;
     reimbursementRequested!: boolean;
     volunteerNotes: string | null = null;
+    reminderSentDateTime: string | null = null;     // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -201,6 +203,7 @@ export class EventResourceAssignmentData {
     chargeTypeId!: bigint | number;
     reimbursementRequested!: boolean;
     volunteerNotes!: string | null;
+    reminderSentDateTime!: string | null;   // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -543,6 +546,7 @@ export class EventResourceAssignmentService extends SecureEndpointBase {
         output.chargeTypeId = data.chargeTypeId;
         output.reimbursementRequested = data.reimbursementRequested;
         output.volunteerNotes = data.volunteerNotes;
+        output.reminderSentDateTime = data.reminderSentDateTime;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

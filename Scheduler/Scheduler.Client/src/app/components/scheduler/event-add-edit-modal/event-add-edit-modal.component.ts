@@ -246,7 +246,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       clientId: [null],
       bookingSourceTypeId: [null],
       color: [null],
-      isAllDay: [false]
+      isAllDay: [false],
+      isOpenForVolunteers: [false],
+      maxVolunteerSlots: [null]
     });
 
     // Assignments array (managed separately for easier sub-table integration)
@@ -777,7 +779,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       clientId: eventData.clientId,
       bookingSourceTypeId: eventData.bookingSourceTypeId,
       color: eventData.color,
-      isAllDay: eventData.isAllDay || false
+      isAllDay: eventData.isAllDay || false,
+      isOpenForVolunteers: eventData.isOpenForVolunteers || false,
+      maxVolunteerSlots: eventData.maxVolunteerSlots || null
     });
 
     this.selectedTarget = eventData.schedulingTarget || null;
@@ -893,6 +897,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         recurrenceInstanceDate: null,
         attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
         isAllDay: formVal.isAllDay || false,
+        isOpenForVolunteers: formVal.isOpenForVolunteers || false,
+        maxVolunteerSlots: formVal.maxVolunteerSlots || null,
         priorityId: formVal.priorityId || null,
         eventStatusId: formVal.eventStatusId || 1,
         bookingSourceTypeId: formVal.bookingSourceTypeId || null,

@@ -1361,6 +1361,18 @@ Used to track engagement level and control visibility/assignment rules.";
             // Suggested seed data (you can adjust or move to tenant-specific if preferred)
             volunteerStatusTable.AddData(new Dictionary<string, string>
 {
+    { "name", "Pending" },
+    { "description", "Self-registered volunteer awaiting admin approval" },
+    { "sequence", "5" },
+    { "color", "#F59E0B" },
+    { "isActive", "0" },
+    { "preventsScheduling", "1" },
+    { "requiresApproval", "1" },
+    { "objectGuid", "a1111111-2222-3333-4444-555555555000" }
+});
+
+            volunteerStatusTable.AddData(new Dictionary<string, string>
+{
     { "name", "Prospect / Interested" },
     { "description", "Has expressed interest but not yet onboarded" },
     { "sequence", "10" },
@@ -2894,6 +2906,10 @@ You attach the specific Crew/Resource to Event B.";
             Database.Table.Field seaField = scheduledEventTable.AddTextField("attributes", true).AddScriptComments("to store arbitrary JSON");
             seaField.hideOnDefaultLists = true;
 
+            // Volunteer Hub opportunity browsing fields
+            scheduledEventTable.AddBoolField("isOpenForVolunteers", false, false).AddScriptComments("Whether this event appears in the Volunteer Hub opportunity browser for self-sign-up");
+            scheduledEventTable.AddIntField("maxVolunteerSlots", true, null).AddScriptComments("Maximum number of volunteer sign-ups allowed; NULL = unlimited");
+
             scheduledEventTable.AddVersionControl();
             scheduledEventTable.AddControlFields();
             scheduledEventTable.SetDisplayNameField("name");
@@ -4194,6 +4210,8 @@ Used to:
             eventResourceAssignmentTable.AddBoolField("reimbursementRequested", false, false).AddScriptComments("Volunteer has flagged that they want/need reimbursement");
 
             eventResourceAssignmentTable.AddTextField("volunteerNotes", true).AddScriptComments("Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')");
+
+            eventResourceAssignmentTable.AddDateTimeField("reminderSentDateTime", true).AddScriptComments("When the last automated reminder was sent for this assignment; NULL = no reminder sent yet");
 
             // Optional: Add a status override just for volunteer assignments if you want more granularity
             // (you can reuse assignmentStatusTable, or create a separate VolunteerAssignmentStatus if needed)           

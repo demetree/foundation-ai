@@ -92,6 +92,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? chargeTypeId = null,
 			bool? reimbursementRequested = null,
 			string volunteerNotes = null,
+			DateTime? reminderSentDateTime = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -168,6 +169,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (approvedDateTime.HasValue == true && approvedDateTime.Value.Kind != DateTimeKind.Utc)
 			{
 				approvedDateTime = approvedDateTime.Value.ToUniversalTime();
+			}
+
+			if (reminderSentDateTime.HasValue == true && reminderSentDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				reminderSentDateTime = reminderSentDateTime.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.EventResourceAssignment> query = (from era in _context.EventResourceAssignments select era);
@@ -277,6 +283,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(volunteerNotes) == false)
 			{
 				query = query.Where(era => era.volunteerNotes == volunteerNotes);
+			}
+			if (reminderSentDateTime.HasValue == true)
+			{
+				query = query.Where(era => era.reminderSentDateTime == reminderSentDateTime.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -483,6 +493,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? chargeTypeId = null,
 			bool? reimbursementRequested = null,
 			string volunteerNotes = null,
+			DateTime? reminderSentDateTime = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -541,6 +552,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (approvedDateTime.HasValue == true && approvedDateTime.Value.Kind != DateTimeKind.Utc)
 			{
 				approvedDateTime = approvedDateTime.Value.ToUniversalTime();
+			}
+
+			if (reminderSentDateTime.HasValue == true && reminderSentDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				reminderSentDateTime = reminderSentDateTime.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.EventResourceAssignment> query = (from era in _context.EventResourceAssignments select era);
@@ -648,6 +664,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (volunteerNotes != null)
 			{
 				query = query.Where(era => era.volunteerNotes == volunteerNotes);
+			}
+			if (reminderSentDateTime.HasValue == true)
+			{
+				query = query.Where(era => era.reminderSentDateTime == reminderSentDateTime.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1036,6 +1056,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					eventResourceAssignment.approvedDateTime = eventResourceAssignment.approvedDateTime.Value.ToUniversalTime();
 				}
 
+				if (eventResourceAssignment.reminderSentDateTime.HasValue == true && eventResourceAssignment.reminderSentDateTime.Value.Kind != DateTimeKind.Utc)
+				{
+					eventResourceAssignment.reminderSentDateTime = eventResourceAssignment.reminderSentDateTime.Value.ToUniversalTime();
+				}
+
 				try
 				{
 				    EntityEntry<Database.EventResourceAssignment> attached = _context.Entry(existing);
@@ -1172,6 +1197,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (eventResourceAssignment.approvedDateTime.HasValue == true && eventResourceAssignment.approvedDateTime.Value.Kind != DateTimeKind.Utc)
 				{
 					eventResourceAssignment.approvedDateTime = eventResourceAssignment.approvedDateTime.Value.ToUniversalTime();
+				}
+
+				if (eventResourceAssignment.reminderSentDateTime.HasValue == true && eventResourceAssignment.reminderSentDateTime.Value.Kind != DateTimeKind.Utc)
+				{
+					eventResourceAssignment.reminderSentDateTime = eventResourceAssignment.reminderSentDateTime.Value.ToUniversalTime();
 				}
 
 				eventResourceAssignment.objectGuid = Guid.NewGuid();
@@ -1383,6 +1413,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    eventResourceAssignment.chargeTypeId = oldEventResourceAssignment.chargeTypeId;
 				    eventResourceAssignment.reimbursementRequested = oldEventResourceAssignment.reimbursementRequested;
 				    eventResourceAssignment.volunteerNotes = oldEventResourceAssignment.volunteerNotes;
+				    eventResourceAssignment.reminderSentDateTime = oldEventResourceAssignment.reminderSentDateTime;
 				    eventResourceAssignment.objectGuid = oldEventResourceAssignment.objectGuid;
 				    eventResourceAssignment.active = oldEventResourceAssignment.active;
 				    eventResourceAssignment.deleted = oldEventResourceAssignment.deleted;
@@ -1851,6 +1882,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? chargeTypeId = null,
 			bool? reimbursementRequested = null,
 			string volunteerNotes = null,
+			DateTime? reminderSentDateTime = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1926,6 +1958,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (approvedDateTime.HasValue == true && approvedDateTime.Value.Kind != DateTimeKind.Utc)
 			{
 				approvedDateTime = approvedDateTime.Value.ToUniversalTime();
+			}
+
+			if (reminderSentDateTime.HasValue == true && reminderSentDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				reminderSentDateTime = reminderSentDateTime.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.EventResourceAssignment> query = (from era in _context.EventResourceAssignments select era);
@@ -2035,6 +2072,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(volunteerNotes) == false)
 			{
 				query = query.Where(era => era.volunteerNotes == volunteerNotes);
+			}
+			if (reminderSentDateTime.HasValue == true)
+			{
+				query = query.Where(era => era.reminderSentDateTime == reminderSentDateTime.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{

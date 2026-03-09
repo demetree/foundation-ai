@@ -963,14 +963,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             var now = DateTime.UtcNow;
 
             // Get upcoming events that are open for volunteers
-            // Using convention: events with 'volunteer' in name/description or events that
-            // already have volunteer assignments are considered volunteer-eligible.
-            // TODO: Once isOpenForVolunteers column is added to ScheduledEvent, use that instead.
             var events = await _schedulerDb.ScheduledEvents
                 .Include(e => e.EventResourceAssignments)
                 .Where(e =>
                     e.active &&
                     !e.deleted &&
+                    e.isOpenForVolunteers &&
                     e.startDateTime > now &&
                     e.tenantGuid == session.TenantGuid)
                 .OrderBy(e => e.startDateTime)
@@ -983,7 +981,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     e.location,
                     e.startDateTime,
                     e.endDateTime,
-                    totalVolunteerSlots = (int?)null, // TODO: use e.maxVolunteerSlots once column added
+                    totalVolunteerSlots = e.maxVolunteerSlots,
                     currentVolunteers = e.EventResourceAssignments
                         .Count(a => a.isVolunteer && a.active && !a.deleted),
                     isAlreadySignedUp = e.EventResourceAssignments
@@ -1022,8 +1020,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             if (existing != null)
                 return Conflict(new { error = "You are already signed up for this event." });
 
-            // TODO: Check slot availability once maxVolunteerSlots column is added
-
+            // Check slot availability
+            if (scheduledEvent.maxVolunteerSlots.HasValue)
+            {
+                var currentCount = scheduledEvent.EventResourceAssignments
+                    .Count(a => a.isVolunteer && a.active && !a.deleted);
+                if (currentCount >= scheduledEvent.maxVolunteerSlots.Value)
+                    return BadRequest(new { error = "All volunteer slots are filled for this event." });
+            }
             // Get default "Planned" assignment status
             var plannedStatus = await _schedulerDb.AssignmentStatuses
                 .FirstOrDefaultAsync(s => s.name == "Planned");

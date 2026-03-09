@@ -59,6 +59,10 @@ public partial class ScheduledEvent
 
     public string attributes { get; set; }
 
+    public bool isOpenForVolunteers { get; set; }
+
+    public int? maxVolunteerSlots { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

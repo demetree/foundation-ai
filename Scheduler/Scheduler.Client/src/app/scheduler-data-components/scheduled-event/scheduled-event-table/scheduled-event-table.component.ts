@@ -199,6 +199,8 @@ export class ScheduledEventTableComponent implements OnInit, OnChanges, AfterVie
     { key: 'color', label: 'Color', width: "50px", template: 'color' },
     // { key: 'externalId', label: 'External Id', width: undefined },
     // { key: 'attributes', label: 'Attributes', width: undefined },
+    { key: 'isOpenForVolunteers', label: 'Is Open For Volunteers', width: '120px', template: 'boolean' },
+    { key: 'maxVolunteerSlots', label: 'Max Volunteer Slots', width: undefined },
 
     ];
 
@@ -370,6 +372,8 @@ export class ScheduledEventTableComponent implements OnInit, OnChanges, AfterVie
                       'color',
                       'externalId',
                       'attributes',
+                      'isOpenForVolunteers',
+                      'maxVolunteerSlots',
         ];
 
         result = result.filter((scheduledEvent) =>

@@ -63,6 +63,8 @@ public partial class EventResourceAssignment
 
     public string volunteerNotes { get; set; }
 
+    public DateTime? reminderSentDateTime { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

@@ -311,6 +311,7 @@ namespace Foundation.Scheduler.Database
 			[Required]
 			public Boolean reimbursementRequested { get; set; }
 			public String volunteerNotes { get; set; }
+			public DateTime? reminderSentDateTime { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -376,6 +377,7 @@ namespace Foundation.Scheduler.Database
 				chargeTypeId = this.chargeTypeId,
 				reimbursementRequested = this.reimbursementRequested,
 				volunteerNotes = this.volunteerNotes,
+				reminderSentDateTime = this.reminderSentDateTime,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -445,6 +447,7 @@ namespace Foundation.Scheduler.Database
 				chargeTypeId = this.chargeTypeId,
 				reimbursementRequested = this.reimbursementRequested,
 				volunteerNotes = this.volunteerNotes,
+				reminderSentDateTime = this.reminderSentDateTime,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -523,6 +526,7 @@ namespace Foundation.Scheduler.Database
 				chargeTypeId = dto.chargeTypeId,
 				reimbursementRequested = dto.reimbursementRequested,
 				volunteerNotes = dto.volunteerNotes,
+				reminderSentDateTime = dto.reminderSentDateTime,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -569,6 +573,7 @@ namespace Foundation.Scheduler.Database
 			this.chargeTypeId = dto.chargeTypeId;
 			this.reimbursementRequested = dto.reimbursementRequested;
 			this.volunteerNotes = dto.volunteerNotes;
+			this.reminderSentDateTime = dto.reminderSentDateTime;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -621,6 +626,7 @@ namespace Foundation.Scheduler.Database
 				chargeTypeId = this.chargeTypeId,
 				reimbursementRequested = this.reimbursementRequested,
 				volunteerNotes = this.volunteerNotes,
+				reminderSentDateTime = this.reminderSentDateTime,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -704,6 +710,7 @@ namespace Foundation.Scheduler.Database
 				chargeTypeId = eventResourceAssignment.chargeTypeId,
 				reimbursementRequested = eventResourceAssignment.reimbursementRequested,
 				volunteerNotes = eventResourceAssignment.volunteerNotes,
+				reminderSentDateTime = eventResourceAssignment.reminderSentDateTime,
 				versionNumber = eventResourceAssignment.versionNumber,
 				objectGuid = eventResourceAssignment.objectGuid,
 				active = eventResourceAssignment.active,
@@ -754,6 +761,7 @@ namespace Foundation.Scheduler.Database
 				chargeTypeId = eventResourceAssignment.chargeTypeId,
 				reimbursementRequested = eventResourceAssignment.reimbursementRequested,
 				volunteerNotes = eventResourceAssignment.volunteerNotes,
+				reminderSentDateTime = eventResourceAssignment.reminderSentDateTime,
 				versionNumber = eventResourceAssignment.versionNumber,
 				objectGuid = eventResourceAssignment.objectGuid,
 				active = eventResourceAssignment.active,

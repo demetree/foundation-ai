@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = financialOfficeChangeHistory.timeStamp,
 				userId = financialOfficeChangeHistory.userId,
 				data = financialOfficeChangeHistory.data,
-				financialOffice = FinancialOffice.CreateMinimalAnonymous(financialOfficeChangeHistory.financialOffice)
+				financialOffice = FinancialOffice.CreateMinimalAnonymous(financialOfficeChangeHistory.financialOffice),
 			 };
 		}
 

@@ -131,6 +131,10 @@
                 Volunteer  Notes
                 <span *ngIf="sortColumn === 'volunteerNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('reminderSentDateTime')">
+                Reminder  Sent  Date  Time
+                <span *ngIf="sortColumn === 'reminderSentDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -242,6 +246,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/chargetype', eventResourceAssignment.chargeTypeId]" class="btn btn-link text-left" ngbTooltip="Open Charge Type details">{{eventResourceAssignment.chargeType?.name}}</a></td>
             <td class="text-truncate"><boolean-icon [value]="eventResourceAssignment.reimbursementRequested"/></td>
             <td class="text-truncate">{{eventResourceAssignment.volunteerNotes}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.reminderSentDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -492,6 +497,10 @@ End of commented block for alternate definition option -->
             <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.volunteerNotes != null">
               <strong>Volunteer Notes: </strong>
               {{eventResourceAssignment.volunteerNotes}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.reminderSentDateTime != null">
+              <strong>Reminder Sent Date Time: </strong>
+              {{eventResourceAssignment.reminderSentDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             </div>
          </div>

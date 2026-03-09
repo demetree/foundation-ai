@@ -1282,9 +1282,14 @@ namespace Foundation.Scheduler.CodeGeneration
         // Same tenant GUID as ConfigurePettyHarbour
         private static readonly Guid PHMCTenantGuid = new Guid("D58F56C6-E3FB-4D3B-80B3-7053C66491E3");
 
+
         // Path to the data files (relative to repo root)
-        private static readonly string DataFolder = Path.Combine(
-            Directory.GetCurrentDirectory(), "..", "..", "..", "..", "Example Scheduler Data");
+        //private static readonly string DataFolder = Path.Combine(
+        //    Directory.GetCurrentDirectory(), "..", "..", "..", "..", "Example Scheduler Data");
+
+        // AFter moving files into source control and copying to output
+        private static readonly string DataFolder = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+
 
 
         /// <summary>

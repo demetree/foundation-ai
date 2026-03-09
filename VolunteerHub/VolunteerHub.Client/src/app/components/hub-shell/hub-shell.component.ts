@@ -12,6 +12,7 @@ export class HubShellComponent {
         { path: '/dashboard', icon: 'fas fa-home', label: 'Home' },
         { path: '/schedule', icon: 'fas fa-calendar', label: 'Schedule' },
         { path: '/hours', icon: 'fas fa-clock', label: 'Hours' },
+        { path: '/opportunities', icon: 'fas fa-search', label: 'Opportunities' },
         { path: '/profile', icon: 'fas fa-user', label: 'Profile' }
     ];
 

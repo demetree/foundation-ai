@@ -91,6 +91,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string color = null,
 			string externalId = null,
 			string attributes = null,
+			bool? isOpenForVolunteers = null,
+			int? maxVolunteerSlots = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -258,6 +260,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(attributes) == false)
 			{
 				query = query.Where(se => se.attributes == attributes);
+			}
+			if (isOpenForVolunteers.HasValue == true)
+			{
+				query = query.Where(se => se.isOpenForVolunteers == isOpenForVolunteers.Value);
+			}
+			if (maxVolunteerSlots.HasValue == true)
+			{
+				query = query.Where(se => se.maxVolunteerSlots == maxVolunteerSlots.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -475,6 +485,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string color = null,
 			string externalId = null,
 			string attributes = null,
+			bool? isOpenForVolunteers = null,
+			int? maxVolunteerSlots = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -622,6 +634,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (attributes != null)
 			{
 				query = query.Where(se => se.attributes == attributes);
+			}
+			if (isOpenForVolunteers.HasValue == true)
+			{
+				query = query.Where(se => se.isOpenForVolunteers == isOpenForVolunteers.Value);
+			}
+			if (maxVolunteerSlots.HasValue == true)
+			{
+				query = query.Where(se => se.maxVolunteerSlots == maxVolunteerSlots.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1417,6 +1437,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    scheduledEvent.color = oldScheduledEvent.color;
 				    scheduledEvent.externalId = oldScheduledEvent.externalId;
 				    scheduledEvent.attributes = oldScheduledEvent.attributes;
+				    scheduledEvent.isOpenForVolunteers = oldScheduledEvent.isOpenForVolunteers;
+				    scheduledEvent.maxVolunteerSlots = oldScheduledEvent.maxVolunteerSlots;
 				    scheduledEvent.objectGuid = oldScheduledEvent.objectGuid;
 				    scheduledEvent.active = oldScheduledEvent.active;
 				    scheduledEvent.deleted = oldScheduledEvent.deleted;
@@ -1884,6 +1906,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string color = null,
 			string externalId = null,
 			string attributes = null,
+			bool? isOpenForVolunteers = null,
+			int? maxVolunteerSlots = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -2050,6 +2074,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(attributes) == false)
 			{
 				query = query.Where(se => se.attributes == attributes);
+			}
+			if (isOpenForVolunteers.HasValue == true)
+			{
+				query = query.Where(se => se.isOpenForVolunteers == isOpenForVolunteers.Value);
+			}
+			if (maxVolunteerSlots.HasValue == true)
+			{
+				query = query.Where(se => se.maxVolunteerSlots == maxVolunteerSlots.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{

@@ -73,6 +73,8 @@ export class ScheduledEventQueryParameters {
     color: string | null | undefined = null;
     externalId: string | null | undefined = null;
     attributes: string | null | undefined = null;
+    isOpenForVolunteers: boolean | null | undefined = null;
+    maxVolunteerSlots: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -113,6 +115,8 @@ export class ScheduledEventSubmitData {
     color: string | null = null;
     externalId: string | null = null;
     attributes: string | null = null;
+    isOpenForVolunteers!: boolean;
+    maxVolunteerSlots: bigint | number | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -207,6 +211,8 @@ export class ScheduledEventData {
     color!: string | null;
     externalId!: string | null;
     attributes!: string | null;
+    isOpenForVolunteers!: boolean;
+    maxVolunteerSlots!: bigint | number;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -1656,6 +1662,8 @@ export class ScheduledEventService extends SecureEndpointBase {
         output.color = data.color;
         output.externalId = data.externalId;
         output.attributes = data.attributes;
+        output.isOpenForVolunteers = data.isOpenForVolunteers;
+        output.maxVolunteerSlots = data.maxVolunteerSlots;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
