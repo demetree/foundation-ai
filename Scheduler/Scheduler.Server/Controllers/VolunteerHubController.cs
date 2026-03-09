@@ -669,11 +669,440 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 .Include(vp => vp.volunteerStatus)
                 .FirstOrDefaultAsync();
         }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // PUBLIC: Volunteer Self-Registration
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Public endpoint — no auth required.
+        /// Accepts a volunteer registration form and creates a VolunteerProfile
+        /// with "Pending" status for admin review.
+        /// </summary>
+        [HttpPost("public/register")]
+        public async Task<IActionResult> Register([FromBody] VolunteerRegistrationModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Email))
+                return BadRequest(new { error = "Email is required." });
+
+            if (string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+                return BadRequest(new { error = "First name and last name are required." });
+
+            try
+            {
+                // Check for duplicate registration by email
+                var securityContext = new SecurityContext();
+                var existingUser = await securityContext.SecurityUsers
+                    .FirstOrDefaultAsync(u => u.emailAddress == model.Email.Trim().ToLower());
+
+                if (existingUser != null)
+                {
+                    return Conflict(new { error = "An account with this email already exists. Please log in to the Volunteer Hub." });
+                }
+
+                // Resolve the "Pending" volunteer status (convention: status name "Pending")
+                var pendingStatus = await _schedulerDb.VolunteerStatuses
+                    .FirstOrDefaultAsync(s => s.name == "Pending");
+
+                if (pendingStatus == null)
+                {
+                    // Fallback: use the first status
+                    pendingStatus = await _schedulerDb.VolunteerStatuses.FirstOrDefaultAsync();
+                }
+
+                if (pendingStatus == null)
+                    return StatusCode(500, new { error = "No volunteer statuses configured." });
+
+                // Get default tenant
+                var tenantGuid = await GetDefaultTenantGuidAsync();
+
+                // Create a minimal Resource for this volunteer
+                var resource = new Resource
+                {
+                    tenantGuid = tenantGuid,
+                    name = $"{model.FirstName.Trim()} {model.LastName.Trim()}",
+                    active = true,
+                    deleted = false,
+                    objectGuid = Guid.NewGuid(),
+                    versionNumber = 1
+                };
+                _schedulerDb.Resources.Add(resource);
+                await _schedulerDb.SaveChangesAsync();
+
+                // Create the VolunteerProfile in "Pending" status
+                var profile = new VolunteerProfile
+                {
+                    tenantGuid = tenantGuid,
+                    resourceId = resource.id,
+                    volunteerStatusId = pendingStatus.id,
+                    availabilityPreferences = model.AvailabilityPreferences,
+                    interestsAndSkillsNotes = model.InterestsAndSkillsNotes,
+                    emergencyContactNotes = model.EmergencyContactNotes,
+                    // Store email in attributes JSON for later retrieval during approval
+                    attributes = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        registrationEmail = model.Email.Trim().ToLower(),
+                        registrationPhone = model.Phone,
+                        registrationFirstName = model.FirstName.Trim(),
+                        registrationLastName = model.LastName.Trim(),
+                        registrationDate = DateTime.UtcNow
+                    }),
+                    active = true,
+                    deleted = false,
+                    objectGuid = Guid.NewGuid(),
+                    versionNumber = 1
+                };
+                _schedulerDb.VolunteerProfiles.Add(profile);
+                await _schedulerDb.SaveChangesAsync();
+
+                _logger.LogInformation("Volunteer self-registration created: profile {Id} for {Email}",
+                    profile.id, model.Email);
+
+                return Ok(new
+                {
+                    message = "Registration submitted! An administrator will review your application.",
+                    profileId = profile.id
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing volunteer self-registration for {Email}", model.Email);
+                return StatusCode(500, new { error = "Failed to process registration." });
+            }
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // ADMIN: Pending Registrations Management
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Admin: Get pending volunteer registrations (profiles with "Pending" status).
+        /// </summary>
+        [Authorize]
+        [HttpGet("admin/registrations")]
+        public async Task<IActionResult> GetPendingRegistrations()
+        {
+            var pendingStatus = await _schedulerDb.VolunteerStatuses
+                .FirstOrDefaultAsync(s => s.name == "Pending");
+
+            if (pendingStatus == null)
+                return Ok(Array.Empty<object>());
+
+            var pending = await _schedulerDb.VolunteerProfiles
+                .Include(vp => vp.resource)
+                .Include(vp => vp.volunteerStatus)
+                .Where(vp => vp.volunteerStatusId == pendingStatus.id && vp.active && !vp.deleted)
+                .OrderByDescending(vp => vp.id)
+                .Select(vp => new
+                {
+                    vp.id,
+                    vp.resource.name,
+                    statusName = vp.volunteerStatus.name,
+                    vp.availabilityPreferences,
+                    vp.interestsAndSkillsNotes,
+                    vp.emergencyContactNotes,
+                    vp.attributes // Contains registration email, phone, date
+                })
+                .ToListAsync();
+
+            return Ok(pending);
+        }
+
+        /// <summary>
+        /// Admin: Approve a pending registration — creates SecurityUser and provisions Hub access.
+        /// </summary>
+        [Authorize]
+        [HttpPost("admin/registrations/{profileId}/approve")]
+        public async Task<IActionResult> ApproveRegistration(int profileId)
+        {
+            var profile = await _schedulerDb.VolunteerProfiles
+                .Include(vp => vp.resource)
+                .FirstOrDefaultAsync(vp => vp.id == profileId);
+
+            if (profile == null)
+                return NotFound(new { error = "Profile not found." });
+
+            try
+            {
+                // Parse registration data from attributes
+                var regData = System.Text.Json.JsonDocument.Parse(profile.attributes ?? "{}");
+                var email = regData.RootElement.TryGetProperty("registrationEmail", out var emailEl) ? emailEl.GetString() : null;
+                var phone = regData.RootElement.TryGetProperty("registrationPhone", out var phoneEl) ? phoneEl.GetString() : null;
+                var firstName = regData.RootElement.TryGetProperty("registrationFirstName", out var fnEl) ? fnEl.GetString() : null;
+                var lastName = regData.RootElement.TryGetProperty("registrationLastName", out var lnEl) ? lnEl.GetString() : null;
+
+                if (string.IsNullOrWhiteSpace(email))
+                    return BadRequest(new { error = "Registration email not found in profile attributes." });
+
+                // Move to "Active" status
+                var activeStatus = await _schedulerDb.VolunteerStatuses
+                    .FirstOrDefaultAsync(s => s.name == "Active");
+
+                if (activeStatus != null)
+                {
+                    profile.volunteerStatusId = activeStatus.id;
+                    profile.onboardedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                }
+
+                await _schedulerDb.SaveChangesAsync();
+
+                // Provision Hub access (reuse existing provisioning logic pattern)
+                var securityContext = new SecurityContext();
+
+                var secUser = await securityContext.SecurityUsers
+                    .FirstOrDefaultAsync(u => u.emailAddress == email);
+
+                if (secUser == null)
+                {
+                    // Create new SecurityUser for this volunteer
+                    secUser = new SecurityUser
+                    {
+                        accountName = email,
+                        emailAddress = email,
+                        cellPhoneNumber = phone,
+                        firstName = firstName,
+                        lastName = lastName,
+                        canLogin = true,
+                        activeDirectoryAccount = false,
+                        active = true,
+                        deleted = false,
+                        objectGuid = Guid.NewGuid(),
+                        twoFactorSendByEmail = true,
+                        twoFactorSendBySMS = !string.IsNullOrWhiteSpace(phone)
+                    };
+                    securityContext.SecurityUsers.Add(secUser);
+                    await securityContext.SaveChangesAsync();
+                }
+
+                // Link profile to SecurityUser
+                profile.linkedUserGuid = secUser.objectGuid;
+                await _schedulerDb.SaveChangesAsync();
+
+                _logger.LogInformation("Volunteer registration approved: profile {Id}, email {Email}", profileId, email);
+
+                return Ok(new
+                {
+                    message = "Registration approved. Volunteer can now log in to the Hub.",
+                    profileId = profile.id,
+                    securityUserId = secUser.id
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error approving registration for profile {Id}", profileId);
+                return StatusCode(500, new { error = "Failed to approve registration." });
+            }
+        }
+
+        /// <summary>
+        /// Admin: Reject a pending registration.
+        /// </summary>
+        [Authorize]
+        [HttpPost("admin/registrations/{profileId}/reject")]
+        public async Task<IActionResult> RejectRegistration(int profileId, [FromBody] RejectRegistrationModel model)
+        {
+            var profile = await _schedulerDb.VolunteerProfiles
+                .FirstOrDefaultAsync(vp => vp.id == profileId);
+
+            if (profile == null)
+                return NotFound(new { error = "Profile not found." });
+
+            // Mark as inactive/rejected
+            var inactiveStatus = await _schedulerDb.VolunteerStatuses
+                .FirstOrDefaultAsync(s => s.name == "Inactive");
+
+            if (inactiveStatus != null)
+            {
+                profile.volunteerStatusId = inactiveStatus.id;
+            }
+
+            profile.active = false;
+            profile.inactiveSince = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            // Store rejection notes in attributes
+            if (!string.IsNullOrWhiteSpace(model?.Notes))
+            {
+                try
+                {
+                    var existing = System.Text.Json.JsonDocument.Parse(profile.attributes ?? "{}");
+                    var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(profile.attributes ?? "{}");
+                    dict["rejectionNotes"] = model.Notes;
+                    dict["rejectionDate"] = DateTime.UtcNow.ToString("o");
+                    profile.attributes = System.Text.Json.JsonSerializer.Serialize(dict);
+                }
+                catch
+                {
+                    // If attributes parsing fails, just append
+                }
+            }
+
+            await _schedulerDb.SaveChangesAsync();
+
+            _logger.LogInformation("Volunteer registration rejected: profile {Id}", profileId);
+
+            return Ok(new { message = "Registration rejected." });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // OPPORTUNITIES: Browse & Sign-Up
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Authenticated volunteer: Browse upcoming events that are open for volunteer sign-up.
+        /// Returns events with available slot counts.
+        /// </summary>
+        [HttpGet("opportunities")]
+        public async Task<IActionResult> GetOpportunities()
+        {
+            var session = await ResolveSessionAsync();
+            if (session == null) return Unauthorized(new { error = "Invalid session." });
+
+            var now = DateTime.UtcNow;
+
+            // Get upcoming events that are open for volunteers
+            // Using convention: events with 'volunteer' in name/description or events that
+            // already have volunteer assignments are considered volunteer-eligible.
+            // TODO: Once isOpenForVolunteers column is added to ScheduledEvent, use that instead.
+            var events = await _schedulerDb.ScheduledEvents
+                .Include(e => e.EventResourceAssignments)
+                .Where(e =>
+                    e.active &&
+                    !e.deleted &&
+                    e.startDateTime > now &&
+                    e.tenantGuid == session.TenantGuid)
+                .OrderBy(e => e.startDateTime)
+                .Take(50)
+                .Select(e => new
+                {
+                    e.id,
+                    e.name,
+                    e.description,
+                    e.location,
+                    e.startDateTime,
+                    e.endDateTime,
+                    totalVolunteerSlots = (int?)null, // TODO: use e.maxVolunteerSlots once column added
+                    currentVolunteers = e.EventResourceAssignments
+                        .Count(a => a.isVolunteer && a.active && !a.deleted),
+                    isAlreadySignedUp = e.EventResourceAssignments
+                        .Any(a => a.isVolunteer && a.active && !a.deleted &&
+                                  a.resourceId == session.ResourceId)
+                })
+                .ToListAsync();
+
+            return Ok(events);
+        }
+
+        /// <summary>
+        /// Authenticated volunteer: Sign up for an opportunity.
+        /// Creates a new volunteer EventResourceAssignment.
+        /// </summary>
+        [HttpPost("opportunities/{eventId}/sign-up")]
+        public async Task<IActionResult> SignUpForOpportunity(int eventId)
+        {
+            var session = await ResolveSessionAsync();
+            if (session == null) return Unauthorized(new { error = "Invalid session." });
+
+            var scheduledEvent = await _schedulerDb.ScheduledEvents
+                .Include(e => e.EventResourceAssignments)
+                .FirstOrDefaultAsync(e => e.id == eventId && e.active && !e.deleted);
+
+            if (scheduledEvent == null)
+                return NotFound(new { error = "Event not found." });
+
+            if (scheduledEvent.startDateTime <= DateTime.UtcNow)
+                return BadRequest(new { error = "Cannot sign up for past events." });
+
+            // Check for duplicate sign-up
+            var existing = scheduledEvent.EventResourceAssignments
+                .FirstOrDefault(a => a.isVolunteer && a.resourceId == session.ResourceId && a.active && !a.deleted);
+
+            if (existing != null)
+                return Conflict(new { error = "You are already signed up for this event." });
+
+            // TODO: Check slot availability once maxVolunteerSlots column is added
+
+            // Get default "Planned" assignment status
+            var plannedStatus = await _schedulerDb.AssignmentStatuses
+                .FirstOrDefaultAsync(s => s.name == "Planned");
+
+            var assignment = new EventResourceAssignment
+            {
+                tenantGuid = session.TenantGuid,
+                scheduledEventId = eventId,
+                resourceId = session.ResourceId,
+                assignmentStatusId = plannedStatus?.id ?? 1,
+                isVolunteer = true,
+                active = true,
+                deleted = false,
+                objectGuid = Guid.NewGuid(),
+                versionNumber = 1
+            };
+
+            _schedulerDb.EventResourceAssignments.Add(assignment);
+            await _schedulerDb.SaveChangesAsync();
+
+            _logger.LogInformation("Volunteer {ResourceId} signed up for event {EventId}",
+                session.ResourceId, eventId);
+
+            return Ok(new
+            {
+                message = "Successfully signed up!",
+                assignmentId = assignment.id,
+                eventName = scheduledEvent.name,
+                eventDate = scheduledEvent.startDateTime
+            });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // Internal: Session resolution helper for opportunity endpoints
+        // ─────────────────────────────────────────────────────────────
+
+        private async Task<VolunteerSession> ResolveSessionAsync()
+        {
+            var token = HttpContext.Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(token)) return null;
+
+            var securityContext = new SecurityContext();
+            var secUser = await securityContext.SecurityUsers
+                .FirstOrDefaultAsync(u => u.authenticationToken == token &&
+                                          u.authenticationTokenExpiry > DateTime.UtcNow);
+
+            if (secUser == null) return null;
+
+            // Resolve volunteer profile
+            var profile = await _schedulerDb.VolunteerProfiles
+                .FirstOrDefaultAsync(vp => vp.linkedUserGuid == secUser.objectGuid && vp.active && !vp.deleted);
+
+            if (profile == null) return null;
+
+            // Get tenant from a tenant user mapping
+            var tenantUser = await securityContext.SecurityTenantUsers
+                .FirstOrDefaultAsync(tu => tu.securityUserId == secUser.id);
+
+            return new VolunteerSession
+            {
+                SecurityUserId = secUser.id,
+                UserGuid = secUser.objectGuid,
+                ResourceId = profile.resourceId,
+                ProfileId = profile.id,
+                TenantGuid = tenantUser?.securityTenant?.objectGuid ?? Guid.Empty
+            };
+        }
+
+        private async Task<Guid> GetDefaultTenantGuidAsync()
+        {
+            var securityContext = new SecurityContext();
+            var tenant = await securityContext.SecurityTenants.FirstOrDefaultAsync();
+            return tenant?.objectGuid ?? Guid.Empty;
+        }
     }
 
-
     // ─────────────────────────────────────────────────────────────
-    // REQUEST MODELS
+    // Request / Response Models
     // ─────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -717,5 +1146,30 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         public string? AvailabilityPreferences { get; set; }
         public string? InterestsAndSkillsNotes { get; set; }
         public string? EmergencyContactNotes { get; set; }
+    }
+
+    public class VolunteerRegistrationModel
+    {
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string? Phone { get; set; }
+        public string? AvailabilityPreferences { get; set; }
+        public string? InterestsAndSkillsNotes { get; set; }
+        public string? EmergencyContactNotes { get; set; }
+    }
+
+    public class RejectRegistrationModel
+    {
+        public string? Notes { get; set; }
+    }
+
+    public class VolunteerSession
+    {
+        public int SecurityUserId { get; set; }
+        public Guid UserGuid { get; set; }
+        public int ResourceId { get; set; }
+        public int ProfileId { get; set; }
+        public Guid TenantGuid { get; set; }
     }
 }

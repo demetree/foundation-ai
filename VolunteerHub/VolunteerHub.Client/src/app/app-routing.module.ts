@@ -7,10 +7,13 @@ import { HubDashboardComponent } from './components/hub-dashboard/hub-dashboard.
 import { HubScheduleComponent } from './components/hub-schedule/hub-schedule.component';
 import { HubHoursComponent } from './components/hub-hours/hub-hours.component';
 import { HubProfileComponent } from './components/hub-profile/hub-profile.component';
+import { HubRegisterComponent } from './components/hub-register/hub-register.component';
+import { HubOpportunitiesComponent } from './components/hub-opportunities/hub-opportunities.component';
 import { HubAuthGuard } from './guards/hub-auth.guard';
 
 const routes: Routes = [
     { path: 'login', component: HubLoginComponent },
+    { path: 'register', component: HubRegisterComponent },
     {
         path: '',
         component: HubShellComponent,
@@ -19,6 +22,7 @@ const routes: Routes = [
             { path: 'dashboard', component: HubDashboardComponent },
             { path: 'schedule', component: HubScheduleComponent },
             { path: 'hours', component: HubHoursComponent },
+            { path: 'opportunities', component: HubOpportunitiesComponent },
             { path: 'profile', component: HubProfileComponent },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]

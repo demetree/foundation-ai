@@ -1,0 +1,49 @@
+<div class="opportunities-page">
+    <h2>🔍 Volunteer Opportunities</h2>
+    <p class="subtitle">Browse upcoming events and sign up to volunteer</p>
+
+    <div *ngIf="successMessage" class="success-banner">{{ successMessage }}</div>
+    <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+    <div *ngIf="loading" class="loading">Loading opportunities...</div>
+
+    <div *ngIf="!loading && opportunities.length === 0" class="empty-state">
+        <p>No opportunities available right now. Check back soon!</p>
+    </div>
+
+    <div class="opportunities-grid" *ngIf="!loading && opportunities.length > 0">
+        <div class="opportunity-card" *ngFor="let opp of opportunities">
+            <div class="card-header">
+                <h3>{{ opp.name }}</h3>
+                <span class="date-badge">{{ formatDate(opp.startDateTime) }}</span>
+            </div>
+
+            <p class="description" *ngIf="opp.description">{{ opp.description }}</p>
+
+            <div class="card-details">
+                <div class="detail" *ngIf="opp.location">
+                    <span class="detail-label">📍 Location</span>
+                    <span class="detail-value">{{ opp.location }}</span>
+                </div>
+                <div class="detail">
+                    <span class="detail-label">👥 Volunteers</span>
+                    <span class="detail-value">
+                        {{ opp.currentVolunteers }} signed up
+                        <span *ngIf="opp.totalVolunteerSlots"> / {{ opp.totalVolunteerSlots }} slots</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button *ngIf="opp.isAlreadySignedUp" class="btn-signed-up" disabled>
+                    ✅ Already Signed Up
+                </button>
+                <button *ngIf="!opp.isAlreadySignedUp" class="btn-sign-up" (click)="signUp(opp.id)"
+                    [disabled]="signingUp === opp.id">
+                    <span *ngIf="signingUp !== opp.id">Sign Up</span>
+                    <span *ngIf="signingUp === opp.id">Signing up...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

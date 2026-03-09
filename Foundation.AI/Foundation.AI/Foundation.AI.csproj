@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Foundation.AI.Inference\Foundation.AI.Inference.csproj" />
     <ProjectReference Include="..\Foundation.AI.Rag\Foundation.AI.Rag.csproj" />
     <ProjectReference Include="..\Foundation.AI.Vision\Foundation.AI.Vision.csproj" />
-    <!--<ProjectReference Include="..\Foundation.AI.Inference.BitNet\Foundation.AI.Inference.BitNet.csproj" />-->
+    <ProjectReference Include="..\Foundation.AI.Inference.BitNet\Foundation.AI.Inference.BitNet.csproj" />
+    <ProjectReference Include="..\Foundation.AI.Experiment\Foundation.AI.Experiment.csproj" />
   </ItemGroup>
 </Project>

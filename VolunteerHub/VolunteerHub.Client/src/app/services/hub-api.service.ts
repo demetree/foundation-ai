@@ -84,4 +84,37 @@ export class HubApiService {
             { headers: this.headers }
         );
     }
+
+
+    // ─────── Public Registration ───────
+
+    register(data: {
+        firstName: string; lastName: string; email: string;
+        phone?: string; availabilityPreferences?: string;
+        interestsAndSkillsNotes?: string; emergencyContactNotes?: string;
+    }): Observable<any> {
+        // No auth header — public endpoint
+        return this.http.post(
+            `${environment.apiBaseUrl}/api/volunteerhub/public/register`,
+            data
+        );
+    }
+
+
+    // ─────── Opportunities ───────
+
+    getOpportunities(): Observable<any[]> {
+        return this.http.get<any[]>(
+            `${environment.apiBaseUrl}/api/volunteerhub/opportunities`,
+            { headers: this.headers }
+        );
+    }
+
+    signUpForOpportunity(eventId: number): Observable<any> {
+        return this.http.post(
+            `${environment.apiBaseUrl}/api/volunteerhub/opportunities/${eventId}/sign-up`,
+            {},
+            { headers: this.headers }
+        );
+    }
 }

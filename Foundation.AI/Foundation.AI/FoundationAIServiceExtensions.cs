@@ -1,4 +1,5 @@
 using Foundation.AI.Embed;
+using Foundation.AI.Experiment;
 using Foundation.AI.Inference;
 using Foundation.AI.Rag;
 using Foundation.AI.VectorStore;
@@ -74,6 +75,7 @@ public sealed class FoundationAIBuilder
     /// <item><c>AddOpenAiInference()</c> / <c>AddInferenceProvider()</c> — from Foundation.AI.Inference</item>
     /// <item><c>AddBitNetInference()</c> — from Foundation.AI.Inference.BitNet (local 1-bit LLM)</item>
     /// <item><c>AddOpenAiVision()</c> / <c>AddVisionProvider()</c> — from Foundation.AI.Vision</item>
+    /// <item><c>AddExperiment()</c> — from Foundation.AI.Experiment (autonomous experimentation)</item>
     /// <item><c>AddRag()</c> — from Foundation.AI.Rag</item>
     /// </list>
     /// </summary>

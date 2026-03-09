@@ -1,59 +1,36 @@
 //
 // SMS Notification Provider
 //
-// Sends SMS notifications via Twilio.
+// Sends SMS notifications via Twilio using the Foundation TwilioSmsService.
 //
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Foundation.Services;
 using Microsoft.Extensions.Logging;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
-using Twilio.Types;
 
 namespace Alerting.Server.Services.Notifications
 {
     /// <summary>
-    /// Sends notifications via SMS using Twilio.
+    /// Sends notifications via SMS using the Foundation TwilioSmsService.
+    /// Handles incident-specific message formatting and delegates delivery
+    /// to the shared Foundation service.
     /// </summary>
     public class SmsNotificationProvider : INotificationProvider
     {
-        private readonly IConfiguration _config;
         private readonly ILogger<SmsNotificationProvider> _logger;
-        private bool _initialized;
 
         // NotificationChannelType ID for SMS (from database seed data)
         public int ChannelTypeId => 2; // SMS
 
-        public SmsNotificationProvider(
-            IConfiguration config,
-            ILogger<SmsNotificationProvider> logger)
+        public SmsNotificationProvider(ILogger<SmsNotificationProvider> logger)
         {
-            _config = config;
             _logger = logger;
-        }
-
-        private void EnsureInitialized()
-        {
-            if (_initialized) return;
-
-            var accountSid = _config["Twilio:AccountSid"];
-            var authToken = _config["Twilio:AuthToken"];
-
-            if (string.IsNullOrEmpty(accountSid) || string.IsNullOrEmpty(authToken))
-            {
-                _logger.LogWarning("Twilio credentials not configured - SMS notifications disabled");
-                return;
-            }
-
-            TwilioClient.Init(accountSid, authToken);
-            _initialized = true;
         }
 
         public async Task<NotificationResult> SendAsync(NotificationRequest request, CancellationToken cancellationToken = default)
         {
-            NotificationLogger.Debug($"SmsNotificationProvider.SendAsync - User: {request.UserObjectGuid}, Phone: {MaskPhoneNumber(request.UserPhoneNumber)}");
+            NotificationLogger.Debug($"SmsNotificationProvider.SendAsync - User: {request.UserObjectGuid}, Phone: {TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber)}");
 
             if (string.IsNullOrWhiteSpace(request.UserPhoneNumber))
             {
@@ -63,62 +40,42 @@ namespace Alerting.Server.Services.Notifications
                 return NotificationResult.Failed("No phone number configured for user");
             }
 
-            var fromNumber = _config["Twilio:FromNumber"];
-            if (string.IsNullOrEmpty(fromNumber))
-            {
-                NotificationLogger.Warning("Twilio FromNumber not configured - cannot send SMS");
-                _logger.LogWarning("Twilio FromNumber not configured - cannot send SMS");
-                return NotificationResult.Failed("SMS provider not configured");
-            }
-
             try
             {
-                NotificationLogger.Debug("Ensuring Twilio client is initialized");
-                EnsureInitialized();
-                if (!_initialized)
-                {
-                    NotificationLogger.Error("Twilio not initialized - credentials missing");
-                    return NotificationResult.Failed("Twilio not initialized - credentials missing");
-                }
-
                 NotificationLogger.Debug($"Building SMS message for incident {request.Incident.IncidentKey}");
                 var messageBody = BuildMessageBody(request);
                 NotificationLogger.Debug($"SMS body length: {messageBody.Length} characters");
 
-                NotificationLogger.Debug($"Calling Twilio MessageResource.CreateAsync to {MaskPhoneNumber(request.UserPhoneNumber)}");
-                var message = await MessageResource.CreateAsync(
-                    to: new PhoneNumber(request.UserPhoneNumber),
-                    from: new PhoneNumber(fromNumber),
-                    body: messageBody
+                NotificationLogger.Debug($"Calling TwilioSmsService.SendSmsAsync to {TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber)}");
+                var (success, messageSid, error) = await TwilioSmsService.SendSmsAsync(
+                    request.UserPhoneNumber,
+                    messageBody
                 );
-
-                var success = message.Status != MessageResource.StatusEnum.Failed &&
-                              message.Status != MessageResource.StatusEnum.Undelivered;
 
                 if (success)
                 {
-                    NotificationLogger.Info($"SMS sent successfully to {MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey} (SID: {message.Sid})");
+                    NotificationLogger.Info($"SMS sent successfully to {TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey} (SID: {messageSid})");
                     _logger.LogInformation("SMS notification sent successfully to {Phone} for incident {IncidentKey} (SID: {Sid})",
-                        MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, message.Sid);
+                        TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, messageSid);
                     return new NotificationResult
                     {
                         Success = true,
-                        ExternalMessageId = message.Sid,
-                        ProviderResponse = message.Status?.ToString(),
+                        ExternalMessageId = messageSid,
+                        ProviderResponse = "Sent",
                         RecipientAddress = request.UserPhoneNumber,
                         BodyContent = messageBody
                     };
                 }
                 else
                 {
-                    NotificationLogger.Error($"Twilio SMS failed to {MaskPhoneNumber(request.UserPhoneNumber)}: {message.ErrorMessage} (Status: {message.Status})");
+                    NotificationLogger.Error($"SMS failed to {TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber)}: {error}");
                     _logger.LogError("Failed to send SMS notification to {Phone} for incident {IncidentKey}: {Error}",
-                        MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, message.ErrorMessage);
+                        TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, error);
                     return new NotificationResult
                     {
                         Success = false,
-                        ErrorMessage = message.ErrorMessage ?? "SMS delivery failed",
-                        ProviderResponse = message.Status?.ToString(),
+                        ErrorMessage = error ?? "SMS delivery failed",
+                        ProviderResponse = "Failed",
                         RecipientAddress = request.UserPhoneNumber,
                         BodyContent = messageBody
                     };
@@ -126,9 +83,9 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (Exception ex)
             {
-                NotificationLogger.Exception($"Exception sending SMS to {MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey}", ex);
+                NotificationLogger.Exception($"Exception sending SMS to {TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey}", ex);
                 _logger.LogError(ex, "Exception sending SMS notification to {Phone} for incident {IncidentKey}",
-                    MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey);
+                    TwilioSmsService.MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey);
                 return NotificationResult.Failed(ex.Message);
             }
         }
@@ -150,14 +107,6 @@ namespace Alerting.Server.Services.Notifications
             }
 
             return $"[{severity}] {title}\n{key}\nService: {service ?? "Unknown"}";
-        }
-
-        private string MaskPhoneNumber(string phone)
-        {
-            // Mask phone number for logging (show last 4 digits only)
-            if (string.IsNullOrEmpty(phone) || phone.Length < 4)
-                return "****";
-            return new string('*', phone.Length - 4) + phone.Substring(phone.Length - 4);
         }
     }
 }
