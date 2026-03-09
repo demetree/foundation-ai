@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════
-   AI-Generated:  Brickberg Dashboard styles
+   AI-Developed:  Brickberg Dashboard styles
    Bloomberg-inspired financial terminal for LEGO investments
    ══════════════════════════════════════════════════════════════════ */
 
@@ -77,9 +77,13 @@ $bo-accent: #6C5CE7;
 }
 
 
-/* ── Quick Lookup Bar ── */
+/* ══════════════════════════════════════════════════════════════════
+   ENHANCED SEARCH BAR + TYPEAHEAD
+   ══════════════════════════════════════════════════════════════════ */
+
 .bb-lookup {
     margin-bottom: 20px;
+    position: relative;
 }
 
 .lookup-bar {
@@ -87,8 +91,9 @@ $bo-accent: #6C5CE7;
     display: flex;
     align-items: center;
     border-radius: var(--radius-lg, 16px);
-    padding: 4px 6px 4px 20px;
+    padding: 4px 12px 4px 20px;
     gap: 12px;
+    transition: border-color 0.2s;
 }
 
 .lookup-icon {
@@ -114,50 +119,364 @@ $bo-accent: #6C5CE7;
     }
 }
 
-.lookup-go {
-    padding: 10px 24px;
+.lookup-clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     border: none;
-    border-radius: 12px;
-    background: $be-accent;
-    color: #fff;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 1px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--bmc-text-secondary);
     cursor: pointer;
     transition: all 0.2s;
+    flex-shrink: 0;
 
-    &:hover:not(:disabled) {
-        background: lighten($be-accent, 5%);
-        transform: translateY(-1px);
-    }
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
+    &:hover {
+        color: #FF6B6B;
+        background: rgba(255, 107, 107, 0.1);
     }
 }
 
-.lookup-result {
+.lookup-loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: $be-accent;
+    flex-shrink: 0;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+
+/* ── Typeahead Suggestions ── */
+.lookup-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    margin-top: 4px;
+    @include glass.glass-effect-lg;
+    border-radius: var(--radius-lg, 16px);
+    overflow: hidden;
+    max-height: 440px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--bmc-glass-border);
+        border-radius: 3px;
+    }
+}
+
+.suggestion-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--bmc-glass-border);
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover,
+    &.highlighted {
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.08);
+    }
+}
+
+.suggestion-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bmc-glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--bmc-glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    i {
+        font-size: 1.1rem;
+        color: var(--bmc-text-secondary);
+        opacity: 0.2;
+    }
+}
+
+.suggestion-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggestion-name {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bmc-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+    font-size: 0.72rem;
+    color: var(--bmc-text-secondary);
+}
+
+.suggestion-num {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-weight: 700;
+    color: $be-accent;
+}
+
+.suggestion-year {
+    opacity: 0.8;
+}
+
+.suggestion-parts {
+    opacity: 0.7;
+
+    i {
+        font-size: 0.6rem;
+        margin-right: 2px;
+    }
+}
+
+.suggestion-theme {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.1);
+    color: var(--bmc-accent);
+    font-size: 0.65rem;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   RECENT LOOKUPS STRIP
+   ══════════════════════════════════════════════════════════════════ */
+
+.recent-strip {
+    margin-top: 12px;
+}
+
+.recent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.recent-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--bmc-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    i {
+        margin-right: 6px;
+        font-size: 0.68rem;
+    }
+}
+
+.recent-clear {
+    background: none;
+    border: none;
+    color: var(--bmc-text-secondary);
+    font-size: 0.68rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s;
+
+    &:hover {
+        opacity: 1;
+        color: #FF6B6B;
+    }
+}
+
+.recent-items {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+
+    &::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--bmc-glass-border);
+        border-radius: 2px;
+    }
+}
+
+.recent-chip {
+    @include glass.glass-effect;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    min-width: 0;
+
+    &:hover {
+        border-color: var(--bmc-accent);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+.recent-chip-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bmc-glass-bg, rgba(255, 255, 255, 0.03));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    i {
+        font-size: 0.8rem;
+        color: var(--bmc-text-secondary);
+        opacity: 0.2;
+    }
+}
+
+.recent-chip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.recent-chip-num {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $be-accent;
+    white-space: nowrap;
+}
+
+.recent-chip-name {
+    font-size: 0.7rem;
+    color: var(--bmc-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   RICH LOOKUP RESULT CARD
+   ══════════════════════════════════════════════════════════════════ */
+
+.lookup-result-card {
     @include glass.glass-effect-lg;
     margin-top: 12px;
     border-radius: var(--radius-lg, 16px);
-    padding: 20px 24px;
-    animation: fadeIn 0.3s ease-out;
+    overflow: hidden;
 }
 
-.lookup-result-header {
+
+/* ── Set Identity Header ── */
+.result-identity {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+    gap: 20px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--bmc-glass-border);
 }
 
-.lookup-set-number {
+.result-thumb {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bmc-glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--bmc-glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:hover {
+        border-color: var(--bmc-accent);
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.result-header-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.result-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.result-set-number {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 1.1rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: var(--bmc-text-primary);
+    padding: 3px 12px;
+    border-radius: 14px;
+    background: $be-accent;
+    color: #fff;
 }
 
 .lookup-close {
@@ -174,49 +493,146 @@ $bo-accent: #6C5CE7;
     }
 }
 
-.lookup-data-grid {
-    display: flex;
-    gap: 32px;
+.result-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+        color: var(--bmc-accent);
+    }
 }
 
-.lookup-col {
+.result-meta-chips {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 8px;
+    margin-top: 2px;
 }
 
-.lookup-source {
-    font-size: 0.65rem;
+.result-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    background: var(--bmc-glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--bmc-glass-border);
+    color: var(--bmc-text-secondary);
+
+    i {
+        font-size: 0.62rem;
+    }
+
+    &.theme {
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.08);
+        border-color: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.2);
+        color: var(--bmc-accent);
+    }
+}
+
+
+/* ── Market Data Sources Grid ── */
+.result-sources {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+}
+
+.result-source {
+    border-right: 1px solid var(--bmc-glass-border);
+
+    &:last-child {
+        border-right: none;
+    }
+
+    &.disconnected {
+        opacity: 0.5;
+    }
+}
+
+.source-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bmc-glass-border);
+
+    &.bl-accent {
+        border-top: 2px solid $bl-accent;
+    }
+
+    &.be-accent {
+        border-top: 2px solid $be-accent;
+    }
+
+    &.bo-accent {
+        border-top: 2px solid $bo-accent;
+    }
+}
+
+.source-label {
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 
-    &.bl-color {
+    .bl & {
         color: $bl-accent;
     }
 
-    &.be-color {
+    .be & {
         color: $be-accent;
     }
 
-    &.bo-color {
+    .bo & {
         color: $bo-accent;
     }
 }
 
-.lookup-metric {
-    display: flex;
-    flex-direction: column;
+.source-badge {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bmc-glass-bg);
+    color: var(--bmc-text-secondary);
+    opacity: 0.6;
 }
 
-.lookup-label {
-    font-size: 0.68rem;
+.source-metrics {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.source-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &.primary {
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--bmc-glass-border);
+        margin-bottom: 2px;
+    }
+}
+
+.metric-label {
+    font-size: 0.72rem;
     color: var(--bmc-text-secondary);
 }
 
-.lookup-value {
+.metric-value {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 1rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: var(--bmc-text-primary);
 
@@ -227,13 +643,44 @@ $bo-accent: #6C5CE7;
     &.negative {
         color: #FF6B6B;
     }
+
+    &.secondary {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--bmc-text-secondary);
+    }
+}
+
+.source-disconnected {
+    padding: 20px 16px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--bmc-text-secondary);
+    font-style: italic;
+}
+
+
+/* ── No Data / Error ── */
+.result-no-data {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--bmc-text-secondary);
+    font-size: 0.82rem;
+
+    i {
+        color: var(--bmc-accent);
+        font-size: 0.9rem;
+    }
 }
 
 .lookup-error {
     margin-top: 12px;
-    padding: 12px 20px;
-    border-radius: 10px;
+    padding: 14px 20px;
+    border-radius: 12px;
     background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.2);
     color: #FF6B6B;
     font-size: 0.82rem;
 
@@ -242,6 +689,44 @@ $bo-accent: #6C5CE7;
     }
 }
 
+
+/* ── Result Footer ── */
+.result-footer {
+    padding: 12px 24px;
+    border-top: 1px solid var(--bmc-glass-border);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.result-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border: 1px solid var(--bmc-glass-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        color: var(--bmc-accent);
+        border-color: var(--bmc-accent);
+        background: rgba(var(--bmc-accent-rgb, 79, 143, 247), 0.06);
+    }
+
+    i {
+        font-size: 0.72rem;
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   DASHBOARD PANELS (unchanged)
+   ══════════════════════════════════════════════════════════════════ */
 
 /* ── Main Grid ── */
 .bb-grid {
@@ -594,9 +1079,27 @@ $bo-accent: #6C5CE7;
         grid-template-columns: 1fr;
     }
 
-    .lookup-data-grid {
+    .result-sources {
+        grid-template-columns: 1fr;
+    }
+
+    .result-source {
+        border-right: none;
+        border-bottom: 1px solid var(--bmc-glass-border);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .result-identity {
         flex-direction: column;
-        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .result-thumb {
+        width: 80px;
+        height: 80px;
     }
 
     .portfolio-total-value {

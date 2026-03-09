@@ -1,4 +1,4 @@
-<!-- AI-Generated: Brickberg Terminal — Bloomberg-inspired LEGO financial dashboard -->
+<!-- AI-Developed: Brickberg Terminal — Bloomberg-inspired LEGO financial dashboard -->
 <div class="brickberg-page" @fadeInUp>
 
     <!-- ══════════ Terminal Header ══════════ -->
@@ -20,62 +20,224 @@
     </header>
 
 
-    <!-- ══════════ Quick Lookup Bar ══════════ -->
+    <!-- ══════════ Enhanced Search Bar ══════════ -->
     <section class="bb-lookup">
         <div class="lookup-bar">
             <i class="fas fa-search lookup-icon"></i>
-            <input type="text" class="lookup-input" placeholder="Enter set number (e.g. 42131-1)..."
-                [(ngModel)]="lookupSetNumber" (keydown)="onLookupKeydown($event)" />
-            <button class="lookup-go" (click)="performLookup()" [disabled]="lookupLoading || !lookupSetNumber.trim()">
-                <span *ngIf="!lookupLoading">GO</span>
-                <i *ngIf="lookupLoading" class="fas fa-spinner fa-spin"></i>
+            <input #searchInput type="text" class="lookup-input" placeholder="Search by set name or number…"
+                [(ngModel)]="searchTerm" (input)="onSearchInput()" (keydown)="onSearchKeydown($event)"
+                (blur)="onSearchBlur()" (focus)="onSearchFocus()" autocomplete="off" />
+            <button class="lookup-clear-btn" *ngIf="searchTerm" (click)="clearLookup()" title="Clear">
+                <i class="fas fa-times"></i>
             </button>
+            <div class="lookup-loading-indicator" *ngIf="lookupLoading">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
         </div>
 
-        <!-- Lookup Result -->
-        <div class="lookup-result" *ngIf="lookupResult">
-            <div class="lookup-result-header">
-                <span class="lookup-set-number">{{ lookupSetNumber }}</span>
-                <button class="lookup-close" (click)="clearLookup()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="lookup-data-grid">
-                <div class="lookup-col" *ngIf="lookupResult.brickLink?.loaded">
-                    <span class="lookup-source bl-color">BrickLink</span>
-                    <div class="lookup-metric">
-                        <span class="lookup-label">Sold Avg (Used)</span>
-                        <span class="lookup-value">${{ lookupResult.priceGuideUsed?.avg_price | number:'1.2-2' }}</span>
-                    </div>
-                    <div class="lookup-metric">
-                        <span class="lookup-label">For Sale (New)</span>
-                        <span class="lookup-value">${{ lookupResult.stockGuideNew?.avg_price | number:'1.2-2' }}</span>
+        <!-- Typeahead Suggestions Dropdown -->
+        <div class="lookup-suggestions" *ngIf="showSuggestions" @slideDown>
+            <div class="suggestion-row" *ngFor="let set of suggestions; let i = index"
+                [class.highlighted]="i === selectedSuggestionIndex" (mousedown)="selectSuggestion(set)">
+                <div class="suggestion-thumb">
+                    <img *ngIf="set.imageUrl" [src]="set.imageUrl" [alt]="set.name" loading="lazy"
+                        (error)="set.imageUrl = null" />
+                    <i *ngIf="!set.imageUrl" class="fas fa-cube"></i>
+                </div>
+                <div class="suggestion-info">
+                    <span class="suggestion-name">{{ set.name }}</span>
+                    <div class="suggestion-meta">
+                        <span class="suggestion-num">{{ set.setNumber }}</span>
+                        <span class="suggestion-year" *ngIf="set.year">{{ set.year }}</span>
+                        <span class="suggestion-parts" *ngIf="set.partCount">
+                            <i class="fas fa-puzzle-piece"></i> {{ set.partCount | number }}
+                        </span>
+                        <span class="suggestion-theme" *ngIf="set.themeName">{{ set.themeName }}</span>
                     </div>
                 </div>
-                <div class="lookup-col" *ngIf="lookupResult.brickEconomy?.loaded">
-                    <span class="lookup-source be-color">BrickEconomy</span>
-                    <div class="lookup-metric">
-                        <span class="lookup-label">Current Value</span>
-                        <span class="lookup-value">${{ lookupResult.valuation?.current_value | number:'1.2-2' }}</span>
+            </div>
+        </div>
+
+
+        <!-- ── Recent Lookups Strip ── -->
+        <div class="recent-strip" *ngIf="recentLookups.length > 0 && !lookupResult && !lookupLoading && !lookupError"
+            @fadeIn>
+            <div class="recent-header">
+                <span class="recent-label"><i class="fas fa-history"></i> Recent</span>
+                <button class="recent-clear" (click)="clearRecentLookups()">Clear</button>
+            </div>
+            <div class="recent-items">
+                <div class="recent-chip" *ngFor="let r of recentLookups" (click)="selectRecentLookup(r)">
+                    <div class="recent-chip-thumb">
+                        <img *ngIf="r.imageUrl" [src]="r.imageUrl" [alt]="r.name" loading="lazy" />
+                        <i *ngIf="!r.imageUrl" class="fas fa-cube"></i>
                     </div>
-                    <div class="lookup-metric">
-                        <span class="lookup-label">Growth</span>
-                        <span class="lookup-value"
-                            [class.positive]="(lookupResult.valuation?.growth_percentage ?? 0) >= 0"
-                            [class.negative]="(lookupResult.valuation?.growth_percentage ?? 0) < 0">
-                            {{ (lookupResult.valuation?.growth_percentage ?? 0) >= 0 ? '▲' : '▼' }}
-                            {{ lookupResult.valuation?.growth_percentage | number:'1.1-1' }}%
+                    <div class="recent-chip-info">
+                        <span class="recent-chip-num">{{ r.setNumber }}</span>
+                        <span class="recent-chip-name">{{ r.name }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ── Rich Lookup Result Card ── -->
+        <div class="lookup-result-card" *ngIf="lookupResult" @fadeIn>
+
+            <!-- Set Identity Header -->
+            <div class="result-identity">
+                <div class="result-thumb" *ngIf="selectedSet?.imageUrl" (click)="navigateToSet()">
+                    <img [src]="selectedSet!.imageUrl" [alt]="selectedSet!.name" />
+                </div>
+                <div class="result-header-info">
+                    <div class="result-top-row">
+                        <span class="result-set-number">{{ selectedSet?.setNumber ?? searchTerm }}</span>
+                        <button class="lookup-close" (click)="clearLookup()"><i class="fas fa-times"></i></button>
+                    </div>
+                    <h3 class="result-name" *ngIf="selectedSet?.name" (click)="navigateToSet()">
+                        {{ selectedSet!.name }}
+                    </h3>
+                    <div class="result-meta-chips" *ngIf="selectedSet">
+                        <span class="result-chip" *ngIf="selectedSet.year">
+                            <i class="fas fa-calendar-alt"></i> {{ selectedSet.year }}
+                        </span>
+                        <span class="result-chip" *ngIf="selectedSet.partCount">
+                            <i class="fas fa-puzzle-piece"></i> {{ selectedSet.partCount | number }}
+                        </span>
+                        <span class="result-chip theme" *ngIf="selectedSet.themeName">
+                            <i class="fas fa-tag"></i> {{ selectedSet.themeName }}
                         </span>
                     </div>
                 </div>
-                <div class="lookup-col" *ngIf="lookupResult.brickOwl?.loaded">
-                    <span class="lookup-source bo-color">Brick Owl</span>
-                    <div class="lookup-metric">
-                        <span class="lookup-label">Stores</span>
-                        <span class="lookup-value">{{ lookupResult.availability?.length ?? '—' }}</span>
+            </div>
+
+            <!-- Market Data Sources Grid -->
+            <div class="result-sources" *ngIf="hasAnyData()">
+
+                <!-- BrickLink -->
+                <div class="result-source bl" *ngIf="lookupResult.brickLink?.loaded">
+                    <div class="source-header bl-accent">
+                        <span class="source-label">BrickLink</span>
+                        <span class="source-badge">PRICE GUIDE</span>
+                    </div>
+                    <div class="source-metrics">
+                        <div class="source-metric">
+                            <span class="metric-label">Sold Avg (Used)</span>
+                            <span class="metric-value">${{ lookupResult.priceGuideUsed?.avg_price | number:'1.2-2'
+                                }}</span>
+                        </div>
+                        <div class="source-metric">
+                            <span class="metric-label">Sold Avg (New)</span>
+                            <span class="metric-value">${{ lookupResult.priceGuideNew?.avg_price | number:'1.2-2'
+                                }}</span>
+                        </div>
+                        <div class="source-metric">
+                            <span class="metric-label">For Sale (New)</span>
+                            <span class="metric-value">${{ lookupResult.stockGuideNew?.avg_price | number:'1.2-2'
+                                }}</span>
+                        </div>
+                        <div class="source-metric">
+                            <span class="metric-label">Lots (New / Used)</span>
+                            <span class="metric-value secondary">
+                                {{ lookupResult.priceGuideNew?.total_quantity ?? '—' }} /
+                                {{ lookupResult.priceGuideUsed?.total_quantity ?? '—' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-source bl disconnected"
+                    *ngIf="lookupResult.brickLink && !lookupResult.brickLink.loaded">
+                    <div class="source-header bl-accent">
+                        <span class="source-label">BrickLink</span>
+                    </div>
+                    <div class="source-disconnected">
+                        <span *ngIf="lookupResult.brickLink.connected">{{ lookupResult.brickLink.error ?? 'Data
+                            unavailable' }}</span>
+                        <span *ngIf="!lookupResult.brickLink.connected">Not connected</span>
+                    </div>
+                </div>
+
+                <!-- BrickEconomy -->
+                <div class="result-source be" *ngIf="lookupResult.brickEconomy?.loaded">
+                    <div class="source-header be-accent">
+                        <span class="source-label">BrickEconomy</span>
+                        <span class="source-badge">VALUATION</span>
+                    </div>
+                    <div class="source-metrics">
+                        <div class="source-metric primary">
+                            <span class="metric-label">Estimated Value</span>
+                            <span class="metric-value">${{ lookupResult.valuation?.currentValue | number:'1.2-2'
+                                }}</span>
+                        </div>
+                        <div class="source-metric" *ngIf="lookupResult.valuation?.growthPercentage != null">
+                            <span class="metric-label">Growth</span>
+                            <span class="metric-value"
+                                [class]="getGrowthClass(lookupResult.valuation.growthPercentage)">
+                                {{ getGrowthArrow(lookupResult.valuation.growthPercentage) }}
+                                {{ lookupResult.valuation.growthPercentage | number:'1.1-1' }}%
+                            </span>
+                        </div>
+                        <div class="source-metric" *ngIf="lookupResult.valuation?.forecastValue">
+                            <span class="metric-label">Forecast</span>
+                            <span class="metric-value">${{ lookupResult.valuation.forecastValue | number:'1.2-2'
+                                }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-source be disconnected"
+                    *ngIf="lookupResult.brickEconomy && !lookupResult.brickEconomy.loaded">
+                    <div class="source-header be-accent">
+                        <span class="source-label">BrickEconomy</span>
+                    </div>
+                    <div class="source-disconnected">
+                        <span *ngIf="lookupResult.brickEconomy.connected">{{ lookupResult.brickEconomy.error ?? 'Data
+                            unavailable' }}</span>
+                        <span *ngIf="!lookupResult.brickEconomy.connected">Not connected</span>
+                    </div>
+                </div>
+
+                <!-- Brick Owl -->
+                <div class="result-source bo" *ngIf="lookupResult.brickOwl?.loaded">
+                    <div class="source-header bo-accent">
+                        <span class="source-label">Brick Owl</span>
+                        <span class="source-badge">AVAILABILITY</span>
+                    </div>
+                    <div class="source-metrics">
+                        <div class="source-metric primary">
+                            <span class="metric-label">Stores with Stock</span>
+                            <span class="metric-value">{{ lookupResult.availability?.length ?? 0 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-source bo disconnected"
+                    *ngIf="lookupResult.brickOwl && !lookupResult.brickOwl.loaded">
+                    <div class="source-header bo-accent">
+                        <span class="source-label">Brick Owl</span>
+                    </div>
+                    <div class="source-disconnected">
+                        <span *ngIf="lookupResult.brickOwl.connected">{{ lookupResult.brickOwl.error ?? 'Data
+                            unavailable' }}</span>
+                        <span *ngIf="!lookupResult.brickOwl.connected">Not connected</span>
                     </div>
                 </div>
             </div>
+
+            <!-- No data from any source -->
+            <div class="result-no-data" *ngIf="lookupResult && !hasAnyData()">
+                <i class="fas fa-info-circle"></i>
+                <span>No market data from connected integrations for this set.</span>
+            </div>
+
+            <!-- View set detail link -->
+            <div class="result-footer" *ngIf="selectedSet">
+                <button class="result-view-btn" (click)="navigateToSet()">
+                    <i class="fas fa-external-link-alt"></i> View Full Set Detail
+                </button>
+            </div>
         </div>
-        <div class="lookup-error" *ngIf="lookupError">
+
+        <!-- Lookup Error -->
+        <div class="lookup-error" *ngIf="lookupError" @fadeIn>
             <i class="fas fa-exclamation-triangle"></i> {{ lookupError }}
         </div>
     </section>
@@ -236,4 +398,5 @@
             </div>
         </section>
     </div>
+
 </div>
