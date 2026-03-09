@@ -4,12 +4,35 @@
         <i class="fas fa-calendar"></i> My Schedule
     </h1>
 
-    <!-- Filter tabs -->
-    <div class="schedule-filters animate-in animate-delay-1">
-        <button class="filter-tab" [class.active]="filter === 'upcoming'"
-            (click)="setFilter('upcoming')">Upcoming</button>
-        <button class="filter-tab" [class.active]="filter === 'past'" (click)="setFilter('past')">Past</button>
-        <button class="filter-tab" [class.active]="filter === 'all'" (click)="setFilter('all')">All</button>
+    <!-- Calendar Header -->
+    <div class="calendar-header d-flex justify-content-between align-items-center mb-3 animate-in animate-delay-1">
+        <div class="d-flex align-items-center gap-2">
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-primary" (click)="navigateCalendar('prev')">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline-primary" (click)="navigateCalendar('today')">Today</button>
+                <button class="btn btn-outline-primary" (click)="navigateCalendar('next')">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <h5 class="mb-0 fw-semibold text-primary">{{ currentTitle }}</h5>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <div class="btn-group btn-group-sm">
+                <button *ngFor="let view of ['dayGridMonth', 'timeGridWeek', 'timeGridDay']" 
+                    class="btn" 
+                    [class.btn-primary]="currentView === view" 
+                    [class.btn-outline-primary]="currentView !== view"
+                    (click)="changeView(view)">
+                    {{ getViewLabel(view) }}
+                </button>
+            </div>
+            <div *ngIf="isLoading" class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
     </div>
 
     <!-- Loading -->
@@ -17,55 +40,62 @@
         <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--hub-primary-light);"></i>
     </div>
 
-    <!-- Empty state -->
-    <div *ngIf="!isLoading && filteredAssignments.length === 0"
-        class="hub-empty-state hub-card-sm animate-in animate-delay-2">
-        <i class="fas fa-calendar-check"></i>
-        <h3>No {{ filter === 'upcoming' ? 'upcoming' : filter === 'past' ? 'past' : '' }} assignments</h3>
-        <p>Nothing to show here right now.</p>
+    <!-- FullCalendar -->
+    <div class="hub-card-sm calendar-container animate-in animate-delay-2" *ngIf="!isLoading">
+        <full-calendar #calendar [options]="calendarOptions"></full-calendar>
     </div>
 
-    <!-- Assignment list -->
-    <div class="assignment-list" *ngIf="!isLoading && filteredAssignments.length > 0">
-        <div class="schedule-card hub-card-sm animate-in" *ngFor="let a of filteredAssignments; let i = index"
-            [class]="'animate-delay-' + (i + 2)">
-
-            <div class="schedule-card-header">
-                <div class="schedule-date">
-                    <span class="schedule-day">{{ a.startDateTime | date:'d' }}</span>
-                    <span class="schedule-month">{{ a.startDateTime | date:'MMM' }}</span>
+    <!-- Assignment Detail Modal -->
+    <div class="modal fade show" *ngIf="showModal" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ selectedAssignment?.eventName || 'Event Details' }}</h5>
+                    <button type="button" class="btn-close" (click)="closeModal()"></button>
                 </div>
-                <div class="schedule-info">
-                    <strong>{{ a.eventName || 'Event' }}</strong>
-                    <span class="schedule-time">
-                        {{ a.startDateTime | date:'h:mm a' }} – {{ a.endDateTime | date:'h:mm a' }}
-                    </span>
-                    <div class="schedule-meta">
-                        <span class="hub-badge" [ngClass]="getStatusClass(a.status)">{{ a.status || 'Planned' }}</span>
-                        <span class="hub-badge badge-info" *ngIf="a.role">{{ a.role }}</span>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <strong><i class="far fa-calendar"></i> Date & Time</strong>
+                        <p>{{ selectedAssignment?.startDateTime | date:'EEEE, MMMM d, yyyy' }}</p>
+                        <p>{{ selectedAssignment?.startDateTime | date:'h:mm a' }} – {{ selectedAssignment?.endDateTime | date:'h:mm a' }}</p>
+                    </div>
+                    <div class="mb-3" *ngIf="selectedAssignment?.role">
+                        <strong><i class="fas fa-user-tag"></i> Role</strong>
+                        <p>{{ selectedAssignment?.role }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-info-circle"></i> Status</strong>
+                        <p><span class="hub-badge" [ngClass]="getStatusClass(selectedAssignment?.status)">{{ selectedAssignment?.status || 'Planned' }}</span></p>
+                    </div>
+                    <div class="mb-3" *ngIf="selectedAssignment?.eventDescription">
+                        <strong><i class="fas fa-align-left"></i> Description</strong>
+                        <p>{{ selectedAssignment?.eventDescription }}</p>
+                    </div>
+                    <div class="mb-3" *ngIf="selectedAssignment?.reportedHours || selectedAssignment?.approvedHours">
+                        <strong><i class="fas fa-clock"></i> Hours</strong>
+                        <p *ngIf="selectedAssignment?.approvedHours">Approved: {{ selectedAssignment?.approvedHours }} hrs</p>
+                        <p *ngIf="selectedAssignment?.reportedHours && !selectedAssignment?.approvedHours">Reported: {{ selectedAssignment?.reportedHours }} hrs (pending)</p>
+                    </div>
+                    <div class="mb-3" *ngIf="selectedAssignment?.notes">
+                        <strong><i class="fas fa-sticky-note"></i> Notes</strong>
+                        <p>{{ selectedAssignment?.notes }}</p>
                     </div>
                 </div>
+                <div class="modal-footer" *ngIf="selectedAssignment?.status === 'Planned' || selectedAssignment?.status === 'Assigned'">
+                    <button type="button" class="btn btn-success" (click)="respond(selectedAssignment.id, true)" [disabled]="respondingId === selectedAssignment.id">
+                        <i class="fas fa-check" *ngIf="respondingId !== selectedAssignment.id"></i>
+                        <i class="fas fa-spinner fa-spin" *ngIf="respondingId === selectedAssignment.id"></i>
+                        Accept
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" (click)="respond(selectedAssignment.id, false)" [disabled]="respondingId === selectedAssignment.id">
+                        <i class="fas fa-times"></i>
+                        Decline
+                    </button>
+                </div>
+                <div class="modal-footer" *ngIf="selectedAssignment?.status !== 'Planned' && selectedAssignment?.status !== 'Assigned'">
+                    <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+                </div>
             </div>
-
-            <div class="schedule-desc" *ngIf="a.eventDescription">
-                {{ a.eventDescription }}
-            </div>
-
-            <!-- Accept / Decline actions for pending assignments -->
-            <div class="schedule-actions" *ngIf="a.status === 'Planned' || a.status === 'Assigned'">
-                <button class="hub-btn-primary schedule-action-btn" (click)="respond(a.id, true)"
-                    [disabled]="respondingId === a.id">
-                    <i class="fas fa-check" *ngIf="respondingId !== a.id"></i>
-                    <i class="fas fa-spinner fa-spin" *ngIf="respondingId === a.id"></i>
-                    Accept
-                </button>
-                <button class="hub-btn-outline schedule-action-btn" (click)="respond(a.id, false)"
-                    [disabled]="respondingId === a.id">
-                    <i class="fas fa-times"></i>
-                    Decline
-                </button>
-            </div>
-
         </div>
     </div>
 

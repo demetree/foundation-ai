@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.Scheduler.Database;
+using Foundation.Scheduler.Services;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {
@@ -27,13 +28,16 @@ namespace Foundation.Scheduler.Controllers.WebAPI
     public class VolunteerHubController : ControllerBase
     {
         private readonly SchedulerContext _schedulerDb;
+        private readonly VolunteerHubService _volunteerHubService;
         private readonly ILogger<VolunteerHubController> _logger;
 
         public VolunteerHubController(
             SchedulerContext schedulerDb,
+            VolunteerHubService volunteerHubService,
             ILogger<VolunteerHubController> logger)
         {
             _schedulerDb = schedulerDb;
+            _volunteerHubService = volunteerHubService;
             _logger = logger;
         }
 
@@ -206,11 +210,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("auth/session")]
         public async Task<IActionResult> GetSession()
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
-            var profile = await GetVolunteerProfileForUserAsync(user);
+            var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return Unauthorized(new { message = "No volunteer profile linked." });
 
             return Ok(new
@@ -232,11 +237,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
-            var profile = await GetVolunteerProfileForUserAsync(user);
+            var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
 
             return Ok(profile.ToOutputDTO());
@@ -255,11 +261,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             DateTime? from = null,
             DateTime? to = null)
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
-            var profile = await GetVolunteerProfileForUserAsync(user);
+            var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
 
             var query = _schedulerDb.EventResourceAssignments
@@ -317,11 +324,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("me/assignments/{assignmentId}/report-hours")]
         public async Task<IActionResult> ReportHours(int assignmentId, [FromBody] ReportHoursModel model)
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
-            var profile = await GetVolunteerProfileForUserAsync(user);
+            var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
 
             var assignment = await _schedulerDb.EventResourceAssignments
@@ -357,11 +365,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("me/assignments/{assignmentId}/respond")]
         public async Task<IActionResult> RespondToAssignment(int assignmentId, [FromBody] RespondToAssignmentModel model)
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
-            var profile = await GetVolunteerProfileForUserAsync(user);
+            var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
 
             var assignment = await _schedulerDb.EventResourceAssignments
@@ -407,9 +416,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPut("me/profile")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileModel model)
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
             var profile = await _schedulerDb.VolunteerProfiles
                 .Where(vp => vp.linkedUserGuid == user.objectGuid)
@@ -445,9 +455,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("auth/logout")]
         public async Task<IActionResult> Logout()
         {
-            SessionResolution session = await ResolveSessionUserAsync();
-            if (session.User == null) return session.ErrorResult!;
-            SecurityUser user = session.User;
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionUserAsync(token);
+            if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
+            SecurityUser user = session.User!;
 
             using (SecurityContext securityDb = new SecurityContext())
             {
@@ -626,52 +637,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         // ─────────────────────────────────────────────────────────────
-        // HELPERS
-        // ─────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Resolves the session token from the request header and returns the SecurityUser.
-        /// </summary>
-        private async Task<SessionResolution> ResolveSessionUserAsync()
-        {
-            string? token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                return new SessionResolution(null, Unauthorized(new { message = "Session token required." }));
-            }
-
-            using (SecurityContext securityDb = new SecurityContext())
-            {
-                SecurityUser? user = await securityDb.SecurityUsers
-                    .Where(u => u.authenticationToken == token)
-                    .Where(u => u.active == true && u.deleted == false)
-                    .FirstOrDefaultAsync();
-
-                if (user == null || user.authenticationTokenExpiry == null || user.authenticationTokenExpiry < DateTime.UtcNow)
-                {
-                    return new SessionResolution(null, Unauthorized(new { message = "Session expired or invalid." }));
-                }
-
-                return new SessionResolution(user, null);
-            }
-        }
-
-        /// <summary>
-        /// Gets the VolunteerProfile linked to the given SecurityUser.
-        /// </summary>
-        private async Task<VolunteerProfile?> GetVolunteerProfileForUserAsync(SecurityUser user)
-        {
-            return await _schedulerDb.VolunteerProfiles
-                .Where(vp => vp.linkedUserGuid == user.objectGuid)
-                .Where(vp => vp.active == true && vp.deleted == false)
-                .Include(vp => vp.resource)
-                .Include(vp => vp.volunteerStatus)
-                .FirstOrDefaultAsync();
-        }
-
-
-        // ─────────────────────────────────────────────────────────────
         // PUBLIC: Volunteer Self-Registration
         // ─────────────────────────────────────────────────────────────
 
@@ -715,7 +680,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     return StatusCode(500, new { error = "No volunteer statuses configured." });
 
                 // Get default tenant
-                var tenantGuid = await GetDefaultTenantGuidAsync();
+                var tenantGuid = await _volunteerHubService.GetDefaultTenantGuidAsync();
 
                 // Create a minimal Resource for this volunteer
                 var resource = new Resource
@@ -957,7 +922,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("opportunities")]
         public async Task<IActionResult> GetOpportunities()
         {
-            var session = await ResolveSessionAsync();
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionAsync(token);
             if (session == null) return Unauthorized(new { error = "Invalid session." });
 
             var now = DateTime.UtcNow;
@@ -1000,7 +966,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("opportunities/{eventId}/sign-up")]
         public async Task<IActionResult> SignUpForOpportunity(int eventId)
         {
-            var session = await ResolveSessionAsync();
+            var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
+            var session = await _volunteerHubService.ResolveSessionAsync(token);
             if (session == null) return Unauthorized(new { error = "Invalid session." });
 
             var scheduledEvent = await _schedulerDb.ScheduledEvents
@@ -1060,59 +1027,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             });
         }
 
-
-        // ─────────────────────────────────────────────────────────────
-        // Internal: Session resolution helper for opportunity endpoints
-        // ─────────────────────────────────────────────────────────────
-
-        private async Task<VolunteerSession> ResolveSessionAsync()
-        {
-            var token = HttpContext.Request.Headers["X-Volunteer-Session"].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(token)) return null;
-
-            var securityContext = new SecurityContext();
-            var secUser = await securityContext.SecurityUsers
-                .FirstOrDefaultAsync(u => u.authenticationToken == token &&
-                                          u.authenticationTokenExpiry > DateTime.UtcNow);
-
-            if (secUser == null) return null;
-
-            // Resolve volunteer profile
-            var profile = await _schedulerDb.VolunteerProfiles
-                .FirstOrDefaultAsync(vp => vp.linkedUserGuid == secUser.objectGuid && vp.active && !vp.deleted);
-
-            if (profile == null) return null;
-
-            // Get tenant from a tenant user mapping
-            var tenantUser = await securityContext.SecurityTenantUsers
-                .FirstOrDefaultAsync(tu => tu.securityUserId == secUser.id);
-
-            return new VolunteerSession
-            {
-                SecurityUserId = secUser.id,
-                UserGuid = secUser.objectGuid,
-                ResourceId = profile.resourceId,
-                ProfileId = profile.id,
-                TenantGuid = tenantUser?.securityTenant?.objectGuid ?? Guid.Empty
-            };
-        }
-
-        private async Task<Guid> GetDefaultTenantGuidAsync()
-        {
-            var securityContext = new SecurityContext();
-            var tenant = await securityContext.SecurityTenants.FirstOrDefaultAsync();
-            return tenant?.objectGuid ?? Guid.Empty;
-        }
     }
 
     // ─────────────────────────────────────────────────────────────
     // Request / Response Models
     // ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Result of resolving a volunteer hub session from the request header.
-    /// </summary>
-    public record SessionResolution(SecurityUser? User, IActionResult? ErrorResult);
 
     public class OtpRequestModel
     {

@@ -3,6 +3,82 @@
     margin-right: 0.5rem;
 }
 
+// Calendar Header
+.calendar-header {
+    h5 {
+        color: #334155;
+    }
+}
+
+// FullCalendar Overrides
+:host ::ng-deep {
+    .fc {
+        font-family: inherit;
+    }
+
+    .fc-theme-standard td,
+    .fc-theme-standard th {
+        border-color: #e2e8f0;
+    }
+
+    .fc-theme-standard .fc-scrollgrid {
+        border-color: #e2e8f0;
+    }
+
+    .fc-daygrid-day-number {
+        color: #475569;
+        font-weight: 500;
+        padding: 6px 8px;
+    }
+
+    .fc-day-today {
+        background-color: rgba(14, 165, 233, 0.06) !important;
+    }
+
+    .fc-event {
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+        &:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    .fc-daygrid-more-link {
+        color: #0ea5e9;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    .fc-col-header-cell {
+        background-color: #f8fafc;
+        padding: 8px 0;
+
+        a {
+            color: #64748b;
+            font-weight: 600;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+    }
+
+    .fc-timegrid-slot-label {
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+}
+
+.calendar-container {
+    padding: 1rem;
+}
+
 // Filter tabs
 .schedule-filters {
     display: flex;
@@ -125,4 +201,25 @@
 .schedule-action-btn {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
+}
+
+// Badge colors
+.badge-success {
+    background-color: #10b981;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #ef4444;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #f59e0b;
+    color: #1a1a2e;
+}
+
+.badge-info {
+    background-color: #0ea5e9;
+    color: white;
 }

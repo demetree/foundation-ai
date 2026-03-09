@@ -15,6 +15,7 @@ using Foundation.BMC.Services;
 using BMC.BrickLink.Sync;
 using BMC.BrickEconomy.Sync;
 using BMC.BrickOwl.Sync;
+using BMC.BrickOwl.Api.Models.Responses;
 
 
 namespace Foundation.BMC.Controllers.WebAPI
@@ -237,9 +238,10 @@ namespace Foundation.BMC.Controllers.WebAPI
                     using (boClient)
                     {
                         // Cache the BOID lookup separately — avoids ID mapping API call on cache hit
+                        // Pass "set_number" as idType so BrickOwl maps Rebrickable-style set numbers
                         var idLookup = await _cacheService.GetOrFetchAsync<object>(
                             "BrickOwl", "BOID", setNumber, null,
-                            () => boClient.CatalogIdLookupAsync(setNumber, "Set", null),
+                            () => boClient.CatalogIdLookupAsync(setNumber, "Set", "set_number"),
                             cancellationToken);
                         string boid = ExtractBoid(idLookup);
 
@@ -467,31 +469,44 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         /// <summary>
         /// Extract the first BOID from a Brick Owl catalog ID lookup response.
-        /// The API returns varying formats — this safely extracts the first value.
+        ///
+        /// The API returns a BrickOwlIdLookupResult with a List<string> Boids property.
+        /// We also handle the case where the value arrives as a raw object (e.g. from cache
+        /// deserialization) by falling back to dynamic dispatch.
+        ///
+        /// AI-Developed — Rewritten to use strong typing instead of fragile dynamic dispatch.
         /// </summary>
         private static string ExtractBoid(object idLookupResult)
         {
             if (idLookupResult == null) return null;
 
-            // The result is typically a JObject or dynamic with a "boids" array or similar.
-            // Use dynamic dispatch to extract the first BOID regardless of shape.
+            //
+            // Strongly-typed path — BrickOwlIdLookupResult with a List<string> Boids
+            //
+            if (idLookupResult is BrickOwlIdLookupResult typedResult)
+            {
+                if (typedResult.Boids != null && typedResult.Boids.Count > 0)
+                {
+                    return typedResult.Boids[0];
+                }
+                return null;
+            }
+
+            //
+            // Fallback for cache deserialization or unexpected shapes — use JSON parsing
+            //
             try
             {
-                dynamic result = idLookupResult;
+                string json = System.Text.Json.JsonSerializer.Serialize(idLookupResult);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                var root = doc.RootElement;
 
-                // Try common response shapes
-                if (result is System.Collections.IEnumerable enumerable)
+                if (root.TryGetProperty("boids", out var boidsElement)
+                    && boidsElement.ValueKind == System.Text.Json.JsonValueKind.Array
+                    && boidsElement.GetArrayLength() > 0)
                 {
-                    foreach (dynamic item in enumerable)
-                    {
-                        string boid = item?.boid?.ToString() ?? item?.ToString();
-                        if (!string.IsNullOrEmpty(boid)) return boid;
-                    }
+                    return boidsElement[0].GetString();
                 }
-
-                // Direct boid property
-                string directBoid = result?.boid?.ToString();
-                if (!string.IsNullOrEmpty(directBoid)) return directBoid;
             }
             catch
             {

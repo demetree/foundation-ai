@@ -15,6 +15,7 @@ import { SetOwnershipCacheService } from '../../services/set-ownership-cache.ser
 import { BrickSetSyncService } from '../../services/brickset-sync.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { AuthService } from '../../services/auth.service';
+import { BrickbergApiService } from '../../services/brickberg-api.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -90,6 +91,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         private bsSyncService: BrickSetSyncService,
         private alertService: AlertService,
         private authService: AuthService,
+        private brickbergApi: BrickbergApiService,
     ) {
         if (this.authService.isLoggedIn) {
             this.ownershipCache.ensureLoaded();
@@ -698,7 +700,10 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         this.brickbergLoading = true;
         this.brickbergData = null;
 
-        this.http.get(`/api/brickberg/set/${this.set.setNumber}`).pipe(
+        //
+        // Use the authenticated BrickbergApiService instead of raw HttpClient
+        //
+        this.brickbergApi.getSetMarketData(this.set.setNumber).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (data) => {

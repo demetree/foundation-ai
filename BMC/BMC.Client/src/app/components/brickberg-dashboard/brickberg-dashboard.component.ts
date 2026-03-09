@@ -1,5 +1,5 @@
 ///
-/// AI-Generated: Brickberg Dashboard — top-level financial terminal for LEGO investments.
+/// AI-Developed: Brickberg Dashboard — top-level financial terminal for LEGO investments.
 ///
 /// The "Bloomberg Terminal" for LEGO — provides:
 ///   - Portfolio summary (total collection value from owned sets × cached valuations)
@@ -8,12 +8,17 @@
 ///   - Integration health status
 ///   - Cache statistics
 ///
+/// Updated to use BrickbergApiService for authenticated API calls. Previously used raw
+/// HttpClient without auth headers, causing 401 errors from SecureWebAPIController.
+///
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Subject, forkJoin, of } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { trigger, transition, style, animate } from '@angular/animations';
+
+import { BrickbergApiService } from '../../services/brickberg-api.service';
 
 
 @Component({
@@ -53,7 +58,8 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
 
     constructor(
         private http: HttpClient,
-        private router: Router
+        private router: Router,
+        private brickbergApi: BrickbergApiService
     ) { }
 
 
@@ -68,9 +74,12 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
     }
 
 
+    //
+    // Fire all dashboard data requests in parallel using the authenticated API service
+    //
     private loadAllPanels(): void {
-        // Fire all data requests in parallel
-        this.http.get('/api/brickberg/portfolio').pipe(
+
+        this.brickbergApi.getPortfolio().pipe(
             takeUntil(this.destroy$),
             catchError(() => of(null))
         ).subscribe(data => {
@@ -78,7 +87,7 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
             this.portfolioLoading = false;
         });
 
-        this.http.get('/api/brickberg/market-movers').pipe(
+        this.brickbergApi.getMarketMovers().pipe(
             takeUntil(this.destroy$),
             catchError(() => of(null))
         ).subscribe(data => {
@@ -86,7 +95,7 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
             this.moversLoading = false;
         });
 
-        this.http.get('/api/brickberg/status').pipe(
+        this.brickbergApi.getIntegrationStatus().pipe(
             takeUntil(this.destroy$),
             catchError(() => of(null))
         ).subscribe(data => {
@@ -94,7 +103,7 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
             this.statusLoading = false;
         });
 
-        this.http.get('/api/brickberg/cache-stats').pipe(
+        this.brickbergApi.getCacheStats().pipe(
             takeUntil(this.destroy$),
             catchError(() => of(null))
         ).subscribe(data => {
@@ -113,7 +122,7 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
         this.lookupError = null;
         this.lookupResult = null;
 
-        this.http.get(`/api/brickberg/set/${num}`).pipe(
+        this.brickbergApi.getSetMarketData(num).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (data) => {
@@ -157,3 +166,4 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
         this.router.navigate(['/integrations']);
     }
 }
+

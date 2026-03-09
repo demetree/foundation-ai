@@ -131,6 +131,7 @@ namespace Foundation.Scheduler
 
                 // Register Volunteer Communications Services
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerNotificationService>();
+                builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerHubService>();
                 builder.Services.AddHostedService<Foundation.Scheduler.Services.VolunteerReminderWorker>();
 
                 //
