@@ -46,6 +46,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface ProjectFormValues {
+  userId: string | null,     // Stored as string for form input, converted to number on submit.
   name: string,
   description: string,
   notes: string | null,
@@ -82,6 +83,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   public projectForm: FormGroup = this.fb.group({
+        userId: [''],
         name: ['', Validators.required],
         description: ['', Validators.required],
         notes: [''],
@@ -415,6 +417,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.projectForm.reset({
+        userId: '',
         name: '',
         description: '',
         notes: '',
@@ -433,6 +436,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.projectForm.reset({
+        userId: projectData.userId?.toString() ?? '',
         name: projectData.name ?? '',
         description: projectData.description ?? '',
         notes: projectData.notes ?? '',
@@ -501,6 +505,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
     //
     const projectSubmitData: ProjectSubmitData = {
         id: this.projectData?.id || 0,
+        userId: formValue.userId ? Number(formValue.userId) : null,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
         notes: formValue.notes?.trim() || null,

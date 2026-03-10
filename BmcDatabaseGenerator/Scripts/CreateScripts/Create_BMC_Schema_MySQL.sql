@@ -788,6 +788,7 @@ CREATE INDEX `I_PartSubFileReference_deleted` ON `PartSubFileReference` (`delete
 CREATE TABLE `Project`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userId` INT NULL,		-- Cross-database reference to SecurityUser.id — the user who owns this project (nullable for legacy data)
 	`name` VARCHAR(100) NOT NULL,
 	`description` VARCHAR(500) NOT NULL,
 	`notes` TEXT NULL,		-- Free-form notes about the project
@@ -2423,6 +2424,10 @@ INSERT INTO `ExportFormat` ( `name`, `description`, `fileExtension`, `sequence`,
 INSERT INTO `ExportFormat` ( `name`, `description`, `fileExtension`, `sequence`, `objectGuid` ) VALUES  ( 'Rebrickable CSV', 'Rebrickable-compatible CSV parts list', '.csv', 6, 'ef100001-0001-4000-8000-000000000006' );
 
 INSERT INTO `ExportFormat` ( `name`, `description`, `fileExtension`, `sequence`, `objectGuid` ) VALUES  ( 'PDF Instructions', 'PDF export of build manual instructions', '.pdf', 7, 'ef100001-0001-4000-8000-000000000007' );
+
+INSERT INTO `ExportFormat` ( `name`, `description`, `fileExtension`, `sequence`, `objectGuid` ) VALUES  ( 'BrickLink Studio', 'BrickLink Studio project file format', '.io', 8, 'ef100001-0001-4000-8000-000000000008' );
+
+INSERT INTO `ExportFormat` ( `name`, `description`, `fileExtension`, `sequence`, `objectGuid` ) VALUES  ( 'STL', 'Stereolithography format for 3D printing', '.stl', 9, 'ef100001-0001-4000-8000-000000000009' );
 
 
 -- Log of exports produced from a project, tracking what was exported and when.

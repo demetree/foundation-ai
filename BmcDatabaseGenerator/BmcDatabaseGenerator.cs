@@ -432,6 +432,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             projectTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
             projectTable.AddIdField();
             projectTable.AddMultiTenantSupport();
+            projectTable.AddIntField("userId", true).AddScriptComments("Cross-database reference to SecurityUser.id — the user who owns this project (nullable for legacy data)");
             projectTable.AddNameAndDescriptionFields(true, true, false);
 
             projectTable.AddTextField("notes").AddScriptComments("Free-form notes about the project");
@@ -1426,6 +1427,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             exportFormatTable.AddData(new Dictionary<string, string> { { "name", "BrickLink XML" }, { "description", "BrickLink wanted-list XML format for ordering parts" }, { "fileExtension", ".xml" }, { "sequence", "5" }, { "objectGuid", "ef100001-0001-4000-8000-000000000005" } });
             exportFormatTable.AddData(new Dictionary<string, string> { { "name", "Rebrickable CSV" }, { "description", "Rebrickable-compatible CSV parts list" }, { "fileExtension", ".csv" }, { "sequence", "6" }, { "objectGuid", "ef100001-0001-4000-8000-000000000006" } });
             exportFormatTable.AddData(new Dictionary<string, string> { { "name", "PDF Instructions" }, { "description", "PDF export of build manual instructions" }, { "fileExtension", ".pdf" }, { "sequence", "7" }, { "objectGuid", "ef100001-0001-4000-8000-000000000007" } });
+            exportFormatTable.AddData(new Dictionary<string, string> { { "name", "BrickLink Studio" }, { "description", "BrickLink Studio project file format" }, { "fileExtension", ".io" }, { "sequence", "8" }, { "objectGuid", "ef100001-0001-4000-8000-000000000008" } });
+            exportFormatTable.AddData(new Dictionary<string, string> { { "name", "STL" }, { "description", "Stereolithography format for 3D printing" }, { "fileExtension", ".stl" }, { "sequence", "9" }, { "objectGuid", "ef100001-0001-4000-8000-000000000009" } });
 
 
             // -------------------------------------------------

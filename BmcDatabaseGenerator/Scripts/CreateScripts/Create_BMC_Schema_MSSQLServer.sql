@@ -936,6 +936,7 @@ CREATE TABLE [BMC].[Project]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userId] INT NULL,		-- Cross-database reference to SecurityUser.id — the user who owns this project (nullable for legacy data)
 	[name] NVARCHAR(100) NOT NULL,
 	[description] NVARCHAR(500) NOT NULL,
 	[notes] NVARCHAR(MAX) NULL,		-- Free-form notes about the project
@@ -3031,6 +3032,12 @@ INSERT INTO [BMC].[ExportFormat] ( [name], [description], [fileExtension], [sequ
 GO
 
 INSERT INTO [BMC].[ExportFormat] ( [name], [description], [fileExtension], [sequence], [objectGuid] ) VALUES  ( 'PDF Instructions', 'PDF export of build manual instructions', '.pdf', 7, 'ef100001-0001-4000-8000-000000000007' )
+GO
+
+INSERT INTO [BMC].[ExportFormat] ( [name], [description], [fileExtension], [sequence], [objectGuid] ) VALUES  ( 'BrickLink Studio', 'BrickLink Studio project file format', '.io', 8, 'ef100001-0001-4000-8000-000000000008' )
+GO
+
+INSERT INTO [BMC].[ExportFormat] ( [name], [description], [fileExtension], [sequence], [objectGuid] ) VALUES  ( 'STL', 'Stereolithography format for 3D printing', '.stl', 9, 'ef100001-0001-4000-8000-000000000009' )
 GO
 
 

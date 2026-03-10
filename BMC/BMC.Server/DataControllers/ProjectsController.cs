@@ -66,6 +66,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Projects")]
 		public async Task<IActionResult> GetProjects(
+			int? userId = null,
 			string name = null,
 			string description = null,
 			string notes = null,
@@ -134,6 +135,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
+			if (userId.HasValue == true)
+			{
+				query = query.Where(p => p.userId == userId.Value);
+			}
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(p => p.name == name);
@@ -259,6 +264,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Projects/RowCount")]
 		public async Task<IActionResult> GetRowCount(
+			int? userId = null,
 			string name = null,
 			string description = null,
 			string notes = null,
@@ -307,6 +313,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			IQueryable<Database.Project> query = (from p in _context.Projects select p);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (userId.HasValue == true)
+			{
+				query = query.Where(p => p.userId == userId.Value);
+			}
 			if (name != null)
 			{
 				query = query.Where(p => p.name == name);
@@ -945,6 +955,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Put all other fields back the way that they were 
 				    //
+				    project.userId = oldProject.userId;
 				    project.name = oldProject.name;
 				    project.description = oldProject.description;
 				    project.notes = oldProject.notes;
@@ -1393,6 +1404,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
+			int? userId = null,
 			string name = null,
 			string description = null,
 			string notes = null,
@@ -1460,6 +1472,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
+			if (userId.HasValue == true)
+			{
+				query = query.Where(p => p.userId == userId.Value);
+			}
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(p => p.name == name);

@@ -27,6 +27,10 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('name')">
                 Name
                 <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -136,7 +140,8 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
-            <td class="text-truncate"><a [routerLink]="['/project', project.id]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{project.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/project', project.id]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{project.userId | bigNumberFormat : '1.0-2'}}</a></td>
+            <td class="text-truncate">{{project.name}}</td>
             <td class="text-truncate">{{project.description}}</td>
             <td class="text-truncate">{{project.notes}}</td>
             <td class="text-truncate">{{project.thumbnailImagePath}}</td>
@@ -288,6 +293,10 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="project-info" *ngIf="project.userId != null">
+              <strong>User Id: </strong>
+              {{project.userId | bigNumberFormat : '1.0-2'}}
+            </p>
             <p class="project-info" *ngIf="project.name != null">
               <strong>Name: </strong>
               {{project.name}}

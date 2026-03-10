@@ -34,6 +34,7 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface ProjectFormValues {
+  userId: string | null,     // Stored as string for form input, converted to number on submit.
   name: string,
   description: string,
   notes: string | null,
@@ -73,6 +74,7 @@ export class ProjectAddEditComponent {
 
 
   public projectForm: FormGroup = this.fb.group({
+        userId: [''],
         name: ['', Validators.required],
         description: ['', Validators.required],
         notes: [''],
@@ -215,6 +217,7 @@ export class ProjectAddEditComponent {
     //
     const projectSubmitData: ProjectSubmitData = {
         id: this.projectSubmitData?.id || 0,
+        userId: formValue.userId ? Number(formValue.userId) : null,
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
         notes: formValue.notes?.trim() || null,
@@ -350,6 +353,7 @@ export class ProjectAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.projectForm.reset({
+        userId: '',
         name: '',
         description: '',
         notes: '',
@@ -368,6 +372,7 @@ export class ProjectAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.projectForm.reset({
+        userId: projectData.userId?.toString() ?? '',
         name: projectData.name ?? '',
         description: projectData.description ?? '',
         notes: projectData.notes ?? '',

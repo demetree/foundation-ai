@@ -175,6 +175,7 @@ export class ProjectTableComponent implements OnInit, OnChanges, AfterViewInit {
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'userId', label: 'User Id', width: undefined },
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/project', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
     { key: 'notes', label: 'Notes', width: undefined },
@@ -328,6 +329,7 @@ export class ProjectTableComponent implements OnInit, OnChanges, AfterViewInit {
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'userId',
                       'name',
                       'description',
                       'notes',

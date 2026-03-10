@@ -11,6 +11,8 @@ public partial class Project
 
     public Guid tenantGuid { get; set; }
 
+    public int? userId { get; set; }
+
     public string name { get; set; }
 
     public string description { get; set; }

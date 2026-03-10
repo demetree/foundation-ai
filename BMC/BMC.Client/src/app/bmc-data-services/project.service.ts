@@ -39,6 +39,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class ProjectQueryParameters {
+    userId: bigint | number | null | undefined = null;
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     notes: string | null | undefined = null;
@@ -61,6 +62,7 @@ export class ProjectQueryParameters {
 //
 export class ProjectSubmitData {
     id!: bigint | number;
+    userId: bigint | number | null = null;
     name!: string;
     description!: string;
     notes: string | null = null;
@@ -137,6 +139,7 @@ export class ProjectBasicListData {
 //
 export class ProjectData {
     id!: bigint | number;
+    userId!: bigint | number;
     name!: string;
     description!: string;
     notes!: string | null;
@@ -1561,6 +1564,7 @@ export class ProjectService extends SecureEndpointBase {
         let output = new ProjectSubmitData();
 
         output.id = data.id;
+        output.userId = data.userId;
         output.name = data.name;
         output.description = data.description;
         output.notes = data.notes;

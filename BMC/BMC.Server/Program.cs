@@ -172,6 +172,11 @@ namespace Foundation.BMC
                 builder.Services.AddScoped<BrickOwlSyncService>();
 
                 //
+                // MOC Import service — converts .ldr, .mpd, .io files to native Project entities
+                //
+                builder.Services.AddScoped<ModelImportService>();
+
+                //
                 // Market data caching — reduces external API calls for Brickberg Terminal
                 //
                 builder.Services.Configure<MarketDataCacheOptions>(
@@ -333,6 +338,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(MyLostPartsController));
                 controllers.Add(typeof(BrickbergController));
                 controllers.Add(typeof(PublicBrowseController));
+                controllers.Add(typeof(MocImportController));
 
                 //
                 // Start of code generated controller list for BMC module

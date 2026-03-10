@@ -281,6 +281,7 @@ namespace Foundation.BMC.Database
 		public class ProjectDTO
 		{
 			public Int32 id { get; set; }
+			public Int32? userId { get; set; }
 			[Required]
 			public String name { get; set; }
 			[Required]
@@ -319,6 +320,7 @@ namespace Foundation.BMC.Database
 			return new ProjectDTO
 			{
 				id = this.id,
+				userId = this.userId,
 				name = this.name,
 				description = this.description,
 				notes = this.notes,
@@ -368,6 +370,7 @@ namespace Foundation.BMC.Database
 			return new ProjectOutputDTO
 			{
 				id = this.id,
+				userId = this.userId,
 				name = this.name,
 				description = this.description,
 				notes = this.notes,
@@ -417,6 +420,7 @@ namespace Foundation.BMC.Database
 			return new Database.Project
 			{
 				id = dto.id,
+				userId = dto.userId,
 				name = dto.name,
 				description = dto.description,
 				notes = dto.notes,
@@ -443,6 +447,7 @@ namespace Foundation.BMC.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
+			this.userId = dto.userId;
 			this.name = dto.name;
 			this.description = dto.description;
 			this.notes = dto.notes;
@@ -475,6 +480,7 @@ namespace Foundation.BMC.Database
 			return new Project{
 				id = this.id,
 				tenantGuid = this.tenantGuid,
+				userId = this.userId,
 				name = this.name,
 				description = this.description,
 				notes = this.notes,
@@ -538,6 +544,7 @@ namespace Foundation.BMC.Database
 
 			return new {
 				id = project.id,
+				userId = project.userId,
 				name = project.name,
 				description = project.description,
 				notes = project.notes,
@@ -568,6 +575,7 @@ namespace Foundation.BMC.Database
 
 			return new {
 				id = project.id,
+				userId = project.userId,
 				name = project.name,
 				description = project.description,
 				notes = project.notes,

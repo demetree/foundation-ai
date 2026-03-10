@@ -17,6 +17,10 @@
                 <div class="col m-2 project-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="projectForm" (ngSubmit)="submitForm()" class="project-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="Project-userId" id="label-Project-userId">User Id</label>
+                                <input type="number" id="Project-userId" formControlName="userId" placeholder="Enter User Id" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-userId" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('name')">
                                 <label for="Project-name" id="label-Project-name"><span class="text-danger">*</span>Name</label>
                                 <input type="text" id="Project-name" formControlName="name" placeholder="Enter Name" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-name" />
