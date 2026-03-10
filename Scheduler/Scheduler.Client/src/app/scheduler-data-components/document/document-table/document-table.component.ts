@@ -176,6 +176,8 @@ export class DocumentTableComponent implements OnInit, OnChanges, AfterViewInit 
     //
     const defaultColumns: TableColumn[] = [
     { key: 'documentType.name', label: 'Document Type', width: undefined, template: 'link', linkPath: ['/documenttype', 'documentTypeId'] },
+    { key: 'invoice.name', label: 'Invoice', width: undefined, template: 'link', linkPath: ['/invoice', 'invoiceId'] },
+    { key: 'receipt.name', label: 'Receipt', width: undefined, template: 'link', linkPath: ['/receipt', 'receiptId'] },
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/document', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
     { key: 'fileName', label: 'File Name', width: undefined },
@@ -343,6 +345,8 @@ export class DocumentTableComponent implements OnInit, OnChanges, AfterViewInit 
         // Define fields to filter on, including nested properties
         const filterFields = [
                       'documentType.name',
+                      'invoice.name',
+                      'receipt.name',
                       'name',
                       'description',
                       'fileName',

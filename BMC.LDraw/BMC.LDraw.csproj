@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BmcDatabase\BmcDatabase.csproj" />
     <PackageReference Include="EFCore.BulkExtensions.MIT" Version="10.*" />
+    <PackageReference Include="SharpZipLib" Version="1.*" />
   </ItemGroup>
 
   <ItemGroup>

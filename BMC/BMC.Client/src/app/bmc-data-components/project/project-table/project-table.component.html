@@ -47,6 +47,10 @@
                 Thumbnail  Image  Path
                 <span *ngIf="sortColumn === 'thumbnailImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('thumbnailData')">
+                Thumbnail  Data
+                <span *ngIf="sortColumn === 'thumbnailData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('partCount')">
                 Part  Count
                 <span *ngIf="sortColumn === 'partCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -145,6 +149,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{project.description}}</td>
             <td class="text-truncate">{{project.notes}}</td>
             <td class="text-truncate">{{project.thumbnailImagePath}}</td>
+            <td class="text-truncate">{{project.thumbnailData}}</td>
             <td class="text-truncate">{{project.partCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{project.lastBuildDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
@@ -312,6 +317,10 @@ End of commented block for alternate definition option -->
             <p class="project-info" *ngIf="project.thumbnailImagePath != null">
               <strong>Thumbnail Image Path: </strong>
               {{project.thumbnailImagePath}}
+            </p>
+            <p class="project-info" *ngIf="project.thumbnailData != null">
+              <strong>Thumbnail Data: </strong>
+              {{project.thumbnailData}}
             </p>
             <p class="project-info" *ngIf="project.partCount != null">
               <strong>Part Count: </strong>

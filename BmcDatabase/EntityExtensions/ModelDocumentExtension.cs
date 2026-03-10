@@ -295,6 +295,9 @@ namespace Foundation.BMC.Database
 			public String author { get; set; }
 			public Int32? totalPartCount { get; set; }
 			public Int32? totalStepCount { get; set; }
+			public String studioVersion { get; set; }
+			public String instructionSettingsXml { get; set; }
+			public String errorPartList { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -338,6 +341,9 @@ namespace Foundation.BMC.Database
 				author = this.author,
 				totalPartCount = this.totalPartCount,
 				totalStepCount = this.totalStepCount,
+				studioVersion = this.studioVersion,
+				instructionSettingsXml = this.instructionSettingsXml,
+				errorPartList = this.errorPartList,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -393,6 +399,9 @@ namespace Foundation.BMC.Database
 				author = this.author,
 				totalPartCount = this.totalPartCount,
 				totalStepCount = this.totalStepCount,
+				studioVersion = this.studioVersion,
+				instructionSettingsXml = this.instructionSettingsXml,
+				errorPartList = this.errorPartList,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -449,6 +458,9 @@ namespace Foundation.BMC.Database
 				author = dto.author,
 				totalPartCount = dto.totalPartCount,
 				totalStepCount = dto.totalStepCount,
+				studioVersion = dto.studioVersion,
+				instructionSettingsXml = dto.instructionSettingsXml,
+				errorPartList = dto.errorPartList,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -481,6 +493,9 @@ namespace Foundation.BMC.Database
 			this.author = dto.author;
 			this.totalPartCount = dto.totalPartCount;
 			this.totalStepCount = dto.totalStepCount;
+			this.studioVersion = dto.studioVersion;
+			this.instructionSettingsXml = dto.instructionSettingsXml;
+			this.errorPartList = dto.errorPartList;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -519,6 +534,9 @@ namespace Foundation.BMC.Database
 				author = this.author,
 				totalPartCount = this.totalPartCount,
 				totalStepCount = this.totalStepCount,
+				studioVersion = this.studioVersion,
+				instructionSettingsXml = this.instructionSettingsXml,
+				errorPartList = this.errorPartList,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -588,6 +606,9 @@ namespace Foundation.BMC.Database
 				author = modelDocument.author,
 				totalPartCount = modelDocument.totalPartCount,
 				totalStepCount = modelDocument.totalStepCount,
+				studioVersion = modelDocument.studioVersion,
+				instructionSettingsXml = modelDocument.instructionSettingsXml,
+				errorPartList = modelDocument.errorPartList,
 				versionNumber = modelDocument.versionNumber,
 				objectGuid = modelDocument.objectGuid,
 				active = modelDocument.active,
@@ -624,6 +645,9 @@ namespace Foundation.BMC.Database
 				author = modelDocument.author,
 				totalPartCount = modelDocument.totalPartCount,
 				totalStepCount = modelDocument.totalStepCount,
+				studioVersion = modelDocument.studioVersion,
+				instructionSettingsXml = modelDocument.instructionSettingsXml,
+				errorPartList = modelDocument.errorPartList,
 				versionNumber = modelDocument.versionNumber,
 				objectGuid = modelDocument.objectGuid,
 				active = modelDocument.active,

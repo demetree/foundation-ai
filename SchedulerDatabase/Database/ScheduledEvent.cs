@@ -85,6 +85,8 @@ public partial class ScheduledEvent
 
     public virtual ICollection<ScheduledEvent> InverseparentScheduledEvent { get; set; } = new List<ScheduledEvent>();
 
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ICollection<RecurrenceException> RecurrenceExceptions { get; set; } = new List<RecurrenceException>();

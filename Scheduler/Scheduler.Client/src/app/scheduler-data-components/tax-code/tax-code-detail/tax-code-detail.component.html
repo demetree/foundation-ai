@@ -134,6 +134,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="invoiceService.userIsSchedulerInvoiceReader()">
+                            <button ngbNavLink>Invoices
+                                <span class="badge bg-primary ms-2">
+                                    {{ (taxCodeData?.InvoicesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-invoice-table [queryParams]="{ taxCodeId: taxCodeData?.id }" [showAddButton]="true" [preSeededData]="{ taxCodeId: taxCodeData?.id }" [hiddenFields]="['taxCodeId']"></app-invoice-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

@@ -1,0 +1,138 @@
+<div class="add-receipt" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-receipt me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Receipt" 
+        *ngIf="userIsSchedulerReceiptWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #receiptModal let-modal>
+   <div class="modal-header receipt-modal-header">
+      <h5 class="modal-title mb-0" id="receiptModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Receipt' : 'Add Receipt' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body receipt-modal-body">
+      <form [formGroup]="receiptForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('receiptNumber')">
+                <label for="Receipt-receiptNumber" id="label-Receipt-receiptNumber"><span class="text-danger">*</span>Receipt Number</label>
+                <input type="text" id="Receipt-receiptNumber" formControlName="receiptNumber" placeholder="Enter Receipt Number" class="form-control receipt-input" [disabled]="!userIsSchedulerReceiptWriter()" aria-labelledby="label-receiptNumber" />
+                <div *ngIf="receiptForm.get('receiptNumber')?.invalid && receiptForm.get('receiptNumber')?.touched" class="text-danger">
+                    Receipt Number is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptTypeId')">
+                <label for="Receipt-receiptTypeId" id="label-Receipt-receiptTypeId"><span class="text-danger">*</span>Receipt Type</label>
+                <select id="Receipt-receiptTypeId" formControlName="receiptTypeId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Receipt Type</option>
+                    <option *ngFor="let receiptType of receiptTypes$ | async" [ngValue]="receiptType.id">{{receiptType.name}}</option>
+                </select>
+                <div *ngIf="receiptForm.get('receiptTypeId')?.invalid && receiptForm.get('receiptTypeId')?.touched" class="text-danger">
+                    Receipt Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
+                <label for="Receipt-invoiceId" id="label-Receipt-invoiceId">Invoice</label>
+                <select id="Receipt-invoiceId" formControlName="invoiceId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Invoice</option>
+                    <option *ngFor="let invoice of invoices$ | async" [ngValue]="invoice.id">{{[invoice.invoiceNumber] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('paymentTransactionId')">
+                <label for="Receipt-paymentTransactionId" id="label-Receipt-paymentTransactionId">Payment Transaction</label>
+                <select id="Receipt-paymentTransactionId" formControlName="paymentTransactionId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Payment Transaction</option>
+                    <option *ngFor="let paymentTransaction of paymentTransactions$ | async" [ngValue]="paymentTransaction.id">{{paymentTransaction.status}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('financialTransactionId')">
+                <label for="Receipt-financialTransactionId" id="label-Receipt-financialTransactionId">Financial Transaction</label>
+                <select id="Receipt-financialTransactionId" formControlName="financialTransactionId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Financial Transaction</option>
+                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.contactRole}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                <label for="Receipt-clientId" id="label-Receipt-clientId">Client</label>
+                <select id="Receipt-clientId" formControlName="clientId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Client</option>
+                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="Receipt-contactId" id="label-Receipt-contactId">Contact</label>
+                <select id="Receipt-contactId" formControlName="contactId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                <label for="Receipt-currencyId" id="label-Receipt-currencyId"><span class="text-danger">*</span>Currency</label>
+                <select id="Receipt-currencyId" formControlName="currencyId" class="form-select receipt-select" [disabled]="!userIsSchedulerReceiptWriter()">
+                    <option [ngValue]="null">Select Currency</option>
+                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                </select>
+                <div *ngIf="receiptForm.get('currencyId')?.invalid && receiptForm.get('currencyId')?.touched" class="text-danger">
+                    Currency is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptDate')">
+                <label for="Receipt-receiptDate" id="label-Receipt-receiptDate"><span class="text-danger">*</span>Receipt Date</label>
+                <input type="datetime-local" id="Receipt-receiptDate" formControlName="receiptDate" placeholder="Enter Receipt Date" class="form-control receipt-input" [disabled]="!userIsSchedulerReceiptWriter()" aria-labelledby="label-receiptDate" />
+                <div *ngIf="receiptForm.get('receiptDate')?.invalid && receiptForm.get('receiptDate')?.touched" class="text-danger">
+                    Receipt Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('amount')">
+                <label for="Receipt-amount" id="label-Receipt-amount"><span class="text-danger">*</span>Amount</label>
+                <input type="number" id="Receipt-amount" formControlName="amount" placeholder="Enter Amount" class="form-control receipt-input" [disabled]="!userIsSchedulerReceiptWriter()" aria-labelledby="label-amount" />
+                <div *ngIf="receiptForm.get('amount')?.invalid && receiptForm.get('amount')?.touched" class="text-danger">
+                    Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('paymentMethod')">
+                <label for="Receipt-paymentMethod" id="label-Receipt-paymentMethod">Payment Method</label>
+                <input type="text" id="Receipt-paymentMethod" formControlName="paymentMethod" placeholder="Enter Payment Method" class="form-control receipt-input" [disabled]="!userIsSchedulerReceiptWriter()" aria-labelledby="label-paymentMethod" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Receipt-description" id="label-Receipt-description">Description</label>
+                <textarea id="Receipt-description" formControlName="description" placeholder="Enter Description" class="form-control receipt-input" [disabled]="!userIsSchedulerReceiptWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Receipt-notes" id="label-Receipt-notes">Notes</label>
+                <textarea id="Receipt-notes" formControlName="notes" placeholder="Enter Notes" class="form-control receipt-input" [disabled]="!userIsSchedulerReceiptWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Receipt-versionNumber" id="label-Receipt-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Receipt-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control receipt-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Receipt-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerReceiptWriter()" />
+                <label for="Receipt-active" class="form-check-label" id="label-Receipt-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Receipt-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerReceiptWriter()" />
+                <label for="Receipt-deleted" class="form-check-label" id="label-Receipt-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer receipt-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Receipt changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !receiptForm.valid || receiptForm.pristine  || userIsSchedulerReceiptWriter() == false " ngbTooltip="Save the Receipt changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Receipt' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

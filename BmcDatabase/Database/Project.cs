@@ -21,6 +21,8 @@ public partial class Project
 
     public string thumbnailImagePath { get; set; }
 
+    public byte[] thumbnailData { get; set; }
+
     public int? partCount { get; set; }
 
     public DateTime? lastBuildDate { get; set; }

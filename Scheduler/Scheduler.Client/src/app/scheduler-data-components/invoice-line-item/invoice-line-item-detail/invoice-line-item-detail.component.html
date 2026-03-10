@@ -1,0 +1,118 @@
+<div class="container-fluid p-1 m-0 invoice-line-item-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="invoice-line-item-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Invoice Line Item</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Invoice Line Item' : 'Add Invoice Line Item'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerInvoiceLineItemReader()">
+                <div class="col m-2 invoice-line-item-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="invoiceLineItemForm" (ngSubmit)="submitForm()" class="invoice-line-item-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
+                                <label for="InvoiceLineItem-invoiceId" id="label-InvoiceLineItem-invoiceId"><span class="text-danger">*</span>Invoice</label>
+                                <select id="InvoiceLineItem-invoiceId" formControlName="invoiceId" class="form-select invoice-line-item-select" [disabled]="!userIsSchedulerInvoiceLineItemWriter()">
+                                    <option [ngValue]="null">Select Invoice</option>
+                                    <option *ngFor="let invoice of invoices$ | async" [ngValue]="invoice.id">{{[invoice.invoiceNumber] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="invoiceLineItemForm.get('invoiceId')?.invalid && invoiceLineItemForm.get('invoiceId')?.touched" class="text-danger">
+                                    Invoice is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('eventChargeId')">
+                                <label for="InvoiceLineItem-eventChargeId" id="label-InvoiceLineItem-eventChargeId">Event Charge</label>
+                                <select id="InvoiceLineItem-eventChargeId" formControlName="eventChargeId" class="form-select invoice-line-item-select" [disabled]="!userIsSchedulerInvoiceLineItemWriter()">
+                                    <option [ngValue]="null">Select Event Charge</option>
+                                    <option *ngFor="let eventCharge of eventCharges$ | async" [ngValue]="eventCharge.id">{{eventCharge.description}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('financialCategoryId')">
+                                <label for="InvoiceLineItem-financialCategoryId" id="label-InvoiceLineItem-financialCategoryId">Financial Category</label>
+                                <select id="InvoiceLineItem-financialCategoryId" formControlName="financialCategoryId" class="form-select invoice-line-item-select" [disabled]="!userIsSchedulerInvoiceLineItemWriter()">
+                                    <option [ngValue]="null">Select Financial Category</option>
+                                    <option *ngFor="let financialCategory of financialCategories$ | async" [ngValue]="financialCategory.id">{{financialCategory.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="InvoiceLineItem-description" id="label-InvoiceLineItem-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="InvoiceLineItem-description" formControlName="description" placeholder="Enter Description" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()"></textarea>
+                                <div *ngIf="invoiceLineItemForm.get('description')?.invalid && invoiceLineItemForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                                <label for="InvoiceLineItem-quantity" id="label-InvoiceLineItem-quantity"><span class="text-danger">*</span>Quantity</label>
+                                <input type="number" id="InvoiceLineItem-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" aria-labelledby="label-quantity" />
+                                <div *ngIf="invoiceLineItemForm.get('quantity')?.invalid && invoiceLineItemForm.get('quantity')?.touched" class="text-danger">
+                                    Quantity is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('unitPrice')">
+                                <label for="InvoiceLineItem-unitPrice" id="label-InvoiceLineItem-unitPrice"><span class="text-danger">*</span>Unit Price</label>
+                                <input type="number" id="InvoiceLineItem-unitPrice" formControlName="unitPrice" placeholder="Enter Unit Price" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" aria-labelledby="label-unitPrice" />
+                                <div *ngIf="invoiceLineItemForm.get('unitPrice')?.invalid && invoiceLineItemForm.get('unitPrice')?.touched" class="text-danger">
+                                    Unit Price is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('amount')">
+                                <label for="InvoiceLineItem-amount" id="label-InvoiceLineItem-amount"><span class="text-danger">*</span>Amount</label>
+                                <input type="number" id="InvoiceLineItem-amount" formControlName="amount" placeholder="Enter Amount" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" aria-labelledby="label-amount" />
+                                <div *ngIf="invoiceLineItemForm.get('amount')?.invalid && invoiceLineItemForm.get('amount')?.touched" class="text-danger">
+                                    Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('taxAmount')">
+                                <label for="InvoiceLineItem-taxAmount" id="label-InvoiceLineItem-taxAmount"><span class="text-danger">*</span>Tax Amount</label>
+                                <input type="number" id="InvoiceLineItem-taxAmount" formControlName="taxAmount" placeholder="Enter Tax Amount" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" aria-labelledby="label-taxAmount" />
+                                <div *ngIf="invoiceLineItemForm.get('taxAmount')?.invalid && invoiceLineItemForm.get('taxAmount')?.touched" class="text-danger">
+                                    Tax Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalAmount')">
+                                <label for="InvoiceLineItem-totalAmount" id="label-InvoiceLineItem-totalAmount"><span class="text-danger">*</span>Total Amount</label>
+                                <input type="number" id="InvoiceLineItem-totalAmount" formControlName="totalAmount" placeholder="Enter Total Amount" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" aria-labelledby="label-totalAmount" />
+                                <div *ngIf="invoiceLineItemForm.get('totalAmount')?.invalid && invoiceLineItemForm.get('totalAmount')?.touched" class="text-danger">
+                                    Total Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="InvoiceLineItem-sequence" id="label-InvoiceLineItem-sequence">Sequence</label>
+                                <input type="number" id="InvoiceLineItem-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control invoice-line-item-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="InvoiceLineItem-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" />
+                                <label for="InvoiceLineItem-active" class="form-check-label" id="label-InvoiceLineItem-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="InvoiceLineItem-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerInvoiceLineItemWriter()" />
+                                <label for="InvoiceLineItem-deleted" class="form-check-label" id="label-InvoiceLineItem-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="invoice-line-item-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="invoiceLineItemForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Invoice Line Item">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !invoiceLineItemForm.valid || !invoiceLineItemForm.dirty || invoiceLineItemForm.pristine  || userIsSchedulerInvoiceLineItemWriter() == false " ngbTooltip="Save the Invoice Line Item changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Invoice Line Item' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

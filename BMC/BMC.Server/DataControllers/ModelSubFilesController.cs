@@ -188,6 +188,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || (includeRelations == true && x.modelDocument.sourceFileFileName.Contains(anyStringContains))
 			       || (includeRelations == true && x.modelDocument.sourceFileMimeType.Contains(anyStringContains))
 			       || (includeRelations == true && x.modelDocument.author.Contains(anyStringContains))
+			       || (includeRelations == true && x.modelDocument.studioVersion.Contains(anyStringContains))
+			       || (includeRelations == true && x.modelDocument.instructionSettingsXml.Contains(anyStringContains))
+			       || (includeRelations == true && x.modelDocument.errorPartList.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentModelSubFile.fileName.Contains(anyStringContains))
 			   );
 			}
@@ -347,6 +350,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.modelDocument.sourceFileFileName.Contains(anyStringContains)
 			       || x.modelDocument.sourceFileMimeType.Contains(anyStringContains)
 			       || x.modelDocument.author.Contains(anyStringContains)
+			       || x.modelDocument.studioVersion.Contains(anyStringContains)
+			       || x.modelDocument.instructionSettingsXml.Contains(anyStringContains)
+			       || x.modelDocument.errorPartList.Contains(anyStringContains)
 			       || x.parentModelSubFile.fileName.Contains(anyStringContains)
 			   );
 			}
@@ -917,6 +923,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.modelDocument.sourceFileFileName.Contains(anyStringContains)
 			       || x.modelDocument.sourceFileMimeType.Contains(anyStringContains)
 			       || x.modelDocument.author.Contains(anyStringContains)
+			       || x.modelDocument.studioVersion.Contains(anyStringContains)
+			       || x.modelDocument.instructionSettingsXml.Contains(anyStringContains)
+			       || x.modelDocument.errorPartList.Contains(anyStringContains)
 			       || x.parentModelSubFile.fileName.Contains(anyStringContains)
 			   );
 			}

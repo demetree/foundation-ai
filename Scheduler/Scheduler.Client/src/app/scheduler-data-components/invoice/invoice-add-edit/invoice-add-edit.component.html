@@ -1,0 +1,169 @@
+<div class="add-invoice" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-invoice me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Invoice" 
+        *ngIf="userIsSchedulerInvoiceWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #invoiceModal let-modal>
+   <div class="modal-header invoice-modal-header">
+      <h5 class="modal-title mb-0" id="invoiceModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Invoice' : 'Add Invoice' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body invoice-modal-body">
+      <form [formGroup]="invoiceForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceNumber')">
+                <label for="Invoice-invoiceNumber" id="label-Invoice-invoiceNumber"><span class="text-danger">*</span>Invoice Number</label>
+                <input type="text" id="Invoice-invoiceNumber" formControlName="invoiceNumber" placeholder="Enter Invoice Number" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-invoiceNumber" />
+                <div *ngIf="invoiceForm.get('invoiceNumber')?.invalid && invoiceForm.get('invoiceNumber')?.touched" class="text-danger">
+                    Invoice Number is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                <label for="Invoice-clientId" id="label-Invoice-clientId"><span class="text-danger">*</span>Client</label>
+                <select id="Invoice-clientId" formControlName="clientId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Client</option>
+                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                </select>
+                <div *ngIf="invoiceForm.get('clientId')?.invalid && invoiceForm.get('clientId')?.touched" class="text-danger">
+                    Client is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="Invoice-contactId" id="label-Invoice-contactId">Contact</label>
+                <select id="Invoice-contactId" formControlName="contactId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="Invoice-scheduledEventId" id="label-Invoice-scheduledEventId">Scheduled Event</label>
+                <select id="Invoice-scheduledEventId" formControlName="scheduledEventId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('financialOfficeId')">
+                <label for="Invoice-financialOfficeId" id="label-Invoice-financialOfficeId">Financial Office</label>
+                <select id="Invoice-financialOfficeId" formControlName="financialOfficeId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Financial Office</option>
+                    <option *ngFor="let financialOffice of financialOffices$ | async" [ngValue]="financialOffice.id">{{financialOffice.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceStatusId')">
+                <label for="Invoice-invoiceStatusId" id="label-Invoice-invoiceStatusId"><span class="text-danger">*</span>Invoice Status</label>
+                <select id="Invoice-invoiceStatusId" formControlName="invoiceStatusId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Invoice Status</option>
+                    <option *ngFor="let invoiceStatus of invoiceStatuses$ | async" [ngValue]="invoiceStatus.id">{{invoiceStatus.name}}</option>
+                </select>
+                <div *ngIf="invoiceForm.get('invoiceStatusId')?.invalid && invoiceForm.get('invoiceStatusId')?.touched" class="text-danger">
+                    Invoice Status is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                <label for="Invoice-currencyId" id="label-Invoice-currencyId"><span class="text-danger">*</span>Currency</label>
+                <select id="Invoice-currencyId" formControlName="currencyId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Currency</option>
+                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                </select>
+                <div *ngIf="invoiceForm.get('currencyId')?.invalid && invoiceForm.get('currencyId')?.touched" class="text-danger">
+                    Currency is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('taxCodeId')">
+                <label for="Invoice-taxCodeId" id="label-Invoice-taxCodeId">Tax Code</label>
+                <select id="Invoice-taxCodeId" formControlName="taxCodeId" class="form-select invoice-select" [disabled]="!userIsSchedulerInvoiceWriter()">
+                    <option [ngValue]="null">Select Tax Code</option>
+                    <option *ngFor="let taxCode of taxCodes$ | async" [ngValue]="taxCode.id">{{taxCode.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceDate')">
+                <label for="Invoice-invoiceDate" id="label-Invoice-invoiceDate"><span class="text-danger">*</span>Invoice Date</label>
+                <input type="datetime-local" id="Invoice-invoiceDate" formControlName="invoiceDate" placeholder="Enter Invoice Date" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-invoiceDate" />
+                <div *ngIf="invoiceForm.get('invoiceDate')?.invalid && invoiceForm.get('invoiceDate')?.touched" class="text-danger">
+                    Invoice Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dueDate')">
+                <label for="Invoice-dueDate" id="label-Invoice-dueDate"><span class="text-danger">*</span>Due Date</label>
+                <input type="datetime-local" id="Invoice-dueDate" formControlName="dueDate" placeholder="Enter Due Date" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-dueDate" />
+                <div *ngIf="invoiceForm.get('dueDate')?.invalid && invoiceForm.get('dueDate')?.touched" class="text-danger">
+                    Due Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('subtotal')">
+                <label for="Invoice-subtotal" id="label-Invoice-subtotal"><span class="text-danger">*</span>Subtotal</label>
+                <input type="number" id="Invoice-subtotal" formControlName="subtotal" placeholder="Enter Subtotal" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-subtotal" />
+                <div *ngIf="invoiceForm.get('subtotal')?.invalid && invoiceForm.get('subtotal')?.touched" class="text-danger">
+                    Subtotal is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('taxAmount')">
+                <label for="Invoice-taxAmount" id="label-Invoice-taxAmount"><span class="text-danger">*</span>Tax Amount</label>
+                <input type="number" id="Invoice-taxAmount" formControlName="taxAmount" placeholder="Enter Tax Amount" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-taxAmount" />
+                <div *ngIf="invoiceForm.get('taxAmount')?.invalid && invoiceForm.get('taxAmount')?.touched" class="text-danger">
+                    Tax Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalAmount')">
+                <label for="Invoice-totalAmount" id="label-Invoice-totalAmount"><span class="text-danger">*</span>Total Amount</label>
+                <input type="number" id="Invoice-totalAmount" formControlName="totalAmount" placeholder="Enter Total Amount" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-totalAmount" />
+                <div *ngIf="invoiceForm.get('totalAmount')?.invalid && invoiceForm.get('totalAmount')?.touched" class="text-danger">
+                    Total Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('amountPaid')">
+                <label for="Invoice-amountPaid" id="label-Invoice-amountPaid"><span class="text-danger">*</span>Amount Paid</label>
+                <input type="number" id="Invoice-amountPaid" formControlName="amountPaid" placeholder="Enter Amount Paid" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-amountPaid" />
+                <div *ngIf="invoiceForm.get('amountPaid')?.invalid && invoiceForm.get('amountPaid')?.touched" class="text-danger">
+                    Amount Paid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sentDate')">
+                <label for="Invoice-sentDate" id="label-Invoice-sentDate">Sent Date</label>
+                <input type="datetime-local" id="Invoice-sentDate" formControlName="sentDate" placeholder="Enter Sent Date" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-sentDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('paidDate')">
+                <label for="Invoice-paidDate" id="label-Invoice-paidDate">Paid Date</label>
+                <input type="datetime-local" id="Invoice-paidDate" formControlName="paidDate" placeholder="Enter Paid Date" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()" aria-labelledby="label-paidDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Invoice-notes" id="label-Invoice-notes">Notes</label>
+                <textarea id="Invoice-notes" formControlName="notes" placeholder="Enter Notes" class="form-control invoice-input" [disabled]="!userIsSchedulerInvoiceWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Invoice-versionNumber" id="label-Invoice-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Invoice-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control invoice-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Invoice-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerInvoiceWriter()" />
+                <label for="Invoice-active" class="form-check-label" id="label-Invoice-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Invoice-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerInvoiceWriter()" />
+                <label for="Invoice-deleted" class="form-check-label" id="label-Invoice-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer invoice-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Invoice changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !invoiceForm.valid || invoiceForm.pristine  || userIsSchedulerInvoiceWriter() == false " ngbTooltip="Save the Invoice changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Invoice' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

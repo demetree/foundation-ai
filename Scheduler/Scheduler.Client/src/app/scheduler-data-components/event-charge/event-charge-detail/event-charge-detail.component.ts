@@ -32,6 +32,7 @@ import { RateTypeService } from '../../../scheduler-data-services/rate-type.serv
 import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { EventChargeChangeHistoryService } from '../../../scheduler-data-services/event-charge-change-history.service';
 import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
+import { InvoiceLineItemService } from '../../../scheduler-data-services/invoice-line-item.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -137,6 +138,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
   public taxCodes$ = this.taxCodeService.GetTaxCodeList();
   public eventChargeChangeHistories$ = this.eventChargeChangeHistoryService.GetEventChargeChangeHistoryList();
   public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
+  public invoiceLineItems$ = this.invoiceLineItemService.GetInvoiceLineItemList();
 
   private destroy$ = new Subject<void>();
 
@@ -151,6 +153,7 @@ export class EventChargeDetailComponent implements OnInit, CanComponentDeactivat
     public taxCodeService: TaxCodeService,
     public eventChargeChangeHistoryService: EventChargeChangeHistoryService,
     public paymentTransactionService: PaymentTransactionService,
+    public invoiceLineItemService: InvoiceLineItemService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

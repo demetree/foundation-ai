@@ -868,6 +868,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					financialCategory.FinancialCategoryChangeHistories = null;
 					financialCategory.FinancialTransactions = null;
 					financialCategory.InverseparentFinancialCategory = null;
+					financialCategory.InvoiceLineItems = null;
 					financialCategory.accountType = null;
 					financialCategory.financialOffice = null;
 					financialCategory.parentFinancialCategory = null;
@@ -990,6 +991,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.FinancialCategoryChangeHistories = null;
 				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.InverseparentFinancialCategory = null;
+				cloneOfExisting.InvoiceLineItems = null;
 				cloneOfExisting.accountType = null;
 				cloneOfExisting.financialOffice = null;
 				cloneOfExisting.parentFinancialCategory = null;

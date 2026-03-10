@@ -72,6 +72,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Documents")]
 		public async Task<IActionResult> GetDocuments(
 			int? documentTypeId = null,
+			int? invoiceId = null,
+			int? receiptId = null,
 			string name = null,
 			string description = null,
 			string fileName = null,
@@ -160,6 +162,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (documentTypeId.HasValue == true)
 			{
 				query = query.Where(d => d.documentTypeId == documentTypeId.Value);
+			}
+			if (invoiceId.HasValue == true)
+			{
+				query = query.Where(d => d.invoiceId == invoiceId.Value);
+			}
+			if (receiptId.HasValue == true)
+			{
+				query = query.Where(d => d.receiptId == receiptId.Value);
 			}
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -313,6 +323,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.financialTransaction.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.externalSystemName.Contains(anyStringContains))
+			       || (includeRelations == true && x.invoice.invoiceNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.invoice.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.receipt.receiptNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.receipt.paymentMethod.Contains(anyStringContains))
+			       || (includeRelations == true && x.receipt.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.receipt.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.resource.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.resource.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.resource.notes.Contains(anyStringContains))
@@ -336,6 +352,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Include(x => x.contact);
 				query = query.Include(x => x.documentType);
 				query = query.Include(x => x.financialTransaction);
+				query = query.Include(x => x.invoice);
+				query = query.Include(x => x.receipt);
 				query = query.Include(x => x.resource);
 				query = query.Include(x => x.scheduledEvent);
 				query = query.AsSplitQuery();
@@ -407,6 +425,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Documents/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? documentTypeId = null,
+			int? invoiceId = null,
+			int? receiptId = null,
 			string name = null,
 			string description = null,
 			string fileName = null,
@@ -475,6 +495,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (documentTypeId.HasValue == true)
 			{
 				query = query.Where(d => d.documentTypeId == documentTypeId.Value);
+			}
+			if (invoiceId.HasValue == true)
+			{
+				query = query.Where(d => d.invoiceId == invoiceId.Value);
+			}
+			if (receiptId.HasValue == true)
+			{
+				query = query.Where(d => d.receiptId == receiptId.Value);
 			}
 			if (name != null)
 			{
@@ -625,6 +653,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialTransaction.notes.Contains(anyStringContains)
 			       || x.financialTransaction.externalId.Contains(anyStringContains)
 			       || x.financialTransaction.externalSystemName.Contains(anyStringContains)
+			       || x.invoice.invoiceNumber.Contains(anyStringContains)
+			       || x.invoice.notes.Contains(anyStringContains)
+			       || x.receipt.receiptNumber.Contains(anyStringContains)
+			       || x.receipt.paymentMethod.Contains(anyStringContains)
+			       || x.receipt.description.Contains(anyStringContains)
+			       || x.receipt.notes.Contains(anyStringContains)
 			       || x.resource.name.Contains(anyStringContains)
 			       || x.resource.description.Contains(anyStringContains)
 			       || x.resource.notes.Contains(anyStringContains)
@@ -706,6 +740,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					query = query.Include(x => x.contact);
 					query = query.Include(x => x.documentType);
 					query = query.Include(x => x.financialTransaction);
+					query = query.Include(x => x.invoice);
+					query = query.Include(x => x.receipt);
 					query = query.Include(x => x.resource);
 					query = query.Include(x => x.scheduledEvent);
 					query = query.AsSplitQuery();
@@ -1223,6 +1259,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					document.contact = null;
 					document.documentType = null;
 					document.financialTransaction = null;
+					document.invoice = null;
+					document.receipt = null;
 					document.resource = null;
 					document.scheduledEvent = null;
 
@@ -1355,6 +1393,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.contact = null;
 				cloneOfExisting.documentType = null;
 				cloneOfExisting.financialTransaction = null;
+				cloneOfExisting.invoice = null;
+				cloneOfExisting.receipt = null;
 				cloneOfExisting.resource = null;
 				cloneOfExisting.scheduledEvent = null;
 
@@ -1386,6 +1426,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Put all other fields back the way that they were 
 				    //
 				    document.documentTypeId = oldDocument.documentTypeId;
+				    document.invoiceId = oldDocument.invoiceId;
+				    document.receiptId = oldDocument.receiptId;
 				    document.name = oldDocument.name;
 				    document.description = oldDocument.description;
 				    document.fileName = oldDocument.fileName;
@@ -1875,6 +1917,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			int? documentTypeId = null,
+			int? invoiceId = null,
+			int? receiptId = null,
 			string name = null,
 			string description = null,
 			string fileName = null,
@@ -1962,6 +2006,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (documentTypeId.HasValue == true)
 			{
 				query = query.Where(d => d.documentTypeId == documentTypeId.Value);
+			}
+			if (invoiceId.HasValue == true)
+			{
+				query = query.Where(d => d.invoiceId == invoiceId.Value);
+			}
+			if (receiptId.HasValue == true)
+			{
+				query = query.Where(d => d.receiptId == receiptId.Value);
 			}
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -2113,6 +2165,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialTransaction.notes.Contains(anyStringContains)
 			       || x.financialTransaction.externalId.Contains(anyStringContains)
 			       || x.financialTransaction.externalSystemName.Contains(anyStringContains)
+			       || x.invoice.invoiceNumber.Contains(anyStringContains)
+			       || x.invoice.notes.Contains(anyStringContains)
+			       || x.receipt.receiptNumber.Contains(anyStringContains)
+			       || x.receipt.paymentMethod.Contains(anyStringContains)
+			       || x.receipt.description.Contains(anyStringContains)
+			       || x.receipt.notes.Contains(anyStringContains)
 			       || x.resource.name.Contains(anyStringContains)
 			       || x.resource.description.Contains(anyStringContains)
 			       || x.resource.notes.Contains(anyStringContains)

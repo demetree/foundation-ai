@@ -733,6 +733,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					receiptType.Gifts = null;
 					receiptType.ReceiptTypeChangeHistories = null;
+					receiptType.Receipts = null;
 
 
 				    ReceiptTypeChangeHistory receiptTypeChangeHistory = new ReceiptTypeChangeHistory();
@@ -849,6 +850,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.Gifts = null;
 				cloneOfExisting.ReceiptTypeChangeHistories = null;
+				cloneOfExisting.Receipts = null;
 
 				if (versionNumber >= receiptType.versionNumber)
 				{

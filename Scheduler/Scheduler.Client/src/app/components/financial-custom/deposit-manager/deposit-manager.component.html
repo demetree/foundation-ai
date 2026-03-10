@@ -1,0 +1,148 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="page-container">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="listing-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </button>
+                <div>
+                    <h3 class="mb-0"><i class="fa-solid fa-shield-halved me-2"></i>Deposit Manager</h3>
+                    <small class="header-subtitle">Track and refund event deposits</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SUMMARY CARDS ═══ -->
+    <div class="row g-3 mb-3" *ngIf="!isLoading">
+        <div class="col-md-4">
+            <div class="summary-card outstanding-card">
+                <div class="summary-icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="summary-body">
+                    <div class="summary-label">Outstanding</div>
+                    <div class="summary-value">{{ formatCurrency(totalOutstanding) }}</div>
+                    <div class="summary-count">{{ outstandingCount }} deposit{{ outstandingCount === 1 ? '' : 's' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card refunded-card">
+                <div class="summary-icon"><i class="fa-solid fa-check-circle"></i></div>
+                <div class="summary-body">
+                    <div class="summary-label">Refunded</div>
+                    <div class="summary-value">{{ formatCurrency(totalRefunded) }}</div>
+                    <div class="summary-count">{{ refundedCount }} deposit{{ refundedCount === 1 ? '' : 's' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card total-card">
+                <div class="summary-icon"><i class="fa-solid fa-coins"></i></div>
+                <div class="summary-body">
+                    <div class="summary-label">Total Collected</div>
+                    <div class="summary-value">{{ formatCurrency(totalOutstanding + totalRefunded) }}</div>
+                    <div class="summary-count">{{ deposits.length }} total</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ FILTERS ═══ -->
+    <div class="filter-bar" *ngIf="!isLoading">
+        <div class="filter-pills">
+            <button class="pill" [class.active]="viewFilter === 'outstanding'"
+                (click)="viewFilter='outstanding'; applyFilters()">
+                <i class="fa-solid fa-clock me-1"></i> Outstanding
+            </button>
+            <button class="pill" [class.active]="viewFilter === 'refunded'"
+                (click)="viewFilter='refunded'; applyFilters()">
+                <i class="fa-solid fa-check me-1"></i> Refunded
+            </button>
+            <button class="pill" [class.active]="viewFilter === 'all'" (click)="viewFilter='all'; applyFilters()">
+                All
+            </button>
+        </div>
+
+        <div class="search-box">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" class="form-control" placeholder="Search event, description..." [(ngModel)]="searchText"
+                (ngModelChange)="applyFilters()" />
+        </div>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && filteredDeposits.length === 0">
+        <i class="fa-solid fa-shield-halved"></i>
+        <p>No deposits match your filters</p>
+    </div>
+
+
+    <!-- ═══ TABLE ═══ -->
+    <div class="table-responsive" *ngIf="!isLoading && !isMobile && filteredDeposits.length > 0">
+        <table class="table listing-table">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Description</th>
+                    <th class="text-end">Amount</th>
+                    <th>Status</th>
+                    <th>Refund Date</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let d of filteredDeposits" [class.refunded-row]="d.isRefunded">
+                    <td>{{ d.eventName }}</td>
+                    <td>{{ d.description }}</td>
+                    <td class="text-end fw-semibold">{{ formatCurrency(d.amount) }}</td>
+                    <td>
+                        <span class="status-badge" [ngClass]="d.isRefunded ? 'badge-refunded' : 'badge-outstanding'">
+                            {{ d.isRefunded ? 'Refunded' : 'Outstanding' }}
+                        </span>
+                    </td>
+                    <td>{{ d.isRefunded ? formatDate(d.refundedDate) : '—' }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-refund" *ngIf="!d.isRefunded" (click)="markRefunded(d)"
+                            [disabled]="isRefunding">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Refund
+                        </button>
+                        <span class="text-muted" *ngIf="d.isRefunded"><i class="fa-solid fa-check"></i></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══ MOBILE CARDS ═══ -->
+    <div class="mobile-cards" *ngIf="!isLoading && isMobile && filteredDeposits.length > 0">
+        <div class="mobile-card" *ngFor="let d of filteredDeposits" [class.refunded-card-mobile]="d.isRefunded">
+            <div class="card-top">
+                <span class="card-event">{{ d.eventName }}</span>
+                <span class="status-badge" [ngClass]="d.isRefunded ? 'badge-refunded' : 'badge-outstanding'">
+                    {{ d.isRefunded ? 'Refunded' : 'Outstanding' }}
+                </span>
+            </div>
+            <div class="card-main">
+                <span>{{ d.description }}</span>
+                <span class="card-amount">{{ formatCurrency(d.amount) }}</span>
+            </div>
+            <div class="card-bottom" *ngIf="!d.isRefunded">
+                <button class="btn btn-sm btn-refund" (click)="markRefunded(d)" [disabled]="isRefunding">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Refund
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

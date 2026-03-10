@@ -1,0 +1,218 @@
+/* AI-Developed — This file was significantly developed with AI assistance. */
+
+//
+// Receipt Detail — Premium Styles
+//
+
+.receipt-detail-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+
+// ──────────────────────────────────────
+// Header
+// ──────────────────────────────────────
+.detail-header {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(27, 94, 32, 0.35);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    backdrop-filter: blur(6px);
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+}
+
+.receipt-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    border-radius: 8px;
+    padding: 0.35rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-edit {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+}
+
+.btn-pdf {
+    background: #e53935;
+    color: #fff;
+    border: none;
+
+    &:hover:not(:disabled) {
+        background: #c62828;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+
+// ──────────────────────────────────────
+// Amount Hero
+// ──────────────────────────────────────
+.amount-hero {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.amount-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #90a4ae;
+    margin-bottom: 0.3rem;
+}
+
+.amount-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #66bb6a;
+    letter-spacing: 1px;
+}
+
+
+// ──────────────────────────────────────
+// Info Grid
+// ──────────────────────────────────────
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    &.full-width {
+        grid-column: 1 / -1;
+    }
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #90a4ae;
+    margin-bottom: 0.3rem;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    &.clickable {
+        color: #66bb6a;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.notes-value {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+
+// ──────────────────────────────────────
+// Loading
+// ──────────────────────────────────────
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: #78909c;
+}
+
+
+// ──────────────────────────────────────
+// Responsive
+// ──────────────────────────────────────
+@media (max-width: 767px) {
+    .receipt-detail-container {
+        padding: 1rem;
+    }
+
+    .detail-header {
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .receipt-number {
+        font-size: 1.1rem;
+    }
+
+    .amount-value {
+        font-size: 1.8rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}

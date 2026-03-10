@@ -1228,6 +1228,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					scheduledEvent.EventResourceAssignments = null;
 					scheduledEvent.FinancialTransactions = null;
 					scheduledEvent.InverseparentScheduledEvent = null;
+					scheduledEvent.Invoices = null;
 					scheduledEvent.PaymentTransactions = null;
 					scheduledEvent.RecurrenceExceptions = null;
 					scheduledEvent.ScheduledEventChangeHistories = null;
@@ -1367,6 +1368,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.InverseparentScheduledEvent = null;
+				cloneOfExisting.Invoices = null;
 				cloneOfExisting.PaymentTransactions = null;
 				cloneOfExisting.RecurrenceExceptions = null;
 				cloneOfExisting.ScheduledEventChangeHistories = null;

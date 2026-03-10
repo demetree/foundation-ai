@@ -25,6 +25,8 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { DocumentService, DocumentData, DocumentSubmitData } from '../../../scheduler-data-services/document.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { DocumentTypeService } from '../../../scheduler-data-services/document-type.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
@@ -40,6 +42,8 @@ import { AuthService } from '../../../services/auth.service';
 //
 interface DocumentFormValues {
   documentTypeId: number | bigint,       // For FK link number
+  invoiceId: number | bigint | null,       // For FK link number
+  receiptId: number | bigint | null,       // For FK link number
   name: string,
   description: string | null,
   fileName: string,
@@ -93,6 +97,8 @@ export class DocumentAddEditComponent {
 
   public documentForm: FormGroup = this.fb.group({
         documentTypeId: [null, Validators.required],
+        invoiceId: [null],
+        receiptId: [null],
         name: ['', Validators.required],
         description: [''],
         fileName: ['', Validators.required],
@@ -126,6 +132,8 @@ export class DocumentAddEditComponent {
 
   documents$ = this.documentService.GetDocumentList();
   documentTypes$ = this.documentTypeService.GetDocumentTypeList();
+  invoices$ = this.invoiceService.GetInvoiceList();
+  receipts$ = this.receiptService.GetReceiptList();
   scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   contacts$ = this.contactService.GetContactList();
@@ -135,6 +143,8 @@ export class DocumentAddEditComponent {
     private modalService: NgbModal,
     private documentService: DocumentService,
     private documentTypeService: DocumentTypeService,
+    private invoiceService: InvoiceService,
+    private receiptService: ReceiptService,
     private scheduledEventService: ScheduledEventService,
     private financialTransactionService: FinancialTransactionService,
     private contactService: ContactService,
@@ -259,6 +269,8 @@ export class DocumentAddEditComponent {
     const documentSubmitData: DocumentSubmitData = {
         id: this.documentSubmitData?.id || 0,
         documentTypeId: Number(formValue.documentTypeId),
+        invoiceId: formValue.invoiceId ? Number(formValue.invoiceId) : null,
+        receiptId: formValue.receiptId ? Number(formValue.receiptId) : null,
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
         fileName: formValue.fileName!.trim(),
@@ -408,6 +420,8 @@ export class DocumentAddEditComponent {
       //
       this.documentForm.reset({
         documentTypeId: null,
+        invoiceId: null,
+        receiptId: null,
         name: '',
         description: '',
         fileName: '',
@@ -440,6 +454,8 @@ export class DocumentAddEditComponent {
         //
         this.documentForm.reset({
         documentTypeId: documentData.documentTypeId,
+        invoiceId: documentData.invoiceId,
+        receiptId: documentData.receiptId,
         name: documentData.name ?? '',
         description: documentData.description ?? '',
         fileName: documentData.fileName ?? '',

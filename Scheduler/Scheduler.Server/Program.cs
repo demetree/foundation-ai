@@ -290,6 +290,10 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(HouseholdChangeHistoriesController));
                 controllers.Add(typeof(IconsController));
                 controllers.Add(typeof(InteractionTypesController));
+                controllers.Add(typeof(InvoicesController));
+                controllers.Add(typeof(InvoiceChangeHistoriesController));
+                controllers.Add(typeof(InvoiceLineItemsController));
+                controllers.Add(typeof(InvoiceStatusesController));
                 controllers.Add(typeof(NotificationSubscriptionsController));
                 controllers.Add(typeof(NotificationSubscriptionChangeHistoriesController));
                 controllers.Add(typeof(NotificationTypesController));
@@ -313,6 +317,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(RateSheetsController));
                 controllers.Add(typeof(RateSheetChangeHistoriesController));
                 controllers.Add(typeof(RateTypesController));
+                controllers.Add(typeof(ReceiptsController));
+                controllers.Add(typeof(ReceiptChangeHistoriesController));
                 controllers.Add(typeof(ReceiptTypesController));
                 controllers.Add(typeof(ReceiptTypeChangeHistoriesController));
                 controllers.Add(typeof(RecurrenceExceptionsController));
@@ -379,7 +385,6 @@ namespace Foundation.Scheduler
                 //
                 // End of code generated controller list for Scheduler module
                 //
-
 
 
 

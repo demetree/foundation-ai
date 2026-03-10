@@ -211,6 +211,34 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="invoiceService.userIsSchedulerInvoiceReader()">
+                            <button ngbNavLink>Invoices
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.InvoicesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-invoice-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-invoice-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="receiptService.userIsSchedulerReceiptReader()">
+                            <button ngbNavLink>Receipts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.ReceiptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-receipt-table [queryParams]="{ currencyId: currencyData?.id }" [showAddButton]="true" [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-receipt-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

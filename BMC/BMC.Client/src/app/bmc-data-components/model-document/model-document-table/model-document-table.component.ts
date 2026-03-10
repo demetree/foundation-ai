@@ -187,6 +187,9 @@ export class ModelDocumentTableComponent implements OnInit, OnChanges, AfterView
     { key: 'author', label: 'Author', width: undefined },
     { key: 'totalPartCount', label: 'Total Part Count', width: undefined },
     { key: 'totalStepCount', label: 'Total Step Count', width: undefined },
+    { key: 'studioVersion', label: 'Studio Version', width: undefined },
+    { key: 'instructionSettingsXml', label: 'Instruction Settings Xml', width: undefined },
+    { key: 'errorPartList', label: 'Error Part List', width: undefined },
 
     ];
 
@@ -346,6 +349,9 @@ export class ModelDocumentTableComponent implements OnInit, OnChanges, AfterView
                       'author',
                       'totalPartCount',
                       'totalStepCount',
+                      'studioVersion',
+                      'instructionSettingsXml',
+                      'errorPartList',
         ];
 
         result = result.filter((modelDocument) =>

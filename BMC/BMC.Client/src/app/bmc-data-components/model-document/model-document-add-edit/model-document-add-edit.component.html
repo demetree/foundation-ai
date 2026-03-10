@@ -77,6 +77,18 @@
                 <label for="ModelDocument-totalStepCount" id="label-ModelDocument-totalStepCount">Total Step Count</label>
                 <input type="number" id="ModelDocument-totalStepCount" formControlName="totalStepCount" placeholder="Enter Total Step Count" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-totalStepCount" />
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('studioVersion')">
+                <label for="ModelDocument-studioVersion" id="label-ModelDocument-studioVersion">Studio Version</label>
+                <input type="text" id="ModelDocument-studioVersion" formControlName="studioVersion" placeholder="Enter Studio Version" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()" aria-labelledby="label-studioVersion" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('instructionSettingsXml')">
+                <label for="ModelDocument-instructionSettingsXml" id="label-ModelDocument-instructionSettingsXml">Instruction Settings Xml</label>
+                <textarea id="ModelDocument-instructionSettingsXml" formControlName="instructionSettingsXml" placeholder="Enter Instruction Settings Xml" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('errorPartList')">
+                <label for="ModelDocument-errorPartList" id="label-ModelDocument-errorPartList">Error Part List</label>
+                <textarea id="ModelDocument-errorPartList" formControlName="errorPartList" placeholder="Enter Error Part List" class="form-control model-document-input" [disabled]="!userIsBMCModelDocumentWriter()"></textarea>
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="ModelDocument-versionNumber" id="label-ModelDocument-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="ModelDocument-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control model-document-input" />

@@ -1,0 +1,304 @@
+/* AI-Developed — This file was significantly developed with AI assistance. */
+
+//
+// Payment Listing — Premium Styles (Amber/Orange Theme)
+//
+
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+
+// ──────────────────────────────────────
+// Header
+// ──────────────────────────────────────
+.listing-header {
+    background: linear-gradient(135deg, #e65100 0%, #f57c00 50%, #ff9800 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(230, 81, 0, 0.35);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-subtitle {
+    opacity: 0.8;
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+}
+
+
+// ──────────────────────────────────────
+// Filters
+// ──────────────────────────────────────
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #78909c;
+        font-size: 0.85rem;
+    }
+
+    .form-control {
+        padding-left: 36px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+    }
+}
+
+.filter-pills {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.pill {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #90a4ae;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 152, 0, 0.1);
+        color: #ffb74d;
+        border-color: rgba(255, 152, 0, 0.3);
+    }
+
+    &.active {
+        background: rgba(255, 152, 0, 0.2);
+        color: #ffb74d;
+        border-color: rgba(255, 152, 0, 0.4);
+    }
+}
+
+
+// ──────────────────────────────────────
+// Table
+// ──────────────────────────────────────
+.listing-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #90a4ae;
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-weight: 600;
+
+        &.sortable {
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                color: #ffb74d;
+            }
+        }
+    }
+
+    td {
+        padding: 0.65rem 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 0.9rem;
+    }
+
+    .clickable-row {
+        cursor: pointer;
+        transition: background 0.15s;
+
+        &:hover {
+            background: rgba(255, 152, 0, 0.06);
+        }
+    }
+}
+
+
+// ──────────────────────────────────────
+// Status badges
+// ──────────────────────────────────────
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+}
+
+.badge-completed {
+    background: #2e7d32;
+    color: #fff;
+}
+
+.badge-pending {
+    background: #f57c00;
+    color: #fff;
+}
+
+.badge-failed {
+    background: #c62828;
+    color: #fff;
+}
+
+.badge-refunded {
+    background: #5c6bc0;
+    color: #fff;
+}
+
+
+// ──────────────────────────────────────
+// Mobile cards
+// ──────────────────────────────────────
+.mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mobile-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 152, 0, 0.06);
+        border-color: rgba(255, 152, 0, 0.2);
+    }
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.3rem;
+}
+
+.card-date {
+    font-size: 0.75rem;
+    color: #90a4ae;
+}
+
+.card-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-payer {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.card-amount {
+    font-weight: 700;
+    color: #ffb74d;
+    font-size: 1.05rem;
+}
+
+.card-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    color: #78909c;
+}
+
+
+// ──────────────────────────────────────
+// Misc
+// ──────────────────────────────────────
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #78909c;
+
+    i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    p {
+        font-size: 1rem;
+        margin: 0;
+    }
+}
+
+.results-count {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #78909c;
+    margin-top: 0.75rem;
+}
+
+@media (max-width: 767px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .listing-header {
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+    }
+}

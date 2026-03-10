@@ -1,0 +1,686 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Foundation.Entity;
+using Foundation.ChangeHistory;
+
+namespace Foundation.Scheduler.Database
+{
+	//
+	// The purpose of this partial class is to provide helper methods to convert an object into a simpler anonymous object better suited for JSON serialization to web client for the web api controllers to use.
+	//
+	public partial class Receipt : IVersionTrackedEntity<Receipt>, IAnonymousConvertible
+	{
+        /// <summary>
+        /// This is for setting the context for change history inquiries.
+        /// </summary>
+        private SchedulerContext _contextForVersionInquiry = null;
+        private Guid _tenantGuidForVersionInquiry = Guid.Empty;
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the a Change History toolset for the user that support write and read operations.
+        /// 
+        /// </summary>
+        /// <param name="context">A context object that contains the entities</param>
+        /// <param name="securityUser">The security user that the changes will be made on behalf of.</param>
+        /// <param name="insideTransaction">Whether or not there is a transaction in process by the using function</param>
+        /// <returns>A change history toolset instance to interact with the change history of the entity</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static ChangeHistoryToolset<Receipt, ReceiptChangeHistory> GetChangeHistoryToolsetForWriting(SchedulerContext context, Foundation.Security.Database.SecurityUser securityUser, bool insideTransaction = false, CancellationToken cancellationToken = default)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (securityUser == null)
+            {
+                throw new ArgumentNullException(nameof(securityUser));
+            }
+
+            //
+            // This table does not have data visibility enabled, therefore the user ID is to be taken directly from the security user object.
+            // 
+            return new ChangeHistoryToolset<Receipt, ReceiptChangeHistory>(context, securityUser.id, insideTransaction, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// Gets the a Change History toolset for read only purposes.
+        /// 
+        /// </summary>
+        /// <param name="context">A context object that contains the entities</param>
+        /// <returns>A change history toolset instance to interact with the change history of the entity</returns>       
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static ChangeHistoryToolset<Receipt, ReceiptChangeHistory> GetChangeHistoryToolsetForReading(SchedulerContext context, CancellationToken cancellationToken = default)
+        {
+            return new ChangeHistoryToolset<Receipt, ReceiptChangeHistory>(context, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// 
+        /// This needs to be called before running any version inquiry method from the IVersionTrackedEntity interface.
+        ///
+        /// It sets up the context and the tenant guid to use.  Provide the context used for the work, and the tenant guid of the user executing the logic.
+        ///
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="tenantGuid"></param>
+        public void SetupVersionInquiry(SchedulerContext context, Guid tenantGuid)
+        {
+            _contextForVersionInquiry = context;
+            _tenantGuidForVersionInquiry = tenantGuid;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about the entity's version history using the version of the entity as the basis for the query.
+        /// 
+        /// Use this to get the update user/time metadata for this version.  IncludingData here is optional and default to false, as it is probably redundant in most cases 
+        /// unless the entity you're working with might have unsaved changes.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Receipt>> GetThisVersionAsync(bool includeData = false, CancellationToken cancellationToken = default)
+        {
+            return await GetVersionAsync(this.versionNumber, includeData, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about the first version of the entity.  Equivalent to GetVersionAsync(1, includeData), but name is a bit more concise.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Receipt>> GetFirstVersionAsync(bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            return await GetVersionAsync(1, includeData, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about the version of the entity at the provided point in time.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Receipt>> GetVersionAtTimeAsync(DateTime pointInTime, bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
+            {
+                throw new Exception("Context for version inquiry is not set.  Please call SetupVersionInquiry() before calling this function.");
+            }
+
+
+            var chts = GetChangeHistoryToolsetForReading(_contextForVersionInquiry, cancellationToken);
+
+            // Get the version for the point in time provided
+            AuditEntry versionAudit = await chts.GetAuditForTime(this, pointInTime).ConfigureAwait(false);
+
+            if (versionAudit == null)
+            {
+                throw new Exception($"No change history found for point in time {pointInTime.ToString("s")} of this Receipt entity.");
+            }
+
+            VersionInformation<Receipt> version = new VersionInformation<Receipt>();
+
+            version.versionNumber = versionAudit.versionNumber;
+
+            version.timeStamp = versionAudit.timeStamp;
+
+            if (versionAudit.userId.HasValue == true)
+            {
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                // Continency to return a change history user configured to indicate that we don't know the user.
+                version.user = new ChangeHistoryUser() { firstName = "Unknown", id = 0, middleName = null, lastName = "User" };
+            }
+
+            if (includeData == true)
+            {
+                version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
+            }
+
+            return version;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about a specific version of the entity.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Receipt>> GetVersionAsync(int versionNumber, bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
+            {
+                throw new Exception("Context for version inquiry is not set.  Please call SetupVersionInquiry() before accessing the GetVersion function.");
+            }
+
+            var chts = GetChangeHistoryToolsetForReading(_contextForVersionInquiry, cancellationToken);
+
+            // Get the requested version
+            AuditEntry versionAudit = await chts.GetAuditForVersion(this, versionNumber).ConfigureAwait(false);
+
+            if (versionAudit == null)
+            {
+                throw new Exception($"No change history found for version {versionNumber} of this Receipt entity.");
+            }
+
+            VersionInformation<Receipt> version = new VersionInformation<Receipt>();
+
+            version.versionNumber = versionAudit.versionNumber;
+            version.timeStamp = versionAudit.timeStamp;
+
+            if (versionAudit.userId.HasValue == true)
+            {
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                // Continency to return a change history user configured to indicate that we don't know the user.
+                version.user = new ChangeHistoryUser() { firstName = "Unknown", id = 0, middleName = null, lastName = "User" };
+            }
+
+            if (includeData == true)
+            {
+                version.data = await chts.GetVersionAsync(this, versionNumber).ConfigureAwait(false);
+            }
+
+            return version;
+        }
+
+
+        /// <summary>
+        /// 
+        /// This gets all the available meta data version information for this entity, and optionally the entity states too
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<List<VersionInformation<Receipt>>> GetAllVersionsAsync(bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
+            {
+                throw new Exception("Context for version inquiry is not set.Please call SetupVersionInquiry() before accessing the GetAllVersions function.");
+            }
+
+            var chts = GetChangeHistoryToolsetForReading(_contextForVersionInquiry, cancellationToken);
+
+            List<AuditEntry> versionAudits = await chts.GetAuditTrailAsync(this).ConfigureAwait(false);
+
+            if (versionAudits == null)
+            {
+                throw new Exception($"No change history audits found for this entity.");
+            }
+
+            List <VersionInformation<Receipt>> versions = new List<VersionInformation<Receipt>>();
+
+            foreach (AuditEntry versionAudit in versionAudits)
+            {
+                VersionInformation<Receipt> version = new VersionInformation<Receipt>();
+
+                version.versionNumber = versionAudit.versionNumber;
+                version.timeStamp = versionAudit.timeStamp;
+
+                if (versionAudit.userId.HasValue == true)
+                {
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Continency to return a change history user configured to indicate that we don't know the user.
+                    version.user = new ChangeHistoryUser() { firstName = "Unknown", id = 0, middleName = null, lastName = "User" };
+                }
+
+                if (includeData == true)
+                {
+                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
+                }
+
+                versions.Add(version);
+            }
+
+            return versions;
+        }
+
+
+		/// <summary>
+		///
+		/// INPUT Data Transfer Object intended to be used for posting data into the system from the outside.  It only contains user editable value type properties.
+		///
+		/// Required fields are given the Required decorator
+		///
+		/// </summary>
+		public class ReceiptDTO
+		{
+			public Int32 id { get; set; }
+			[Required]
+			public String receiptNumber { get; set; }
+			[Required]
+			public Int32 receiptTypeId { get; set; }
+			public Int32? invoiceId { get; set; }
+			public Int32? paymentTransactionId { get; set; }
+			public Int32? financialTransactionId { get; set; }
+			public Int32? clientId { get; set; }
+			public Int32? contactId { get; set; }
+			[Required]
+			public Int32 currencyId { get; set; }
+			[Required]
+			public DateTime receiptDate { get; set; }
+			[Required]
+			public Decimal amount { get; set; }
+			public String paymentMethod { get; set; }
+			public String description { get; set; }
+			public String notes { get; set; }
+			public Int32 versionNumber { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
+		}
+
+
+		/// <summary>
+		///
+		/// OUTPUT Data Transfer Object intended to be used sending data out of the system.  Contains all value type properties and first level nav property objects, but no child object lists.
+		///
+		/// </summary>
+		public class ReceiptOutputDTO : ReceiptDTO
+		{
+			public Client.ClientDTO client { get; set; }
+			public Contact.ContactDTO contact { get; set; }
+			public Currency.CurrencyDTO currency { get; set; }
+			public FinancialTransaction.FinancialTransactionDTO financialTransaction { get; set; }
+			public Invoice.InvoiceDTO invoice { get; set; }
+			public PaymentTransaction.PaymentTransactionDTO paymentTransaction { get; set; }
+			public ReceiptType.ReceiptTypeDTO receiptType { get; set; }
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Receipt to an INPUT (or No Nav property OUTPUT) Data Transfer Object intended to be used for posting data into the system from the outside, or or outputting data without nav properties.
+		///
+		/// Note that sub objects use the base DTO, not the output DTO, so they will not have any nav properties on them, and this is by design.
+		///
+		/// </summary>
+		public ReceiptDTO ToDTO()
+		{
+			return new ReceiptDTO
+			{
+				id = this.id,
+				receiptNumber = this.receiptNumber,
+				receiptTypeId = this.receiptTypeId,
+				invoiceId = this.invoiceId,
+				paymentTransactionId = this.paymentTransactionId,
+				financialTransactionId = this.financialTransactionId,
+				clientId = this.clientId,
+				contactId = this.contactId,
+				currencyId = this.currencyId,
+				receiptDate = this.receiptDate,
+				amount = this.amount,
+				paymentMethod = this.paymentMethod,
+				description = this.description,
+				notes = this.notes,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
+			};
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Receipt list to list of INPUT Data Transfer Object intended to be used for posting data into the system, or outputting data without nav properties.
+		///
+		/// </summary>
+		public static List<ReceiptDTO> ToDTOList(List<Receipt> data)
+		{
+			if (data == null)
+			{
+				return null;
+			}
+
+			List<ReceiptDTO> output = new List<ReceiptDTO>();
+
+			output.Capacity = data.Count;
+
+			foreach (Receipt receipt in data)
+			{
+				output.Add(receipt.ToDTO());
+			}
+
+			return output;
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Receipt to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ReceiptEntity type directly.
+		///
+		/// </summary>
+		public ReceiptOutputDTO ToOutputDTO()
+		{
+			return new ReceiptOutputDTO
+			{
+				id = this.id,
+				receiptNumber = this.receiptNumber,
+				receiptTypeId = this.receiptTypeId,
+				invoiceId = this.invoiceId,
+				paymentTransactionId = this.paymentTransactionId,
+				financialTransactionId = this.financialTransactionId,
+				clientId = this.clientId,
+				contactId = this.contactId,
+				currencyId = this.currencyId,
+				receiptDate = this.receiptDate,
+				amount = this.amount,
+				paymentMethod = this.paymentMethod,
+				description = this.description,
+				notes = this.notes,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
+				client = this.client?.ToDTO(),
+				contact = this.contact?.ToDTO(),
+				currency = this.currency?.ToDTO(),
+				financialTransaction = this.financialTransaction?.ToDTO(),
+				invoice = this.invoice?.ToDTO(),
+				paymentTransaction = this.paymentTransaction?.ToDTO(),
+				receiptType = this.receiptType?.ToDTO()
+			};
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Receipt list to list of Output Data Transfer Object intended to be used for serializing a list of Receipt objects to avoid using the Receipt entity type directly.
+		///
+		/// </summary>
+		public static List<ReceiptOutputDTO> ToOutputDTOList(List<Receipt> data)
+		{
+			if (data == null)
+			{
+				return null;
+			}
+
+			List<ReceiptOutputDTO> output = new List<ReceiptOutputDTO>();
+
+			output.Capacity = data.Count;
+
+			foreach (Receipt receipt in data)
+			{
+				output.Add(receipt.ToOutputDTO());
+			}
+
+			return output;
+		}
+
+
+		/// <summary>
+		///
+		/// Converts an INPUT DTO to a Receipt Object.
+		///
+		/// </summary>
+		public static Database.Receipt FromDTO(ReceiptDTO dto)
+		{
+			return new Database.Receipt
+			{
+				id = dto.id,
+				receiptNumber = dto.receiptNumber,
+				receiptTypeId = dto.receiptTypeId,
+				invoiceId = dto.invoiceId,
+				paymentTransactionId = dto.paymentTransactionId,
+				financialTransactionId = dto.financialTransactionId,
+				clientId = dto.clientId,
+				contactId = dto.contactId,
+				currencyId = dto.currencyId,
+				receiptDate = dto.receiptDate,
+				amount = dto.amount,
+				paymentMethod = dto.paymentMethod,
+				description = dto.description,
+				notes = dto.notes,
+				versionNumber = dto.versionNumber,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
+			};
+		}
+
+
+		/// <summary>
+		///
+		/// Applies the values from an INPUT DTO to a Receipt Object.
+		///
+		/// </summary>
+		public void ApplyDTO(ReceiptDTO dto)
+		{
+			if (dto == null || this.id != dto.id)
+			{
+			    throw new Exception("DTO is null or has an id mismatch.");
+			}
+
+			this.receiptNumber = dto.receiptNumber;
+			this.receiptTypeId = dto.receiptTypeId;
+			this.invoiceId = dto.invoiceId;
+			this.paymentTransactionId = dto.paymentTransactionId;
+			this.financialTransactionId = dto.financialTransactionId;
+			this.clientId = dto.clientId;
+			this.contactId = dto.contactId;
+			this.currencyId = dto.currencyId;
+			this.receiptDate = dto.receiptDate;
+			this.amount = dto.amount;
+			this.paymentMethod = dto.paymentMethod;
+			this.description = dto.description;
+			this.notes = dto.notes;
+			this.versionNumber = dto.versionNumber;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
+			{
+				this.active = dto.active.Value;
+			}
+			if (dto.deleted.HasValue == true)
+			{
+				this.deleted = dto.deleted.Value;
+			}
+		}
+
+
+		/// <summary>
+		///
+		/// Creates a deep copy clone of a Receipt Object.
+		///
+		/// </summary>
+		public Receipt Clone()
+		{
+			//
+			// Return a cloned object without any object or list properties.
+			//
+			return new Receipt{
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				receiptNumber = this.receiptNumber,
+				receiptTypeId = this.receiptTypeId,
+				invoiceId = this.invoiceId,
+				paymentTransactionId = this.paymentTransactionId,
+				financialTransactionId = this.financialTransactionId,
+				clientId = this.clientId,
+				contactId = this.contactId,
+				currencyId = this.currencyId,
+				receiptDate = this.receiptDate,
+				amount = this.amount,
+				paymentMethod = this.paymentMethod,
+				description = this.description,
+				notes = this.notes,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
+			 };
+		}
+
+
+        /// <summary>
+        ///
+        /// Creates an anonymous object containing properties from a Receipt Object.
+        ///
+        /// </summary>
+        public object ToAnonymous()
+        {
+            return CreateAnonymous(this);
+        }
+
+        /// <summary>
+        ///
+        /// Creates an anonymous object containing properties from a Receipt Object, with minimal versions of first level sub objects
+        ///
+        /// </summary>
+        public object ToAnonymousWithFirstLevelSubObjects()
+        {
+            return CreateAnonymousWithFirstLevelSubObjects(this);
+        }
+
+        /// <summary>
+        ///
+        /// Creates an minimal anonymous object containing name and description properties from a Receipt Object, as best it can.
+        ///
+        /// </summary>
+        public object ToMinimalAnonymous()
+        {
+            return CreateMinimalAnonymous(this);
+        }
+
+
+
+		/// <summary>
+		///
+		/// Creates an anonymous object version of a Receipt Object.
+		///
+		/// </summary>
+		public static object CreateAnonymous(Database.Receipt receipt)
+		{
+			//
+			// Return a simplified object without any object or list properties.
+			//
+			if (receipt == null)
+			{
+				return null;
+			}
+
+			return new {
+				id = receipt.id,
+				receiptNumber = receipt.receiptNumber,
+				receiptTypeId = receipt.receiptTypeId,
+				invoiceId = receipt.invoiceId,
+				paymentTransactionId = receipt.paymentTransactionId,
+				financialTransactionId = receipt.financialTransactionId,
+				clientId = receipt.clientId,
+				contactId = receipt.contactId,
+				currencyId = receipt.currencyId,
+				receiptDate = receipt.receiptDate,
+				amount = receipt.amount,
+				paymentMethod = receipt.paymentMethod,
+				description = receipt.description,
+				notes = receipt.notes,
+				versionNumber = receipt.versionNumber,
+				objectGuid = receipt.objectGuid,
+				active = receipt.active,
+				deleted = receipt.deleted,
+			 };
+		}
+
+		/// <summary>
+		///
+		/// Creates an anonymous object version of a Receipt Object with first level sub ojbects.
+		///
+		/// </summary>
+		public static object CreateAnonymousWithFirstLevelSubObjects(Receipt receipt)
+		{
+			//
+			// Return a simplified object with simple first level sub objects.
+			//
+			if (receipt == null)
+			{
+				return null;
+			}
+
+			return new {
+				id = receipt.id,
+				receiptNumber = receipt.receiptNumber,
+				receiptTypeId = receipt.receiptTypeId,
+				invoiceId = receipt.invoiceId,
+				paymentTransactionId = receipt.paymentTransactionId,
+				financialTransactionId = receipt.financialTransactionId,
+				clientId = receipt.clientId,
+				contactId = receipt.contactId,
+				currencyId = receipt.currencyId,
+				receiptDate = receipt.receiptDate,
+				amount = receipt.amount,
+				paymentMethod = receipt.paymentMethod,
+				description = receipt.description,
+				notes = receipt.notes,
+				versionNumber = receipt.versionNumber,
+				objectGuid = receipt.objectGuid,
+				active = receipt.active,
+				deleted = receipt.deleted,
+				client = Client.CreateMinimalAnonymous(receipt.client),
+				contact = Contact.CreateMinimalAnonymous(receipt.contact),
+				currency = Currency.CreateMinimalAnonymous(receipt.currency),
+				financialTransaction = FinancialTransaction.CreateMinimalAnonymous(receipt.financialTransaction),
+				invoice = Invoice.CreateMinimalAnonymous(receipt.invoice),
+				paymentTransaction = PaymentTransaction.CreateMinimalAnonymous(receipt.paymentTransaction),
+				receiptType = ReceiptType.CreateMinimalAnonymous(receipt.receiptType)
+			 };
+		}
+
+		/// <summary>
+		///
+		/// Creates an minimal anonymous object version of a Receipt Object.  This has just id, name, and description properties.
+		///
+		/// </summary>
+		public static object CreateMinimalAnonymous(Receipt receipt)
+		{
+			//
+			// Return a very minimal object.
+			//
+			if (receipt == null)
+			{
+				return null;
+			}
+
+			return new {
+				id = receipt.id,
+				description = receipt.description,
+				name = string.Join(", ", new[] { receipt.receiptNumber}.Where(s => !string.IsNullOrWhiteSpace(s)))
+			 };
+		}
+	}
+}

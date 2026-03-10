@@ -172,9 +172,10 @@ namespace Foundation.BMC
                 builder.Services.AddScoped<BrickOwlSyncService>();
 
                 //
-                // MOC Import service — converts .ldr, .mpd, .io files to native Project entities
+                // MOC Import/Export services — converts between .ldr, .mpd, .io files and native Project entities
                 //
                 builder.Services.AddScoped<ModelImportService>();
+                builder.Services.AddScoped<ModelExportService>();
 
                 //
                 // Market data caching — reduces external API calls for Brickberg Terminal

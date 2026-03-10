@@ -1,0 +1,394 @@
+/* ================================================================
+   Upload Model Modal — Drag & Drop File Import
+   ================================================================ */
+
+.upload-modal {
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--bmc-border);
+        background: var(--bmc-panel-bg);
+    }
+
+    .modal-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--bmc-text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        i {
+            color: var(--bmc-primary);
+        }
+    }
+
+    .btn-close {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm, 4px);
+        border: none;
+        background: transparent;
+        color: var(--bmc-text-muted);
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: var(--bmc-text-primary);
+            background: var(--bmc-bg-hover);
+        }
+    }
+
+    .modal-body {
+        padding: 24px;
+        background: var(--bmc-bg);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 24px;
+        border-top: 1px solid var(--bmc-border);
+        background: var(--bmc-panel-bg);
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Drop Zone
+   ---------------------------------------------------------------- */
+.drop-zone {
+    border: 2px dashed var(--bmc-border);
+    border-radius: var(--radius-lg, 12px);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: var(--bmc-glass-bg);
+
+    &:hover,
+    &.drag-over {
+        border-color: var(--bmc-primary);
+        background: rgba(255, 179, 0, 0.04);
+        box-shadow: 0 0 0 4px var(--bmc-accent-glow-soft);
+    }
+
+    &.drag-over {
+        transform: scale(1.01);
+    }
+
+    &.has-file {
+        border-style: solid;
+        border-color: var(--bmc-primary);
+    }
+}
+
+.drop-content {
+    .drop-icon {
+        font-size: 3rem;
+        color: var(--bmc-text-muted);
+        opacity: 0.5;
+        margin-bottom: 12px;
+    }
+
+    h5 {
+        color: var(--bmc-text-primary);
+        font-weight: 600;
+        margin: 0 0 4px;
+        font-size: 0.95rem;
+    }
+
+    p {
+        color: var(--bmc-text-muted);
+        font-size: 0.82rem;
+        margin: 0;
+    }
+}
+
+.file-selected {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+
+    .file-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md, 8px);
+        background: rgba(255, 179, 0, 0.1);
+        color: var(--bmc-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .file-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: var(--bmc-text-primary);
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-size {
+        font-size: 0.75rem;
+        color: var(--bmc-text-muted);
+        font-family: 'Fira Code', 'Consolas', monospace;
+    }
+
+    .file-format {
+        font-size: 0.72rem;
+        color: var(--bmc-primary);
+        font-weight: 500;
+    }
+
+    .btn-change {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: var(--bmc-text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        &:hover {
+            background: rgba(239, 83, 80, 0.1);
+            color: #ef5350;
+        }
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Formats List
+   ---------------------------------------------------------------- */
+.formats-list {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.format-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm, 4px);
+    background: var(--bmc-glass-bg);
+    border: 1px solid var(--bmc-glass-border);
+    font-size: 0.75rem;
+    color: var(--bmc-text-secondary);
+    font-family: 'Fira Code', 'Consolas', monospace;
+
+    i {
+        font-size: 0.7rem;
+        color: var(--bmc-primary);
+    }
+}
+
+.format-limit {
+    font-size: 0.72rem;
+    color: var(--bmc-text-muted);
+}
+
+
+/* ----------------------------------------------------------------
+   Upload Progress
+   ---------------------------------------------------------------- */
+.upload-progress {
+    text-align: center;
+    padding: 30px 20px;
+
+    .progress-icon {
+        font-size: 2.5rem;
+        color: var(--bmc-primary);
+        margin-bottom: 16px;
+    }
+
+    h5 {
+        color: var(--bmc-text-primary);
+        font-weight: 600;
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+    }
+}
+
+.progress-bar-wrap {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bmc-glass-bg);
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bmc-primary), #ff8f00);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--bmc-primary);
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+
+/* ----------------------------------------------------------------
+   Result Card
+   ---------------------------------------------------------------- */
+.result-card {
+    text-align: center;
+    padding: 30px 20px;
+
+    .result-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+
+        &:not(.error) {
+            color: #66bb6a;
+        }
+
+        &.error {
+            color: #ef5350;
+        }
+    }
+
+    h5 {
+        color: var(--bmc-text-primary);
+        font-weight: 600;
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+    }
+
+    .result-project-name {
+        color: var(--bmc-primary);
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin: 0 0 20px;
+    }
+
+    .error-msg {
+        color: var(--bmc-text-secondary);
+        font-size: 0.88rem;
+        margin: 8px 0 0;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.result-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .stat-num {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bmc-text-primary);
+        line-height: 1.2;
+    }
+
+    .stat-desc {
+        font-size: 0.7rem;
+        color: var(--bmc-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+}
+
+.unresolved-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md, 6px);
+    background: rgba(255, 183, 77, 0.1);
+    border: 1px solid rgba(255, 183, 77, 0.3);
+    color: #ffb74d;
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+
+/* ----------------------------------------------------------------
+   Buttons (within modal)
+   ---------------------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-lg, 8px);
+    border: 1px solid transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--bmc-primary);
+    color: #000;
+    border-color: var(--bmc-primary);
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 4px 12px var(--bmc-accent-glow);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    border-color: var(--bmc-border);
+
+    &:hover:not(:disabled) {
+        border-color: var(--bmc-text-secondary);
+        color: var(--bmc-text-primary);
+    }
+}

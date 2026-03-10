@@ -41,6 +41,9 @@ export class ModelDocumentQueryParameters {
     author: string | null | undefined = null;
     totalPartCount: bigint | number | null | undefined = null;
     totalStepCount: bigint | number | null | undefined = null;
+    studioVersion: string | null | undefined = null;
+    instructionSettingsXml: string | null | undefined = null;
+    errorPartList: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -69,6 +72,9 @@ export class ModelDocumentSubmitData {
     author: string | null = null;
     totalPartCount: bigint | number | null = null;
     totalStepCount: bigint | number | null = null;
+    studioVersion: string | null = null;
+    instructionSettingsXml: string | null = null;
+    errorPartList: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -151,6 +157,9 @@ export class ModelDocumentData {
     author!: string | null;
     totalPartCount!: bigint | number;
     totalStepCount!: bigint | number;
+    studioVersion!: string | null;
+    instructionSettingsXml!: string | null;
+    errorPartList!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -572,6 +581,9 @@ export class ModelDocumentService extends SecureEndpointBase {
         output.author = data.author;
         output.totalPartCount = data.totalPartCount;
         output.totalStepCount = data.totalStepCount;
+        output.studioVersion = data.studioVersion;
+        output.instructionSettingsXml = data.instructionSettingsXml;
+        output.errorPartList = data.errorPartList;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

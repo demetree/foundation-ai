@@ -1000,6 +1000,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					eventCharge.EventChargeChangeHistories = null;
+					eventCharge.InvoiceLineItems = null;
 					eventCharge.PaymentTransactions = null;
 					eventCharge.chargeStatus = null;
 					eventCharge.chargeType = null;
@@ -1123,6 +1124,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.EventChargeChangeHistories = null;
+				cloneOfExisting.InvoiceLineItems = null;
 				cloneOfExisting.PaymentTransactions = null;
 				cloneOfExisting.chargeStatus = null;
 				cloneOfExisting.chargeType = null;

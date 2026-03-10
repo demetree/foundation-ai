@@ -13,6 +13,10 @@ public partial class Document
 
     public int documentTypeId { get; set; }
 
+    public int? invoiceId { get; set; }
+
+    public int? receiptId { get; set; }
+
     public string name { get; set; }
 
     public string description { get; set; }
@@ -66,6 +70,10 @@ public partial class Document
     public virtual DocumentType documentType { get; set; }
 
     public virtual FinancialTransaction financialTransaction { get; set; }
+
+    public virtual Invoice invoice { get; set; }
+
+    public virtual Receipt receipt { get; set; }
 
     public virtual Resource resource { get; set; }
 

@@ -198,6 +198,8 @@ export class TenantProfileTableComponent implements OnInit, OnChanges, AfterView
     { key: 'secondaryColor', label: 'Secondary Color', width: "50px", template: 'color' },
     { key: 'displaysMetric', label: 'Displays Metric', width: '120px', template: 'boolean' },
     { key: 'displaysUSTerms', label: 'Displays U S Terms', width: '120px', template: 'boolean' },
+    { key: 'invoiceNumberMask', label: 'Invoice Number Mask', width: undefined },
+    { key: 'receiptNumberMask', label: 'Receipt Number Mask', width: undefined },
 
     ];
 
@@ -368,6 +370,8 @@ export class TenantProfileTableComponent implements OnInit, OnChanges, AfterView
                       'secondaryColor',
                       'displaysMetric',
                       'displaysUSTerms',
+                      'invoiceNumberMask',
+                      'receiptNumberMask',
         ];
 
         result = result.filter((tenantProfile) =>

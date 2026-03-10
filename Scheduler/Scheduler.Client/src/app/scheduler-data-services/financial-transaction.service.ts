@@ -26,8 +26,9 @@ import { FiscalPeriodData } from './fiscal-period.service';
 import { PaymentTypeData } from './payment-type.service';
 import { CurrencyData } from './currency.service';
 import { FinancialTransactionChangeHistoryService, FinancialTransactionChangeHistoryData } from './financial-transaction-change-history.service';
-import { DocumentService, DocumentData } from './document.service';
 import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
+import { ReceiptService, ReceiptData } from './receipt.service';
+import { DocumentService, DocumentData } from './document.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -213,14 +214,19 @@ export class FinancialTransactionData {
     private _financialTransactionChangeHistoriesSubject = new BehaviorSubject<FinancialTransactionChangeHistoryData[] | null>(null);
 
                 
-    private _documents: DocumentData[] | null = null;
-    private _documentsPromise: Promise<DocumentData[]> | null  = null;
-    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
-
-                
     private _paymentTransactions: PaymentTransactionData[] | null = null;
     private _paymentTransactionsPromise: Promise<PaymentTransactionData[]> | null  = null;
     private _paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
+                
+    private _receipts: ReceiptData[] | null = null;
+    private _receiptsPromise: Promise<ReceiptData[]> | null  = null;
+    private _receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
+                
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
                 
 
@@ -264,31 +270,6 @@ export class FinancialTransactionData {
 
 
 
-    public Documents$ = this._documentsSubject.asObservable().pipe(
-
-        // Trigger load on first subscription if not already loaded
-        tap(() => {
-          if (this._documents === null && this._documentsPromise === null) {
-            this.loadDocuments(); // Private method to start fetch
-          }
-        }),
-        shareReplay(1) // Cache last emit
-    );
-
-
-    private _documentsCount$: Observable<bigint | number> | null = null;
-    public get DocumentsCount$(): Observable<bigint | number> {
-        if (this._documentsCount$ === null) {
-            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({financialTransactionId: this.id,
-              active: true,
-              deleted: false
-            });
-        }
-        return this._documentsCount$;
-    }
-
-
-
     public PaymentTransactions$ = this._paymentTransactionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -310,6 +291,56 @@ export class FinancialTransactionData {
             });
         }
         return this._paymentTransactionsCount$;
+    }
+
+
+
+    public Receipts$ = this._receiptsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._receipts === null && this._receiptsPromise === null) {
+            this.loadReceipts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _receiptsCount$: Observable<bigint | number> | null = null;
+    public get ReceiptsCount$(): Observable<bigint | number> {
+        if (this._receiptsCount$ === null) {
+            this._receiptsCount$ = ReceiptService.Instance.GetReceiptsRowCount({financialTransactionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._receiptsCount$;
+    }
+
+
+
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({financialTransactionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
     }
 
 
@@ -357,15 +388,20 @@ export class FinancialTransactionData {
      this._financialTransactionChangeHistoriesSubject.next(null);
      this._financialTransactionChangeHistoriesCount$ = null;
 
-     this._documents = null;
-     this._documentsPromise = null;
-     this._documentsSubject.next(null);
-     this._documentsCount$ = null;
-
      this._paymentTransactions = null;
      this._paymentTransactionsPromise = null;
      this._paymentTransactionsSubject.next(null);
      this._paymentTransactionsCount$ = null;
+
+     this._receipts = null;
+     this._receiptsPromise = null;
+     this._receiptsSubject.next(null);
+     this._receiptsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -443,71 +479,6 @@ export class FinancialTransactionData {
 
     /**
      *
-     * Gets the Documents for this FinancialTransaction.
-     *
-     * If already loaded, returns cached array.
-     *
-     * If not, fetches from server and caches the result.
-     * 
-     * Usage in components:
-     *   this.financialTransaction.Documents.then(financialTransactions => { ... })
-     *   or
-     *   await this.financialTransaction.financialTransactions
-     *
-    */
-    public get Documents(): Promise<DocumentData[]> {
-        if (this._documents !== null) {
-            return Promise.resolve(this._documents);
-        }
-
-        if (this._documentsPromise !== null) {
-            return this._documentsPromise;
-        }
-
-        // Start the load
-        this.loadDocuments();
-
-        return this._documentsPromise!;
-    }
-
-
-
-    private loadDocuments(): void {
-
-        this._documentsPromise = lastValueFrom(
-            FinancialTransactionService.Instance.GetDocumentsForFinancialTransaction(this.id)
-        )
-        .then(Documents => {
-            this._documents = Documents ?? [];
-            this._documentsSubject.next(this._documents);
-            return this._documents;
-         })
-        .catch(err => {
-            this._documents = [];
-            this._documentsSubject.next(this._documents);
-            throw err;
-        })
-        .finally(() => {
-            this._documentsPromise = null; // Allow retry if needed
-        });
-    }
-
-    /**
-     * Clears the cached Document. Call after mutations to force refresh.
-     */
-    public ClearDocumentsCache(): void {
-        this._documents = null;
-        this._documentsPromise = null;
-        this._documentsSubject.next(this._documents);      // Emit to observable
-    }
-
-    public get HasDocuments(): Promise<boolean> {
-        return this.Documents.then(documents => documents.length > 0);
-    }
-
-
-    /**
-     *
      * Gets the PaymentTransactions for this FinancialTransaction.
      *
      * If already loaded, returns cached array.
@@ -568,6 +539,136 @@ export class FinancialTransactionData {
 
     public get HasPaymentTransactions(): Promise<boolean> {
         return this.PaymentTransactions.then(paymentTransactions => paymentTransactions.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Receipts for this FinancialTransaction.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialTransaction.Receipts.then(financialTransactions => { ... })
+     *   or
+     *   await this.financialTransaction.financialTransactions
+     *
+    */
+    public get Receipts(): Promise<ReceiptData[]> {
+        if (this._receipts !== null) {
+            return Promise.resolve(this._receipts);
+        }
+
+        if (this._receiptsPromise !== null) {
+            return this._receiptsPromise;
+        }
+
+        // Start the load
+        this.loadReceipts();
+
+        return this._receiptsPromise!;
+    }
+
+
+
+    private loadReceipts(): void {
+
+        this._receiptsPromise = lastValueFrom(
+            FinancialTransactionService.Instance.GetReceiptsForFinancialTransaction(this.id)
+        )
+        .then(Receipts => {
+            this._receipts = Receipts ?? [];
+            this._receiptsSubject.next(this._receipts);
+            return this._receipts;
+         })
+        .catch(err => {
+            this._receipts = [];
+            this._receiptsSubject.next(this._receipts);
+            throw err;
+        })
+        .finally(() => {
+            this._receiptsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Receipt. Call after mutations to force refresh.
+     */
+    public ClearReceiptsCache(): void {
+        this._receipts = null;
+        this._receiptsPromise = null;
+        this._receiptsSubject.next(this._receipts);      // Emit to observable
+    }
+
+    public get HasReceipts(): Promise<boolean> {
+        return this.Receipts.then(receipts => receipts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Documents for this FinancialTransaction.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialTransaction.Documents.then(financialTransactions => { ... })
+     *   or
+     *   await this.financialTransaction.financialTransactions
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            FinancialTransactionService.Instance.GetDocumentsForFinancialTransaction(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
     }
 
 
@@ -650,8 +751,9 @@ export class FinancialTransactionService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private financialTransactionChangeHistoryService: FinancialTransactionChangeHistoryService,
-        private documentService: DocumentService,
         private paymentTransactionService: PaymentTransactionService,
+        private receiptService: ReceiptService,
+        private documentService: DocumentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1142,8 +1244,8 @@ export class FinancialTransactionService extends SecureEndpointBase {
     }
 
 
-    public GetDocumentsForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
-        return this.documentService.GetDocumentList({
+    public GetPaymentTransactionsForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
+        return this.paymentTransactionService.GetPaymentTransactionList({
             financialTransactionId: financialTransactionId,
             active: active,
             deleted: deleted,
@@ -1152,8 +1254,18 @@ export class FinancialTransactionService extends SecureEndpointBase {
     }
 
 
-    public GetPaymentTransactionsForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
-        return this.paymentTransactionService.GetPaymentTransactionList({
+    public GetReceiptsForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ReceiptData[]> {
+        return this.receiptService.GetReceiptList({
+            financialTransactionId: financialTransactionId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetDocumentsForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
             financialTransactionId: financialTransactionId,
             active: active,
             deleted: deleted,
@@ -1201,13 +1313,17 @@ export class FinancialTransactionService extends SecureEndpointBase {
     (revived as any)._financialTransactionChangeHistoriesPromise = null;
     (revived as any)._financialTransactionChangeHistoriesSubject = new BehaviorSubject<FinancialTransactionChangeHistoryData[] | null>(null);
 
-    (revived as any)._documents = null;
-    (revived as any)._documentsPromise = null;
-    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
-
     (revived as any)._paymentTransactions = null;
     (revived as any)._paymentTransactionsPromise = null;
     (revived as any)._paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
+    (revived as any)._receipts = null;
+    (revived as any)._receiptsPromise = null;
+    (revived as any)._receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
 
     //
@@ -1233,18 +1349,6 @@ export class FinancialTransactionService extends SecureEndpointBase {
     (revived as any)._financialTransactionChangeHistoriesCount$ = null;
 
 
-    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
-                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any)._documentsCount$ = null;
-
-
     (revived as any).PaymentTransactions$ = (revived as any)._paymentTransactionsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._paymentTransactions === null && (revived as any)._paymentTransactionsPromise === null) {
@@ -1255,6 +1359,30 @@ export class FinancialTransactionService extends SecureEndpointBase {
       );
 
     (revived as any)._paymentTransactionsCount$ = null;
+
+
+    (revived as any).Receipts$ = (revived as any)._receiptsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._receipts === null && (revived as any)._receiptsPromise === null) {
+                (revived as any).loadReceipts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._receiptsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
 

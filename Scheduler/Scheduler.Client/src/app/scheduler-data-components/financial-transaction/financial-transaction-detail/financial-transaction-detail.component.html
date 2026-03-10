@@ -202,20 +202,6 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
-                            <button ngbNavLink>Documents
-                                <span class="badge bg-primary ms-2">
-                                    {{ (financialTransactionData?.DocumentsCount$ | async) ?? '-' }}
-                                </span>
-                            </button>
-                            <ng-template ngbNavContent>
-                            <div class="d-flex flex-column gap-3 p-0">
-                                <div class="flex-grow-1">
-                                    <app-document-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-document-table>
-                                </div>
-                            </div>
-                            </ng-template>
-                        </li>
                       <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
                             <button ngbNavLink>Payment Transactions
                                 <span class="badge bg-primary ms-2">
@@ -226,6 +212,34 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-payment-transaction-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-payment-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="receiptService.userIsSchedulerReceiptReader()">
+                            <button ngbNavLink>Receipts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialTransactionData?.ReceiptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-receipt-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-receipt-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialTransactionData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>

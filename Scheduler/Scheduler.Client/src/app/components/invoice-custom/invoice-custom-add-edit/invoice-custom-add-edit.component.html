@@ -1,0 +1,191 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<!-- ng-bootstrap modal -->
+<ng-template #invoiceModal let-modal>
+    <div class="modal-header inv-modal-header">
+        <h5 class="modal-title mb-0">
+            <i class="fa-solid me-2" [ngClass]="isEditMode ? 'fa-pen-to-square' : 'fa-plus-circle'"></i>
+            {{ isEditMode ? 'Edit Invoice' : 'New Invoice' }}
+        </h5>
+        <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+            <i class="fa fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="modal-body inv-modal-body">
+        <form [formGroup]="form" (ngSubmit)="submitForm()">
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 1: Invoice Info                     -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-file-invoice me-1"></i> Invoice Info
+                </div>
+
+                <div class="row g-3">
+                    <!-- Invoice Number -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="inv-number">
+                            <span class="text-danger">*</span> Invoice #
+                        </label>
+                        <input type="text" id="inv-number" formControlName="invoiceNumber" class="form-control" />
+                        <div *ngIf="form.get('invoiceNumber')?.invalid && form.get('invoiceNumber')?.touched"
+                            class="text-danger small mt-1">Invoice number is required</div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="inv-status">
+                            <span class="text-danger">*</span> Status
+                        </label>
+                        <select id="inv-status" formControlName="invoiceStatusId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let s of statuses$ | async" [ngValue]="s.id">{{ s.name }}</option>
+                        </select>
+                        <div *ngIf="form.get('invoiceStatusId')?.invalid && form.get('invoiceStatusId')?.touched"
+                            class="text-danger small mt-1">Status is required</div>
+                    </div>
+
+                    <!-- Client -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="inv-client">
+                            <span class="text-danger">*</span> Client
+                        </label>
+                        <select id="inv-client" formControlName="clientId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let c of clients$ | async" [ngValue]="c.id">{{ c.name }}</option>
+                        </select>
+                        <div *ngIf="form.get('clientId')?.invalid && form.get('clientId')?.touched"
+                            class="text-danger small mt-1">Client is required</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 2: Dates                            -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-calendar-days me-1"></i> Dates
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="inv-date">
+                            <span class="text-danger">*</span> Invoice Date
+                        </label>
+                        <input type="datetime-local" id="inv-date" formControlName="invoiceDate" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="inv-due">
+                            <span class="text-danger">*</span> Due Date
+                        </label>
+                        <input type="datetime-local" id="inv-due" formControlName="dueDate" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 3: Amounts                          -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-dollar-sign me-1"></i> Amounts
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label" for="inv-subtotal">Subtotal</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" id="inv-subtotal" formControlName="subtotal"
+                                class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="inv-tax">Tax</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" id="inv-tax" formControlName="taxAmount"
+                                class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="inv-total">Total</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="inv-total" formControlName="totalAmount" class="form-control"
+                                readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="inv-paid">Amount Paid</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" id="inv-paid" formControlName="amountPaid"
+                                class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <!-- Currency -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="inv-currency">
+                            <span class="text-danger">*</span> Currency
+                        </label>
+                        <select id="inv-currency" formControlName="currencyId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let c of currencies$ | async" [ngValue]="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Tax Code -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="inv-taxcode">Tax Code</label>
+                        <select id="inv-taxcode" formControlName="taxCodeId" class="form-select">
+                            <option [ngValue]="null">— None —</option>
+                            <option *ngFor="let tc of taxCodes$ | async" [ngValue]="tc.id">{{ tc.name }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Office -->
+                    <div class="col-md-4" *ngIf="offices.length > 0">
+                        <label class="form-label" for="inv-office">Office</label>
+                        <select id="inv-office" formControlName="financialOfficeId" class="form-select">
+                            <option [ngValue]="null">— None —</option>
+                            <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 4: Notes                            -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-sticky-note me-1"></i> Notes
+                </div>
+                <textarea id="inv-notes" formControlName="notes" class="form-control" rows="3"
+                    placeholder="Optional notes..."></textarea>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- Footer buttons                              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="modal-footer-actions">
+                <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                    <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="isSaving"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Create Invoice' }}
+                </button>
+            </div>
+
+        </form>
+    </div>
+</ng-template>

@@ -22,6 +22,7 @@ import { FinancialCategoryChangeHistoryService, FinancialCategoryChangeHistoryDa
 import { ChargeTypeService, ChargeTypeData } from './charge-type.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { BudgetService, BudgetData } from './budget.service';
+import { InvoiceLineItemService, InvoiceLineItemData } from './invoice-line-item.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -183,6 +184,11 @@ export class FinancialCategoryData {
     private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
+    private _invoiceLineItems: InvoiceLineItemData[] | null = null;
+    private _invoiceLineItemsPromise: Promise<InvoiceLineItemData[]> | null  = null;
+    private _invoiceLineItemsSubject = new BehaviorSubject<InvoiceLineItemData[] | null>(null);
+
+                
 
 
     //
@@ -299,6 +305,31 @@ export class FinancialCategoryData {
 
 
 
+    public InvoiceLineItems$ = this._invoiceLineItemsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._invoiceLineItems === null && this._invoiceLineItemsPromise === null) {
+            this.loadInvoiceLineItems(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _invoiceLineItemsCount$: Observable<bigint | number> | null = null;
+    public get InvoiceLineItemsCount$(): Observable<bigint | number> {
+        if (this._invoiceLineItemsCount$ === null) {
+            this._invoiceLineItemsCount$ = InvoiceLineItemService.Instance.GetInvoiceLineItemsRowCount({financialCategoryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._invoiceLineItemsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -356,6 +387,11 @@ export class FinancialCategoryData {
      this._budgetsPromise = null;
      this._budgetsSubject.next(null);
      this._budgetsCount$ = null;
+
+     this._invoiceLineItems = null;
+     this._invoiceLineItemsPromise = null;
+     this._invoiceLineItemsSubject.next(null);
+     this._invoiceLineItemsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -626,6 +662,71 @@ export class FinancialCategoryData {
     }
 
 
+    /**
+     *
+     * Gets the InvoiceLineItems for this FinancialCategory.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialCategory.InvoiceLineItems.then(financialCategories => { ... })
+     *   or
+     *   await this.financialCategory.financialCategories
+     *
+    */
+    public get InvoiceLineItems(): Promise<InvoiceLineItemData[]> {
+        if (this._invoiceLineItems !== null) {
+            return Promise.resolve(this._invoiceLineItems);
+        }
+
+        if (this._invoiceLineItemsPromise !== null) {
+            return this._invoiceLineItemsPromise;
+        }
+
+        // Start the load
+        this.loadInvoiceLineItems();
+
+        return this._invoiceLineItemsPromise!;
+    }
+
+
+
+    private loadInvoiceLineItems(): void {
+
+        this._invoiceLineItemsPromise = lastValueFrom(
+            FinancialCategoryService.Instance.GetInvoiceLineItemsForFinancialCategory(this.id)
+        )
+        .then(InvoiceLineItems => {
+            this._invoiceLineItems = InvoiceLineItems ?? [];
+            this._invoiceLineItemsSubject.next(this._invoiceLineItems);
+            return this._invoiceLineItems;
+         })
+        .catch(err => {
+            this._invoiceLineItems = [];
+            this._invoiceLineItemsSubject.next(this._invoiceLineItems);
+            throw err;
+        })
+        .finally(() => {
+            this._invoiceLineItemsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached InvoiceLineItem. Call after mutations to force refresh.
+     */
+    public ClearInvoiceLineItemsCache(): void {
+        this._invoiceLineItems = null;
+        this._invoiceLineItemsPromise = null;
+        this._invoiceLineItemsSubject.next(this._invoiceLineItems);      // Emit to observable
+    }
+
+    public get HasInvoiceLineItems(): Promise<boolean> {
+        return this.InvoiceLineItems.then(invoiceLineItems => invoiceLineItems.length > 0);
+    }
+
+
 
 
     //
@@ -708,6 +809,7 @@ export class FinancialCategoryService extends SecureEndpointBase {
         private chargeTypeService: ChargeTypeService,
         private financialTransactionService: FinancialTransactionService,
         private budgetService: BudgetService,
+        private invoiceLineItemService: InvoiceLineItemService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1217,6 +1319,16 @@ export class FinancialCategoryService extends SecureEndpointBase {
     }
 
 
+    public GetInvoiceLineItemsForFinancialCategory(financialCategoryId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<InvoiceLineItemData[]> {
+        return this.invoiceLineItemService.GetInvoiceLineItemList({
+            financialCategoryId: financialCategoryId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full FinancialCategoryData instance.
@@ -1267,6 +1379,10 @@ export class FinancialCategoryService extends SecureEndpointBase {
     (revived as any)._budgets = null;
     (revived as any)._budgetsPromise = null;
     (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
+
+    (revived as any)._invoiceLineItems = null;
+    (revived as any)._invoiceLineItemsPromise = null;
+    (revived as any)._invoiceLineItemsSubject = new BehaviorSubject<InvoiceLineItemData[] | null>(null);
 
 
     //
@@ -1326,6 +1442,18 @@ export class FinancialCategoryService extends SecureEndpointBase {
       );
 
     (revived as any)._budgetsCount$ = null;
+
+
+    (revived as any).InvoiceLineItems$ = (revived as any)._invoiceLineItemsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._invoiceLineItems === null && (revived as any)._invoiceLineItemsPromise === null) {
+                (revived as any).loadInvoiceLineItems();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._invoiceLineItemsCount$ = null;
 
 
 

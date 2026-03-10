@@ -23,6 +23,7 @@ import { FinancialTransactionData } from './financial-transaction.service';
 import { EventChargeData } from './event-charge.service';
 import { CurrencyData } from './currency.service';
 import { PaymentTransactionChangeHistoryService, PaymentTransactionChangeHistoryData } from './payment-transaction-change-history.service';
+import { ReceiptService, ReceiptData } from './receipt.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -193,6 +194,11 @@ export class PaymentTransactionData {
     private _paymentTransactionChangeHistoriesSubject = new BehaviorSubject<PaymentTransactionChangeHistoryData[] | null>(null);
 
                 
+    private _receipts: ReceiptData[] | null = null;
+    private _receiptsPromise: Promise<ReceiptData[]> | null  = null;
+    private _receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
+                
 
 
     //
@@ -230,6 +236,31 @@ export class PaymentTransactionData {
             });
         }
         return this._paymentTransactionChangeHistoriesCount$;
+    }
+
+
+
+    public Receipts$ = this._receiptsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._receipts === null && this._receiptsPromise === null) {
+            this.loadReceipts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _receiptsCount$: Observable<bigint | number> | null = null;
+    public get ReceiptsCount$(): Observable<bigint | number> {
+        if (this._receiptsCount$ === null) {
+            this._receiptsCount$ = ReceiptService.Instance.GetReceiptsRowCount({paymentTransactionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._receiptsCount$;
     }
 
 
@@ -276,6 +307,11 @@ export class PaymentTransactionData {
      this._paymentTransactionChangeHistoriesPromise = null;
      this._paymentTransactionChangeHistoriesSubject.next(null);
      this._paymentTransactionChangeHistoriesCount$ = null;
+
+     this._receipts = null;
+     this._receiptsPromise = null;
+     this._receiptsSubject.next(null);
+     this._receiptsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -348,6 +384,71 @@ export class PaymentTransactionData {
 
     public get HasPaymentTransactionChangeHistories(): Promise<boolean> {
         return this.PaymentTransactionChangeHistories.then(paymentTransactionChangeHistories => paymentTransactionChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Receipts for this PaymentTransaction.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.paymentTransaction.Receipts.then(paymentTransactions => { ... })
+     *   or
+     *   await this.paymentTransaction.paymentTransactions
+     *
+    */
+    public get Receipts(): Promise<ReceiptData[]> {
+        if (this._receipts !== null) {
+            return Promise.resolve(this._receipts);
+        }
+
+        if (this._receiptsPromise !== null) {
+            return this._receiptsPromise;
+        }
+
+        // Start the load
+        this.loadReceipts();
+
+        return this._receiptsPromise!;
+    }
+
+
+
+    private loadReceipts(): void {
+
+        this._receiptsPromise = lastValueFrom(
+            PaymentTransactionService.Instance.GetReceiptsForPaymentTransaction(this.id)
+        )
+        .then(Receipts => {
+            this._receipts = Receipts ?? [];
+            this._receiptsSubject.next(this._receipts);
+            return this._receipts;
+         })
+        .catch(err => {
+            this._receipts = [];
+            this._receiptsSubject.next(this._receipts);
+            throw err;
+        })
+        .finally(() => {
+            this._receiptsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Receipt. Call after mutations to force refresh.
+     */
+    public ClearReceiptsCache(): void {
+        this._receipts = null;
+        this._receiptsPromise = null;
+        this._receiptsSubject.next(this._receipts);      // Emit to observable
+    }
+
+    public get HasReceipts(): Promise<boolean> {
+        return this.Receipts.then(receipts => receipts.length > 0);
     }
 
 
@@ -430,6 +531,7 @@ export class PaymentTransactionService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private paymentTransactionChangeHistoryService: PaymentTransactionChangeHistoryService,
+        private receiptService: ReceiptService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -916,6 +1018,16 @@ export class PaymentTransactionService extends SecureEndpointBase {
     }
 
 
+    public GetReceiptsForPaymentTransaction(paymentTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ReceiptData[]> {
+        return this.receiptService.GetReceiptList({
+            paymentTransactionId: paymentTransactionId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full PaymentTransactionData instance.
@@ -955,6 +1067,10 @@ export class PaymentTransactionService extends SecureEndpointBase {
     (revived as any)._paymentTransactionChangeHistoriesPromise = null;
     (revived as any)._paymentTransactionChangeHistoriesSubject = new BehaviorSubject<PaymentTransactionChangeHistoryData[] | null>(null);
 
+    (revived as any)._receipts = null;
+    (revived as any)._receiptsPromise = null;
+    (revived as any)._receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -977,6 +1093,18 @@ export class PaymentTransactionService extends SecureEndpointBase {
       );
 
     (revived as any)._paymentTransactionChangeHistoriesCount$ = null;
+
+
+    (revived as any).Receipts$ = (revived as any)._receiptsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._receipts === null && (revived as any)._receiptsPromise === null) {
+                (revived as any).loadReceipts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._receiptsCount$ = null;
 
 
 

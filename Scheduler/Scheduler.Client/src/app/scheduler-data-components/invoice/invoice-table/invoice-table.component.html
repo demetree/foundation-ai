@@ -1,0 +1,454 @@
+<app-invoice-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-invoice-add-edit>
+<div class="row" *ngIf="userIsSchedulerInvoiceReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerInvoiceWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Invoice">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerInvoiceWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('invoiceNumber')">
+                Invoice  Number
+                <span *ngIf="sortColumn === 'invoiceNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('client.name')">
+                Client
+                <span *ngIf="sortColumn === 'client.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('contact.name')">
+                Contact
+                <span *ngIf="sortColumn === 'contact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scheduledEvent.name')">
+                Scheduled  Event
+                <span *ngIf="sortColumn === 'scheduledEvent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialOffice.name')">
+                Financial  Office
+                <span *ngIf="sortColumn === 'financialOffice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('invoiceStatus.name')">
+                Invoice  Status
+                <span *ngIf="sortColumn === 'invoiceStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('currency.name')">
+                Currency
+                <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('taxCode.name')">
+                Tax  Code
+                <span *ngIf="sortColumn === 'taxCode.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('invoiceDate')">
+                Invoice  Date
+                <span *ngIf="sortColumn === 'invoiceDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('dueDate')">
+                Due  Date
+                <span *ngIf="sortColumn === 'dueDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('subtotal')">
+                Subtotal
+                <span *ngIf="sortColumn === 'subtotal'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('taxAmount')">
+                Tax  Amount
+                <span *ngIf="sortColumn === 'taxAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalAmount')">
+                Total  Amount
+                <span *ngIf="sortColumn === 'totalAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('amountPaid')">
+                Amount  Paid
+                <span *ngIf="sortColumn === 'amountPaid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sentDate')">
+                Sent  Date
+                <span *ngIf="sortColumn === 'sentDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('paidDate')">
+                Paid  Date
+                <span *ngIf="sortColumn === 'paidDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let invoice of filteredInvoices; trackBy: getInvoiceId"
+              [ngClass]="{
+                 'row-inactive': invoice.active == false,
+                 'row-deleted': invoice.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerInvoiceWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(invoice)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerInvoiceWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(invoice)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="invoice.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(invoice)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="invoice.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(invoice, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(invoice, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(invoice, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(invoice, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(invoice, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(invoice, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(invoice, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(invoice, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/invoice', invoice.id]" class="btn btn-link text-left" ngbTooltip="Open Invoice details">{{invoice.invoiceNumber}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/client', invoice.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{invoice.client?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/contact', invoice.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{invoice.contact?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/scheduledevent', invoice.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{invoice.scheduledEvent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialoffice', invoice.financialOfficeId]" class="btn btn-link text-left" ngbTooltip="Open Financial Office details">{{invoice.financialOffice?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/invoicestatus', invoice.invoiceStatusId]" class="btn btn-link text-left" ngbTooltip="Open Invoice Status details">{{invoice.invoiceStatus?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/currency', invoice.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{invoice.currency?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/taxcode', invoice.taxCodeId]" class="btn btn-link text-left" ngbTooltip="Open Tax Code details">{{invoice.taxCode?.name}}</a></td>
+            <td class="text-truncate">{{invoice.invoiceDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{invoice.dueDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{invoice.subtotal | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{invoice.taxAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{invoice.totalAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{invoice.amountPaid | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{invoice.sentDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{invoice.paidDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{invoice.notes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let invoice of filteredInvoices; trackBy: getInvoiceId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': invoice.active == false,
+                 'row-deleted': invoice.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(invoice, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(invoice, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(invoice, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(invoice, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(invoice, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(invoice, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(invoice, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(invoice, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(invoice, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(invoice, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(invoice, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(invoice, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(invoice, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/invoice', invoice.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(invoice)" *ngIf="userIsSchedulerInvoiceWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(invoice)" *ngIf="userIsSchedulerInvoiceWriter() && invoice.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(invoice)" *ngIf="userIsSchedulerInvoiceWriter() && invoice.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{invoice.invoiceNumber}}</strong>
+               <small class="text-muted d-block">{{invoice.invoiceStatus?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/invoice', invoice.id]"
+                        ngbTooltip="Invoice Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(invoice)"
+                        ngbTooltip="Edit Invoice">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(invoice)"
+                      ngbTooltip="Delete Invoice" 
+                      placement="top"
+                      *ngIf="invoice.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(invoice)"
+                      ngbTooltip="Undelete Invoice" 
+                      placement="top"
+                      *ngIf="invoice.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="invoice-info" *ngIf="invoice.invoiceNumber != null">
+              <strong>Invoice Number: </strong>
+              {{invoice.invoiceNumber}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.clientId != null">
+              <strong>Client: </strong>
+              <a [routerLink]="['/client', invoice.clientId]" class="text-left p-0 m-0" ngbTooltip="Open Client details">{{invoice.client?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.contactId != null">
+              <strong>Contact: </strong>
+              <a [routerLink]="['/contact', invoice.contactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{invoice.contact?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.scheduledEventId != null">
+              <strong>Scheduled Event: </strong>
+              <a [routerLink]="['/scheduledevent', invoice.scheduledEventId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduled Event details">{{invoice.scheduledEvent?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.financialOfficeId != null">
+              <strong>Financial Office: </strong>
+              <a [routerLink]="['/financialoffice', invoice.financialOfficeId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Office details">{{invoice.financialOffice?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.invoiceStatusId != null">
+              <strong>Invoice Status: </strong>
+              <a [routerLink]="['/invoicestatus', invoice.invoiceStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Invoice Status details">{{invoice.invoiceStatus?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.currencyId != null">
+              <strong>Currency: </strong>
+              <a [routerLink]="['/currency', invoice.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{invoice.currency?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.taxCodeId != null">
+              <strong>Tax Code: </strong>
+              <a [routerLink]="['/taxcode', invoice.taxCodeId]" class="text-left p-0 m-0" ngbTooltip="Open Tax Code details">{{invoice.taxCode?.name}}</a>
+            </p>
+            <p class="invoice-info" *ngIf="invoice.invoiceDate != null">
+              <strong>Invoice Date: </strong>
+              {{invoice.invoiceDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.dueDate != null">
+              <strong>Due Date: </strong>
+              {{invoice.dueDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.subtotal != null">
+              <strong>Subtotal: </strong>
+              {{invoice.subtotal | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.taxAmount != null">
+              <strong>Tax Amount: </strong>
+              {{invoice.taxAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.totalAmount != null">
+              <strong>Total Amount: </strong>
+              {{invoice.totalAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.amountPaid != null">
+              <strong>Amount Paid: </strong>
+              {{invoice.amountPaid | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.sentDate != null">
+              <strong>Sent Date: </strong>
+              {{invoice.sentDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.paidDate != null">
+              <strong>Paid Date: </strong>
+              {{invoice.paidDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="invoice-info" *ngIf="invoice.notes != null">
+              <strong>Notes: </strong>
+              {{invoice.notes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

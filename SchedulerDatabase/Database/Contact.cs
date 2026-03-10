@@ -89,9 +89,13 @@ public partial class Contact
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
     public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
 
     public virtual ICollection<OfficeContact> OfficeContacts { get; set; } = new List<OfficeContact>();
+
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
 
     public virtual ICollection<ResourceContact> ResourceContacts { get; set; } = new List<ResourceContact>();
 

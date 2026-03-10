@@ -180,6 +180,7 @@ export class ProjectTableComponent implements OnInit, OnChanges, AfterViewInit {
     { key: 'description', label: 'Description', width: undefined },
     { key: 'notes', label: 'Notes', width: undefined },
     { key: 'thumbnailImagePath', label: 'Thumbnail Image Path', width: undefined },
+    { key: 'thumbnailData', label: 'Thumbnail Data', width: undefined },
     { key: 'partCount', label: 'Part Count', width: undefined },
     { key: 'lastBuildDate', label: 'Last Build Date', width: undefined, template: 'date' },
 
@@ -334,6 +335,7 @@ export class ProjectTableComponent implements OnInit, OnChanges, AfterViewInit {
                       'description',
                       'notes',
                       'thumbnailImagePath',
+                      'thumbnailData',
                       'partCount',
                       'lastBuildDate',
         ];

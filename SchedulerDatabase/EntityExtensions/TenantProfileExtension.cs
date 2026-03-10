@@ -307,6 +307,8 @@ namespace Foundation.Scheduler.Database
 			public Boolean displaysMetric { get; set; }
 			[Required]
 			public Boolean displaysUSTerms { get; set; }
+			public String invoiceNumberMask { get; set; }
+			public String receiptNumberMask { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -363,6 +365,8 @@ namespace Foundation.Scheduler.Database
 				secondaryColor = this.secondaryColor,
 				displaysMetric = this.displaysMetric,
 				displaysUSTerms = this.displaysUSTerms,
+				invoiceNumberMask = this.invoiceNumberMask,
+				receiptNumberMask = this.receiptNumberMask,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -429,6 +433,8 @@ namespace Foundation.Scheduler.Database
 				secondaryColor = this.secondaryColor,
 				displaysMetric = this.displaysMetric,
 				displaysUSTerms = this.displaysUSTerms,
+				invoiceNumberMask = this.invoiceNumberMask,
+				receiptNumberMask = this.receiptNumberMask,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -498,6 +504,8 @@ namespace Foundation.Scheduler.Database
 				secondaryColor = dto.secondaryColor,
 				displaysMetric = dto.displaysMetric,
 				displaysUSTerms = dto.displaysUSTerms,
+				invoiceNumberMask = dto.invoiceNumberMask,
+				receiptNumberMask = dto.receiptNumberMask,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -541,6 +549,8 @@ namespace Foundation.Scheduler.Database
 			this.secondaryColor = dto.secondaryColor;
 			this.displaysMetric = dto.displaysMetric;
 			this.displaysUSTerms = dto.displaysUSTerms;
+			this.invoiceNumberMask = dto.invoiceNumberMask;
+			this.receiptNumberMask = dto.receiptNumberMask;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -590,6 +600,8 @@ namespace Foundation.Scheduler.Database
 				secondaryColor = this.secondaryColor,
 				displaysMetric = this.displaysMetric,
 				displaysUSTerms = this.displaysUSTerms,
+				invoiceNumberMask = this.invoiceNumberMask,
+				receiptNumberMask = this.receiptNumberMask,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -670,6 +682,8 @@ namespace Foundation.Scheduler.Database
 				secondaryColor = tenantProfile.secondaryColor,
 				displaysMetric = tenantProfile.displaysMetric,
 				displaysUSTerms = tenantProfile.displaysUSTerms,
+				invoiceNumberMask = tenantProfile.invoiceNumberMask,
+				receiptNumberMask = tenantProfile.receiptNumberMask,
 				versionNumber = tenantProfile.versionNumber,
 				objectGuid = tenantProfile.objectGuid,
 				active = tenantProfile.active,
@@ -717,6 +731,8 @@ namespace Foundation.Scheduler.Database
 				secondaryColor = tenantProfile.secondaryColor,
 				displaysMetric = tenantProfile.displaysMetric,
 				displaysUSTerms = tenantProfile.displaysUSTerms,
+				invoiceNumberMask = tenantProfile.invoiceNumberMask,
+				receiptNumberMask = tenantProfile.receiptNumberMask,
 				versionNumber = tenantProfile.versionNumber,
 				objectGuid = tenantProfile.objectGuid,
 				active = tenantProfile.active,

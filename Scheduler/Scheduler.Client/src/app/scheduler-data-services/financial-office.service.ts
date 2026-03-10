@@ -20,6 +20,7 @@ import { FinancialOfficeChangeHistoryService, FinancialOfficeChangeHistoryData }
 import { FinancialCategoryService, FinancialCategoryData } from './financial-category.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { BudgetService, BudgetData } from './budget.service';
+import { InvoiceService, InvoiceData } from './invoice.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -169,6 +170,11 @@ export class FinancialOfficeData {
     private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
+    private _invoices: InvoiceData[] | null = null;
+    private _invoicesPromise: Promise<InvoiceData[]> | null  = null;
+    private _invoicesSubject = new BehaviorSubject<InvoiceData[] | null>(null);
+
+                
 
 
     //
@@ -285,6 +291,31 @@ export class FinancialOfficeData {
 
 
 
+    public Invoices$ = this._invoicesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._invoices === null && this._invoicesPromise === null) {
+            this.loadInvoices(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _invoicesCount$: Observable<bigint | number> | null = null;
+    public get InvoicesCount$(): Observable<bigint | number> {
+        if (this._invoicesCount$ === null) {
+            this._invoicesCount$ = InvoiceService.Instance.GetInvoicesRowCount({financialOfficeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._invoicesCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -342,6 +373,11 @@ export class FinancialOfficeData {
      this._budgetsPromise = null;
      this._budgetsSubject.next(null);
      this._budgetsCount$ = null;
+
+     this._invoices = null;
+     this._invoicesPromise = null;
+     this._invoicesSubject.next(null);
+     this._invoicesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -612,6 +648,71 @@ export class FinancialOfficeData {
     }
 
 
+    /**
+     *
+     * Gets the Invoices for this FinancialOffice.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialOffice.Invoices.then(financialOffices => { ... })
+     *   or
+     *   await this.financialOffice.financialOffices
+     *
+    */
+    public get Invoices(): Promise<InvoiceData[]> {
+        if (this._invoices !== null) {
+            return Promise.resolve(this._invoices);
+        }
+
+        if (this._invoicesPromise !== null) {
+            return this._invoicesPromise;
+        }
+
+        // Start the load
+        this.loadInvoices();
+
+        return this._invoicesPromise!;
+    }
+
+
+
+    private loadInvoices(): void {
+
+        this._invoicesPromise = lastValueFrom(
+            FinancialOfficeService.Instance.GetInvoicesForFinancialOffice(this.id)
+        )
+        .then(Invoices => {
+            this._invoices = Invoices ?? [];
+            this._invoicesSubject.next(this._invoices);
+            return this._invoices;
+         })
+        .catch(err => {
+            this._invoices = [];
+            this._invoicesSubject.next(this._invoices);
+            throw err;
+        })
+        .finally(() => {
+            this._invoicesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Invoice. Call after mutations to force refresh.
+     */
+    public ClearInvoicesCache(): void {
+        this._invoices = null;
+        this._invoicesPromise = null;
+        this._invoicesSubject.next(this._invoices);      // Emit to observable
+    }
+
+    public get HasInvoices(): Promise<boolean> {
+        return this.Invoices.then(invoices => invoices.length > 0);
+    }
+
+
 
 
     //
@@ -694,6 +795,7 @@ export class FinancialOfficeService extends SecureEndpointBase {
         private financialCategoryService: FinancialCategoryService,
         private financialTransactionService: FinancialTransactionService,
         private budgetService: BudgetService,
+        private invoiceService: InvoiceService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1200,6 +1302,16 @@ export class FinancialOfficeService extends SecureEndpointBase {
     }
 
 
+    public GetInvoicesForFinancialOffice(financialOfficeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<InvoiceData[]> {
+        return this.invoiceService.GetInvoiceList({
+            financialOfficeId: financialOfficeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full FinancialOfficeData instance.
@@ -1250,6 +1362,10 @@ export class FinancialOfficeService extends SecureEndpointBase {
     (revived as any)._budgets = null;
     (revived as any)._budgetsPromise = null;
     (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
+
+    (revived as any)._invoices = null;
+    (revived as any)._invoicesPromise = null;
+    (revived as any)._invoicesSubject = new BehaviorSubject<InvoiceData[] | null>(null);
 
 
     //
@@ -1309,6 +1425,18 @@ export class FinancialOfficeService extends SecureEndpointBase {
       );
 
     (revived as any)._budgetsCount$ = null;
+
+
+    (revived as any).Invoices$ = (revived as any)._invoicesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._invoices === null && (revived as any)._invoicesPromise === null) {
+                (revived as any).loadInvoices();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._invoicesCount$ = null;
 
 
 

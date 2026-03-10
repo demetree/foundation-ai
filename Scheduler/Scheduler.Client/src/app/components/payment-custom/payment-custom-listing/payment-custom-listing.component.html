@@ -1,0 +1,131 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="page-container">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- HEADER                                      -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="listing-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h3 class="mb-0">
+                    <i class="fa-solid fa-money-bill-transfer me-2"></i>Payments
+                </h3>
+                <small class="header-subtitle">Record and track payment transactions</small>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-sm btn-glass" (click)="openNewPayment()">
+                    <i class="fa-solid fa-plus me-1"></i> New Payment
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- FILTERS                                     -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="filter-bar">
+        <div class="search-box">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" class="form-control" placeholder="Search payer, method, receipt #..."
+                [(ngModel)]="searchText" (ngModelChange)="applyFilters()" />
+        </div>
+
+        <div class="filter-pills">
+            <button class="pill" [class.active]="statusFilter === ''"
+                (click)="statusFilter=''; applyFilters()">All</button>
+            <button class="pill" [class.active]="statusFilter === 'completed'"
+                (click)="statusFilter='completed'; applyFilters()">Completed</button>
+            <button class="pill" [class.active]="statusFilter === 'pending'"
+                (click)="statusFilter='pending'; applyFilters()">Pending</button>
+            <button class="pill" [class.active]="statusFilter === 'refunded'"
+                (click)="statusFilter='refunded'; applyFilters()">Refunded</button>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- LOADING / EMPTY                             -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && filteredPayments.length === 0">
+        <i class="fa-solid fa-money-bill-transfer"></i>
+        <p>No payments found</p>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- DESKTOP TABLE                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="table-responsive" *ngIf="!isLoading && !isMobile && filteredPayments.length > 0">
+        <table class="table listing-table">
+            <thead>
+                <tr>
+                    <th class="sortable" (click)="toggleSort('transactionDate')">
+                        Date <i class="fa-solid ms-1" [ngClass]="getSortIcon('transactionDate')"></i>
+                    </th>
+                    <th class="sortable" (click)="toggleSort('payerName')">
+                        Payer <i class="fa-solid ms-1" [ngClass]="getSortIcon('payerName')"></i>
+                    </th>
+                    <th>Method</th>
+                    <th class="sortable text-end" (click)="toggleSort('amount')">
+                        Amount <i class="fa-solid ms-1" [ngClass]="getSortIcon('amount')"></i>
+                    </th>
+                    <th class="text-end">Net</th>
+                    <th class="sortable" (click)="toggleSort('status')">
+                        Status <i class="fa-solid ms-1" [ngClass]="getSortIcon('status')"></i>
+                    </th>
+                    <th>Receipt #</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let p of filteredPayments" class="clickable-row" (click)="viewDetail(p)">
+                    <td>{{ formatDate(p.transactionDate) }}</td>
+                    <td>{{ p.payerName || '—' }}</td>
+                    <td>{{ p.paymentMethod?.name || '—' }}</td>
+                    <td class="text-end fw-semibold">{{ formatCurrency(p.amount) }}</td>
+                    <td class="text-end">{{ formatCurrency(p.netAmount) }}</td>
+                    <td>
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(p.status)">
+                            {{ p.status || 'Pending' }}
+                        </span>
+                    </td>
+                    <td>{{ p.receiptNumber || '—' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- MOBILE CARDS                                -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="mobile-cards" *ngIf="!isLoading && isMobile && filteredPayments.length > 0">
+        <div class="mobile-card" *ngFor="let p of filteredPayments" (click)="viewDetail(p)">
+            <div class="card-top">
+                <span class="card-date">{{ formatDate(p.transactionDate) }}</span>
+                <span class="status-badge" [ngClass]="getStatusBadgeClass(p.status)">{{ p.status || 'Pending' }}</span>
+            </div>
+            <div class="card-main">
+                <span class="card-payer">{{ p.payerName || 'Unknown' }}</span>
+                <span class="card-amount">{{ formatCurrency(p.amount) }}</span>
+            </div>
+            <div class="card-bottom">
+                <span>{{ p.paymentMethod?.name || '—' }}</span>
+                <span *ngIf="p.receiptNumber">Receipt: {{ p.receiptNumber }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-count" *ngIf="!isLoading && filteredPayments.length > 0">
+        {{ filteredPayments.length }} payment{{ filteredPayments.length === 1 ? '' : 's' }}
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<app-payment-custom-add-edit (paymentChanged)="onPaymentChanged()"></app-payment-custom-add-edit>

@@ -257,6 +257,7 @@ import { MyLostPartsComponent } from './components/my-lost-parts/my-lost-parts.c
 import { ProfileComponent } from './components/profile/profile.component';
 import { ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
 import { PublicProfileComponent } from './components/public-profile/public-profile.component';
+import { MyProjectsComponent } from './components/my-projects/my-projects.component';
 
 
 

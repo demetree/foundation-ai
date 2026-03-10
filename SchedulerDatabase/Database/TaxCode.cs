@@ -38,4 +38,6 @@ public partial class TaxCode
     public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
+
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }

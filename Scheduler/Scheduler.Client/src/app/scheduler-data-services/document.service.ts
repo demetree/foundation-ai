@@ -17,6 +17,8 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { DocumentTypeData } from './document-type.service';
+import { InvoiceData } from './invoice.service';
+import { ReceiptData } from './receipt.service';
 import { ScheduledEventData } from './scheduled-event.service';
 import { FinancialTransactionData } from './financial-transaction.service';
 import { ContactData } from './contact.service';
@@ -34,6 +36,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class DocumentQueryParameters {
     documentTypeId: bigint | number | null | undefined = null;
+    invoiceId: bigint | number | null | undefined = null;
+    receiptId: bigint | number | null | undefined = null;
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     fileName: string | null | undefined = null;
@@ -69,6 +73,8 @@ export class DocumentQueryParameters {
 export class DocumentSubmitData {
     id!: bigint | number;
     documentTypeId!: bigint | number;
+    invoiceId: bigint | number | null = null;
+    receiptId: bigint | number | null = null;
     name!: string;
     description: string | null = null;
     fileName!: string;
@@ -159,6 +165,8 @@ export class DocumentBasicListData {
 export class DocumentData {
     id!: bigint | number;
     documentTypeId!: bigint | number;
+    invoiceId!: bigint | number;
+    receiptId!: bigint | number;
     name!: string;
     description!: string | null;
     fileName!: string;
@@ -185,6 +193,8 @@ export class DocumentData {
     contact: ContactData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     documentType: DocumentTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialTransaction: FinancialTransactionData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    invoice: InvoiceData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    receipt: ReceiptData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     resource: ResourceData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     scheduledEvent: ScheduledEventData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
@@ -491,6 +501,8 @@ export class DocumentService extends SecureEndpointBase {
 
         output.id = data.id;
         output.documentTypeId = data.documentTypeId;
+        output.invoiceId = data.invoiceId;
+        output.receiptId = data.receiptId;
         output.name = data.name;
         output.description = data.description;
         output.fileName = data.fileName;

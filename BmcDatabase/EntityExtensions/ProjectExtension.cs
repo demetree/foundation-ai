@@ -288,6 +288,7 @@ namespace Foundation.BMC.Database
 			public String description { get; set; }
 			public String notes { get; set; }
 			public String thumbnailImagePath { get; set; }
+			public Byte[] thumbnailData { get; set; }
 			public Int32? partCount { get; set; }
 			public DateTime? lastBuildDate { get; set; }
 			public Int32 versionNumber { get; set; }
@@ -325,6 +326,7 @@ namespace Foundation.BMC.Database
 				description = this.description,
 				notes = this.notes,
 				thumbnailImagePath = this.thumbnailImagePath,
+				thumbnailData = this.thumbnailData,
 				partCount = this.partCount,
 				lastBuildDate = this.lastBuildDate,
 				versionNumber = this.versionNumber,
@@ -375,6 +377,7 @@ namespace Foundation.BMC.Database
 				description = this.description,
 				notes = this.notes,
 				thumbnailImagePath = this.thumbnailImagePath,
+				thumbnailData = this.thumbnailData,
 				partCount = this.partCount,
 				lastBuildDate = this.lastBuildDate,
 				versionNumber = this.versionNumber,
@@ -425,6 +428,7 @@ namespace Foundation.BMC.Database
 				description = dto.description,
 				notes = dto.notes,
 				thumbnailImagePath = dto.thumbnailImagePath,
+				thumbnailData = dto.thumbnailData,
 				partCount = dto.partCount,
 				lastBuildDate = dto.lastBuildDate,
 				versionNumber = dto.versionNumber,
@@ -452,6 +456,7 @@ namespace Foundation.BMC.Database
 			this.description = dto.description;
 			this.notes = dto.notes;
 			this.thumbnailImagePath = dto.thumbnailImagePath;
+			this.thumbnailData = dto.thumbnailData;
 			this.partCount = dto.partCount;
 			this.lastBuildDate = dto.lastBuildDate;
 			this.versionNumber = dto.versionNumber;
@@ -485,6 +490,7 @@ namespace Foundation.BMC.Database
 				description = this.description,
 				notes = this.notes,
 				thumbnailImagePath = this.thumbnailImagePath,
+				thumbnailData = this.thumbnailData,
 				partCount = this.partCount,
 				lastBuildDate = this.lastBuildDate,
 				versionNumber = this.versionNumber,
@@ -549,6 +555,7 @@ namespace Foundation.BMC.Database
 				description = project.description,
 				notes = project.notes,
 				thumbnailImagePath = project.thumbnailImagePath,
+				thumbnailData = project.thumbnailData,
 				partCount = project.partCount,
 				lastBuildDate = project.lastBuildDate,
 				versionNumber = project.versionNumber,
@@ -580,6 +587,7 @@ namespace Foundation.BMC.Database
 				description = project.description,
 				notes = project.notes,
 				thumbnailImagePath = project.thumbnailImagePath,
+				thumbnailData = project.thumbnailData,
 				partCount = project.partCount,
 				lastBuildDate = project.lastBuildDate,
 				versionNumber = project.versionNumber,

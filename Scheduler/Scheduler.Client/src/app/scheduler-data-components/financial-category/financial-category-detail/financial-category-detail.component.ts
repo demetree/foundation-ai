@@ -29,6 +29,7 @@ import { FinancialCategoryChangeHistoryService } from '../../../scheduler-data-s
 import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { BudgetService } from '../../../scheduler-data-services/budget.service';
+import { InvoiceLineItemService } from '../../../scheduler-data-services/invoice-line-item.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -115,6 +116,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
   public chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public budgets$ = this.budgetService.GetBudgetList();
+  public invoiceLineItems$ = this.invoiceLineItemService.GetInvoiceLineItemList();
 
   private destroy$ = new Subject<void>();
 
@@ -126,6 +128,7 @@ export class FinancialCategoryDetailComponent implements OnInit, CanComponentDea
     public chargeTypeService: ChargeTypeService,
     public financialTransactionService: FinancialTransactionService,
     public budgetService: BudgetService,
+    public invoiceLineItemService: InvoiceLineItemService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

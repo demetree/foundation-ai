@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 invoice-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="invoice-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Invoice Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Invoice Change History' : 'Add Invoice Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerInvoiceChangeHistoryReader()">
+                <div class="col m-2 invoice-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="invoiceChangeHistoryForm" (ngSubmit)="submitForm()" class="invoice-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
+                                <label for="InvoiceChangeHistory-invoiceId" id="label-InvoiceChangeHistory-invoiceId"><span class="text-danger">*</span>Invoice</label>
+                                <select id="InvoiceChangeHistory-invoiceId" formControlName="invoiceId" class="form-select invoice-change-history-select" [disabled]="!userIsSchedulerInvoiceChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Invoice</option>
+                                    <option *ngFor="let invoice of invoices$ | async" [ngValue]="invoice.id">{{[invoice.invoiceNumber] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="invoiceChangeHistoryForm.get('invoiceId')?.invalid && invoiceChangeHistoryForm.get('invoiceId')?.touched" class="text-danger">
+                                    Invoice is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="InvoiceChangeHistory-versionNumber" id="label-InvoiceChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="InvoiceChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control invoice-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="InvoiceChangeHistory-timeStamp" id="label-InvoiceChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="InvoiceChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control invoice-change-history-input" [disabled]="!userIsSchedulerInvoiceChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="invoiceChangeHistoryForm.get('timeStamp')?.invalid && invoiceChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="InvoiceChangeHistory-userId" id="label-InvoiceChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="InvoiceChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control invoice-change-history-input" [disabled]="!userIsSchedulerInvoiceChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="invoiceChangeHistoryForm.get('userId')?.invalid && invoiceChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="InvoiceChangeHistory-data" id="label-InvoiceChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="InvoiceChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control invoice-change-history-input" [disabled]="!userIsSchedulerInvoiceChangeHistoryWriter()"></textarea>
+                                <div *ngIf="invoiceChangeHistoryForm.get('data')?.invalid && invoiceChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="invoice-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="invoiceChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Invoice Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !invoiceChangeHistoryForm.valid || !invoiceChangeHistoryForm.dirty || invoiceChangeHistoryForm.pristine  || userIsSchedulerInvoiceChangeHistoryWriter() == false " ngbTooltip="Save the Invoice Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Invoice Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -28,6 +28,8 @@ import { SchedulingTargetService, SchedulingTargetData } from './scheduling-targ
 import { SchedulingTargetAddressService, SchedulingTargetAddressData } from './scheduling-target-address.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
+import { InvoiceService, InvoiceData } from './invoice.service';
+import { ReceiptService, ReceiptData } from './receipt.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -241,6 +243,16 @@ export class ClientData {
     private _financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
 
                 
+    private _invoices: InvoiceData[] | null = null;
+    private _invoicesPromise: Promise<InvoiceData[]> | null  = null;
+    private _invoicesSubject = new BehaviorSubject<InvoiceData[] | null>(null);
+
+                
+    private _receipts: ReceiptData[] | null = null;
+    private _receiptsPromise: Promise<ReceiptData[]> | null  = null;
+    private _receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
@@ -412,6 +424,56 @@ export class ClientData {
 
 
 
+    public Invoices$ = this._invoicesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._invoices === null && this._invoicesPromise === null) {
+            this.loadInvoices(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _invoicesCount$: Observable<bigint | number> | null = null;
+    public get InvoicesCount$(): Observable<bigint | number> {
+        if (this._invoicesCount$ === null) {
+            this._invoicesCount$ = InvoiceService.Instance.GetInvoicesRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._invoicesCount$;
+    }
+
+
+
+    public Receipts$ = this._receiptsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._receipts === null && this._receiptsPromise === null) {
+            this.loadReceipts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _receiptsCount$: Observable<bigint | number> | null = null;
+    public get ReceiptsCount$(): Observable<bigint | number> {
+        if (this._receiptsCount$ === null) {
+            this._receiptsCount$ = ReceiptService.Instance.GetReceiptsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._receiptsCount$;
+    }
+
+
+
     public Constituents$ = this._constituentsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -504,6 +566,16 @@ export class ClientData {
      this._financialTransactionsPromise = null;
      this._financialTransactionsSubject.next(null);
      this._financialTransactionsCount$ = null;
+
+     this._invoices = null;
+     this._invoicesPromise = null;
+     this._invoicesSubject.next(null);
+     this._invoicesCount$ = null;
+
+     this._receipts = null;
+     this._receiptsPromise = null;
+     this._receiptsSubject.next(null);
+     this._receiptsCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
@@ -911,6 +983,136 @@ export class ClientData {
 
     /**
      *
+     * Gets the Invoices for this Client.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.client.Invoices.then(clients => { ... })
+     *   or
+     *   await this.client.clients
+     *
+    */
+    public get Invoices(): Promise<InvoiceData[]> {
+        if (this._invoices !== null) {
+            return Promise.resolve(this._invoices);
+        }
+
+        if (this._invoicesPromise !== null) {
+            return this._invoicesPromise;
+        }
+
+        // Start the load
+        this.loadInvoices();
+
+        return this._invoicesPromise!;
+    }
+
+
+
+    private loadInvoices(): void {
+
+        this._invoicesPromise = lastValueFrom(
+            ClientService.Instance.GetInvoicesForClient(this.id)
+        )
+        .then(Invoices => {
+            this._invoices = Invoices ?? [];
+            this._invoicesSubject.next(this._invoices);
+            return this._invoices;
+         })
+        .catch(err => {
+            this._invoices = [];
+            this._invoicesSubject.next(this._invoices);
+            throw err;
+        })
+        .finally(() => {
+            this._invoicesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Invoice. Call after mutations to force refresh.
+     */
+    public ClearInvoicesCache(): void {
+        this._invoices = null;
+        this._invoicesPromise = null;
+        this._invoicesSubject.next(this._invoices);      // Emit to observable
+    }
+
+    public get HasInvoices(): Promise<boolean> {
+        return this.Invoices.then(invoices => invoices.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Receipts for this Client.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.client.Receipts.then(clients => { ... })
+     *   or
+     *   await this.client.clients
+     *
+    */
+    public get Receipts(): Promise<ReceiptData[]> {
+        if (this._receipts !== null) {
+            return Promise.resolve(this._receipts);
+        }
+
+        if (this._receiptsPromise !== null) {
+            return this._receiptsPromise;
+        }
+
+        // Start the load
+        this.loadReceipts();
+
+        return this._receiptsPromise!;
+    }
+
+
+
+    private loadReceipts(): void {
+
+        this._receiptsPromise = lastValueFrom(
+            ClientService.Instance.GetReceiptsForClient(this.id)
+        )
+        .then(Receipts => {
+            this._receipts = Receipts ?? [];
+            this._receiptsSubject.next(this._receipts);
+            return this._receipts;
+         })
+        .catch(err => {
+            this._receipts = [];
+            this._receiptsSubject.next(this._receipts);
+            throw err;
+        })
+        .finally(() => {
+            this._receiptsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Receipt. Call after mutations to force refresh.
+     */
+    public ClearReceiptsCache(): void {
+        this._receipts = null;
+        this._receiptsPromise = null;
+        this._receiptsSubject.next(this._receipts);      // Emit to observable
+    }
+
+    public get HasReceipts(): Promise<boolean> {
+        return this.Receipts.then(receipts => receipts.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the Constituents for this Client.
      *
      * If already loaded, returns cached array.
@@ -1058,6 +1260,8 @@ export class ClientService extends SecureEndpointBase {
         private schedulingTargetAddressService: SchedulingTargetAddressService,
         private scheduledEventService: ScheduledEventService,
         private financialTransactionService: FinancialTransactionService,
+        private invoiceService: InvoiceService,
+        private receiptService: ReceiptService,
         private constituentService: ConstituentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -1601,6 +1805,26 @@ export class ClientService extends SecureEndpointBase {
     }
 
 
+    public GetInvoicesForClient(clientId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<InvoiceData[]> {
+        return this.invoiceService.GetInvoiceList({
+            clientId: clientId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetReceiptsForClient(clientId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ReceiptData[]> {
+        return this.receiptService.GetReceiptList({
+            clientId: clientId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetConstituentsForClient(clientId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConstituentData[]> {
         return this.constituentService.GetConstituentList({
             clientId: clientId,
@@ -1669,6 +1893,14 @@ export class ClientService extends SecureEndpointBase {
     (revived as any)._financialTransactions = null;
     (revived as any)._financialTransactionsPromise = null;
     (revived as any)._financialTransactionsSubject = new BehaviorSubject<FinancialTransactionData[] | null>(null);
+
+    (revived as any)._invoices = null;
+    (revived as any)._invoicesPromise = null;
+    (revived as any)._invoicesSubject = new BehaviorSubject<InvoiceData[] | null>(null);
+
+    (revived as any)._receipts = null;
+    (revived as any)._receiptsPromise = null;
+    (revived as any)._receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
 
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
@@ -1756,6 +1988,30 @@ export class ClientService extends SecureEndpointBase {
       );
 
     (revived as any)._financialTransactionsCount$ = null;
+
+
+    (revived as any).Invoices$ = (revived as any)._invoicesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._invoices === null && (revived as any)._invoicesPromise === null) {
+                (revived as any).loadInvoices();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._invoicesCount$ = null;
+
+
+    (revived as any).Receipts$ = (revived as any)._receiptsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._receipts === null && (revived as any)._receiptsPromise === null) {
+                (revived as any).loadReceipts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._receiptsCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(

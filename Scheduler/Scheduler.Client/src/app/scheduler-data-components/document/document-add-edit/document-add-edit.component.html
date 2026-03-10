@@ -30,6 +30,20 @@
                     Document Type is required
                 </div>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
+                <label for="Document-invoiceId" id="label-Document-invoiceId">Invoice</label>
+                <select id="Document-invoiceId" formControlName="invoiceId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Invoice</option>
+                    <option *ngFor="let invoice of invoices$ | async" [ngValue]="invoice.id">{{[invoice.invoiceNumber] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptId')">
+                <label for="Document-receiptId" id="label-Document-receiptId">Receipt</label>
+                <select id="Document-receiptId" formControlName="receiptId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Receipt</option>
+                    <option *ngFor="let receipt of receipts$ | async" [ngValue]="receipt.id">{{[receipt.receiptNumber] | filterAndJoin}}</option>
+                </select>
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('name')">
                 <label for="Document-name" id="label-Document-name"><span class="text-danger">*</span>Name</label>
                 <input type="text" id="Document-name" formControlName="name" placeholder="Enter Name" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-name" />

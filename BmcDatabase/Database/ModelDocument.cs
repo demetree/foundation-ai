@@ -35,6 +35,12 @@ public partial class ModelDocument
 
     public int? totalStepCount { get; set; }
 
+    public string studioVersion { get; set; }
+
+    public string instructionSettingsXml { get; set; }
+
+    public string errorPartList { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

@@ -93,6 +93,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string secondaryColor = null,
 			bool? displaysMetric = null,
 			bool? displaysUSTerms = null,
+			string invoiceNumberMask = null,
+			string receiptNumberMask = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -235,6 +237,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(tp => tp.displaysUSTerms == displaysUSTerms.Value);
 			}
+			if (string.IsNullOrEmpty(invoiceNumberMask) == false)
+			{
+				query = query.Where(tp => tp.invoiceNumberMask == invoiceNumberMask);
+			}
+			if (string.IsNullOrEmpty(receiptNumberMask) == false)
+			{
+				query = query.Where(tp => tp.receiptNumberMask == receiptNumberMask);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(tp => tp.versionNumber == versionNumber.Value);
@@ -293,6 +303,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.website.Contains(anyStringContains)
 			       || x.primaryColor.Contains(anyStringContains)
 			       || x.secondaryColor.Contains(anyStringContains)
+			       || x.invoiceNumberMask.Contains(anyStringContains)
+			       || x.receiptNumberMask.Contains(anyStringContains)
 			       || (includeRelations == true && x.country.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.country.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.country.abbreviation.Contains(anyStringContains))
@@ -404,6 +416,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string secondaryColor = null,
 			bool? displaysMetric = null,
 			bool? displaysUSTerms = null,
+			string invoiceNumberMask = null,
+			string receiptNumberMask = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -526,6 +540,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(tp => tp.displaysUSTerms == displaysUSTerms.Value);
 			}
+			if (invoiceNumberMask != null)
+			{
+				query = query.Where(tp => tp.invoiceNumberMask == invoiceNumberMask);
+			}
+			if (receiptNumberMask != null)
+			{
+				query = query.Where(tp => tp.receiptNumberMask == receiptNumberMask);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(tp => tp.versionNumber == versionNumber.Value);
@@ -581,6 +603,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.website.Contains(anyStringContains)
 			       || x.primaryColor.Contains(anyStringContains)
 			       || x.secondaryColor.Contains(anyStringContains)
+			       || x.invoiceNumberMask.Contains(anyStringContains)
+			       || x.receiptNumberMask.Contains(anyStringContains)
 			       || x.country.name.Contains(anyStringContains)
 			       || x.country.description.Contains(anyStringContains)
 			       || x.country.abbreviation.Contains(anyStringContains)
@@ -906,6 +930,16 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					tenantProfile.secondaryColor = tenantProfile.secondaryColor.Substring(0, 10);
 				}
 
+				if (tenantProfile.invoiceNumberMask != null && tenantProfile.invoiceNumberMask.Length > 100)
+				{
+					tenantProfile.invoiceNumberMask = tenantProfile.invoiceNumberMask.Substring(0, 100);
+				}
+
+				if (tenantProfile.receiptNumberMask != null && tenantProfile.receiptNumberMask.Length > 100)
+				{
+					tenantProfile.receiptNumberMask = tenantProfile.receiptNumberMask.Substring(0, 100);
+				}
+
 
 				//
 				// Add default values for any missing data attribute fields.
@@ -1126,6 +1160,16 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (tenantProfile.secondaryColor != null && tenantProfile.secondaryColor.Length > 10)
 				{
 					tenantProfile.secondaryColor = tenantProfile.secondaryColor.Substring(0, 10);
+				}
+
+				if (tenantProfile.invoiceNumberMask != null && tenantProfile.invoiceNumberMask.Length > 100)
+				{
+					tenantProfile.invoiceNumberMask = tenantProfile.invoiceNumberMask.Substring(0, 100);
+				}
+
+				if (tenantProfile.receiptNumberMask != null && tenantProfile.receiptNumberMask.Length > 100)
+				{
+					tenantProfile.receiptNumberMask = tenantProfile.receiptNumberMask.Substring(0, 100);
 				}
 
 				tenantProfile.objectGuid = Guid.NewGuid();
@@ -1376,6 +1420,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    tenantProfile.secondaryColor = oldTenantProfile.secondaryColor;
 				    tenantProfile.displaysMetric = oldTenantProfile.displaysMetric;
 				    tenantProfile.displaysUSTerms = oldTenantProfile.displaysUSTerms;
+				    tenantProfile.invoiceNumberMask = oldTenantProfile.invoiceNumberMask;
+				    tenantProfile.receiptNumberMask = oldTenantProfile.receiptNumberMask;
 				    tenantProfile.objectGuid = oldTenantProfile.objectGuid;
 				    tenantProfile.active = oldTenantProfile.active;
 				    tenantProfile.deleted = oldTenantProfile.deleted;
@@ -1867,6 +1913,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string secondaryColor = null,
 			bool? displaysMetric = null,
 			bool? displaysUSTerms = null,
+			string invoiceNumberMask = null,
+			string receiptNumberMask = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -2000,6 +2048,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(tp => tp.displaysUSTerms == displaysUSTerms.Value);
 			}
+			if (string.IsNullOrEmpty(invoiceNumberMask) == false)
+			{
+				query = query.Where(tp => tp.invoiceNumberMask == invoiceNumberMask);
+			}
+			if (string.IsNullOrEmpty(receiptNumberMask) == false)
+			{
+				query = query.Where(tp => tp.receiptNumberMask == receiptNumberMask);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(tp => tp.versionNumber == versionNumber.Value);
@@ -2056,6 +2112,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.website.Contains(anyStringContains)
 			       || x.primaryColor.Contains(anyStringContains)
 			       || x.secondaryColor.Contains(anyStringContains)
+			       || x.invoiceNumberMask.Contains(anyStringContains)
+			       || x.receiptNumberMask.Contains(anyStringContains)
 			       || x.country.name.Contains(anyStringContains)
 			       || x.country.description.Contains(anyStringContains)
 			       || x.country.abbreviation.Contains(anyStringContains)

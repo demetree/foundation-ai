@@ -82,6 +82,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string author = null,
 			int? totalPartCount = null,
 			int? totalStepCount = null,
+			string studioVersion = null,
+			string instructionSettingsXml = null,
+			string errorPartList = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -180,6 +183,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(md => md.totalStepCount == totalStepCount.Value);
 			}
+			if (string.IsNullOrEmpty(studioVersion) == false)
+			{
+				query = query.Where(md => md.studioVersion == studioVersion);
+			}
+			if (string.IsNullOrEmpty(instructionSettingsXml) == false)
+			{
+				query = query.Where(md => md.instructionSettingsXml == instructionSettingsXml);
+			}
+			if (string.IsNullOrEmpty(errorPartList) == false)
+			{
+				query = query.Where(md => md.errorPartList == errorPartList);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(md => md.versionNumber == versionNumber.Value);
@@ -231,6 +246,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.sourceFileFileName.Contains(anyStringContains)
 			       || x.sourceFileMimeType.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
+			       || x.studioVersion.Contains(anyStringContains)
+			       || x.instructionSettingsXml.Contains(anyStringContains)
+			       || x.errorPartList.Contains(anyStringContains)
 			       || (includeRelations == true && x.project.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
@@ -320,6 +338,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string author = null,
 			int? totalPartCount = null,
 			int? totalStepCount = null,
+			string studioVersion = null,
+			string instructionSettingsXml = null,
+			string errorPartList = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -398,6 +419,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(md => md.totalStepCount == totalStepCount.Value);
 			}
+			if (studioVersion != null)
+			{
+				query = query.Where(md => md.studioVersion == studioVersion);
+			}
+			if (instructionSettingsXml != null)
+			{
+				query = query.Where(md => md.instructionSettingsXml == instructionSettingsXml);
+			}
+			if (errorPartList != null)
+			{
+				query = query.Where(md => md.errorPartList == errorPartList);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(md => md.versionNumber == versionNumber.Value);
@@ -446,6 +479,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.sourceFileFileName.Contains(anyStringContains)
 			       || x.sourceFileMimeType.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
+			       || x.studioVersion.Contains(anyStringContains)
+			       || x.instructionSettingsXml.Contains(anyStringContains)
+			       || x.errorPartList.Contains(anyStringContains)
 			       || x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
@@ -725,6 +761,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 					modelDocument.author = modelDocument.author.Substring(0, 100);
 				}
 
+				if (modelDocument.studioVersion != null && modelDocument.studioVersion.Length > 100)
+				{
+					modelDocument.studioVersion = modelDocument.studioVersion.Substring(0, 100);
+				}
+
 
 				//
 				// Add default values for any missing data attribute fields.
@@ -910,6 +951,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (modelDocument.author != null && modelDocument.author.Length > 100)
 				{
 					modelDocument.author = modelDocument.author.Substring(0, 100);
+				}
+
+				if (modelDocument.studioVersion != null && modelDocument.studioVersion.Length > 100)
+				{
+					modelDocument.studioVersion = modelDocument.studioVersion.Substring(0, 100);
 				}
 
 				modelDocument.objectGuid = Guid.NewGuid();
@@ -1147,6 +1193,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    modelDocument.author = oldModelDocument.author;
 				    modelDocument.totalPartCount = oldModelDocument.totalPartCount;
 				    modelDocument.totalStepCount = oldModelDocument.totalStepCount;
+				    modelDocument.studioVersion = oldModelDocument.studioVersion;
+				    modelDocument.instructionSettingsXml = oldModelDocument.instructionSettingsXml;
+				    modelDocument.errorPartList = oldModelDocument.errorPartList;
 				    modelDocument.objectGuid = oldModelDocument.objectGuid;
 				    modelDocument.active = oldModelDocument.active;
 				    modelDocument.deleted = oldModelDocument.deleted;
@@ -1627,6 +1676,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string author = null,
 			int? totalPartCount = null,
 			int? totalStepCount = null,
+			string studioVersion = null,
+			string instructionSettingsXml = null,
+			string errorPartList = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1724,6 +1776,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(md => md.totalStepCount == totalStepCount.Value);
 			}
+			if (string.IsNullOrEmpty(studioVersion) == false)
+			{
+				query = query.Where(md => md.studioVersion == studioVersion);
+			}
+			if (string.IsNullOrEmpty(instructionSettingsXml) == false)
+			{
+				query = query.Where(md => md.instructionSettingsXml == instructionSettingsXml);
+			}
+			if (string.IsNullOrEmpty(errorPartList) == false)
+			{
+				query = query.Where(md => md.errorPartList == errorPartList);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(md => md.versionNumber == versionNumber.Value);
@@ -1773,6 +1837,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.sourceFileFileName.Contains(anyStringContains)
 			       || x.sourceFileMimeType.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
+			       || x.studioVersion.Contains(anyStringContains)
+			       || x.instructionSettingsXml.Contains(anyStringContains)
+			       || x.errorPartList.Contains(anyStringContains)
 			       || x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)

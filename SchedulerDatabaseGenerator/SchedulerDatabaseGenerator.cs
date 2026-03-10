@@ -1983,6 +1983,8 @@ Used to track engagement level and control visibility/assignment rules.";
             tenantProfile.AddHTMLColorField("secondaryColor");
             tenantProfile.AddBoolField("displaysMetric", false, false).AddScriptComments("True if the tenant defaults to using metric units when creating projects.    Note that this does not affect the storage units, which are always metric.");
             tenantProfile.AddBoolField("displaysUSTerms", false, false).AddScriptComments("True if the tenant defaults to using terms for the US market, such as Zip code,.");
+            tenantProfile.AddString100Field("invoiceNumberMask", true).AddScriptComments("Format mask for auto-generating invoice numbers. Supports {YYYY} for year and {NNNN} for zero-padded sequence. Default: INV-{YYYY}-{NNNN}.");
+            tenantProfile.AddString100Field("receiptNumberMask", true).AddScriptComments("Format mask for auto-generating receipt numbers. Supports {YYYY} for year and {NNNN} for zero-padded sequence. Default: REC-{YYYY}-{NNNN}.");
             tenantProfile.AddVersionControl(); // Includes version field
             tenantProfile.AddControlFields();   // Includes Active and Deleted flags
 
@@ -3178,100 +3180,6 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             #endregion
 
 
-            #region Document Attachments — DocumentType + Document
-
-            //
-            // Document Type — Classification of attachments
-            //
-            Database.Table documentTypeTable = database.AddTable("DocumentType");
-            documentTypeTable.comment = "Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).";
-            documentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
-            documentTypeTable.AddIdField();
-            documentTypeTable.AddNameAndDescriptionFields(true, true, false);
-            documentTypeTable.AddSequenceField();
-            documentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
-            documentTypeTable.AddControlFields();
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Rental Agreement" },
-                { "description", "Signed rental or usage agreement" },
-                { "sequence", "1" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Receipt" },
-                { "description", "Purchase receipt or proof of payment" },
-                { "sequence", "2" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Invoice" },
-                { "description", "Invoice issued or received" },
-                { "sequence", "3" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456703" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Photo" },
-                { "description", "Photograph or image" },
-                { "sequence", "4" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Other" },
-                { "description", "Other document type" },
-                { "sequence", "99" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456799" } });
-
-
-            //
-            // Document — Attachment record with binary storage
-            // Supports polymorphic links to events, financial transactions, contacts, and resources.
-            // Includes status tracking for workflows like rental agreement signing.
-            //
-            Database.Table documentTable = database.AddTable("Document");
-            documentTable.comment = @"====================================================================================================
- DOCUMENT (Attachment Storage)
- Stores file attachments (images, PDFs, scans) with metadata and binary content.
- Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
-
- DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
-
- The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
- ====================================================================================================";
-
-            documentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
-            documentTable.AddIdField();
-            documentTable.AddMultiTenantSupport();
-            documentTable.AddForeignKeyField(documentTypeTable, false, true).AddScriptComments("The type of document (Rental Agreement, Receipt, Photo, etc.).");
-            documentTable.AddString250Field("name", false).AddScriptComments("Display name for the document.");
-            documentTable.AddString500Field("description", true).AddScriptComments("Optional description of the document.");
-            documentTable.AddString500Field("fileName", false).AddScriptComments("Original filename with extension (e.g., 'rental-agreement-smith.pdf').");
-            documentTable.AddString100Field("mimeType", false).AddScriptComments("MIME type of the file (e.g., 'application/pdf', 'image/jpeg').");
-            documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
-            documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
-
-            // Polymorphic entity links — at least one should be set
-            documentTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., rental agreement for a booking).");
-            documentTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., receipt for a purchase).");
-            documentTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to a Contact.");
-            documentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional link to a Resource.");
-
-            // Status tracking for document workflows
-            documentTable.AddString50Field("status", true).AddScriptComments("Document workflow status: pending, signed, verified, etc.");
-            documentTable.AddDateTimeField("statusDate", true).AddScriptComments("When the status was last changed.");
-            documentTable.AddString100Field("statusChangedBy", true).AddScriptComments("Who changed the status.");
-
-            documentTable.AddDateTimeField("uploadedDate", false).AddScriptComments("When the document was uploaded (UTC).");
-            documentTable.AddString100Field("uploadedBy", true).AddScriptComments("User who uploaded the document.");
-            documentTable.AddTextField("notes", true).AddScriptComments("Optional notes about the document.");
-            documentTable.AddVersionControl();
-            documentTable.AddControlFields();
-
-            #endregion
-
-
             #region Electronic Payments — PaymentMethod + PaymentProvider + PaymentTransaction
 
             //
@@ -3394,6 +3302,287 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             paymentTransactionTable.AddTextField("notes", true).AddScriptComments("Optional notes about the payment.");
             paymentTransactionTable.AddVersionControl();
             paymentTransactionTable.AddControlFields();
+
+            #endregion
+
+
+            #region Invoicing & Receipts — Invoice + InvoiceLineItem + Receipt
+
+            //
+            // Invoice Status — Workflow states for invoices
+            // System-defined, not tenant-specific.
+            //
+            Database.Table invoiceStatusTable = database.AddTable("InvoiceStatus");
+            invoiceStatusTable.comment = @"====================================================================================================
+ INVOICE STATUS
+ Workflow states for invoices (Draft, Sent, Partially Paid, Paid, Overdue, Cancelled, Void).
+ System-defined reference data — not tenant-specific.
+ ====================================================================================================";
+
+            invoiceStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            invoiceStatusTable.AddIdField();
+            invoiceStatusTable.AddNameAndDescriptionFields(true, true, false);
+            invoiceStatusTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            invoiceStatusTable.AddSequenceField();
+            invoiceStatusTable.AddControlFields();
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Draft" },
+                { "description", "Invoice created but not yet sent to client" },
+                { "color", "#9E9E9E" },
+                { "sequence", "1" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000001" } });
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Sent" },
+                { "description", "Invoice has been sent to the client" },
+                { "color", "#2196F3" },
+                { "sequence", "2" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000002" } });
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Partially Paid" },
+                { "description", "Client has made a partial payment" },
+                { "color", "#FF9800" },
+                { "sequence", "3" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000003" } });
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Paid" },
+                { "description", "Invoice has been fully paid" },
+                { "color", "#4CAF50" },
+                { "sequence", "4" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000004" } });
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Overdue" },
+                { "description", "Invoice is past due date and unpaid" },
+                { "color", "#F44336" },
+                { "sequence", "5" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000005" } });
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Cancelled" },
+                { "description", "Invoice has been cancelled" },
+                { "color", "#795548" },
+                { "sequence", "6" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000006" } });
+
+            invoiceStatusTable.AddData(new Dictionary<string, string> {
+                { "name", "Void" },
+                { "description", "Invoice has been voided and should be disregarded" },
+                { "color", "#607D8B" },
+                { "sequence", "7" },
+                { "objectGuid", "b1c2d3e4-0001-4000-9000-000000000007" } });
+
+
+            //
+            // Invoice — Formal billing document issued to a client
+            //
+            Database.Table invoiceTable = database.AddTable("Invoice");
+            invoiceTable.comment = @"====================================================================================================
+ INVOICE
+ Formal billing document issued to a client for services rendered (e.g., hall rental fees).
+ Links to a Client (who is being billed), optionally to a ScheduledEvent and FinancialOffice.
+ Line items are stored in InvoiceLineItem child table.
+
+ DESIGN NOTE: The invoiceNumber is auto-generated using the tenant's invoiceNumberMask from
+ TenantProfile (e.g., 'INV-2025-0001'). Generated PDF documents are stored via the Document
+ table with the invoiceId FK set, providing a permanent archive of what was sent.
+ ====================================================================================================";
+
+            invoiceTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            invoiceTable.AddIdField();
+            invoiceTable.AddMultiTenantSupport();
+            invoiceTable.AddString50Field("invoiceNumber", false).AddScriptComments("Auto-generated sequential invoice number (e.g., 'INV-2025-0001').").CreateIndex();
+            invoiceTable.AddForeignKeyField(clientTable, false, true).AddScriptComments("The client being invoiced.");
+            invoiceTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional billing contact person.");
+            invoiceTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to the event this invoice relates to.");
+            invoiceTable.AddForeignKeyField(financialOfficeTable, true, true).AddScriptComments("Optional issuing financial office.");
+            invoiceTable.AddForeignKeyField(invoiceStatusTable, false, true).AddScriptComments("Current invoice status (Draft, Sent, Paid, etc.).");
+            invoiceTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Currency for all amounts on this invoice.");
+            invoiceTable.AddForeignKeyField(taxCodeTable, true, true).AddScriptComments("Default tax code applied to line items.");
+            invoiceTable.AddDateTimeField("invoiceDate", false).AddScriptComments("Date the invoice was issued (UTC).").CreateIndex();
+            invoiceTable.AddDateTimeField("dueDate", false).AddScriptComments("Payment due date (UTC).");
+            invoiceTable.AddMoneyField("subtotal", false, 0, true).AddScriptComments("Sum of line item amounts before tax.");
+            invoiceTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("Total tax amount.");
+            invoiceTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Grand total (subtotal + taxAmount).");
+            invoiceTable.AddMoneyField("amountPaid", false, 0, true).AddScriptComments("Running total of payments received against this invoice.");
+            invoiceTable.AddDateTimeField("sentDate", true).AddScriptComments("When the invoice was sent to the client (null = not sent).");
+            invoiceTable.AddDateTimeField("paidDate", true).AddScriptComments("When the invoice was fully paid (null = not yet paid).");
+            invoiceTable.AddTextField("notes", true).AddScriptComments("Optional notes or payment terms.");
+            invoiceTable.AddVersionControl();
+            invoiceTable.AddControlFields();
+            invoiceTable.SetDisplayNameField("invoiceNumber");
+
+            invoiceTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "invoiceNumber" }, true);
+
+
+            //
+            // Invoice Line Item — Individual billable items on an invoice
+            //
+            Database.Table invoiceLineItemTable = database.AddTable("InvoiceLineItem");
+            invoiceLineItemTable.comment = @"====================================================================================================
+ INVOICE LINE ITEM
+ Individual billable items on an invoice. Optionally links back to the source EventCharge
+ and/or FinancialCategory for categorization and audit trail.
+ ====================================================================================================";
+
+            invoiceLineItemTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            invoiceLineItemTable.AddIdField();
+            invoiceLineItemTable.AddMultiTenantSupport();
+            invoiceLineItemTable.AddForeignKeyField(invoiceTable, false, true).AddScriptComments("Parent invoice.");
+            invoiceLineItemTable.AddForeignKeyField(eventChargeTable, true, true).AddScriptComments("Optional link to the source EventCharge this line item was created from.");
+            invoiceLineItemTable.AddForeignKeyField(financialCategoryTable, true, true).AddScriptComments("Optional revenue category for reporting.");
+            invoiceLineItemTable.AddString500Field("description", false).AddScriptComments("Line item description (e.g., 'Hall Rental - Saturday Dec 14').");
+            invoiceLineItemTable.AddDecimalField("quantity", false, 1, true).AddScriptComments("Quantity (hours, units, etc.).");
+            invoiceLineItemTable.AddMoneyField("unitPrice", false, 0, true).AddScriptComments("Price per unit.");
+            invoiceLineItemTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Extended amount (quantity × unitPrice).");
+            invoiceLineItemTable.AddMoneyField("taxAmount", false, 0, true).AddScriptComments("Tax for this line item.");
+            invoiceLineItemTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Line total (amount + taxAmount).");
+            invoiceLineItemTable.AddSequenceField().AddScriptComments("Display order on the invoice.");
+            invoiceLineItemTable.AddControlFields();
+
+
+            //
+            // Receipt — Proof of payment issued to a payer
+            //
+            Database.Table receiptTable = database.AddTable("Receipt");
+            receiptTable.comment = @"====================================================================================================
+ RECEIPT
+ Proof of payment issued when a payment is received. Optionally links to an Invoice,
+ PaymentTransaction, or FinancialTransaction to provide a full audit trail.
+
+ DESIGN NOTE: The receiptNumber is auto-generated using the tenant's receiptNumberMask from
+ TenantProfile (e.g., 'REC-2025-0001'). Generated PDF documents are stored via the Document
+ table with the receiptId FK set.
+ ====================================================================================================";
+
+            receiptTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            receiptTable.AddIdField();
+            receiptTable.AddMultiTenantSupport();
+            receiptTable.AddString50Field("receiptNumber", false).AddScriptComments("Auto-generated sequential receipt number (e.g., 'REC-2025-0001').").CreateIndex();
+            receiptTable.AddForeignKeyField(receiptTypeTable, false, true).AddScriptComments("Type of receipt (Official, Summary, etc.).");
+            receiptTable.AddForeignKeyField(invoiceTable, true, true).AddScriptComments("Optional link to the invoice this receipt is for.");
+            receiptTable.AddForeignKeyField(paymentTransactionTable, true, true).AddScriptComments("Optional link to the payment transaction.");
+            receiptTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to the financial transaction.");
+            receiptTable.AddForeignKeyField(clientTable, true, true).AddScriptComments("Optional payer client.");
+            receiptTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional payer contact.");
+            receiptTable.AddForeignKeyField(currencyTable, false, true).AddScriptComments("Currency for the amount.");
+            receiptTable.AddDateTimeField("receiptDate", false).AddScriptComments("Date the receipt was issued (UTC).").CreateIndex();
+            receiptTable.AddMoneyField("amount", false, 0, true).AddScriptComments("Amount received.");
+            receiptTable.AddString100Field("paymentMethod", true).AddScriptComments("How the payment was made (e.g., 'E-Transfer', 'Cash').");
+            receiptTable.AddString500Field("description", true).AddScriptComments("Description of what the payment was for.");
+            receiptTable.AddTextField("notes", true).AddScriptComments("Optional additional notes.");
+            receiptTable.AddVersionControl();
+            receiptTable.AddControlFields();
+            receiptTable.SetDisplayNameField("receiptNumber");
+
+            receiptTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "receiptNumber" }, true);
+
+            #endregion
+
+
+
+
+            #region Document Attachments — DocumentType + Document
+
+            //
+            // Document Type — Classification of attachments
+            //
+            Database.Table documentTypeTable = database.AddTable("DocumentType");
+            documentTypeTable.comment = "Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).";
+            documentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            documentTypeTable.AddIdField();
+            documentTypeTable.AddNameAndDescriptionFields(true, true, false);
+            documentTypeTable.AddSequenceField();
+            documentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            documentTypeTable.AddControlFields();
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Rental Agreement" },
+                { "description", "Signed rental or usage agreement" },
+                { "sequence", "1" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Receipt" },
+                { "description", "Purchase receipt or proof of payment" },
+                { "sequence", "2" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Invoice" },
+                { "description", "Invoice issued or received" },
+                { "sequence", "3" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456703" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Photo" },
+                { "description", "Photograph or image" },
+                { "sequence", "4" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Other" },
+                { "description", "Other document type" },
+                { "sequence", "99" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456799" } });
+
+
+            //
+            // Document — Attachment record with binary storage
+            // Supports polymorphic links to events, financial transactions, contacts, and resources.
+            // Includes status tracking for workflows like rental agreement signing.
+            //
+            Database.Table documentTable = database.AddTable("Document");
+            documentTable.comment = @"====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================";
+
+            documentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentTable.AddIdField();
+            documentTable.AddMultiTenantSupport();
+            documentTable.AddForeignKeyField(documentTypeTable, false, true).AddScriptComments("The type of document (Rental Agreement, Receipt, Photo, etc.).");
+
+            //
+            // Add Invoice and Receipt FKs to the Document table (defined earlier)
+            // This allows generated PDF invoices/receipts to be stored as Document records.
+            //
+            documentTable.AddForeignKeyField(invoiceTable, true, true).AddScriptComments("Optional link to an Invoice (e.g., generated invoice PDF).");
+            documentTable.AddForeignKeyField(receiptTable, true, true).AddScriptComments("Optional link to a Receipt (e.g., generated receipt PDF).");
+
+            documentTable.AddString250Field("name", false).AddScriptComments("Display name for the document.");
+            documentTable.AddString500Field("description", true).AddScriptComments("Optional description of the document.");
+            documentTable.AddString500Field("fileName", false).AddScriptComments("Original filename with extension (e.g., 'rental-agreement-smith.pdf').");
+            documentTable.AddString100Field("mimeType", false).AddScriptComments("MIME type of the file (e.g., 'application/pdf', 'image/jpeg').");
+            documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
+            documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
+
+            // Polymorphic entity links — at least one should be set
+            documentTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., rental agreement for a booking).");
+            documentTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., receipt for a purchase).");
+            documentTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to a Contact.");
+            documentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional link to a Resource.");
+
+            // Status tracking for document workflows
+            documentTable.AddString50Field("status", true).AddScriptComments("Document workflow status: pending, signed, verified, etc.");
+            documentTable.AddDateTimeField("statusDate", true).AddScriptComments("When the status was last changed.");
+            documentTable.AddString100Field("statusChangedBy", true).AddScriptComments("Who changed the status.");
+
+            documentTable.AddDateTimeField("uploadedDate", false).AddScriptComments("When the document was uploaded (UTC).");
+            documentTable.AddString100Field("uploadedBy", true).AddScriptComments("User who uploaded the document.");
+            documentTable.AddTextField("notes", true).AddScriptComments("Optional notes about the document.");
+            documentTable.AddVersionControl();
+            documentTable.AddControlFields();
 
             #endregion
 

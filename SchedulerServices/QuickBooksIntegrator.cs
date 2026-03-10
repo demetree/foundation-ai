@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+// Alias to disambiguate from Foundation.Scheduler.Database.Invoice
+using QbInvoice = Intuit.Ipp.Data.Invoice;
+
 // Traditional helper class for QuickBooks Online authentication & sync
 // This follows your existing code style: clear, explicit, no heavy modern patterns
 public class QuickBooksIntegrator
@@ -102,7 +105,7 @@ public class QuickBooksIntegrator
         ServiceContext context = GetServiceContext();
         DataService dataService = new DataService(context);
 
-        Invoice invoice = new Invoice
+        QbInvoice invoice = new QbInvoice
         {
             DocNumber = $"SCH-GIFT-{gift.id}",
             TxnDate = gift.receivedDate,
@@ -122,7 +125,7 @@ public class QuickBooksIntegrator
         }
         };
 
-        var tcs = new TaskCompletionSource<Invoice>();
+        var tcs = new TaskCompletionSource<QbInvoice>();
 
         // Attach the callback
         dataService.OnAddAsyncCompleted += (sender, e) =>
@@ -133,7 +136,7 @@ public class QuickBooksIntegrator
             }
             else
             {
-                tcs.TrySetResult((Invoice)e.Entity);
+                tcs.TrySetResult((QbInvoice)e.Entity);
             }
         };
 
@@ -171,7 +174,7 @@ public class QuickBooksIntegrator
         ServiceContext context = GetServiceContext();
         DataService dataService = new DataService(context);
 
-        Invoice invoice = new Invoice
+        QbInvoice invoice = new QbInvoice
         {
             DocNumber = $"SCH-GIFT-{gift.id}",
             TxnDate = gift.receivedDate,
@@ -193,7 +196,7 @@ public class QuickBooksIntegrator
 
         try
         {
-            Invoice addedInvoice = dataService.Add(invoice);
+            QbInvoice addedInvoice = dataService.Add(invoice);
 
             // Store QBO ID back in your Gift for future reference
             // gift.ExternalId = addedInvoice.Id;

@@ -72,6 +72,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Foundation.Imaging\Foundation.Imaging.csproj" />
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
     <ProjectReference Include="..\..\SchedulerDatabase\SchedulerDatabase.csproj" />
     <ProjectReference Include="..\..\SchedulerServices\SchedulerServices.csproj" />

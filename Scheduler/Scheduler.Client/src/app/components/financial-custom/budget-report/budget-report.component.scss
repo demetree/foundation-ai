@@ -1,0 +1,224 @@
+/* AI-Developed — This file was significantly developed with AI assistance. */
+
+.report-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+// Screen-only header (hidden on print)
+.screen-header {
+    background: linear-gradient(135deg, #283593 0%, #3949ab 50%, #5c6bc0 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(40, 53, 147, 0.35);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+}
+
+.glass-select {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    max-width: 180px;
+
+    option {
+        color: #333;
+        background: #fff;
+    }
+}
+
+// Print header (visible only on print)
+.print-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.print-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.report-meta {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+// Report sections
+.report-section {
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-table {
+    width: 100%;
+    font-size: 0.85rem;
+
+    th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #90a4ae;
+        padding: 0.5rem 0.6rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    td {
+        padding: 0.5rem 0.6rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .code-cell {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #78909c;
+    }
+
+    .totals-row {
+        border-top: 2px solid rgba(255, 255, 255, 0.15);
+
+        td {
+            padding-top: 0.75rem;
+        }
+    }
+}
+
+.net-summary {
+    margin-top: 1rem;
+}
+
+.summary-card {
+    padding: 1rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.summary-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #90a4ae;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-top: 0.3rem;
+}
+
+// Print
+.print-only {
+    display: none;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    .report-container {
+        padding: 0;
+        max-width: none;
+    }
+
+    .report-table th,
+    .report-table td {
+        color: #000 !important;
+        border-color: #ccc !important;
+    }
+
+    .section-title {
+        color: #000 !important;
+        border-color: #ccc !important;
+    }
+
+    .summary-card {
+        border-color: #ccc !important;
+        background: #f5f5f5 !important;
+    }
+
+    .summary-value {
+        color: #000 !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .report-container {
+        padding: 1rem;
+    }
+
+    .screen-header {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -51,6 +51,8 @@ public partial class FinancialCategory
 
     public virtual ICollection<FinancialCategory> InverseparentFinancialCategory { get; set; } = new List<FinancialCategory>();
 
+    public virtual ICollection<InvoiceLineItem> InvoiceLineItems { get; set; } = new List<InvoiceLineItem>();
+
     public virtual AccountType accountType { get; set; }
 
     public virtual FinancialOffice financialOffice { get; set; }

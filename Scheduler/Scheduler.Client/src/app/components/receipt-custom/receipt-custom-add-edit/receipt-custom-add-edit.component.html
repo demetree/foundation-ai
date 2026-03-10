@@ -1,0 +1,140 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<!-- ng-bootstrap modal -->
+<ng-template #receiptModal let-modal>
+    <div class="modal-header rcp-modal-header">
+        <h5 class="modal-title mb-0">
+            <i class="fa-solid me-2" [ngClass]="isEditMode ? 'fa-pen-to-square' : 'fa-plus-circle'"></i>
+            {{ isEditMode ? 'Edit Receipt' : 'New Receipt' }}
+        </h5>
+        <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+            <i class="fa fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="modal-body rcp-modal-body">
+        <form [formGroup]="form" (ngSubmit)="submitForm()">
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 1: Receipt Info                     -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-receipt me-1"></i> Receipt Info
+                </div>
+
+                <div class="row g-3">
+                    <!-- Receipt Number -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcp-number">
+                            <span class="text-danger">*</span> Receipt #
+                        </label>
+                        <input type="text" id="rcp-number" formControlName="receiptNumber" class="form-control" />
+                        <div *ngIf="form.get('receiptNumber')?.invalid && form.get('receiptNumber')?.touched"
+                            class="text-danger small mt-1">Receipt number is required</div>
+                    </div>
+
+                    <!-- Receipt Type -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcp-type">
+                            <span class="text-danger">*</span> Type
+                        </label>
+                        <select id="rcp-type" formControlName="receiptTypeId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let rt of receiptTypes$ | async" [ngValue]="rt.id">{{ rt.name }}</option>
+                        </select>
+                        <div *ngIf="form.get('receiptTypeId')?.invalid && form.get('receiptTypeId')?.touched"
+                            class="text-danger small mt-1">Type is required</div>
+                    </div>
+
+                    <!-- Client -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcp-client">Client</label>
+                        <select id="rcp-client" formControlName="clientId" class="form-select">
+                            <option [ngValue]="null">— None —</option>
+                            <option *ngFor="let c of clients$ | async" [ngValue]="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 2: Date & Amount                    -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-dollar-sign me-1"></i> Date & Amount
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcp-date">
+                            <span class="text-danger">*</span> Receipt Date
+                        </label>
+                        <input type="datetime-local" id="rcp-date" formControlName="receiptDate" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcp-amount">
+                            <span class="text-danger">*</span> Amount
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" id="rcp-amount" formControlName="amount"
+                                class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcp-currency">
+                            <span class="text-danger">*</span> Currency
+                        </label>
+                        <select id="rcp-currency" formControlName="currencyId" class="form-select">
+                            <option [ngValue]="null">— Select —</option>
+                            <option *ngFor="let c of currencies$ | async" [ngValue]="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcp-method">Payment Method</label>
+                        <input type="text" id="rcp-method" formControlName="paymentMethod" class="form-control"
+                            placeholder="e.g., Cash, Cheque, E-Transfer" />
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- SECTION 3: Description & Notes              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="section-card mb-3">
+                <div class="section-label">
+                    <i class="fa-solid fa-sticky-note me-1"></i> Description & Notes
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rcp-description">Description</label>
+                    <input type="text" id="rcp-description" formControlName="description" class="form-control"
+                        placeholder="Brief description..." />
+                </div>
+                <div>
+                    <label class="form-label" for="rcp-notes">Notes</label>
+                    <textarea id="rcp-notes" formControlName="notes" class="form-control" rows="3"
+                        placeholder="Optional notes..."></textarea>
+                </div>
+            </div>
+
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- Footer buttons                              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div class="modal-footer-actions">
+                <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-success" [disabled]="isSaving">
+                    <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="isSaving"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Create Receipt' }}
+                </button>
+            </div>
+
+        </form>
+    </div>
+</ng-template>

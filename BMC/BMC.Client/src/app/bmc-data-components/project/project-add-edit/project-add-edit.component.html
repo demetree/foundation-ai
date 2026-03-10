@@ -46,6 +46,10 @@
                 <label for="Project-thumbnailImagePath" id="label-Project-thumbnailImagePath">Thumbnail Image Path</label>
                 <input type="text" id="Project-thumbnailImagePath" formControlName="thumbnailImagePath" placeholder="Enter Thumbnail Image Path" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-thumbnailImagePath" />
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('thumbnailData')">
+                <label for="Project-thumbnailData" id="label-Project-thumbnailData">Thumbnail Data</label>
+                <input type="text" id="Project-thumbnailData" formControlName="thumbnailData" placeholder="Enter Thumbnail Data" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-thumbnailData" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('partCount')">
                 <label for="Project-partCount" id="label-Project-partCount">Part Count</label>
                 <input type="number" id="Project-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-partCount" />

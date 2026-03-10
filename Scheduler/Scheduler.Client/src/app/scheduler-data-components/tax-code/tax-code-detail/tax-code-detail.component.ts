@@ -26,6 +26,7 @@ import { TaxCodeService, TaxCodeData, TaxCodeSubmitData } from '../../../schedul
 import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -101,6 +102,7 @@ export class TaxCodeDetailComponent implements OnInit, CanComponentDeactivate {
   public chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public invoices$ = this.invoiceService.GetInvoiceList();
 
   private destroy$ = new Subject<void>();
 
@@ -109,6 +111,7 @@ export class TaxCodeDetailComponent implements OnInit, CanComponentDeactivate {
     public chargeTypeService: ChargeTypeService,
     public eventChargeService: EventChargeService,
     public financialTransactionService: FinancialTransactionService,
+    public invoiceService: InvoiceService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

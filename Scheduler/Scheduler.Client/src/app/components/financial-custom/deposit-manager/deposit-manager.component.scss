@@ -1,0 +1,309 @@
+/* AI-Developed — This file was significantly developed with AI assistance. */
+
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+// Header — Teal
+.listing-header {
+    background: linear-gradient(135deg, #00695c 0%, #00897b 50%, #26a69a 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0, 105, 92, 0.35);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-subtitle {
+    opacity: 0.8;
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+}
+
+// Summary cards
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.outstanding-card {
+    background: rgba(255, 152, 0, 0.08);
+    border-color: rgba(255, 152, 0, 0.2);
+}
+
+.refunded-card {
+    background: rgba(76, 175, 80, 0.08);
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.total-card {
+    background: rgba(92, 107, 192, 0.08);
+    border-color: rgba(92, 107, 192, 0.2);
+}
+
+.summary-icon {
+    font-size: 1.5rem;
+}
+
+.outstanding-card .summary-icon {
+    color: #ffb74d;
+}
+
+.refunded-card .summary-icon {
+    color: #66bb6a;
+}
+
+.total-card .summary-icon {
+    color: #7986cb;
+}
+
+.summary-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #90a4ae;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.summary-count {
+    font-size: 0.75rem;
+    color: #78909c;
+}
+
+// Filters
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.pill {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #90a4ae;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(0, 137, 123, 0.1);
+        color: #4db6ac;
+        border-color: rgba(0, 137, 123, 0.3);
+    }
+
+    &.active {
+        background: rgba(0, 137, 123, 0.2);
+        color: #4db6ac;
+        border-color: rgba(0, 137, 123, 0.4);
+    }
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #78909c;
+        font-size: 0.85rem;
+    }
+
+    .form-control {
+        padding-left: 36px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+    }
+}
+
+// Table
+.listing-table {
+    width: 100%;
+
+    th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #90a4ae;
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-weight: 600;
+    }
+
+    td {
+        padding: 0.65rem 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 0.9rem;
+    }
+
+    .refunded-row {
+        opacity: 0.6;
+    }
+}
+
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+}
+
+.badge-outstanding {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ffb74d;
+}
+
+.badge-refunded {
+    background: rgba(76, 175, 80, 0.2);
+    color: #66bb6a;
+}
+
+.btn-refund {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ffb74d;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 152, 0, 0.25);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+// Mobile
+.mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mobile-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+
+    &.refunded-card-mobile {
+        opacity: 0.6;
+    }
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.3rem;
+}
+
+.card-event {
+    font-weight: 600;
+}
+
+.card-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-amount {
+    font-weight: 700;
+    color: #ffb74d;
+    font-size: 1.05rem;
+}
+
+.card-bottom {
+    margin-top: 0.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #78909c;
+
+    i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+}
+
+@media (max-width: 767px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .listing-header {
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+    }
+}

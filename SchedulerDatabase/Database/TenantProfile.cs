@@ -57,6 +57,10 @@ public partial class TenantProfile
 
     public bool displaysUSTerms { get; set; }
 
+    public string invoiceNumberMask { get; set; }
+
+    public string receiptNumberMask { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

@@ -1,0 +1,181 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">
+                        <i class="fa-solid fa-file-invoice-dollar me-2"></i>Invoices
+                    </h3>
+                    <small class="text-white-50">Manage and track invoices</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Status Quick Filters -->
+                <div class="status-pills d-flex gap-1 me-3">
+                    <button class="btn btn-sm badge-glass-pill" [class.active]="filterStatusId === null"
+                        (click)="filterStatusId = null; onFilterChange()">
+                        All <span class="badge badge-glass-sm ms-1">{{ totalCount }}</span>
+                    </button>
+                    <button class="btn btn-sm badge-glass-pill" *ngIf="draftCount > 0"
+                        [class.active]="filterStatusId !== null && getStatusBadgeClass(statuses | slice:0:1 | json) === 'status-draft'"
+                        (click)="filterStatusId = null; onFilterChange()">
+                        <i class="fa-solid fa-pencil me-1"></i>Draft
+                        <span class="badge badge-glass-sm ms-1">{{ draftCount }}</span>
+                    </button>
+                    <span class="text-white-50 small align-self-center" *ngIf="overdueCount > 0">
+                        <i class="fa-solid fa-exclamation-triangle me-1 text-warning"></i>{{ overdueCount }} overdue
+                    </span>
+                </div>
+
+                <!-- Status Filter -->
+                <select class="form-select form-select-sm glass-select me-2" [(ngModel)]="filterStatusId"
+                    (ngModelChange)="onFilterChange()" style="max-width: 180px;">
+                    <option [ngValue]="null">All Statuses</option>
+                    <option *ngFor="let status of statuses" [ngValue]="status.id">{{ status.name }}</option>
+                </select>
+
+                <!-- Search -->
+                <div class="search-bar position-relative">
+                    <i class="fa fa-search search-icon text-white-50"></i>
+                    <input type="text" class="form-control search-input glass-input" placeholder="Search invoices..."
+                        [(ngModel)]="filterText" (ngModelChange)="onFilterChange()">
+                    <button *ngIf="filterText" class="clear-search btn text-white"
+                        (click)="filterText=''; onFilterChange()" title="Clear Search">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm text-center py-5" *ngIf="!isLoading && filteredInvoices.length === 0">
+        <div class="card-body">
+            <i class="fa-solid fa-file-invoice fa-3x text-muted opacity-25 mb-3"></i>
+            <h5 class="text-muted">No Invoices Found</h5>
+            <p class="text-muted" *ngIf="filterText || filterStatusId">
+                Try adjusting your filters.
+            </p>
+            <p class="text-muted" *ngIf="!filterText && !filterStatusId">
+                No invoices have been created yet.
+            </p>
+        </div>
+    </div>
+
+    <!-- Invoice Table (Desktop) -->
+    <div class="card border-0 shadow-sm" *ngIf="!isLoading && filteredInvoices.length > 0 && !isSmallScreen">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 sortable" (click)="sortBy('invoiceNumber')">
+                            Invoice # <i class="fa-solid ms-1" [ngClass]="getSortIcon('invoiceNumber')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('client')">
+                            Client <i class="fa-solid ms-1" [ngClass]="getSortIcon('client')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('invoiceDate')">
+                            Date <i class="fa-solid ms-1" [ngClass]="getSortIcon('invoiceDate')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('dueDate')">
+                            Due <i class="fa-solid ms-1" [ngClass]="getSortIcon('dueDate')"></i>
+                        </th>
+                        <th>Status</th>
+                        <th class="text-end sortable" (click)="sortBy('totalAmount')">
+                            Total <i class="fa-solid ms-1" [ngClass]="getSortIcon('totalAmount')"></i>
+                        </th>
+                        <th class="text-end">Balance</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let inv of filteredInvoices; trackBy: trackById" class="invoice-row"
+                        (click)="viewInvoice(inv)" style="cursor: pointer;">
+                        <td class="ps-4">
+                            <span class="fw-bold text-primary">{{ inv.invoiceNumber }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-medium">{{ inv.client?.name || '—' }}</span>
+                        </td>
+                        <td>
+                            <span>{{ inv.invoiceDate | date:'mediumDate' }}</span>
+                        </td>
+                        <td>
+                            <span
+                                [ngClass]="{'text-danger fw-bold': inv.invoiceStatus?.name?.toLowerCase() === 'overdue'}">
+                                {{ inv.dueDate | date:'mediumDate' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge status-badge" [ngClass]="getStatusBadgeClass(inv.invoiceStatus?.name)">
+                                {{ inv.invoiceStatus?.name || '—' }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold">{{ inv.totalAmount | currency:'CAD':'symbol':'1.2-2' }}</span>
+                        </td>
+                        <td class="text-end">
+                            <span [ngClass]="getAmountRemaining(inv) > 0 ? 'text-danger' : 'text-success'">
+                                {{ getAmountRemaining(inv) | currency:'CAD':'symbol':'1.2-2' }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-secondary" (click)="onGeneratePdf(inv, $event)"
+                                ngbTooltip="Download PDF">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white border-top py-2 px-4">
+            <small class="text-muted">
+                Showing {{ filteredInvoices.length }} of {{ totalCount }} invoices
+            </small>
+        </div>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div *ngIf="!isLoading && filteredInvoices.length > 0 && isSmallScreen">
+        <div class="card border-0 shadow-sm mb-2" *ngFor="let inv of filteredInvoices; trackBy: trackById"
+            (click)="viewInvoice(inv)" role="button" style="cursor: pointer;">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-bold text-primary">{{ inv.invoiceNumber }}</div>
+                        <div class="fw-medium">{{ inv.client?.name || 'No Client' }}</div>
+                        <small class="text-muted">{{ inv.invoiceDate | date:'mediumDate' }}</small>
+                        <span class="badge status-badge ms-1" [ngClass]="getStatusBadgeClass(inv.invoiceStatus?.name)">
+                            {{ inv.invoiceStatus?.name }}
+                        </span>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold">{{ inv.totalAmount | currency:'CAD':'symbol':'1.2-2' }}</div>
+                        <small [ngClass]="getAmountRemaining(inv) > 0 ? 'text-danger' : 'text-success'">
+                            Bal: {{ getAmountRemaining(inv) | currency:'CAD':'symbol':'1.2-2' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

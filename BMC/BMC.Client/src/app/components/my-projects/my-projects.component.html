@@ -1,0 +1,201 @@
+<!-- My Projects — Premium MOC Project Management UI -->
+<div class="my-projects-container">
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner-wrap">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading your projects…</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="projects-header" *ngIf="!loading">
+        <div class="header-left">
+            <h1 class="page-title">
+                <i class="fas fa-project-diagram"></i>
+                My Projects
+            </h1>
+            <p class="page-subtitle">Build, import, and manage your MOC creations</p>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn btn-upload" (click)="openUploadModal()" title="Import a model file"
+                id="upload-model-btn">
+                <i class="fas fa-file-import"></i>
+                <span>Upload Model</span>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- Stats Cards -->
+    <div class="stats-row" *ngIf="!loading">
+        <div class="stat-card">
+            <div class="stat-icon projects"><i class="fas fa-project-diagram"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ projects.length | number }}</span>
+                <span class="stat-label">Total Projects</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon parts"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ getTotalParts() | number }}</span>
+                <span class="stat-label">Total Parts</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon recent"><i class="fas fa-clock"></i></div>
+            <div class="stat-body">
+                <span class="stat-value">{{ getRecentCount() }}</span>
+                <span class="stat-label">Active This Week</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toolbar -->
+    <div class="projects-toolbar" *ngIf="!loading && projects.length > 0">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search projects…" (input)="onSearch($event)" [value]="searchTerm"
+                id="project-search" />
+        </div>
+
+        <div class="toolbar-right">
+            <!-- Sort Dropdown -->
+            <div class="sort-group">
+                <label class="sort-label">Sort:</label>
+                <select class="sort-select" [ngModel]="sortBy" (ngModelChange)="setSort($event)" id="project-sort">
+                    <option value="recent">Recent Activity</option>
+                    <option value="name">Name</option>
+                    <option value="parts">Part Count</option>
+                </select>
+            </div>
+
+            <span class="result-count">{{ filteredProjects.length }} projects</span>
+
+            <div class="view-toggle">
+                <button [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'; applyFilters()"
+                    title="Grid view" id="view-grid-btn">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button [class.active]="viewMode === 'list'" (click)="viewMode = 'list'; applyFilters()"
+                    title="List view" id="view-list-btn">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && projects.length === 0">
+        <i class="fas fa-drafting-compass"></i>
+        <h3>No projects yet</h3>
+        <p>Upload a model file (.ldr, .mpd, or .io) to create your first project.</p>
+        <button class="btn btn-upload" (click)="openUploadModal()" id="empty-upload-btn">
+            <i class="fas fa-file-import"></i>
+            <span>Upload Your First Model</span>
+        </button>
+    </div>
+
+    <!-- No Results -->
+    <div class="empty-state" *ngIf="!loading && projects.length > 0 && filteredProjects.length === 0">
+        <i class="fas fa-search"></i>
+        <h3>No matches</h3>
+        <p>No projects match "{{ searchTerm }}"</p>
+    </div>
+
+
+    <!-- ===== GRID VIEW ===== -->
+    <div class="projects-grid" *ngIf="!loading && viewMode === 'grid' && displayedProjects.length > 0">
+        <div class="project-card" *ngFor="let project of displayedProjects"
+            (click)="router.navigate(['/projects', project.id])" style="cursor: pointer;">
+
+            <!-- Thumbnail -->
+            <div class="card-thumbnail">
+                <img *ngIf="project.thumbnailImagePath" [src]="project.thumbnailImagePath" [alt]="project.name" />
+                <div class="placeholder-thumb" *ngIf="!project.thumbnailImagePath">
+                    <i class="fas fa-cubes"></i>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="card-body">
+                <h4 class="project-name" [title]="project.name">{{ project.name || 'Untitled Project' }}</h4>
+                <p class="project-desc" *ngIf="project.description">{{ project.description }}</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="card-footer">
+                <div class="card-meta">
+                    <span class="meta-badge parts" *ngIf="project.partCount" title="Parts">
+                        <i class="fas fa-puzzle-piece"></i> {{ project.partCount | number }}
+                    </span>
+                    <span class="meta-badge time" title="Last activity">
+                        <i class="fas fa-clock"></i> {{ getRelativeDate(project.lastBuildDate) }}
+                    </span>
+                </div>
+                <button class="btn-icon danger" (click)="deleteProject(project, $event)" title="Delete project">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===== LIST VIEW ===== -->
+    <div class="projects-table-wrap" *ngIf="!loading && viewMode === 'list' && displayedProjects.length > 0">
+        <table class="projects-table">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th class="num">Parts</th>
+                    <th>Last Activity</th>
+                    <th>Version</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let project of displayedProjects" (click)="router.navigate(['/projects', project.id])"
+                    style="cursor: pointer;">
+                    <td>
+                        <div class="project-cell">
+                            <strong>{{ project.name || 'Untitled Project' }}</strong>
+                            <span class="project-desc-small" *ngIf="project.description">{{ project.description
+                                }}</span>
+                        </div>
+                    </td>
+                    <td class="num">{{ (project.partCount || 0) | number }}</td>
+                    <td>{{ getRelativeDate(project.lastBuildDate) }}</td>
+                    <td>
+                        <span class="version-badge">v{{ project.versionNumber }}</span>
+                    </td>
+                    <td>
+                        <button class="btn-icon danger" (click)="deleteProject(project, $event)" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage <= 1">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="page-btn" *ngFor="let p of getVisiblePages()" [class.active]="p === currentPage"
+            (click)="goToPage(p)">
+            {{ p }}
+        </button>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+</div>

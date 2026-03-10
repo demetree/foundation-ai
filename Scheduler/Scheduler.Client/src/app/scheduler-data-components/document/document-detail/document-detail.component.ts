@@ -24,6 +24,8 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { DocumentService, DocumentData, DocumentSubmitData } from '../../../scheduler-data-services/document.service';
 import { DocumentTypeService } from '../../../scheduler-data-services/document-type.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
@@ -41,6 +43,8 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 //
 interface DocumentFormValues {
   documentTypeId: number | bigint,       // For FK link number
+  invoiceId: number | bigint | null,       // For FK link number
+  receiptId: number | bigint | null,       // For FK link number
   name: string,
   description: string | null,
   fileName: string,
@@ -91,6 +95,8 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
 
   public documentForm: FormGroup = this.fb.group({
         documentTypeId: [null, Validators.required],
+        invoiceId: [null],
+        receiptId: [null],
         name: ['', Validators.required],
         description: [''],
         fileName: ['', Validators.required],
@@ -128,6 +134,8 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
 
   documents$ = this.documentService.GetDocumentList();
   public documentTypes$ = this.documentTypeService.GetDocumentTypeList();
+  public invoices$ = this.invoiceService.GetInvoiceList();
+  public receipts$ = this.receiptService.GetReceiptList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public contacts$ = this.contactService.GetContactList();
@@ -139,6 +147,8 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
   constructor(
     public documentService: DocumentService,
     public documentTypeService: DocumentTypeService,
+    public invoiceService: InvoiceService,
+    public receiptService: ReceiptService,
     public scheduledEventService: ScheduledEventService,
     public financialTransactionService: FinancialTransactionService,
     public contactService: ContactService,
@@ -426,6 +436,8 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
       //
       this.documentForm.reset({
         documentTypeId: null,
+        invoiceId: null,
+        receiptId: null,
         name: '',
         description: '',
         fileName: '',
@@ -458,6 +470,8 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
         //
         this.documentForm.reset({
         documentTypeId: documentData.documentTypeId,
+        invoiceId: documentData.invoiceId,
+        receiptId: documentData.receiptId,
         name: documentData.name ?? '',
         description: documentData.description ?? '',
         fileName: documentData.fileName ?? '',
@@ -540,6 +554,8 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
     const documentSubmitData: DocumentSubmitData = {
         id: this.documentData?.id || 0,
         documentTypeId: Number(formValue.documentTypeId),
+        invoiceId: formValue.invoiceId ? Number(formValue.invoiceId) : null,
+        receiptId: formValue.receiptId ? Number(formValue.receiptId) : null,
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
         fileName: formValue.fileName!.trim(),

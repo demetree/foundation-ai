@@ -626,6 +626,8 @@ import { MyPartListsComponent } from './components/my-part-lists/my-part-lists.c
 import { MyLostPartsComponent } from './components/my-lost-parts/my-lost-parts.component';
 import { BrickbergDashboardComponent } from './components/brickberg-dashboard/brickberg-dashboard.component';
 import { AuthNudgeModalComponent } from './components/auth-nudge-modal/auth-nudge-modal.component';
+import { MyProjectsComponent } from './components/my-projects/my-projects.component';
+import { UploadModelModalComponent } from './components/upload-model-modal/upload-model-modal.component';
 
 
 @NgModule({
@@ -681,6 +683,8 @@ import { AuthNudgeModalComponent } from './components/auth-nudge-modal/auth-nudg
         MyLostPartsComponent,
         BrickbergDashboardComponent,
         AuthNudgeModalComponent,
+        MyProjectsComponent,
+        UploadModelModalComponent,
 
 
         //

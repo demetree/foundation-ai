@@ -69,6 +69,8 @@ public partial class FinancialTransaction
 
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
+
     public virtual Client client { get; set; }
 
     public virtual Contact contact { get; set; }

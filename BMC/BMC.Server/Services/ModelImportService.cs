@@ -149,7 +149,7 @@ namespace Foundation.BMC.Services
             string extension = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
             string sourceFormat = extension;
             string[] lDrawLines = null;
-            byte[] thumbnailData = null;
+            StudioIoResult ioResult = null;
 
             if (extension == FORMAT_IO)
             {
@@ -158,14 +158,22 @@ namespace Foundation.BMC.Services
                 //
                 _logger.LogInformation("Importing .io file: {FileName} ({Size} bytes)", fileName, fileData.Length);
 
-                StudioIoResult ioResult = StudioIoParser.ParseBytes(fileData, fileName);
+                ioResult = StudioIoParser.ParseBytes(fileData, fileName);
                 lDrawLines = ioResult.LDrawLines;
-                thumbnailData = ioResult.ThumbnailData;
 
                 _logger.LogInformation(
-                    ".io extraction complete — Studio version: {Version}, reported parts: {Parts}",
+                    ".io extraction complete — Studio version: {Version}, reported parts: {Parts}, password-protected: {Protected}",
                     ioResult.StudioVersion ?? "unknown",
-                    ioResult.ReportedPartCount?.ToString() ?? "unknown");
+                    ioResult.ReportedPartCount?.ToString() ?? "unknown",
+                    ioResult.WasPasswordProtected);
+
+                //
+                // Log error part list if present — helps with diagnostics
+                //
+                if (string.IsNullOrEmpty(ioResult.ErrorPartList) == false)
+                {
+                    _logger.LogWarning("Studio .io error part list:\n{ErrorParts}", ioResult.ErrorPartList);
+                }
             }
             else if (extension == FORMAT_LDR || extension == FORMAT_MPD)
             {
@@ -207,7 +215,7 @@ namespace Foundation.BMC.Services
                 fileData,
                 fileName,
                 sourceFormat,
-                thumbnailData,
+                ioResult,
                 tenantGuid,
                 cancellationToken);
 
@@ -287,7 +295,7 @@ namespace Foundation.BMC.Services
             byte[] rawFileData,
             string fileName,
             string sourceFormat,
-            byte[] thumbnailData,
+            StudioIoResult ioResult,
             Guid tenantGuid,
             CancellationToken cancellationToken)
         {
@@ -311,6 +319,14 @@ namespace Foundation.BMC.Services
                 active = true,
                 deleted = false
             };
+
+            //
+            // If we have a thumbnail from an .io import, store it on the Project
+            //
+            if (ioResult != null && ioResult.ThumbnailData != null && ioResult.ThumbnailData.Length > 0)
+            {
+                project.thumbnailData = ioResult.ThumbnailData;
+            }
 
             _context.Projects.Add(project);
             await _context.SaveChangesAsync(cancellationToken);
@@ -352,6 +368,16 @@ namespace Foundation.BMC.Services
                 active = true,
                 deleted = false
             };
+
+            //
+            // If this was an .io import, store the Studio-specific metadata
+            //
+            if (ioResult != null)
+            {
+                modelDocument.studioVersion = ioResult.StudioVersion;
+                modelDocument.instructionSettingsXml = ioResult.InstructionSettingsXml;
+                modelDocument.errorPartList = ioResult.ErrorPartList;
+            }
 
             _context.ModelDocuments.Add(modelDocument);
             await _context.SaveChangesAsync(cancellationToken);

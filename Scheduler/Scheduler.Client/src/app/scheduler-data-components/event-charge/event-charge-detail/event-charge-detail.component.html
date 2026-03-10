@@ -198,6 +198,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="invoiceLineItemService.userIsSchedulerInvoiceLineItemReader()">
+                            <button ngbNavLink>Invoice Line Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (eventChargeData?.InvoiceLineItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-invoice-line-item-table [queryParams]="{ eventChargeId: eventChargeData?.id }" [showAddButton]="true" [preSeededData]="{ eventChargeId: eventChargeData?.id }" [hiddenFields]="['eventChargeId']"></app-invoice-line-item-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

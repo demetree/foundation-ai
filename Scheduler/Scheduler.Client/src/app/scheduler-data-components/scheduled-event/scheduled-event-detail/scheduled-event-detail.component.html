@@ -264,20 +264,6 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
-                            <button ngbNavLink>Documents
-                                <span class="badge bg-primary ms-2">
-                                    {{ (scheduledEventData?.DocumentsCount$ | async) ?? '-' }}
-                                </span>
-                            </button>
-                            <ng-template ngbNavContent>
-                            <div class="d-flex flex-column gap-3 p-0">
-                                <div class="flex-grow-1">
-                                    <app-document-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-document-table>
-                                </div>
-                            </div>
-                            </ng-template>
-                        </li>
                       <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
                             <button ngbNavLink>Payment Transactions
                                 <span class="badge bg-primary ms-2">
@@ -288,6 +274,34 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-payment-transaction-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-payment-transaction-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="invoiceService.userIsSchedulerInvoiceReader()">
+                            <button ngbNavLink>Invoices
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.InvoicesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-invoice-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-invoice-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>

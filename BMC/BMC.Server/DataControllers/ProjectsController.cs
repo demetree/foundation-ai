@@ -789,6 +789,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					project.thumbnailData = null;
 					project.BrickConnections = null;
 					project.BuildManuals = null;
 					project.ModelDocuments = null;
@@ -915,6 +916,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.thumbnailData = null;
 				cloneOfExisting.BrickConnections = null;
 				cloneOfExisting.BuildManuals = null;
 				cloneOfExisting.ModelDocuments = null;
@@ -960,6 +962,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    project.description = oldProject.description;
 				    project.notes = oldProject.notes;
 				    project.thumbnailImagePath = oldProject.thumbnailImagePath;
+				    project.thumbnailData = oldProject.thumbnailData;
 				    project.partCount = oldProject.partCount;
 				    project.lastBuildDate = oldProject.lastBuildDate;
 				    project.objectGuid = oldProject.objectGuid;

@@ -59,6 +59,8 @@ public partial class EventCharge
 
     public virtual ICollection<EventChargeChangeHistory> EventChargeChangeHistories { get; set; } = new List<EventChargeChangeHistory>();
 
+    public virtual ICollection<InvoiceLineItem> InvoiceLineItems { get; set; } = new List<InvoiceLineItem>();
+
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ChargeStatus chargeStatus { get; set; }

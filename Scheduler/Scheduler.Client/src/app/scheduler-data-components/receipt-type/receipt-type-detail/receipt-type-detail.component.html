@@ -106,6 +106,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="receiptService.userIsSchedulerReceiptReader()">
+                            <button ngbNavLink>Receipts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (receiptTypeData?.ReceiptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-receipt-table [queryParams]="{ receiptTypeId: receiptTypeData?.id }" [showAddButton]="true" [preSeededData]="{ receiptTypeId: receiptTypeData?.id }" [hiddenFields]="['receiptTypeId']"></app-receipt-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="giftService.userIsSchedulerGiftReader()">
                             <button ngbNavLink>Gifts
                                 <span class="badge bg-primary ms-2">

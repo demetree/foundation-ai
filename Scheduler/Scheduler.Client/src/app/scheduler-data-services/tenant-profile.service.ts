@@ -53,6 +53,8 @@ export class TenantProfileQueryParameters {
     secondaryColor: string | null | undefined = null;
     displaysMetric: boolean | null | undefined = null;
     displaysUSTerms: boolean | null | undefined = null;
+    invoiceNumberMask: string | null | undefined = null;
+    receiptNumberMask: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -92,6 +94,8 @@ export class TenantProfileSubmitData {
     secondaryColor: string | null = null;
     displaysMetric!: boolean;
     displaysUSTerms!: boolean;
+    invoiceNumberMask: string | null = null;
+    receiptNumberMask: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -185,6 +189,8 @@ export class TenantProfileData {
     secondaryColor!: string | null;
     displaysMetric!: boolean;
     displaysUSTerms!: boolean;
+    invoiceNumberMask!: string | null;
+    receiptNumberMask!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -518,6 +524,8 @@ export class TenantProfileService extends SecureEndpointBase {
         output.secondaryColor = data.secondaryColor;
         output.displaysMetric = data.displaysMetric;
         output.displaysUSTerms = data.displaysUSTerms;
+        output.invoiceNumberMask = data.invoiceNumberMask;
+        output.receiptNumberMask = data.receiptNumberMask;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

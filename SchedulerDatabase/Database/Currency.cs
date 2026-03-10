@@ -39,9 +39,13 @@ public partial class Currency
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
     public virtual ICollection<Office> Offices { get; set; } = new List<Office>();
 
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ICollection<RateSheet> RateSheets { get; set; } = new List<RateSheet>();
+
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
 }

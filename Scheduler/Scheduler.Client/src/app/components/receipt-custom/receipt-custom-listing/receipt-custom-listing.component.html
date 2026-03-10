@@ -1,0 +1,138 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">
+                        <i class="fa-solid fa-receipt me-2"></i>Receipts
+                    </h3>
+                    <small class="text-white-50">Payment receipts and records</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+
+                <span class="text-white me-3">
+                    <span class="badge badge-glass-sm">{{ totalCount }}</span> total receipts
+                </span>
+
+                <!-- Search -->
+                <div class="search-bar position-relative">
+                    <i class="fa fa-search search-icon text-white-50"></i>
+                    <input type="text" class="form-control search-input glass-input" placeholder="Search receipts..."
+                        [(ngModel)]="filterText" (ngModelChange)="onFilterChange()">
+                    <button *ngIf="filterText" class="clear-search btn text-white"
+                        (click)="filterText=''; onFilterChange()" title="Clear Search">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm text-center py-5" *ngIf="!isLoading && filteredReceipts.length === 0">
+        <div class="card-body">
+            <i class="fa-solid fa-receipt fa-3x text-muted opacity-25 mb-3"></i>
+            <h5 class="text-muted">No Receipts Found</h5>
+            <p class="text-muted" *ngIf="filterText">
+                Try adjusting your search.
+            </p>
+            <p class="text-muted" *ngIf="!filterText">
+                No receipts have been created yet.
+            </p>
+        </div>
+    </div>
+
+    <!-- Receipt Table (Desktop) -->
+    <div class="card border-0 shadow-sm" *ngIf="!isLoading && filteredReceipts.length > 0 && !isSmallScreen">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 sortable" (click)="sortBy('receiptNumber')">
+                            Receipt # <i class="fa-solid ms-1" [ngClass]="getSortIcon('receiptNumber')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('receiptDate')">
+                            Date <i class="fa-solid ms-1" [ngClass]="getSortIcon('receiptDate')"></i>
+                        </th>
+                        <th>Description</th>
+                        <th>Payment Method</th>
+                        <th class="text-end sortable" (click)="sortBy('amount')">
+                            Amount <i class="fa-solid ms-1" [ngClass]="getSortIcon('amount')"></i>
+                        </th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let rec of filteredReceipts; trackBy: trackById" class="receipt-row">
+                        <td class="ps-4">
+                            <span class="fw-bold text-primary">{{ rec.receiptNumber }}</span>
+                        </td>
+                        <td>
+                            <span>{{ rec.receiptDate | date:'mediumDate' }}</span>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 300px;">{{ rec.description || '—' }}</div>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ rec.paymentMethod || '—' }}</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold text-success">{{ rec.amount | currency:'CAD':'symbol':'1.2-2' }}</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-secondary" (click)="onGeneratePdf(rec, $event)"
+                                ngbTooltip="Download PDF">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white border-top py-2 px-4">
+            <small class="text-muted">
+                Showing {{ filteredReceipts.length }} of {{ totalCount }} receipts
+            </small>
+        </div>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div *ngIf="!isLoading && filteredReceipts.length > 0 && isSmallScreen">
+        <div class="card border-0 shadow-sm mb-2" *ngFor="let rec of filteredReceipts; trackBy: trackById">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-bold text-primary">{{ rec.receiptNumber }}</div>
+                        <small class="text-muted">{{ rec.receiptDate | date:'mediumDate' }}</small>
+                        <div class="small text-truncate" style="max-width: 200px;">{{ rec.description || '' }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-success">{{ rec.amount | currency:'CAD':'symbol':'1.2-2' }}</div>
+                        <button class="btn btn-sm btn-outline-secondary mt-1" (click)="onGeneratePdf(rec, $event)">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -842,6 +842,7 @@ CREATE TABLE "Project"
 	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
 	"notes" TEXT NULL COLLATE NOCASE,		-- Free-form notes about the project
 	"thumbnailImagePath" VARCHAR(250) NULL COLLATE NOCASE,		-- Relative path to project thumbnail image for listings
+	"thumbnailData" BLOB NULL,		-- PNG thumbnail image data from .io import or renders
 	"partCount" INTEGER NULL,		-- Cached total part count for quick display without querying PlacedBrick
 	"lastBuildDate" DATETIME NULL,		-- When the user last modified the build (placed or moved a brick)
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -1315,6 +1316,9 @@ CREATE TABLE "ModelDocument"
 	"author" VARCHAR(100) NULL COLLATE NOCASE,		-- Model author from the file header
 	"totalPartCount" INTEGER NULL,		-- Cached total part count across all sub-files
 	"totalStepCount" INTEGER NULL,		-- Cached total build step count across all sub-files
+	"studioVersion" VARCHAR(100) NULL COLLATE NOCASE,		-- BrickLink Studio version that created this document (from .io .INFO file)
+	"instructionSettingsXml" TEXT NULL COLLATE NOCASE,		-- Raw XML instruction configuration from .io model.ins file
+	"errorPartList" TEXT NULL COLLATE NOCASE,		-- Content of errorPartList.err from .io archive listing problematic or missing parts
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.

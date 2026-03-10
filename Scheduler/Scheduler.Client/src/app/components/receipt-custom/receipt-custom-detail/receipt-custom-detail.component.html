@@ -1,0 +1,111 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="receipt-detail-container" *ngIf="!isLoading && receipt; else loadingTemplate">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- HEADER                                      -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="detail-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </button>
+                <h2 class="receipt-number mb-0">
+                    <i class="fa-solid fa-receipt me-2"></i>{{ receipt.receiptNumber }}
+                </h2>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-sm btn-action btn-edit" (click)="openEditModal()" title="Edit Receipt">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-action btn-pdf" (click)="generatePdf()" [disabled]="isGeneratingPdf"
+                    title="Download PDF">
+                    <i class="fa-solid fa-file-pdf me-1"></i>
+                    {{ isGeneratingPdf ? 'Generating...' : 'PDF' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- AMOUNT HERO                                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="amount-hero">
+        <div class="amount-label">Amount</div>
+        <div class="amount-value">{{ formatCurrency(receipt.amount) }}</div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- DETAILS GRID                                -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">Receipt Date</span>
+            <span class="info-value">{{ formatDate(receipt.receiptDate) }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.receiptType">
+            <span class="info-label">Receipt Type</span>
+            <span class="info-value">{{ receipt.receiptType.name }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.client">
+            <span class="info-label">Client</span>
+            <span class="info-value">{{ receipt.client.name }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.contact">
+            <span class="info-label">Contact</span>
+            <span class="info-value">{{ receipt.contact.firstName }} {{ receipt.contact.lastName }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.paymentMethod">
+            <span class="info-label">Payment Method</span>
+            <span class="info-value">{{ receipt.paymentMethod }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.currency">
+            <span class="info-label">Currency</span>
+            <span class="info-value">{{ receipt.currency.name }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.invoice">
+            <span class="info-label">Linked Invoice</span>
+            <span class="info-value clickable" (click)="router.navigate(['/finances/invoices', receipt.invoiceId])">
+                <i class="fa-solid fa-file-invoice me-1"></i>{{ receipt.invoice.invoiceNumber }}
+            </span>
+        </div>
+
+        <div class="info-item" *ngIf="receipt.paymentTransaction">
+            <span class="info-label">Payment Transaction</span>
+            <span class="info-value">#{{ receipt.paymentTransactionId }}</span>
+        </div>
+
+        <div class="info-item full-width" *ngIf="receipt.description">
+            <span class="info-label">Description</span>
+            <span class="info-value">{{ receipt.description }}</span>
+        </div>
+
+        <div class="info-item full-width" *ngIf="receipt.notes">
+            <span class="info-label">Notes</span>
+            <span class="info-value notes-value">{{ receipt.notes }}</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- Loading Template -->
+<ng-template #loadingTemplate>
+    <div class="loading-container">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading receipt...</p>
+    </div>
+</ng-template>
+
+
+<!-- Add/Edit Modal -->
+<app-receipt-custom-add-edit (receiptChanged)="onReceiptChanged()"></app-receipt-custom-add-edit>

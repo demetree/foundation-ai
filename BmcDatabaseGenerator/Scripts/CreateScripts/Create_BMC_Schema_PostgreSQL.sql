@@ -858,6 +858,7 @@ CREATE TABLE "BMC"."Project"
 	"description" VARCHAR(500) NOT NULL,
 	"notes" TEXT NULL,		-- Free-form notes about the project
 	"thumbnailImagePath" VARCHAR(250) NULL,		-- Relative path to project thumbnail image for listings
+	"thumbnailData" BYTEA NULL,		-- PNG thumbnail image data from .io import or renders
 	"partCount" INT NULL,		-- Cached total part count for quick display without querying PlacedBrick
 	"lastBuildDate" TIMESTAMP NULL,		-- When the user last modified the build (placed or moved a brick)
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -1331,6 +1332,9 @@ CREATE TABLE "BMC"."ModelDocument"
 	"author" VARCHAR(100) NULL,		-- Model author from the file header
 	"totalPartCount" INT NULL,		-- Cached total part count across all sub-files
 	"totalStepCount" INT NULL,		-- Cached total build step count across all sub-files
+	"studioVersion" VARCHAR(100) NULL,		-- BrickLink Studio version that created this document (from .io .INFO file)
+	"instructionSettingsXml" TEXT NULL,		-- Raw XML instruction configuration from .io model.ins file
+	"errorPartList" TEXT NULL,		-- Content of errorPartList.err from .io archive listing problematic or missing parts
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.

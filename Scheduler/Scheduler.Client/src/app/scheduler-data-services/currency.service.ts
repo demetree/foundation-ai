@@ -24,6 +24,8 @@ import { EventChargeService, EventChargeData } from './event-charge.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { BudgetService, BudgetData } from './budget.service';
 import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
+import { InvoiceService, InvoiceData } from './invoice.service';
+import { ReceiptService, ReceiptData } from './receipt.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -162,6 +164,16 @@ export class CurrencyData {
     private _paymentTransactions: PaymentTransactionData[] | null = null;
     private _paymentTransactionsPromise: Promise<PaymentTransactionData[]> | null  = null;
     private _paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
+                
+    private _invoices: InvoiceData[] | null = null;
+    private _invoicesPromise: Promise<InvoiceData[]> | null  = null;
+    private _invoicesSubject = new BehaviorSubject<InvoiceData[] | null>(null);
+
+                
+    private _receipts: ReceiptData[] | null = null;
+    private _receiptsPromise: Promise<ReceiptData[]> | null  = null;
+    private _receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
 
                 
 
@@ -371,6 +383,56 @@ export class CurrencyData {
 
 
 
+    public Invoices$ = this._invoicesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._invoices === null && this._invoicesPromise === null) {
+            this.loadInvoices(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _invoicesCount$: Observable<bigint | number> | null = null;
+    public get InvoicesCount$(): Observable<bigint | number> {
+        if (this._invoicesCount$ === null) {
+            this._invoicesCount$ = InvoiceService.Instance.GetInvoicesRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._invoicesCount$;
+    }
+
+
+
+    public Receipts$ = this._receiptsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._receipts === null && this._receiptsPromise === null) {
+            this.loadReceipts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _receiptsCount$: Observable<bigint | number> | null = null;
+    public get ReceiptsCount$(): Observable<bigint | number> {
+        if (this._receiptsCount$ === null) {
+            this._receiptsCount$ = ReceiptService.Instance.GetReceiptsRowCount({currencyId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._receiptsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -448,6 +510,16 @@ export class CurrencyData {
      this._paymentTransactionsPromise = null;
      this._paymentTransactionsSubject.next(null);
      this._paymentTransactionsCount$ = null;
+
+     this._invoices = null;
+     this._invoicesPromise = null;
+     this._invoicesSubject.next(null);
+     this._invoicesCount$ = null;
+
+     this._receipts = null;
+     this._receiptsPromise = null;
+     this._receiptsSubject.next(null);
+     this._receiptsCount$ = null;
 
   }
 
@@ -975,6 +1047,136 @@ export class CurrencyData {
     }
 
 
+    /**
+     *
+     * Gets the Invoices for this Currency.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.currency.Invoices.then(currencies => { ... })
+     *   or
+     *   await this.currency.currencies
+     *
+    */
+    public get Invoices(): Promise<InvoiceData[]> {
+        if (this._invoices !== null) {
+            return Promise.resolve(this._invoices);
+        }
+
+        if (this._invoicesPromise !== null) {
+            return this._invoicesPromise;
+        }
+
+        // Start the load
+        this.loadInvoices();
+
+        return this._invoicesPromise!;
+    }
+
+
+
+    private loadInvoices(): void {
+
+        this._invoicesPromise = lastValueFrom(
+            CurrencyService.Instance.GetInvoicesForCurrency(this.id)
+        )
+        .then(Invoices => {
+            this._invoices = Invoices ?? [];
+            this._invoicesSubject.next(this._invoices);
+            return this._invoices;
+         })
+        .catch(err => {
+            this._invoices = [];
+            this._invoicesSubject.next(this._invoices);
+            throw err;
+        })
+        .finally(() => {
+            this._invoicesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Invoice. Call after mutations to force refresh.
+     */
+    public ClearInvoicesCache(): void {
+        this._invoices = null;
+        this._invoicesPromise = null;
+        this._invoicesSubject.next(this._invoices);      // Emit to observable
+    }
+
+    public get HasInvoices(): Promise<boolean> {
+        return this.Invoices.then(invoices => invoices.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Receipts for this Currency.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.currency.Receipts.then(currencies => { ... })
+     *   or
+     *   await this.currency.currencies
+     *
+    */
+    public get Receipts(): Promise<ReceiptData[]> {
+        if (this._receipts !== null) {
+            return Promise.resolve(this._receipts);
+        }
+
+        if (this._receiptsPromise !== null) {
+            return this._receiptsPromise;
+        }
+
+        // Start the load
+        this.loadReceipts();
+
+        return this._receiptsPromise!;
+    }
+
+
+
+    private loadReceipts(): void {
+
+        this._receiptsPromise = lastValueFrom(
+            CurrencyService.Instance.GetReceiptsForCurrency(this.id)
+        )
+        .then(Receipts => {
+            this._receipts = Receipts ?? [];
+            this._receiptsSubject.next(this._receipts);
+            return this._receipts;
+         })
+        .catch(err => {
+            this._receipts = [];
+            this._receiptsSubject.next(this._receipts);
+            throw err;
+        })
+        .finally(() => {
+            this._receiptsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Receipt. Call after mutations to force refresh.
+     */
+    public ClearReceiptsCache(): void {
+        this._receipts = null;
+        this._receiptsPromise = null;
+        this._receiptsSubject.next(this._receipts);      // Emit to observable
+    }
+
+    public get HasReceipts(): Promise<boolean> {
+        return this.Receipts.then(receipts => receipts.length > 0);
+    }
+
+
 
 
     /**
@@ -1018,6 +1220,8 @@ export class CurrencyService extends SecureEndpointBase {
         private financialTransactionService: FinancialTransactionService,
         private budgetService: BudgetService,
         private paymentTransactionService: PaymentTransactionService,
+        private invoiceService: InvoiceService,
+        private receiptService: ReceiptService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1459,6 +1663,26 @@ export class CurrencyService extends SecureEndpointBase {
     }
 
 
+    public GetInvoicesForCurrency(currencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<InvoiceData[]> {
+        return this.invoiceService.GetInvoiceList({
+            currencyId: currencyId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetReceiptsForCurrency(currencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ReceiptData[]> {
+        return this.receiptService.GetReceiptList({
+            currencyId: currencyId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full CurrencyData instance.
@@ -1525,6 +1749,14 @@ export class CurrencyService extends SecureEndpointBase {
     (revived as any)._paymentTransactions = null;
     (revived as any)._paymentTransactionsPromise = null;
     (revived as any)._paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
+
+    (revived as any)._invoices = null;
+    (revived as any)._invoicesPromise = null;
+    (revived as any)._invoicesSubject = new BehaviorSubject<InvoiceData[] | null>(null);
+
+    (revived as any)._receipts = null;
+    (revived as any)._receiptsPromise = null;
+    (revived as any)._receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
 
 
     //
@@ -1632,6 +1864,30 @@ export class CurrencyService extends SecureEndpointBase {
       );
 
     (revived as any)._paymentTransactionsCount$ = null;
+
+
+    (revived as any).Invoices$ = (revived as any)._invoicesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._invoices === null && (revived as any)._invoicesPromise === null) {
+                (revived as any).loadInvoices();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._invoicesCount$ = null;
+
+
+    (revived as any).Receipts$ = (revived as any)._receiptsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._receipts === null && (revived as any)._receiptsPromise === null) {
+                (revived as any).loadReceipts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._receiptsCount$ = null;
 
 
 

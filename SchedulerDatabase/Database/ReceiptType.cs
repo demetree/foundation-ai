@@ -30,4 +30,6 @@ public partial class ReceiptType
     public virtual ICollection<Gift> Gifts { get; set; } = new List<Gift>();
 
     public virtual ICollection<ReceiptTypeChangeHistory> ReceiptTypeChangeHistories { get; set; } = new List<ReceiptTypeChangeHistory>();
+
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
 }

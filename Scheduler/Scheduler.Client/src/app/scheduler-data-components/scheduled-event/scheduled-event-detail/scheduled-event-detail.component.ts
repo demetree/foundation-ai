@@ -37,8 +37,9 @@ import { BookingSourceTypeService } from '../../../scheduler-data-services/booki
 import { ScheduledEventChangeHistoryService } from '../../../scheduler-data-services/scheduled-event-change-history.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
-import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { ContactInteractionService } from '../../../scheduler-data-services/contact-interaction.service';
 import { EventCalendarService } from '../../../scheduler-data-services/event-calendar.service';
 import { ScheduledEventDependencyService } from '../../../scheduler-data-services/scheduled-event-dependency.service';
@@ -169,8 +170,9 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
   public scheduledEventChangeHistories$ = this.scheduledEventChangeHistoryService.GetScheduledEventChangeHistoryList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
-  public documents$ = this.documentService.GetDocumentList();
   public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
+  public invoices$ = this.invoiceService.GetInvoiceList();
+  public documents$ = this.documentService.GetDocumentList();
   public contactInteractions$ = this.contactInteractionService.GetContactInteractionList();
   public eventCalendars$ = this.eventCalendarService.GetEventCalendarList();
   public scheduledEventDependencies$ = this.scheduledEventDependencyService.GetScheduledEventDependencyList();
@@ -196,8 +198,9 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
     public scheduledEventChangeHistoryService: ScheduledEventChangeHistoryService,
     public eventChargeService: EventChargeService,
     public financialTransactionService: FinancialTransactionService,
-    public documentService: DocumentService,
     public paymentTransactionService: PaymentTransactionService,
+    public invoiceService: InvoiceService,
+    public documentService: DocumentService,
     public contactInteractionService: ContactInteractionService,
     public eventCalendarService: EventCalendarService,
     public scheduledEventDependencyService: ScheduledEventDependencyService,

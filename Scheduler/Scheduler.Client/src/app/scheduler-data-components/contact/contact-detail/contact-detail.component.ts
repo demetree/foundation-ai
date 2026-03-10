@@ -36,6 +36,8 @@ import { ClientContactService } from '../../../scheduler-data-services/client-co
 import { SchedulingTargetContactService } from '../../../scheduler-data-services/scheduling-target-contact.service';
 import { ResourceContactService } from '../../../scheduler-data-services/resource-contact.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { ContactInteractionService } from '../../../scheduler-data-services/contact-interaction.service';
 import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
@@ -160,6 +162,8 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
   public schedulingTargetContacts$ = this.schedulingTargetContactService.GetSchedulingTargetContactList();
   public resourceContacts$ = this.resourceContactService.GetResourceContactList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public invoices$ = this.invoiceService.GetInvoiceList();
+  public receipts$ = this.receiptService.GetReceiptList();
   public documents$ = this.documentService.GetDocumentList();
   public contactInteractions$ = this.contactInteractionService.GetContactInteractionList();
   public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
@@ -183,6 +187,8 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
     public schedulingTargetContactService: SchedulingTargetContactService,
     public resourceContactService: ResourceContactService,
     public financialTransactionService: FinancialTransactionService,
+    public invoiceService: InvoiceService,
+    public receiptService: ReceiptService,
     public documentService: DocumentService,
     public contactInteractionService: ContactInteractionService,
     public notificationSubscriptionService: NotificationSubscriptionService,

@@ -437,6 +437,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             projectTable.AddTextField("notes").AddScriptComments("Free-form notes about the project");
             projectTable.AddString250Field("thumbnailImagePath").AddScriptComments("Relative path to project thumbnail image for listings");
+            projectTable.AddBinaryField("thumbnailData").AddScriptComments("PNG thumbnail image data from .io import or renders");
             projectTable.AddIntField("partCount", true).AddScriptComments("Cached total part count for quick display without querying PlacedBrick");
             projectTable.AddDateTimeField("lastBuildDate", true).AddScriptComments("When the user last modified the build (placed or moved a brick)");
 
@@ -643,6 +644,9 @@ All operational tables include multi-tenant support, versioning where appropriat
             modelDocumentTable.AddString100Field("author").AddScriptComments("Model author from the file header");
             modelDocumentTable.AddIntField("totalPartCount", true).AddScriptComments("Cached total part count across all sub-files");
             modelDocumentTable.AddIntField("totalStepCount", true).AddScriptComments("Cached total build step count across all sub-files");
+            modelDocumentTable.AddString100Field("studioVersion").AddScriptComments("BrickLink Studio version that created this document (from .io .INFO file)");
+            modelDocumentTable.AddTextField("instructionSettingsXml").AddScriptComments("Raw XML instruction configuration from .io model.ins file");
+            modelDocumentTable.AddTextField("errorPartList").AddScriptComments("Content of errorPartList.err from .io archive listing problematic or missing parts");
 
             modelDocumentTable.AddVersionControl();
             modelDocumentTable.AddControlFields();

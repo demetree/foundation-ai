@@ -119,6 +119,14 @@
                 Displays  U  S  Terms
                 <span *ngIf="sortColumn === 'displaysUSTerms'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('invoiceNumberMask')">
+                Invoice  Number  Mask
+                <span *ngIf="sortColumn === 'invoiceNumberMask'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receiptNumberMask')">
+                Receipt  Number  Mask
+                <span *ngIf="sortColumn === 'receiptNumberMask'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -227,6 +235,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{tenantProfile.secondaryColor}}</td>
             <td class="text-truncate"><boolean-icon [value]="tenantProfile.displaysMetric"/></td>
             <td class="text-truncate"><boolean-icon [value]="tenantProfile.displaysUSTerms"/></td>
+            <td class="text-truncate">{{tenantProfile.invoiceNumberMask}}</td>
+            <td class="text-truncate">{{tenantProfile.receiptNumberMask}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -465,6 +475,14 @@ End of commented block for alternate definition option -->
             <p class="tenant-profile-info" *ngIf="tenantProfile.displaysUSTerms != null">
               <strong>Displays U S Terms: </strong>
               <boolean-icon [value]="tenantProfile.displaysUSTerms"/>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.invoiceNumberMask != null">
+              <strong>Invoice Number Mask: </strong>
+              {{tenantProfile.invoiceNumberMask}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.receiptNumberMask != null">
+              <strong>Receipt Number Mask: </strong>
+              {{tenantProfile.receiptNumberMask}}
             </p>
             </div>
          </div>

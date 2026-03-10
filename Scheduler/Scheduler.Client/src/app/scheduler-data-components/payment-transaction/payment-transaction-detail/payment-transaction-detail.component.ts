@@ -30,6 +30,7 @@ import { FinancialTransactionService } from '../../../scheduler-data-services/fi
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { PaymentTransactionChangeHistoryService } from '../../../scheduler-data-services/payment-transaction-change-history.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -131,6 +132,7 @@ export class PaymentTransactionDetailComponent implements OnInit, CanComponentDe
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public currencies$ = this.currencyService.GetCurrencyList();
   public paymentTransactionChangeHistories$ = this.paymentTransactionChangeHistoryService.GetPaymentTransactionChangeHistoryList();
+  public receipts$ = this.receiptService.GetReceiptList();
 
   private destroy$ = new Subject<void>();
 
@@ -143,6 +145,7 @@ export class PaymentTransactionDetailComponent implements OnInit, CanComponentDe
     public eventChargeService: EventChargeService,
     public currencyService: CurrencyService,
     public paymentTransactionChangeHistoryService: PaymentTransactionChangeHistoryService,
+    public receiptService: ReceiptService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

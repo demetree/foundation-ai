@@ -75,6 +75,10 @@ public partial class Client
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
+
     public virtual ICollection<ScheduledEvent> ScheduledEvents { get; set; } = new List<ScheduledEvent>();
 
     public virtual ICollection<SchedulingTargetAddress> SchedulingTargetAddresses { get; set; } = new List<SchedulingTargetAddress>();

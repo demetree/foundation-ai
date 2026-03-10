@@ -67,6 +67,7 @@ export class ProjectSubmitData {
     description!: string;
     notes: string | null = null;
     thumbnailImagePath: string | null = null;
+    thumbnailData: string | null = null;
     partCount: bigint | number | null = null;
     lastBuildDate: string | null = null;     // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
@@ -144,6 +145,7 @@ export class ProjectData {
     description!: string;
     notes!: string | null;
     thumbnailImagePath!: string | null;
+    thumbnailData!: string | null;
     partCount!: bigint | number;
     lastBuildDate!: string | null;   // ISO 8601 (full datetime)
     versionNumber!: bigint | number;
@@ -1569,6 +1571,7 @@ export class ProjectService extends SecureEndpointBase {
         output.description = data.description;
         output.notes = data.notes;
         output.thumbnailImagePath = data.thumbnailImagePath;
+        output.thumbnailData = data.thumbnailData;
         output.partCount = data.partCount;
         output.lastBuildDate = data.lastBuildDate;
         output.versionNumber = data.versionNumber;

@@ -75,6 +75,18 @@
                 Total  Step  Count
                 <span *ngIf="sortColumn === 'totalStepCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('studioVersion')">
+                Studio  Version
+                <span *ngIf="sortColumn === 'studioVersion'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('instructionSettingsXml')">
+                Instruction  Settings  Xml
+                <span *ngIf="sortColumn === 'instructionSettingsXml'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('errorPartList')">
+                Error  Part  List
+                <span *ngIf="sortColumn === 'errorPartList'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -172,6 +184,9 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{modelDocument.author}}</td>
             <td class="text-truncate">{{modelDocument.totalPartCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{modelDocument.totalStepCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{modelDocument.studioVersion}}</td>
+            <td class="text-truncate">{{modelDocument.instructionSettingsXml}}</td>
+            <td class="text-truncate">{{modelDocument.errorPartList}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -366,6 +381,18 @@ End of commented block for alternate definition option -->
             <p class="model-document-info" *ngIf="modelDocument.totalStepCount != null">
               <strong>Total Step Count: </strong>
               {{modelDocument.totalStepCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.studioVersion != null">
+              <strong>Studio Version: </strong>
+              {{modelDocument.studioVersion}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.instructionSettingsXml != null">
+              <strong>Instruction Settings Xml: </strong>
+              {{modelDocument.instructionSettingsXml}}
+            </p>
+            <p class="model-document-info" *ngIf="modelDocument.errorPartList != null">
+              <strong>Error Part List: </strong>
+              {{modelDocument.errorPartList}}
             </p>
             </div>
          </div>

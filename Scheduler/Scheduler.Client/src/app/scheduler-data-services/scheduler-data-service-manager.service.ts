@@ -85,6 +85,10 @@ import {HouseholdService} from  './household.service';
 import {HouseholdChangeHistoryService} from  './household-change-history.service';
 import {IconService} from  './icon.service';
 import {InteractionTypeService} from  './interaction-type.service';
+import {InvoiceService} from  './invoice.service';
+import {InvoiceChangeHistoryService} from  './invoice-change-history.service';
+import {InvoiceLineItemService} from  './invoice-line-item.service';
+import {InvoiceStatusService} from  './invoice-status.service';
 import {NotificationSubscriptionService} from  './notification-subscription.service';
 import {NotificationSubscriptionChangeHistoryService} from  './notification-subscription-change-history.service';
 import {NotificationTypeService} from  './notification-type.service';
@@ -108,6 +112,8 @@ import {QualificationService} from  './qualification.service';
 import {RateSheetService} from  './rate-sheet.service';
 import {RateSheetChangeHistoryService} from  './rate-sheet-change-history.service';
 import {RateTypeService} from  './rate-type.service';
+import {ReceiptService} from  './receipt.service';
+import {ReceiptChangeHistoryService} from  './receipt-change-history.service';
 import {ReceiptTypeService} from  './receipt-type.service';
 import {ReceiptTypeChangeHistoryService} from  './receipt-type-change-history.service';
 import {RecurrenceExceptionService} from  './recurrence-exception.service';
@@ -254,6 +260,10 @@ export class SchedulerDataServiceManagerService  {
               , public householdChangeHistoryService: HouseholdChangeHistoryService
               , public iconService: IconService
               , public interactionTypeService: InteractionTypeService
+              , public invoiceService: InvoiceService
+              , public invoiceChangeHistoryService: InvoiceChangeHistoryService
+              , public invoiceLineItemService: InvoiceLineItemService
+              , public invoiceStatusService: InvoiceStatusService
               , public notificationSubscriptionService: NotificationSubscriptionService
               , public notificationSubscriptionChangeHistoryService: NotificationSubscriptionChangeHistoryService
               , public notificationTypeService: NotificationTypeService
@@ -277,6 +287,8 @@ export class SchedulerDataServiceManagerService  {
               , public rateSheetService: RateSheetService
               , public rateSheetChangeHistoryService: RateSheetChangeHistoryService
               , public rateTypeService: RateTypeService
+              , public receiptService: ReceiptService
+              , public receiptChangeHistoryService: ReceiptChangeHistoryService
               , public receiptTypeService: ReceiptTypeService
               , public receiptTypeChangeHistoryService: ReceiptTypeChangeHistoryService
               , public recurrenceExceptionService: RecurrenceExceptionService
@@ -421,6 +433,10 @@ export class SchedulerDataServiceManagerService  {
         this.householdChangeHistoryService.ClearAllCaches();
         this.iconService.ClearAllCaches();
         this.interactionTypeService.ClearAllCaches();
+        this.invoiceService.ClearAllCaches();
+        this.invoiceChangeHistoryService.ClearAllCaches();
+        this.invoiceLineItemService.ClearAllCaches();
+        this.invoiceStatusService.ClearAllCaches();
         this.notificationSubscriptionService.ClearAllCaches();
         this.notificationSubscriptionChangeHistoryService.ClearAllCaches();
         this.notificationTypeService.ClearAllCaches();
@@ -444,6 +460,8 @@ export class SchedulerDataServiceManagerService  {
         this.rateSheetService.ClearAllCaches();
         this.rateSheetChangeHistoryService.ClearAllCaches();
         this.rateTypeService.ClearAllCaches();
+        this.receiptService.ClearAllCaches();
+        this.receiptChangeHistoryService.ClearAllCaches();
         this.receiptTypeService.ClearAllCaches();
         this.receiptTypeChangeHistoryService.ClearAllCaches();
         this.recurrenceExceptionService.ClearAllCaches();

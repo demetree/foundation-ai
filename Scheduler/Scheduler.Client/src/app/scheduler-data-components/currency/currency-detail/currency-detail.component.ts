@@ -31,6 +31,8 @@ import { EventChargeService } from '../../../scheduler-data-services/event-charg
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { BudgetService } from '../../../scheduler-data-services/budget.service';
 import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -107,6 +109,8 @@ export class CurrencyDetailComponent implements OnInit, CanComponentDeactivate {
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public budgets$ = this.budgetService.GetBudgetList();
   public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
+  public invoices$ = this.invoiceService.GetInvoiceList();
+  public receipts$ = this.receiptService.GetReceiptList();
 
   private destroy$ = new Subject<void>();
 
@@ -120,6 +124,8 @@ export class CurrencyDetailComponent implements OnInit, CanComponentDeactivate {
     public financialTransactionService: FinancialTransactionService,
     public budgetService: BudgetService,
     public paymentTransactionService: PaymentTransactionService,
+    public invoiceService: InvoiceService,
+    public receiptService: ReceiptService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

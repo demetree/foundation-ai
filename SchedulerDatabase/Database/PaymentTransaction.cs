@@ -57,6 +57,8 @@ public partial class PaymentTransaction
 
     public virtual ICollection<PaymentTransactionChangeHistory> PaymentTransactionChangeHistories { get; set; } = new List<PaymentTransactionChangeHistory>();
 
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
+
     public virtual Currency currency { get; set; }
 
     public virtual EventCharge eventCharge { get; set; }

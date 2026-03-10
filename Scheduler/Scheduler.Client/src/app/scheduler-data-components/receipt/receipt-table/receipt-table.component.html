@@ -1,0 +1,418 @@
+<app-receipt-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-receipt-add-edit>
+<div class="row" *ngIf="userIsSchedulerReceiptReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerReceiptWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Receipt">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerReceiptWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('receiptNumber')">
+                Receipt  Number
+                <span *ngIf="sortColumn === 'receiptNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receiptType.name')">
+                Receipt  Type
+                <span *ngIf="sortColumn === 'receiptType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('invoice.name')">
+                Invoice
+                <span *ngIf="sortColumn === 'invoice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('paymentTransaction.name')">
+                Payment  Transaction
+                <span *ngIf="sortColumn === 'paymentTransaction.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialTransaction.name')">
+                Financial  Transaction
+                <span *ngIf="sortColumn === 'financialTransaction.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('client.name')">
+                Client
+                <span *ngIf="sortColumn === 'client.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('contact.name')">
+                Contact
+                <span *ngIf="sortColumn === 'contact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('currency.name')">
+                Currency
+                <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receiptDate')">
+                Receipt  Date
+                <span *ngIf="sortColumn === 'receiptDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('amount')">
+                Amount
+                <span *ngIf="sortColumn === 'amount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('paymentMethod')">
+                Payment  Method
+                <span *ngIf="sortColumn === 'paymentMethod'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let receipt of filteredReceipts; trackBy: getReceiptId"
+              [ngClass]="{
+                 'row-inactive': receipt.active == false,
+                 'row-deleted': receipt.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerReceiptWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(receipt)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerReceiptWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(receipt)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="receipt.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(receipt)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="receipt.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(receipt, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(receipt, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(receipt, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(receipt, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(receipt, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(receipt, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(receipt, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(receipt, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/receipt', receipt.id]" class="btn btn-link text-left" ngbTooltip="Open Receipt details">{{receipt.receiptNumber}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/receipttype', receipt.receiptTypeId]" class="btn btn-link text-left" ngbTooltip="Open Receipt Type details">{{receipt.receiptType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/invoice', receipt.invoiceId]" class="btn btn-link text-left" ngbTooltip="Open Invoice details">{{receipt.invoice?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/paymenttransaction', receipt.paymentTransactionId]" class="btn btn-link text-left" ngbTooltip="Open Payment Transaction details">{{receipt.paymentTransaction?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialtransaction', receipt.financialTransactionId]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{receipt.financialTransaction?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/client', receipt.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{receipt.client?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/contact', receipt.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{receipt.contact?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/currency', receipt.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{receipt.currency?.name}}</a></td>
+            <td class="text-truncate">{{receipt.receiptDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{receipt.amount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{receipt.paymentMethod}}</td>
+            <td class="text-truncate">{{receipt.description}}</td>
+            <td class="text-truncate">{{receipt.notes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let receipt of filteredReceipts; trackBy: getReceiptId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': receipt.active == false,
+                 'row-deleted': receipt.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(receipt, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(receipt, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(receipt, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(receipt, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(receipt, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(receipt, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(receipt, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(receipt, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(receipt, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(receipt, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(receipt, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(receipt, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(receipt, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/receipt', receipt.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(receipt)" *ngIf="userIsSchedulerReceiptWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(receipt)" *ngIf="userIsSchedulerReceiptWriter() && receipt.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(receipt)" *ngIf="userIsSchedulerReceiptWriter() && receipt.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{receipt.receiptNumber}}</strong>
+               <small class="text-muted d-block">{{receipt.receiptType?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/receipt', receipt.id]"
+                        ngbTooltip="Receipt Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(receipt)"
+                        ngbTooltip="Edit Receipt">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(receipt)"
+                      ngbTooltip="Delete Receipt" 
+                      placement="top"
+                      *ngIf="receipt.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(receipt)"
+                      ngbTooltip="Undelete Receipt" 
+                      placement="top"
+                      *ngIf="receipt.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="receipt-info" *ngIf="receipt.receiptNumber != null">
+              <strong>Receipt Number: </strong>
+              {{receipt.receiptNumber}}
+            </p>
+            <p class="receipt-info" *ngIf="receipt.receiptTypeId != null">
+              <strong>Receipt Type: </strong>
+              <a [routerLink]="['/receipttype', receipt.receiptTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Receipt Type details">{{receipt.receiptType?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.invoiceId != null">
+              <strong>Invoice: </strong>
+              <a [routerLink]="['/invoice', receipt.invoiceId]" class="text-left p-0 m-0" ngbTooltip="Open Invoice details">{{receipt.invoice?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.paymentTransactionId != null">
+              <strong>Payment Transaction: </strong>
+              <a [routerLink]="['/paymenttransaction', receipt.paymentTransactionId]" class="text-left p-0 m-0" ngbTooltip="Open Payment Transaction details">{{receipt.paymentTransaction?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.financialTransactionId != null">
+              <strong>Financial Transaction: </strong>
+              <a [routerLink]="['/financialtransaction', receipt.financialTransactionId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Transaction details">{{receipt.financialTransaction?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.clientId != null">
+              <strong>Client: </strong>
+              <a [routerLink]="['/client', receipt.clientId]" class="text-left p-0 m-0" ngbTooltip="Open Client details">{{receipt.client?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.contactId != null">
+              <strong>Contact: </strong>
+              <a [routerLink]="['/contact', receipt.contactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{receipt.contact?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.currencyId != null">
+              <strong>Currency: </strong>
+              <a [routerLink]="['/currency', receipt.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{receipt.currency?.name}}</a>
+            </p>
+            <p class="receipt-info" *ngIf="receipt.receiptDate != null">
+              <strong>Receipt Date: </strong>
+              {{receipt.receiptDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="receipt-info" *ngIf="receipt.amount != null">
+              <strong>Amount: </strong>
+              {{receipt.amount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="receipt-info" *ngIf="receipt.paymentMethod != null">
+              <strong>Payment Method: </strong>
+              {{receipt.paymentMethod}}
+            </p>
+            <p class="receipt-info" *ngIf="receipt.description != null">
+              <strong>Description: </strong>
+              {{receipt.description}}
+            </p>
+            <p class="receipt-info" *ngIf="receipt.notes != null">
+              <strong>Notes: </strong>
+              {{receipt.notes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

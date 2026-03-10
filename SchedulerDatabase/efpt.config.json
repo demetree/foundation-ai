@@ -320,6 +320,22 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[Invoice]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[InvoiceChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[InvoiceLineItem]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[InvoiceStatus]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[NotificationSubscription]",
          "ObjectType": 0
       },
@@ -409,6 +425,14 @@
       },
       {
          "Name": "[Scheduler].[RateType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Receipt]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ReceiptChangeHistory]",
          "ObjectType": 0
       },
       {

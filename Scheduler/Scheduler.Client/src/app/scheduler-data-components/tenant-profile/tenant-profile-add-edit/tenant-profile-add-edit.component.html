@@ -162,6 +162,14 @@
                 <input type="checkbox" id="TenantProfile-displaysUSTerms" formControlName="displaysUSTerms" class="form-check-input" [disabled]="!userIsSchedulerTenantProfileWriter()" />
                 <label for="TenantProfile-displaysUSTerms" class="form-check-label" id="label-TenantProfile-displaysUSTerms"><span class="text-danger">*</span>Displays U S Terms</label>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceNumberMask')">
+                <label for="TenantProfile-invoiceNumberMask" id="label-TenantProfile-invoiceNumberMask">Invoice Number Mask</label>
+                <input type="text" id="TenantProfile-invoiceNumberMask" formControlName="invoiceNumberMask" placeholder="Enter Invoice Number Mask" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-invoiceNumberMask" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptNumberMask')">
+                <label for="TenantProfile-receiptNumberMask" id="label-TenantProfile-receiptNumberMask">Receipt Number Mask</label>
+                <input type="text" id="TenantProfile-receiptNumberMask" formControlName="receiptNumberMask" placeholder="Enter Receipt Number Mask" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-receiptNumberMask" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="TenantProfile-versionNumber" id="label-TenantProfile-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="TenantProfile-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control tenant-profile-input" />

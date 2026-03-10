@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ReceiptTypeChangeHistoryService, ReceiptTypeChangeHistoryData } from './receipt-type-change-history.service';
+import { ReceiptService, ReceiptData } from './receipt.service';
 import { GiftService, GiftData } from './gift.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -140,6 +141,11 @@ export class ReceiptTypeData {
     private _receiptTypeChangeHistoriesSubject = new BehaviorSubject<ReceiptTypeChangeHistoryData[] | null>(null);
 
                 
+    private _receipts: ReceiptData[] | null = null;
+    private _receiptsPromise: Promise<ReceiptData[]> | null  = null;
+    private _receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
@@ -182,6 +188,31 @@ export class ReceiptTypeData {
             });
         }
         return this._receiptTypeChangeHistoriesCount$;
+    }
+
+
+
+    public Receipts$ = this._receiptsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._receipts === null && this._receiptsPromise === null) {
+            this.loadReceipts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _receiptsCount$: Observable<bigint | number> | null = null;
+    public get ReceiptsCount$(): Observable<bigint | number> {
+        if (this._receiptsCount$ === null) {
+            this._receiptsCount$ = ReceiptService.Instance.GetReceiptsRowCount({receiptTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._receiptsCount$;
     }
 
 
@@ -253,6 +284,11 @@ export class ReceiptTypeData {
      this._receiptTypeChangeHistoriesPromise = null;
      this._receiptTypeChangeHistoriesSubject.next(null);
      this._receiptTypeChangeHistoriesCount$ = null;
+
+     this._receipts = null;
+     this._receiptsPromise = null;
+     this._receiptsSubject.next(null);
+     this._receiptsCount$ = null;
 
      this._gifts = null;
      this._giftsPromise = null;
@@ -330,6 +366,71 @@ export class ReceiptTypeData {
 
     public get HasReceiptTypeChangeHistories(): Promise<boolean> {
         return this.ReceiptTypeChangeHistories.then(receiptTypeChangeHistories => receiptTypeChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the Receipts for this ReceiptType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.receiptType.Receipts.then(receiptTypes => { ... })
+     *   or
+     *   await this.receiptType.receiptTypes
+     *
+    */
+    public get Receipts(): Promise<ReceiptData[]> {
+        if (this._receipts !== null) {
+            return Promise.resolve(this._receipts);
+        }
+
+        if (this._receiptsPromise !== null) {
+            return this._receiptsPromise;
+        }
+
+        // Start the load
+        this.loadReceipts();
+
+        return this._receiptsPromise!;
+    }
+
+
+
+    private loadReceipts(): void {
+
+        this._receiptsPromise = lastValueFrom(
+            ReceiptTypeService.Instance.GetReceiptsForReceiptType(this.id)
+        )
+        .then(Receipts => {
+            this._receipts = Receipts ?? [];
+            this._receiptsSubject.next(this._receipts);
+            return this._receipts;
+         })
+        .catch(err => {
+            this._receipts = [];
+            this._receiptsSubject.next(this._receipts);
+            throw err;
+        })
+        .finally(() => {
+            this._receiptsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Receipt. Call after mutations to force refresh.
+     */
+    public ClearReceiptsCache(): void {
+        this._receipts = null;
+        this._receiptsPromise = null;
+        this._receiptsSubject.next(this._receipts);      // Emit to observable
+    }
+
+    public get HasReceipts(): Promise<boolean> {
+        return this.Receipts.then(receipts => receipts.length > 0);
     }
 
 
@@ -477,6 +578,7 @@ export class ReceiptTypeService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private receiptTypeChangeHistoryService: ReceiptTypeChangeHistoryService,
+        private receiptService: ReceiptService,
         private giftService: GiftService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -950,6 +1052,16 @@ export class ReceiptTypeService extends SecureEndpointBase {
     }
 
 
+    public GetReceiptsForReceiptType(receiptTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ReceiptData[]> {
+        return this.receiptService.GetReceiptList({
+            receiptTypeId: receiptTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetGiftsForReceiptType(receiptTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GiftData[]> {
         return this.giftService.GetGiftList({
             receiptTypeId: receiptTypeId,
@@ -999,6 +1111,10 @@ export class ReceiptTypeService extends SecureEndpointBase {
     (revived as any)._receiptTypeChangeHistoriesPromise = null;
     (revived as any)._receiptTypeChangeHistoriesSubject = new BehaviorSubject<ReceiptTypeChangeHistoryData[] | null>(null);
 
+    (revived as any)._receipts = null;
+    (revived as any)._receiptsPromise = null;
+    (revived as any)._receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
+
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
     (revived as any)._giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
@@ -1025,6 +1141,18 @@ export class ReceiptTypeService extends SecureEndpointBase {
       );
 
     (revived as any)._receiptTypeChangeHistoriesCount$ = null;
+
+
+    (revived as any).Receipts$ = (revived as any)._receiptsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._receipts === null && (revived as any)._receiptsPromise === null) {
+                (revived as any).loadReceipts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._receiptsCount$ = null;
 
 
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(

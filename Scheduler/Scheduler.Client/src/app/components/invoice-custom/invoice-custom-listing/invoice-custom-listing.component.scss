@@ -1,0 +1,223 @@
+.page-container {
+    background-color: #f4f6f9;
+    min-height: 100%;
+    padding: 1rem;
+}
+
+//
+// Premium Header — Invoice blue gradient
+//
+$gradient-invoice: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+
+.premium-header {
+    background: $gradient-invoice;
+    border-radius: 16px;
+    overflow: hidden;
+
+    .card-header {
+        padding: 1.25rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-left,
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-title {
+        color: white;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+    }
+}
+
+.badge-glass-pill {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    padding: 0.3em 0.8em;
+    transition: all 0.2s ease;
+
+    &:hover,
+    &.active {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+.badge-glass-sm {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white;
+    font-weight: 500;
+    font-size: 0.7rem;
+}
+
+.glass-select {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    backdrop-filter: blur(5px);
+    font-size: 0.85rem;
+
+    option {
+        color: #333;
+        background: white;
+    }
+
+    &:focus {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+}
+
+.search-bar {
+    position: relative;
+    min-width: 0;
+    flex: 0 1 200px;
+
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding-left: 35px;
+        color: white;
+        height: 38px;
+        backdrop-filter: blur(5px);
+        font-size: 0.85rem;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        &:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+    }
+
+    .clear-search {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 0;
+        opacity: 0.7;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+
+//
+// Table
+//
+.sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        color: #2563eb;
+    }
+}
+
+.invoice-row {
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #f0f4ff;
+    }
+}
+
+
+//
+// Status Badges
+//
+.status-badge {
+    font-weight: 500;
+    font-size: 0.75rem;
+    padding: 0.3em 0.7em;
+    border-radius: 6px;
+}
+
+.status-draft {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
+.status-sent {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
+.status-partial {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.status-paid {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.status-overdue {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.status-cancelled {
+    background: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+}
+
+.status-void {
+    background: rgba(75, 85, 99, 0.1);
+    color: #4b5563;
+}
+
+.status-default {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}

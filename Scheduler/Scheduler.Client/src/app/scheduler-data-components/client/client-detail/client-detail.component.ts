@@ -35,6 +35,8 @@ import { SchedulingTargetService } from '../../../scheduler-data-services/schedu
 import { SchedulingTargetAddressService } from '../../../scheduler-data-services/scheduling-target-address.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
+import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -154,6 +156,8 @@ export class ClientDetailComponent implements OnInit, CanComponentDeactivate {
   public schedulingTargetAddresses$ = this.schedulingTargetAddressService.GetSchedulingTargetAddressList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
+  public invoices$ = this.invoiceService.GetInvoiceList();
+  public receipts$ = this.receiptService.GetReceiptList();
   public constituents$ = this.constituentService.GetConstituentList();
 
   private destroy$ = new Subject<void>();
@@ -172,6 +176,8 @@ export class ClientDetailComponent implements OnInit, CanComponentDeactivate {
     public schedulingTargetAddressService: SchedulingTargetAddressService,
     public scheduledEventService: ScheduledEventService,
     public financialTransactionService: FinancialTransactionService,
+    public invoiceService: InvoiceService,
+    public receiptService: ReceiptService,
     public constituentService: ConstituentService,
     private authService: AuthService,
     private route: ActivatedRoute,

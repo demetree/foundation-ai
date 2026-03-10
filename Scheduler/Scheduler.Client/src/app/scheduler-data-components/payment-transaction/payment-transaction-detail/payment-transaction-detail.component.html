@@ -177,6 +177,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="receiptService.userIsSchedulerReceiptReader()">
+                            <button ngbNavLink>Receipts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (paymentTransactionData?.ReceiptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-receipt-table [queryParams]="{ paymentTransactionId: paymentTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ paymentTransactionId: paymentTransactionData?.id }" [hiddenFields]="['paymentTransactionId']"></app-receipt-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

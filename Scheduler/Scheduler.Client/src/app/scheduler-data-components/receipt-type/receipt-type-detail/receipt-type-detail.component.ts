@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ReceiptTypeService, ReceiptTypeData, ReceiptTypeSubmitData } from '../../../scheduler-data-services/receipt-type.service';
 import { ReceiptTypeChangeHistoryService } from '../../../scheduler-data-services/receipt-type-change-history.service';
+import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -92,6 +93,7 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
 
   receiptTypes$ = this.receiptTypeService.GetReceiptTypeList();
   public receiptTypeChangeHistories$ = this.receiptTypeChangeHistoryService.GetReceiptTypeChangeHistoryList();
+  public receipts$ = this.receiptService.GetReceiptList();
   public gifts$ = this.giftService.GetGiftList();
 
   private destroy$ = new Subject<void>();
@@ -99,6 +101,7 @@ export class ReceiptTypeDetailComponent implements OnInit, CanComponentDeactivat
   constructor(
     public receiptTypeService: ReceiptTypeService,
     public receiptTypeChangeHistoryService: ReceiptTypeChangeHistoryService,
+    public receiptService: ReceiptService,
     public giftService: GiftService,
     private authService: AuthService,
     private route: ActivatedRoute,
