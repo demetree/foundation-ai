@@ -77,6 +77,15 @@
         </span>
       </button>
     </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'rental'" (click)="setActiveTab('rental')">
+        <i class="bi bi-file-earmark-text me-1"></i>Rental Agreement
+        <span class="badge ms-1" *ngIf="getRentalStatus() !== 'none'"
+          [ngClass]="{'bg-warning-subtle text-warning': getRentalStatus() === 'draft', 'bg-success-subtle text-success': getRentalStatus() === 'signed', 'bg-danger-subtle text-danger': getRentalStatus() === 'expired'}">
+          {{ getRentalStatus() | titlecase }}
+        </span>
+      </button>
+    </li>
   </ul>
 
   <form [formGroup]="eventForm">
@@ -769,6 +778,92 @@
               View all transactions →
             </a>
           </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- RENTAL AGREEMENT TAB -->
+    <!-- ============================================================== -->
+    <div class="tab-pane-content" *ngIf="activeTab === 'rental'">
+      <div class="rental-agreement-section">
+        <div class="d-flex align-items-center mb-3">
+          <h6 class="fw-semibold mb-0">
+            <i class="bi bi-file-earmark-text me-2 text-primary"></i>Rental Agreement Details
+          </h6>
+        </div>
+
+        <div class="row g-3">
+          <!-- Agreement Status -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Agreement Status</label>
+            <select class="form-select" [ngModel]="getRentalStatus()" (ngModelChange)="setRentalField('status', $event)"
+              [ngModelOptions]="{standalone: true}">
+              <option value="none">No Agreement</option>
+              <option value="draft">Draft</option>
+              <option value="signed">Signed</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+
+          <!-- Contact Name -->
+          <div class="col-md-8">
+            <label class="form-label fw-semibold">Contact Name</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" class="form-control" placeholder="Renter / Organization name"
+                [ngModel]="getRentalField('contactName')" (ngModelChange)="setRentalField('contactName', $event)"
+                [ngModelOptions]="{standalone: true}" />
+            </div>
+          </div>
+
+          <!-- Signed Date -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Signed Date</label>
+            <input type="date" class="form-control"
+              [ngModel]="getRentalField('signedDate')" (ngModelChange)="setRentalField('signedDate', $event)"
+              [ngModelOptions]="{standalone: true}" />
+          </div>
+
+          <!-- Expiry Date -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Expiry Date</label>
+            <input type="date" class="form-control"
+              [ngModel]="getRentalField('expiryDate')" (ngModelChange)="setRentalField('expiryDate', $event)"
+              [ngModelOptions]="{standalone: true}" />
+          </div>
+
+          <!-- Deposit Amount -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Deposit Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control" placeholder="0.00" min="0" step="0.01"
+                [ngModel]="getRentalField('depositAmount')" (ngModelChange)="setRentalField('depositAmount', $event)"
+                [ngModelOptions]="{standalone: true}" />
+            </div>
+          </div>
+
+          <!-- Agreement Notes -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Agreement Notes</label>
+            <textarea class="form-control" rows="3" placeholder="Special terms, conditions, or arrangements..."
+              [ngModel]="getRentalField('notes')" (ngModelChange)="setRentalField('notes', $event)"
+              [ngModelOptions]="{standalone: true}"></textarea>
+          </div>
+        </div>
+
+        <!-- Status visual indicator -->
+        <div class="rental-status-bar mt-3" *ngIf="getRentalStatus() !== 'none'">
+          <div class="d-flex align-items-center gap-2 p-2 rounded"
+            [ngClass]="{'bg-warning-subtle': getRentalStatus() === 'draft', 'bg-success-subtle': getRentalStatus() === 'signed', 'bg-danger-subtle': getRentalStatus() === 'expired'}">
+            <i class="bi" [ngClass]="{'bi-pencil text-warning': getRentalStatus() === 'draft', 'bi-check-circle-fill text-success': getRentalStatus() === 'signed', 'bi-exclamation-triangle-fill text-danger': getRentalStatus() === 'expired'}"></i>
+            <span class="small fw-semibold">
+              <ng-container *ngIf="getRentalStatus() === 'draft'">Agreement is in draft — awaiting signature.</ng-container>
+              <ng-container *ngIf="getRentalStatus() === 'signed'">Agreement is signed and active.</ng-container>
+              <ng-container *ngIf="getRentalStatus() === 'expired'">Agreement has expired.</ng-container>
+            </span>
+          </div>
         </div>
       </div>
     </div>

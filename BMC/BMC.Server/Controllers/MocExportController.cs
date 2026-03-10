@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Foundation.Auditor;
@@ -204,6 +206,155 @@ namespace Foundation.BMC.Controllers.WebAPI
                 _logger.LogError(ex, "MOC export failed for project {Id}, format .{Format}", projectId, format);
                 return Problem("An error occurred while exporting the project. Please try again or contact support.");
             }
+        }
+
+
+        // ────────────────────────────────────────────────────────────────
+        //  Viewer Data Endpoints
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// GET /api/moc/project/{projectId}/viewer-mpd
+        ///
+        /// Returns a self-contained LDraw MPD as text/plain for the client-side 3D viewer.
+        ///
+        /// The MPD includes all placed bricks with positions and colours,
+        /// submodel FILE blocks, and any custom part geometry from the stored .io archive
+        /// inlined as additional FILE blocks.
+        ///
+        /// Standard LDraw library parts are NOT inlined — the client's LDrawLoader
+        /// resolves those via /api/ldraw/file/ with IndexedDB caching.
+        ///
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.OnePerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/moc/project/{projectId}/viewer-mpd")]
+        public async Task<IActionResult> GetViewerMpd(int projectId, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            try
+            {
+                string mpdContent = await _exportService.GenerateViewerMpdAsync(projectId, userTenantGuid, cancellationToken);
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.ReadEntity,
+                    $"MOC viewer data — Project id={projectId}",
+                    projectId.ToString());
+
+                return Content(mpdContent, "text/plain", System.Text.Encoding.UTF8);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate viewer MPD for project {Id}", projectId);
+                return Problem("An error occurred while generating the viewer data.");
+            }
+        }
+
+
+        /// <summary>
+        ///
+        /// GET /api/moc/project/{projectId}/summary
+        ///
+        /// Returns a lightweight JSON summary of a project for the viewer UI:
+        /// name, description, part count, step count, submodel count, source format.
+        ///
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/moc/project/{projectId}/summary")]
+        public async Task<IActionResult> GetProjectSummary(int projectId, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            var summary = await _exportService.GetProjectSummaryAsync(projectId, userTenantGuid, cancellationToken);
+
+            if (summary == null)
+            {
+                return NotFound($"Project {projectId} not found.");
+            }
+
+            return Ok(summary);
+        }
+
+
+        /// <summary>
+        ///
+        /// GET /api/moc/project/{projectId}/thumbnail
+        ///
+        /// Returns the project's stored thumbnail image (PNG)
+        /// from the Project.thumbnailData blob.
+        ///
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/moc/project/{projectId}/thumbnail")]
+        public async Task<IActionResult> GetProjectThumbnail(int projectId, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            Project project = await _context.Projects
+                .Where(p => p.id == projectId && p.tenantGuid == userTenantGuid && p.active == true && p.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (project == null || project.thumbnailData == null || project.thumbnailData.Length == 0)
+            {
+                return NotFound();
+            }
+
+            return File(project.thumbnailData, "image/png");
         }
     }
 }

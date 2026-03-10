@@ -1,0 +1,104 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="page-container">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="close-header no-print">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </button>
+                <h3 class="mb-0"><i class="fa-solid fa-lock me-2"></i>Fiscal Period Close</h3>
+            </div>
+            <div class="header-right">
+                <select class="form-select form-select-sm glass-select"
+                    [(ngModel)]="selectedYear" (ngModelChange)="onYearChange()">
+                    <option [ngValue]="null">All Years</option>
+                    <option *ngFor="let y of fiscalYears" [ngValue]="y">FY {{ y }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SUMMARY ═══ -->
+    <div class="summary-row" *ngIf="!isLoading">
+        <div class="summary-card open">
+            <div class="card-count">{{ openCount }}</div>
+            <div class="card-label">Open</div>
+        </div>
+        <div class="summary-card closed">
+            <div class="card-count">{{ closedCount }}</div>
+            <div class="card-label">Closed</div>
+        </div>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+
+
+    <!-- ═══ CONFIRMATION DIALOG ═══ -->
+    <div class="confirm-overlay" *ngIf="confirmAction" (click)="cancelConfirm()">
+        <div class="confirm-dialog" (click)="$event.stopPropagation()">
+            <h5>
+                <i class="fa-solid" [ngClass]="confirmAction === 'close' ? 'fa-lock' : 'fa-lock-open'"></i>
+                {{ confirmAction === 'close' ? 'Close' : 'Reopen' }} Period?
+            </h5>
+            <p>
+                Are you sure you want to <strong>{{ confirmAction }}</strong> the period
+                <strong>{{ confirmPeriod?.period?.name }}</strong>?
+            </p>
+            <p class="text-muted small" *ngIf="confirmAction === 'close'">
+                Closing a period prevents new transactions from being recorded against it.
+            </p>
+            <div class="confirm-actions">
+                <button class="btn btn-sm btn-outline-secondary" (click)="cancelConfirm()" [disabled]="isSaving">Cancel</button>
+                <button class="btn btn-sm" (click)="executeAction()" [disabled]="isSaving"
+                    [ngClass]="confirmAction === 'close' ? 'btn-danger' : 'btn-success'">
+                    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                    {{ confirmAction === 'close' ? 'Close Period' : 'Reopen Period' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ PERIOD LIST ═══ -->
+    <div class="period-list" *ngIf="!isLoading">
+        <div class="period-card" *ngFor="let row of filteredRows" [class.period-closed]="row.isClosed">
+            <div class="period-info">
+                <div class="period-name">
+                    <i class="fa-solid me-2" [ngClass]="row.isClosed ? 'fa-lock text-muted' : 'fa-lock-open text-success'" style="font-size: 0.85rem;"></i>
+                    {{ row.period.name }}
+                </div>
+                <div class="period-meta">
+                    <span class="meta-item"><i class="fa-regular fa-calendar me-1"></i>{{ row.dateRange }}</span>
+                    <span class="meta-item">FY {{ row.period.fiscalYear }}</span>
+                    <span class="meta-item" *ngIf="row.period.periodStatus">{{ row.period.periodStatus.name }}</span>
+                </div>
+                <div class="closed-info" *ngIf="row.isClosed">
+                    <small class="text-muted">
+                        Closed {{ formatDate(row.period.closedDate) }}
+                        <span *ngIf="row.period.closedBy"> by {{ row.period.closedBy }}</span>
+                    </small>
+                </div>
+            </div>
+            <div class="period-action">
+                <button class="btn btn-sm" *ngIf="!row.isClosed"
+                    (click)="requestClose(row)">
+                    <i class="fa-solid fa-lock me-1"></i> Close
+                </button>
+                <button class="btn btn-sm btn-reopen" *ngIf="row.isClosed"
+                    (click)="requestReopen(row)">
+                    <i class="fa-solid fa-lock-open me-1"></i> Reopen
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center py-4 text-muted" *ngIf="filteredRows.length === 0">
+            No fiscal periods found.
+        </div>
+    </div>
+</div>

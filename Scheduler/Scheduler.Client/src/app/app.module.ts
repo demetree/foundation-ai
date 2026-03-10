@@ -205,6 +205,10 @@ import { PaymentCustomAddEditComponent } from './components/payment-custom/payme
 //
 import { BudgetReportComponent } from './components/financial-custom/budget-report/budget-report.component';
 import { DepositManagerComponent } from './components/financial-custom/deposit-manager/deposit-manager.component';
+import { PnlReportComponent } from './components/financial-custom/pnl-report/pnl-report.component';
+import { AccountantReportsComponent } from './components/financial-custom/accountant-reports/accountant-reports.component';
+import { RentalAgreementTrackerComponent } from './components/scheduler-custom/rental-agreement-tracker/rental-agreement-tracker.component';
+import { FiscalPeriodCloseComponent } from './components/financial-custom/fiscal-period-close/fiscal-period-close.component';
 
 
 //
@@ -1326,6 +1330,18 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     BudgetReportComponent,
     DepositManagerComponent,
+
+    //
+    // P2 Financial Reports
+    //
+    PnlReportComponent,
+    AccountantReportsComponent,
+
+    //
+    // P3 Nice-to-Haves
+    //
+    RentalAgreementTrackerComponent,
+    FiscalPeriodCloseComponent,
 
 
     //

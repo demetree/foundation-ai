@@ -628,6 +628,7 @@ import { BrickbergDashboardComponent } from './components/brickberg-dashboard/br
 import { AuthNudgeModalComponent } from './components/auth-nudge-modal/auth-nudge-modal.component';
 import { MyProjectsComponent } from './components/my-projects/my-projects.component';
 import { UploadModelModalComponent } from './components/upload-model-modal/upload-model-modal.component';
+import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component';
 
 
 @NgModule({
@@ -685,6 +686,7 @@ import { UploadModelModalComponent } from './components/upload-model-modal/uploa
         AuthNudgeModalComponent,
         MyProjectsComponent,
         UploadModelModalComponent,
+        MocViewerComponent,
 
 
         //

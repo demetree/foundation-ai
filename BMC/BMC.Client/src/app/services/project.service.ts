@@ -44,6 +44,18 @@ export interface ImportFormat {
     mimeType: string;
 }
 
+export interface ProjectViewerSummary {
+    projectId: number;
+    name: string;
+    description: string;
+    partCount: number | null;
+    stepCount: number;
+    submodelCount: number;
+    sourceFormat: string | null;
+    studioVersion: string | null;
+    hasThumbnail: boolean;
+}
+
 
 // ───────────────────────────── Service ─────────────────────────────
 
@@ -53,6 +65,7 @@ export interface ImportFormat {
 export class ProjectService {
     private readonly projectUrl = '/api/Project';
     private readonly importUrl = '/api/moc/import';
+    private readonly mocUrl = '/api/moc';
 
     constructor(
         private http: HttpClient,
@@ -102,5 +115,37 @@ export class ProjectService {
             `${this.projectUrl}/${id}`,
             { headers: this.headers }
         );
+    }
+
+
+    // ───────────────────── Viewer & Export ─────────────────────
+
+    /** GET /api/moc/project/{id}/summary — project metadata for the viewer */
+    getProjectSummary(projectId: number): Observable<ProjectViewerSummary> {
+        return this.http.get<ProjectViewerSummary>(
+            `${this.mocUrl}/project/${projectId}/summary`,
+            { headers: this.headers }
+        );
+    }
+
+
+    /** GET /api/moc/project/{id}/viewer-mpd — self-contained MPD text for 3D viewer */
+    getViewerMpd(projectId: number): Observable<string> {
+        return this.http.get(
+            `${this.mocUrl}/project/${projectId}/viewer-mpd`,
+            { headers: this.headers, responseType: 'text' }
+        );
+    }
+
+
+    /** Get the download URL for exporting a project in a given format */
+    getExportUrl(projectId: number, format: 'ldr' | 'mpd' | 'io'): string {
+        return `${this.mocUrl}/export/${projectId}/${format}`;
+    }
+
+
+    /** Get the thumbnail URL for a project */
+    getThumbnailUrl(projectId: number): string {
+        return `${this.mocUrl}/project/${projectId}/thumbnail`;
     }
 }

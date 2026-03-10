@@ -258,6 +258,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { ProfileSettingsComponent } from './components/profile-settings/profile-settings.component';
 import { PublicProfileComponent } from './components/public-profile/public-profile.component';
 import { MyProjectsComponent } from './components/my-projects/my-projects.component';
+import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component';
 
 
 
@@ -298,6 +299,8 @@ const routes: Routes = [
     { path: 'part-renderer', component: PartRendererComponent, canActivate: [AuthGuard], title: 'Part Renderer' },
     { path: 'manual-generator', component: ManualGeneratorComponent, canActivate: [AuthGuard], title: 'Manual Generator' },
     { path: 'brickberg', component: BrickbergDashboardComponent, canActivate: [AuthGuard], title: 'Brickberg Terminal' },
+    { path: 'my-projects', component: MyProjectsComponent, canActivate: [AuthGuard], title: 'My Projects' },
+    { path: 'my-projects/:projectId/viewer', component: MocViewerComponent, canActivate: [AuthGuard], title: 'MOC Viewer' },
 
 
     //

@@ -1,0 +1,186 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="page-container">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="report-header no-print">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </button>
+                <h3 class="mb-0"><i class="fa-solid fa-calculator me-2"></i>Accountant Reports</h3>
+            </div>
+            <div class="header-right">
+                <select class="form-select form-select-sm glass-select me-2" *ngIf="offices.length > 1"
+                    [(ngModel)]="selectedOfficeId" (ngModelChange)="onFilterChange()">
+                    <option [ngValue]="null">All Offices</option>
+                    <option *ngFor="let o of offices" [ngValue]="o.id">{{ o.name }}</option>
+                </select>
+                <select class="form-select form-select-sm glass-select me-2"
+                    [(ngModel)]="selectedFiscalPeriodId" (ngModelChange)="onFilterChange()">
+                    <option [ngValue]="null">All Periods</option>
+                    <option *ngFor="let p of fiscalPeriods" [ngValue]="p.id">{{ p.name }}</option>
+                </select>
+                <button class="btn btn-sm btn-glass me-1" (click)="exportPdf()">
+                    <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                </button>
+                <button class="btn btn-sm btn-glass me-1" (click)="printReport()">
+                    <i class="fa-solid fa-print me-1"></i> Print
+                </button>
+                <button class="btn btn-sm btn-glass" (click)="exportCsv()">
+                    <i class="fa-solid fa-file-csv me-1"></i> CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ TABS ═══ -->
+    <div class="tab-bar no-print" *ngIf="!isLoading">
+        <button class="tab-btn" [class.active]="activeTab === 'trial-balance'" (click)="activeTab='trial-balance'">
+            <i class="fa-solid fa-scale-balanced me-1"></i> Trial Balance
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'coa'" (click)="activeTab='coa'">
+            <i class="fa-solid fa-sitemap me-1"></i> Chart of Accounts
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'journal'" (click)="activeTab='journal'">
+            <i class="fa-solid fa-book me-1"></i> Journal
+        </button>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+
+
+    <!-- ═══ PRINT HEADER ═══ -->
+    <div class="print-header print-only" *ngIf="!isLoading">
+        <h2>{{ activeTab === 'trial-balance' ? 'Trial Balance' : activeTab === 'coa' ? 'Chart of Accounts' : 'Transaction Journal' }}</h2>
+        <div class="report-meta">{{ selectedOfficeName }} · {{ selectedPeriodName }} · {{ reportDate }}</div>
+    </div>
+
+
+    <!-- ═══ TRIAL BALANCE TAB ═══ -->
+    <div class="tab-content" *ngIf="!isLoading && activeTab === 'trial-balance'">
+        <div class="balance-indicator" [ngClass]="isBalanced ? 'balanced' : 'unbalanced'">
+            <i class="fa-solid" [ngClass]="isBalanced ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+            {{ isBalanced ? 'Balanced' : 'Out of Balance' }}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table acct-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Account</th>
+                        <th>Type</th>
+                        <th class="text-end">Debit</th>
+                        <th class="text-end">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of trialBalanceRows">
+                        <td class="code-cell">{{ r.code }}</td>
+                        <td>{{ r.name }}</td>
+                        <td class="type-cell">{{ r.accountType }}</td>
+                        <td class="text-end">{{ r.debit ? (r.debit | number:'1.2-2') : '' }}</td>
+                        <td class="text-end">{{ r.credit ? (r.credit | number:'1.2-2') : '' }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="totals-row">
+                        <td colspan="3"><strong>TOTALS</strong></td>
+                        <td class="text-end"><strong>{{ totalDebits | number:'1.2-2' }}</strong></td>
+                        <td class="text-end"><strong>{{ totalCredits | number:'1.2-2' }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- ═══ CHART OF ACCOUNTS TAB ═══ -->
+    <div class="tab-content" *ngIf="!isLoading && activeTab === 'coa'">
+        <div class="table-responsive">
+            <table class="table acct-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Account Name</th>
+                        <th>Type</th>
+                        <th>External ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of coaRows" [class.parent-row]="r.hasChildren">
+                        <td class="code-cell">{{ r.code }}</td>
+                        <td [style.padding-left.px]="16 + r.level * 20">
+                            <i class="fa-solid fa-folder-open me-1 text-warning" *ngIf="r.hasChildren" style="font-size: 0.75rem;"></i>
+                            {{ r.name }}
+                        </td>
+                        <td class="type-cell">{{ r.accountType }}</td>
+                        <td class="code-cell">{{ r.externalId }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center py-3 text-muted" *ngIf="coaRows.length === 0">
+            No financial categories found.
+        </div>
+    </div>
+
+
+    <!-- ═══ JOURNAL TAB ═══ -->
+    <div class="tab-content" *ngIf="!isLoading && activeTab === 'journal'">
+        <div class="journal-toolbar no-print">
+            <div class="search-box">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" class="form-control" placeholder="Search category, description..."
+                    [(ngModel)]="journalSearch" />
+            </div>
+            <span class="text-muted ms-2" style="font-size: 0.8rem;">{{ filteredJournal.length }} entries</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table acct-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" (click)="sortJournal('date')">
+                            Date <i class="fa-solid ms-1" [ngClass]="sortIcon('date')"></i>
+                        </th>
+                        <th class="sortable" (click)="sortJournal('code')">
+                            Code <i class="fa-solid ms-1" [ngClass]="sortIcon('code')"></i>
+                        </th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th class="sortable text-end" (click)="sortJournal('amount')">
+                            Amount <i class="fa-solid ms-1" [ngClass]="sortIcon('amount')"></i>
+                        </th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of filteredJournal">
+                        <td>{{ formatDate(r.date) }}</td>
+                        <td class="code-cell">{{ r.code }}</td>
+                        <td>{{ r.category }}</td>
+                        <td class="desc-cell">{{ r.description }}</td>
+                        <td class="text-end fw-semibold">{{ r.amount | number:'1.2-2' }}</td>
+                        <td>
+                            <span class="type-badge" [ngClass]="r.type === 'Revenue' ? 'badge-revenue' : 'badge-expense'">
+                                {{ r.type }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center py-3 text-muted" *ngIf="filteredJournal.length === 0">
+            No transactions found.
+        </div>
+    </div>
+</div>

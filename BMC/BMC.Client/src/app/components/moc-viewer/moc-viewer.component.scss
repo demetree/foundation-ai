@@ -1,0 +1,456 @@
+/* MOC 3D Viewer — AI-Developed */
+
+:host {
+    display: block;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.moc-viewer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #0d0f14;
+    color: #e8e8f0;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+
+/* ─── Header ─── */
+
+.viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(18, 20, 30, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+    min-height: 52px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.header-title {
+    min-width: 0;
+
+    h1 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: -0.01em;
+    }
+}
+
+.header-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+
+    span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    i {
+        font-size: 10px;
+    }
+}
+
+.header-actions {
+    display: flex;
+    gap: 4px;
+}
+
+
+/* ─── Icon Buttons ─── */
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 15px;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    &:active {
+        transform: scale(0.94);
+    }
+}
+
+
+/* ─── Main Body ─── */
+
+.viewer-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+
+/* ─── Canvas ─── */
+
+.canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #1a1c28 0%, #0d0f14 70%);
+
+    canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+}
+
+
+/* ─── Loading Overlay ─── */
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 15, 20, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 5;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #6c8aff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+
+/* ─── Error Overlay ─── */
+
+.error-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.error-content {
+    text-align: center;
+    padding: 32px;
+    max-width: 360px;
+
+    i {
+        font-size: 40px;
+        color: #ff6b6b;
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    p {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+}
+
+.btn-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+}
+
+
+/* ─── Build Step Controls ─── */
+
+.step-controls {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(18, 20, 30, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    z-index: 6;
+}
+
+.btn-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    &.active {
+        background: rgba(108, 138, 255, 0.2);
+        color: #6c8aff;
+    }
+}
+
+.step-slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 160px;
+
+    input[type="range"] {
+        width: 100%;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        outline: none;
+        cursor: pointer;
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #6c8aff;
+            border: 2px solid #0d0f14;
+            cursor: pointer;
+        }
+
+        &::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #6c8aff;
+            border: 2px solid #0d0f14;
+            cursor: pointer;
+        }
+    }
+}
+
+.step-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+}
+
+
+/* ─── Sidebar ─── */
+
+.viewer-sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: rgba(16, 18, 26, 0.95);
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+
+/* ─── Sidebar Sections ─── */
+
+.sidebar-section {
+    h3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.4);
+        margin: 0 0 12px 0;
+    }
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.info-item {
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+
+    .info-label {
+        display: block;
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        display: block;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e8e8f0;
+    }
+}
+
+.info-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.5;
+    margin: 8px 0 0 0;
+}
+
+
+/* ─── Export Buttons ─── */
+
+.export-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    color: #e8e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+
+    i {
+        font-size: 16px;
+        color: #6c8aff;
+        width: 20px;
+        text-align: center;
+    }
+
+    span {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    small {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.35);
+        margin-left: auto;
+    }
+
+    &:hover {
+        background: rgba(108, 138, 255, 0.08);
+        border-color: rgba(108, 138, 255, 0.2);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+    .viewer-sidebar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 8;
+        box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-meta {
+        display: none;
+    }
+}

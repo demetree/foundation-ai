@@ -808,6 +808,32 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   }
 
   // -------------------------------------------------------------------------
+  // Rental Agreement Helpers
+  // -------------------------------------------------------------------------
+  getRentalStatus(): string {
+    return this.attributesParsed?.rentalAgreement?.status ?? 'none';
+  }
+
+  getRentalField(field: string): any {
+    return this.attributesParsed?.rentalAgreement?.[field] ?? null;
+  }
+
+  setRentalField(field: string, value: any): void {
+    if (!this.attributesParsed.rentalAgreement) {
+      this.attributesParsed.rentalAgreement = {};
+    }
+
+    if (field === 'status' && value === 'none') {
+      // Clear the entire rental agreement when set to "No Agreement"
+      delete this.attributesParsed.rentalAgreement;
+    } else {
+      this.attributesParsed.rentalAgreement[field] = value || null;
+    }
+
+    this.eventForm.markAsDirty();
+  }
+
+  // -------------------------------------------------------------------------
   // Save Logic
   // -------------------------------------------------------------------------
   async save(): Promise<void> {

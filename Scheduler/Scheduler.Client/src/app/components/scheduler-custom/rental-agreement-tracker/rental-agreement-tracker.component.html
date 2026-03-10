@@ -1,0 +1,87 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="page-container">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="tracker-header no-print">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </button>
+                <h3 class="mb-0"><i class="fa-solid fa-file-contract me-2"></i>Rental Agreements</h3>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fa-solid fa-search search-icon"></i>
+                    <input type="text" class="form-control form-control-sm" placeholder="Search events or contacts..."
+                        [(ngModel)]="searchTerm" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ SUMMARY CARDS ═══ -->
+    <div class="summary-row" *ngIf="!isLoading">
+        <div class="summary-card draft" (click)="statusFilter = statusFilter === 'draft' ? 'all' : 'draft'"
+            [class.active]="statusFilter === 'draft'">
+            <div class="card-count">{{ draftCount }}</div>
+            <div class="card-label">Draft</div>
+        </div>
+        <div class="summary-card signed" (click)="statusFilter = statusFilter === 'signed' ? 'all' : 'signed'"
+            [class.active]="statusFilter === 'signed'">
+            <div class="card-count">{{ signedCount }}</div>
+            <div class="card-label">Signed</div>
+        </div>
+        <div class="summary-card expired" (click)="statusFilter = statusFilter === 'expired' ? 'all' : 'expired'"
+            [class.active]="statusFilter === 'expired'">
+            <div class="card-count">{{ expiredCount }}</div>
+            <div class="card-label">Expired</div>
+        </div>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+
+
+    <!-- ═══ TABLE ═══ -->
+    <div class="table-responsive" *ngIf="!isLoading && filteredRows.length > 0">
+        <table class="table agreement-table">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Signed</th>
+                    <th>Expiry</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of filteredRows" class="clickable-row" (click)="navigateToEvent(row.event.id)">
+                    <td class="fw-semibold">{{ row.event.name }}</td>
+                    <td>{{ row.agreement.contactName ?? '—' }}</td>
+                    <td>
+                        <span class="status-badge"
+                            [ngClass]="'status-' + row.agreement.agreementStatus">
+                            {{ row.agreement.agreementStatus | titlecase }}
+                        </span>
+                    </td>
+                    <td>{{ formatDate(row.agreement.signedDate) }}</td>
+                    <td>{{ formatDate(row.agreement.expiryDate) }}</td>
+                    <td class="notes-cell">{{ row.agreement.rentalNotes ?? '—' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ EMPTY ═══ -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && filteredRows.length === 0">
+        <i class="fa-solid fa-file-contract fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+        <span *ngIf="allRows.length === 0">No events have rental agreement data yet.</span>
+        <span *ngIf="allRows.length > 0">No agreements match the current filter.</span>
+    </div>
+</div>

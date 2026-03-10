@@ -1,0 +1,142 @@
+<!-- MOC 3D Viewer — AI-Developed -->
+
+<div class="moc-viewer" id="moc-viewer-container">
+
+    <!-- ─── Header ─── -->
+    <div class="viewer-header">
+        <div class="header-left">
+            <button class="btn-icon" (click)="goBack()" title="Back">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <div class="header-title" *ngIf="summary">
+                <h1>{{ summary.name }}</h1>
+                <span class="header-meta">
+                    <span *ngIf="summary.partCount"><i class="bi bi-puzzle"></i> {{ summary.partCount | number }} parts</span>
+                    <span *ngIf="totalSteps > 0"><i class="bi bi-layers"></i> {{ totalSteps }} steps</span>
+                    <span *ngIf="summary.submodelCount > 0"><i class="bi bi-box"></i> {{ summary.submodelCount }} submodels</span>
+                </span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" (click)="toggleAutoRotate()" [title]="autoRotate ? 'Stop rotation' : 'Auto-rotate'">
+                <i class="bi" [ngClass]="autoRotate ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+            </button>
+            <button class="btn-icon" (click)="resetCamera()" title="Reset camera">
+                <i class="bi bi-fullscreen"></i>
+            </button>
+            <button class="btn-icon" (click)="toggleSidebar()" title="Toggle sidebar">
+                <i class="bi" [ngClass]="sidebarOpen ? 'bi-layout-sidebar-reverse' : 'bi-layout-sidebar'"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ─── Main Content ─── -->
+    <div class="viewer-body" [class.sidebar-open]="sidebarOpen">
+
+        <!-- ─── 3D Canvas ─── -->
+        <div class="canvas-container">
+            <canvas #viewerCanvas id="moc-viewer-canvas"></canvas>
+
+            <!-- Loading overlay -->
+            <div class="loading-overlay" *ngIf="isLoadingModel || isLoadingSummary">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <span *ngIf="isLoadingSummary">Loading project...</span>
+                    <span *ngIf="isLoadingModel && !isLoadingSummary">Building 3D model...</span>
+                </div>
+            </div>
+
+            <!-- Error overlay -->
+            <div class="error-overlay" *ngIf="modelLoadError && !isLoadingModel">
+                <div class="error-content">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p>{{ modelLoadError }}</p>
+                    <button class="btn-retry" (click)="goBack()">
+                        <i class="bi bi-arrow-left"></i> Back to Projects
+                    </button>
+                </div>
+            </div>
+
+            <!-- Build step controls (bottom bar) -->
+            <div class="step-controls" *ngIf="totalSteps > 1 && !isLoadingModel">
+                <button class="btn-step" (click)="setStep(0)" [class.active]="currentStep === 0" title="Show all">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </button>
+                <button class="btn-step" (click)="prevStep()" [disabled]="currentStep <= 0">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="step-slider">
+                    <input type="range"
+                           [min]="0"
+                           [max]="totalSteps"
+                           [value]="currentStep"
+                           (input)="setStep(+$any($event.target).value)"
+                           id="step-slider-input">
+                    <span class="step-label">
+                        {{ currentStep === 0 ? 'All Steps' : 'Step ' + currentStep + ' / ' + totalSteps }}
+                    </span>
+                </div>
+                <button class="btn-step" (click)="nextStep()" [disabled]="currentStep >= totalSteps">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ─── Sidebar ─── -->
+        <div class="viewer-sidebar" *ngIf="sidebarOpen && summary">
+
+            <!-- Project Info -->
+            <div class="sidebar-section">
+                <h3><i class="bi bi-info-circle"></i> Project Info</h3>
+                <div class="info-grid">
+                    <div class="info-item" *ngIf="summary.partCount">
+                        <span class="info-label">Parts</span>
+                        <span class="info-value">{{ summary.partCount | number }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="totalSteps > 0">
+                        <span class="info-label">Build Steps</span>
+                        <span class="info-value">{{ totalSteps }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="summary.submodelCount > 0">
+                        <span class="info-label">Submodels</span>
+                        <span class="info-value">{{ summary.submodelCount }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="summary.sourceFormat">
+                        <span class="info-label">Source</span>
+                        <span class="info-value">.{{ summary.sourceFormat }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="summary.studioVersion">
+                        <span class="info-label">Studio</span>
+                        <span class="info-value">v{{ summary.studioVersion }}</span>
+                    </div>
+                </div>
+                <p class="info-desc" *ngIf="summary.description">{{ summary.description }}</p>
+            </div>
+
+            <!-- Export -->
+            <div class="sidebar-section">
+                <h3><i class="bi bi-download"></i> Export</h3>
+                <div class="export-buttons">
+                    <button class="btn-export" (click)="exportAs('ldr')" id="export-ldr-btn">
+                        <i class="bi bi-file-code"></i>
+                        <span>.ldr</span>
+                        <small>LDraw Model</small>
+                    </button>
+                    <button class="btn-export" (click)="exportAs('mpd')" id="export-mpd-btn">
+                        <i class="bi bi-layer-forward"></i>
+                        <span>.mpd</span>
+                        <small>Multi-Part Document</small>
+                    </button>
+                    <button class="btn-export" (click)="exportAs('io')" id="export-io-btn">
+                        <i class="bi bi-box-seam"></i>
+                        <span>.io</span>
+                        <small>BrickLink Studio</small>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

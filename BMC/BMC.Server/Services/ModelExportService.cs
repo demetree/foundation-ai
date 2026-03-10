@@ -247,6 +247,188 @@ namespace Foundation.BMC.Services
         }
 
 
+        #region Viewer Data
+
+        /// <summary>
+        /// Summary DTO returned by the project viewer summary endpoint.
+        /// </summary>
+        public class ProjectViewerSummary
+        {
+            public int ProjectId { get; set; }
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public int? PartCount { get; set; }
+            public int StepCount { get; set; }
+            public int SubmodelCount { get; set; }
+            public string SourceFormat { get; set; }
+            public string StudioVersion { get; set; }
+            public bool HasThumbnail { get; set; }
+        }
+
+
+        /// <summary>
+        ///
+        /// Get a lightweight summary of a project for the viewer UI.
+        ///
+        /// </summary>
+        public async Task<ProjectViewerSummary> GetProjectSummaryAsync(
+            int projectId,
+            Guid tenantGuid,
+            CancellationToken cancellationToken = default)
+        {
+            Project project = await _context.Projects
+                .Where(p => p.id == projectId && p.tenantGuid == tenantGuid && p.active == true && p.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (project == null)
+            {
+                return null;
+            }
+
+            //
+            // Count build steps and submodels
+            //
+            int stepCount = await _context.PlacedBricks
+                .Where(pb => pb.projectId == projectId && pb.tenantGuid == tenantGuid && pb.active == true && pb.deleted == false)
+                .Select(pb => pb.buildStepNumber ?? 1)
+                .Distinct()
+                .CountAsync(cancellationToken);
+
+            int submodelCount = await _context.Submodels
+                .Where(s => s.projectId == projectId && s.tenantGuid == tenantGuid && s.active == true && s.deleted == false)
+                .CountAsync(cancellationToken);
+
+            //
+            // Get source format and Studio version from the most recent ModelDocument
+            //
+            var docInfo = await _context.ModelDocuments
+                .Where(md => md.projectId == projectId && md.tenantGuid == tenantGuid && md.active == true && md.deleted == false)
+                .OrderByDescending(md => md.id)
+                .Select(md => new { md.sourceFormat, md.studioVersion })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return new ProjectViewerSummary
+            {
+                ProjectId = project.id,
+                Name = project.name,
+                Description = project.description,
+                PartCount = project.partCount,
+                StepCount = stepCount,
+                SubmodelCount = submodelCount,
+                SourceFormat = docInfo?.sourceFormat,
+                StudioVersion = docInfo?.studioVersion,
+                HasThumbnail = project.thumbnailData != null && project.thumbnailData.Length > 0
+            };
+        }
+
+
+        /// <summary>
+        ///
+        /// Generate a self-contained MPD string optimised for the client-side 3D viewer.
+        ///
+        /// This produces a standard LDraw MPD file from PlacedBrick entities,
+        /// and then appends any custom part geometry files found in the project's
+        /// stored .io archive as inline FILE blocks.
+        ///
+        /// The result is a single self-contained text document that LDrawLoader
+        /// can parse without needing any additional file fetches for custom parts.
+        /// Standard LDraw library parts are NOT inlined — LDrawLoader resolves
+        /// those via the existing /api/ldraw/file/ endpoint with IndexedDB caching.
+        ///
+        /// </summary>
+        public async Task<string> GenerateViewerMpdAsync(
+            int projectId,
+            Guid tenantGuid,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // Step 1: Generate the base MPD content from PlacedBrick entities
+            //
+            string baseMpd = await GenerateLDrawContentAsync(projectId, tenantGuid, true, cancellationToken);
+
+            //
+            // Step 2: Look for custom part geometry in the stored .io archive
+            //
+            ModelDocument ioDocument = await _context.ModelDocuments
+                .Where(md => md.projectId == projectId
+                          && md.tenantGuid == tenantGuid
+                          && md.sourceFormat == FORMAT_IO
+                          && md.sourceFileData != null
+                          && md.active == true
+                          && md.deleted == false)
+                .OrderByDescending(md => md.id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (ioDocument == null || ioDocument.sourceFileData == null)
+            {
+                //
+                // No stored .io data — the base MPD is sufficient
+                //
+                return baseMpd;
+            }
+
+            //
+            // Step 3: Parse the .io archive to extract CustomParts
+            //
+            Dictionary<string, byte[]> customParts = null;
+
+            try
+            {
+                StudioIoResult parseResult = StudioIoParser.ParseBytes(
+                    ioDocument.sourceFileData,
+                    ioDocument.sourceFileName ?? "model.io");
+
+                customParts = parseResult.CustomParts;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse stored .io for custom parts in project {Id}", projectId);
+                return baseMpd;
+            }
+
+            if (customParts == null || customParts.Count == 0)
+            {
+                return baseMpd;
+            }
+
+            //
+            // Step 4: Inline custom part geometry as FILE blocks at the end of the MPD
+            //
+            StringBuilder sb = new StringBuilder(baseMpd);
+
+            sb.AppendLine();
+            sb.AppendLine("0 // Custom parts embedded from BrickLink Studio");
+
+            foreach (KeyValuePair<string, byte[]> part in customParts)
+            {
+                string partContent = System.Text.Encoding.UTF8.GetString(part.Value);
+                string partName = part.Key;
+
+                sb.AppendLine("0 FILE " + partName);
+                sb.Append(partContent);
+
+                //
+                // Ensure content ends with a newline before NOFILE
+                //
+                if (partContent.Length > 0 && partContent[partContent.Length - 1] != '\n')
+                {
+                    sb.AppendLine();
+                }
+
+                sb.AppendLine("0 NOFILE");
+            }
+
+            _logger.LogInformation(
+                "Viewer MPD for project {Id}: inlined {Count} custom parts",
+                projectId,
+                customParts.Count);
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+
         /// <summary>
         ///
         /// Generate LDraw-format text content from a project's PlacedBrick entities.
