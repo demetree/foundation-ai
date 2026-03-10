@@ -56,6 +56,19 @@
             </button>
         </div>
 
+        <!-- Pending Approval Interstitial -->
+        <div *ngIf="step === 'pending'" class="pending-interstitial">
+            <div class="pending-icon">⏳</div>
+            <h2>Application Under Review</h2>
+            <p class="login-desc">{{ successMessage }}</p>
+            <p class="pending-hint">
+                Once approved, you can return here and log in with your email.
+            </p>
+            <button class="hub-btn-secondary" (click)="onBack()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+        </div>
+
         <!-- Messages -->
         <div class="login-message error" *ngIf="errorMessage">
             <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}

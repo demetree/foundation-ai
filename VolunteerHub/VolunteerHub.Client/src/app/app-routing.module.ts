@@ -9,9 +9,11 @@ import { HubHoursComponent } from './components/hub-hours/hub-hours.component';
 import { HubProfileComponent } from './components/hub-profile/hub-profile.component';
 import { HubRegisterComponent } from './components/hub-register/hub-register.component';
 import { HubOpportunitiesComponent } from './components/hub-opportunities/hub-opportunities.component';
+import { HubLandingComponent } from './components/hub-landing/hub-landing.component';
 import { HubAuthGuard } from './guards/hub-auth.guard';
 
 const routes: Routes = [
+    { path: 'welcome', component: HubLandingComponent },
     { path: 'login', component: HubLoginComponent },
     { path: 'register', component: HubRegisterComponent },
     {
@@ -27,7 +29,7 @@ const routes: Routes = [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },
-    { path: '**', redirectTo: '' }
+    { path: '**', redirectTo: 'welcome' }
 ];
 
 @NgModule({

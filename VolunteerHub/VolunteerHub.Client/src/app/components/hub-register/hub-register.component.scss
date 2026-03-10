@@ -147,7 +147,56 @@ h1 {
     line-height: 1.6;
 }
 
-.success-card .btn-primary {
+.success-card .btn-secondary {
     max-width: 220px;
     margin: 0 auto;
+    display: inline-block;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: var(--text-primary, #f1f5f9);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.success-card .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.pending-steps {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+}
+
+.pending-steps h3 {
+    color: var(--text-primary, #f1f5f9);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.pending-steps ol {
+    color: var(--text-muted, #94a3b8);
+    padding-left: 20px;
+    margin: 0;
+    line-height: 1.8;
+    font-size: 0.9rem;
+}
+
+.admin-contact {
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.85rem;
+    margin: 0 0 20px 0;
+}
+
+.admin-contact a {
+    color: var(--accent, #818cf8);
+    text-decoration: underline;
 }

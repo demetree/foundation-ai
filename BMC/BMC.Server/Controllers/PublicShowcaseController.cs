@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Foundation.BMC.Database;
 using Foundation.BMC.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +28,7 @@ namespace Foundation.BMC.Controllers.WebAPI
     public class PublicShowcaseController : ControllerBase
     {
         private readonly SetExplorerService _setExplorerService;
+        private readonly BMCContext _context;
         private readonly IMemoryCache _cache;
         private readonly ILogger<PublicShowcaseController> _logger;
 
@@ -33,11 +37,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         public PublicShowcaseController(
             SetExplorerService setExplorerService,
+            BMCContext context,
             IMemoryCache cache,
             ILogger<PublicShowcaseController> logger
         )
         {
             _setExplorerService = setExplorerService;
+            _context = context;
             _cache = cache;
             _logger = logger;
         }
@@ -52,7 +58,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// </summary>
         [HttpGet("stats")]
-        public IActionResult GetStats()
+        public async Task<IActionResult> GetStats()
         {
             //
             // Check the service first — if data isn't ready yet, return 503 immediately
@@ -67,15 +73,26 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return StatusCode(503, new { message = "Data is still being computed. Please try again shortly." });
             }
 
-            var stats = _cache.GetOrCreate("public:stats", entry =>
+            //
+            // Use GetOrCreateAsync since we now need to query the database for
+            // accurate counts of unique parts, colours, minifigs, and themes.
+            //
+            var stats = await _cache.GetOrCreateAsync("public:stats", async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+
+                int uniqueParts = await _context.BrickParts.CountAsync(bp => bp.active && !bp.deleted);
+                int colours     = await _context.BrickColours.CountAsync(bc => bc.active && !bc.deleted);
+                int minifigs    = await _context.LegoMinifigs.CountAsync(mf => mf.active && !mf.deleted);
+                int themes      = await _context.LegoThemes.CountAsync(t => t.active && !t.deleted);
 
                 return new
                 {
                     totalSets = sets.Count,
-                    totalParts = sets.Sum(s => s.PartCount),
-                    totalThemes = sets.Where(s => s.ThemeId.HasValue).Select(s => s.ThemeId).Distinct().Count(),
+                    totalParts = uniqueParts,
+                    totalColours = colours,
+                    totalThemes = themes,
+                    totalMinifigs = minifigs,
                     newestYear = sets.Max(s => s.Year),
                     oldestYear = sets.Where(s => s.Year > 0).Min(s => s.Year)
                 };

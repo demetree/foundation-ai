@@ -61,10 +61,14 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
     // Stats
     displaySets = 0;
     displayParts = 0;
+    displayColours = 0;
     displayThemes = 0;
+    displayMinifigs = 0;
     targetSets = 0;
     targetParts = 0;
+    targetColours = 0;
     targetThemes = 0;
+    targetMinifigs = 0;
 
     // Content
     featuredSets: FeaturedSet[] = [];
@@ -75,7 +79,6 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
     // Hero tagline rotation
     taglines = [
         'Design, simulate, and build with virtual bricks.',
-        'Explore 79,000+ unique parts in stunning detail.',
         'Browse the entire LEGO catalogue from 1949 to today.',
         'Generate build manuals for your custom creations.',
         'The ultimate platform for LEGO enthusiasts.'
@@ -89,7 +92,7 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
         {
             icon: 'fas fa-cube',
             title: 'Parts Catalog',
-            description: 'Browse 79,000+ unique brick parts with detailed specifications, colours, and categories.',
+            description: 'Browse unique brick parts with detailed specifications, colours, and categories.',
             gradient: 'gradient-red',
             route: '/parts',
             requiresAuth: false
@@ -183,12 +186,23 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
                 next: (result) => {
                     this.targetSets = result.stats.totalSets;
                     this.targetParts = result.stats.totalParts;
+                    this.targetColours = result.stats.totalColours;
                     this.targetThemes = result.stats.totalThemes;
+                    this.targetMinifigs = result.stats.totalMinifigs;
 
                     this.featuredSets = result.featured;
                     this.recentSets = result.recent;
                     this.decades = result.decades;
                     this.randomSets = result.random;
+
+                    // Update the parts tagline with the real count
+                    this.taglines[0] = `Explore ${this.targetParts.toLocaleString()}+ unique parts in stunning detail.`;
+
+                    // Update the Parts Catalog feature description with real count
+                    const partsCatalogFeature = this.features.find(f => f.title === 'Parts Catalog');
+                    if (partsCatalogFeature) {
+                        partsCatalogFeature.description = `Browse ${this.targetParts.toLocaleString()}+ unique brick parts with detailed specifications, colours, and categories.`;
+                    }
 
                     this.loading = false;
 
@@ -196,7 +210,9 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
                     setTimeout(() => {
                         this.animateCounter('displaySets', this.targetSets, 1500);
                         this.animateCounter('displayParts', this.targetParts, 2000);
+                        this.animateCounter('displayColours', this.targetColours, 1200);
                         this.animateCounter('displayThemes', this.targetThemes, 1200);
+                        this.animateCounter('displayMinifigs', this.targetMinifigs, 1800);
                     }, 200);
                 },
                 error: () => {
@@ -207,7 +223,7 @@ export class PublicLandingComponent implements OnInit, OnDestroy {
     }
 
 
-    private animateCounter(prop: 'displaySets' | 'displayParts' | 'displayThemes', target: number, duration: number): void {
+    private animateCounter(prop: 'displaySets' | 'displayParts' | 'displayColours' | 'displayThemes' | 'displayMinifigs', target: number, duration: number): void {
         const start = performance.now();
         const step = (timestamp: number) => {
             const progress = Math.min((timestamp - start) / duration, 1);

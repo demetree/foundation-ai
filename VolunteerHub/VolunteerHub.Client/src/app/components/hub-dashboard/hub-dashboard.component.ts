@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HubAuthService } from '../../services/hub-auth.service';
 import { HubApiService } from '../../services/hub-api.service';
+import { VolunteerProfile, VolunteerAssignment } from '../../models/hub-models';
 
 @Component({
     selector: 'app-hub-dashboard',
@@ -10,8 +11,8 @@ import { HubApiService } from '../../services/hub-api.service';
 export class HubDashboardComponent implements OnInit {
 
     userName: string = '';
-    profile: any = null;
-    upcomingAssignments: any[] = [];
+    profile: VolunteerProfile | null = null;
+    upcomingAssignments: VolunteerAssignment[] = [];
     isLoading = true;
 
     constructor(

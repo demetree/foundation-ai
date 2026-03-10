@@ -165,7 +165,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-box-open', title: 'Set Explorer', description: 'Search and filter sets', route: '/lego/sets', gradient: 'gradient-orange' },
         { icon: 'fas fa-child-reaching', title: 'Minifig Gallery', description: 'Browse all minifigs', route: '/lego/minifigs', gradient: 'gradient-pink' },
         { icon: 'fas fa-layer-group', title: 'Themes', description: 'Browse by theme', route: '/lego/themes', gradient: 'gradient-teal' },
-        { icon: 'fas fa-cubes', title: 'Parts Catalog', description: '79,000+ parts', route: '/parts', gradient: 'gradient-red' },
+        { icon: 'fas fa-cubes', title: 'Parts Catalog', description: 'All parts', route: '/parts', gradient: 'gradient-red' },
         { icon: 'fas fa-camera', title: 'Part Renderer', description: '3D rendering', route: '/part-renderer', gradient: 'gradient-purple' },
         { icon: 'fas fa-book', title: 'Manual Builder', description: 'Build instructions', route: '/manual-generator', gradient: 'gradient-green' },
         { icon: 'fas fa-layer-group', title: 'My Collection', description: 'Track your sets', route: '/my-collection', gradient: 'gradient-amber' },

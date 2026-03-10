@@ -1,0 +1,38 @@
+<div class="landing-page">
+
+    <!-- Hero Section -->
+    <div class="hero animate-in">
+        <div class="hero-content">
+
+            <!-- Logo -->
+            <div class="hero-logo" *ngIf="logoUrl">
+                <img [src]="logoUrl" [alt]="organizationName" class="org-logo">
+            </div>
+            <div class="hero-logo hero-logo-fallback" *ngIf="!logoUrl">
+                <i class="fas fa-hand-holding-heart"></i>
+            </div>
+
+            <!-- Heading -->
+            <h1>{{ organizationName }}</h1>
+            <p class="hero-tagline">Make a difference — volunteer with us today.</p>
+
+            <!-- CTAs -->
+            <div class="hero-actions">
+                <button class="btn-cta-primary" (click)="goToRegister()">
+                    <i class="fas fa-user-plus"></i>
+                    Volunteer Sign Up
+                </button>
+                <button class="btn-cta-secondary" (click)="goToLogin()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Already a Volunteer? Log In
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="landing-footer" *ngIf="contactEmail">
+        <p>Questions? Reach out at <a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a></p>
+    </footer>
+
+</div>

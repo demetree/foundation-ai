@@ -9,7 +9,7 @@ import { HubAuthService } from '../../services/hub-auth.service';
 })
 export class HubLoginComponent {
 
-    step: 'identifier' | 'code' = 'identifier';
+    step: 'identifier' | 'code' | 'pending' = 'identifier';
     identifier = '';
     code = '';
     isLoading = false;
@@ -34,8 +34,15 @@ export class HubLoginComponent {
 
         try {
             const result = await this.auth.requestCode(this.identifier.trim());
-            this.successMessage = result.message;
-            this.step = 'code';
+
+            // Check if the server detected a pending registration
+            if ((result as any).status === 'pending') {
+                this.successMessage = result.message;
+                this.step = 'pending';
+            } else {
+                this.successMessage = result.message;
+                this.step = 'code';
+            }
         } catch (err: any) {
             this.errorMessage = err?.error?.message || 'Something went wrong. Please try again.';
         } finally {

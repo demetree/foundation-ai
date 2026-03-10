@@ -3,8 +3,9 @@
     <!-- Top bar -->
     <header class="shell-header">
         <div class="shell-header-brand">
-            <i class="fas fa-hand-holding-heart"></i>
-            <span>Volunteer Hub</span>
+            <img *ngIf="logoUrl" [src]="logoUrl" [alt]="organizationName" class="shell-brand-logo">
+            <i *ngIf="!logoUrl" class="fas fa-hand-holding-heart"></i>
+            <span>{{ organizationName }}</span>
         </div>
         <button class="shell-logout" (click)="logout()" title="Sign out">
             <i class="fas fa-right-from-bracket"></i>

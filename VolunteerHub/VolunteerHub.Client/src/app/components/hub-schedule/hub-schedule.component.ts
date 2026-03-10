@@ -38,7 +38,7 @@ export class HubScheduleComponent implements OnInit {
     constructor(private api: HubApiService) { }
 
     ngOnInit(): void {
-        // Calendar initializes via datesSet callback
+        this.loadAssignments();
     }
 
     private handleDatesSet(info: any): void {

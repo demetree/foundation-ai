@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HubApiService } from '../../services/hub-api.service';
+import { VolunteerProfile } from '../../models/hub-models';
 
 @Component({
     selector: 'app-hub-profile',
@@ -8,7 +9,7 @@ import { HubApiService } from '../../services/hub-api.service';
 })
 export class HubProfileComponent implements OnInit {
 
-    profile: any = null;
+    profile: VolunteerProfile | null = null;
     isLoading = true;
     isSaving = false;
     saveMessage = '';

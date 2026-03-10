@@ -136,3 +136,50 @@
         border: 1px solid rgba(16, 185, 129, 0.2);
     }
 }
+
+// Pending approval interstitial
+.pending-interstitial {
+    text-align: center;
+    padding: 1rem 0;
+
+    .pending-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--hub-text);
+    }
+
+    .pending-hint {
+        color: var(--hub-text-muted);
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+.hub-btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--hub-radius-sm, 8px);
+    color: var(--hub-text-muted);
+    font-family: var(--hub-font);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.65rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--hub-text);
+    }
+
+    i {
+        margin-right: 0.3rem;
+    }
+}

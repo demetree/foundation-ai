@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HubApiService } from '../../services/hub-api.service';
+import { VolunteerAssignment } from '../../models/hub-models';
 
 @Component({
     selector: 'app-hub-hours',
@@ -8,7 +9,7 @@ import { HubApiService } from '../../services/hub-api.service';
 })
 export class HubHoursComponent implements OnInit {
 
-    assignments: any[] = [];
+    assignments: VolunteerAssignment[] = [];
     isLoading = true;
     totalReported = 0;
     totalApproved = 0;
@@ -75,7 +76,7 @@ export class HubHoursComponent implements OnInit {
             next: () => {
                 const a = this.assignments.find(x => x.id === assignmentId);
                 if (a) {
-                    a.reportedHours = this.reportHours;
+                    a.reportedHours = this.reportHours ?? undefined;
                     a.notes = this.reportNotes;
                 }
                 this.calculateTotals();
@@ -89,5 +90,32 @@ export class HubHoursComponent implements OnInit {
                 this.reportError = 'Failed to report hours. Please try again.';
             }
         });
+    }
+
+
+    exportCsv(): void {
+        const header = 'Event Name,Date,Role,Reported Hours,Approved Hours,Notes';
+
+        const rows = this.assignments.map(a => {
+            const eventName = (a.eventName || 'Event').replace(/,/g, ' ');
+            const date = a.startDateTime ? new Date(a.startDateTime).toLocaleDateString() : '';
+            const role = (a.role || '').replace(/,/g, ' ');
+            const reported = a.reportedHours ?? '';
+            const approved = a.approvedHours ?? '';
+            const notes = (a.notes || '').replace(/,/g, ' ').replace(/\n/g, ' ');
+
+            return `${eventName},${date},${role},${reported},${approved},${notes}`;
+        });
+
+        const csv = [header, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `volunteer-hours-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+
+        URL.revokeObjectURL(url);
     }
 }

@@ -58,7 +58,7 @@ export class HubRegisterComponent {
         });
     }
 
-    goToLogin(): void {
-        this.router.navigate(['/login']);
+    goHome(): void {
+        this.router.navigate(['/welcome']);
     }
 }

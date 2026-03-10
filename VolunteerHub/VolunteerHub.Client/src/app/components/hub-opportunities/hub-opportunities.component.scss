@@ -14,6 +14,81 @@ h2 {
     font-size: 0.9rem;
 }
 
+// Filter bar
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+}
+
+.filter-search {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+
+    i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.85rem;
+    }
+
+    input {
+        padding-left: 36px !important;
+        width: 100%;
+    }
+}
+
+.filter-dates {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-date-field {
+    label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted, #94a3b8);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+
+    input {
+        width: 150px;
+    }
+}
+
+.btn-clear-filters {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    color: #fca5a5;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    i {
+        margin-right: 4px;
+    }
+}
+
 .success-banner {
     background: rgba(16, 185, 129, 0.15);
     border: 1px solid rgba(16, 185, 129, 0.3);

@@ -34,7 +34,12 @@
 
     <!-- Assignment hours list -->
     <div class="hours-list animate-in animate-delay-2" *ngIf="!isLoading && assignments.length > 0">
-        <h2 class="hub-section-label">Assignment History</h2>
+        <div class="hours-list-header">
+            <h2 class="hub-section-label">Assignment History</h2>
+            <button class="hub-btn-outline btn-export" (click)="exportCsv()">
+                <i class="fas fa-download"></i> Download CSV
+            </button>
+        </div>
 
         <div class="hours-card hub-card-sm" *ngFor="let a of assignments">
             <div class="hours-card-main">

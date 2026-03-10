@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { HubAuthService } from './hub-auth.service';
 import { environment } from '../../environments/environment';
+import { VolunteerProfile, VolunteerAssignment, Opportunity, BrandingInfo, ProfileUpdateRequest } from '../models/hub-models';
 
 @Injectable({ providedIn: 'root' })
 export class HubApiService {
@@ -22,14 +23,14 @@ export class HubApiService {
 
     // ─────── Profile ───────
 
-    getMyProfile(): Observable<any> {
-        return this.http.get(
+    getMyProfile(): Observable<VolunteerProfile> {
+        return this.http.get<VolunteerProfile>(
             `${environment.apiBaseUrl}/api/volunteerhub/me`,
             { headers: this.headers }
         );
     }
 
-    updateMyProfile(data: { availabilityPreferences?: string; interestsAndSkillsNotes?: string; emergencyContactNotes?: string }): Observable<any> {
+    updateMyProfile(data: ProfileUpdateRequest): Observable<any> {
         return this.http.put(
             `${environment.apiBaseUrl}/api/volunteerhub/me/profile`,
             data,
@@ -40,12 +41,12 @@ export class HubApiService {
 
     // ─────── Assignments ───────
 
-    getMyAssignments(from?: Date, to?: Date): Observable<any[]> {
+    getMyAssignments(from?: Date, to?: Date): Observable<VolunteerAssignment[]> {
         let params: any = {};
         if (from) params.from = from.toISOString();
         if (to) params.to = to.toISOString();
 
-        return this.http.get<any[]>(
+        return this.http.get<VolunteerAssignment[]>(
             `${environment.apiBaseUrl}/api/volunteerhub/me/assignments`,
             { headers: this.headers, params }
         );
@@ -101,12 +102,36 @@ export class HubApiService {
     }
 
 
+    // ─────── Branding ───────
+
+    getBranding(): Observable<BrandingInfo> {
+        // No auth header — public endpoint
+        return this.http.get<BrandingInfo>(
+            `${environment.apiBaseUrl}/api/volunteerhub/public/branding`
+        );
+    }
+
+
     // ─────── Opportunities ───────
 
-    getOpportunities(): Observable<any[]> {
-        return this.http.get<any[]>(
+    getOpportunities(search?: string, fromDate?: Date, toDate?: Date): Observable<Opportunity[]> {
+        let params: any = {};
+
+        if (search) {
+            params.search = search;
+        }
+
+        if (fromDate) {
+            params.fromDate = fromDate.toISOString();
+        }
+
+        if (toDate) {
+            params.toDate = toDate.toISOString();
+        }
+
+        return this.http.get<Opportunity[]>(
             `${environment.apiBaseUrl}/api/volunteerhub/opportunities`,
-            { headers: this.headers }
+            { headers: this.headers, params }
         );
     }
 

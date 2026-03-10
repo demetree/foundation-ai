@@ -21,10 +21,8 @@
 
         <div class="d-flex align-items-center gap-2">
             <div class="btn-group btn-group-sm">
-                <button *ngFor="let view of ['dayGridMonth', 'timeGridWeek', 'timeGridDay']" 
-                    class="btn" 
-                    [class.btn-primary]="currentView === view" 
-                    [class.btn-outline-primary]="currentView !== view"
+                <button *ngFor="let view of ['dayGridMonth', 'timeGridWeek', 'timeGridDay']" class="btn"
+                    [class.btn-primary]="currentView === view" [class.btn-outline-primary]="currentView !== view"
                     (click)="changeView(view)">
                     {{ getViewLabel(view) }}
                 </button>
@@ -42,6 +40,23 @@
 
     <!-- FullCalendar -->
     <div class="hub-card-sm calendar-container animate-in animate-delay-2" *ngIf="!isLoading">
+
+        <!-- Color Legend -->
+        <div class="calendar-legend">
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #0ea5e9;"></span>
+                <span>Assigned</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #f59e0b;"></span>
+                <span>Hours Pending</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #10b981;"></span>
+                <span>Approved</span>
+            </div>
+        </div>
+
         <full-calendar #calendar [options]="calendarOptions"></full-calendar>
     </div>
 
@@ -57,7 +72,8 @@
                     <div class="mb-3">
                         <strong><i class="far fa-calendar"></i> Date & Time</strong>
                         <p>{{ selectedAssignment?.startDateTime | date:'EEEE, MMMM d, yyyy' }}</p>
-                        <p>{{ selectedAssignment?.startDateTime | date:'h:mm a' }} – {{ selectedAssignment?.endDateTime | date:'h:mm a' }}</p>
+                        <p>{{ selectedAssignment?.startDateTime | date:'h:mm a' }} – {{ selectedAssignment?.endDateTime
+                            | date:'h:mm a' }}</p>
                     </div>
                     <div class="mb-3" *ngIf="selectedAssignment?.role">
                         <strong><i class="fas fa-user-tag"></i> Role</strong>
@@ -65,7 +81,8 @@
                     </div>
                     <div class="mb-3">
                         <strong><i class="fas fa-info-circle"></i> Status</strong>
-                        <p><span class="hub-badge" [ngClass]="getStatusClass(selectedAssignment?.status)">{{ selectedAssignment?.status || 'Planned' }}</span></p>
+                        <p><span class="hub-badge" [ngClass]="getStatusClass(selectedAssignment?.status)">{{
+                                selectedAssignment?.status || 'Planned' }}</span></p>
                     </div>
                     <div class="mb-3" *ngIf="selectedAssignment?.eventDescription">
                         <strong><i class="fas fa-align-left"></i> Description</strong>
@@ -73,26 +90,32 @@
                     </div>
                     <div class="mb-3" *ngIf="selectedAssignment?.reportedHours || selectedAssignment?.approvedHours">
                         <strong><i class="fas fa-clock"></i> Hours</strong>
-                        <p *ngIf="selectedAssignment?.approvedHours">Approved: {{ selectedAssignment?.approvedHours }} hrs</p>
-                        <p *ngIf="selectedAssignment?.reportedHours && !selectedAssignment?.approvedHours">Reported: {{ selectedAssignment?.reportedHours }} hrs (pending)</p>
+                        <p *ngIf="selectedAssignment?.approvedHours">Approved: {{ selectedAssignment?.approvedHours }}
+                            hrs</p>
+                        <p *ngIf="selectedAssignment?.reportedHours && !selectedAssignment?.approvedHours">Reported: {{
+                            selectedAssignment?.reportedHours }} hrs (pending)</p>
                     </div>
                     <div class="mb-3" *ngIf="selectedAssignment?.notes">
                         <strong><i class="fas fa-sticky-note"></i> Notes</strong>
                         <p>{{ selectedAssignment?.notes }}</p>
                     </div>
                 </div>
-                <div class="modal-footer" *ngIf="selectedAssignment?.status === 'Planned' || selectedAssignment?.status === 'Assigned'">
-                    <button type="button" class="btn btn-success" (click)="respond(selectedAssignment.id, true)" [disabled]="respondingId === selectedAssignment.id">
+                <div class="modal-footer"
+                    *ngIf="selectedAssignment?.status === 'Planned' || selectedAssignment?.status === 'Assigned'">
+                    <button type="button" class="btn btn-success" (click)="respond(selectedAssignment.id, true)"
+                        [disabled]="respondingId === selectedAssignment.id">
                         <i class="fas fa-check" *ngIf="respondingId !== selectedAssignment.id"></i>
                         <i class="fas fa-spinner fa-spin" *ngIf="respondingId === selectedAssignment.id"></i>
                         Accept
                     </button>
-                    <button type="button" class="btn btn-outline-danger" (click)="respond(selectedAssignment.id, false)" [disabled]="respondingId === selectedAssignment.id">
+                    <button type="button" class="btn btn-outline-danger" (click)="respond(selectedAssignment.id, false)"
+                        [disabled]="respondingId === selectedAssignment.id">
                         <i class="fas fa-times"></i>
                         Decline
                     </button>
                 </div>
-                <div class="modal-footer" *ngIf="selectedAssignment?.status !== 'Planned' && selectedAssignment?.status !== 'Assigned'">
+                <div class="modal-footer"
+                    *ngIf="selectedAssignment?.status !== 'Planned' && selectedAssignment?.status !== 'Assigned'">
                     <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
                 </div>
             </div>

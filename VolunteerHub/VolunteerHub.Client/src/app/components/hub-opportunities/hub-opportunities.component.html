@@ -2,6 +2,28 @@
     <h2>🔍 Volunteer Opportunities</h2>
     <p class="subtitle">Browse upcoming events and sign up to volunteer</p>
 
+    <!-- Search / Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" class="hub-input" placeholder="Search by name, description, or location..."
+                [(ngModel)]="searchTerm" (input)="onSearch()">
+        </div>
+        <div class="filter-dates">
+            <div class="filter-date-field">
+                <label>From</label>
+                <input type="date" class="hub-input" [(ngModel)]="fromDate" (change)="onDateChange()">
+            </div>
+            <div class="filter-date-field">
+                <label>To</label>
+                <input type="date" class="hub-input" [(ngModel)]="toDate" (change)="onDateChange()">
+            </div>
+        </div>
+        <button *ngIf="hasActiveFilters" class="btn-clear-filters" (click)="clearFilters()">
+            <i class="fas fa-times"></i> Clear Filters
+        </button>
+    </div>
+
     <div *ngIf="successMessage" class="success-banner">{{ successMessage }}</div>
     <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
 

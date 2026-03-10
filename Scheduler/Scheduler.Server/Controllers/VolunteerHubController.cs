@@ -74,6 +74,37 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                     if (user == null)
                     {
+                        //
+                        // Check if there's a pending volunteer registration for this email.
+                        // Pending volunteers don't have a SecurityUser yet - their email is
+                        // stored in the VolunteerProfile.attributes JSON during registration.
+                        //
+                        var pendingStatus = await _schedulerDb.VolunteerStatuses
+                            .FirstOrDefaultAsync(s => s.name == "Pending");
+
+                        if (pendingStatus != null)
+                        {
+                            bool hasPendingRegistration = await _schedulerDb.VolunteerProfiles
+                                .Where(vp => vp.volunteerStatusId == pendingStatus.id
+                                          && vp.active == true
+                                          && vp.deleted == false
+                                          && vp.attributes != null
+                                          && vp.attributes.Contains(identifier))
+                                .AnyAsync();
+
+                            if (hasPendingRegistration)
+                            {
+                                _logger.LogInformation(
+                                    "VolunteerHub OTP request for pending registration: {Identifier}", identifier);
+
+                                return Ok(new
+                                {
+                                    message = "Your registration is being reviewed by an administrator. You will receive an email when your account is approved.",
+                                    status = "pending"
+                                });
+                            }
+                        }
+
                         // Don't reveal whether the account exists
                         _logger.LogWarning("VolunteerHub OTP request for unknown identifier: {Identifier}", identifier);
                         return Ok(new { message = "If an account exists with that email or phone, a code has been sent." });
@@ -920,7 +951,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// Returns events with available slot counts.
         /// </summary>
         [HttpGet("opportunities")]
-        public async Task<IActionResult> GetOpportunities()
+        public async Task<IActionResult> GetOpportunities(
+            string? search = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null)
         {
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionAsync(token);
@@ -929,7 +963,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             var now = DateTime.UtcNow;
 
             // Get upcoming events that are open for volunteers
-            var events = await _schedulerDb.ScheduledEvents
+            var query = _schedulerDb.ScheduledEvents
                 .Include(e => e.EventResourceAssignments)
                 .Where(e =>
                     e.active &&
@@ -937,6 +971,30 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     e.isOpenForVolunteers &&
                     e.startDateTime > now &&
                     e.tenantGuid == session.TenantGuid)
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                string searchLower = search.Trim().ToLowerInvariant();
+                query = query.Where(e =>
+                    e.name.ToLower().Contains(searchLower) ||
+                    (e.description != null && e.description.ToLower().Contains(searchLower)) ||
+                    (e.location != null && e.location.ToLower().Contains(searchLower)));
+            }
+
+            // Apply date range filters
+            if (fromDate.HasValue)
+            {
+                query = query.Where(e => e.startDateTime >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(e => e.startDateTime <= toDate.Value);
+            }
+
+            var events = await query
                 .OrderBy(e => e.startDateTime)
                 .Take(50)
                 .Select(e => new
@@ -1025,6 +1083,90 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 eventName = scheduledEvent.name,
                 eventDate = scheduledEvent.startDateTime
             });
+        }
+
+
+        // ─────────────────────────────────────────────────────────────
+        // PUBLIC: Tenant Branding
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Public endpoint — returns tenant branding info (name, colors, contact).
+        /// </summary>
+        [HttpGet("public/branding")]
+        public async Task<IActionResult> GetBranding(Guid? tenantGuid = null)
+        {
+            try
+            {
+                Guid resolvedGuid = tenantGuid ?? await _volunteerHubService.GetDefaultTenantGuidAsync();
+
+                var profile = await _schedulerDb.TenantProfiles
+                    .Where(tp => tp.tenantGuid == resolvedGuid && tp.deleted == false)
+                    .FirstOrDefaultAsync();
+
+                if (profile == null)
+                {
+                    return Ok(new
+                    {
+                        organizationName = "Volunteer Hub",
+                        email = (string)null,
+                        phoneNumber = (string)null,
+                        website = (string)null,
+                        primaryColor = (string)null,
+                        secondaryColor = (string)null,
+                        hasLogo = false
+                    });
+                }
+
+                bool hasLogo = profile.companyLogoData != null && profile.companyLogoData.Length > 0;
+
+                return Ok(new
+                {
+                    organizationName = !string.IsNullOrWhiteSpace(profile.name) ? profile.name : "Volunteer Hub",
+                    email = profile.email,
+                    phoneNumber = profile.phoneNumber,
+                    website = profile.website,
+                    primaryColor = profile.primaryColor,
+                    secondaryColor = profile.secondaryColor,
+                    hasLogo = hasLogo,
+                    logoUrl = hasLogo ? "/api/volunteerhub/public/branding/logo" : null
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching tenant branding");
+                return Ok(new { organizationName = "Volunteer Hub", hasLogo = false });
+            }
+        }
+
+
+        /// <summary>
+        /// Public endpoint — serves the tenant logo image bytes.
+        /// </summary>
+        [HttpGet("public/branding/logo")]
+        public async Task<IActionResult> GetBrandingLogo(Guid? tenantGuid = null)
+        {
+            try
+            {
+                Guid resolvedGuid = tenantGuid ?? await _volunteerHubService.GetDefaultTenantGuidAsync();
+
+                var profile = await _schedulerDb.TenantProfiles
+                    .Where(tp => tp.tenantGuid == resolvedGuid && tp.deleted == false)
+                    .FirstOrDefaultAsync();
+
+                if (profile?.companyLogoData == null || profile.companyLogoData.Length == 0)
+                {
+                    return NotFound();
+                }
+
+                string mimeType = profile.companyLogoMimeType ?? "image/png";
+                return File(profile.companyLogoData, mimeType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching tenant logo");
+                return NotFound();
+            }
         }
 
     }

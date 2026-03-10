@@ -79,6 +79,32 @@
     padding: 1rem;
 }
 
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.5rem 0 1rem;
+    border-bottom: 1px solid var(--hub-border, #e2e8f0);
+    margin-bottom: 0.75rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--hub-text-muted, #94a3b8);
+    font-weight: 500;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
 // Filter tabs
 .schedule-filters {
     display: flex;

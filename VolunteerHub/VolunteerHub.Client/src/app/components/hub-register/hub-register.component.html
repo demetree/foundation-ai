@@ -3,9 +3,23 @@
     <div *ngIf="submitted" class="success-card">
         <div class="success-icon">✅</div>
         <h2>Registration Submitted!</h2>
-        <p>Thank you for your interest in volunteering. An administrator will review your application and you'll receive
-            an email when approved.</p>
-        <button class="btn-primary" (click)="goToLogin()">Go to Login</button>
+        <p>Thank you for your interest in volunteering! Your application is now under review.</p>
+
+        <div class="pending-steps">
+            <h3>What happens next?</h3>
+            <ol>
+                <li>An administrator will review your application.</li>
+                <li>You'll receive an email once your account is approved.</li>
+                <li>After approval, you can log in and start signing up for opportunities.</li>
+            </ol>
+        </div>
+
+        <p class="admin-contact">
+            Have questions? Contact us at
+            <a href="mailto:admin&#64;example.com">admin&#64;example.com</a>
+        </p>
+
+        <button class="btn-secondary" (click)="goHome()">Return to Home</button>
     </div>
 
     <!-- Registration Form -->
@@ -60,6 +74,6 @@
             <span *ngIf="submitting">Submitting...</span>
         </button>
 
-        <p class="login-link">Already have an account? <a (click)="goToLogin()">Log in here</a></p>
+        <p class="login-link">Already have an account? <a (click)="goHome()">Log in here</a></p>
     </div>
 </div>

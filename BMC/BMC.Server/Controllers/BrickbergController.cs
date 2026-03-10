@@ -233,30 +233,72 @@ namespace Foundation.BMC.Controllers.WebAPI
             async Task FetchBrickOwlAsync()
             {
                 if (boClient == null) return;
+
+                //
+                // AI-Developed — Split into separate try/catch blocks for BOID lookup
+                // and availability so we can distinguish between "couldn't find BOID"
+                // vs "BOID found but availability endpoint failed" (e.g. 403 from
+                // BrickOwl requiring special API approval for /catalog/availability).
+                //
+
                 try
                 {
                     using (boClient)
                     {
-                        // Cache the BOID lookup separately — avoids ID mapping API call on cache hit
-                        // Pass "set_number" as idType so BrickOwl maps Rebrickable-style set numbers
-                        var idLookup = await _cacheService.GetOrFetchAsync<object>(
-                            "BrickOwl", "BOID", setNumber, null,
-                            () => boClient.CatalogIdLookupAsync(setNumber, "Set", "set_number"),
-                            cancellationToken);
-                        string boid = ExtractBoid(idLookup);
-
-                        if (!string.IsNullOrEmpty(boid))
+                        // ── Step 1: Look up the BOID ──
+                        object idLookup = null;
+                        try
                         {
-                            localBoid = boid;
+                            // Cache the BOID lookup separately — avoids ID mapping API call on cache hit
+                            // Pass "set_number" as idType so BrickOwl maps Rebrickable-style set numbers
+                            idLookup = await _cacheService.GetOrFetchAsync<object>(
+                                "BrickOwl", "BOID", setNumber, null,
+                                async () => (object)await boClient.CatalogIdLookupAsync(setNumber, "Set", "set_number"),
+                                cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex,
+                                "Brickberg: Brick Owl BOID lookup failed for {SetNumber}: {Message}",
+                                setNumber, ex.Message);
+                            boError = $"Brick Owl BOID lookup failed: {ex.Message}";
+                            return;
+                        }
+
+                        string boid = ExtractBoid(idLookup);
+                        if (string.IsNullOrEmpty(boid))
+                        {
+                            _logger.LogDebug(
+                                "Brickberg: No Brick Owl BOID found for {SetNumber}. " +
+                                "IdLookup result type: {ResultType}, value: {ResultValue}",
+                                setNumber,
+                                idLookup?.GetType().Name ?? "null",
+                                idLookup?.ToString()?.Substring(0, Math.Min(idLookup?.ToString()?.Length ?? 0, 200)) ?? "null");
+                            boError = "No Brick Owl BOID found for this set.";
+                            return;
+                        }
+
+                        localBoid = boid;
+
+                        // ── Step 2: Fetch availability using the BOID ──
+                        try
+                        {
                             localAvailability = await _cacheService.GetOrFetchAsync<object>(
                                 "BrickOwl", "SET", setNumber, null,
-                                () => boClient.CatalogAvailabilityAsync(boid),
+                                async () => (object)await boClient.CatalogAvailabilityAsync(boid),
                                 cancellationToken);
                             boLoaded = true;
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            boError = "No Brick Owl BOID found for this set.";
+                            _logger.LogWarning(ex,
+                                "Brickberg: Brick Owl availability failed for {SetNumber} (BOID={Boid}): {Message}",
+                                setNumber, boid, ex.Message);
+
+                            // Still report a partial success — we found the BOID even though
+                            // availability failed (the /catalog/availability endpoint may
+                            // require special API approval from Brick Owl)
+                            boError = $"BOID found ({boid}), but availability data unavailable: {ex.Message}";
                         }
                     }
                 }
