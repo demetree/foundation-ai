@@ -2,8 +2,14 @@
 
 :host {
     display: block;
-    height: 100vh;
+    height: calc(100vh - var(--header-height, 56px));
     overflow: hidden;
+
+    /* Counteract .app-main padding so the viewer fills edge-to-edge */
+    margin: -28px -32px;
+    width: calc(100% + 64px);
+
+    padding-top: 10px;
 }
 
 .moc-viewer {

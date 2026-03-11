@@ -8,6 +8,10 @@
     display: flex;
     flex: 1;
     margin-top: var(--header-height);
+
+    &.on-login-page {
+        margin-top: 0;
+    }
 }
 
 .app-main {
@@ -48,6 +52,16 @@
 
     &.no-sidebar {
         margin-left: 0;
+    }
+
+    &.on-login-page {
+        padding: 0;
+        min-height: 100vh;
+        overflow: hidden;
+
+        &::after {
+            top: 0;
+        }
     }
 }
 

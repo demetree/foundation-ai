@@ -312,6 +312,12 @@ namespace Foundation.BMC.Services
             string projectName = mainModel.Name ?? Path.GetFileNameWithoutExtension(fileName);
 
             //
+            // Ensure the project name is unique within this tenant.
+            // If a project with the same name already exists, append an incrementing suffix.
+            //
+            projectName = await GetUniqueProjectNameAsync(projectName, tenantGuid, cancellationToken);
+
+            //
             // Step 1: Create the Project entity
             //
             Project project = new Project
@@ -528,7 +534,7 @@ namespace Foundation.BMC.Services
                 {
                     tenantGuid = tenantGuid,
                     projectId = project.id,
-                    name = model.Name,
+                    name = await GetUniqueSubmodelNameAsync(model.Name, tenantGuid, cancellationToken),
                     description = $"Submodel imported from {fileName}",
                     sequence = modelIndex,
                     versionNumber = 1,
@@ -968,6 +974,83 @@ namespace Foundation.BMC.Services
             }
 
             return "application/octet-stream";
+        }
+
+
+        /// <summary>
+        ///
+        /// Check whether a project name already exists for the given tenant,
+        /// and if so, append an incrementing suffix until a unique name is found.
+        ///
+        /// Examples:  "My Ship" → "My Ship (2)" → "My Ship (3)" etc.
+        ///
+        /// </summary>
+        private async Task<string> GetUniqueProjectNameAsync(string baseName, Guid tenantGuid, CancellationToken cancellationToken)
+        {
+            string candidateName = baseName;
+            int suffix = 2;
+
+            while (await _context.Projects
+                .AnyAsync(p => p.tenantGuid == tenantGuid
+                            && p.name == candidateName
+                            && p.active == true
+                            && p.deleted == false, cancellationToken))
+            {
+                candidateName = $"{baseName} ({suffix})";
+                suffix++;
+
+                //
+                // Safety valve — don't loop forever if something is very wrong
+                //
+                if (suffix > 1000)
+                {
+                    candidateName = $"{baseName} ({Guid.NewGuid().ToString("N").Substring(0, 6)})";
+                    break;
+                }
+            }
+
+            if (candidateName != baseName)
+            {
+                _logger.LogInformation("Project name '{OriginalName}' already exists — using '{UniqueName}' instead", baseName, candidateName);
+            }
+
+            return candidateName;
+        }
+
+
+        /// <summary>
+        ///
+        /// Check whether a submodel name already exists for the given tenant,
+        /// and if so, append an incrementing suffix until a unique name is found.
+        ///
+        /// </summary>
+        private async Task<string> GetUniqueSubmodelNameAsync(string baseName, Guid tenantGuid, CancellationToken cancellationToken)
+        {
+            string candidateName = baseName;
+            int suffix = 2;
+
+            while (await _context.Submodels
+                .AnyAsync(s => s.tenantGuid == tenantGuid
+                            && s.name == candidateName
+                            && s.active == true
+                            && s.deleted == false, cancellationToken))
+            {
+                candidateName = $"{baseName} ({suffix})";
+                suffix++;
+
+                if (suffix > 1000)
+                {
+                    candidateName = $"{baseName} ({Guid.NewGuid().ToString("N").Substring(0, 6)})";
+                    break;
+                }
+            }
+
+            if (candidateName != baseName)
+            {
+                _logger.LogInformation("Submodel name '{OriginalName}' already exists — using '{UniqueName}' instead", baseName, candidateName);
+            }
+
+            return candidateName;
         }
 
 
