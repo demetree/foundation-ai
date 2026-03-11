@@ -66,6 +66,7 @@ namespace Foundation.BMC.Services
         private readonly PartsUniverseService _partsUniverseService;
         private readonly SetExplorerService _setExplorerService;
         private readonly MinifigGalleryService _minifigGalleryService;
+        private readonly LDrawFileService _ldrawFileService;
 
 
         public DataImportWorker(
@@ -74,7 +75,8 @@ namespace Foundation.BMC.Services
             ILogger<DataImportWorker> logger,
             PartsUniverseService partsUniverseService,
             SetExplorerService setExplorerService,
-            MinifigGalleryService minifigGalleryService
+            MinifigGalleryService minifigGalleryService,
+            LDrawFileService ldrawFileService
         )
         {
             _scopeFactory = scopeFactory;
@@ -83,6 +85,7 @@ namespace Foundation.BMC.Services
             _partsUniverseService = partsUniverseService;
             _setExplorerService = setExplorerService;
             _minifigGalleryService = minifigGalleryService;
+            _ldrawFileService = ldrawFileService;
 
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromMinutes(15);
@@ -819,6 +822,14 @@ namespace Foundation.BMC.Services
                     if (string.IsNullOrEmpty(ldrawDataPath) == false)
                     {
                         importService.CopyDataFiles(extractedPath, ldrawDataPath);
+
+                        //
+                        // Hot-reload: add the new/updated files into the in-memory cache
+                        // so the LDrawController and ModelExportService see them immediately
+                        // without requiring a server restart.
+                        //
+                        _logger.LogInformation("{Prefix}   Refreshing in-memory LDraw file cache...", LOG_PREFIX);
+                        _ldrawFileService.IngestDirectory(ldrawDataPath);
                     }
                 }
 

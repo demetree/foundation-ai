@@ -421,12 +421,82 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         loader.setPartsLibraryPath(fileEndpoint);
 
         //
+        // Step 2a: Extract bundled LDraw library files from the MPD
+        //
+        // The server embeds all LDraw dependency files (parts, primitives,
+        // LDConfig.ldr) as inline "0 FILE" blocks. We extract them into a
+        // map and intercept the LDrawLoader's fetchData method so it resolves
+        // files from memory rather than issuing individual HTTP requests.
+        //
+        const { strippedMpd, fileMap } = this.extractBundledFiles(mpdText);
+
+        if (Object.keys(fileMap).length > 0) {
+            console.log(`[MocViewer] Pre-seeded ${Object.keys(fileMap).length} bundled LDraw files`);
+
+            //
+            // Access the internal LDrawParsedCache and monkey-patch fetchData
+            // to serve from the local map before hitting the network.
+            //
+            const partsGeometryCache = (loader as any).partsCache;
+            if (partsGeometryCache && partsGeometryCache.parseCache) {
+                const parseCache = partsGeometryCache.parseCache;
+                const originalFetchData = parseCache.fetchData.bind(parseCache);
+
+                parseCache.fetchData = async (fileName: string) => {
+                    //
+                    // Try the local file map first — check bare name, then
+                    // with standard LDraw directory prefixes stripped.
+                    //
+                    // The server already bundled ALL files it could find in
+                    // the LDraw parts library.  If a file isn't here, it
+                    // does not exist.  Throwing immediately prevents the
+                    // LDrawLoader's 12-attempt trial-and-error HTTP flood.
+                    //
+                    const lowerName = fileName.toLowerCase();
+                    if (fileMap[lowerName]) {
+                        return fileMap[lowerName];
+                    }
+
+                    // Strip directory prefix and try bare filename
+                    const bareName = lowerName.includes('/') ? lowerName.substring(lowerName.lastIndexOf('/') + 1) : lowerName;
+                    if (fileMap[bareName]) {
+                        return fileMap[bareName];
+                    }
+
+                    // Try with standard LDraw directory prefixes
+                    const prefixes = ['parts/', 'p/', 'parts/s/', 'p/48/', 'p/8/', 'models/'];
+                    for (const prefix of prefixes) {
+                        if (fileMap[prefix + bareName]) {
+                            return fileMap[prefix + bareName];
+                        }
+                    }
+
+                    // File is not in the LDraw library — throw immediately
+                    // instead of making 12 sequential HTTP requests
+                    console.debug(`[MocViewer] Skipping unbundled file: ${fileName}`);
+                    throw new Error(`LDrawLoader: File "${fileName}" not found in bundled library.`);
+                };
+            }
+        }
+
+        //
         // Preload LDraw colour configuration
         //
-        const preloadUrl = fileEndpoint + 'LDConfig.ldr';
+        // preloadMaterials() makes a single HTTP request for LDConfig.ldr.
+        // With the in-memory LDrawFileService, this completes instantly.
+        // Also seed the parse cache so the file isn't fetched again during parsing.
+        //
+        const ldConfigKey = Object.keys(fileMap).find(k => k.toLowerCase() === 'ldconfig.ldr');
+        if (ldConfigKey && fileMap[ldConfigKey]) {
+            // Seed the parse cache so LDConfig.ldr isn't fetched during model parsing
+            const partsGeometryCache = (loader as any).partsCache;
+            if (partsGeometryCache && partsGeometryCache.parseCache) {
+                partsGeometryCache.parseCache.setData('LDConfig.ldr', fileMap[ldConfigKey]);
+            }
+        }
 
         try {
-            await (loader as any).preloadMaterials(preloadUrl);
+            await (loader as any).preloadMaterials(fileEndpoint + 'LDConfig.ldr');
         } catch (err) {
             console.warn('[MocViewer] Material preload failed (using defaults):', err);
         }
@@ -469,6 +539,61 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
             this.modelLoadError = 'Failed to parse the 3D model.';
             this.isLoadingModel = false;
         }
+    }
+
+
+    /**
+     * Extracts all "0 FILE" / "0 NOFILE" blocks from an MPD text string
+     * into a map keyed by lowercase filename.
+     *
+     * The server bundles all LDraw library dependencies inline so the
+     * LDrawLoader can resolve them from memory instead of fetching
+     * each one individually via HTTP.
+     */
+    private extractBundledFiles(mpdText: string): { strippedMpd: string; fileMap: Record<string, string> } {
+        const fileMap: Record<string, string> = {};
+        const lines = mpdText.split('\n');
+        let currentFileName: string | null = null;
+        let currentContent: string[] = [];
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+
+            if (trimmed.startsWith('0 FILE ')) {
+                //
+                // Save the previous file if we were accumulating one
+                //
+                if (currentFileName !== null) {
+                    fileMap[currentFileName.toLowerCase()] = currentContent.join('\n');
+                }
+
+                currentFileName = trimmed.substring(7).trim();
+                currentContent = [];
+                continue;
+            }
+
+            if (trimmed === '0 NOFILE') {
+                if (currentFileName !== null) {
+                    fileMap[currentFileName.toLowerCase()] = currentContent.join('\n');
+                    currentFileName = null;
+                    currentContent = [];
+                }
+                continue;
+            }
+
+            if (currentFileName !== null) {
+                currentContent.push(line);
+            }
+        }
+
+        //
+        // Save the last file if we were still accumulating
+        //
+        if (currentFileName !== null) {
+            fileMap[currentFileName.toLowerCase()] = currentContent.join('\n');
+        }
+
+        return { strippedMpd: mpdText, fileMap };
     }
 
 

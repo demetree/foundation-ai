@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -29,10 +29,10 @@ namespace Foundation.BMC.Services
     ///   - For .io format, wraps the LDraw content in a password-protected ZIP with thumbnail
     ///
     /// Supports two export paths:
-    ///   1. "Native" export — reconstructs LDraw from PlacedBrick entities
-    ///   2. "Round-trip" export — uses the stored ModelDocument.sourceFileData when available
+    ///   1. "Native" export â€” reconstructs LDraw from PlacedBrick entities
+    ///   2. "Round-trip" export â€” uses the stored ModelDocument.sourceFileData when available
     ///
-    /// AI-developed code — initial implementation March 2026
+    /// AI-developed code â€” initial implementation March 2026
     ///
     /// </summary>
     public class ModelExportService
@@ -49,17 +49,17 @@ namespace Foundation.BMC.Services
         // Dependencies
         //
         private readonly BMCContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly LDrawFileService _ldrawFiles;
         private readonly ILogger<ModelExportService> _logger;
 
 
         /// <summary>
-        /// Constructor — takes the BMC database context, app configuration, and a logger.
+        /// Constructor â€” takes the BMC database context, LDraw file service, and a logger.
         /// </summary>
-        public ModelExportService(BMCContext context, IConfiguration configuration, ILogger<ModelExportService> logger)
+        public ModelExportService(BMCContext context, LDrawFileService ldrawFiles, ILogger<ModelExportService> logger)
         {
             _context = context;
-            _configuration = configuration;
+            _ldrawFiles = ldrawFiles;
             _logger = logger;
         }
 
@@ -335,7 +335,7 @@ namespace Foundation.BMC.Services
         ///
         /// The result is a single self-contained text document that LDrawLoader
         /// can parse without needing any additional file fetches for custom parts.
-        /// Standard LDraw library parts are NOT inlined — LDrawLoader resolves
+        /// Standard LDraw library parts are NOT inlined â€” LDrawLoader resolves
         /// those via the existing /api/ldraw/file/ endpoint with IndexedDB caching.
         ///
         /// </summary>
@@ -365,7 +365,7 @@ namespace Foundation.BMC.Services
             if (ioDocument == null || ioDocument.sourceFileData == null)
             {
                 //
-                // No stored .io data — the base MPD is sufficient
+                // No stored .io data â€” the base MPD is sufficient
                 //
                 return baseMpd;
             }
@@ -482,7 +482,7 @@ namespace Foundation.BMC.Services
                 .ToListAsync(cancellationToken);
 
             //
-            // Load part and colour lookup tables (reverse direction: id → ldrawPartId/ldrawColourCode)
+            // Load part and colour lookup tables (reverse direction: id â†’ ldrawPartId/ldrawColourCode)
             //
             Dictionary<int, string> partLookup = await _context.BrickParts
                 .Where(p => p.ldrawPartId != null && p.ldrawPartId != "" && p.active == true && p.deleted == false)
@@ -543,7 +543,7 @@ namespace Foundation.BMC.Services
                     if (ldrawPartId == null)
                     {
                         //
-                        // Can't resolve the part — skip this brick
+                        // Can't resolve the part â€” skip this brick
                         //
                         _logger.LogWarning("Export: Could not resolve brickPartId {PartId} to LDraw ID, skipping", brick.brickPartId);
                         continue;
@@ -798,17 +798,9 @@ namespace Foundation.BMC.Services
 
         #region LDraw Dependency Bundling
 
-        //
-        // Static filename-to-path index for LDraw library files.
-        // Built lazily on first use and cached for the application lifetime.
-        //
-        private static Dictionary<string, string> _ldrawFileIndex;
-        private static readonly object _ldrawIndexLock = new object();
-
-
         /// <summary>
         /// Scans the MPD text for all LDraw sub-file references (type-1 lines),
-        /// recursively resolves their dependencies from the LDraw parts library,
+        /// recursively resolves their dependencies from the in-memory LDraw library,
         /// and embeds them as inline 0 FILE / 0 NOFILE blocks.
         ///
         /// Also embeds LDConfig.ldr so colour definitions are available without
@@ -816,15 +808,11 @@ namespace Foundation.BMC.Services
         /// </summary>
         private string BundleLDrawDependencies(string mpdText)
         {
-            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
-
-            if (string.IsNullOrEmpty(dataPath) || Directory.Exists(dataPath) == false)
+            if (_ldrawFiles.IsLoaded == false || _ldrawFiles.FileCount == 0)
             {
-                _logger.LogWarning("LDraw:DataPath not configured or missing — skipping dependency bundling.");
+                _logger.LogWarning("LDraw file service not loaded â€” skipping dependency bundling.");
                 return mpdText;
             }
-
-            EnsureLDrawFileIndex(dataPath);
 
             //
             // Collect all filenames already embedded in the MPD (0 FILE lines)
@@ -843,28 +831,22 @@ namespace Foundation.BMC.Services
             }
 
             //
-            // Scan the MPD for type-1 sub-file references and resolve recursively
+            // BFS: resolve each referenced file and scan it for further dependencies
             //
             Dictionary<string, string> resolvedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Queue<string> toResolve = new Queue<string>();
 
-            //
-            // Seed the queue with all type-1 references from the current MPD
-            //
             ExtractSubFileReferences(mpdText, embeddedFiles, toResolve);
 
             //
             // Also ensure LDConfig.ldr is bundled (colour definitions)
             //
-            if (embeddedFiles.Contains("LDConfig.ldr") == false && resolvedFiles.ContainsKey("LDConfig.ldr") == false)
+            if (embeddedFiles.Contains("LDConfig.ldr") == false)
             {
                 toResolve.Enqueue("LDConfig.ldr");
             }
 
-            //
-            // BFS: resolve each file and scan it for further dependencies
-            //
-            int maxFiles = 15000;  // safety guard
+            int maxFiles = 15000;
             int resolved = 0;
 
             while (toResolve.Count > 0 && resolved < maxFiles)
@@ -876,23 +858,19 @@ namespace Foundation.BMC.Services
                     continue;
                 }
 
-                string content = ReadLDrawFile(dataPath, fileName);
+                //
+                // O(1) lookup in the preloaded in-memory cache
+                //
+                string content = _ldrawFiles.TryGetFile(fileName);
 
                 if (content == null)
                 {
-                    //
-                    // File not found in the library — skip it.
-                    // The client-side LDrawLoader will attempt its own resolution as fallback.
-                    //
                     continue;
                 }
 
                 resolvedFiles[fileName] = content;
                 resolved++;
 
-                //
-                // Scan this file for its own sub-file references
-                //
                 ExtractSubFileReferences(content, embeddedFiles, toResolve, resolvedFiles);
             }
 
@@ -945,10 +923,6 @@ namespace Foundation.BMC.Services
             {
                 string trimmed = line.Trim();
 
-                //
-                // Type-1 lines: 1 <colour> <x> <y> <z> <a> <b> <c> <d> <e> <f> <g> <h> <i> <file>
-                //               14 tokens minimum
-                //
                 if (trimmed.Length < 10 || trimmed[0] != '1')
                 {
                     continue;
@@ -959,9 +933,6 @@ namespace Foundation.BMC.Services
                     continue;
                 }
 
-                //
-                // Split and extract the filename (last token)
-                //
                 string[] tokens = trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (tokens.Length < 15)
@@ -971,9 +942,6 @@ namespace Foundation.BMC.Services
 
                 string fileName = tokens[tokens.Length - 1];
 
-                //
-                // Skip references that are already embedded or resolved
-                //
                 if (embeddedFiles.Contains(fileName))
                 {
                     continue;
@@ -988,145 +956,8 @@ namespace Foundation.BMC.Services
             }
         }
 
-
-        /// <summary>
-        /// Reads an LDraw file from the parts library, trying multiple standard
-        /// directory locations (mirroring LDrawController.ResolveFilePath).
-        /// </summary>
-        private string ReadLDrawFile(string dataPath, string fileName)
-        {
-            //
-            // Normalise path separators
-            //
-            string normalised = fileName.Replace('\\', '/');
-
-            //
-            // 1. Try exact path (e.g. "parts/3001.dat", "p/stud.dat")
-            //
-            string exactPath = Path.GetFullPath(Path.Combine(dataPath, normalised));
-
-            if (File.Exists(exactPath))
-            {
-                return File.ReadAllText(exactPath);
-            }
-
-            //
-            // 2. Try standard LDraw directories with filename only
-            //
-            string bareFileName = Path.GetFileName(normalised);
-            string[] searchDirs = { "parts", "p", "parts/s", "p/48", "p/8", "models" };
-
-            foreach (string dir in searchDirs)
-            {
-                string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, bareFileName));
-
-                if (File.Exists(candidate))
-                {
-                    return File.ReadAllText(candidate);
-                }
-            }
-
-            //
-            // 3. Try with sub-path (e.g. "s/3001s01.dat" → "parts/s/3001s01.dat")
-            //
-            if (normalised.Contains('/'))
-            {
-                string pathSuffix = normalised.Substring(normalised.IndexOf('/') + 1);
-
-                foreach (string dir in searchDirs)
-                {
-                    string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, pathSuffix));
-
-                    if (File.Exists(candidate))
-                    {
-                        return File.ReadAllText(candidate);
-                    }
-                }
-            }
-
-            //
-            // 4. Fall back to the filename index
-            //
-            string lowerFileName = bareFileName.ToLowerInvariant();
-
-            if (_ldrawFileIndex != null && _ldrawFileIndex.TryGetValue(lowerFileName, out string indexedPath))
-            {
-                string indexedFullPath = Path.GetFullPath(Path.Combine(dataPath, indexedPath));
-
-                if (File.Exists(indexedFullPath))
-                {
-                    return File.ReadAllText(indexedFullPath);
-                }
-            }
-
-            //
-            // 5. Try lowercase version of the filename
-            //
-            foreach (string dir in searchDirs)
-            {
-                string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, lowerFileName));
-
-                if (File.Exists(candidate))
-                {
-                    return File.ReadAllText(candidate);
-                }
-            }
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Lazily builds the filename-to-path index for the LDraw data directory.
-        /// </summary>
-        private void EnsureLDrawFileIndex(string dataPath)
-        {
-            if (_ldrawFileIndex != null)
-            {
-                return;
-            }
-
-            lock (_ldrawIndexLock)
-            {
-                if (_ldrawFileIndex != null)
-                {
-                    return;
-                }
-
-                _logger.LogInformation("Building LDraw file index for bundling: {DataPath}", dataPath);
-
-                var index = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                try
-                {
-                    string[] extensions = { "*.dat", "*.ldr" };
-
-                    foreach (string pattern in extensions)
-                    {
-                        foreach (string file in Directory.EnumerateFiles(dataPath, pattern, SearchOption.AllDirectories))
-                        {
-                            string relativePath = Path.GetRelativePath(dataPath, file).Replace('\\', '/');
-                            string lowerName = Path.GetFileName(file).ToLowerInvariant();
-
-                            if (index.ContainsKey(lowerName) == false)
-                            {
-                                index[lowerName] = relativePath;
-                            }
-                        }
-                    }
-
-                    _logger.LogInformation("LDraw file index built: {Count} files.", index.Count);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error building LDraw file index.");
-                }
-
-                _ldrawFileIndex = index;
-            }
-        }
-
         #endregion
+
 
 
         /// <summary>

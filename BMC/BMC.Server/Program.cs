@@ -172,6 +172,12 @@ namespace Foundation.BMC
                 builder.Services.AddScoped<BrickOwlSyncService>();
 
                 //
+                // LDraw file service — preloads entire parts library into RAM at startup
+                //
+                builder.Services.AddSingleton<LDrawFileService>();
+                builder.Services.AddHostedService(sp => sp.GetRequiredService<LDrawFileService>());
+
+                //
                 // MOC Import/Export services — converts between .ldr, .mpd, .io files and native Project entities
                 //
                 builder.Services.AddScoped<ModelImportService>();
