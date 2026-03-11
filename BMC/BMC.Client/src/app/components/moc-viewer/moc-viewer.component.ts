@@ -8,10 +8,10 @@
     Reuses camera, lighting, and LDraw loading patterns from catalog-part-detail.
 */
 
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, Inject, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { Subject } from 'rxjs';
+import { Subject, Subscription, firstValueFrom } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 
 import * as THREE from 'three';
@@ -22,7 +22,9 @@ import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDraw
 import { ProjectService, ProjectViewerSummary } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
-import { HttpClient } from '@angular/common/http';
+import { ManualGeneratorSignalrService, StepProgressEvent, GenerationCompleteEvent, ManualOptionsDto } from '../../services/manual-generator-signalr.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { DomSanitizer, SafeUrl, SafeHtml } from '@angular/platform-browser';
 
 
 @Component({
@@ -61,6 +63,118 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     sidebarOpen = true;
     autoRotate = true;
 
+    // STL export state
+    exportingStl = false;
+    stlFormat: 'binary' | 'ascii' = 'binary';
+
+    // ────────────────────────────────────────────────────────────────
+    //  Tab System
+    // ────────────────────────────────────────────────────────────────
+    activeViewerTab: '3d' | 'render' | 'manual' = '3d';
+    poseMode = false;
+
+    // ────────────────────────────────────────────────────────────────
+    //  Server Render Tab — State
+    // ────────────────────────────────────────────────────────────────
+    renderWidth = 512;
+    renderHeight = 512;
+    renderElevation = 30;
+    renderAzimuth = -45;
+    flipView = false;
+    renderEdges = true;
+    smoothShading = true;
+    antiAliasMode: 'none' | '2x' | '4x' = 'none';
+    rendererType: 'rasterizer' | 'raytrace' = 'rasterizer';
+    outputFormat: 'png' | 'webp' | 'svg' | 'gif' = 'png';
+    webpQuality = 90;
+    backgroundHex = '';
+    gradientTopHex = '';
+    gradientBottomHex = '';
+    enablePbr = true;
+    exposure = 1.0;
+    aperture = 0;
+
+    // Render output state
+    rendering = false;
+    renderError = '';
+    renderTimeMs = 0;
+    renderedImageUrl: SafeUrl | null = null;
+    private renderedBlobUrl: string | null = null;
+    renderedFormat = 'png';
+
+    // Size presets
+    sizeCategory: 'standard' | 'desktop' | 'mobile' = 'standard';
+    sizeCategories = [
+        { key: 'standard' as const, label: 'Standard', icon: 'bi-grid-3x3' },
+        { key: 'desktop' as const, label: 'Desktop', icon: 'bi-display' },
+        { key: 'mobile' as const, label: 'Mobile', icon: 'bi-phone' },
+    ];
+    sizePresets: { label: string; w: number; h: number; category: string }[] = [
+        { label: '256²', w: 256, h: 256, category: 'standard' },
+        { label: '512²', w: 512, h: 512, category: 'standard' },
+        { label: '768²', w: 768, h: 768, category: 'standard' },
+        { label: '1024²', w: 1024, h: 1024, category: 'standard' },
+        { label: 'HD', w: 1920, h: 1080, category: 'desktop' },
+        { label: '2K', w: 2560, h: 1440, category: 'desktop' },
+        { label: '4K', w: 3840, h: 2160, category: 'desktop' },
+        { label: 'Ultrawide', w: 3440, h: 1440, category: 'desktop' },
+        { label: 'Phone', w: 1080, h: 1920, category: 'mobile' },
+        { label: 'Phone+', w: 1284, h: 2778, category: 'mobile' },
+        { label: 'Tablet', w: 2048, h: 2732, category: 'mobile' },
+        { label: 'Square', w: 1080, h: 1080, category: 'mobile' },
+    ];
+    anglePresets = [
+        { label: 'Standard', icon: 'bi-box', elevation: 30, azimuth: -45 },
+        { label: 'Front', icon: 'bi-square', elevation: 0, azimuth: 0 },
+        { label: 'Top', icon: 'bi-arrow-down', elevation: 90, azimuth: 0 },
+        { label: 'Side', icon: 'bi-arrow-right', elevation: 0, azimuth: -90 },
+        { label: '3/4 High', icon: 'bi-triangle', elevation: 45, azimuth: -45 },
+        { label: '3/4 Low', icon: 'bi-dash-lg', elevation: 15, azimuth: -45 },
+    ];
+    bgPresets = [
+        { label: 'None', icon: 'bi-x-circle', top: '', bottom: '', bg: '' },
+        { label: 'Dark', icon: 'bi-moon', top: '#1a1a2e', bottom: '#16213e', bg: '' },
+        { label: 'Sunset', icon: 'bi-brightness-high', top: '#ff6b6b', bottom: '#ffd93d', bg: '' },
+        { label: 'Ocean', icon: 'bi-water', top: '#0f3460', bottom: '#1a508b', bg: '' },
+        { label: 'Forest', icon: 'bi-tree', top: '#1b4332', bottom: '#2d6a4f', bg: '' },
+        { label: 'Midnight', icon: 'bi-stars', top: '#0d0d2b', bottom: '#1a1a40', bg: '' },
+        { label: 'Blush', icon: 'bi-heart', top: '#ee9ca7', bottom: '#ffdde1', bg: '' },
+        { label: 'Slate', icon: 'bi-cloud', top: '#2c3e50', bottom: '#4ca1af', bg: '' },
+        { label: 'Studio', icon: 'bi-lightbulb', top: '#e8e8e8', bottom: '#f5f5f5', bg: '' },
+    ];
+
+    // ────────────────────────────────────────────────────────────────
+    //  Build Manual Tab — State
+    // ────────────────────────────────────────────────────────────────
+    isAnalysing = false;
+    analysis: any = null;
+    manualOptions: ManualOptionsDto = {
+        pageSize: 'a4',
+        imageSize: 800,
+        elevation: 30,
+        azimuth: -45,
+        renderEdges: true,
+        smoothShading: true,
+        outputFormat: 'html',
+        renderer: 'rasterizer',
+        enablePbr: true,
+        exposure: 1.0,
+        aperture: 0
+    };
+    isGenerating = false;
+    generationProgress = 0;
+    generationTotal = 0;
+    currentPreview: string | null = null;
+    generationError: string | null = null;
+    isReconnecting = false;
+    generatedHtml: string | null = null;
+    pdfDownloadUrl: string | null = null;
+    htmlDownloadUrl: string | null = null;
+    resultStats: { totalSteps: number; totalParts: number; renderTimeMs: number } | null = null;
+    manualCurrentPage = 0;
+    manualPages: SafeHtml[] = [];
+    private manualSubs: Subscription[] = [];
+
     private baseUrl: string;
     private destroy$ = new Subject<void>();
 
@@ -73,6 +187,8 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         private projectService: ProjectService,
         public authService: AuthService,
         private fileCacheService: LDrawFileCacheService,
+        private signalr: ManualGeneratorSignalrService,
+        private sanitizer: DomSanitizer,
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
@@ -96,6 +212,9 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     ngOnDestroy(): void {
         this.stopAnimation();
         this.cleanupThreeJs();
+        this.revokeRenderBlob();
+        this.manualSubs.forEach(s => s.unsubscribe());
+        this.signalr.disconnect();
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -495,6 +614,45 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
 
+    /**
+     * Export the assembled MOC as an STL file via the server-side geometry resolver.
+     * Supports both binary (compact) and ASCII (human-readable) formats.
+     *
+     * AI-generated — Mar 2026.
+     */
+    exportStl(): void {
+        if (this.projectId == null || this.exportingStl) {
+            return;
+        }
+
+        this.exportingStl = true;
+        const url = this.projectService.getStlExportUrl(this.projectId, this.stlFormat);
+
+        this.http.get(url, {
+            headers: this.authService.GetAuthenticationHeaders(),
+            responseType: 'blob'
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (blob) => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `${this.summary?.name ?? 'export'}.stl`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+                this.exportingStl = false;
+            },
+            error: (err) => {
+                console.error('[MocViewer] STL export failed:', err);
+                this.exportingStl = false;
+            }
+        });
+    }
+
+
     // ────────────────────────────────────────────────────────────────
     //  Animation Loop
     // ────────────────────────────────────────────────────────────────
@@ -552,5 +710,427 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.controls) {
             this.controls.dispose();
         }
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Server Render Tab — Methods
+    //
+    //  AI-developed — March 2026
+    // ────────────────────────────────────────────────────────────────
+
+    get activeSizePresets() {
+        return this.sizePresets.filter(p => p.category === this.sizeCategory);
+    }
+
+    get effectiveAntiAlias(): string {
+        if (this.antiAliasMode === '4x' && (this.renderWidth > 2560 || this.renderHeight > 2560)) {
+            return '2x';
+        }
+        return this.antiAliasMode;
+    }
+
+    get sizeDisplayLabel(): string {
+        if (this.outputFormat === 'svg') return 'Vector (scalable)';
+        return `${this.renderWidth} × ${this.renderHeight} px`;
+    }
+
+    selectRenderSize(preset: { w: number; h: number }): void {
+        this.renderWidth = preset.w;
+        this.renderHeight = preset.h;
+    }
+
+    isSelectedSize(preset: { w: number; h: number }): boolean {
+        return this.renderWidth === preset.w && this.renderHeight === preset.h;
+    }
+
+    selectRenderAngle(preset: { elevation: number; azimuth: number }): void {
+        this.renderElevation = preset.elevation;
+        this.renderAzimuth = preset.azimuth;
+    }
+
+    isSelectedAngle(preset: { elevation: number; azimuth: number }): boolean {
+        return this.renderElevation === preset.elevation && this.renderAzimuth === preset.azimuth;
+    }
+
+    applyBgPreset(preset: { top: string; bottom: string; bg: string }): void {
+        this.gradientTopHex = preset.top;
+        this.gradientBottomHex = preset.bottom;
+        this.backgroundHex = preset.bg;
+    }
+
+    isActiveBgPreset(preset: { top: string; bottom: string }): boolean {
+        return this.gradientTopHex === preset.top && this.gradientBottomHex === preset.bottom;
+    }
+
+
+    // Pose Mode — extract camera angles from OrbitControls
+    togglePoseMode(): void {
+        this.poseMode = !this.poseMode;
+        if (this.controls) {
+            this.controls.autoRotate = !this.poseMode;
+        }
+    }
+
+    getCameraAngles(): { elevation: number; azimuth: number } {
+        if (this.camera == null || this.controls == null) {
+            return { elevation: 30, azimuth: -45 };
+        }
+
+        const position = this.camera.position.clone().sub(this.controls.target);
+        const distance = position.length();
+        if (distance === 0) return { elevation: 0, azimuth: 0 };
+
+        const elevation = Math.round(Math.asin(position.y / distance) * (180 / Math.PI));
+        const azimuth = Math.round(Math.atan2(position.x, -position.z) * (180 / Math.PI));
+        return { elevation, azimuth };
+    }
+
+    applyPoseToRender(): void {
+        const angles = this.getCameraAngles();
+        this.renderElevation = angles.elevation;
+        this.renderAzimuth = angles.azimuth;
+        this.activeViewerTab = 'render';
+        setTimeout(() => this.renderModel(), 0);
+    }
+
+
+    /**
+     * Server-side rendering of the assembled MOC model.
+     * Sends render config to /api/moc/export/{id}/render and displays the result.
+     */
+    renderModel(): void {
+        if (this.projectId == null || this.rendering) { return; }
+
+        if (this.outputFormat === 'gif') {
+            this.renderTurntable();
+            return;
+        }
+
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeRenderBlob();
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        const effectiveAzimuth = this.flipView ? this.renderAzimuth + 180 : this.renderAzimuth;
+
+        let url = `/api/moc/export/${this.projectId}/render?width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
+
+        // Pass the current build step so the render matches what the user sees
+        if (this.currentStep > 0) {
+            url += `&step=${this.currentStep}`;
+        }
+
+        if (this.rendererType === 'raytrace') {
+            url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;
+        }
+        if (this.backgroundHex) {
+            url += `&backgroundHex=${encodeURIComponent(this.backgroundHex)}`;
+        }
+        if (this.gradientTopHex && this.gradientBottomHex) {
+            url += `&gradientTopHex=${encodeURIComponent(this.gradientTopHex)}&gradientBottomHex=${encodeURIComponent(this.gradientBottomHex)}`;
+        }
+
+        const startTime = performance.now();
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = this.outputFormat;
+                    this.rendering = false;
+                },
+                error: (err) => {
+                    this.renderTimeMs = 0;
+                    this.renderError = err.status === 404 ? 'Model geometry not found.' : 'Render failed. Please try again.';
+                    this.rendering = false;
+                }
+            });
+    }
+
+
+    private renderTurntable(): void {
+        this.rendering = true;
+        this.renderError = '';
+        this.revokeRenderBlob();
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        const url = `/api/moc/export/${this.projectId}/render?width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&format=gif&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}`;
+
+        const startTime = performance.now();
+
+        this.http.get(url, { headers, responseType: 'blob' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (blob) => {
+                    this.renderTimeMs = Math.round(performance.now() - startTime);
+                    this.renderedBlobUrl = URL.createObjectURL(blob);
+                    this.renderedImageUrl = this.sanitizer.bypassSecurityTrustUrl(this.renderedBlobUrl);
+                    this.renderedFormat = 'gif';
+                    this.rendering = false;
+                },
+                error: () => {
+                    this.renderTimeMs = 0;
+                    this.renderError = 'Turntable render failed.';
+                    this.rendering = false;
+                }
+            });
+    }
+
+
+    downloadRender(): void {
+        if (this.renderedBlobUrl == null) return;
+        const ext = this.renderedFormat === 'gif' ? 'gif' : this.renderedFormat === 'webp' ? 'webp' : this.renderedFormat === 'svg' ? 'svg' : 'png';
+        const baseName = `${this.summary?.name ?? 'render'}_${this.renderWidth}x${this.renderHeight}`;
+        const a = document.createElement('a');
+        a.href = this.renderedBlobUrl;
+        a.download = `${baseName}.${ext}`;
+        a.click();
+    }
+
+
+    private revokeRenderBlob(): void {
+        if (this.renderedBlobUrl) {
+            URL.revokeObjectURL(this.renderedBlobUrl);
+            this.renderedBlobUrl = null;
+            this.renderedImageUrl = null;
+        }
+    }
+
+
+    // ────────────────────────────────────────────────────────────────
+    //  Build Manual Tab — Methods
+    //
+    //  AI-developed — March 2026
+    // ────────────────────────────────────────────────────────────────
+
+    initManualTab(): void {
+        if (this.manualSubs.length > 0) return; // already initialised
+
+        this.manualSubs.push(
+            this.signalr.onStepProgress$.subscribe((e: StepProgressEvent) => {
+                this.generationProgress = e.step;
+                this.generationTotal = e.total;
+                this.currentPreview = 'data:image/png;base64,' + e.previewBase64;
+            }),
+            this.signalr.onComplete$.subscribe((e: GenerationCompleteEvent) => {
+                this.isGenerating = false;
+                this.generationError = null;
+                this.resultStats = {
+                    totalSteps: e.totalSteps,
+                    totalParts: e.totalParts,
+                    renderTimeMs: e.renderTimeMs
+                };
+                if (e.format === 'pdf') {
+                    this.pdfDownloadUrl = e.downloadUrl ?? null;
+                } else if (e.downloadUrl) {
+                    this.htmlDownloadUrl = e.downloadUrl;
+                    fetch(e.downloadUrl, {
+                        headers: { Authorization: 'Bearer ' + this.authService.accessToken }
+                    })
+                        .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
+                        .then(html => {
+                            this.generatedHtml = html;
+                            this.splitManualPages(html);
+                        })
+                        .catch(() => { this.generationError = 'Failed to download HTML manual.'; });
+                } else {
+                    this.generatedHtml = e.html;
+                    this.splitManualPages(e.html!);
+                }
+                this.signalr.disconnect();
+            }),
+            this.signalr.onError$.subscribe((msg: string) => {
+                if (this.resultStats != null) return;
+                this.isGenerating = false;
+                this.generationError = msg;
+                this.signalr.disconnect();
+            }),
+            this.signalr.onConnectionChange$.subscribe((connected: boolean) => {
+                if (this.isGenerating) {
+                    this.isReconnecting = !connected;
+                }
+            })
+        );
+    }
+
+
+    analyseProject(): void {
+        if (this.projectId == null || this.isAnalysing) return;
+
+        this.isAnalysing = true;
+        this.analysis = null;
+
+        const headers = this.authService.GetAuthenticationHeaders();
+        this.http.post<any>(`/api/manual-generator/analyse-project/${this.projectId}`, null, { headers })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (res) => {
+                    this.analysis = res;
+                    this.isAnalysing = false;
+                },
+                error: (err) => {
+                    this.generationError = err.error || 'Analysis failed.';
+                    this.isAnalysing = false;
+                }
+            });
+    }
+
+
+    async generateManual(): Promise<void> {
+        if (this.projectId == null) return;
+
+        this.initManualTab();
+        this.isGenerating = true;
+        this.generationProgress = 0;
+        this.generationTotal = 0;
+        this.currentPreview = null;
+        this.generationError = null;
+        this.generatedHtml = null;
+        this.pdfDownloadUrl = null;
+        this.htmlDownloadUrl = null;
+        this.resultStats = null;
+        this.manualPages = [];
+
+        const headers = new HttpHeaders({
+            'Authorization': `Bearer ${this.authService.accessToken}`
+        });
+
+        try {
+            const response = await firstValueFrom(
+                this.http.post<{ generationId: string }>(
+                    `/api/manual-generator/generate-project/${this.projectId}`, null, { headers }
+                )
+            );
+
+            if (response?.generationId == null) {
+                this.generationError = 'Server did not return a generation ID.';
+                this.isGenerating = false;
+                return;
+            }
+
+            await this.signalr.connect();
+            await this.signalr.generateManual(response.generationId, this.manualOptions);
+
+        } catch (err: any) {
+            if (this.resultStats == null) {
+                this.generationError = err?.error || 'Failed to start generation.';
+                this.isGenerating = false;
+            }
+        }
+    }
+
+
+    cancelGeneration(): void {
+        this.isGenerating = false;
+        this.isReconnecting = false;
+        this.generationError = 'Generation cancelled.';
+        this.signalr.disconnect();
+    }
+
+
+    get progressPercent(): number {
+        if (this.generationTotal === 0) return 0;
+        return Math.round((this.generationProgress / this.generationTotal) * 100);
+    }
+
+
+    private splitManualPages(html: string): void {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const pageElements = doc.querySelectorAll('.page');
+        this.manualPages = [];
+        pageElements.forEach(page => {
+            this.manualPages.push(this.sanitizer.bypassSecurityTrustHtml(page.outerHTML));
+        });
+        this.manualCurrentPage = 0;
+    }
+
+    manualPrevPage(): void {
+        if (this.manualCurrentPage > 0) this.manualCurrentPage--;
+    }
+
+    manualNextPage(): void {
+        if (this.manualCurrentPage < this.manualPages.length - 1) this.manualCurrentPage++;
+    }
+
+    @HostListener('document:keydown', ['$event'])
+    onKeyDown(event: KeyboardEvent): void {
+        if (this.activeViewerTab !== 'manual' || this.manualPages.length === 0) return;
+        if (event.key === 'ArrowLeft') this.manualPrevPage();
+        if (event.key === 'ArrowRight') this.manualNextPage();
+    }
+
+
+    downloadManualHtml(): void {
+        const downloadName = (this.summary?.name ?? 'manual') + '_build-manual.html';
+        if (this.generatedHtml) {
+            const blob = new Blob([this.generatedHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = downloadName;
+            a.click();
+            URL.revokeObjectURL(url);
+            return;
+        }
+        if (this.htmlDownloadUrl) {
+            fetch(this.htmlDownloadUrl, {
+                headers: { Authorization: 'Bearer ' + this.authService.accessToken }
+            })
+                .then(r => r.ok ? r.blob() : Promise.reject(r.statusText))
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = downloadName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+        }
+    }
+
+
+    downloadManualPdf(): void {
+        if (!this.pdfDownloadUrl) return;
+        const downloadName = (this.summary?.name ?? 'manual') + '_build-manual.pdf';
+        fetch(this.pdfDownloadUrl, {
+            headers: { Authorization: 'Bearer ' + this.authService.accessToken }
+        })
+            .then(r => r.ok ? r.blob() : Promise.reject(r.statusText))
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = downloadName;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+    }
+
+
+    printManual(): void {
+        if (!this.generatedHtml) return;
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(this.generatedHtml);
+            printWindow.document.close();
+            printWindow.onload = () => { printWindow.print(); };
+        }
+    }
+
+
+    resetManual(): void {
+        this.analysis = null;
+        this.generatedHtml = null;
+        this.pdfDownloadUrl = null;
+        this.htmlDownloadUrl = null;
+        this.resultStats = null;
+        this.manualPages = [];
+        this.currentPreview = null;
+        this.generationError = null;
     }
 }

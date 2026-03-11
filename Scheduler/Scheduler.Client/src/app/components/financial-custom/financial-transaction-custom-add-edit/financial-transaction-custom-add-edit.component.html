@@ -229,8 +229,24 @@
             <!-- ═══════════════════════════════════════════ -->
             <div class="modal-footer tx-modal-footer">
                 <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeModal()">Cancel</button>
+
+                <!-- Save & Add Another (add mode only) -->
+                <button type="button" class="btn btn-sm btn-outline-primary"
+                    *ngIf="!isEditMode"
+                    (click)="saveAndAddAnother()"
+                    [disabled]="isSaving || isSavingAndAdding || !txForm.valid || txForm.pristine">
+                    <span *ngIf="isSavingAndAdding">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        Saving...
+                    </span>
+                    <span *ngIf="!isSavingAndAdding">
+                        <i class="fa-solid fa-plus me-1"></i>
+                        Save &amp; Add Another
+                    </span>
+                </button>
+
                 <button type="submit" class="btn btn-sm btn-primary"
-                    [disabled]="isSaving || !txForm.valid || txForm.pristine">
+                    [disabled]="isSaving || isSavingAndAdding || !txForm.valid || txForm.pristine">
                     <span *ngIf="isSaving">
                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                         Saving...

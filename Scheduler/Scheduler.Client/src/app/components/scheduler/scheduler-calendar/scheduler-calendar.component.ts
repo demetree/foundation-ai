@@ -1119,4 +1119,32 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+
+  /**
+   * Opens the printable schedule view in a new browser tab.
+   * Uses the current calendar date range and active calendar filters.
+   */
+  printSchedule(): void {
+    const api = this.calendarComponent?.getApi();
+    let rangeStart: string;
+    let rangeEnd: string;
+
+    if (api) {
+      rangeStart = api.view.activeStart.toISOString();
+      rangeEnd = api.view.activeEnd.toISOString();
+    } else {
+      const today = new Date();
+      rangeStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+      rangeEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString();
+    }
+
+    let url = `/api/ScheduledEvents/PrintSchedule?rangeStart=${encodeURIComponent(rangeStart)}&rangeEnd=${encodeURIComponent(rangeEnd)}`;
+
+    if (this.selectedCalendarIds.size > 0) {
+      url += `&calendarIds=${Array.from(this.selectedCalendarIds).join(',')}`;
+    }
+
+    window.open(url, '_blank');
+  }
 }

@@ -16,7 +16,7 @@
    This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
 
 */
-import { Component, ViewChild, Output, Input, TemplateRef } from '@angular/core';
+import { Component, ViewChild, Output, Input, TemplateRef, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
@@ -30,7 +30,7 @@ import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.
 import { ChargeStatusService } from '../../../scheduler-data-services/charge-status.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { RateTypeService } from '../../../scheduler-data-services/rate-type.service';
-import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
+import { TaxCodeService, TaxCodeData } from '../../../scheduler-data-services/tax-code.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -70,7 +70,7 @@ interface EventChargeFormValues {
   templateUrl: './event-charge-add-edit.component.html',
   styleUrls: ['./event-charge-add-edit.component.scss']
 })
-export class EventChargeAddEditComponent {
+export class EventChargeAddEditComponent implements OnInit {
   @ViewChild('eventChargeModal') eventChargeModal!: TemplateRef<any>;
   @Output() eventChargeChanged = new Subject<EventChargeData[]>();
   @Input() eventChargeSubmitData: EventChargeSubmitData | null = null;
@@ -132,6 +132,60 @@ export class EventChargeAddEditComponent {
   currencies$ = this.currencyService.GetCurrencyList();
   rateTypes$ = this.rateTypeService.GetRateTypeList();
   taxCodes$ = this.taxCodeService.GetTaxCodeList();
+  private taxCodesCache: TaxCodeData[] = [];
+
+
+  ngOnInit(): void {
+    // Cache tax codes for rate lookups
+    this.taxCodeService.GetTaxCodeList({ active: true, deleted: false }).subscribe(codes => {
+      this.taxCodesCache = codes;
+    });
+
+    // Auto-recalculate tax when tax code or extended amount changes
+    this.eventChargeForm.get('taxCodeId')?.valueChanges.subscribe(() => this.autoCalculateTax());
+    this.eventChargeForm.get('extendedAmount')?.valueChanges.subscribe(() => this.autoCalculateTax());
+  }
+
+
+  /**
+   * Auto-select the default HST tax code when adding a new charge.
+   * Called after the form is reset in add mode.
+   */
+  private autoSelectDefaultTaxCode(): void {
+    if (this.taxCodesCache.length === 0) return;
+
+    // Look for HST by name (case-insensitive)
+    const hst = this.taxCodesCache.find(tc => tc.name?.toUpperCase().includes('HST'));
+    if (hst) {
+      this.eventChargeForm.patchValue({ taxCodeId: hst.id }, { emitEvent: true });
+    } else if (this.taxCodesCache.length === 1) {
+      // If only one tax code exists, auto-select it
+      this.eventChargeForm.patchValue({ taxCodeId: this.taxCodesCache[0].id }, { emitEvent: true });
+    }
+  }
+
+
+  /**
+   * Auto-calculate taxAmount from extendedAmount × taxCode.rate.
+   * Also updates totalAmount = extendedAmount + taxAmount.
+   */
+  private autoCalculateTax(): void {
+    const taxCodeId = this.eventChargeForm.get('taxCodeId')?.value;
+    const extendedAmount = Number(this.eventChargeForm.get('extendedAmount')?.value) || 0;
+
+    if (!taxCodeId || extendedAmount === 0) return;
+
+    const taxCode = this.taxCodesCache.find(tc => Number(tc.id) === Number(taxCodeId));
+    if (!taxCode || !taxCode.rate) return;
+
+    const taxAmount = Math.round(extendedAmount * taxCode.rate * 100) / 100;
+    const totalAmount = Math.round((extendedAmount + taxAmount) * 100) / 100;
+
+    this.eventChargeForm.patchValue({
+      taxAmount: taxAmount.toString(),
+      totalAmount: totalAmount.toString()
+    }, { emitEvent: false });
+  }
 
   constructor(
     private modalService: NgbModal,
@@ -191,6 +245,9 @@ export class EventChargeAddEditComponent {
       if (this.preSeededData !== null && this.preSeededData !== undefined) {
         this.eventChargeForm.patchValue(this.preSeededData);
       }
+
+      // Auto-select HST tax code for new charges
+      this.autoSelectDefaultTaxCode();
 
     }
 

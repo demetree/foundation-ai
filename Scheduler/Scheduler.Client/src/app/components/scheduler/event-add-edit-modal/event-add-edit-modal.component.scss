@@ -555,3 +555,81 @@ $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
     }
 }
+
+
+// -------------------------------------------------------------------------
+// Mobile Responsive
+// -------------------------------------------------------------------------
+@media (max-width: 767px) {
+    .event-modal-header {
+        padding: 0.75rem 1rem;
+
+        .modal-title {
+            font-size: 1rem;
+        }
+    }
+
+    .event-modal-body {
+        padding: 0.75rem;
+        max-height: 65vh;
+    }
+
+    // Tabs — horizontal scroll on narrow screens
+    .event-tab-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+
+        .nav-link {
+            font-size: 0.78rem;
+            padding: 0.4rem 0.65rem;
+            white-space: nowrap;
+        }
+    }
+
+    // Form fields — tighter spacing
+    .form-label {
+        font-size: 0.75rem;
+    }
+
+    .form-control,
+    .form-select {
+        font-size: 0.85rem;
+    }
+
+    // Duration pills — smaller on mobile
+    .duration-pill {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.4rem;
+    }
+
+    // Exception form — stack fields
+    .exception-add-form .row {
+        flex-direction: column;
+    }
+
+    // Calendar chips — allow wrapping
+    .calendar-chips {
+        gap: 0.3rem;
+    }
+
+    .chip-label {
+        max-width: 100px;
+    }
+
+    // Dependency names — narrower truncation
+    .dep-event-name {
+        max-width: 140px;
+    }
+
+    // Footer — wrap buttons
+    .event-modal-footer {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+
+        .btn-save {
+            min-width: 100px;
+            font-size: 0.85rem;
+        }
+    }
+}

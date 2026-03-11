@@ -239,6 +239,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
     return this.authService.isSchedulerReader || this.authService.isSchedulerReaderWriter || this.authService.isSchedulerAdministrator;
   }
 
+  public canSeeRecCommitteeTab(): boolean {
+    return this.authService.isSchedulerReader || this.authService.isSchedulerReaderWriter || this.authService.isSchedulerAdministrator;
+  }
+
 
   /**
    * Main data load - parallel requests for performance.

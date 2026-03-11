@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Foundation.Auditor;
@@ -14,6 +15,8 @@ using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.BMC.Database;
 using Foundation.BMC.Services;
+
+using BMC.LDraw.Render;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -53,17 +56,29 @@ namespace Foundation.BMC.Controllers.WebAPI
         //
         private readonly BMCContext _context;
         private readonly ModelExportService _exportService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<MocExportController> _logger;
 
 
         /// <summary>
-        /// Constructor — injects BMC context, export service, and logger.
+        /// Lazy-initialised RenderService — created on first STL export request.
         /// </summary>
-        public MocExportController(BMCContext context, ModelExportService exportService, ILogger<MocExportController> logger)
+        private RenderService _renderService;
+
+
+        /// <summary>
+        /// Constructor — injects BMC context, export service, configuration, and logger.
+        /// </summary>
+        public MocExportController(
+            BMCContext context,
+            ModelExportService exportService,
+            IConfiguration configuration,
+            ILogger<MocExportController> logger)
             : base("BMC", "MocExport")
         {
             _context = context;
             _exportService = exportService;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -84,7 +99,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 new { extension = ".ldr", name = "LDraw Model", description = "Single LDraw model file with parts and build steps" },
                 new { extension = ".mpd", name = "LDraw Multi-Part Document", description = "LDraw file with submodels in a single document" },
-                new { extension = ".io", name = "BrickLink Studio", description = "BrickLink Studio project file (password-protected ZIP with embedded LDraw)" }
+                new { extension = ".io", name = "BrickLink Studio", description = "BrickLink Studio project file (password-protected ZIP with embedded LDraw)" },
+                new { extension = ".stl", name = "STL (3D Print)", description = "Stereolithography file for 3D printing or CAD import" }
             };
 
             return Ok(formats);
@@ -379,6 +395,354 @@ namespace Foundation.BMC.Controllers.WebAPI
             _thumbnailCache.TryAdd(projectId, project.thumbnailData);
 
             return File(project.thumbnailData, "image/png");
+        }
+
+
+        // ────────────────────────────────────────────────────────────────
+        //  STL Export
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// GET /api/moc/export/{projectId}/stl
+        ///
+        /// Export a project's assembled geometry as an STL file.
+        ///
+        /// Generates the full MPD from PlacedBrick entities, resolves all geometry
+        /// via the LDraw library, and exports as either binary (compact) or ASCII
+        /// (human-readable) STL.
+        ///
+        /// This can take significant time for large models — uses a 120-second timeout.
+        ///
+        /// AI-developed code — March 2026
+        ///
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.OnePerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/moc/export/{projectId}/stl")]
+        public async Task<IActionResult> ExportStl(
+            int projectId,
+            string format = "binary",
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            //
+            // Security check
+            //
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            format = (format ?? "binary").ToLowerInvariant();
+            bool ascii = format == "ascii";
+
+            try
+            {
+                //
+                // Step 1: Generate the full MPD content from the project's PlacedBrick entities
+                //
+                _logger.LogInformation("STL export starting for project {Id}, format={Format}", projectId, format);
+
+                string mpdContent = await _exportService.GenerateViewerMpdAsync(projectId, userTenantGuid, cancellationToken);
+
+                if (string.IsNullOrWhiteSpace(mpdContent))
+                {
+                    return NotFound("Project has no geometry data to export.");
+                }
+
+                //
+                // Step 2: Get the project name for the export filename
+                //
+                Project project = await _context.Projects
+                    .Where(p => p.id == projectId && p.tenantGuid == userTenantGuid && p.active == true && p.deleted == false)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                string projectName = project?.name ?? "export";
+                string safeFileName = string.Join("_", projectName.Split(System.IO.Path.GetInvalidFileNameChars())).Trim();
+
+                if (string.IsNullOrWhiteSpace(safeFileName))
+                {
+                    safeFileName = "export";
+                }
+
+                //
+                // Step 3: Convert MPD text to lines and run the STL export on a background thread
+                // with a 120-second timeout for large models
+                //
+                string[] mpdLines = mpdContent.Split('\n');
+                string fileName = safeFileName + ".mpd";
+
+                using var exportCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                exportCts.CancelAfter(TimeSpan.FromSeconds(120));
+
+                byte[] stlBytes = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    EnsureRenderService(dataPath);
+                    return _renderService.ExportToStl(mpdLines, fileName, colourCode: -1, ascii: ascii);
+                }, exportCts.Token);
+
+                if (stlBytes == null || stlBytes.Length == 0)
+                {
+                    return NotFound("Project geometry could not be resolved — the project may not have any placed bricks.");
+                }
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.ReadEntity,
+                    $"MOC STL export — Project id={projectId}, format={format}, size={stlBytes.Length}",
+                    projectId.ToString());
+
+                _logger.LogInformation(
+                    "STL export complete — Project id={Id}, format={Format}, size={Size} bytes",
+                    projectId,
+                    format,
+                    stlBytes.Length);
+
+                string contentType = ascii ? "text/plain" : "application/octet-stream";
+                string stlFileName = safeFileName + ".stl";
+
+                return File(stlBytes, contentType, stlFileName);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("STL export timed out or was cancelled for project {Id}", projectId);
+                return StatusCode(499, "STL export timed out or was cancelled. Large models may take longer — please try again.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "STL export error for project {Id}", projectId);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "STL export failed for project {Id}", projectId);
+                return Problem("An error occurred while exporting the project to STL. Please try again or contact support.");
+            }
+        }
+
+
+        // ────────────────────────────────────────────────────────────────
+        //  Server-Side Model Rendering
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// GET /api/moc/export/{projectId}/render
+        ///
+        /// Server-side render of the fully assembled MOC model.
+        ///
+        /// Generates the MPD from PlacedBrick entities, resolves all geometry
+        /// via the LDraw library, and renders to PNG, WebP, SVG, or turntable GIF.
+        ///
+        /// Supports full render configuration: size, camera angle, format,
+        /// anti-aliasing, background, PBR ray tracing.
+        ///
+        /// AI-developed code — March 2026
+        ///
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.OnePerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/moc/export/{projectId}/render")]
+        public async Task<IActionResult> RenderProject(
+            int projectId,
+            int width = 512,
+            int height = 512,
+            float elevation = 30f,
+            float azimuth = -45f,
+            bool renderEdges = true,
+            bool smoothShading = true,
+            string antiAlias = "none",
+            string format = "png",
+            int quality = 90,
+            string backgroundHex = null,
+            string gradientTopHex = null,
+            string gradientBottomHex = null,
+            string renderer = "rasterizer",
+            bool enablePbr = true,
+            float exposure = 1.0f,
+            float aperture = 0f,
+            int step = 0,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            // Normalise & clamp
+            width = Math.Clamp(width, 64, 3840);
+            height = Math.Clamp(height, 64, 3840);
+            elevation = Math.Clamp(elevation, -90f, 90f);
+            azimuth = Math.Clamp(azimuth, -360f, 360f);
+            quality = Math.Clamp(quality, 1, 100);
+            exposure = Math.Clamp(exposure, 0.1f, 10f);
+            aperture = Math.Clamp(aperture, 0f, 10f);
+            format = (format ?? "png").ToLowerInvariant();
+            antiAlias = (antiAlias ?? "none").ToLowerInvariant();
+
+            AntiAliasMode aaMode = AntiAliasMode.None;
+            if (antiAlias == "2x") aaMode = AntiAliasMode.SSAA2x;
+            else if (antiAlias == "4x") aaMode = AntiAliasMode.SSAA4x;
+
+            if (aaMode == AntiAliasMode.SSAA4x && (width > 2560 || height > 2560))
+                aaMode = AntiAliasMode.SSAA2x;
+
+            try
+            {
+                // Generate the full MPD from project data
+                string mpdContent = await _exportService.GenerateViewerMpdAsync(projectId, userTenantGuid, cancellationToken);
+
+                if (string.IsNullOrWhiteSpace(mpdContent))
+                {
+                    return NotFound("Project has no geometry data to render.");
+                }
+
+                string[] mpdLines = mpdContent.Split('\n');
+                string fileName = "project.mpd";
+
+                // 120-second render timeout for large models
+                using var renderCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                renderCts.CancelAfter(TimeSpan.FromSeconds(120));
+
+                byte[] result;
+                string contentType;
+
+                RendererType rendererType = string.Equals(renderer, "raytrace", System.StringComparison.OrdinalIgnoreCase)
+                    ? RendererType.RayTracer
+                    : RendererType.Rasterizer;
+
+                if (format == "svg")
+                {
+                    string svg = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToSvg(mpdLines, fileName, width, height, -1, elevation, azimuth, renderEdges, smoothShading);
+                    }, renderCts.Token);
+
+                    result = System.Text.Encoding.UTF8.GetBytes(svg);
+                    contentType = "image/svg+xml";
+                }
+                else if (format == "webp")
+                {
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToWebP(mpdLines, fileName, width, height, -1, elevation, azimuth,
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality,
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
+                    }, renderCts.Token);
+                    contentType = "image/webp";
+                }
+                else if (format == "gif")
+                {
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderTurntableGif(mpdLines, fileName, width, height, -1, 36,
+                            elevation, 80, renderEdges, smoothShading);
+                    }, renderCts.Token);
+                    contentType = "image/gif";
+                }
+                else if (step > 0)
+                {
+                    // PNG — step-aware render (renders all parts up to the selected step)
+                    // Step param is 1-based from the client UI. The server's GeometryResolver
+                    // counts the pre-STEP content as step 0, but Three.js LDrawLoader groups
+                    // do not — offset by an additional 1 to align.
+                    int stepIndex = Math.Max(0, step - 2);
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderStep(mpdLines, fileName, stepIndex, width, height, -1,
+                            elevation, azimuth, renderEdges, smoothShading, aaMode);
+                    }, renderCts.Token);
+                    contentType = "image/png";
+                }
+                else
+                {
+                    // PNG (default — full model)
+                    result = await Task.Run(() =>
+                    {
+                        string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                        EnsureRenderService(dataPath);
+                        return _renderService.RenderToPng(mpdLines, fileName, width, height, -1, elevation, azimuth,
+                            renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex,
+                            rendererType: rendererType, enablePbr: enablePbr, exposure: exposure, aperture: aperture);
+                    }, renderCts.Token);
+                    contentType = "image/png";
+                }
+
+                if (result == null || result.Length == 0)
+                {
+                    return NotFound("Project geometry could not be rendered — the project may not have any placed bricks.");
+                }
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.ReadEntity,
+                    $"MOC render — Project id={projectId}, {width}x{height}, format={format}, size={result.Length}",
+                    projectId.ToString());
+
+                return File(result, contentType);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "Render timed out or was cancelled.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "MOC render error for project {Id}", projectId);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MOC render failed for project {Id}", projectId);
+                return Problem("An error occurred while rendering the project.");
+            }
+        }
+
+
+        /// <summary>
+        /// Lazy-initialise the RenderService with the configured LDraw data path.
+        /// Same pattern as PartRendererController.
+        /// </summary>
+        private void EnsureRenderService(string dataPath)
+        {
+            if (_renderService == null)
+            {
+                _renderService = new RenderService(dataPath);
+            }
         }
     }
 }

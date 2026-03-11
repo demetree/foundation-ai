@@ -646,5 +646,90 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 			return Ok(await (from queryData in query select Database.ScheduledEvent.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
 		}
+
+
+        /// <summary>
+        /// Checks for booking conflicts (overlapping events) on the same scheduling target (calendar).
+        ///
+        /// Two events overlap when: newStart &lt; existingEnd AND newEnd &gt; existingStart
+        ///
+        /// Returns the conflicting events so the user can decide whether to proceed.
+        /// This is a non-blocking check — the client shows a warning, not an error.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/ScheduledEvents/CheckConflicts")]
+        public async Task<IActionResult> CheckConflicts(
+            int schedulingTargetId,
+            DateTime startDateTime,
+            DateTime endDateTime,
+            int? excludeEventId = null,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "CheckConflicts requested by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            //
+            // Fix any non-UTC date parameters
+            //
+            if (startDateTime.Kind != DateTimeKind.Utc)
+                startDateTime = startDateTime.ToUniversalTime();
+            if (endDateTime.Kind != DateTimeKind.Utc)
+                endDateTime = endDateTime.ToUniversalTime();
+
+            //
+            // Two intervals overlap when: newStart < existingEnd AND newEnd > existingStart
+            //
+            var query = _context.ScheduledEvents
+                .Where(se => se.tenantGuid == userTenantGuid
+                    && se.schedulingTargetId == schedulingTargetId
+                    && se.active == true && se.deleted == false
+                    && se.startDateTime < endDateTime
+                    && se.endDateTime > startDateTime);
+
+            if (excludeEventId.HasValue)
+            {
+                query = query.Where(se => se.id != excludeEventId.Value);
+            }
+
+            var conflicts = await query
+                .OrderBy(se => se.startDateTime)
+                .Select(se => new
+                {
+                    id = se.id,
+                    name = se.name,
+                    startDateTime = se.startDateTime,
+                    endDateTime = se.endDateTime,
+                    location = se.location
+                })
+                .Take(10) // Limit to prevent large payloads
+                .ToListAsync(cancellationToken);
+
+            return Ok(new
+            {
+                hasConflict = conflicts.Count > 0,
+                conflictCount = conflicts.Count,
+                conflicts
+            });
+        }
 	}
 }

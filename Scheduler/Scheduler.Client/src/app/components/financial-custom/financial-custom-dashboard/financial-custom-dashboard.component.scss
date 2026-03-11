@@ -312,3 +312,110 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     border-radius: 50%;
     vertical-align: middle;
 }
+
+
+//
+// Category Breakdown Table
+//
+.breakdown-col {
+    &:first-child {
+        border-right: 1px solid #f3f4f6;
+    }
+}
+
+.breakdown-section-header {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.6rem 1rem;
+    border-left: 3px solid transparent;
+}
+
+.revenue-header {
+    color: #059669;
+    border-left-color: #10b981;
+    background: rgba(16, 185, 129, 0.04);
+}
+
+.expense-header {
+    color: #dc2626;
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.04);
+}
+
+.breakdown-table {
+    font-size: 0.875rem;
+
+    th {
+        font-weight: 500;
+        border-bottom: 1px solid #f3f4f6;
+        padding: 0.4rem 0.5rem;
+    }
+
+    td {
+        padding: 0.45rem 0.5rem;
+        vertical-align: middle;
+    }
+
+    tfoot tr {
+        border-top: 2px solid #e5e7eb;
+    }
+}
+
+.net-income-footer {
+    border-top: 2px solid #e5e7eb;
+    background: #fafbfc;
+}
+
+
+// =========================================================================
+// Mobile Responsive
+// =========================================================================
+
+@media (max-width: 767px) {
+    .page-container {
+        padding: 0.5rem;
+    }
+
+    .premium-header .card-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 0.5rem;
+
+        .btn {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.65rem;
+        }
+    }
+
+    // Summary cards — ensure they stack and don't overflow
+    .summary-card {
+        min-width: unset !important;
+    }
+
+    // Tables — horizontal scroll on mobile
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    // Category breakdown table — smaller text
+    .category-breakdown-table {
+        font-size: 0.75rem;
+
+        th, td {
+            padding: 0.35rem 0.5rem;
+        }
+    }
+
+    // Chart container — reduce height
+    .chart-container canvas {
+        max-height: 250px;
+    }
+}

@@ -17,6 +17,11 @@
                 </div>
             </div>
             <div class="header-right">
+                <button class="btn btn-glass btn-sm me-2" (click)="exportReport()"
+                    [disabled]="isExporting" ngbTooltip="Export Financial Report to Excel">
+                    <i class="fa-solid" [ngClass]="isExporting ? 'fa-spinner fa-spin' : 'fa-file-excel'" ></i>
+                    {{ isExporting ? 'Exporting...' : 'Export Report' }}
+                </button>
                 <button class="btn btn-glass btn-sm me-2" (click)="goToTransactions()" ngbTooltip="Record Income">
                     <i class="fa-solid fa-plus-circle me-1"></i> Record Income
                 </button>
@@ -267,6 +272,178 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Category Breakdown Summary Table -->
+        <div class="row g-4 mt-1">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fa-solid fa-table-list text-primary me-2"></i>
+                            Income vs. Expenses — {{ selectedYear }}
+                        </h6>
+                        <span class="badge bg-light text-dark" *ngIf="!loadingBreakdown">
+                            {{ revenueCategories.length + expenseCategories.length }} categories
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+
+                        <!-- Loading -->
+                        <div class="text-center py-4" *ngIf="loadingBreakdown">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2 text-muted">Loading breakdown...</span>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="text-center py-4"
+                            *ngIf="!loadingBreakdown && revenueCategories.length === 0 && expenseCategories.length === 0">
+                            <i class="fa-solid fa-chart-column fa-2x text-muted opacity-25 mb-2"></i>
+                            <p class="text-muted mb-0">No transactions for {{ selectedYear }}.</p>
+                        </div>
+
+                        <!-- Two-Column Summary -->
+                        <div class="row g-0"
+                            *ngIf="!loadingBreakdown && (revenueCategories.length > 0 || expenseCategories.length > 0)">
+
+                            <!-- Revenue Column -->
+                            <div class="col-md-6 breakdown-col">
+                                <div class="breakdown-section-header revenue-header">
+                                    <i class="fa-solid fa-arrow-trend-up me-1"></i> Revenue
+                                </div>
+                                <table class="table table-sm table-hover mb-0 breakdown-table">
+                                    <thead>
+                                        <tr class="text-muted small">
+                                            <th class="ps-3">Code</th>
+                                            <th>Category</th>
+                                            <th class="text-end">#</th>
+                                            <th class="text-end pe-3">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let cat of revenueCategories">
+                                            <td class="ps-3 text-muted">{{ cat.code }}</td>
+                                            <td>{{ cat.categoryName }}</td>
+                                            <td class="text-end text-muted">{{ cat.count }}</td>
+                                            <td class="text-end pe-3 text-success fw-medium">
+                                                {{ cat.total | currency:'CAD':'symbol':'1.2-2' }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="fw-bold border-top-2">
+                                            <td class="ps-3" colspan="2">Total Revenue</td>
+                                            <td class="text-end">{{ revenueCategories.length }}</td>
+                                            <td class="text-end pe-3 text-success">
+                                                {{ yearRevenue | currency:'CAD':'symbol':'1.2-2' }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Expense Column -->
+                            <div class="col-md-6 breakdown-col">
+                                <div class="breakdown-section-header expense-header">
+                                    <i class="fa-solid fa-arrow-trend-down me-1"></i> Expenses
+                                </div>
+                                <table class="table table-sm table-hover mb-0 breakdown-table">
+                                    <thead>
+                                        <tr class="text-muted small">
+                                            <th class="ps-3">Code</th>
+                                            <th>Category</th>
+                                            <th class="text-end">#</th>
+                                            <th class="text-end pe-3">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let cat of expenseCategories">
+                                            <td class="ps-3 text-muted">{{ cat.code }}</td>
+                                            <td>{{ cat.categoryName }}</td>
+                                            <td class="text-end text-muted">{{ cat.count }}</td>
+                                            <td class="text-end pe-3 text-danger fw-medium">
+                                                {{ cat.total | currency:'CAD':'symbol':'1.2-2' }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="fw-bold border-top-2">
+                                            <td class="ps-3" colspan="2">Total Expenses</td>
+                                            <td class="text-end">{{ expenseCategories.length }}</td>
+                                            <td class="text-end pe-3 text-danger">
+                                                {{ yearExpenses | currency:'CAD':'symbol':'1.2-2' }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Net Income Footer -->
+                        <div class="net-income-footer d-flex justify-content-between align-items-center px-4 py-3"
+                            *ngIf="!loadingBreakdown && (revenueCategories.length > 0 || expenseCategories.length > 0)">
+                            <span class="fw-bold fs-6">
+                                <i class="fa-solid fa-scale-balanced me-2"></i>Net Income — {{ selectedYear }}
+                            </span>
+                            <span class="fw-bold fs-5" [ngClass]="yearNet >= 0 ? 'text-success' : 'text-danger'">
+                                {{ yearNet | currency:'CAD':'symbol':'1.2-2' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             Outstanding Deposits Widget
+             ==================================================================== -->
+        <div class="row mt-4" *ngIf="!loadingDeposits && outstandingDeposits.length > 0">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-semibold mb-0">
+                                <i class="bi bi-lock-fill text-warning me-2"></i>Outstanding Deposits
+                            </h6>
+                            <span class="badge bg-warning-subtle text-warning fs-6">
+                                {{ outstandingDepositsTotal | currency:'CAD':'symbol':'1.2-2' }} held
+                            </span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Charge Type</th>
+                                        <th>Event Date</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let deposit of outstandingDeposits">
+                                        <td class="fw-semibold">{{ deposit.eventName }}</td>
+                                        <td>{{ deposit.chargeType }}</td>
+                                        <td>{{ deposit.eventDate | date:'mediumDate' }}</td>
+                                        <td class="text-end fw-semibold text-warning">
+                                            {{ deposit.amount | currency:'CAD':'symbol':'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="fw-bold">Total Held ({{ outstandingDeposits.length }} deposits)</td>
+                                        <td class="text-end fw-bold text-warning">
+                                            {{ outstandingDepositsTotal | currency:'CAD':'symbol':'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>

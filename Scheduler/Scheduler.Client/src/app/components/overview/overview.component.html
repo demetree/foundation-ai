@@ -358,6 +358,18 @@
           </div>
         </ng-template>
       </li>
+
+      <!-- Rec Committee Tab -->
+      <li ngbNavItem="rec-committee" *ngIf="canSeeRecCommitteeTab()">
+        <button ngbNavLink>
+          <i class="fa-solid fa-people-group me-2"></i>Rec Committee
+        </button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-inner">
+            <app-overview-rec-committee-tab></app-overview-rec-committee-tab>
+          </div>
+        </ng-template>
+      </li>
     </ul>
     <div [ngbNavOutlet]="nav" class="mt-4"></div>
   </div>

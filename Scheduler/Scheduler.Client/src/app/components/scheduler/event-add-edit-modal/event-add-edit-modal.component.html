@@ -131,6 +131,24 @@
           </div>
         </div>
 
+        <!-- Booking Conflict Warning -->
+        <div class="col-12" *ngIf="conflictWarnings.length > 0">
+          <div class="alert alert-warning py-2 px-3 mb-0 d-flex align-items-start gap-2" style="font-size: 0.85rem;">
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <div>
+              <strong>Booking conflict{{ conflictWarnings.length > 1 ? 's' : '' }} detected!</strong>
+              This time overlaps with:
+              <ul class="mb-0 ps-3 mt-1">
+                <li *ngFor="let conflict of conflictWarnings">
+                  <strong>{{ conflict.name }}</strong>
+                  — {{ conflict.startDateTime | date:'short' }} to {{ conflict.endDateTime | date:'short' }}
+                  <span class="text-muted" *ngIf="conflict.location"> ({{ conflict.location }})</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <!-- Location -->
         <div class="col-md-6">
           <label class="form-label fw-semibold">Location</label>
@@ -708,23 +726,64 @@
 
         <!-- Event Charges -->
         <div class="mb-4" *ngIf="eventCharges.length > 0">
-          <h6 class="fw-semibold mb-2">
-            <i class="bi bi-receipt me-2 text-primary"></i>Event Charges
-          </h6>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-semibold mb-0">
+              <i class="bi bi-receipt me-2 text-primary"></i>Event Charges
+            </h6>
+            <div class="form-check form-switch" *ngIf="hasDeposits()">
+              <input class="form-check-input" type="checkbox" id="depositFilter"
+                [(ngModel)]="showDepositsOnly" [ngModelOptions]="{standalone: true}">
+              <label class="form-check-label small" for="depositFilter">Deposits only</label>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem;">
               <thead class="table-light">
                 <tr>
                   <th>Charge Type</th>
                   <th>Description</th>
+                  <th class="text-center">Status</th>
                   <th class="text-end">Amount</th>
+                  <th class="text-end">Tax</th>
+                  <th class="text-end"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let charge of eventCharges">
-                  <td>{{ charge.chargeType?.name || '—' }}</td>
+                <tr *ngFor="let charge of getFilteredCharges()">
+                  <td>
+                    {{ charge.chargeType?.name || '—' }}
+                    <span class="badge bg-warning-subtle text-warning ms-1" *ngIf="charge.isDeposit"
+                      ngbTooltip="This charge is a security deposit">
+                      <i class="bi bi-lock-fill me-1"></i>Deposit
+                    </span>
+                  </td>
                   <td>{{ charge.notes || '—' }}</td>
+                  <td class="text-center">
+                    <!-- Deposit refunded -->
+                    <span class="badge bg-success-subtle text-success" *ngIf="charge.isDeposit && charge.depositRefundedDate"
+                      [ngbTooltip]="'Refunded ' + (charge.depositRefundedDate | date:'mediumDate')">
+                      <i class="bi bi-check-circle me-1"></i>Refunded
+                    </span>
+                    <!-- Deposit awaiting refund -->
+                    <span class="badge bg-info-subtle text-info" *ngIf="charge.isDeposit && !charge.depositRefundedDate">
+                      <i class="bi bi-hourglass-split me-1"></i>Held
+                    </span>
+                    <!-- Not a deposit -->
+                    <span class="text-muted small" *ngIf="!charge.isDeposit">—</span>
+                  </td>
                   <td class="text-end fw-semibold">{{ charge.extendedAmount | currency:'USD':'symbol':'1.2-2' }}</td>
+                  <td class="text-end text-muted small">
+                    <span *ngIf="charge.taxAmount">{{ charge.taxAmount | currency:'USD':'symbol':'1.2-2' }}</span>
+                    <span *ngIf="!charge.taxAmount">—</span>
+                  </td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-success py-0 px-2"
+                      *ngIf="charge.isDeposit && !charge.depositRefundedDate"
+                      (click)="refundDeposit(charge)"
+                      ngbTooltip="Mark this deposit as refunded">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -766,6 +825,45 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- =========================================== -->
+        <!-- Event Financial Timeline                    -->
+        <!-- =========================================== -->
+        <div class="mb-3" *ngIf="financialTimeline.length > 0">
+          <h6 class="fw-semibold mb-2">
+            <i class="bi bi-clock-history me-2 text-info"></i>Financial Timeline
+          </h6>
+          <div class="timeline-list">
+            <div class="timeline-entry d-flex align-items-start gap-3 py-2"
+              *ngFor="let entry of financialTimeline; let last = last"
+              [class.border-bottom]="!last" style="border-color: #f3f4f6 !important; font-size: 0.85rem;">
+
+              <!-- Icon -->
+              <div class="timeline-icon flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                [ngClass]="{
+                  'bg-primary-subtle text-primary': entry.type === 'charge',
+                  'bg-warning-subtle text-warning': entry.type === 'deposit',
+                  'bg-success-subtle text-success': entry.type === 'refund' || entry.type === 'income',
+                  'bg-danger-subtle text-danger': entry.type === 'expense'
+                }" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                <i class="bi" [ngClass]="'bi-' + entry.icon"></i>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-grow-1 min-width-0">
+                <div class="d-flex justify-content-between">
+                  <span class="text-truncate">{{ entry.description }}</span>
+                  <span class="fw-semibold ms-2 flex-shrink-0"
+                    [class.text-success]="entry.isPositive"
+                    [class.text-danger]="!entry.isPositive">
+                    {{ entry.isPositive ? '+' : '-' }}{{ entry.amount | currency:'USD':'symbol':'1.2-2' }}
+                  </span>
+                </div>
+                <small class="text-muted">{{ entry.date | date:'medium' }}</small>
+              </div>
+            </div>
           </div>
         </div>
 

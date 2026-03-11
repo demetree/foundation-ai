@@ -152,6 +152,12 @@ export class ProjectService {
     }
 
 
+    /** Get the download URL for exporting a project as STL */
+    getStlExportUrl(projectId: number, stlFormat: 'binary' | 'ascii' = 'binary'): string {
+        return `${this.mocUrl}/export/${projectId}/stl?format=${stlFormat}`;
+    }
+
+
     /** Get the thumbnail URL for a project */
     getThumbnailUrl(projectId: number): string {
         return `${this.mocUrl}/project/${projectId}/thumbnail`;

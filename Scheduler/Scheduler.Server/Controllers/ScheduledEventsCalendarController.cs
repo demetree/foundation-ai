@@ -286,5 +286,176 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             return Ok(outputDTOList);
         }
+
+
+        /// <summary>
+        /// Returns a printer-friendly HTML page of the event schedule for the given date range.
+        ///
+        /// Designed to be opened in a new tab and printed / posted on a bulletin board.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/ScheduledEvents/PrintSchedule")]
+        public async Task<IActionResult> PrintSchedule(
+            DateTime rangeStart,
+            DateTime rangeEnd,
+            int? schedulingTargetId = null,
+            string? calendarIds = null,
+            [FromServices] RecurrenceExpansionService expansionService = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "PrintSchedule requested by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            if (rangeStart.Kind != DateTimeKind.Utc) rangeStart = rangeStart.ToUniversalTime();
+            if (rangeEnd.Kind != DateTimeKind.Utc) rangeEnd = rangeEnd.ToUniversalTime();
+
+            //
+            // Query events (standalone + recurrence expanded)
+            //
+            var query = _context.ScheduledEvents
+                .Where(se => se.tenantGuid == userTenantGuid
+                    && se.active == true && se.deleted == false
+                    && se.recurrenceRuleId == null
+                    && se.parentScheduledEventId == null
+                    && se.startDateTime <= rangeEnd && se.endDateTime >= rangeStart)
+                .Include(se => se.schedulingTarget)
+                .AsNoTracking();
+
+            if (schedulingTargetId.HasValue)
+            {
+                query = query.Where(se => se.schedulingTargetId == schedulingTargetId.Value);
+            }
+
+            // Calendar filter
+            HashSet<int>? allowedEventIds = null;
+            if (!string.IsNullOrWhiteSpace(calendarIds))
+            {
+                var calIdList = calendarIds.Split(',')
+                    .Select(s => int.TryParse(s.Trim(), out int v) ? v : (int?)null)
+                    .Where(v => v.HasValue)
+                    .Select(v => v!.Value)
+                    .ToList();
+                if (calIdList.Count > 0)
+                {
+                    allowedEventIds = (await _context.EventCalendars
+                        .Where(ec => calIdList.Contains(ec.calendarId) && ec.tenantGuid == userTenantGuid && ec.active == true && ec.deleted == false)
+                        .Select(ec => ec.scheduledEventId)
+                        .Distinct()
+                        .ToListAsync(cancellationToken)).ToHashSet();
+                }
+            }
+
+            if (allowedEventIds != null)
+                query = query.Where(se => allowedEventIds.Contains(se.id));
+
+            var events = await query.OrderBy(se => se.startDateTime).ToListAsync(cancellationToken);
+
+            //
+            // Expand recurring events if the expansion service is available
+            //
+            if (expansionService != null)
+            {
+                var recurringQuery = _context.ScheduledEvents
+                    .Where(se => se.tenantGuid == userTenantGuid && se.active == true && se.deleted == false
+                        && se.recurrenceRuleId != null && se.parentScheduledEventId == null)
+                    .Include(se => se.recurrenceRule).ThenInclude(rr => rr.recurrenceFrequency)
+                    .Include(se => se.schedulingTarget)
+                    .AsNoTracking();
+
+                if (schedulingTargetId.HasValue)
+                    recurringQuery = recurringQuery.Where(se => se.schedulingTargetId == schedulingTargetId.Value);
+                if (allowedEventIds != null)
+                    recurringQuery = recurringQuery.Where(se => allowedEventIds.Contains(se.id));
+
+                var masters = await recurringQuery.ToListAsync(cancellationToken);
+                var masterIds = masters.Select(e => e.id).ToList();
+                var exceptions = masterIds.Count > 0
+                    ? await _context.RecurrenceExceptions.Where(re => masterIds.Contains(re.scheduledEventId) && re.tenantGuid == userTenantGuid).AsNoTracking().ToListAsync(cancellationToken)
+                    : new List<RecurrenceException>();
+
+                foreach (var master in masters)
+                {
+                    var exForEvent = exceptions.Where(re => re.scheduledEventId == master.id).ToList();
+                    events.AddRange(expansionService.ExpandOccurrences(master, exForEvent, rangeStart, rangeEnd));
+                }
+            }
+
+            events = events.OrderBy(e => e.startDateTime).ToList();
+
+            //
+            // Group events by date (local time)
+            //
+            var grouped = events
+                .GroupBy(e => e.startDateTime.ToLocalTime().Date)
+                .OrderBy(g => g.Key);
+
+            //
+            // Build printable HTML
+            //
+            var html = new System.Text.StringBuilder();
+            html.AppendLine("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">");
+            html.AppendLine("<title>Event Schedule</title>");
+            html.AppendLine("<style>");
+            html.AppendLine("* { margin: 0; padding: 0; box-sizing: border-box; }");
+            html.AppendLine("body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #333; padding: 20px; }");
+            html.AppendLine("h1 { font-size: 16pt; margin-bottom: 4px; }");
+            html.AppendLine("h2 { font-size: 12pt; background: #2563eb; color: #fff; padding: 6px 12px; margin: 16px 0 0 0; border-radius: 4px 4px 0 0; }");
+            html.AppendLine(".subtitle { color: #666; font-size: 10pt; margin-bottom: 12px; }");
+            html.AppendLine("table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }");
+            html.AppendLine("th { background: #f1f5f9; text-align: left; padding: 6px 10px; font-size: 9pt; text-transform: uppercase; color: #64748b; border: 1px solid #e2e8f0; }");
+            html.AppendLine("td { padding: 6px 10px; border: 1px solid #e2e8f0; font-size: 10pt; }");
+            html.AppendLine("tr:nth-child(even) td { background: #f8fafc; }");
+            html.AppendLine(".empty { color: #94a3b8; font-style: italic; padding: 10px; }");
+            html.AppendLine("@media print { body { padding: 0; } h2 { break-after: avoid; } }");
+            html.AppendLine("</style></head><body>");
+
+            html.AppendLine($"<h1>Event Schedule</h1>");
+            html.AppendLine($"<p class=\"subtitle\">{rangeStart.ToLocalTime():dddd, MMMM d, yyyy} — {rangeEnd.ToLocalTime():dddd, MMMM d, yyyy}</p>");
+
+            foreach (var dayGroup in grouped)
+            {
+                html.AppendLine($"<h2>{dayGroup.Key:dddd, MMMM d, yyyy}</h2>");
+                html.AppendLine("<table><thead><tr><th>Time</th><th>Event</th><th>Location</th><th>Calendar</th></tr></thead><tbody>");
+
+                foreach (var ev in dayGroup)
+                {
+                    string timeStr = ev.startDateTime.ToLocalTime().ToString("h:mm tt") + " – " + ev.endDateTime.ToLocalTime().ToString("h:mm tt");
+                    string name = System.Net.WebUtility.HtmlEncode(ev.name ?? "");
+                    string loc = System.Net.WebUtility.HtmlEncode(ev.location ?? "—");
+                    string cal = System.Net.WebUtility.HtmlEncode(ev.schedulingTarget?.name ?? "—");
+
+                    html.AppendLine($"<tr><td>{timeStr}</td><td>{name}</td><td>{loc}</td><td>{cal}</td></tr>");
+                }
+
+                html.AppendLine("</tbody></table>");
+            }
+
+            if (!grouped.Any())
+            {
+                html.AppendLine("<p class=\"empty\">No events scheduled for this period.</p>");
+            }
+
+            html.AppendLine("</body></html>");
+
+            return Content(html.ToString(), "text/html", System.Text.Encoding.UTF8);
+        }
     }
 }

@@ -69,6 +69,7 @@ import { OverviewComponent } from './components/overview/overview.component';
 import { OverviewManagerTabComponent } from './components/overview/overview-manager-tab/overview-manager-tab.component';
 import { OverviewDispatcherTabComponent } from './components/overview/overview-dispatcher-tab/overview-dispatcher-tab.component';
 import { OverviewSchedulerTabComponent } from './components/overview/overview-scheduler-tab/overview-scheduler-tab.component';
+import { OverviewRecCommitteeTabComponent } from './components/overview/overview-rec-committee-tab/overview-rec-committee-tab.component';
 
 import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -2101,6 +2102,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     OverviewManagerTabComponent,
     OverviewDispatcherTabComponent,
     OverviewSchedulerTabComponent,
+    OverviewRecCommitteeTabComponent,
     IntelligenceModalComponent,
     ChangeHistoryViewerComponent,
     LocationMapComponent,

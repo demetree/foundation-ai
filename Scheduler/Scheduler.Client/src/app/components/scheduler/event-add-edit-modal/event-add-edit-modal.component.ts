@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angu
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription, lastValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { ScheduledEventService, ScheduledEventData, ScheduledEventSubmitData } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData, EventResourceAssignmentSubmitData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
@@ -154,9 +155,17 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // Track whether the user has manually set the end date
   private endDateManuallySet = false;
 
+  // Financial Timeline
+  financialTimeline: TimelineEntry[] = [];
+
+  // Booking conflict detection
+  conflictWarnings: ConflictEvent[] = [];
+  checkingConflicts = false;
+
   constructor(
     public activeModal: NgbActiveModal,
     private fb: FormBuilder,
+    private http: HttpClient,
     private scheduledEventService: ScheduledEventService,
     private assignmentService: EventResourceAssignmentService,
     private targetService: SchedulingTargetService,
@@ -290,6 +299,12 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     // Track when user manually sets end date
     this.eventForm.get('endDateTime')?.valueChanges.subscribe(() => {
       this.endDateManuallySet = true;
+      this.checkConflicts();
+    });
+
+    // Also check conflicts when start date changes
+    this.eventForm.get('startDateTime')?.valueChanges.subscribe(() => {
+      this.checkConflicts();
     });
   }
 
@@ -374,6 +389,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     if (tab === 'financials' && !this.financialsLoaded && this.isEditMode) {
       this.loadEventFinancials();
+      this.loadEventTimeline();
     }
   }
 
@@ -414,6 +430,105 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       error: () => {
         this.loadingFinancials = false;
         this.alertService.showMessage('Failed to load financial data', '', MessageSeverity.error);
+      }
+    });
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Deposit Lifecycle
+  // -------------------------------------------------------------------------
+  showDepositsOnly = false;
+
+  hasDeposits(): boolean {
+    return this.eventCharges.some(c => c.isDeposit);
+  }
+
+  getFilteredCharges(): EventChargeData[] {
+    if (!this.showDepositsOnly) return this.eventCharges;
+    return this.eventCharges.filter(c => c.isDeposit);
+  }
+
+  refundDeposit(charge: EventChargeData): void {
+    if (!charge || !charge.isDeposit || charge.depositRefundedDate) return;
+
+    const now = new Date().toISOString();
+
+    //
+    // Use the built-in conversion to create a submit payload, then set the refund date
+    //
+    const submitData = this.eventChargeService.ConvertToEventChargeSubmitData(charge);
+    submitData.depositRefundedDate = now;
+
+    this.eventChargeService.PutEventCharge(charge.id, submitData).subscribe({
+      next: () => {
+        //
+        // Update the local charge object so the UI reflects the change immediately
+        //
+        charge.depositRefundedDate = now;
+        this.alertService.showMessage('Deposit marked as refunded', '', MessageSeverity.success);
+      },
+      error: (err: any) => {
+        this.alertService.showMessage('Failed to refund deposit', err?.message || '', MessageSeverity.error);
+      }
+    });
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Event Financial Timeline
+  // -------------------------------------------------------------------------
+  private loadEventTimeline(): void {
+    if (!this.event) return;
+
+    this.http.get<TimelineEntry[]>(
+      `/api/FinancialTransactions/EventFinancialTimeline/${this.event.id}`
+    ).subscribe({
+      next: (entries) => {
+        this.financialTimeline = entries ?? [];
+      },
+      error: () => {
+        this.financialTimeline = [];
+      }
+    });
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Booking Conflict Detection
+  // -------------------------------------------------------------------------
+  private checkConflicts(): void {
+    const formVal = this.eventForm?.value;
+    if (!formVal) return;
+
+    const targetId = formVal.schedulingTargetId;
+    const startVal = formVal.startDateTime;
+    const endVal = formVal.endDateTime;
+
+    //
+    // Only check if we have all three values
+    //
+    if (!targetId || !startVal || !endVal) {
+      this.conflictWarnings = [];
+      return;
+    }
+
+    this.checkingConflicts = true;
+
+    const startUtc = new Date(startVal).toISOString();
+    const endUtc = new Date(endVal).toISOString();
+    const excludeId = this.isEditMode && this.event ? `&excludeEventId=${this.event.id}` : '';
+
+    const url = `/api/ScheduledEvents/CheckConflicts?schedulingTargetId=${targetId}&startDateTime=${startUtc}&endDateTime=${endUtc}${excludeId}`;
+
+    this.http.get<ConflictResponse>(url).subscribe({
+      next: (response) => {
+        this.conflictWarnings = response?.conflicts ?? [];
+        this.checkingConflicts = false;
+      },
+      error: () => {
+        this.conflictWarnings = [];
+        this.checkingConflicts = false;
       }
     });
   }
@@ -1872,4 +1987,28 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.deletedQualReqIds = [];
     this.pendingNewQualReqs = [];
   }
+}
+
+
+interface TimelineEntry {
+  date: string;
+  type: string;
+  icon: string;
+  description: string;
+  amount: number;
+  isPositive: boolean;
+}
+
+interface ConflictEvent {
+  id: number;
+  name: string;
+  startDateTime: string;
+  endDateTime: string;
+  location: string;
+}
+
+interface ConflictResponse {
+  hasConflict: boolean;
+  conflictCount: number;
+  conflicts: ConflictEvent[];
 }

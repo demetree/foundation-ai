@@ -8,12 +8,14 @@
 //
 
 import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { FiscalPeriodService, FiscalPeriodData } from '../../../scheduler-data-services/fiscal-period.service';
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { AuthService } from '../../../services/auth.service';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { Router } from '@angular/router';
 
 
@@ -34,6 +36,24 @@ export class FinancialCustomDashboardComponent implements OnInit {
     public netBalance = 0;
     public transactionCount = 0;
     public categoryCount = 0;
+    public isExporting = false;
+
+    //
+    // Category breakdown for income-vs-expense summary table
+    //
+    public revenueCategories: CategoryBreakdownItem[] = [];
+    public expenseCategories: CategoryBreakdownItem[] = [];
+    public yearRevenue = 0;
+    public yearExpenses = 0;
+    public yearNet = 0;
+    public loadingBreakdown = false;
+
+    //
+    // Outstanding deposits widget
+    //
+    public outstandingDeposits: OutstandingDepositItem[] = [];
+    public outstandingDepositsTotal = 0;
+    public loadingDeposits = false;
 
     //
     // Recent transactions
@@ -68,11 +88,13 @@ export class FinancialCustomDashboardComponent implements OnInit {
     public selectedOfficeId: number | null = null;  // null = "All Offices"
 
     constructor(
+        private http: HttpClient,
         private transactionService: FinancialTransactionService,
         private categoryService: FinancialCategoryService,
         private fiscalPeriodService: FiscalPeriodService,
         private financialOfficeService: FinancialOfficeService,
         private authService: AuthService,
+        private alertService: AlertService,
         private navigationService: NavigationService,
         private router: Router
     ) { }
@@ -80,6 +102,8 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadDashboardData();
+        this.loadCategoryBreakdown();
+        this.loadOutstandingDeposits();
     }
 
 
@@ -259,12 +283,14 @@ export class FinancialCustomDashboardComponent implements OnInit {
     public onYearChange(year: number): void {
         this.selectedYear = year;
         this.rebuildMonthlyBreakdown();
+        this.loadCategoryBreakdown();
     }
 
 
     public onOfficeChange(officeId: number | null): void {
         this.selectedOfficeId = officeId;
         this.processTransactions(this.getFilteredTransactions());
+        this.loadCategoryBreakdown();
     }
 
 
@@ -346,4 +372,141 @@ export class FinancialCustomDashboardComponent implements OnInit {
     public getCurrentMonthIndex(): number {
         return new Date().getMonth();
     }
+
+
+    /**
+     * Downloads a formatted Excel financial report for the selected year and office.
+     */
+    public exportReport(): void {
+        if (this.isExporting) return;
+
+        this.isExporting = true;
+
+        let url = `/api/FinancialTransactions/ExportFinancialReport?year=${this.selectedYear}`;
+        if (this.selectedOfficeId !== null) {
+            url += `&financialOfficeId=${this.selectedOfficeId}`;
+        }
+
+        this.http.get(url, { responseType: 'blob', observe: 'response' }).subscribe({
+            next: (response) => {
+                const blob = response.body;
+                if (!blob) {
+                    this.alertService.showMessage('Export failed', 'No data returned', MessageSeverity.error);
+                    this.isExporting = false;
+                    return;
+                }
+
+                //
+                // Extract filename from Content-Disposition header or use a default
+                //
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `Financial_Report_${this.selectedYear}.xlsx`;
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                    if (match && match[1]) {
+                        filename = match[1];
+                    }
+                }
+
+                //
+                // Trigger browser download
+                //
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+
+                this.alertService.showMessage('Report exported successfully', '', MessageSeverity.success);
+                this.isExporting = false;
+            },
+            error: (err) => {
+                this.alertService.showMessage('Export failed', err?.message || 'Unknown error', MessageSeverity.error);
+                this.isExporting = false;
+            }
+        });
+    }
+
+
+    /**
+     * Loads category-level breakdown from the server for the selected year and office.
+     */
+    private loadCategoryBreakdown(): void {
+        this.loadingBreakdown = true;
+
+        let url = `/api/FinancialTransactions/CategoryBreakdown?year=${this.selectedYear}`;
+        if (this.selectedOfficeId !== null) {
+            url += `&financialOfficeId=${this.selectedOfficeId}`;
+        }
+
+        this.http.get<CategoryBreakdownResponse>(url).subscribe({
+            next: (response) => {
+                const categories = response?.categories ?? [];
+                this.revenueCategories = categories.filter((c: CategoryBreakdownItem) => c.isRevenue);
+                this.expenseCategories = categories.filter((c: CategoryBreakdownItem) => !c.isRevenue);
+                this.yearRevenue = this.revenueCategories.reduce((sum, c) => sum + c.total, 0);
+                this.yearExpenses = this.expenseCategories.reduce((sum, c) => sum + c.total, 0);
+                this.yearNet = this.yearRevenue - this.yearExpenses;
+                this.loadingBreakdown = false;
+            },
+            error: () => {
+                this.loadingBreakdown = false;
+            }
+        });
+    }
+
+
+    /**
+     * Loads outstanding (unreturned) deposits across the tenant.
+     */
+    private loadOutstandingDeposits(): void {
+        this.loadingDeposits = true;
+
+        this.http.get<OutstandingDepositsResponse>('/api/FinancialTransactions/OutstandingDeposits').subscribe({
+            next: (response) => {
+                this.outstandingDeposits = response?.deposits ?? [];
+                this.outstandingDepositsTotal = response?.totalAmount ?? 0;
+                this.loadingDeposits = false;
+            },
+            error: () => {
+                this.loadingDeposits = false;
+            }
+        });
+    }
+}
+
+
+//
+// Interfaces for Category Breakdown API response
+//
+interface CategoryBreakdownItem {
+    categoryId: number;
+    categoryName: string;
+    code: string;
+    isRevenue: boolean;
+    total: number;
+    count: number;
+}
+
+interface CategoryBreakdownResponse {
+    year: number;
+    categories: CategoryBreakdownItem[];
+}
+
+interface OutstandingDepositItem {
+    chargeId: number;
+    eventId: number;
+    eventName: string;
+    chargeType: string;
+    amount: number;
+    eventDate: string | null;
+}
+
+interface OutstandingDepositsResponse {
+    count: number;
+    totalAmount: number;
+    deposits: OutstandingDepositItem[];
 }

@@ -37,6 +37,7 @@ export class FinancialTransactionCustomAddEditComponent {
     public isEditMode = false;
     public modalIsDisplayed = false;
     public isSaving = false;
+    public isSavingAndAdding = false;
     public showMoreDetails = false;
 
     //
@@ -182,6 +183,11 @@ export class FinancialTransactionCustomAddEditComponent {
             if (this.preSeededData) {
                 this.txForm.patchValue(this.preSeededData);
             }
+
+            //
+            // Apply last-used values from localStorage (category, office, currency)
+            //
+            this.applyLastUsedValues();
         }
 
         this.loadLookups();
@@ -357,8 +363,10 @@ export class FinancialTransactionCustomAddEditComponent {
         } else {
             this.transactionService.PostFinancialTransaction(submitData).subscribe({
                 next: () => {
+                    this.rememberLastUsedValues();
                     this.alertService.showMessage('Transaction created successfully', '', MessageSeverity.success);
                     this.isSaving = false;
+                    this.isSavingAndAdding = false;
                     this.closeModal();
                     this.transactionService.ClearAllCaches();
                     this.financialTransactionChanged.emit();
@@ -366,9 +374,84 @@ export class FinancialTransactionCustomAddEditComponent {
                 error: (err) => {
                     this.alertService.showMessage('Failed to create transaction', JSON.stringify(err), MessageSeverity.error);
                     this.isSaving = false;
+                    this.isSavingAndAdding = false;
                 }
             });
         }
+    }
+
+
+    //
+    // Save & Add Another — saves the current transaction, then re-opens the form
+    // with last-used category/office/currency pre-populated for fast repeat entry.
+    //
+    public saveAndAddAnother(): void {
+        if (this.isSaving || this.isSavingAndAdding || this.isEditMode) return;
+
+        if (!this.transactionService.userIsSchedulerFinancialTransactionWriter()) {
+            this.alertService.showMessage(
+                `${this.authService.currentUser?.userName} does not have permission to write Financial Transactions`, '', MessageSeverity.info
+            );
+            return;
+        }
+
+        if (!this.txForm.valid) {
+            this.alertService.showMessage('Please fix form errors before saving.', 'Invalid Data', MessageSeverity.warn);
+            this.txForm.markAllAsTouched();
+            return;
+        }
+
+        this.isSavingAndAdding = true;
+        const fv = this.txForm.getRawValue();
+
+        const submitData: FinancialTransactionSubmitData = {
+            id: 0,
+            financialCategoryId: Number(fv.financialCategoryId),
+            financialOfficeId: fv.financialOfficeId ? Number(fv.financialOfficeId) : null,
+            scheduledEventId: fv.scheduledEventId ? Number(fv.scheduledEventId) : null,
+            contactId: fv.contactId ? Number(fv.contactId) : null,
+            clientId: fv.clientId ? Number(fv.clientId) : null,
+            contactRole: fv.contactRole?.trim() || null,
+            taxCodeId: fv.taxCodeId ? Number(fv.taxCodeId) : null,
+            fiscalPeriodId: fv.fiscalPeriodId ? Number(fv.fiscalPeriodId) : null,
+            paymentTypeId: fv.paymentTypeId ? Number(fv.paymentTypeId) : null,
+            transactionDate: dateTimeLocalToIsoUtc(fv.transactionDate!.trim())!,
+            description: fv.description!.trim(),
+            amount: Number(fv.amount),
+            taxAmount: Number(fv.taxAmount),
+            totalAmount: Number(fv.totalAmount),
+            isRevenue: !!fv.isRevenue,
+            journalEntryType: fv.journalEntryType?.trim() || null,
+            referenceNumber: fv.referenceNumber?.trim() || null,
+            notes: fv.notes?.trim() || null,
+            currencyId: Number(fv.currencyId),
+            exportedDate: null,
+            externalId: null,
+            externalSystemName: null,
+            versionNumber: 0,
+            active: true,
+            deleted: false,
+        };
+
+        this.transactionService.PostFinancialTransaction(submitData).subscribe({
+            next: () => {
+                this.rememberLastUsedValues();
+                this.alertService.showMessage('Transaction saved — add another!', '', MessageSeverity.success);
+                this.isSavingAndAdding = false;
+                this.transactionService.ClearAllCaches();
+                this.financialTransactionChanged.emit();
+
+                //
+                // Reset the form but keep remembered values pre-populated
+                //
+                this.resetForm();
+                this.applyLastUsedValues();
+            },
+            error: (err) => {
+                this.alertService.showMessage('Failed to create transaction', JSON.stringify(err), MessageSeverity.error);
+                this.isSavingAndAdding = false;
+            }
+        });
     }
 
 
@@ -388,5 +471,64 @@ export class FinancialTransactionCustomAddEditComponent {
     public isFieldHidden(fieldName: string): boolean {
         if (!this.hiddenFields) return false;
         return this.hiddenFields.includes(fieldName);
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Quick-Entry: localStorage memory for repeat entries
+    // -------------------------------------------------------------------------
+    private static readonly LAST_USED_KEY = 'scheduler_tx_lastUsed';
+
+    private rememberLastUsedValues(): void {
+        try {
+            const fv = this.txForm.getRawValue();
+            const memory: Record<string, any> = {};
+            if (fv.financialCategoryId) memory['financialCategoryId'] = Number(fv.financialCategoryId);
+            if (fv.financialOfficeId) memory['financialOfficeId'] = Number(fv.financialOfficeId);
+            if (fv.currencyId) memory['currencyId'] = Number(fv.currencyId);
+            if (fv.paymentTypeId) memory['paymentTypeId'] = Number(fv.paymentTypeId);
+            localStorage.setItem(FinancialTransactionCustomAddEditComponent.LAST_USED_KEY, JSON.stringify(memory));
+        } catch { /* localStorage not available — no-op */ }
+    }
+
+    private applyLastUsedValues(): void {
+        try {
+            const raw = localStorage.getItem(FinancialTransactionCustomAddEditComponent.LAST_USED_KEY);
+            if (!raw) {
+                this.autoSelectDefaultCurrency();
+                return;
+            }
+            const memory = JSON.parse(raw);
+            const patch: Record<string, any> = {};
+            if (memory.financialCategoryId) patch['financialCategoryId'] = memory.financialCategoryId;
+            if (memory.financialOfficeId) patch['financialOfficeId'] = memory.financialOfficeId;
+            if (memory.currencyId) patch['currencyId'] = memory.currencyId;
+            if (memory.paymentTypeId) patch['paymentTypeId'] = memory.paymentTypeId;
+            this.txForm.patchValue(patch);
+
+            // Auto-set isRevenue from remembered category
+            if (patch['financialCategoryId']) {
+                this.onCategoryChange();
+            }
+        } catch {
+            this.autoSelectDefaultCurrency();
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Quick-Entry: Auto-select default currency (CAD)
+    // -------------------------------------------------------------------------
+    private autoSelectDefaultCurrency(): void {
+        this.currencies$.subscribe(currencies => {
+            if (!currencies || this.txForm.get('currencyId')?.value) return;
+            const cad = currencies.find(c => c.code === 'CAD' || c.name?.toUpperCase().includes('CANAD'));
+            if (cad) {
+                this.txForm.get('currencyId')?.setValue(cad.id);
+            } else if (currencies.length === 1) {
+                // Only one currency in the system — use it
+                this.txForm.get('currencyId')?.setValue(currencies[0].id);
+            }
+        });
     }
 }
