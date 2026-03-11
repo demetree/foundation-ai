@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Foundation.Auditor;
+using Foundation.Concurrent;
 using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
@@ -38,6 +39,13 @@ namespace Foundation.BMC.Controllers.WebAPI
         // Constants
         //
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+
+        //
+        // Static thumbnail cache — 5 minute sliding expiry, shared across all requests.
+        // Keyed by projectId.  No compression needed since PNG data is already compressed.
+        //
+        private static readonly ExpiringCache<int, byte[]> _thumbnailCache
+            = new ExpiringCache<int, byte[]>(expirationInSeconds: 300, useSlidingExpiration: true, useCompression: false);
 
 
         //
@@ -324,7 +332,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// </summary>
         [HttpGet]
-        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.NoLimit, Scope = RateLimitScope.PerUser)]
         [Route("api/moc/project/{projectId}/thumbnail")]
         public async Task<IActionResult> GetProjectThumbnail(int projectId, CancellationToken cancellationToken = default)
         {
@@ -345,6 +353,17 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
             }
 
+            //
+            // Check the in-memory cache first
+            //
+            if (_thumbnailCache.TryGetValue(projectId, out byte[] cachedData))
+            {
+                return File(cachedData, "image/png");
+            }
+
+            //
+            // Cache miss — query the database
+            //
             Project project = await _context.Projects
                 .Where(p => p.id == projectId && p.tenantGuid == userTenantGuid && p.active == true && p.deleted == false)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -353,6 +372,11 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 return NotFound();
             }
+
+            //
+            // Store in the cache for subsequent requests
+            //
+            _thumbnailCache.TryAdd(projectId, project.thumbnailData);
 
             return File(project.thumbnailData, "image/png");
         }

@@ -237,7 +237,15 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     private addGroundPlane(): void {
-        const gridHelper = new THREE.GridHelper(1000, 50, 0x333355, 0x222244);
+        //
+        // Read the theme border colour from CSS custom properties so the grid
+        // adapts automatically when the user switches themes.
+        //
+        const computedBorder = getComputedStyle(document.documentElement)
+            .getPropertyValue('--bmc-border').trim() || '#333355';
+        const gridColour = new THREE.Color(computedBorder);
+
+        const gridHelper = new THREE.GridHelper(1000, 50, gridColour, gridColour);
         gridHelper.position.y = -0.5;
         (gridHelper.material as THREE.Material).opacity = 0.3;
         (gridHelper.material as THREE.Material).transparent = true;

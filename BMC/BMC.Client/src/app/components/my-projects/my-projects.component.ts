@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, finalize } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProjectService, ProjectSummary } from '../../services/project.service';
+import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 import { UploadModelModalComponent } from '../upload-model-modal/upload-model-modal.component';
@@ -27,6 +29,7 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
     searchTerm = '';
     viewMode: 'grid' | 'list' = 'grid';
     sortBy: 'recent' | 'name' | 'parts' = 'recent';
+    thumbnailUrls: Map<number, string> = new Map();
 
     // Pagination
     pageSize = 12;
@@ -36,7 +39,9 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
 
     constructor(
         public router: Router,
+        private http: HttpClient,
         private projectService: ProjectService,
+        private authService: AuthService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService,
         private modalService: NgbModal
@@ -74,11 +79,40 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
             next: (projects) => {
                 this.projects = projects;
                 this.applyFilters();
+                this.loadThumbnails(projects);
             },
             error: () => {
                 this.alertService.showMessage('Error', 'Failed to load projects', MessageSeverity.error);
             }
         });
+    }
+
+
+    /**
+     * Fetch thumbnails via authenticated HTTP and create blob URLs.
+     * <img> tags can't send Authorization headers, so we fetch as blobs.
+     */
+    private loadThumbnails(projects: ProjectSummary[]): void {
+        const headers = this.authService.GetAuthenticationHeaders().delete('Content-Type');
+
+        for (const project of projects) {
+            this.http.get(`/api/moc/project/${project.id}/thumbnail`, {
+                headers: headers,
+                responseType: 'blob'
+            }).subscribe({
+                next: (blob) => {
+                    if (blob.size > 0) {
+                        this.thumbnailUrls.set(project.id, URL.createObjectURL(blob));
+                    }
+                },
+                error: () => { /* no thumbnail — leave the placeholder */ }
+            });
+        }
+    }
+
+
+    getThumbnailUrl(projectId: number): string | null {
+        return this.thumbnailUrls.get(projectId) ?? null;
     }
 
 

@@ -153,7 +153,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         ///
         /// </summary>
         [HttpPost]
-        [RateLimit(RateLimitOption.FivePerMinute, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.TenPerMinute, Scope = RateLimitScope.PerUser)]
         [Route("api/moc/import/upload")]
         [RequestSizeLimit(MAX_UPLOAD_SIZE_BYTES)]
         public async Task<IActionResult> UploadModel(IFormFile file, CancellationToken cancellationToken = default)

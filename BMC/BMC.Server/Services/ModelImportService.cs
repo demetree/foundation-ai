@@ -7,12 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Foundation.BMC.Database;
 
 using BMC.LDraw.Models;
 using BMC.LDraw.Parsers;
+using BMC.LDraw.Render;
 
 namespace Foundation.BMC.Services
 {
@@ -48,6 +50,7 @@ namespace Foundation.BMC.Services
         // Dependencies
         //
         private readonly BMCContext _context;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<ModelImportService> _logger;
 
 
@@ -67,11 +70,12 @@ namespace Foundation.BMC.Services
 
 
         /// <summary>
-        /// Constructor — takes the BMC database context and a logger.
+        /// Constructor — takes the BMC database context, configuration, and a logger.
         /// </summary>
-        public ModelImportService(BMCContext context, ILogger<ModelImportService> logger)
+        public ModelImportService(BMCContext context, IConfiguration configuration, ILogger<ModelImportService> logger)
         {
             _context = context;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -213,6 +217,7 @@ namespace Foundation.BMC.Services
             ImportResult result = await CreateProjectFromModelsAsync(
                 models,
                 fileData,
+                lDrawLines,
                 fileName,
                 sourceFormat,
                 ioResult,
@@ -293,6 +298,7 @@ namespace Foundation.BMC.Services
         private async Task<ImportResult> CreateProjectFromModelsAsync(
             List<LDrawModel> models,
             byte[] rawFileData,
+            string[] lDrawLines,
             string fileName,
             string sourceFormat,
             StudioIoResult ioResult,
@@ -326,6 +332,14 @@ namespace Foundation.BMC.Services
             if (ioResult != null && ioResult.ThumbnailData != null && ioResult.ThumbnailData.Length > 0)
             {
                 project.thumbnailData = ioResult.ThumbnailData;
+            }
+            else
+            {
+                //
+                // No embedded thumbnail — generate one using the software renderer.
+                // Uses the same RenderService as PartRendererController.
+                //
+                project.thumbnailData = GenerateThumbnailFromLDraw(lDrawLines, fileName);
             }
 
             _context.Projects.Add(project);
@@ -954,6 +968,71 @@ namespace Foundation.BMC.Services
             }
 
             return "application/octet-stream";
+        }
+
+
+        /// <summary>
+        ///
+        /// Generate a PNG thumbnail from parsed LDraw lines using the software renderer.
+        ///
+        /// This follows the same pattern as PartRendererController: creates a RenderService
+        /// with the LDraw data path from configuration, then calls RenderToPng with the
+        /// in-memory lines.
+        ///
+        /// Returns null if rendering fails — the import should not be blocked by a
+        /// thumbnail generation failure.
+        ///
+        /// </summary>
+        private byte[] GenerateThumbnailFromLDraw(string[] lDrawLines, string fileName)
+        {
+            if (lDrawLines == null || lDrawLines.Length == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+
+                if (string.IsNullOrEmpty(dataPath))
+                {
+                    _logger.LogWarning("LDraw:DataPath is not configured — skipping thumbnail generation for '{FileName}'", fileName);
+                    return null;
+                }
+
+                _logger.LogInformation("Generating thumbnail for '{FileName}' using software renderer", fileName);
+
+                RenderService renderService = new RenderService(dataPath);
+
+                byte[] pngData = renderService.RenderToPng(
+                    lDrawLines,
+                    fileName,
+                    width: 512,
+                    height: 512,
+                    colourCode: 4,          // default red colour
+                    elevation: 30f,
+                    azimuth: -45f,
+                    renderEdges: true,
+                    smoothShading: true,
+                    antiAliasMode: AntiAliasMode.SSAA2x);
+
+                if (pngData != null && pngData.Length > 0)
+                {
+                    _logger.LogInformation("Thumbnail generated for '{FileName}': {Size} bytes", fileName, pngData.Length);
+                    return pngData;
+                }
+
+                _logger.LogWarning("Thumbnail rendering returned empty data for '{FileName}'", fileName);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                //
+                // Thumbnail generation is non-critical — log the error but don't fail the import
+                //
+                _logger.LogWarning(ex, "Failed to generate thumbnail for '{FileName}' — import will continue without a thumbnail", fileName);
+                return null;
+            }
         }
     }
 }

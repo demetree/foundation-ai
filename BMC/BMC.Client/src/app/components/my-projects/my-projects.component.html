@@ -112,12 +112,12 @@
     <!-- ===== GRID VIEW ===== -->
     <div class="projects-grid" *ngIf="!loading && viewMode === 'grid' && displayedProjects.length > 0">
         <div class="project-card" *ngFor="let project of displayedProjects"
-            (click)="router.navigate(['/projects', project.id])" style="cursor: pointer;">
+            (click)="router.navigate(['/my-projects', project.id, 'viewer'])" style="cursor: pointer;">
 
             <!-- Thumbnail -->
             <div class="card-thumbnail">
-                <img *ngIf="project.thumbnailImagePath" [src]="project.thumbnailImagePath" [alt]="project.name" />
-                <div class="placeholder-thumb" *ngIf="!project.thumbnailImagePath">
+                <img *ngIf="getThumbnailUrl(project.id)" [src]="getThumbnailUrl(project.id)" [alt]="project.name" />
+                <div class="placeholder-thumb" *ngIf="!getThumbnailUrl(project.id)">
                     <i class="fas fa-cubes"></i>
                 </div>
             </div>
@@ -159,7 +159,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let project of displayedProjects" (click)="router.navigate(['/projects', project.id])"
+                <tr *ngFor="let project of displayedProjects" (click)="router.navigate(['/my-projects', project.id, 'viewer'])"
                     style="cursor: pointer;">
                     <td>
                         <div class="project-cell">

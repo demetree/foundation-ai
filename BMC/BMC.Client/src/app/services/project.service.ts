@@ -63,7 +63,7 @@ export interface ProjectViewerSummary {
     providedIn: 'root'
 })
 export class ProjectService {
-    private readonly projectUrl = '/api/Project';
+    private readonly projectUrl = '/api/Projects';
     private readonly importUrl = '/api/moc/import';
     private readonly mocUrl = '/api/moc';
 
@@ -91,8 +91,16 @@ export class ProjectService {
         const formData = new FormData();
         formData.append('file', file, file.name);
 
+        //
+        // IMPORTANT: For multipart/form-data uploads, the browser must set Content-Type
+        // automatically (with the boundary parameter). The default auth headers include
+        // 'Content-Type: application/json' which would override this and cause the server
+        // to not find the file parameter. So we delete Content-Type here.
+        //
+        const uploadHeaders = this.headers.delete('Content-Type');
+
         const req = new HttpRequest('POST', `${this.importUrl}/upload`, formData, {
-            headers: this.headers,
+            headers: uploadHeaders,
             reportProgress: true
         });
 
@@ -112,7 +120,7 @@ export class ProjectService {
     /** DELETE /api/Project/{id} — soft-delete a project */
     deleteProject(id: number): Observable<any> {
         return this.http.delete(
-            `${this.projectUrl}/${id}`,
+            `/api/Project/${id}`,
             { headers: this.headers }
         );
     }

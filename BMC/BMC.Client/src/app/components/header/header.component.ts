@@ -49,7 +49,8 @@ export class HeaderComponent {
             items: [
                 { icon: 'fas fa-camera', label: 'Part Renderer', route: '/part-renderer' },
                 { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
-                { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' }
+                { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
+                { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' }
             ]
         },
         {

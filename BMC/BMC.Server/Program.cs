@@ -340,6 +340,8 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BrickbergController));
                 controllers.Add(typeof(PublicBrowseController));
                 controllers.Add(typeof(MocImportController));
+                controllers.Add(typeof(MocExportController));
+
 
                 //
                 // Start of code generated controller list for BMC module
