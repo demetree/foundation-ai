@@ -603,6 +603,25 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t\tStartAuditEventClock();");
                 sb.AppendLine();
 
+
+                // Safety row cap: when a default page size is configured on the table,
+                // emit guard logic so unpaginated callers get a hard cap instead of a
+                // full-table fetch that can cause SQL timeouts.
+                if (scriptGenTable != null && scriptGenTable.webAPIListGetterDefaultPageSize.HasValue)
+                {
+                    int cap = scriptGenTable.webAPIListGetterDefaultPageSize.Value;
+                    sb.AppendLine("\t\t\t// Safety cap: prevents full-table dumps from causing SQL execution timeouts.");
+                    sb.AppendLine("\t\t\t// Callers that provide explicit pageSize + pageNumber are unaffected.");
+                    sb.AppendLine("\t\t\tif (pageSize.HasValue == false || pageNumber.HasValue == false)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\tpageSize   = " + cap + ";");
+                    sb.AppendLine("\t\t\t\tpageNumber = 1;");
+                    sb.AppendLine("\t\t\t\tResponse.Headers[\"X-Truncated\"] = \"true\";");
+                    sb.AppendLine("\t\t\t\tResponse.Headers[\"X-Max-Rows\"]  = \"" + cap + "\";");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                }
+
                 GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
 
 
@@ -4612,6 +4631,25 @@ namespace Foundation.CodeGeneration
 
             if (ignoreFoundationServices == false)
             {
+                // Safety row cap: when a default page size is configured on the table,
+                // emit guard logic so unpaginated callers get a hard cap instead of a
+                // full-table fetch that can cause SQL timeouts.
+                if (scriptGenTable != null && scriptGenTable.webAPIListGetterDefaultPageSize.HasValue)
+                {
+                    int cap = scriptGenTable.webAPIListGetterDefaultPageSize.Value;
+                    sb.AppendLine("\t\t\t// Safety cap: prevents full-table dumps from causing SQL execution timeouts.");
+                    sb.AppendLine("\t\t\t// Callers that provide explicit pageSize + pageNumber are unaffected.");
+                    sb.AppendLine("\t\t\tif (pageSize.HasValue == false || pageNumber.HasValue == false)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\tpageSize   = " + cap + ";");
+                    sb.AppendLine("\t\t\t\tpageNumber = 1;");
+                    sb.AppendLine("\t\t\t\tResponse.Headers[\"X-Truncated\"] = \"true\";");
+                    sb.AppendLine("\t\t\t\tResponse.Headers[\"X-Max-Rows\"]  = \"" + cap + "\";");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                }
+
+
                 GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
 
                 sb.AppendLine();

@@ -19,6 +19,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ProjectData } from './project.service';
 import { SubmodelChangeHistoryService, SubmodelChangeHistoryData } from './submodel-change-history.service';
 import { SubmodelPlacedBrickService, SubmodelPlacedBrickData } from './submodel-placed-brick.service';
+import { SubmodelInstanceService, SubmodelInstanceData } from './submodel-instance.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -151,6 +152,11 @@ export class SubmodelData {
     private _submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
 
                 
+    private _submodelInstances: SubmodelInstanceData[] | null = null;
+    private _submodelInstancesPromise: Promise<SubmodelInstanceData[]> | null  = null;
+    private _submodelInstancesSubject = new BehaviorSubject<SubmodelInstanceData[] | null>(null);
+
+                
 
 
     //
@@ -217,6 +223,31 @@ export class SubmodelData {
 
 
 
+    public SubmodelInstances$ = this._submodelInstancesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._submodelInstances === null && this._submodelInstancesPromise === null) {
+            this.loadSubmodelInstances(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _submodelInstancesCount$: Observable<bigint | number> | null = null;
+    public get SubmodelInstancesCount$(): Observable<bigint | number> {
+        if (this._submodelInstancesCount$ === null) {
+            this._submodelInstancesCount$ = SubmodelInstanceService.Instance.GetSubmodelInstancesRowCount({submodelId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._submodelInstancesCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -264,6 +295,11 @@ export class SubmodelData {
      this._submodelPlacedBricksPromise = null;
      this._submodelPlacedBricksSubject.next(null);
      this._submodelPlacedBricksCount$ = null;
+
+     this._submodelInstances = null;
+     this._submodelInstancesPromise = null;
+     this._submodelInstancesSubject.next(null);
+     this._submodelInstancesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -404,6 +440,71 @@ export class SubmodelData {
     }
 
 
+    /**
+     *
+     * Gets the SubmodelInstances for this Submodel.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.submodel.SubmodelInstances.then(submodels => { ... })
+     *   or
+     *   await this.submodel.submodels
+     *
+    */
+    public get SubmodelInstances(): Promise<SubmodelInstanceData[]> {
+        if (this._submodelInstances !== null) {
+            return Promise.resolve(this._submodelInstances);
+        }
+
+        if (this._submodelInstancesPromise !== null) {
+            return this._submodelInstancesPromise;
+        }
+
+        // Start the load
+        this.loadSubmodelInstances();
+
+        return this._submodelInstancesPromise!;
+    }
+
+
+
+    private loadSubmodelInstances(): void {
+
+        this._submodelInstancesPromise = lastValueFrom(
+            SubmodelService.Instance.GetSubmodelInstancesForSubmodel(this.id)
+        )
+        .then(SubmodelInstances => {
+            this._submodelInstances = SubmodelInstances ?? [];
+            this._submodelInstancesSubject.next(this._submodelInstances);
+            return this._submodelInstances;
+         })
+        .catch(err => {
+            this._submodelInstances = [];
+            this._submodelInstancesSubject.next(this._submodelInstances);
+            throw err;
+        })
+        .finally(() => {
+            this._submodelInstancesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached SubmodelInstance. Call after mutations to force refresh.
+     */
+    public ClearSubmodelInstancesCache(): void {
+        this._submodelInstances = null;
+        this._submodelInstancesPromise = null;
+        this._submodelInstancesSubject.next(this._submodelInstances);      // Emit to observable
+    }
+
+    public get HasSubmodelInstances(): Promise<boolean> {
+        return this.SubmodelInstances.then(submodelInstances => submodelInstances.length > 0);
+    }
+
+
 
 
     //
@@ -484,6 +585,7 @@ export class SubmodelService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private submodelChangeHistoryService: SubmodelChangeHistoryService,
         private submodelPlacedBrickService: SubmodelPlacedBrickService,
+        private submodelInstanceService: SubmodelInstanceService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -967,6 +1069,16 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
+    public GetSubmodelInstancesForSubmodel(submodelId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<SubmodelInstanceData[]> {
+        return this.submodelInstanceService.GetSubmodelInstanceList({
+            submodelId: submodelId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full SubmodelData instance.
@@ -1010,6 +1122,10 @@ export class SubmodelService extends SecureEndpointBase {
     (revived as any)._submodelPlacedBricksPromise = null;
     (revived as any)._submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
 
+    (revived as any)._submodelInstances = null;
+    (revived as any)._submodelInstancesPromise = null;
+    (revived as any)._submodelInstancesSubject = new BehaviorSubject<SubmodelInstanceData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1044,6 +1160,18 @@ export class SubmodelService extends SecureEndpointBase {
       );
 
     (revived as any)._submodelPlacedBricksCount$ = null;
+
+
+    (revived as any).SubmodelInstances$ = (revived as any)._submodelInstancesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodelInstances === null && (revived as any)._submodelInstancesPromise === null) {
+                (revived as any).loadSubmodelInstances();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._submodelInstancesCount$ = null;
 
 
 

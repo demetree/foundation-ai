@@ -1,0 +1,98 @@
+<div class="add-submodel-instance" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-submodel-instance me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Submodel Instance" 
+        *ngIf="userIsBMCSubmodelInstanceWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #submodelInstanceModal let-modal>
+   <div class="modal-header submodel-instance-modal-header">
+      <h5 class="modal-title mb-0" id="submodelInstanceModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Submodel Instance' : 'Add Submodel Instance' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body submodel-instance-modal-body">
+      <form [formGroup]="submodelInstanceForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('submodelId')">
+                <label for="SubmodelInstance-submodelId" id="label-SubmodelInstance-submodelId"><span class="text-danger">*</span>Submodel</label>
+                <select id="SubmodelInstance-submodelId" formControlName="submodelId" class="form-select submodel-instance-select" [disabled]="!userIsBMCSubmodelInstanceWriter()">
+                    <option [ngValue]="null">Select Submodel</option>
+                    <option *ngFor="let submodel of submodels$ | async" [ngValue]="submodel.id">{{submodel.name}}</option>
+                </select>
+                <div *ngIf="submodelInstanceForm.get('submodelId')?.invalid && submodelInstanceForm.get('submodelId')?.touched" class="text-danger">
+                    Submodel is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                <label for="SubmodelInstance-positionX" id="label-SubmodelInstance-positionX">Position X</label>
+                <input type="number" id="SubmodelInstance-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-positionX" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                <label for="SubmodelInstance-positionY" id="label-SubmodelInstance-positionY">Position Y</label>
+                <input type="number" id="SubmodelInstance-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-positionY" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionZ')">
+                <label for="SubmodelInstance-positionZ" id="label-SubmodelInstance-positionZ">Position Z</label>
+                <input type="number" id="SubmodelInstance-positionZ" formControlName="positionZ" placeholder="Enter Position Z" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-positionZ" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationX')">
+                <label for="SubmodelInstance-rotationX" id="label-SubmodelInstance-rotationX">Rotation X</label>
+                <input type="number" id="SubmodelInstance-rotationX" formControlName="rotationX" placeholder="Enter Rotation X" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-rotationX" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationY')">
+                <label for="SubmodelInstance-rotationY" id="label-SubmodelInstance-rotationY">Rotation Y</label>
+                <input type="number" id="SubmodelInstance-rotationY" formControlName="rotationY" placeholder="Enter Rotation Y" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-rotationY" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationZ')">
+                <label for="SubmodelInstance-rotationZ" id="label-SubmodelInstance-rotationZ">Rotation Z</label>
+                <input type="number" id="SubmodelInstance-rotationZ" formControlName="rotationZ" placeholder="Enter Rotation Z" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-rotationZ" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rotationW')">
+                <label for="SubmodelInstance-rotationW" id="label-SubmodelInstance-rotationW">Rotation W</label>
+                <input type="number" id="SubmodelInstance-rotationW" formControlName="rotationW" placeholder="Enter Rotation W" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-rotationW" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('colourCode')">
+                <label for="SubmodelInstance-colourCode" id="label-SubmodelInstance-colourCode"><span class="text-danger">*</span>Colour Code</label>
+                <input type="number" id="SubmodelInstance-colourCode" formControlName="colourCode" placeholder="Enter Colour Code" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-colourCode" />
+                <div *ngIf="submodelInstanceForm.get('colourCode')?.invalid && submodelInstanceForm.get('colourCode')?.touched" class="text-danger">
+                    Colour Code is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('buildStepNumber')">
+                <label for="SubmodelInstance-buildStepNumber" id="label-SubmodelInstance-buildStepNumber"><span class="text-danger">*</span>Build Step Number</label>
+                <input type="number" id="SubmodelInstance-buildStepNumber" formControlName="buildStepNumber" placeholder="Enter Build Step Number" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-buildStepNumber" />
+                <div *ngIf="submodelInstanceForm.get('buildStepNumber')?.invalid && submodelInstanceForm.get('buildStepNumber')?.touched" class="text-danger">
+                    Build Step Number is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SubmodelInstance-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" />
+                <label for="SubmodelInstance-active" class="form-check-label" id="label-SubmodelInstance-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SubmodelInstance-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" />
+                <label for="SubmodelInstance-deleted" class="form-check-label" id="label-SubmodelInstance-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer submodel-instance-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Submodel Instance changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !submodelInstanceForm.valid || submodelInstanceForm.pristine  || userIsBMCSubmodelInstanceWriter() == false " ngbTooltip="Save the Submodel Instance changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Submodel Instance' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

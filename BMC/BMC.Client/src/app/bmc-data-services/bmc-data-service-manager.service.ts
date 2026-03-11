@@ -90,6 +90,7 @@ import {SharedInstructionService} from  './shared-instruction.service';
 import {SharedInstructionChangeHistoryService} from  './shared-instruction-change-history.service';
 import {SubmodelService} from  './submodel.service';
 import {SubmodelChangeHistoryService} from  './submodel-change-history.service';
+import {SubmodelInstanceService} from  './submodel-instance.service';
 import {SubmodelPlacedBrickService} from  './submodel-placed-brick.service';
 import {UserAchievementService} from  './user-achievement.service';
 import {UserBadgeService} from  './user-badge.service';
@@ -202,6 +203,7 @@ export class BMCDataServiceManagerService  {
               , public sharedInstructionChangeHistoryService: SharedInstructionChangeHistoryService
               , public submodelService: SubmodelService
               , public submodelChangeHistoryService: SubmodelChangeHistoryService
+              , public submodelInstanceService: SubmodelInstanceService
               , public submodelPlacedBrickService: SubmodelPlacedBrickService
               , public userAchievementService: UserAchievementService
               , public userBadgeService: UserBadgeService
@@ -312,6 +314,7 @@ export class BMCDataServiceManagerService  {
         this.sharedInstructionChangeHistoryService.ClearAllCaches();
         this.submodelService.ClearAllCaches();
         this.submodelChangeHistoryService.ClearAllCaches();
+        this.submodelInstanceService.ClearAllCaches();
         this.submodelPlacedBrickService.ClearAllCaches();
         this.userAchievementService.ClearAllCaches();
         this.userBadgeService.ClearAllCaches();

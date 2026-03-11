@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Foundation.BMC.Database;
@@ -48,15 +49,17 @@ namespace Foundation.BMC.Services
         // Dependencies
         //
         private readonly BMCContext _context;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<ModelExportService> _logger;
 
 
         /// <summary>
-        /// Constructor — takes the BMC database context and a logger.
+        /// Constructor — takes the BMC database context, app configuration, and a logger.
         /// </summary>
-        public ModelExportService(BMCContext context, ILogger<ModelExportService> logger)
+        public ModelExportService(BMCContext context, IConfiguration configuration, ILogger<ModelExportService> logger)
         {
             _context = context;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -423,7 +426,20 @@ namespace Foundation.BMC.Services
                 projectId,
                 customParts.Count);
 
-            return sb.ToString();
+            //
+            // Step 5: Bundle all LDraw library dependencies inline
+            //
+            // The Three.js LDrawLoader normally fetches each sub-file reference
+            // individually via HTTP (up to 12 attempts per file due to directory
+            // trial-and-error). For a 1600-part model this generates thousands
+            // of requests. By embedding all dependency .dat files inline as
+            // FILE blocks, the LDrawLoader resolves them from the embedded content
+            // with zero network requests.
+            //
+            string mpdText = sb.ToString();
+            string bundledMpd = BundleLDrawDependencies(mpdText);
+
+            return bundledMpd;
         }
 
         #endregion
@@ -574,6 +590,62 @@ namespace Foundation.BMC.Services
 
             if (includeMpdSubmodels == true)
             {
+                //
+                // Write submodel instance reference lines in the main model.
+                // These are the type-1 lines that place submodel assemblies at
+                // world-space positions with transforms.
+                //
+                List<SubmodelInstance> instances = await _context.SubmodelInstances
+                    .Where(si => si.submodel.projectId == projectId
+                              && si.tenantGuid == tenantGuid
+                              && si.active == true
+                              && si.deleted == false)
+                    .Include(si => si.submodel)
+                    .OrderBy(si => si.buildStepNumber)
+                    .ThenBy(si => si.id)
+                    .ToListAsync(cancellationToken);
+
+                if (instances.Count > 0)
+                {
+                    int currentRefStep = 0;
+
+                    foreach (SubmodelInstance instance in instances)
+                    {
+                        //
+                        // Emit STEP separators between different build steps
+                        //
+                        if (instance.buildStepNumber > currentRefStep && currentRefStep > 0)
+                        {
+                            sb.AppendLine("0 STEP");
+                        }
+
+                        currentRefStep = instance.buildStepNumber;
+
+                        //
+                        // Convert quaternion back to 3x3 rotation matrix
+                        //
+                        float[] matrix = QuaternionToMatrix(
+                            instance.rotationX ?? 0f,
+                            instance.rotationY ?? 0f,
+                            instance.rotationZ ?? 0f,
+                            instance.rotationW ?? 1f);
+
+                        sb.AppendFormat(CultureInfo.InvariantCulture,
+                            "1 {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13}",
+                            instance.colourCode,
+                            instance.positionX ?? 0f,
+                            instance.positionY ?? 0f,
+                            instance.positionZ ?? 0f,
+                            matrix[0], matrix[1], matrix[2],
+                            matrix[3], matrix[4], matrix[5],
+                            matrix[6], matrix[7], matrix[8],
+                            instance.submodel.name);
+                        sb.AppendLine();
+                    }
+
+                    sb.AppendLine("0 STEP");
+                }
+
                 sb.AppendLine("0 NOFILE");
 
                 //
@@ -722,6 +794,339 @@ namespace Foundation.BMC.Services
 
             return matrix;
         }
+
+
+        #region LDraw Dependency Bundling
+
+        //
+        // Static filename-to-path index for LDraw library files.
+        // Built lazily on first use and cached for the application lifetime.
+        //
+        private static Dictionary<string, string> _ldrawFileIndex;
+        private static readonly object _ldrawIndexLock = new object();
+
+
+        /// <summary>
+        /// Scans the MPD text for all LDraw sub-file references (type-1 lines),
+        /// recursively resolves their dependencies from the LDraw parts library,
+        /// and embeds them as inline 0 FILE / 0 NOFILE blocks.
+        ///
+        /// Also embeds LDConfig.ldr so colour definitions are available without
+        /// a separate network request.
+        /// </summary>
+        private string BundleLDrawDependencies(string mpdText)
+        {
+            string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+
+            if (string.IsNullOrEmpty(dataPath) || Directory.Exists(dataPath) == false)
+            {
+                _logger.LogWarning("LDraw:DataPath not configured or missing — skipping dependency bundling.");
+                return mpdText;
+            }
+
+            EnsureLDrawFileIndex(dataPath);
+
+            //
+            // Collect all filenames already embedded in the MPD (0 FILE lines)
+            //
+            HashSet<string> embeddedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string line in mpdText.Split('\n'))
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed.StartsWith("0 FILE ", StringComparison.OrdinalIgnoreCase))
+                {
+                    string fileName = trimmed.Substring(7).Trim();
+                    embeddedFiles.Add(fileName);
+                }
+            }
+
+            //
+            // Scan the MPD for type-1 sub-file references and resolve recursively
+            //
+            Dictionary<string, string> resolvedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Queue<string> toResolve = new Queue<string>();
+
+            //
+            // Seed the queue with all type-1 references from the current MPD
+            //
+            ExtractSubFileReferences(mpdText, embeddedFiles, toResolve);
+
+            //
+            // Also ensure LDConfig.ldr is bundled (colour definitions)
+            //
+            if (embeddedFiles.Contains("LDConfig.ldr") == false && resolvedFiles.ContainsKey("LDConfig.ldr") == false)
+            {
+                toResolve.Enqueue("LDConfig.ldr");
+            }
+
+            //
+            // BFS: resolve each file and scan it for further dependencies
+            //
+            int maxFiles = 15000;  // safety guard
+            int resolved = 0;
+
+            while (toResolve.Count > 0 && resolved < maxFiles)
+            {
+                string fileName = toResolve.Dequeue();
+
+                if (resolvedFiles.ContainsKey(fileName) || embeddedFiles.Contains(fileName))
+                {
+                    continue;
+                }
+
+                string content = ReadLDrawFile(dataPath, fileName);
+
+                if (content == null)
+                {
+                    //
+                    // File not found in the library — skip it.
+                    // The client-side LDrawLoader will attempt its own resolution as fallback.
+                    //
+                    continue;
+                }
+
+                resolvedFiles[fileName] = content;
+                resolved++;
+
+                //
+                // Scan this file for its own sub-file references
+                //
+                ExtractSubFileReferences(content, embeddedFiles, toResolve, resolvedFiles);
+            }
+
+            if (resolvedFiles.Count == 0)
+            {
+                return mpdText;
+            }
+
+            //
+            // Append all resolved files as 0 FILE blocks
+            //
+            StringBuilder sb = new StringBuilder(mpdText, mpdText.Length + resolvedFiles.Values.Sum(v => v.Length) + resolvedFiles.Count * 50);
+
+            sb.AppendLine();
+            sb.AppendLine("0 // LDraw library parts bundled for offline rendering");
+
+            foreach (KeyValuePair<string, string> entry in resolvedFiles)
+            {
+                sb.AppendLine("0 FILE " + entry.Key);
+                sb.Append(entry.Value);
+
+                if (entry.Value.Length > 0 && entry.Value[entry.Value.Length - 1] != '\n')
+                {
+                    sb.AppendLine();
+                }
+
+                sb.AppendLine("0 NOFILE");
+            }
+
+            _logger.LogInformation(
+                "Bundled {Count} LDraw library files inline ({SizeKB:N0} KB total MPD)",
+                resolvedFiles.Count,
+                sb.Length / 1024);
+
+            return sb.ToString();
+        }
+
+
+        /// <summary>
+        /// Scans LDraw text for type-1 sub-file reference lines and enqueues
+        /// any filenames not already embedded or resolved.
+        /// </summary>
+        private void ExtractSubFileReferences(
+            string text,
+            HashSet<string> embeddedFiles,
+            Queue<string> toResolve,
+            Dictionary<string, string> resolvedFiles = null)
+        {
+            foreach (string line in text.Split('\n'))
+            {
+                string trimmed = line.Trim();
+
+                //
+                // Type-1 lines: 1 <colour> <x> <y> <z> <a> <b> <c> <d> <e> <f> <g> <h> <i> <file>
+                //               14 tokens minimum
+                //
+                if (trimmed.Length < 10 || trimmed[0] != '1')
+                {
+                    continue;
+                }
+
+                if (trimmed.Length > 1 && trimmed[1] != ' ' && trimmed[1] != '\t')
+                {
+                    continue;
+                }
+
+                //
+                // Split and extract the filename (last token)
+                //
+                string[] tokens = trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (tokens.Length < 15)
+                {
+                    continue;
+                }
+
+                string fileName = tokens[tokens.Length - 1];
+
+                //
+                // Skip references that are already embedded or resolved
+                //
+                if (embeddedFiles.Contains(fileName))
+                {
+                    continue;
+                }
+
+                if (resolvedFiles != null && resolvedFiles.ContainsKey(fileName))
+                {
+                    continue;
+                }
+
+                toResolve.Enqueue(fileName);
+            }
+        }
+
+
+        /// <summary>
+        /// Reads an LDraw file from the parts library, trying multiple standard
+        /// directory locations (mirroring LDrawController.ResolveFilePath).
+        /// </summary>
+        private string ReadLDrawFile(string dataPath, string fileName)
+        {
+            //
+            // Normalise path separators
+            //
+            string normalised = fileName.Replace('\\', '/');
+
+            //
+            // 1. Try exact path (e.g. "parts/3001.dat", "p/stud.dat")
+            //
+            string exactPath = Path.GetFullPath(Path.Combine(dataPath, normalised));
+
+            if (File.Exists(exactPath))
+            {
+                return File.ReadAllText(exactPath);
+            }
+
+            //
+            // 2. Try standard LDraw directories with filename only
+            //
+            string bareFileName = Path.GetFileName(normalised);
+            string[] searchDirs = { "parts", "p", "parts/s", "p/48", "p/8", "models" };
+
+            foreach (string dir in searchDirs)
+            {
+                string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, bareFileName));
+
+                if (File.Exists(candidate))
+                {
+                    return File.ReadAllText(candidate);
+                }
+            }
+
+            //
+            // 3. Try with sub-path (e.g. "s/3001s01.dat" → "parts/s/3001s01.dat")
+            //
+            if (normalised.Contains('/'))
+            {
+                string pathSuffix = normalised.Substring(normalised.IndexOf('/') + 1);
+
+                foreach (string dir in searchDirs)
+                {
+                    string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, pathSuffix));
+
+                    if (File.Exists(candidate))
+                    {
+                        return File.ReadAllText(candidate);
+                    }
+                }
+            }
+
+            //
+            // 4. Fall back to the filename index
+            //
+            string lowerFileName = bareFileName.ToLowerInvariant();
+
+            if (_ldrawFileIndex != null && _ldrawFileIndex.TryGetValue(lowerFileName, out string indexedPath))
+            {
+                string indexedFullPath = Path.GetFullPath(Path.Combine(dataPath, indexedPath));
+
+                if (File.Exists(indexedFullPath))
+                {
+                    return File.ReadAllText(indexedFullPath);
+                }
+            }
+
+            //
+            // 5. Try lowercase version of the filename
+            //
+            foreach (string dir in searchDirs)
+            {
+                string candidate = Path.GetFullPath(Path.Combine(dataPath, dir, lowerFileName));
+
+                if (File.Exists(candidate))
+                {
+                    return File.ReadAllText(candidate);
+                }
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Lazily builds the filename-to-path index for the LDraw data directory.
+        /// </summary>
+        private void EnsureLDrawFileIndex(string dataPath)
+        {
+            if (_ldrawFileIndex != null)
+            {
+                return;
+            }
+
+            lock (_ldrawIndexLock)
+            {
+                if (_ldrawFileIndex != null)
+                {
+                    return;
+                }
+
+                _logger.LogInformation("Building LDraw file index for bundling: {DataPath}", dataPath);
+
+                var index = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                try
+                {
+                    string[] extensions = { "*.dat", "*.ldr" };
+
+                    foreach (string pattern in extensions)
+                    {
+                        foreach (string file in Directory.EnumerateFiles(dataPath, pattern, SearchOption.AllDirectories))
+                        {
+                            string relativePath = Path.GetRelativePath(dataPath, file).Replace('\\', '/');
+                            string lowerName = Path.GetFileName(file).ToLowerInvariant();
+
+                            if (index.ContainsKey(lowerName) == false)
+                            {
+                                index[lowerName] = relativePath;
+                            }
+                        }
+                    }
+
+                    _logger.LogInformation("LDraw file index built: {Count} files.", index.Count);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error building LDraw file index.");
+                }
+
+                _ldrawFileIndex = index;
+            }
+        }
+
+        #endregion
 
 
         /// <summary>

@@ -197,6 +197,8 @@ import { SubmodelListingComponent } from './bmc-data-components/submodel/submode
 import { SubmodelDetailComponent } from './bmc-data-components/submodel/submodel-detail/submodel-detail.component';
 import { SubmodelChangeHistoryListingComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-listing/submodel-change-history-listing.component';
 import { SubmodelChangeHistoryDetailComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-detail/submodel-change-history-detail.component';
+import { SubmodelInstanceListingComponent } from './bmc-data-components/submodel-instance/submodel-instance-listing/submodel-instance-listing.component';
+import { SubmodelInstanceDetailComponent } from './bmc-data-components/submodel-instance/submodel-instance-detail/submodel-instance-detail.component';
 import { SubmodelPlacedBrickListingComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-listing/submodel-placed-brick-listing.component';
 import { SubmodelPlacedBrickDetailComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-detail/submodel-placed-brick-detail.component';
 import { UserAchievementListingComponent } from './bmc-data-components/user-achievement/user-achievement-listing/user-achievement-listing.component';
@@ -711,6 +713,11 @@ const routes: Routes = [
   {path: 'submodelchangehistories/:submodelChangeHistoryId', component: SubmodelChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Change History' },
   {path: 'submodelchangehistory/:submodelChangeHistoryId', component: SubmodelChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Change History' },
   {path: 'submodelchangehistory',  redirectTo: 'submodelchangehistories'},
+  {path: 'submodelinstances', component: SubmodelInstanceListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Submodel Instances' },
+  {path: 'submodelinstances/new', component: SubmodelInstanceDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Submodel Instance' },
+  {path: 'submodelinstances/:submodelInstanceId', component: SubmodelInstanceDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Instance' },
+  {path: 'submodelinstance/:submodelInstanceId', component: SubmodelInstanceDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Instance' },
+  {path: 'submodelinstance',  redirectTo: 'submodelinstances'},
   {path: 'submodelplacedbricks', component: SubmodelPlacedBrickListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Submodel Placed Bricks' },
   {path: 'submodelplacedbricks/new', component: SubmodelPlacedBrickDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Submodel Placed Brick' },
   {path: 'submodelplacedbricks/:submodelPlacedBrickId', component: SubmodelPlacedBrickDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Submodel Placed Brick' },

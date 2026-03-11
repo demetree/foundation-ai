@@ -540,6 +540,37 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // -------------------------------------------------
+            // SubmodelInstance — Placement of a submodel assembly in the parent model
+            // -------------------------------------------------
+            Database.Table submodelInstanceTable = database.AddTable("SubmodelInstance");
+            submodelInstanceTable.comment = "Tracks where a submodel assembly is placed in the parent model. Stores the LDraw type-1 reference line transform data so the model can be faithfully reconstructed. A single Submodel can have multiple instances (e.g. left/right wheel assemblies at different positions).";
+            submodelInstanceTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
+            submodelInstanceTable.AddIdField();
+            submodelInstanceTable.AddMultiTenantSupport();
+
+            submodelInstanceTable.AddForeignKeyField(submodelTable, false).AddScriptComments("The submodel definition being placed");
+
+            // Position from the LDraw type-1 reference line (world coordinates in LDU)
+            submodelInstanceTable.AddSingleField("positionX").AddScriptComments("X position from the LDraw type 1 reference line (LDU)");
+            submodelInstanceTable.AddSingleField("positionY").AddScriptComments("Y position from the LDraw type 1 reference line (LDU)");
+            submodelInstanceTable.AddSingleField("positionZ").AddScriptComments("Z position from the LDraw type 1 reference line (LDU)");
+
+            // Rotation as quaternion (decomposed from the 3x3 rotation matrix in the type-1 line)
+            submodelInstanceTable.AddSingleField("rotationX").AddScriptComments("Quaternion X component (from 3x3 rotation matrix)");
+            submodelInstanceTable.AddSingleField("rotationY").AddScriptComments("Quaternion Y component");
+            submodelInstanceTable.AddSingleField("rotationZ").AddScriptComments("Quaternion Z component");
+            submodelInstanceTable.AddSingleField("rotationW").AddScriptComments("Quaternion W component (1 = no rotation)");
+
+            // LDraw colour code from the reference line
+            submodelInstanceTable.AddIntField("colourCode", false).AddScriptComments("LDraw colour code from the type-1 reference line (usually 16 = inherit)");
+
+            // Build step for instruction ordering
+            submodelInstanceTable.AddIntField("buildStepNumber", false).AddScriptComments("Build step number in the parent model where this instance is placed");
+
+            submodelInstanceTable.AddControlFields();
+
+
+            // -------------------------------------------------
             // ProjectTag — Tag lookup for project categorization
             // -------------------------------------------------
             Database.Table projectTagTable = database.AddTable("ProjectTag");

@@ -33,6 +33,8 @@ public partial class Submodel
 
     public virtual ICollection<SubmodelChangeHistory> SubmodelChangeHistories { get; set; } = new List<SubmodelChangeHistory>();
 
+    public virtual ICollection<SubmodelInstance> SubmodelInstances { get; set; } = new List<SubmodelInstance>();
+
     public virtual ICollection<SubmodelPlacedBrick> SubmodelPlacedBricks { get; set; } = new List<SubmodelPlacedBrick>();
 
     public virtual Project project { get; set; }

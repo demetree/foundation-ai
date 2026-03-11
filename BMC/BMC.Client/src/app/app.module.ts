@@ -137,6 +137,7 @@ import { SharedInstructionService } from './bmc-data-services/shared-instruction
 import { SharedInstructionChangeHistoryService } from './bmc-data-services/shared-instruction-change-history.service';
 import { SubmodelService } from './bmc-data-services/submodel.service';
 import { SubmodelChangeHistoryService } from './bmc-data-services/submodel-change-history.service';
+import { SubmodelInstanceService } from './bmc-data-services/submodel-instance.service';
 import { SubmodelPlacedBrickService } from './bmc-data-services/submodel-placed-brick.service';
 import { UserAchievementService } from './bmc-data-services/user-achievement.service';
 import { UserBadgeService } from './bmc-data-services/user-badge.service';
@@ -492,6 +493,10 @@ import { SubmodelChangeHistoryListingComponent } from './bmc-data-components/sub
 import { SubmodelChangeHistoryAddEditComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-add-edit/submodel-change-history-add-edit.component';
 import { SubmodelChangeHistoryDetailComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-detail/submodel-change-history-detail.component';
 import { SubmodelChangeHistoryTableComponent } from './bmc-data-components/submodel-change-history/submodel-change-history-table/submodel-change-history-table.component';
+import { SubmodelInstanceListingComponent } from './bmc-data-components/submodel-instance/submodel-instance-listing/submodel-instance-listing.component';
+import { SubmodelInstanceAddEditComponent } from './bmc-data-components/submodel-instance/submodel-instance-add-edit/submodel-instance-add-edit.component';
+import { SubmodelInstanceDetailComponent } from './bmc-data-components/submodel-instance/submodel-instance-detail/submodel-instance-detail.component';
+import { SubmodelInstanceTableComponent } from './bmc-data-components/submodel-instance/submodel-instance-table/submodel-instance-table.component';
 import { SubmodelPlacedBrickListingComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-listing/submodel-placed-brick-listing.component';
 import { SubmodelPlacedBrickAddEditComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-add-edit/submodel-placed-brick-add-edit.component';
 import { SubmodelPlacedBrickDetailComponent } from './bmc-data-components/submodel-placed-brick/submodel-placed-brick-detail/submodel-placed-brick-detail.component';
@@ -1016,6 +1021,10 @@ SubmodelChangeHistoryListingComponent,
 SubmodelChangeHistoryAddEditComponent,
 SubmodelChangeHistoryDetailComponent,
 SubmodelChangeHistoryTableComponent,
+SubmodelInstanceListingComponent,
+SubmodelInstanceAddEditComponent,
+SubmodelInstanceDetailComponent,
+SubmodelInstanceTableComponent,
 SubmodelPlacedBrickListingComponent,
 SubmodelPlacedBrickAddEditComponent,
 SubmodelPlacedBrickDetailComponent,
@@ -1233,6 +1242,7 @@ SharedInstructionService,
 SharedInstructionChangeHistoryService,
 SubmodelService,
 SubmodelChangeHistoryService,
+SubmodelInstanceService,
 SubmodelPlacedBrickService,
 UserAchievementService,
 UserBadgeService,

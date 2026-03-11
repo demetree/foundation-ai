@@ -582,12 +582,39 @@ namespace Foundation.BMC.Services
                         if (submodelNames.Contains(partRef.FileName) == true)
                         {
                             //
-                            // This is a submodel reference, not a placed brick.
-                            // In the full design tool, submodel instances would be represented
-                            // differently. For now, we skip these during placed brick creation
-                            // as they represent the submodel assembly, not individual parts.
+                            // This is a submodel reference (type-1 line placing a submodel assembly).
+                            // Store the placement transform so we can reconstruct
+                            // the reference line when exporting back to MPD.
                             //
-                            _logger.LogDebug("Skipping submodel reference '{SubmodelName}' in step {Step}", partRef.FileName, stepNumber);
+                            if (submodelByName.TryGetValue(partRef.FileName, out Submodel referencedSubmodel))
+                            {
+                                float refRotX, refRotY, refRotZ, refRotW;
+                                MatrixToQuaternion(partRef.Matrix, out refRotX, out refRotY, out refRotZ, out refRotW);
+
+                                SubmodelInstance instance = new SubmodelInstance
+                                {
+                                    tenantGuid = tenantGuid,
+                                    submodelId = referencedSubmodel.id,
+                                    positionX = partRef.X,
+                                    positionY = partRef.Y,
+                                    positionZ = partRef.Z,
+                                    rotationX = refRotX,
+                                    rotationY = refRotY,
+                                    rotationZ = refRotZ,
+                                    rotationW = refRotW,
+                                    colourCode = partRef.ColourCode,
+                                    buildStepNumber = stepNumber,
+                                    objectGuid = Guid.NewGuid(),
+                                    active = true,
+                                    deleted = false
+                                };
+
+                                _context.SubmodelInstances.Add(instance);
+                                _logger.LogDebug(
+                                    "Stored submodel instance '{SubmodelName}' at ({X},{Y},{Z}) in step {Step}",
+                                    partRef.FileName, partRef.X, partRef.Y, partRef.Z, stepNumber);
+                            }
+
                             continue;
                         }
 

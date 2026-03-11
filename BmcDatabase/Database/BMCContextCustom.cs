@@ -139,24 +139,6 @@ namespace Foundation.BMC.Database
         /// </summary>
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
         {
-            //modelBuilder.Entity<MarketDataCache>(entity =>
-            //{
-            //    entity.HasKey(e => e.id);
-            //    entity.ToTable("MarketDataCache", "BMC");
-
-            //    entity.HasIndex(e => e.active);
-            //    entity.HasIndex(e => e.deleted);
-            //    entity.HasIndex(e => e.expiresDate);
-            //    entity.HasIndex(e => new { e.source, e.itemType, e.itemNumber, e.condition })
-            //        .IsUnique()
-            //        .HasFilter(null);  // Allow nulls in condition
-
-            //    entity.Property(e => e.active).HasDefaultValue(true);
-            //    entity.Property(e => e.source).IsRequired().HasMaxLength(50);
-            //    entity.Property(e => e.itemType).IsRequired().HasMaxLength(50);
-            //    entity.Property(e => e.itemNumber).IsRequired().HasMaxLength(100);
-            //    entity.Property(e => e.condition).HasMaxLength(50);
-            //});
         }
     }
 }

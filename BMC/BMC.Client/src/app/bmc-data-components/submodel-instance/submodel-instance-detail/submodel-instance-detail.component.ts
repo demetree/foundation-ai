@@ -1,8 +1,8 @@
 /*
-   GENERATED FORM FOR THE SUBMODEL TABLE - DO NOT MODIFY DIRECTLY
+   GENERATED FORM FOR THE SUBMODELINSTANCE TABLE - DO NOT MODIFY DIRECTLY
    =================================================================================
 
-   This is the default form generated from Submodel table metadata.
+   This is the default form generated from SubmodelInstance table metadata.
 
    It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
    because it's form layout and validation is too simple.
@@ -10,7 +10,7 @@
    For building better looking and/or versions with custom logic, create a custom version of this:
 
    1. Copy this component
-   2. Rename to submodel-custom (or similar)
+   2. Rename to submodel-instance-custom (or similar)
    3. Modify layout, grouping, field types, add workflow logic
    
    This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
@@ -22,11 +22,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { SubmodelService, SubmodelData, SubmodelSubmitData } from '../../../bmc-data-services/submodel.service';
-import { ProjectService } from '../../../bmc-data-services/project.service';
-import { SubmodelChangeHistoryService } from '../../../bmc-data-services/submodel-change-history.service';
-import { SubmodelPlacedBrickService } from '../../../bmc-data-services/submodel-placed-brick.service';
-import { SubmodelInstanceService } from '../../../bmc-data-services/submodel-instance.service';
+import { SubmodelInstanceService, SubmodelInstanceData, SubmodelInstanceSubmitData } from '../../../bmc-data-services/submodel-instance.service';
+import { SubmodelService } from '../../../bmc-data-services/submodel.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -37,25 +34,29 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Allows null for optional fields.
 // - Does not include navigation properties or methods from domain models.
 //
-interface SubmodelFormValues {
-  projectId: number | bigint,       // For FK link number
-  name: string,
-  description: string,
-  submodelId: number | bigint | null,       // For FK link number
-  sequence: string | null,     // Stored as string for form input, converted to number on submit.
-  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+interface SubmodelInstanceFormValues {
+  submodelId: number | bigint,       // For FK link number
+  positionX: string | null,     // Stored as string for form input, converted to number on submit.
+  positionY: string | null,     // Stored as string for form input, converted to number on submit.
+  positionZ: string | null,     // Stored as string for form input, converted to number on submit.
+  rotationX: string | null,     // Stored as string for form input, converted to number on submit.
+  rotationY: string | null,     // Stored as string for form input, converted to number on submit.
+  rotationZ: string | null,     // Stored as string for form input, converted to number on submit.
+  rotationW: string | null,     // Stored as string for form input, converted to number on submit.
+  colourCode: string,     // Stored as string for form input, converted to number on submit.
+  buildStepNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
 
 
 @Component({
-  selector: 'app-submodel-detail',
-  templateUrl: './submodel-detail.component.html',
-  styleUrls: ['./submodel-detail.component.scss']
+  selector: 'app-submodel-instance-detail',
+  templateUrl: './submodel-instance-detail.component.html',
+  styleUrls: ['./submodel-instance-detail.component.scss']
 })
 
-export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
+export class SubmodelInstanceDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   //
@@ -63,7 +64,7 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
   // initial values for one or more fields. Use Partial to allow selective seeding.
   // Only applied in add mode (not edit mode, where existing data takes precedence).
   //
-  @Input() preSeededData: Partial<SubmodelFormValues> | null = null;
+  @Input() preSeededData: Partial<SubmodelInstanceFormValues> | null = null;
 
   //
   // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
@@ -72,20 +73,24 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
   @Input() hiddenFields: string[] = [];
 
 
-  public submodelForm: FormGroup = this.fb.group({
-        projectId: [null, Validators.required],
-        name: ['', Validators.required],
-        description: ['', Validators.required],
-        submodelId: [null],
-        sequence: [''],
-        versionNumber: [''],
+  public submodelInstanceForm: FormGroup = this.fb.group({
+        submodelId: [null, Validators.required],
+        positionX: [''],
+        positionY: [''],
+        positionZ: [''],
+        rotationX: [''],
+        rotationY: [''],
+        rotationZ: [''],
+        rotationW: [''],
+        colourCode: ['', Validators.required],
+        buildStepNumber: ['', Validators.required],
         active: [true],
         deleted: [false],
       });
 
 
-  public submodelId: string | null = null;
-  public submodelData: SubmodelData | null = null;
+  public submodelInstanceId: string | null = null;
+  public submodelInstanceData: SubmodelInstanceData | null = null;
 
   private isLoadingSubject = new BehaviorSubject<boolean>(true);
   public isLoading$ = this.isLoadingSubject.asObservable();
@@ -94,20 +99,14 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
-  submodels$ = this.submodelService.GetSubmodelList();
-  public projects$ = this.projectService.GetProjectList();
-  public submodelChangeHistories$ = this.submodelChangeHistoryService.GetSubmodelChangeHistoryList();
-  public submodelPlacedBricks$ = this.submodelPlacedBrickService.GetSubmodelPlacedBrickList();
-  public submodelInstances$ = this.submodelInstanceService.GetSubmodelInstanceList();
+  submodelInstances$ = this.submodelInstanceService.GetSubmodelInstanceList();
+  public submodels$ = this.submodelService.GetSubmodelList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    public submodelService: SubmodelService,
-    public projectService: ProjectService,
-    public submodelChangeHistoryService: SubmodelChangeHistoryService,
-    public submodelPlacedBrickService: SubmodelPlacedBrickService,
     public submodelInstanceService: SubmodelInstanceService,
+    public submodelService: SubmodelService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -119,16 +118,16 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
   ngOnInit(): void {
 
-    // Get the submodelId from the route parameters
-    this.submodelId = this.route.snapshot.paramMap.get('submodelId');
+    // Get the submodelInstanceId from the route parameters
+    this.submodelInstanceId = this.route.snapshot.paramMap.get('submodelInstanceId');
 
-    if (this.submodelId === 'new' ||
-        this.submodelId == null) {
+    if (this.submodelInstanceId === 'new' ||
+        this.submodelInstanceId == null) {
       //
       // Add mode
       //
       this.isEditMode = false;
-      this.submodelData = null;
+      this.submodelInstanceData = null;
 
       this.buildFormValues(null);
 
@@ -138,7 +137,7 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
       // Check explicitly for null/undefined to avoid errors.
       //
       if (this.preSeededData !== null && this.preSeededData !== undefined) {
-        this.submodelForm.patchValue(this.preSeededData);
+        this.submodelInstanceForm.patchValue(this.preSeededData);
       }
 
 
@@ -150,7 +149,7 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
     for (index = 0; index < this.hiddenFields.length; index++) {
       const fieldName = this.hiddenFields[index];
-      const control = this.submodelForm.get(fieldName);
+      const control = this.submodelInstanceForm.get(fieldName);
       if (control !== null) {
         control.clearValidators();
         control.updateValueAndValidity(); // Refresh validation state.
@@ -160,14 +159,14 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
       this.isLoadingSubject.next(false); // No load needed for add mode
 
-      document.title = 'Add New Submodel';
+      document.title = 'Add New Submodel Instance';
 
     } else {
 
       // Edit mode
       this.isEditMode = true;
 
-      document.title = 'Edit Submodel';
+      document.title = 'Edit Submodel Instance';
 
       // Load the data from the server
       this.loadData(false);
@@ -183,8 +182,8 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   public canDeactivate(): boolean {
-    if (this.submodelForm.dirty) {
-      return confirm('You have unsaved Submodel changes. Are you sure you want to leave this page?');
+    if (this.submodelInstanceForm.dirty) {
+      return confirm('You have unsaved Submodel Instance changes. Are you sure you want to leave this page?');
     }
     return true;
   }
@@ -192,12 +191,12 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
  public GetQueryParameters(): any {
 
-    if (this.submodelId != null && this.submodelId !== 'new') {
+    if (this.submodelInstanceId != null && this.submodelInstanceId !== 'new') {
 
-      const id = parseInt(this.submodelId, 10);
+      const id = parseInt(this.submodelInstanceId, 10);
 
       if (!isNaN(id)) {
-        return { submodelId: id };
+        return { submodelInstanceId: id };
       }
     }
 
@@ -206,9 +205,9 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
 
 
 /*
-  * Loads the Submodel data for the current submodelId.
+  * Loads the SubmodelInstance data for the current submodelInstanceId.
   *
-  * Fully respects the SubmodelService caching strategy and error handling strategy.
+  * Fully respects the SubmodelInstanceService caching strategy and error handling strategy.
   *
   * @param forceLoadAndDisplaySuccessAlert
   *   - true  will bypass cache entirely and show success alert message
@@ -225,10 +224,10 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
     //
     // Permission Check
     //
-    if (!this.submodelService.userIsBMCSubmodelReader()) {
+    if (!this.submodelInstanceService.userIsBMCSubmodelInstanceReader()) {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
-      this.alertService.showMessage(`${userName} does not have permission to read Submodels.`,
+      this.alertService.showMessage(`${userName} does not have permission to read SubmodelInstances.`,
                                     'Access Denied',
                                      MessageSeverity.warn
       );
@@ -239,21 +238,21 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
     }
 
     //
-    // Validate submodelId
+    // Validate submodelInstanceId
     //
-    if (!this.submodelId) {
+    if (!this.submodelInstanceId) {
 
-      this.alertService.showMessage('No Submodel ID provided.', 'Missing ID', MessageSeverity.error);
+      this.alertService.showMessage('No SubmodelInstance ID provided.', 'Missing ID', MessageSeverity.error);
       this.isLoadingSubject.next(false);
 
       return;
     }
 
-    const submodelId = Number(this.submodelId);
+    const submodelInstanceId = Number(this.submodelInstanceId);
 
-    if (isNaN(submodelId) || submodelId <= 0) {
+    if (isNaN(submodelInstanceId) || submodelInstanceId <= 0) {
 
-      this.alertService.showMessage(`Invalid Submodel ID: "${this.submodelId}"`,
+      this.alertService.showMessage(`Invalid Submodel Instance ID: "${this.submodelInstanceId}"`,
                                     'Invalid ID',
                                     MessageSeverity.error
       );
@@ -267,35 +266,35 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
     // Force refresh: clear specific record cache only
     //
     if (forceLoadAndDisplaySuccessAlert === true) {
-      // This is the most targeted way: clear only this Submodel + relations
+      // This is the most targeted way: clear only this SubmodelInstance + relations
 
-      this.submodelService.ClearRecordCache(submodelId, true);
+      this.submodelInstanceService.ClearRecordCache(submodelInstanceId, true);
     }
 
     //
     // Subscribe with full next/error handling
     //
-    this.submodelService.GetSubmodel(submodelId, true).pipe(
+    this.submodelInstanceService.GetSubmodelInstance(submodelInstanceId, true).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
 
-      next: (submodelData) => {
+      next: (submodelInstanceData) => {
 
         //
-        // Success path — submodelData can legitimately be null if 404'd but request succeeded
+        // Success path — submodelInstanceData can legitimately be null if 404'd but request succeeded
         //
-        if (!submodelData) {
+        if (!submodelInstanceData) {
 
-          this.handleSubmodelNotFound(submodelId);
+          this.handleSubmodelInstanceNotFound(submodelInstanceId);
 
         } else {
 
-          this.submodelData = submodelData;
-          this.buildFormValues(this.submodelData);
+          this.submodelInstanceData = submodelInstanceData;
+          this.buildFormValues(this.submodelInstanceData);
 
           if (forceLoadAndDisplaySuccessAlert === true) {
             this.alertService.showMessage(
-              'Submodel loaded successfully',
+              'SubmodelInstance loaded successfully',
               '',
               MessageSeverity.success
             );
@@ -310,29 +309,29 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
         // All HTTP/network/parsing errors flow here
         // The service already stripped sensitive info and re-threw cleanly
         //
-        this.handleSubmodelLoadError(error, submodelId);
+        this.handleSubmodelInstanceLoadError(error, submodelInstanceId);
         this.isLoadingSubject.next(false);
       }
     });
   }
 
 
-  private handleSubmodelNotFound(submodelId: number): void {
+  private handleSubmodelInstanceNotFound(submodelInstanceId: number): void {
 
-    this.submodelData = null;
+    this.submodelInstanceData = null;
     this.buildFormValues(null);
 
     this.alertService.showMessage(
-      `Submodel #${submodelId} was not found or has been deleted.`,
+      `SubmodelInstance #${submodelInstanceId} was not found or has been deleted.`,
       'Not Found',
       MessageSeverity.warn
     );
   }
 
 
-  private handleSubmodelLoadError(error: any, submodelId: number): void {
+  private handleSubmodelInstanceLoadError(error: any, submodelInstanceId: number): void {
 
-    let message = 'Failed to load Submodel.';
+    let message = 'Failed to load Submodel Instance.';
     let title = 'Load Error';
     let severity = MessageSeverity.error;
 
@@ -346,11 +345,11 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
           title = 'Unauthorized';
           break;
         case 403:
-          message = 'You do not have permission to view this Submodel.';
+          message = 'You do not have permission to view this Submodel Instance.';
           title = 'Forbidden';
           break;
         case 404:
-          message = `Submodel #${submodelId} was not found.`;
+          message = `Submodel Instance #${submodelInstanceId} was not found.`;
           title = 'Not Found';
           severity = MessageSeverity.warn;
           break;
@@ -369,32 +368,36 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
       message = error?.message || message;
     }
 
-    console.error(`Submodel load failed (ID: ${submodelId})`, error);
+    console.error(`Submodel Instance load failed (ID: ${submodelInstanceId})`, error);
 
     //
     // Reset UI to safe state
     //
-    this.submodelData = null;
+    this.submodelInstanceData = null;
     this.buildFormValues(null);
 
     this.alertService.showMessage(message, title, severity);
   }
 
 
-  private buildFormValues(submodelData: SubmodelData | null) {
+  private buildFormValues(submodelInstanceData: SubmodelInstanceData | null) {
 
-    if (submodelData == null) {
+    if (submodelInstanceData == null) {
       
       //
       // Reset the form group to null state, but don't change the form instance.
       //
-      this.submodelForm.reset({
-        projectId: null,
-        name: '',
-        description: '',
+      this.submodelInstanceForm.reset({
         submodelId: null,
-        sequence: '',
-        versionNumber: '',
+        positionX: '',
+        positionY: '',
+        positionZ: '',
+        rotationX: '',
+        rotationY: '',
+        rotationZ: '',
+        rotationW: '',
+        colourCode: '',
+        buildStepNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -405,20 +408,24 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
         //
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
-        this.submodelForm.reset({
-        projectId: submodelData.projectId,
-        name: submodelData.name ?? '',
-        description: submodelData.description ?? '',
-        submodelId: submodelData.submodelId,
-        sequence: submodelData.sequence?.toString() ?? '',
-        versionNumber: submodelData.versionNumber?.toString() ?? '',
-        active: submodelData.active ?? true,
-        deleted: submodelData.deleted ?? false,
+        this.submodelInstanceForm.reset({
+        submodelId: submodelInstanceData.submodelId,
+        positionX: submodelInstanceData.positionX?.toString() ?? '',
+        positionY: submodelInstanceData.positionY?.toString() ?? '',
+        positionZ: submodelInstanceData.positionZ?.toString() ?? '',
+        rotationX: submodelInstanceData.rotationX?.toString() ?? '',
+        rotationY: submodelInstanceData.rotationY?.toString() ?? '',
+        rotationZ: submodelInstanceData.rotationZ?.toString() ?? '',
+        rotationW: submodelInstanceData.rotationW?.toString() ?? '',
+        colourCode: submodelInstanceData.colourCode?.toString() ?? '',
+        buildStepNumber: submodelInstanceData.buildStepNumber?.toString() ?? '',
+        active: submodelInstanceData.active ?? true,
+        deleted: submodelInstanceData.deleted ?? false,
       }, { emitEvent: false});
     }
 
-    this.submodelForm.markAsPristine();
-    this.submodelForm.markAsUntouched();
+    this.submodelInstanceForm.markAsPristine();
+    this.submodelInstanceForm.markAsUntouched();
   }
 
   public goBack(): void {
@@ -451,34 +458,38 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
       return;
     }
 
-    if (this.submodelService.userIsBMCSubmodelWriter() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Submodels", 'Access Denied', MessageSeverity.info);
+    if (this.submodelInstanceService.userIsBMCSubmodelInstanceWriter() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Submodel Instances", 'Access Denied', MessageSeverity.info);
       return;
     }
 
-    if (!this.submodelForm.valid) {
+    if (!this.submodelInstanceForm.valid) {
       this.alertService.showMessage('Please fix form errors before saving.', 'Invalid Data', MessageSeverity.warn);
-      this.submodelForm.markAllAsTouched();
+      this.submodelInstanceForm.markAllAsTouched();
       return;
     }
 
     this.isSaving = true;
 
-    const formValue = this.submodelForm.getRawValue();
+    const formValue = this.submodelInstanceForm.getRawValue();
 
 
 
     //
     // Build clean submit object from form + fallback to current data if needed
     //
-    const submodelSubmitData: SubmodelSubmitData = {
-        id: this.submodelData?.id || 0,
-        projectId: Number(formValue.projectId),
-        name: formValue.name!.trim(),
-        description: formValue.description!.trim(),
-        submodelId: formValue.submodelId ? Number(formValue.submodelId) : null,
-        sequence: formValue.sequence ? Number(formValue.sequence) : null,
-        versionNumber: this.submodelData?.versionNumber ?? 0,
+    const submodelInstanceSubmitData: SubmodelInstanceSubmitData = {
+        id: this.submodelInstanceData?.id || 0,
+        submodelId: Number(formValue.submodelId),
+        positionX: formValue.positionX ? Number(formValue.positionX) : null,
+        positionY: formValue.positionY ? Number(formValue.positionY) : null,
+        positionZ: formValue.positionZ ? Number(formValue.positionZ) : null,
+        rotationX: formValue.rotationX ? Number(formValue.rotationX) : null,
+        rotationY: formValue.rotationY ? Number(formValue.rotationY) : null,
+        rotationZ: formValue.rotationZ ? Number(formValue.rotationZ) : null,
+        rotationW: formValue.rotationW ? Number(formValue.rotationW) : null,
+        colourCode: Number(formValue.colourCode),
+        buildStepNumber: Number(formValue.buildStepNumber),
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -488,35 +499,35 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
     // Choose the save method we want
     //
     const saveObservable = this.isEditMode
-      ? this.submodelService.PutSubmodel(submodelSubmitData.id, submodelSubmitData)
-      : this.submodelService.PostSubmodel(submodelSubmitData);
+      ? this.submodelInstanceService.PutSubmodelInstance(submodelInstanceSubmitData.id, submodelInstanceSubmitData)
+      : this.submodelInstanceService.PostSubmodelInstance(submodelInstanceSubmitData);
 
 
     saveObservable.pipe(
       finalize(() => this.isSaving = false)
     ).subscribe({
-      next: (savedSubmodelData) => {
+      next: (savedSubmodelInstanceData) => {
 
-        this.submodelService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+        this.submodelInstanceService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
 
         if (!this.isEditMode) {
           //
-          // Navigate to the newly created Submodel's detail page
+          // Navigate to the newly created Submodel Instance's detail page
           //
-          this.submodelForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
-          this.submodelForm.markAsUntouched();
+          this.submodelInstanceForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
+          this.submodelInstanceForm.markAsUntouched();
 
-          this.router.navigate(['/submodels', savedSubmodelData.id]);
-          this.alertService.showMessage('Submodel added successfully', '', MessageSeverity.success);
+          this.router.navigate(['/submodelinstances', savedSubmodelInstanceData.id]);
+          this.alertService.showMessage('Submodel Instance added successfully', '', MessageSeverity.success);
         } else {
 
           //
           // Rebuild the form with the new data
           //
-          this.submodelData = savedSubmodelData;
-          this.buildFormValues(this.submodelData);
+          this.submodelInstanceData = savedSubmodelInstanceData;
+          this.buildFormValues(this.submodelInstanceData);
 
-          this.alertService.showMessage("Submodel saved successfully", '', MessageSeverity.success);
+          this.alertService.showMessage("Submodel Instance saved successfully", '', MessageSeverity.success);
         }
       },
       error: (err) => {
@@ -533,14 +544,14 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
                 if (err.status === 403)
                 {
                     errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Submodel.';
+                                   'You do not have permission to save this Submodel Instance.';
                 }
                 else
                 {
                     errorMessage = err.error?.message ||
                                    err.error?.error_description ||
                                    err.error?.detail ||
-                                   'An error occurred while saving the Submodel.';
+                                   'An error occurred while saving the Submodel Instance.';
                 }
             }
             // Fallback for unexpected error formats
@@ -548,18 +559,18 @@ export class SubmodelDetailComponent implements OnInit, CanComponentDeactivate {
                 errorMessage = 'An unexpected error occurred.';
             }
 
-            this.alertService.showMessage('Submodel could not be saved',
+            this.alertService.showMessage('Submodel Instance could not be saved',
                                           errorMessage,
                                           MessageSeverity.error);
       }
     });
   }
 
-  public userIsBMCSubmodelReader(): boolean {
-    return this.submodelService.userIsBMCSubmodelReader();
+  public userIsBMCSubmodelInstanceReader(): boolean {
+    return this.submodelInstanceService.userIsBMCSubmodelInstanceReader();
   }
 
-  public userIsBMCSubmodelWriter(): boolean {
-    return this.submodelService.userIsBMCSubmodelWriter();
+  public userIsBMCSubmodelInstanceWriter(): boolean {
+    return this.submodelInstanceService.userIsBMCSubmodelInstanceWriter();
   }
 }

@@ -3938,6 +3938,8 @@ namespace Foundation.CodeGeneration
                 public bool mvcDefineChildenEntitiesToBeOverridden { get; set; }
                 public bool webAPIListGetterToBeOverridden { get; set; }
                 public bool webAPIIdGetterToBeOverridden { get; set; }
+
+                public int? webAPIListGetterDefaultPageSize { get; set; }  // When set, emits a safety cap in the GET list method body: if no pagination is specified, pageSize/pageNumber are forced to this value
                 public bool webAPIPostToBeOverridden { get; set; }
                 public bool webAPIPutToBeOverridden { get; set; }
                 public bool webAPIDeleteToBeOverridden { get; set; }

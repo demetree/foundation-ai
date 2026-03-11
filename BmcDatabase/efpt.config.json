@@ -340,6 +340,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[SubmodelInstance]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[SubmodelPlacedBrick]",
          "ObjectType": 0
       },

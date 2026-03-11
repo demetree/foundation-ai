@@ -108,6 +108,7 @@ CREATE SCHEMA "BMC"
 -- DROP TABLE "BMC"."ProjectCameraPreset"
 -- DROP TABLE "BMC"."ProjectTagAssignment"
 -- DROP TABLE "BMC"."ProjectTag"
+-- DROP TABLE "BMC"."SubmodelInstance"
 -- DROP TABLE "BMC"."SubmodelPlacedBrick"
 -- DROP TABLE "BMC"."SubmodelChangeHistory"
 -- DROP TABLE "BMC"."Submodel"
@@ -215,6 +216,7 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "ProjectCameraPreset" DISABLE
 -- ALTER INDEX ALL ON "ProjectTagAssignment" DISABLE
 -- ALTER INDEX ALL ON "ProjectTag" DISABLE
+-- ALTER INDEX ALL ON "SubmodelInstance" DISABLE
 -- ALTER INDEX ALL ON "SubmodelPlacedBrick" DISABLE
 -- ALTER INDEX ALL ON "SubmodelChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Submodel" DISABLE
@@ -322,6 +324,7 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "ProjectCameraPreset" REBUILD
 -- ALTER INDEX ALL ON "ProjectTagAssignment" REBUILD
 -- ALTER INDEX ALL ON "ProjectTag" REBUILD
+-- ALTER INDEX ALL ON "SubmodelInstance" REBUILD
 -- ALTER INDEX ALL ON "SubmodelPlacedBrick" REBUILD
 -- ALTER INDEX ALL ON "SubmodelChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Submodel" REBUILD
@@ -1163,6 +1166,43 @@ CREATE INDEX "I_SubmodelPlacedBrick_tenantGuid_active" ON "BMC"."SubmodelPlacedB
 
 -- Index on the SubmodelPlacedBrick table's tenantGuid,deleted fields.
 CREATE INDEX "I_SubmodelPlacedBrick_tenantGuid_deleted" ON "BMC"."SubmodelPlacedBrick" ("tenantGuid", "deleted")
+;
+
+
+-- Tracks where a submodel assembly is placed in the parent model. Stores the LDraw type-1 reference line transform data so the model can be faithfully reconstructed. A single Submodel can have multiple instances (e.g. left/right wheel assemblies at different positions).
+CREATE TABLE "BMC"."SubmodelInstance"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"submodelId" INT NOT NULL,		-- The submodel definition being placed
+	"positionX" REAL NULL,		-- X position from the LDraw type 1 reference line (LDU)
+	"positionY" REAL NULL,		-- Y position from the LDraw type 1 reference line (LDU)
+	"positionZ" REAL NULL,		-- Z position from the LDraw type 1 reference line (LDU)
+	"rotationX" REAL NULL,		-- Quaternion X component (from 3x3 rotation matrix)
+	"rotationY" REAL NULL,		-- Quaternion Y component
+	"rotationZ" REAL NULL,		-- Quaternion Z component
+	"rotationW" REAL NULL,		-- Quaternion W component (1 = no rotation)
+	"colourCode" INT NOT NULL,		-- LDraw colour code from the type-1 reference line (usually 16 = inherit)
+	"buildStepNumber" INT NOT NULL,		-- Build step number in the parent model where this instance is placed
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "submodelId" FOREIGN KEY ("submodelId") REFERENCES "BMC"."Submodel"("id")		-- Foreign key to the Submodel table.
+);
+-- Index on the SubmodelInstance table's tenantGuid field.
+CREATE INDEX "I_SubmodelInstance_tenantGuid" ON "BMC"."SubmodelInstance" ("tenantGuid")
+;
+
+-- Index on the SubmodelInstance table's tenantGuid,submodelId fields.
+CREATE INDEX "I_SubmodelInstance_tenantGuid_submodelId" ON "BMC"."SubmodelInstance" ("tenantGuid", "submodelId")
+;
+
+-- Index on the SubmodelInstance table's tenantGuid,active fields.
+CREATE INDEX "I_SubmodelInstance_tenantGuid_active" ON "BMC"."SubmodelInstance" ("tenantGuid", "active")
+;
+
+-- Index on the SubmodelInstance table's tenantGuid,deleted fields.
+CREATE INDEX "I_SubmodelInstance_tenantGuid_deleted" ON "BMC"."SubmodelInstance" ("tenantGuid", "deleted")
 ;
 
 
