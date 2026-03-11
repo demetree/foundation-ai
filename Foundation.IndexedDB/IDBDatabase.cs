@@ -30,7 +30,7 @@ namespace Foundation.IndexedDB
         private Dictionary<string, ObjectStoreConfig> _storeConfigs = new Dictionary<string, ObjectStoreConfig>();
 
         public string Name { get { return _name; } }
-        internal Dictionary<string, ObjectStoreConfig> StoreConfigs  { get { return _storeConfigs; } }
+        internal Dictionary<string, ObjectStoreConfig> StoreConfigs { get { return _storeConfigs; } }
 
 
         private IDBTransaction _currentReadWriteTransaction = null;
@@ -197,7 +197,7 @@ namespace Foundation.IndexedDB
 
         public IDBTransaction Transaction(string objectStoreName, TransactionMode transactionMode)
         {
-            return new IDBTransaction(this, new string[] { objectStoreName }, transactionMode );
+            return new IDBTransaction(this, new string[] { objectStoreName }, transactionMode);
         }
 
 
@@ -358,13 +358,31 @@ namespace Foundation.IndexedDB
         /// 
         /// </summary>
         /// <returns></returns>
-        public string GetSafePath() { 
-        
+        public string GetSafePath()
+        {
+
             string output = this.Path.Replace("'", "''"); // Basic sanitization
 
-            output = Foundation.StringUtility.CamelCase(output);
+            output = ToCamelCase(output);
 
             return output;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Converts the first character of a string to lowercase (camelCase).
+        /// Inlined from Foundation.StringUtility to keep this library standalone.
+        /// 
+        /// </summary>
+        private static string ToCamelCase(string data)
+        {
+            if (string.IsNullOrEmpty(data) == false && data.Length > 1)
+            {
+                return char.ToLowerInvariant(data[0]) + data.Substring(1);
+            }
+
+            return data;
         }
     }
 

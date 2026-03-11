@@ -118,7 +118,7 @@ namespace Foundation.IndexedDB
             while (await cursor.ContinueAsync().ConfigureAwait(false))
             {
 
-               // await cursor.DeleteAsync(); // TODO - add this extension
+                // await cursor.DeleteAsync(); // TODO - add this extension
             }
             tx.Commit();
         }
