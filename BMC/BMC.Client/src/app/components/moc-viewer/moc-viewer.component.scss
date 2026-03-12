@@ -105,6 +105,10 @@
     &:active {
         transform: scale(0.94);
     }
+
+    &.toggle-off {
+        opacity: 0.35;
+    }
 }
 
 
@@ -221,7 +225,7 @@
 }
 
 
-/* ─── Build Step Controls ─── */
+/* ─── Build Step Playback Controls ─── */
 
 .step-controls {
     position: absolute;
@@ -229,14 +233,84 @@
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 16px 10px 16px;
     background: var(--bmc-glass-bg);
     border: 1px solid var(--bmc-glass-border);
-    border-radius: 12px;
-    backdrop-filter: blur(12px);
+    border-radius: 14px;
+    backdrop-filter: blur(14px);
     z-index: 6;
+    min-width: 420px;
+    max-width: 90%;
+}
+
+//
+// Row 1 — Click-to-scrub progress track
+//
+.step-progress-track {
+    width: 100%;
+    height: 5px;
+    background: var(--bmc-border);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: height 0.15s ease;
+
+    &:hover {
+        height: 7px;
+    }
+
+    &.scrubbing {
+        height: 7px;
+        cursor: grabbing;
+    }
+}
+
+.step-progress-fill {
+    height: 100%;
+    background: var(--bmc-gradient-primary);
+    border-radius: 3px;
+    transition: width 0.15s ease;
+}
+
+.scrub-tooltip {
+    position: absolute;
+    bottom: 14px;
+    transform: translateX(-50%);
+    padding: 3px 8px;
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-border);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--bmc-text-primary);
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--bmc-shadow-sm, 0 2px 6px rgba(0,0,0,0.2));
+    z-index: 1;
+}
+
+//
+// Row 2 — Transport, loop, label, speed
+//
+.step-transport-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.step-transport-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--bmc-border);
+    margin: 0 2px;
+}
+
+.step-transport-group {
+    display: flex;
+    gap: 2px;
 }
 
 .btn-step {
@@ -250,7 +324,7 @@
     background: var(--bmc-surface-subtle);
     color: var(--bmc-text-secondary);
     cursor: pointer;
-    font-size: 13px;
+    font-size: 11px;
     transition: all 0.15s ease;
 
     &:hover:not(:disabled) {
@@ -259,7 +333,7 @@
     }
 
     &:disabled {
-        opacity: 0.3;
+        opacity: 0.25;
         cursor: not-allowed;
     }
 
@@ -269,48 +343,97 @@
     }
 }
 
-.step-slider {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    min-width: 160px;
+//
+// Play button — larger, with pulse when playing
+//
+.btn-play {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+    border-radius: 50%;
+    background: var(--bmc-gradient-primary);
+    color: var(--bmc-text-primary);
 
-    input[type="range"] {
-        width: 100%;
-        -webkit-appearance: none;
-        appearance: none;
-        height: 4px;
-        border-radius: 2px;
-        background: var(--bmc-border);
-        outline: none;
-        cursor: pointer;
+    &:hover:not(:disabled) {
+        transform: scale(1.08);
+        background: var(--bmc-gradient-primary);
+    }
 
-        &::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--bmc-primary);
-            border: 2px solid var(--bmc-bg-deep);
-            cursor: pointer;
-        }
+    &.playing {
+        animation: playPulse 1.5s ease-in-out infinite;
+    }
+}
 
-        &::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--bmc-primary);
-            border: 2px solid var(--bmc-bg-deep);
-            cursor: pointer;
-        }
+@keyframes playPulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--bmc-primary-transparent, rgba(99, 102, 241, 0.4)); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+//
+// Loop toggle — accent colour when active
+//
+.btn-loop {
+    font-size: 10px;
+
+    &.active {
+        color: var(--bmc-primary);
+        background: var(--bmc-primary-transparent, rgba(99, 102, 241, 0.15));
     }
 }
 
 .step-label {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--bmc-text-muted);
     white-space: nowrap;
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+}
+
+//
+// Speed pills
+//
+.step-speed-pills {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 6px;
+    background: var(--bmc-surface-subtle);
+    border: 1px solid var(--bmc-border);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.speed-label {
+    font-size: 9px;
+    color: var(--bmc-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0 6px 0 4px;
+    user-select: none;
+}
+
+.speed-pill {
+    padding: 3px 8px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--bmc-text-muted);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+
+    &:hover:not(.active) {
+        color: var(--bmc-text-secondary);
+    }
+
+    &.active {
+        background: var(--bmc-gradient-primary);
+        color: var(--bmc-text-primary);
+        font-weight: 600;
+    }
 }
 
 

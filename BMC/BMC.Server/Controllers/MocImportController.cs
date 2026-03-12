@@ -46,7 +46,8 @@ namespace Foundation.BMC.Controllers.WebAPI
         {
             ".ldr",
             ".mpd",
-            ".io"
+            ".io",
+            ".lxf"
         };
 
 
@@ -132,6 +133,12 @@ namespace Foundation.BMC.Controllers.WebAPI
                     extension = ".io",
                     name = "BrickLink Studio",
                     description = "BrickLink Studio project file (contains embedded LDraw model)"
+                },
+                new SupportedFormatDto
+                {
+                    extension = ".lxf",
+                    name = "LEGO Digital Designer",
+                    description = "Legacy LEGO Digital Designer project file (LDD format)"
                 }
             };
 
@@ -177,7 +184,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
             if (string.IsNullOrEmpty(extension) == true || SUPPORTED_EXTENSIONS.Contains(extension) == false)
             {
-                return BadRequest($"Unsupported file format '{extension}'. Supported formats: .ldr, .mpd, .io");
+                return BadRequest($"Unsupported file format '{extension}'. Supported formats: .ldr, .mpd, .io, .lxf");
             }
 
             //

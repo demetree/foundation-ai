@@ -16,6 +16,8 @@ using BMC.LDraw.Models;
 using BMC.LDraw.Parsers;
 using BMC.LDraw.Render;
 
+using System.Xml.Linq;
+
 namespace Foundation.BMC.Services
 {
     /// <summary>
@@ -44,6 +46,7 @@ namespace Foundation.BMC.Services
         private const string FORMAT_LDR = "ldr";
         private const string FORMAT_MPD = "mpd";
         private const string FORMAT_IO = "io";
+        private const string FORMAT_LXF = "lxf";
 
 
         //
@@ -154,6 +157,7 @@ namespace Foundation.BMC.Services
             string sourceFormat = extension;
             string[] lDrawLines = null;
             StudioIoResult ioResult = null;
+            LxfResult lxfResult = null;
 
             if (extension == FORMAT_IO)
             {
@@ -179,6 +183,21 @@ namespace Foundation.BMC.Services
                     _logger.LogWarning("Studio .io error part list:\n{ErrorParts}", ioResult.ErrorPartList);
                 }
             }
+            else if (extension == FORMAT_LXF)
+            {
+                //
+                // AI-developed: Parse the .lxf ZIP to extract the LXFML XML and convert to LDraw lines
+                //
+                _logger.LogInformation("Importing .lxf file: {FileName} ({Size} bytes)", fileName, fileData.Length);
+
+                lxfResult = LxfParser.ParseBytes(fileData, fileName);
+                lDrawLines = lxfResult.LDrawLines;
+
+                _logger.LogInformation(
+                    ".lxf extraction complete — LDD version: {Version}, {LineCount} LDraw lines generated",
+                    lxfResult.LddVersion ?? "unknown",
+                    lDrawLines?.Length ?? 0);
+            }
             else if (extension == FORMAT_LDR || extension == FORMAT_MPD)
             {
                 //
@@ -191,7 +210,7 @@ namespace Foundation.BMC.Services
             }
             else
             {
-                throw new InvalidOperationException($"Unsupported file format: '.{extension}'. Supported formats are: .ldr, .mpd, .io");
+                throw new InvalidOperationException($"Unsupported file format: '.{extension}'. Supported formats are: .ldr, .mpd, .io, .lxf");
             }
 
             //
@@ -221,6 +240,7 @@ namespace Foundation.BMC.Services
                 fileName,
                 sourceFormat,
                 ioResult,
+                lxfResult?.ThumbnailData,
                 tenantGuid,
                 cancellationToken);
 
@@ -302,6 +322,7 @@ namespace Foundation.BMC.Services
             string fileName,
             string sourceFormat,
             StudioIoResult ioResult,
+            byte[] lxfThumbnailData,
             Guid tenantGuid,
             CancellationToken cancellationToken)
         {
@@ -333,11 +354,15 @@ namespace Foundation.BMC.Services
             };
 
             //
-            // If we have a thumbnail from an .io import, store it on the Project
+            // If we have a thumbnail from an .io or .lxf import, store it on the Project
             //
             if (ioResult != null && ioResult.ThumbnailData != null && ioResult.ThumbnailData.Length > 0)
             {
                 project.thumbnailData = ioResult.ThumbnailData;
+            }
+            else if (lxfThumbnailData != null && lxfThumbnailData.Length > 0)
+            {
+                project.thumbnailData = lxfThumbnailData;
             }
             else
             {
@@ -999,6 +1024,11 @@ namespace Foundation.BMC.Services
             if (format == FORMAT_LDR || format == FORMAT_MPD)
             {
                 return "application/x-ldraw";
+            }
+
+            if (format == FORMAT_LXF)
+            {
+                return "application/x-lego-lxf";
             }
 
             return "application/octet-stream";

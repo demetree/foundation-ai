@@ -49,6 +49,21 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     currentStep = 0; // 0 = show all
     private stepGroups: THREE.Group[] = [];
 
+    // Build step playback
+    isPlaying = false;
+    playbackSpeed = 1.0;
+    loopPlayback = false;
+    private playbackTimerId: any = null;
+    private isScrubbing = false;
+    private scrubTrack: HTMLElement | null = null;
+    private boundScrubMove: ((e: MouseEvent) => void) | null = null;
+    private boundScrubEnd: (() => void) | null = null;
+
+    // Scrub tooltip
+    scrubTooltipVisible = false;
+    scrubTooltipStep = 1;
+    scrubTooltipX = 0;
+
     // Three.js objects
     private scene!: THREE.Scene;
     private camera!: THREE.PerspectiveCamera;
@@ -61,7 +76,12 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Sidebar state
     sidebarOpen = true;
-    autoRotate = true;
+    autoRotate = false;
+    showGrid = true;
+
+    // Grid and shadow plane references
+    private gridHelper: THREE.GridHelper | null = null;
+    private shadowPlane: THREE.Mesh | null = null;
 
     // STL export state
     exportingStl = false;
@@ -210,6 +230,8 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     ngOnDestroy(): void {
+        this.stopPlayback();
+        this.endScrub();
         this.stopAnimation();
         this.cleanupThreeJs();
         this.revokeRenderBlob();
@@ -364,11 +386,26 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
             .getPropertyValue('--bmc-border').trim() || '#333355';
         const gridColour = new THREE.Color(computedBorder);
 
-        const gridHelper = new THREE.GridHelper(1000, 50, gridColour, gridColour);
-        gridHelper.position.y = -0.5;
-        (gridHelper.material as THREE.Material).opacity = 0.3;
-        (gridHelper.material as THREE.Material).transparent = true;
-        this.scene.add(gridHelper);
+        //
+        // Grid — starts at y = 0, repositioned to the model floor after loading.
+        //
+        this.gridHelper = new THREE.GridHelper(1000, 50, gridColour, gridColour);
+        this.gridHelper.position.y = 0;
+        (this.gridHelper.material as THREE.Material).opacity = 0.3;
+        (this.gridHelper.material as THREE.Material).transparent = true;
+        this.scene.add(this.gridHelper);
+
+        //
+        // Shadow plane — a transparent surface that catches soft shadows from
+        // the model.  Gives a subtle grounding cue even when the grid is hidden.
+        //
+        const shadowGeo = new THREE.PlaneGeometry(2000, 2000);
+        const shadowMat = new THREE.ShadowMaterial({ opacity: 0.15 });
+        this.shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+        this.shadowPlane.rotation.x = -Math.PI / 2;
+        this.shadowPlane.position.y = 0;
+        this.shadowPlane.receiveShadow = true;
+        this.scene.add(this.shadowPlane);
     }
 
 
@@ -557,7 +594,9 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     // ────────────────────────────────────────────────────────────────
-    //  Build Step Navigation
+    //  Build Step Navigation & Playback
+    //
+    //  AI-developed — March 2026
     // ────────────────────────────────────────────────────────────────
 
     private discoverBuildSteps(group: THREE.Group): void {
@@ -582,10 +621,14 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         this.currentStep = step;
 
         if (step === 0) {
+            //
             // Show all
+            //
             this.stepGroups.forEach(g => g.visible = true);
         } else {
+            //
             // Show steps 1..step, hide rest
+            //
             this.stepGroups.forEach((g, i) => {
                 g.visible = (i + 1) <= step;
             });
@@ -594,6 +637,8 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     nextStep(): void {
+        this.stopPlayback();
+
         if (this.currentStep < this.totalSteps) {
             this.setStep(this.currentStep + 1);
         }
@@ -601,9 +646,206 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     prevStep(): void {
+        this.stopPlayback();
+
         if (this.currentStep > 0) {
             this.setStep(this.currentStep - 1);
         }
+    }
+
+
+    firstStep(): void {
+        this.stopPlayback();
+        this.setStep(1);
+    }
+
+
+    lastStep(): void {
+        this.stopPlayback();
+        this.setStep(this.totalSteps);
+    }
+
+
+    /// <summary>
+    /// Starts or pauses the auto-advance animation.
+    /// If starting from the end or from "show all", resets to step 1.
+    /// </summary>
+    togglePlayback(): void {
+        if (this.isPlaying) {
+            this.stopPlayback();
+            return;
+        }
+
+        //
+        // If at the end or showing all, reset to step 1 so the animation
+        // has somewhere to go.
+        //
+        if (this.currentStep === 0 || this.currentStep >= this.totalSteps) {
+            this.setStep(1);
+        }
+
+        this.isPlaying = true;
+        this.startPlaybackTimer();
+    }
+
+
+    stopPlayback(): void {
+        this.isPlaying = false;
+
+        if (this.playbackTimerId != null) {
+            clearInterval(this.playbackTimerId);
+            this.playbackTimerId = null;
+        }
+    }
+
+
+    setPlaybackSpeed(speed: number): void {
+        this.playbackSpeed = speed;
+
+        //
+        // If currently playing, restart the timer at the new speed
+        //
+        if (this.isPlaying) {
+            this.startPlaybackTimer();
+        }
+    }
+
+
+    toggleLoop(): void {
+        this.loopPlayback = !this.loopPlayback;
+    }
+
+
+    /// <summary>
+    /// Shows a floating tooltip with the step number as the user hovers
+    /// over the progress track (before clicking).
+    /// </summary>
+    onProgressBarHover(event: MouseEvent): void {
+        if (this.isScrubbing) {
+            return; // scrubToPosition already handles tooltip during drag
+        }
+
+        const track = event.currentTarget as HTMLElement;
+        const rect = track.getBoundingClientRect();
+        const fraction = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        const step = Math.max(1, Math.round(fraction * this.totalSteps));
+
+        this.scrubTooltipStep = step;
+        this.scrubTooltipX = event.clientX - rect.left;
+        this.scrubTooltipVisible = true;
+    }
+
+
+    /// <summary>
+    /// Begins drag-scrubbing on the progress track.
+    /// Installs document-level mousemove/mouseup listeners so scrubbing
+    /// continues even if the cursor leaves the track element.
+    /// The 3D model updates in real-time as the user drags.
+    /// </summary>
+    onProgressBarMouseDown(event: MouseEvent): void {
+        event.preventDefault();
+        this.stopPlayback();
+
+        this.isScrubbing = true;
+        this.scrubTrack = event.currentTarget as HTMLElement;
+
+        //
+        // Immediately scrub to the clicked position
+        //
+        this.scrubToPosition(event.clientX);
+
+        //
+        // Install document-level listeners for drag and release
+        //
+        this.boundScrubMove = (e: MouseEvent) => this.scrubToPosition(e.clientX);
+        this.boundScrubEnd = () => this.endScrub();
+
+        document.addEventListener('mousemove', this.boundScrubMove);
+        document.addEventListener('mouseup', this.boundScrubEnd);
+    }
+
+
+    /// <summary>
+    /// Maps a screen X coordinate to a step on the progress track.
+    /// </summary>
+    private scrubToPosition(clientX: number): void {
+        if (this.scrubTrack == null) {
+            return;
+        }
+
+        const rect = this.scrubTrack.getBoundingClientRect();
+        const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+
+        //
+        // Map fraction 0..1 → step 1..totalSteps
+        //
+        const step = Math.max(1, Math.round(fraction * this.totalSteps));
+        this.setStep(step);
+
+        //
+        // Update tooltip to show the current step during drag
+        //
+        this.scrubTooltipStep = step;
+        this.scrubTooltipX = clientX - rect.left;
+        this.scrubTooltipVisible = true;
+    }
+
+
+    /// <summary>
+    /// Ends the drag-scrub operation and removes document-level listeners.
+    /// </summary>
+    private endScrub(): void {
+        this.isScrubbing = false;
+        this.scrubTrack = null;
+        this.scrubTooltipVisible = false;
+
+        if (this.boundScrubMove) {
+            document.removeEventListener('mousemove', this.boundScrubMove);
+            this.boundScrubMove = null;
+        }
+
+        if (this.boundScrubEnd) {
+            document.removeEventListener('mouseup', this.boundScrubEnd);
+            this.boundScrubEnd = null;
+        }
+    }
+
+
+    /// <summary>
+    /// Returns the progress percentage for the progress bar fill width.
+    /// </summary>
+    get stepProgressPercent(): number {
+        if (this.totalSteps === 0 || this.currentStep === 0) {
+            return 0;
+        }
+
+        return (this.currentStep / this.totalSteps) * 100;
+    }
+
+
+    private startPlaybackTimer(): void {
+        //
+        // Clear any existing timer before starting a new one
+        //
+        if (this.playbackTimerId != null) {
+            clearInterval(this.playbackTimerId);
+        }
+
+        this.playbackTimerId = setInterval(() => {
+            if (this.currentStep < this.totalSteps) {
+                this.setStep(this.currentStep + 1);
+            } else if (this.loopPlayback) {
+                //
+                // Wrap around to step 1
+                //
+                this.setStep(1);
+            } else {
+                //
+                // Reached the end — stop
+                //
+                this.stopPlayback();
+            }
+        }, this.playbackSpeed * 1000);
     }
 
 
@@ -616,20 +858,53 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         const centre = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
+        //
+        // Centre the model at the world origin
+        //
         object.position.sub(centre);
 
-        // Position camera based on model size — further out for larger assemblies
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = this.camera.fov * (Math.PI / 180);
-        const distance = maxDim / (2 * Math.tan(fov / 2)) * 2.5;
+        //
+        // Calculate the ideal camera distance so the model fills the viewport.
+        // Use the tighter of horizontal/vertical FOV so it doesn't clip on
+        // narrow or short viewports.
+        //
+        const fovV = this.camera.fov * (Math.PI / 180);
+        const fovH = 2 * Math.atan(Math.tan(fovV / 2) * this.camera.aspect);
+
+        const distanceV = (size.y / 2) / Math.tan(fovV / 2);
+        const distanceH = (Math.max(size.x, size.z) / 2) / Math.tan(fovH / 2);
+        const fitDistance = Math.max(distanceV, distanceH);
+
+        //
+        // 1.2× padding factor — just enough margin so the model doesn't touch
+        // the viewport edges, without wasting space.
+        //
+        const PADDING = 1.2;
+        const distance = fitDistance * PADDING;
 
         this.camera.position.set(distance * 0.7, distance * 0.5, distance * 0.7);
         this.camera.lookAt(0, 0, 0);
+        this.camera.near = Math.max(0.1, distance * 0.01);
         this.camera.far = distance * 10;
         this.camera.updateProjectionMatrix();
 
         this.controls.target.set(0, 0, 0);
+        this.controls.minDistance = distance * 0.1;
         this.controls.update();
+
+        //
+        // Position the grid and shadow plane at the bottom of the model so they
+        // act as a "floor" beneath the model rather than slicing through it.
+        //
+        const floorY = -size.y / 2;
+
+        if (this.gridHelper) {
+            this.gridHelper.position.y = floorY;
+        }
+
+        if (this.shadowPlane) {
+            this.shadowPlane.position.y = floorY;
+        }
     }
 
 
@@ -644,6 +919,15 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         this.autoRotate = !this.autoRotate;
         if (this.controls) {
             this.controls.autoRotate = this.autoRotate;
+        }
+    }
+
+
+    toggleGrid(): void {
+        this.showGrid = !this.showGrid;
+
+        if (this.gridHelper) {
+            this.gridHelper.visible = this.showGrid;
         }
     }
 

@@ -43,6 +43,7 @@ namespace Foundation.BMC.Services
         private const string FORMAT_LDR = "ldr";
         private const string FORMAT_MPD = "mpd";
         private const string FORMAT_IO = "io";
+        private const string FORMAT_LXF = "lxf";
 
 
         //
@@ -355,7 +356,7 @@ namespace Foundation.BMC.Services
             ModelDocument sourceDocument = await _context.ModelDocuments
                 .Where(md => md.projectId == projectId
                           && md.tenantGuid == tenantGuid
-                          && (md.sourceFormat == FORMAT_MPD || md.sourceFormat == FORMAT_LDR)
+                          && (md.sourceFormat == FORMAT_MPD || md.sourceFormat == FORMAT_LDR || md.sourceFormat == FORMAT_LXF)
                           && md.sourceFileData != null
                           && md.active == true
                           && md.deleted == false)

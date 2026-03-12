@@ -35,6 +35,9 @@
             <button class="btn-icon" *ngIf="activeViewerTab === '3d'" (click)="toggleAutoRotate()" [title]="autoRotate ? 'Stop rotation' : 'Auto-rotate'">
                 <i class="fas" [ngClass]="autoRotate ? 'fa-pause-circle' : 'fa-play-circle'"></i>
             </button>
+            <button class="btn-icon" *ngIf="activeViewerTab === '3d'" [class.toggle-off]="!showGrid" (click)="toggleGrid()" [title]="showGrid ? 'Hide grid' : 'Show grid'" id="toggle-grid-btn">
+                <i class="fas fa-border-all"></i>
+            </button>
             <button class="btn-icon" *ngIf="activeViewerTab === '3d'" (click)="applyPoseToRender()" title="Use current angle for render">
                 <i class="fas fa-crosshairs"></i>
             </button>
@@ -75,28 +78,77 @@
                 </div>
             </div>
 
-            <!-- Build step controls (bottom bar) -->
+            <!-- Build step playback controls (bottom bar) — AI-developed -->
             <div class="step-controls" *ngIf="totalSteps > 1 && !isLoadingModel">
-                <button class="btn-step" (click)="setStep(0)" [class.active]="currentStep === 0" title="Show all">
-                    <i class="fas fa-th"></i>
-                </button>
-                <button class="btn-step" (click)="prevStep()" [disabled]="currentStep <= 0">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <div class="step-slider">
-                    <input type="range"
-                           [min]="0"
-                           [max]="totalSteps"
-                           [value]="currentStep"
-                           (input)="setStep(+$any($event.target).value)"
-                           id="step-slider-input">
+
+                <!-- Row 1: Progress track — click or drag to scrub -->
+                <div class="step-progress-track"
+                     [class.scrubbing]="isScrubbing"
+                     (mousedown)="onProgressBarMouseDown($event)"
+                     (mousemove)="onProgressBarHover($event)"
+                     (mouseleave)="scrubTooltipVisible = false"
+                     title="Click or drag to scrub through build steps"
+                     id="step-progress-track">
+                    <div class="step-progress-fill" [style.width.%]="stepProgressPercent"></div>
+                    <div class="scrub-tooltip"
+                         *ngIf="scrubTooltipVisible"
+                         [style.left.px]="scrubTooltipX">
+                        Step {{ scrubTooltipStep }}
+                    </div>
+                </div>
+
+                <!-- Row 2: Transport + label + speed -->
+                <div class="step-transport-row">
+
+                    <!-- Show All button -->
+                    <button class="btn-step" (click)="stopPlayback(); setStep(0)" [class.active]="currentStep === 0" title="Show all steps" id="step-show-all-btn">
+                        <i class="fas fa-th"></i>
+                    </button>
+
+                    <div class="step-transport-divider"></div>
+
+                    <!-- Transport buttons -->
+                    <div class="step-transport-group">
+                        <button class="btn-step" (click)="firstStep()" [disabled]="currentStep <= 1" title="First step" id="step-first-btn">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="btn-step" (click)="prevStep()" [disabled]="currentStep <= 0" title="Previous step" id="step-prev-btn">
+                            <i class="fas fa-backward"></i>
+                        </button>
+                        <button class="btn-step btn-play" [class.playing]="isPlaying" (click)="togglePlayback()" title="{{ isPlaying ? 'Pause' : 'Play' }}" id="step-play-btn">
+                            <i class="fas" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+                        </button>
+                        <button class="btn-step" (click)="nextStep()" [disabled]="currentStep >= totalSteps" title="Next step" id="step-next-btn">
+                            <i class="fas fa-forward"></i>
+                        </button>
+                        <button class="btn-step" (click)="lastStep()" [disabled]="currentStep >= totalSteps" title="Last step" id="step-last-btn">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+
+                    <!-- Loop toggle -->
+                    <button class="btn-step btn-loop" [class.active]="loopPlayback" (click)="toggleLoop()" title="{{ loopPlayback ? 'Disable loop' : 'Enable loop' }}" id="step-loop-btn">
+                        <i class="fas fa-redo"></i>
+                    </button>
+
+                    <!-- Auto-rotate toggle -->
+                    <button class="btn-step btn-loop" [class.active]="autoRotate" (click)="toggleAutoRotate()" title="{{ autoRotate ? 'Stop rotation' : 'Auto-rotate model' }}" id="step-rotate-btn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+
+                    <!-- Step label -->
                     <span class="step-label">
                         {{ currentStep === 0 ? 'All Steps' : 'Step ' + currentStep + ' / ' + totalSteps }}
                     </span>
+
+                    <!-- Speed pills -->
+                    <div class="step-speed-pills" title="Time per step">
+                        <span class="speed-label">Speed</span>
+                        <button class="speed-pill" [class.active]="playbackSpeed === 0.5" (click)="setPlaybackSpeed(0.5)" title="Fast — hold each step for ½ second" id="speed-05-btn">0.5s</button>
+                        <button class="speed-pill" [class.active]="playbackSpeed === 1" (click)="setPlaybackSpeed(1)" title="Normal — hold each step for 1 second" id="speed-1-btn">1s</button>
+                        <button class="speed-pill" [class.active]="playbackSpeed === 2" (click)="setPlaybackSpeed(2)" title="Slow — hold each step for 2 seconds" id="speed-2-btn">2s</button>
+                    </div>
                 </div>
-                <button class="btn-step" (click)="nextStep()" [disabled]="currentStep >= totalSteps">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
             </div>
         </div>
 

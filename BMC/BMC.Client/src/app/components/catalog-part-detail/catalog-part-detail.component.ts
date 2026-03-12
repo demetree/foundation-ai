@@ -119,6 +119,10 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     private resizeObserver: ResizeObserver | null = null;
     private sceneReady = false;
 
+    // Grid and shadow plane references
+    private gridHelper: THREE.GridHelper | null = null;
+    private shadowPlane: THREE.Mesh | null = null;
+
     //
     // When an initialColourId is provided, we defer showing the 3D model
     // until the colour data has loaded and the correct colour can be applied.
@@ -827,8 +831,9 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         }
 
         //
-        // Re-add the ground grid
+        // Re-add the ground grid and shadow plane
         //
+        this.removeGroundPlane();
         this.addGroundPlane();
 
         //
@@ -1018,7 +1023,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.controls.enablePan = true;
         this.controls.minDistance = 20;
         this.controls.maxDistance = 500;
-        this.controls.autoRotate = true;
+        this.controls.autoRotate = false;
         this.controls.autoRotateSpeed = 1.2;
 
         // Lighting
@@ -1067,11 +1072,41 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
 
     private addGroundPlane(): void {
-        const gridHelper = new THREE.GridHelper(300, 30, 0x333355, 0x222244);
-        gridHelper.position.y = -0.5;
-        (gridHelper.material as THREE.Material).opacity = 0.3;
-        (gridHelper.material as THREE.Material).transparent = true;
-        this.scene.add(gridHelper);
+        const gridColour = new THREE.Color(0x333355);
+
+        //
+        // Grid — starts at y = 0, repositioned to the model floor after loading.
+        //
+        this.gridHelper = new THREE.GridHelper(300, 30, gridColour, gridColour);
+        this.gridHelper.position.y = 0;
+        (this.gridHelper.material as THREE.Material).opacity = 0.3;
+        (this.gridHelper.material as THREE.Material).transparent = true;
+        this.scene.add(this.gridHelper);
+
+        //
+        // Shadow plane — transparent surface beneath the model that catches
+        // soft shadows.  Gives a subtle grounding cue.
+        //
+        const shadowGeo = new THREE.PlaneGeometry(600, 600);
+        const shadowMat = new THREE.ShadowMaterial({ opacity: 0.15 });
+        this.shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+        this.shadowPlane.rotation.x = -Math.PI / 2;
+        this.shadowPlane.position.y = 0;
+        this.shadowPlane.receiveShadow = true;
+        this.scene.add(this.shadowPlane);
+    }
+
+
+    private removeGroundPlane(): void {
+        if (this.gridHelper) {
+            this.scene.remove(this.gridHelper);
+            this.gridHelper = null;
+        }
+
+        if (this.shadowPlane) {
+            this.scene.remove(this.shadowPlane);
+            this.shadowPlane = null;
+        }
     }
 
 
@@ -1271,23 +1306,57 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
 
     private centreAndFrameModel(object: THREE.Object3D): void {
-        // Centre the model
         const box = new THREE.Box3().setFromObject(object);
         const centre = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
+        //
+        // Centre the model at the world origin
+        //
         object.position.sub(centre);
 
-        // Position camera based on model size
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = this.camera.fov * (Math.PI / 180);
-        const distance = maxDim / (2 * Math.tan(fov / 2)) * 2.2;
+        //
+        // Calculate the ideal camera distance so the model fills the viewport.
+        // Use the tighter of horizontal/vertical FOV so it doesn't clip on
+        // narrow or short viewports.
+        //
+        const fovV = this.camera.fov * (Math.PI / 180);
+        const fovH = 2 * Math.atan(Math.tan(fovV / 2) * this.camera.aspect);
+
+        const distanceV = (size.y / 2) / Math.tan(fovV / 2);
+        const distanceH = (Math.max(size.x, size.z) / 2) / Math.tan(fovH / 2);
+        const fitDistance = Math.max(distanceV, distanceH);
+
+        //
+        // 1.2× padding factor — enough margin so the part doesn't touch
+        // the viewport edges, without wasting space.
+        //
+        const PADDING = 1.2;
+        const distance = fitDistance * PADDING;
 
         this.camera.position.set(distance * 0.7, distance * 0.5, distance * 0.7);
         this.camera.lookAt(0, 0, 0);
+        this.camera.near = Math.max(0.1, distance * 0.01);
+        this.camera.far = distance * 10;
+        this.camera.updateProjectionMatrix();
 
         this.controls.target.set(0, 0, 0);
+        this.controls.minDistance = distance * 0.1;
         this.controls.update();
+
+        //
+        // Position the grid and shadow plane at the bottom of the model so they
+        // act as a "floor" beneath the part rather than slicing through it.
+        //
+        const floorY = -size.y / 2;
+
+        if (this.gridHelper) {
+            this.gridHelper.position.y = floorY;
+        }
+
+        if (this.shadowPlane) {
+            this.shadowPlane.position.y = floorY;
+        }
     }
 
 
