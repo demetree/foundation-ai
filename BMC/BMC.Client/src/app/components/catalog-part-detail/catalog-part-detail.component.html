@@ -70,31 +70,32 @@
                             (click)="nudgeStlExport()" title="Sign in to export STL">
                             <i class="bi bi-lock"></i> Export STL
                         </button>
-                        <button class="pose-btn" *ngIf="hasGeometry" [class.active]="autoRotate"
-                            (click)="toggleAutoRotate()" title="{{ autoRotate ? 'Stop rotation' : 'Auto-rotate part' }}">
-                            <i class="bi bi-arrow-repeat"></i>
-                            {{ autoRotate ? 'Rotating' : 'Rotate' }}
+                        <button class="pose-btn" *ngIf="hasGeometry" [class.active]="!autoRotate"
+                            (click)="toggleAutoRotate()"
+                            [title]="autoRotate ? 'Stop rotation to pose and render' : 'Resume auto-rotation'">
+                            <i class="bi" [ngClass]="autoRotate ? 'bi-arrow-repeat' : 'bi-bounding-box'"></i>
+                            {{ autoRotate ? 'Rotating' : 'Pose Mode' }}
                         </button>
-                        <button class="pose-btn" *ngIf="hasGeometry && authService.isLoggedIn" [class.active]="poseMode"
-                            (click)="togglePoseMode()" title="Pose the part, then send view to Server Render">
-                            <i class="bi bi-bounding-box"></i>
-                            {{ poseMode ? 'Posing' : 'Pose Part' }}
-                        </button>
-                        <button class="pose-render-btn" *ngIf="poseMode && authService.isLoggedIn"
+                        <button class="pose-render-btn" *ngIf="!autoRotate && hasGeometry && authService.isLoggedIn"
                             (click)="applyPoseToRender()" title="Use current camera angle for server render">
                             <i class="bi bi-camera"></i> Render This View
                         </button>
                     </div>
                 </div>
 
-                <!-- Pose Mode HUD -->
-                <div class="pose-hud" *ngIf="poseMode && hasGeometry">
+                <!-- Pose Mode HUD — visible when rotation is stopped -->
+                <div class="pose-hud" *ngIf="!autoRotate && hasGeometry">
                     <span><i class="bi bi-arrows-angle-expand"></i> {{ getCameraAngles().elevation }}° elev</span>
                     <span><i class="bi bi-arrow-repeat"></i> {{ getCameraAngles().azimuth }}° azim</span>
                     <span class="pose-hint"><i class="bi bi-mouse"></i> Drag to rotate · Scroll to zoom</span>
                 </div>
 
-                <div class="viewer-controls-hint" *ngIf="hasGeometry && !poseMode">
+                <!-- Rotation hint — subtle overlay while auto-rotating -->
+                <div class="viewer-controls-hint" *ngIf="hasGeometry && autoRotate">
+                    <span><i class="bi bi-hand-index"></i> Stop rotation to pose & render</span>
+                </div>
+
+                <div class="viewer-controls-hint" *ngIf="hasGeometry && !autoRotate">
                     <span><i class="bi bi-mouse"></i> Drag to rotate</span>
                     <span><i class="bi bi-zoom-in"></i> Scroll to zoom</span>
                 </div>

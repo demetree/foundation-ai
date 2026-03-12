@@ -139,8 +139,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     // ────────────────────────────────────────────────────────────────
 
     activeViewerTab: '3d' | 'render' = '3d';
-    autoRotate = true;
-    poseMode = false;
+    autoRotate = true;  // when false, user is in "pose mode"
 
     // Render config
     renderWidth = 512;
@@ -1620,24 +1619,6 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     isActiveBgPreset(preset: { top: string; bottom: string }): boolean {
         return this.gradientTopHex === preset.top && this.gradientBottomHex === preset.bottom;
     }
-
-
-    //
-    // Pose Part Mode — stops rotation and shows camera angle HUD so the
-    // user can frame the part, then send that view to Server Render.
-    //
-    togglePoseMode(): void {
-        this.poseMode = !this.poseMode;
-
-        if (this.controls) {
-            //
-            // When entering pose mode, always stop rotation.
-            // When leaving pose mode, restore the user's autoRotate preference.
-            //
-            this.controls.autoRotate = this.poseMode ? false : this.autoRotate;
-        }
-    }
-
 
     getCameraAngles(): { elevation: number; azimuth: number } {
         if (this.camera == null || this.controls == null) {

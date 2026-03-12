@@ -293,7 +293,7 @@ namespace Foundation.Server
                 // Configure the request pipeline
                 //
                 app.UseDefaultFiles();
-                app.UseStaticFiles();
+                app.UseStaticFilesWithCacheBusting();
 
                 if (app.Environment.IsDevelopment())
                 {
