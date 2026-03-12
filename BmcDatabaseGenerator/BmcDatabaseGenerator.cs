@@ -549,6 +549,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             submodelInstanceTable.AddMultiTenantSupport();
 
             submodelInstanceTable.AddForeignKeyField(submodelTable, false).AddScriptComments("The submodel definition being placed");
+            submodelInstanceTable.AddForeignKeyField("parentSubmodelId", submodelTable, true).AddScriptComments("The parent submodel this instance is placed WITHIN (null = placed directly in the main model)");
 
             // Position from the LDraw type-1 reference line (world coordinates in LDU)
             submodelInstanceTable.AddSingleField("positionX").AddScriptComments("X position from the LDraw type 1 reference line (LDU)");

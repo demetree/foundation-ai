@@ -48,6 +48,7 @@ namespace Foundation.BMC.Services
         private readonly ILogger<LDrawFileService> _logger;
 
         private bool _isLoaded;
+        private Task _loadTask = Task.CompletedTask;
 
 
         public LDrawFileService(IConfiguration configuration, ILogger<LDrawFileService> logger)
@@ -84,12 +85,21 @@ namespace Foundation.BMC.Services
             }
 
             //
-            // Run the preload on a background thread so it doesn't block startup
+            // Run the preload on a background thread so it doesn't block startup.
+            // Store the task so callers can await completion via WaitForLoadAsync().
             //
-            _ = Task.Run(() => PreloadLibrary(dataPath, cancellationToken), cancellationToken);
+            _loadTask = Task.Run(() => PreloadLibrary(dataPath, cancellationToken), cancellationToken);
 
             return Task.CompletedTask;
         }
+
+
+        /// <summary>
+        /// Awaits completion of the initial preload.
+        /// Safe to call multiple times — returns immediately if already loaded.
+        /// Used by ModelExportService to ensure the cache is populated before bundling.
+        /// </summary>
+        public Task WaitForLoadAsync() => _loadTask;
 
 
         public Task StopAsync(CancellationToken cancellationToken)

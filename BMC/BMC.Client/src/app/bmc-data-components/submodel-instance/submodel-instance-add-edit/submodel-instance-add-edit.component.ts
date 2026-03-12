@@ -36,6 +36,7 @@ import { AuthService } from '../../../services/auth.service';
 //
 interface SubmodelInstanceFormValues {
   submodelId: number | bigint,       // For FK link number
+  parentSubmodelId: number | bigint | null,       // For FK link number
   positionX: string | null,     // Stored as string for form input, converted to number on submit.
   positionY: string | null,     // Stored as string for form input, converted to number on submit.
   positionZ: string | null,     // Stored as string for form input, converted to number on submit.
@@ -78,6 +79,7 @@ export class SubmodelInstanceAddEditComponent {
 
   public submodelInstanceForm: FormGroup = this.fb.group({
         submodelId: [null, Validators.required],
+        parentSubmodelId: [null],
         positionX: [''],
         positionY: [''],
         positionZ: [''],
@@ -225,6 +227,7 @@ export class SubmodelInstanceAddEditComponent {
     const submodelInstanceSubmitData: SubmodelInstanceSubmitData = {
         id: this.submodelInstanceSubmitData?.id || 0,
         submodelId: Number(formValue.submodelId),
+        parentSubmodelId: formValue.parentSubmodelId ? Number(formValue.parentSubmodelId) : null,
         positionX: formValue.positionX ? Number(formValue.positionX) : null,
         positionY: formValue.positionY ? Number(formValue.positionY) : null,
         positionZ: formValue.positionZ ? Number(formValue.positionZ) : null,
@@ -362,6 +365,7 @@ export class SubmodelInstanceAddEditComponent {
       //
       this.submodelInstanceForm.reset({
         submodelId: null,
+        parentSubmodelId: null,
         positionX: '',
         positionY: '',
         positionZ: '',
@@ -383,6 +387,7 @@ export class SubmodelInstanceAddEditComponent {
         //
         this.submodelInstanceForm.reset({
         submodelId: submodelInstanceData.submodelId,
+        parentSubmodelId: submodelInstanceData.parentSubmodelId,
         positionX: submodelInstanceData.positionX?.toString() ?? '',
         positionY: submodelInstanceData.positionY?.toString() ?? '',
         positionZ: submodelInstanceData.positionZ?.toString() ?? '',

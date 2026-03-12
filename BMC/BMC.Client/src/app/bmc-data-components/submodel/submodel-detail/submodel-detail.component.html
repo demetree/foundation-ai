@@ -129,6 +129,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="submodelInstanceService.userIsBMCSubmodelInstanceReader()">
+                            <button ngbNavLink>Submodel Instances Parent Submodels
+                                <span class="badge bg-primary ms-2">
+                                    {{ (submodelData?.SubmodelInstanceParentSubmodelsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-submodel-instance-table [queryParams]="{ parentSubmodelId: submodelData?.id }" [showAddButton]="true" [preSeededData]="{ parentSubmodelId: submodelData?.id }" [hiddenFields]="['parentSubmodelId']"></app-submodel-instance-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

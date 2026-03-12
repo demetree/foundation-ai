@@ -31,6 +31,10 @@
                 Submodel
                 <span *ngIf="sortColumn === 'submodel.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('parentSubmodel.name')">
+                Parent  Submodel
+                <span *ngIf="sortColumn === 'parentSubmodel.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('positionX')">
                 Position  X
                 <span *ngIf="sortColumn === 'positionX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -153,6 +157,7 @@ End of commented block for alternate definition option -->
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/submodel', submodelInstance.submodelId]" class="btn btn-link text-left" ngbTooltip="Open Submodel details">{{submodelInstance.submodel?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/submodel', submodelInstance.parentSubmodelId]" class="btn btn-link text-left" ngbTooltip="Open Submodel details">{{submodelInstance.parentSubmodel?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/submodelinstance', submodelInstance.id]" class="btn btn-link text-left" ngbTooltip="Open Submodel Instance details">{{submodelInstance.positionX | bigNumberFormat : '1.0-2'}}</a></td>
             <td class="text-truncate">{{submodelInstance.positionY | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{submodelInstance.positionZ | bigNumberFormat : '1.0-2'}}</td>
@@ -312,6 +317,10 @@ End of commented block for alternate definition option -->
             <p class="submodel-instance-info" *ngIf="submodelInstance.submodelId != null">
               <strong>Submodel: </strong>
               <a [routerLink]="['/submodel', submodelInstance.submodelId]" class="text-left p-0 m-0" ngbTooltip="Open Submodel details">{{submodelInstance.submodel?.name}}</a>
+            </p>
+            <p class="submodel-instance-info" *ngIf="submodelInstance.parentSubmodelId != null">
+              <strong>Parent Submodel: </strong>
+              <a [routerLink]="['/submodel', submodelInstance.parentSubmodelId]" class="text-left p-0 m-0" ngbTooltip="Open Submodel details">{{submodelInstance.parentSubmodel?.name}}</a>
             </p>
             <p class="submodel-instance-info" *ngIf="submodelInstance.positionX != null">
               <strong>Position X: </strong>

@@ -176,6 +176,7 @@ export class SubmodelInstanceTableComponent implements OnInit, OnChanges, AfterV
     //
     const defaultColumns: TableColumn[] = [
     { key: 'submodel.name', label: 'Submodel', width: undefined, template: 'link', linkPath: ['/submodel', 'submodelId'] },
+    { key: 'parentSubmodel.name', label: 'Submodel', width: undefined, template: 'link', linkPath: ['/submodel', 'parentSubmodelId'] },
     { key: 'positionX', label: 'Position X', width: undefined },
     { key: 'positionY', label: 'Position Y', width: undefined },
     { key: 'positionZ', label: 'Position Z', width: undefined },
@@ -331,6 +332,7 @@ export class SubmodelInstanceTableComponent implements OnInit, OnChanges, AfterV
         // Define fields to filter on, including nested properties
         const filterFields = [
                       'submodel.name',
+                      'parentSubmodel.name',
                       'positionX',
                       'positionY',
                       'positionZ',

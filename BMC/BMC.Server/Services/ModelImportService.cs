@@ -595,6 +595,7 @@ namespace Foundation.BMC.Services
                                 {
                                     tenantGuid = tenantGuid,
                                     submodelId = referencedSubmodel.id,
+                                    parentSubmodelId = owningSubmodel?.id,
                                     positionX = partRef.X,
                                     positionY = partRef.Y,
                                     positionZ = partRef.Z,

@@ -63,6 +63,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/SubmodelInstances")]
 		public async Task<IActionResult> GetSubmodelInstances(
 			int? submodelId = null,
+			int? parentSubmodelId = null,
 			float? positionX = null,
 			float? positionY = null,
 			float? positionZ = null,
@@ -127,6 +128,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (submodelId.HasValue == true)
 			{
 				query = query.Where(si => si.submodelId == submodelId.Value);
+			}
+			if (parentSubmodelId.HasValue == true)
+			{
+				query = query.Where(si => si.parentSubmodelId == parentSubmodelId.Value);
 			}
 			if (positionX.HasValue == true)
 			{
@@ -197,6 +202,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.parentSubmodel);
 				query = query.Include(x => x.submodel);
 				query = query.AsSplitQuery();
 			}
@@ -247,6 +253,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/SubmodelInstances/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? submodelId = null,
+			int? parentSubmodelId = null,
 			float? positionX = null,
 			float? positionY = null,
 			float? positionZ = null,
@@ -291,6 +298,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (submodelId.HasValue == true)
 			{
 				query = query.Where(si => si.submodelId == submodelId.Value);
+			}
+			if (parentSubmodelId.HasValue == true)
+			{
+				query = query.Where(si => si.parentSubmodelId == parentSubmodelId.Value);
 			}
 			if (positionX.HasValue == true)
 			{
@@ -416,6 +427,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.parentSubmodel);
 					query = query.Include(x => x.submodel);
 					query = query.AsSplitQuery();
 				}
@@ -789,6 +801,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			int? submodelId = null,
+			int? parentSubmodelId = null,
 			float? positionX = null,
 			float? positionY = null,
 			float? positionZ = null,
@@ -852,6 +865,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (submodelId.HasValue == true)
 			{
 				query = query.Where(si => si.submodelId == submodelId.Value);
+			}
+			if (parentSubmodelId.HasValue == true)
+			{
+				query = query.Where(si => si.parentSubmodelId == parentSubmodelId.Value);
 			}
 			if (positionX.HasValue == true)
 			{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -345,12 +345,43 @@ namespace Foundation.BMC.Services
             CancellationToken cancellationToken = default)
         {
             //
-            // Step 1: Generate the base MPD content from PlacedBrick entities
+            // Step 1: Try to serve the ORIGINAL imported MPD/LDR source file.
+            //
+            // The original file preserves the full nested submodel hierarchy with
+            // correct transforms at every level (e.g. main → porsche → chassisbottom).
+            // Reconstructing from PlacedBrick entities flattens this hierarchy,
+            // losing intermediate transforms and causing position errors.
+            //
+            ModelDocument sourceDocument = await _context.ModelDocuments
+                .Where(md => md.projectId == projectId
+                          && md.tenantGuid == tenantGuid
+                          && (md.sourceFormat == FORMAT_MPD || md.sourceFormat == FORMAT_LDR)
+                          && md.sourceFileData != null
+                          && md.active == true
+                          && md.deleted == false)
+                .OrderByDescending(md => md.id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (sourceDocument?.sourceFileData != null)
+            {
+                string originalMpd = System.Text.Encoding.UTF8.GetString(sourceDocument.sourceFileData);
+
+                if (!string.IsNullOrWhiteSpace(originalMpd))
+                {
+                    _logger.LogInformation(
+                        "Viewer MPD for project {Id}: serving original {Format} source ({Len} chars)",
+                        projectId, sourceDocument.sourceFormat, originalMpd.Length);
+                    return originalMpd;
+                }
+            }
+
+            //
+            // Step 2: No original source — reconstruct from PlacedBrick entities
             //
             string baseMpd = await GenerateLDrawContentAsync(projectId, tenantGuid, true, cancellationToken);
 
             //
-            // Step 2: Look for custom part geometry in the stored .io archive
+            // Step 3: Look for custom part geometry in the stored .io archive
             //
             ModelDocument ioDocument = await _context.ModelDocuments
                 .Where(md => md.projectId == projectId
@@ -365,7 +396,9 @@ namespace Foundation.BMC.Services
             if (ioDocument == null || ioDocument.sourceFileData == null)
             {
                 //
-                // No stored .io data â€” the base MPD is sufficient
+                // No stored .io data — the base MPD is sufficient.
+                // The client-side monkey-patch fetches library parts individually
+                // from the in-memory LDrawFileService (O(1) per request).
                 //
                 return baseMpd;
             }
@@ -427,19 +460,12 @@ namespace Foundation.BMC.Services
                 customParts.Count);
 
             //
-            // Step 5: Bundle all LDraw library dependencies inline
+            // Library parts are NOT bundled inline — the client-side monkey-patch
+            // fetches them individually from the in-memory LDrawFileService.
+            // This preserves the model structure (no extra 0 FILE blocks that
+            // could interfere with the LDrawLoader's parsing).
             //
-            // The Three.js LDrawLoader normally fetches each sub-file reference
-            // individually via HTTP (up to 12 attempts per file due to directory
-            // trial-and-error). For a 1600-part model this generates thousands
-            // of requests. By embedding all dependency .dat files inline as
-            // FILE blocks, the LDrawLoader resolves them from the embedded content
-            // with zero network requests.
-            //
-            string mpdText = sb.ToString();
-            string bundledMpd = BundleLDrawDependencies(mpdText);
-
-            return bundledMpd;
+            return sb.ToString();
         }
 
         #endregion
@@ -473,13 +499,39 @@ namespace Foundation.BMC.Services
             }
 
             //
-            // Load all placed bricks for this project, ordered by build step and then by id
+            // Load all placed bricks for this project, ordered by build step and then by id.
             //
+            // When building an MPD with submodels, we must EXCLUDE bricks that belong
+            // to a submodel — those bricks appear inside the submodel's 0 FILE block
+            // and are instantiated via SubmodelInstance type-1 references.
+            // Including them here as well would cause every submodel brick to render
+            // twice: once directly in the main model and once through the submodel.
+            //
+            HashSet<int> excludedSubmodelBrickIds = null;
+
+            if (includeMpdSubmodels)
+            {
+                excludedSubmodelBrickIds = (await _context.SubmodelPlacedBricks
+                    .Where(spb => spb.tenantGuid == tenantGuid && spb.active == true)
+                    .Where(spb => spb.submodel.projectId == projectId)
+                    .Select(spb => spb.placedBrickId)
+                    .ToListAsync(cancellationToken))
+                    .ToHashSet();
+            }
+
             List<PlacedBrick> bricks = await _context.PlacedBricks
                 .Where(pb => pb.projectId == projectId && pb.tenantGuid == tenantGuid && pb.active == true && pb.deleted == false)
                 .OrderBy(pb => pb.buildStepNumber)
                 .ThenBy(pb => pb.id)
                 .ToListAsync(cancellationToken);
+
+            //
+            // Filter out submodel bricks in memory (cleaner than a complex SQL subquery)
+            //
+            if (excludedSubmodelBrickIds != null && excludedSubmodelBrickIds.Count > 0)
+            {
+                bricks = bricks.Where(pb => !excludedSubmodelBrickIds.Contains(pb.id)).ToList();
+            }
 
             //
             // Load part and colour lookup tables (reverse direction: id â†’ ldrawPartId/ldrawColourCode)
@@ -591,11 +643,11 @@ namespace Foundation.BMC.Services
             if (includeMpdSubmodels == true)
             {
                 //
-                // Write submodel instance reference lines in the main model.
-                // These are the type-1 lines that place submodel assemblies at
-                // world-space positions with transforms.
+                // Load ALL submodel instances for this project.
+                // We filter by parentSubmodelId to place them at the correct
+                // nesting level (null = main model, non-null = inside a submodel).
                 //
-                List<SubmodelInstance> instances = await _context.SubmodelInstances
+                List<SubmodelInstance> allInstances = await _context.SubmodelInstances
                     .Where(si => si.submodel.projectId == projectId
                               && si.tenantGuid == tenantGuid
                               && si.active == true
@@ -605,11 +657,18 @@ namespace Foundation.BMC.Services
                     .ThenBy(si => si.id)
                     .ToListAsync(cancellationToken);
 
-                if (instances.Count > 0)
+                //
+                // Main model instances: only those placed directly (parentSubmodelId == null)
+                //
+                List<SubmodelInstance> mainInstances = allInstances
+                    .Where(si => si.parentSubmodelId == null)
+                    .ToList();
+
+                if (mainInstances.Count > 0)
                 {
                     int currentRefStep = 0;
 
-                    foreach (SubmodelInstance instance in instances)
+                    foreach (SubmodelInstance instance in mainInstances)
                     {
                         //
                         // Emit STEP separators between different build steps
@@ -734,6 +793,38 @@ namespace Foundation.BMC.Services
                         subFirstStep = false;
                     }
 
+                    //
+                    // Include nested submodel instance references within this submodel.
+                    // These are type-1 lines that reference child submodels.
+                    //
+                    List<SubmodelInstance> nestedInstances = allInstances
+                        .Where(si => si.parentSubmodelId == submodel.id)
+                        .OrderBy(si => si.buildStepNumber)
+                        .ThenBy(si => si.id)
+                        .ToList();
+
+                    foreach (SubmodelInstance nestedInst in nestedInstances)
+                    {
+                        float[] nestedMatrix = QuaternionToMatrix(
+                            nestedInst.rotationX ?? 0f,
+                            nestedInst.rotationY ?? 0f,
+                            nestedInst.rotationZ ?? 0f,
+                            nestedInst.rotationW ?? 1f);
+
+                        sb.AppendLine("0 STEP");
+                        sb.AppendFormat(CultureInfo.InvariantCulture,
+                            "1 {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13}",
+                            nestedInst.colourCode,
+                            nestedInst.positionX ?? 0f,
+                            nestedInst.positionY ?? 0f,
+                            nestedInst.positionZ ?? 0f,
+                            nestedMatrix[0], nestedMatrix[1], nestedMatrix[2],
+                            nestedMatrix[3], nestedMatrix[4], nestedMatrix[5],
+                            nestedMatrix[6], nestedMatrix[7], nestedMatrix[8],
+                            nestedInst.submodel.name);
+                        sb.AppendLine();
+                    }
+
                     sb.AppendLine("0 STEP");
                     sb.AppendLine("0 NOFILE");
                 }
@@ -806,11 +897,17 @@ namespace Foundation.BMC.Services
         /// Also embeds LDConfig.ldr so colour definitions are available without
         /// a separate network request.
         /// </summary>
-        private string BundleLDrawDependencies(string mpdText)
+        private async Task<string> BundleLDrawDependenciesAsync(string mpdText)
         {
+            //
+            // Wait for the background preload to complete.
+            // This is a no-op if the preload is already done.
+            //
+            await _ldrawFiles.WaitForLoadAsync().ConfigureAwait(false);
+
             if (_ldrawFiles.IsLoaded == false || _ldrawFiles.FileCount == 0)
             {
-                _logger.LogWarning("LDraw file service not loaded â€” skipping dependency bundling.");
+                _logger.LogWarning("LDraw file service not loaded — skipping dependency bundling.");
                 return mpdText;
             }
 
@@ -889,7 +986,7 @@ namespace Foundation.BMC.Services
 
             foreach (KeyValuePair<string, string> entry in resolvedFiles)
             {
-                sb.AppendLine("0 FILE " + entry.Key);
+                sb.AppendLine("0 FILE " + entry.Key.Replace('\\', '/'));
                 sb.Append(entry.Value);
 
                 if (entry.Value.Length > 0 && entry.Value[entry.Value.Length - 1] != '\n')

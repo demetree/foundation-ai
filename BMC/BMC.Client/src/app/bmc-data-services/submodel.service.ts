@@ -157,6 +157,10 @@ export class SubmodelData {
     private _submodelInstancesSubject = new BehaviorSubject<SubmodelInstanceData[] | null>(null);
 
                 
+    private _submodelInstanceParentSubmodels: SubmodelInstanceData[] | null = null;
+    private _submodelInstanceParentSubmodelsPromise: Promise<SubmodelInstanceData[]> | null  = null;
+    private _submodelInstanceParentSubmodelsSubject = new BehaviorSubject<SubmodelInstanceData[] | null>(null);
+                    
 
 
     //
@@ -248,6 +252,30 @@ export class SubmodelData {
 
 
 
+    public SubmodelInstanceParentSubmodels$ = this._submodelInstanceParentSubmodelsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._submodelInstanceParentSubmodels === null && this._submodelInstanceParentSubmodelsPromise === null) {
+            this.loadSubmodelInstanceParentSubmodels(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _submodelInstanceParentSubmodelsCount$: Observable<bigint | number> | null = null;
+    public get SubmodelInstanceParentSubmodelsCount$(): Observable<bigint | number> {
+        if (this._submodelInstanceParentSubmodelsCount$ === null) {
+            this._submodelInstanceParentSubmodelsCount$ = SubmodelInstanceService.Instance.GetSubmodelInstancesRowCount({parentSubmodelId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._submodelInstanceParentSubmodelsCount$;
+    }
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -300,6 +328,11 @@ export class SubmodelData {
      this._submodelInstancesPromise = null;
      this._submodelInstancesSubject.next(null);
      this._submodelInstancesCount$ = null;
+
+     this._submodelInstanceParentSubmodels = null;
+     this._submodelInstanceParentSubmodelsPromise = null;
+     this._submodelInstanceParentSubmodelsSubject.next(null);
+     this._submodelInstanceParentSubmodelsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -502,6 +535,71 @@ export class SubmodelData {
 
     public get HasSubmodelInstances(): Promise<boolean> {
         return this.SubmodelInstances.then(submodelInstances => submodelInstances.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the SubmodelInstanceParentSubmodels for this Submodel.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.submodel.SubmodelInstanceParentSubmodels.then(parentSubmodels => { ... })
+     *   or
+     *   await this.submodel.parentSubmodels
+     *
+    */
+    public get SubmodelInstanceParentSubmodels(): Promise<SubmodelInstanceData[]> {
+        if (this._submodelInstanceParentSubmodels !== null) {
+            return Promise.resolve(this._submodelInstanceParentSubmodels);
+        }
+
+        if (this._submodelInstanceParentSubmodelsPromise !== null) {
+            return this._submodelInstanceParentSubmodelsPromise;
+        }
+
+        // Start the load
+        this.loadSubmodelInstanceParentSubmodels();
+
+        return this._submodelInstanceParentSubmodelsPromise!;
+    }
+
+
+
+    private loadSubmodelInstanceParentSubmodels(): void {
+
+        this._submodelInstanceParentSubmodelsPromise = lastValueFrom(
+            SubmodelService.Instance.GetSubmodelInstanceParentSubmodelsForSubmodel(this.id)
+        )
+        .then(SubmodelInstanceParentSubmodels => {
+            this._submodelInstanceParentSubmodels = SubmodelInstanceParentSubmodels ?? [];
+            this._submodelInstanceParentSubmodelsSubject.next(this._submodelInstanceParentSubmodels);
+            return this._submodelInstanceParentSubmodels;
+         })
+        .catch(err => {
+            this._submodelInstanceParentSubmodels = [];
+            this._submodelInstanceParentSubmodelsSubject.next(this._submodelInstanceParentSubmodels);
+            throw err;
+        })
+        .finally(() => {
+            this._submodelInstanceParentSubmodelsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached SubmodelInstanceParentSubmodel. Call after mutations to force refresh.
+     */
+    public ClearSubmodelInstanceParentSubmodelsCache(): void {
+        this._submodelInstanceParentSubmodels = null;
+        this._submodelInstanceParentSubmodelsPromise = null;
+        this._submodelInstanceParentSubmodelsSubject.next(this._submodelInstanceParentSubmodels);      // Emit to observable
+    }
+
+    public get HasSubmodelInstanceParentSubmodels(): Promise<boolean> {
+        return this.SubmodelInstanceParentSubmodels.then(submodelInstanceParentSubmodels => submodelInstanceParentSubmodels.length > 0);
     }
 
 
@@ -1079,6 +1177,16 @@ export class SubmodelService extends SecureEndpointBase {
     }
 
 
+    public GetSubmodelInstanceParentSubmodelsForSubmodel(submodelId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<SubmodelInstanceData[]> {
+        return this.submodelInstanceService.GetSubmodelInstanceList({
+            parentSubmodelId: submodelId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full SubmodelData instance.
@@ -1126,6 +1234,10 @@ export class SubmodelService extends SecureEndpointBase {
     (revived as any)._submodelInstancesPromise = null;
     (revived as any)._submodelInstancesSubject = new BehaviorSubject<SubmodelInstanceData[] | null>(null);
 
+    (revived as any)._submodelInstanceParentSubmodels = null;
+    (revived as any)._submodelInstanceParentSubmodelsPromise = null;
+    (revived as any)._submodelInstanceParentSubmodelsSubject = new BehaviorSubject<SubmodelInstanceData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1172,6 +1284,18 @@ export class SubmodelService extends SecureEndpointBase {
       );
 
     (revived as any)._submodelInstancesCount$ = null;
+
+
+    (revived as any).SubmodelInstanceParentSubmodels$ = (revived as any)._submodelInstanceParentSubmodelsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodelInstanceParentSubmodels === null && (revived as any)._submodelInstanceParentSubmodelsPromise === null) {
+                (revived as any).loadSubmodelInstanceParentSubmodels();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._submodelInstanceParentSubmodelsCount$ = null;
 
 
 

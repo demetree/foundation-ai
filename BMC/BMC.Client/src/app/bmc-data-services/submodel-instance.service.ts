@@ -29,6 +29,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class SubmodelInstanceQueryParameters {
     submodelId: bigint | number | null | undefined = null;
+    parentSubmodelId: bigint | number | null | undefined = null;
     positionX: number | null | undefined = null;
     positionY: number | null | undefined = null;
     positionZ: number | null | undefined = null;
@@ -54,6 +55,7 @@ export class SubmodelInstanceQueryParameters {
 export class SubmodelInstanceSubmitData {
     id!: bigint | number;
     submodelId!: bigint | number;
+    parentSubmodelId: bigint | number | null = null;
     positionX: number | null = null;
     positionY: number | null = null;
     positionZ: number | null = null;
@@ -113,6 +115,7 @@ export class SubmodelInstanceBasicListData {
 export class SubmodelInstanceData {
     id!: bigint | number;
     submodelId!: bigint | number;
+    parentSubmodelId!: bigint | number;
     positionX!: number | null;
     positionY!: number | null;
     positionZ!: number | null;
@@ -126,6 +129,7 @@ export class SubmodelInstanceData {
     active!: boolean;
     deleted!: boolean;
     submodel: SubmodelData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    parentSubmodel: SubmodelData | null | undefined = null;            // Navigation property with non-standard field name (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -274,6 +278,7 @@ export class SubmodelInstanceService extends SecureEndpointBase {
 
         output.id = data.id;
         output.submodelId = data.submodelId;
+        output.parentSubmodelId = data.parentSubmodelId;
         output.positionX = data.positionX;
         output.positionY = data.positionY;
         output.positionZ = data.positionZ;

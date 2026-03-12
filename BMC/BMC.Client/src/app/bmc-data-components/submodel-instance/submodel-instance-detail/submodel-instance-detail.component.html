@@ -27,6 +27,13 @@
                                     Submodel is required
                                 </div>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('parentSubmodelId')">
+                                <label for="SubmodelInstance-parentSubmodelId" id="label-SubmodelInstance-parentSubmodelId">Parent Submodel</label>
+                                <select id="SubmodelInstance-parentSubmodelId" formControlName="parentSubmodelId" class="form-select submodel-instance-select" [disabled]="!userIsBMCSubmodelInstanceWriter()">
+                                    <option [ngValue]="null">Select Submodel</option>
+                                    <option *ngFor="let submodel of submodels$ | async" [ngValue]="submodel.id">{{submodel.name}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('positionX')">
                                 <label for="SubmodelInstance-positionX" id="label-SubmodelInstance-positionX">Position X</label>
                                 <input type="number" id="SubmodelInstance-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control submodel-instance-input" [disabled]="!userIsBMCSubmodelInstanceWriter()" aria-labelledby="label-positionX" />

@@ -13,6 +13,8 @@ public partial class SubmodelInstance
 
     public int submodelId { get; set; }
 
+    public int? parentSubmodelId { get; set; }
+
     public float? positionX { get; set; }
 
     public float? positionY { get; set; }
@@ -36,6 +38,8 @@ public partial class SubmodelInstance
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual Submodel parentSubmodel { get; set; }
 
     public virtual Submodel submodel { get; set; }
 }

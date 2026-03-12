@@ -747,7 +747,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 					submodel.Inversesubmodel = null;
 					submodel.SubmodelChangeHistories = null;
-					submodel.SubmodelInstances = null;
+					submodel.SubmodelInstanceparentSubmodels = null;
+					submodel.SubmodelInstancesubmodels = null;
 					submodel.SubmodelPlacedBricks = null;
 					submodel.project = null;
 					submodel.submodel = null;
@@ -867,7 +868,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				cloneOfExisting.Inversesubmodel = null;
 				cloneOfExisting.SubmodelChangeHistories = null;
-				cloneOfExisting.SubmodelInstances = null;
+				cloneOfExisting.SubmodelInstanceparentSubmodels = null;
+				cloneOfExisting.SubmodelInstancesubmodels = null;
 				cloneOfExisting.SubmodelPlacedBricks = null;
 				cloneOfExisting.project = null;
 				cloneOfExisting.submodel = null;

@@ -23,6 +23,7 @@ namespace Foundation.BMC.Database
 			public Int32 id { get; set; }
 			[Required]
 			public Int32 submodelId { get; set; }
+			public Int32? parentSubmodelId { get; set; }
 			public Single? positionX { get; set; }
 			public Single? positionY { get; set; }
 			public Single? positionZ { get; set; }
@@ -48,6 +49,7 @@ namespace Foundation.BMC.Database
 		/// </summary>
 		public class SubmodelInstanceOutputDTO : SubmodelInstanceDTO
 		{
+			public Submodel.SubmodelDTO parentSubmodel { get; set; }
 			public Submodel.SubmodelDTO submodel { get; set; }
 		}
 
@@ -65,6 +67,7 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				submodelId = this.submodelId,
+				parentSubmodelId = this.parentSubmodelId,
 				positionX = this.positionX,
 				positionY = this.positionY,
 				positionZ = this.positionZ,
@@ -117,6 +120,7 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				submodelId = this.submodelId,
+				parentSubmodelId = this.parentSubmodelId,
 				positionX = this.positionX,
 				positionY = this.positionY,
 				positionZ = this.positionZ,
@@ -129,6 +133,7 @@ namespace Foundation.BMC.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				parentSubmodel = this.parentSubmodel?.ToDTO(),
 				submodel = this.submodel?.ToDTO()
 			};
 		}
@@ -170,6 +175,7 @@ namespace Foundation.BMC.Database
 			{
 				id = dto.id,
 				submodelId = dto.submodelId,
+				parentSubmodelId = dto.parentSubmodelId,
 				positionX = dto.positionX,
 				positionY = dto.positionY,
 				positionZ = dto.positionZ,
@@ -199,6 +205,7 @@ namespace Foundation.BMC.Database
 			}
 
 			this.submodelId = dto.submodelId;
+			this.parentSubmodelId = dto.parentSubmodelId;
 			this.positionX = dto.positionX;
 			this.positionY = dto.positionY;
 			this.positionZ = dto.positionZ;
@@ -234,6 +241,7 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				tenantGuid = this.tenantGuid,
 				submodelId = this.submodelId,
+				parentSubmodelId = this.parentSubmodelId,
 				positionX = this.positionX,
 				positionY = this.positionY,
 				positionZ = this.positionZ,
@@ -300,6 +308,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = submodelInstance.id,
 				submodelId = submodelInstance.submodelId,
+				parentSubmodelId = submodelInstance.parentSubmodelId,
 				positionX = submodelInstance.positionX,
 				positionY = submodelInstance.positionY,
 				positionZ = submodelInstance.positionZ,
@@ -333,6 +342,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = submodelInstance.id,
 				submodelId = submodelInstance.submodelId,
+				parentSubmodelId = submodelInstance.parentSubmodelId,
 				positionX = submodelInstance.positionX,
 				positionY = submodelInstance.positionY,
 				positionZ = submodelInstance.positionZ,
@@ -345,6 +355,7 @@ namespace Foundation.BMC.Database
 				objectGuid = submodelInstance.objectGuid,
 				active = submodelInstance.active,
 				deleted = submodelInstance.deleted,
+				parentSubmodel = Submodel.CreateMinimalAnonymous(submodelInstance.parentSubmodel),
 				submodel = Submodel.CreateMinimalAnonymous(submodelInstance.submodel)
 			 };
 		}

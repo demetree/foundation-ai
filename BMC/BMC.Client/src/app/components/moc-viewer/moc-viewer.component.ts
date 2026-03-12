@@ -383,33 +383,21 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         this.modelLoadError = null;
 
         //
-        // Step 1: Fetch the self-contained MPD from the server
+        // Step 2: Load the MPD using LDrawLoader.load() — the standard pattern.
         //
-        let mpdText: string;
-
-        try {
-            mpdText = await this.projectService.getViewerMpd(this.projectId).toPromise() ?? '';
-        } catch (err) {
-            console.error('[MocViewer] Failed to fetch viewer MPD:', err);
-            this.modelLoadError = 'Failed to load model data from the server.';
-            this.isLoadingModel = false;
-            return;
-        }
-
-        if (!mpdText || mpdText.trim().length === 0) {
-            this.modelLoadError = 'Model data is empty — the project may not have any placed bricks.';
-            this.isLoadingModel = false;
-            return;
-        }
-
+        // IMPORTANT: We use load() instead of parse() because load() handles:
+        //   - addDefaultMaterials() (colour codes 16 and 24)
+        //   - FileLoader integration (uses THREE.Cache → IndexedDB persistence)
+        //   - Standard sub-file resolution via partsLibraryPath
+        //   - Proper embedded 0 FILE block handling
         //
-        // Step 2: Parse the MPD using LDrawLoader
+        // This matches the working pattern from catalog-part-detail.
         //
         const loader = new LDrawLoader();
         loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
 
         //
-        // Set auth headers + parts library path for resolving standard parts
+        // Set auth headers — the viewer-mpd endpoint requires authentication
         //
         if (this.authService.isLoggedIn) {
             loader.setRequestHeader({
@@ -417,106 +405,77 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
             });
         }
 
+        //
+        // Point the parts library at the LDraw file endpoint.
+        // The server's LDrawFileService serves from an in-memory cache (O(1) lookups).
+        // THREE.Cache (backed by IndexedDB via LDrawFileCacheService) provides
+        // persistent caching across sessions — files are fetched once, ever.
+        //
         const fileEndpoint = this.baseUrl + 'api/ldraw/file/';
         loader.setPartsLibraryPath(fileEndpoint);
 
         //
-        // Step 2a: Extract bundled LDraw library files from the MPD
+        // Monkey-patch fetchData to gracefully handle missing files.
         //
-        // The server embeds all LDraw dependency files (parts, primitives,
-        // LDConfig.ldr) as inline "0 FILE" blocks. We extract them into a
-        // map and intercept the LDrawLoader's fetchData method so it resolves
-        // files from memory rather than issuing individual HTTP requests.
+        // The standard fetchData throws a hard error when a file can't be
+        // found (after trying 12 URL combinations). This kills the ENTIRE
+        // model — even if only one obscure subpart is missing.
         //
-        const { strippedMpd, fileMap } = this.extractBundledFiles(mpdText);
+        // We wrap the original fetchData to catch errors and return empty
+        // LDraw content instead. This allows the model to render with
+        // missing parts simply omitted (zero geometry) rather than failing.
+        //
+        const partsGeometryCache = (loader as any).partsCache;
+        if (partsGeometryCache && partsGeometryCache.parseCache) {
+            const parseCache = partsGeometryCache.parseCache;
+            const originalFetchData = parseCache.fetchData.bind(parseCache);
 
-        if (Object.keys(fileMap).length > 0) {
-            console.log(`[MocViewer] Pre-seeded ${Object.keys(fileMap).length} bundled LDraw files`);
-
-            //
-            // Access the internal LDrawParsedCache and monkey-patch fetchData
-            // to serve from the local map before hitting the network.
-            //
-            const partsGeometryCache = (loader as any).partsCache;
-            if (partsGeometryCache && partsGeometryCache.parseCache) {
-                const parseCache = partsGeometryCache.parseCache;
-                const originalFetchData = parseCache.fetchData.bind(parseCache);
-
-                parseCache.fetchData = async (fileName: string) => {
-                    //
-                    // Try the local file map first — check bare name, then
-                    // with standard LDraw directory prefixes stripped.
-                    //
-                    // The server already bundled ALL files it could find in
-                    // the LDraw parts library.  If a file isn't here, it
-                    // does not exist.  Throwing immediately prevents the
-                    // LDrawLoader's 12-attempt trial-and-error HTTP flood.
-                    //
-                    const lowerName = fileName.toLowerCase();
-                    if (fileMap[lowerName]) {
-                        return fileMap[lowerName];
-                    }
-
-                    // Strip directory prefix and try bare filename
-                    const bareName = lowerName.includes('/') ? lowerName.substring(lowerName.lastIndexOf('/') + 1) : lowerName;
-                    if (fileMap[bareName]) {
-                        return fileMap[bareName];
-                    }
-
-                    // Try with standard LDraw directory prefixes
-                    const prefixes = ['parts/', 'p/', 'parts/s/', 'p/48/', 'p/8/', 'models/'];
-                    for (const prefix of prefixes) {
-                        if (fileMap[prefix + bareName]) {
-                            return fileMap[prefix + bareName];
-                        }
-                    }
-
-                    // File is not in the LDraw library — throw immediately
-                    // instead of making 12 sequential HTTP requests
-                    console.debug(`[MocViewer] Skipping unbundled file: ${fileName}`);
-                    throw new Error(`LDrawLoader: File "${fileName}" not found in bundled library.`);
-                };
-            }
+            parseCache.fetchData = async (fileName: string) => {
+                try {
+                    return await originalFetchData(fileName);
+                } catch (e) {
+                    console.debug(`[MocViewer] Part not found (skipping): ${fileName}`);
+                    return `0 // Not found: ${fileName}\n`;
+                }
+            };
         }
 
         //
         // Preload LDraw colour configuration
         //
-        // preloadMaterials() makes a single HTTP request for LDConfig.ldr.
-        // With the in-memory LDrawFileService, this completes instantly.
-        // Also seed the parse cache so the file isn't fetched again during parsing.
-        //
-        const ldConfigKey = Object.keys(fileMap).find(k => k.toLowerCase() === 'ldconfig.ldr');
-        if (ldConfigKey && fileMap[ldConfigKey]) {
-            // Seed the parse cache so LDConfig.ldr isn't fetched during model parsing
-            const partsGeometryCache = (loader as any).partsCache;
-            if (partsGeometryCache && partsGeometryCache.parseCache) {
-                partsGeometryCache.parseCache.setData('LDConfig.ldr', fileMap[ldConfigKey]);
-            }
-        }
-
+        console.log('[MocViewer] preloadMaterials starting...');
         try {
             await (loader as any).preloadMaterials(fileEndpoint + 'LDConfig.ldr');
+            console.log('[MocViewer] preloadMaterials complete.');
         } catch (err) {
             console.warn('[MocViewer] Material preload failed (using defaults):', err);
         }
 
         //
-        // Parse the MPD text (not loading from URL — parsing in-memory text)
+        // Load the model from the viewer-mpd endpoint URL.
         //
+        // loader.load() fetches the MPD text via FileLoader, calls
+        // addDefaultMaterials(), parses embedded FILE blocks, and resolves
+        // sub-file references through the standard pipeline.
+        //
+        const viewerMpdUrl = this.baseUrl + `api/moc/project/${this.projectId}/viewer-mpd`;
+        console.log('[MocViewer] Starting load from:', viewerMpdUrl);
+
         try {
             const group = await new Promise<THREE.Group>((resolve, reject) => {
-                //
-                // LDrawLoader.parse() takes text content and returns a Group
-                //
-                (loader as any).parse(mpdText, (group: THREE.Group) => {
-                    resolve(group);
-                }, undefined, (error: any) => {
-                    reject(error);
-                });
+                loader.load(
+                    viewerMpdUrl,
+                    (group: THREE.Group) => {
+                        resolve(group);
+                    },
+                    undefined,  // onProgress
+                    (error: any) => {
+                        reject(error);
+                    }
+                );
             });
 
-            console.log('[MocViewer] Model parsed:', group.children.length, 'children');
+            console.log('[MocViewer] Model loaded:', group.children.length, 'children');
 
             //
             // LDraw coordinate system uses Y-up with Y pointing downward
@@ -535,8 +494,8 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
             this.isLoadingModel = false;
 
         } catch (err) {
-            console.error('[MocViewer] Model parse error:', err);
-            this.modelLoadError = 'Failed to parse the 3D model.';
+            console.error('[MocViewer] Model load error:', err);
+            this.modelLoadError = 'Failed to load the 3D model.';
             this.isLoadingModel = false;
         }
     }
@@ -567,7 +526,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
                     fileMap[currentFileName.toLowerCase()] = currentContent.join('\n');
                 }
 
-                currentFileName = trimmed.substring(7).trim();
+                currentFileName = trimmed.substring(7).trim().replace(/\\/g, '/');
                 currentContent = [];
                 continue;
             }
