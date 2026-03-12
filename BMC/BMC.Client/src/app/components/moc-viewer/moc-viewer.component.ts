@@ -91,7 +91,6 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     //  Tab System
     // ────────────────────────────────────────────────────────────────
     activeViewerTab: '3d' | 'render' | 'manual' = '3d';
-    poseMode = false;
 
     // ────────────────────────────────────────────────────────────────
     //  Server Render Tab — State
@@ -113,6 +112,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     enablePbr = true;
     exposure = 1.0;
     aperture = 0;
+    renderZoom = 1.0;
 
     // Render output state
     rendering = false;
@@ -1133,12 +1133,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     // Pose Mode — extract camera angles from OrbitControls
-    togglePoseMode(): void {
-        this.poseMode = !this.poseMode;
-        if (this.controls) {
-            this.controls.autoRotate = !this.poseMode;
-        }
-    }
+    // (togglePoseMode removed — pose mode is now just !autoRotate)
 
     getCameraAngles(): { elevation: number; azimuth: number } {
         if (this.camera == null || this.controls == null) {
@@ -1158,8 +1153,89 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         const angles = this.getCameraAngles();
         this.renderElevation = angles.elevation;
         this.renderAzimuth = angles.azimuth;
+
+        //
+        // Capture zoom from camera distance using the model bounding box.
+        // Uses modelGroup (not scene) to exclude grid/shadow/lights.
+        //
+        if (this.camera && this.controls && this.modelGroup) {
+            const pos = this.camera.position;
+            const tgt = this.controls.target;
+            const currentDist = Math.sqrt(
+                (pos.x - tgt.x) ** 2 +
+                (pos.y - tgt.y) ** 2 +
+                (pos.z - tgt.z) ** 2
+            );
+
+            const box = new THREE.Box3().setFromObject(this.modelGroup);
+            const size = box.getSize(new THREE.Vector3());
+
+            const halfWidth = Math.max(size.x, size.z) * 0.5;
+            const halfHeight = size.y * 0.5;
+
+            const fovV = 45 * (Math.PI / 180);
+            const renderAspect = this.renderWidth / Math.max(this.renderHeight, 1);
+            const fovH = 2 * Math.atan(Math.tan(fovV / 2) * renderAspect);
+
+            const distV = halfHeight / Math.tan(fovV / 2);
+            const distH = halfWidth / Math.tan(fovH / 2);
+            const baselineDist = Math.max(distV, distH) * 1.15;
+
+            if (currentDist > 0 && baselineDist > 0) {
+                this.renderZoom = Math.max(0.5, Math.min(3.0,
+                    parseFloat((baselineDist / currentDist).toFixed(2))
+                ));
+            }
+        }
+
         this.activeViewerTab = 'render';
         setTimeout(() => this.renderModel(), 0);
+    }
+
+
+    /**
+     * Switching to the Render tab.  When coming from the 3D tab, automatically
+     * capture the current camera pose and zoom so the render matches what the
+     * user sees.  No separate "apply pose" step required.
+     */
+    switchToRenderTab(): void {
+        if (this.activeViewerTab === '3d') {
+            // Capture pose + zoom from the live 3D view
+            const angles = this.getCameraAngles();
+            this.renderElevation = angles.elevation;
+            this.renderAzimuth = angles.azimuth;
+
+            if (this.camera && this.controls && this.modelGroup) {
+                const pos = this.camera.position;
+                const tgt = this.controls.target;
+                const currentDist = Math.sqrt(
+                    (pos.x - tgt.x) ** 2 +
+                    (pos.y - tgt.y) ** 2 +
+                    (pos.z - tgt.z) ** 2
+                );
+
+                const box = new THREE.Box3().setFromObject(this.modelGroup);
+                const size = box.getSize(new THREE.Vector3());
+                const halfWidth = Math.max(size.x, size.z) * 0.5;
+                const halfHeight = size.y * 0.5;
+
+                const fovV = 45 * (Math.PI / 180);
+                const renderAspect = this.renderWidth / Math.max(this.renderHeight, 1);
+                const fovH = 2 * Math.atan(Math.tan(fovV / 2) * renderAspect);
+
+                const distV = halfHeight / Math.tan(fovV / 2);
+                const distH = halfWidth / Math.tan(fovH / 2);
+                const baselineDist = Math.max(distV, distH) * 1.15;
+
+                if (currentDist > 0 && baselineDist > 0) {
+                    this.renderZoom = Math.max(0.5, Math.min(3.0,
+                        parseFloat((baselineDist / currentDist).toFixed(2))
+                    ));
+                }
+            }
+        }
+
+        this.activeViewerTab = 'render';
     }
 
 
@@ -1182,7 +1258,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         const headers = this.authService.GetAuthenticationHeaders();
         const effectiveAzimuth = this.flipView ? this.renderAzimuth + 180 : this.renderAzimuth;
 
-        let url = `/api/moc/export/${this.projectId}/render?width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
+        let url = `/api/moc/export/${this.projectId}/render?width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}&zoom=${this.renderZoom}`;
 
         // Pass the current build step so the render matches what the user sees
         if (this.currentStep > 0) {

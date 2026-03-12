@@ -837,7 +837,8 @@ namespace BMC.LDraw.Render
                                    int quality = 90,
                                    bool enablePbr = true,
                                    float exposure = 1.0f,
-                                   float aperture = 0f)
+                                   float aperture = 0f,
+                                   float zoom = 1.0f)
         {
             byte[] pixels = RenderToPixels(lines: lines,
                                            fileName: fileName,
@@ -854,7 +855,8 @@ namespace BMC.LDraw.Render
                                            gradientBottomHex: gradientBottomHex,
                                            enablePbr: enablePbr,
                                            exposure: exposure,
-                                           aperture: aperture);
+                                           aperture: aperture,
+                                           zoom: zoom);
 
             return ImageExporter.ToWebPBytes(pixels, width, height, quality);
         }

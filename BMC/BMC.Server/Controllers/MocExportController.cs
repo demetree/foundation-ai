@@ -576,6 +576,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             float exposure = 1.0f,
             float aperture = 0f,
             int step = 0,
+            float zoom = 1.0f,
             CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
@@ -605,6 +606,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             quality = Math.Clamp(quality, 1, 100);
             exposure = Math.Clamp(exposure, 0.1f, 10f);
             aperture = Math.Clamp(aperture, 0f, 10f);
+            zoom = Math.Clamp(zoom, 0.5f, 3.0f);
             format = (format ?? "png").ToLowerInvariant();
             antiAlias = (antiAlias ?? "none").ToLowerInvariant();
 
@@ -659,7 +661,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToWebP(mpdLines, fileName, width, height, -1, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality,
-                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture, zoom: zoom);
                     }, renderCts.Token);
                     contentType = "image/webp";
                 }
@@ -699,7 +701,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToPng(mpdLines, fileName, width, height, -1, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex,
-                            rendererType: rendererType, enablePbr: enablePbr, exposure: exposure, aperture: aperture);
+                            rendererType: rendererType, enablePbr: enablePbr, exposure: exposure, aperture: aperture, zoom: zoom);
                     }, renderCts.Token);
                     contentType = "image/png";
                 }
